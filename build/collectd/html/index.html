@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <title>ADS-B Feeder</title>
+        <meta http-equiv="cache-control" content="no-cache" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+        <style type="text/css">
+            html, body { height: 100%; }
+            #footer { height: 60px; background-color: #f5f5f5; }
+            #push { height: 60px; }
+            #wrapper { min-height: 100%; height: auto !important; height: 100%; margin: 0 auto -60px; }
+            #wrapper > .container { padding-top: 60px; }
+            .credits { margin: 20px 0; }
+            .padding { height: 15px; }
+        </style>
+    </head>
+    <body>
+        <div id="wrapper">
+            <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="/">ADS-B Feeder</a>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li id="graphs-link" class="active"><a href="/collectd/">Performance Graphs</a></li>
+                            <li id="map-link"><a href="/dump1090/">Live Dump1090 Map</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div class="container">
+                <h1>Performance Graphs</h1>
+                <div class="btn-group" role="group">
+                    <button type="button" id="btn-1h" class="btn btn-default btn-sm active" onclick="switchView('1h')">Hourly</button>
+                    <button type="button" id="btn-6h" class="btn btn-default btn-sm" onclick="switchView('6h')">Six Hours</button>
+                    <button type="button" id="btn-24h" class="btn btn-default btn-sm" onclick="switchView('24h')">Daily</button>
+                    <button type="button" id="btn-7d" class="btn btn-default btn-sm" onclick="switchView('7d')">Weekly</button>
+                    <button type="button" id="btn-30d" class="btn btn-default btn-sm" onclick="switchView('30d')">Monthly</button>
+                    <button type="button" id="btn-365d" class="btn btn-default btn-sm" onclick="switchView('365d')">Yearly</button>
+                </div>
+                <div class="padding"></div>
+                <!-- Dump1090 Graphs -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">Dump1090 Graphs</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <a id ="dump1090-local_trailing_rate-link" href="#">
+                                    <img id="dump1090-local_trailing_rate-image" class="img-responsive" src="#" alt="Message Rate (Trailing)">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="padding"></div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-aircraft-link" href="#">
+                                   <img id="dump1090-aircraft-image" class="img-responsive" src="#" alt="Aircraft Seen">
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-tracks-link" href="#">
+                                   <img id="dump1090-tracks-image" class="img-responsive" src="#" alt="Tracks Seen">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="padding"></div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-range-link" href="#">
+                                    <img id="dump1090-range-image" class="img-responsive" src="#" alt="Max Range">
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-signal-link" href="#">
+                                    <img id="dump1090-signal-image" class="img-responsive" src="#" alt="Signal Level">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="padding"></div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-local_rate-link" href="#">
+                                   <img id="dump1090-local_rate-image" class="img-responsive" src="#" alt="Message Rate">
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-cpu-link" href="#">
+                                    <img id="dump1090-cpu-image" class="img-responsive" src="#" alt="CPU Utilization">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- System Graphs -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">System Graphs</div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <a id ="system-cpu-link" href="#">
+                                    <img id="system-cpu-image" class="img-responsive" src="#" alt="Overall CPU Utilization">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="padding"></div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <a id ="system-temperature-link" href="#">
+                                   <img id="system-temperature-image" class="img-responsive" src="#" alt="Core Temperature">
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <a id ="system-memory-link" href="#">
+                                   <img id="system-memory-image" class="img-responsive" src="#" alt="Memory Utilization">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="padding"></div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <a id ="system-wlan0_bandwidth-link" href="#">
+                                   <img id="system-wlan0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage">
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <a id ="system-df_root-link" href="#">
+                                    <img id="system-df_root-image" class="img-responsive" src="#" alt="Disk Space Usage (/)">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="padding"></div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <a id ="system-disk_io_iops-link" href="#">
+                                    <img id="system-disk_io_iops-image" class="img-responsive" src="#" alt="Disk I/O - IOPS">
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <a id ="system-disk_io_octets-link" href="#">
+                                    <img id="system-disk_io_octets-image" class="img-responsive" src="#" alt="Disk I/O - Bandwidth">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="push"></div>
+        </div>
+        <footer id="footer">
+            <div class="container">
+                <p class="muted credits">
+                    This ADS-B feeder setup using <a href="https://github.com/jprochazka/adsb-feeder">The ADS-B Feeder Project</a>.
+                </p>
+            </div>
+        </footer>
+        <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+            //*** BEGIN USER DEFINED VARIABLES ***//
+
+            // Set the default time frame to use when loading images when the page is first accessed.
+            // Can be set to 1h, 6h, 24h, 7d, 30d, or 365d.
+            $timeFrame = '24h';
+
+            // Set this to the hostname of the system which is running dump1090.
+            $hostName = 'localhost';
+
+            // Set the page refresh interval in milliseconds.
+            $refreshInterval = 60000
+
+            //*** END USER DEFINED VARIABLES ***//
+
+
+            //*** DO NOT EDIT BELOW THIS LINE UNLESS YOU KNOW WHAT YOU ARE DOING ***//
+
+            $(document).ready(function () {
+                // Display the images for the supplied time frame.
+                switchView($timeFrame);
+
+                // Refresh images contained within the page every X milliseconds.
+                window.setInterval(function() {
+                    switchView($timeFrame)
+                }, $refreshInterval);
+            });
+
+            function switchView(newTimeFrame) {
+                // Set the the $timeFrame variable to the one selected.
+                $timeFrame = newTimeFrame;
+
+                // Set the timestamp variable to be used in querystring.
+                $timestamp = new Date().getTime() / 1000
+
+                // Display images for the requested time frame.
+                $("#dump1090-local_trailing_rate-image").attr("src", "dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-local_rate-image").attr("src", "dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-aircraft-image").attr("src", "dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-tracks-image").attr("src", "dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-range-image").attr("src", "dump1090-" + $hostName + "-range-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-signal-image").attr("src", "dump1090-" + $hostName + "-signal-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-cpu-image").attr("src", "dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-cpu-image").attr("src", "system-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-wlan0_bandwidth-image").attr("src", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-memory-image").attr("src", "system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-temperature-image").attr("src", "system-" + $hostName + "-temperature-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-df_root-image").attr("src", "system-" + $hostName + "-df_root-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-disk_io_iops-image").attr("src", "system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-disk_io_octets-image").attr("src", "system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png?time=" + $timestamp);
+
+                // Create links to full sized images for the requested time frame.
+                $("#dump1090-local_trailing_rate-link").attr("href", "dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png");
+                $("#dump1090-local_rate-image-link").attr("href", "dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png");
+                $("#dump1090-aircraft-link").attr("href", "dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
+                $("#dump1090-tracks-link").attr("href", "dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
+                $("#dump1090-range-link").attr("href", "dump1090-" + $hostName + "-range-" + $timeFrame + ".png");
+                $("#dump1090-signal-link").attr("href", "dump1090-" + $hostName + "-signal-" + $timeFrame + ".png");
+                $("#dump1090-cpu-link").attr("href", "dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png");
+                $("#system-cpu-image").attr("href", "system-" + $hostName + "-cpu-" + $timeFrame + ".png");
+                $("#system-wlan0_bandwidth-image").attr("href", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
+                $("#system-memory-image").attr("href", "system-" + $hostName + "-memory-" + $timeFrame + ".png");
+                $("#system-temperature-image").attr("href", "system-" + $hostName + "-temperature-" + $timeFrame + ".png");
+                $("#system-df_root-image-image").attr("href", "system-" + $hostName + "-df_root-" + $timeFrame + ".png");
+                $("#system-disk_io_iops-image").attr("href", "system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png");
+                $("#system-disk_io_octets-image").attr("href", "system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png");
+
+		// Set the button related to the selected time frame to active.
+          	$("#btn-1h").removeClass('active');
+          	$("#btn-6h").removeClass('active');
+          	$("#btn-24h").removeClass('active');
+          	$("#btn-7d").removeClass('active');
+          	$("#btn-30d").removeClass('active');
+          	$("#btn-365d").removeClass('active');
+          	$("#btn-" + $timeFrame).addClass('active');
+            }
+      </script>
+   </body>
+</html>
