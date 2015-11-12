@@ -49,35 +49,23 @@ echo "https://github.com/flightaware/piaware"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
-## CHECK THAT PIAWARE IS INSTALLED
+## CONFIGURE PIAWARE TO FEED ADS-B EXCHANGE IF PIAWARE IS INSTALLED
 
 echo -e "\e[33m"
-printf "Checking if the package piaware is installed..."
+printf "Configuring PiAware if it is installed..."
 if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    echo -e "\033[31m [NOT INSTALLED]"
-    echo -e "\033[33mPiAware does not appear to be installed."
-    echo "PiAware is required in order to feed data to adsbexchange.com."
+    if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    echo -e "\033[33m"
+    echo "Adding the ADS-B Exchange feed to PiAware's configuration..."
+    ORIGINALFORMAT=`sudo piaware-config -show | sed -n 's/.*{\(.*\)}.*/\1/p'`
+    CLEANFORMAT=`sed 's/ beast,connect,feed.adsbexchange.com:30005//g' <<< $ORIGINALFORMAT`
+    sudo piaware-config -mlatResultsFormat "${CLEANFORMAT} beast,connect,feed.adsbexchange.com:30005"
+    echo -e "\033[33m"
+    echo "Restarting PiAware so new configuration takes effect..."
     echo -e "\033[37m"
-    read -p "Press enter to install PiAware..." CONTINUE
-    echo -e "\e[33m"
-    echo "Executing the PiAware installation script..."
-    echo -e "\033[37m"
-    chmod 755 ../bash/piaware.sh
-    ../bash/piaware.sh
-else
-    echo -e "\033[32m [OK]\033[37m"
+    sudo piaware-config -restart
     echo ""
 fi
-
-## CONFIGURE PIAWARE TO FEED ADS-B EXCHANGE
-
-echo -e "\033[33mAdding the ADS-B Exchange feed to PiAware's configuration..."
-echo -e "\033[37m"
-MLATRESULTFORMAT=`sudo piaware-config -show | grep mlatResultsFormat`
-ORIGINALFORMAT=`sed 's/mlatResultsFormat //g' <<< $MLATRESULTFORMAT`
-COMMAND=`sudo piaware-config -mlatResultsFormat "${ORIGINALFORMAT} beast,connect,feed.adsbexchange.com:30005"`
-$COMMAND
-sudo piaware-config -restart
 
 ## ADD SCRIPT TO EXECUTE NETCAT TO FEED ADS-B EXCHANGE
 
@@ -99,7 +87,7 @@ lnum=($(sed -n '/exit 0/=' /etc/rc.local))
 
 echo -e "\033[33mRunning ADS-B Exchange startup script..."
 echo -e "\033[37m"
-sudo $BUILDDIR/adsbexchange/adsbexchange-maint.sh start > /dev/null & 
+sudo $BUILDDIR/adsbexchange/adsbexchange-maint.sh &
 
 echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
