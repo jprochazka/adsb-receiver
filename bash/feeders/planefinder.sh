@@ -70,14 +70,14 @@ echo "https://planefinder.net/sharing/client"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
-
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\033[33m"
 echo "Installing packages needed to build and fulfill dependencies..."
 echo -e "\033[37m"
+CheckPackage wget
 if [[ `uname -m` == "x86_64" ]]; then
-	CheckPackage libc6-i386
+	CheckPackage libc6:i386
 else
 	CheckPackage libc6
 fi
