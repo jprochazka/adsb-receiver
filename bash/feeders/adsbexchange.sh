@@ -53,7 +53,7 @@ read -p "Press enter to continue..." CONTINUE
 
 echo -e "\e[33m"
 printf "Configuring PiAware if it is installed..."
-if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") eq 0 ]; then
+if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") != 0 ]; then
     echo -e "\033[33m"
     echo "Adding the ADS-B Exchange feed to PiAware's configuration..."
     ORIGINALFORMAT=`sudo piaware-config -show | sed -n 's/.*{\(.*\)}.*/\1/p'`
