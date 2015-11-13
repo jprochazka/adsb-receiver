@@ -42,7 +42,7 @@ the status of the testing done so far on each. Those checked off have been teste
 - [ ] **Debian 8.0 Jessie**
 - [ ] **Debian 7.0 Wheezy**
 - [X] **Ubuntu 15.04 Vivid Vervet**
-- [ ] **Ubuntu 14.04 LTS Trusty Tahr**
+- [X] **Ubuntu 14.04 LTS Trusty Tahr**
 - [ ] **Ubuntu 12.04 LTS Precise Pangolin**
 
 ---
