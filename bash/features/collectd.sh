@@ -161,7 +161,7 @@ LoadPlugin disk
 
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
-		Instance rpi
+		Instance localhost
 		Separator " "
 		<Result>
 			Type gauge
