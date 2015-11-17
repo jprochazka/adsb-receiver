@@ -309,15 +309,16 @@ local_trailing_rate_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 1110 \
-  --height 200 \
+  --width 1010 \
+  --height 217 \
   --step "$5" \
-  --title "$3 Message Rate (Trailing)" \
-  --vertical-label "messages/second" \
+  --title "$3 Message Rate" \
+  --vertical-label "Messages/Second" \
   --lower-limit 0  \
   --units-exponent 0 \
   --right-axis 360:0 \
   --slope-mode \
+  "TEXTALIGN:center" \
   "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
   "DEF:a=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE:end=now-86400:start=end-86400" \
   "DEF:b=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE:end=now-172800:start=end-86400" \
@@ -333,58 +334,72 @@ local_trailing_rate_graph() {
   "DEF:emin=$2/dump1090_messages-local_accepted.rrd:value:MIN:end=now-432000:start=end-86400" \
   "DEF:fmin=$2/dump1090_messages-local_accepted.rrd:value:MIN:end=now-518400:start=end-86400" \
   "DEF:gmin=$2/dump1090_messages-local_accepted.rrd:value:MIN:end=now-604800:start=end-86400" \
-  "DEF:amax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-86400:start=end-86400" \
-  "DEF:bmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-172800:start=end-86400" \
-  "DEF:cmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-259200:start=end-86400" \
-  "DEF:dmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-345600:start=end-86400" \
-  "DEF:emax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-432000:start=end-86400" \
-  "DEF:fmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-518400:start=end-86400" \
-  "DEF:gmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-604800:start=end-86400" \
+  "CDEF:a1=a,UN,0,a,IF" \
+  "CDEF:b1=b,UN,0,b,IF" \
+  "CDEF:c1=c,UN,0,c,IF" \
+  "CDEF:d1=d,UN,0,d,IF" \
+  "CDEF:e1=e,UN,0,e,IF" \
+  "CDEF:f1=f,UN,0,f,IF" \
+  "CDEF:g1=g,UN,0,g,IF" \
+  "CDEF:amin1=amin,UN,1000,amin,IF" \
+  "CDEF:bmin1=bmin,UN,1000,bmin,IF" \
+  "CDEF:cmin1=cmin,UN,1000,cmin,IF" \
+  "CDEF:dmin1=dmin,UN,1000,dmin,IF" \
+  "CDEF:emin1=emin,UN,1000,emin,IF" \
+  "CDEF:fmin1=fmin,UN,1000,fmin,IF" \
+  "CDEF:gmin1=gmin,UN,1000,gmin,IF" \
+  "CDEF:amax1=amax,UN,0,amax,IF" \
+  "CDEF:bmax1=bmax,UN,0,bmax,IF" \
+  "CDEF:cmax1=cmax,UN,0,cmax,IF" \
+  "CDEF:dmax1=dmax,UN,0,dmax,IF" \
+  "CDEF:emax1=emax,UN,0,emax,IF" \
+  "CDEF:fmax1=fmax,UN,0,fmax,IF" \
+  "CDEF:gmax1=gmax,UN,0,gmax,IF" \
   "DEF:strong=$2/dump1090_messages-strong_signals.rrd:value:AVERAGE" \
   "DEF:positions=$2/dump1090_messages-positions.rrd:value:AVERAGE" \
   "CDEF:y2strong=strong,10,*" \
   "CDEF:y2positions=positions,10,*" \
-  "SHIFT:a:86400" \
-  "SHIFT:b:172800" \
-  "SHIFT:c:259200" \
-  "SHIFT:d:345600" \
-  "SHIFT:e:432000" \
-  "SHIFT:f:518400" \
-  "SHIFT:g:604800" \
-  "SHIFT:amin:86400" \
-  "SHIFT:bmin:172800" \
-  "SHIFT:cmin:259200" \
-  "SHIFT:dmin:345600" \
-  "SHIFT:emin:432000" \
-  "SHIFT:fmin:518400" \
-  "SHIFT:gmin:604800" \
-  "SHIFT:amax:86400" \
-  "SHIFT:bmax:172800" \
-  "SHIFT:cmax:259200" \
-  "SHIFT:dmax:345600" \
-  "SHIFT:emax:432000" \
-  "SHIFT:fmax:518400" \
-  "SHIFT:gmax:604800" \
-  "CDEF:7dayaverage=a,b,c,d,e,f,g,+,+,+,+,+,+,7,/" \
-  "CDEF:min1=amin,bmin,MIN" \
-  "CDEF:min2=cmin,dmin,MIN" \
-  "CDEF:min3=emin,fmin,MIN" \
+  "SHIFT:a1:86400" \
+  "SHIFT:b1:172800" \
+  "SHIFT:c1:259200" \
+  "SHIFT:d1:345600" \
+  "SHIFT:e1:432000" \
+  "SHIFT:f1:518400" \
+  "SHIFT:g1:604800" \
+  "SHIFT:amin1:86400" \
+  "SHIFT:bmin1:172800" \
+  "SHIFT:cmin1:259200" \
+  "SHIFT:dmin1:345600" \
+  "SHIFT:emin1:432000" \
+  "SHIFT:fmin1:518400" \
+  "SHIFT:gmin1:604800" \
+  "SHIFT:amax1:86400" \
+  "SHIFT:bmax1:172800" \
+  "SHIFT:cmax1:259200" \
+  "SHIFT:dmax1:345600" \
+  "SHIFT:emax1:432000" \
+  "SHIFT:fmax1:518400" \
+  "SHIFT:gmax1:604800" \
+  "CDEF:7dayaverage=a1,b1,c1,d1,e1,f1,g1,+,+,+,+,+,+,7,/" \
+  "CDEF:min1=amin1,bmin1,MIN" \
+  "CDEF:min2=cmin1,dmin1,MIN" \
+  "CDEF:min3=emin1,fmin1,MIN" \
   "CDEF:min4=min1,min2,MIN" \
-  "CDEF:min5=min3,gmin,MIN" \
+  "CDEF:min5=min3,gmin1,MIN" \
   "CDEF:min=min4,min5,MIN" \
-  "CDEF:max1=amax,bmax,MAX" \
-  "CDEF:max2=cmax,dmax,MAX" \
-  "CDEF:max3=emax,fmax,MAX" \
+  "CDEF:max1=amax1,bmax1,MAX" \
+  "CDEF:max2=cmax1,dmax1,MAX" \
+  "CDEF:max3=emax1,fmax1,MAX" \
   "CDEF:max4=max1,max2,MAX" \
-  "CDEF:max5=max3,gmax,MAX" \
+  "CDEF:max5=max3,gmax1,MAX" \
   "CDEF:max=max4,max5,MAX" \
   "CDEF:maxarea=max,min,-" \
   "LINE1:min#FFFF99:mins" \
   "AREA:maxarea#FFFF99:max:STACK" \
-  "LINE1:7dayaverage#00FF00:7 day average" \
-  "AREA:y2strong#FF0000:messages >-3dBFS / hr (RHS)" \
-  "LINE1:y2positions#00c0FF:positions / hr (RHS)" \
-  "LINE1:messages#0000FF:messages received" \
+  "LINE1:7dayaverage#00FF00:7 Day Average" \
+  "AREA:y2strong#FF0000:messages >-3dBFS/Hr (RHS)" \
+  "LINE1:y2positions#00c0FF:Positions/Hr (RHS)" \
+  "LINE1:messages#0000FF:Messages Received" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -396,13 +411,20 @@ range_graph_imperial(){
   --height 200 \
   --step "$5" \
   --title "$3 Max Range" \
-  --vertical-label "miles" \
-  --lower-limit 0 \
+  --vertical-label "Nautical Miles" \
   --units-exponent 0 \
+  --right-axis 1.852:0 \
+  --right-axis-label "Kilometres" \
   "DEF:rangem=$2/dump1090_range-max_range.rrd:value:MAX" \
-  "CDEF:rangekm=rangem,1000,/" \
-  "CDEF:rangeml=rangekm,0.621371192,*" \
-  "LINE1:rangeml#0000FF:max range" \
+  "CDEF:rangekm=rangem,0.001,*" \
+  "CDEF:rangenm=rangekm,0.539956803,*" \
+  "LINE1:rangenm#0000FF:Max Range" \
+  "VDEF:avgrange=rangenm,AVERAGE" \
+  "LINE1:avgrange#666666:Avr Range\\::dashes" \
+  "VDEF:peakrange=rangenm,MAXIMUM" \
+  "GPRINT:avgrange:%1.1lf NM" \
+  "LINE1:peakrange#FF0000:Peak Range\\:" \
+  "GPRINT:peakrange:%1.1lf NM" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -414,17 +436,25 @@ range_graph_metric() {
   --height 200 \
   --step "$5" \
   --title "$3 Max Range" \
-  --vertical-label "kilometers" \
-  --lower-limit 0 \
+  --vertical-label "Kilometres" \
   --units-exponent 0 \
+  --right-axis 0.5399:0 \
+  --right-axis-label "Nautical Miles" \
   "DEF:rangem=$2/dump1090_range-max_range.rrd:value:MAX" \
   "CDEF:range=rangem,0.001,*" \
-  "LINE1:range#0000FF:max range" \
+  "LINE1:range#0000FF:Max Range" \
+  "VDEF:avgrange=range,AVERAGE" \
+  "LINE1:avgrange#666666:Avg Range\\::dashes" \
+  "VDEF:peakrange=range,MAXIMUM" \
+  "GPRINT:avgrange:%1.1lf km" \
+  "LINE1:peakrange#FF0000:Peak Range\\:" \
+  "GPRINT:peakrange:%1.1lf km" \
+  "LINE1:463#000000:250 NM" \
   --watermark "Drawn: $nowlit";
 }
 
 signal_graph() {
-rrdtool graph \
+  rrdtool graph \
   "$1" \
   --start end-$4 \
   --width 480 \
