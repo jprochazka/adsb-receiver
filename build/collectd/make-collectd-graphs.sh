@@ -334,6 +334,13 @@ local_trailing_rate_graph() {
   "DEF:emin=$2/dump1090_messages-local_accepted.rrd:value:MIN:end=now-432000:start=end-86400" \
   "DEF:fmin=$2/dump1090_messages-local_accepted.rrd:value:MIN:end=now-518400:start=end-86400" \
   "DEF:gmin=$2/dump1090_messages-local_accepted.rrd:value:MIN:end=now-604800:start=end-86400" \
+  "DEF:amax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-86400:start=end-86400" \
+  "DEF:bmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-172800:start=end-86400" \
+  "DEF:cmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-259200:start=end-86400" \
+  "DEF:dmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-345600:start=end-86400" \
+  "DEF:emax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-432000:start=end-86400" \
+  "DEF:fmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-518400:start=end-86400" \
+  "DEF:gmax=$2/dump1090_messages-local_accepted.rrd:value:MAX:end=now-604800:start=end-86400" \
   "CDEF:a1=a,UN,0,a,IF" \
   "CDEF:b1=b,UN,0,b,IF" \
   "CDEF:c1=c,UN,0,c,IF" \
@@ -385,8 +392,6 @@ local_trailing_rate_graph() {
   "CDEF:min2=cmin1,dmin1,MIN" \
   "CDEF:min3=emin1,fmin1,MIN" \
   "CDEF:min4=min1,min2,MIN" \
-  "CDEF:min5=min3,gmin1,MIN" \
-  "CDEF:min=min4,min5,MIN" \
   "CDEF:max1=amax1,bmax1,MAX" \
   "CDEF:max2=cmax1,dmax1,MAX" \
   "CDEF:max3=emax1,fmax1,MAX" \
