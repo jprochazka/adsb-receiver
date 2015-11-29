@@ -392,6 +392,8 @@ local_trailing_rate_graph() {
   "CDEF:min2=cmin1,dmin1,MIN" \
   "CDEF:min3=emin1,fmin1,MIN" \
   "CDEF:min4=min1,min2,MIN" \
+  "CDEF:min5=min3,gmin1,MIN" \
+  "CDEF:min=min4,min5,MIN" \
   "CDEF:max1=amax1,bmax1,MAX" \
   "CDEF:max2=cmax1,dmax1,MAX" \
   "CDEF:max3=emax1,fmax1,MAX" \
