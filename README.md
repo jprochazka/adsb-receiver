@@ -38,6 +38,7 @@ The following is a list of operating systems which are currently going through t
 the status of the testing done so far on each. Those checked off have been tested successfully.
 
 - [X] **Raspbian Jessie**
+- [ ] **Raspbian Jessie Lite**
 - [ ] **Raspbian Wheezy**
 - [ ] **Debian 8.0 Jessie**
 - [ ] **Debian 7.0 Wheezy**
