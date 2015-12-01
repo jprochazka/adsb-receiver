@@ -88,9 +88,14 @@ echo -e "\033[33m"
 echo "Downloading the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
-    wget http://client.planefinder.net/pfclient_${ARMVERSION}_armhf.deb -O $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
+    sudo dpkg -i $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
 else
-    wget http://client.planefinder.net/pfclient_${I386VERSION}_i386.deb -O $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    if [[ `lsb_release -si` == "Debian" ]]; then
+        # Force architecture if this is Debian.
+        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    else
+        sudo dpkg -i $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    fi
 fi
 
 ## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE
