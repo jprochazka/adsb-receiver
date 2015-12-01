@@ -231,15 +231,14 @@ sudo cp -r $BUILDDIR/portal/graphs/html/* /var/www/html/graphs/
 echo -e "\033[33mAdding jobs to crontab..."
 echo -e "\033[37m"
 chmod 755 $BUILDDIR/portal/graphs/make-collectd-graphs.sh
-crontab -l > crontents
-echo "*/5 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null" >> crontents
-echo "*/10 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null" >> crontents
-echo "2,12,22,32,42,52 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h 180 >/dev/null" >> crontents
-echo "4,24,44 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d 1200 >/dev/null" >> crontents
-echo "6 * * *	* sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d 5400 >/dev/null" >> crontents
-echo "8 */12 * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d 86400 >/dev/null" >> crontents
-crontab crontents
-rm crontents
+sudo tee -a /etc/cron.d/feeder-performance-graphs > /dev/null <<EOF
+*/5 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null
+*/10 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null
+2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h 180 >/dev/null
+4,24,44 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d 1200 >/dev/null
+6 * * *	* root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d 5400 >/dev/null
+8 */12 * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d 86400 >/dev/null
+EOF
 
 echo -e "\033[33m"
 echo "Installation and configuration of the performance graphs is now complete."
