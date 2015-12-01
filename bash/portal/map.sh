@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+BUILDDIR="${PWD}/build"
 
 ## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
 
@@ -40,9 +40,3 @@ echo "Placing HTML file in Lighttpd's www root directory..."
 echo -e "\033[37m"
 sudo mkdir /var/www/html/map
 sudo cp -r $BUILDDIR/map/html/* /var/www/html/map/
-
-echo -e "\033[33m"
-echo "Installation of the map HTML file is now complete."
-echo "Please look over the output generated to be sure no errors were encountered."
-echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE

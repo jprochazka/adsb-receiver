@@ -269,7 +269,7 @@ if [[ $DECODER == '' ]] || [[ $DECODER == '1' ]]; then
 
     echo -e "\033[33mExecuting the dump1090-mutability installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
+    chmod +x $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
     $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
 
     clear
@@ -284,7 +284,7 @@ if [[ $DECODER == '2' ]]; then
 
     echo -e "\033[33mExecuting the dump1090-MalcolmRobb installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
+    chmod +x $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
     $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
 
     clear
@@ -305,7 +305,7 @@ if [[ $FEED == '' ]] || [[ $FEED == '1' ]] || [[ $FEED == '3' ]] || [[ $FEED == 
 
     echo -e "\033[33mExecuting the PiAware installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/feeders/piaware.sh
+    chmod +x $SCRIPTDIR/bash/feeders/piaware.sh
     $SCRIPTDIR/bash/feeders/piaware.sh
 
 fi
@@ -318,7 +318,7 @@ if [[ $FEED == '2' ]] || [[ $FEED == '3' ]] || [[ $FEED == '5' ]]; then
 
     echo -e "\033[33mExecuting the Plane Finder ADS=B Client installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/feeders/planefinder.sh
+    chmod +x $SCRIPTDIR/bash/feeders/planefinder.sh
     $SCRIPTDIR/bash/feeders/planefinder.sh
 
 fi
@@ -331,12 +331,12 @@ if [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then
 
     echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/feeders/adsbexchange.sh
+    chmod +x $SCRIPTDIR/bash/feeders/adsbexchange.sh
     $SCRIPTDIR/bash/feeders/adsbexchange.sh
 
 fi
 
-############
+#########################
 ## ADDITIONAL FEATURES
 ##
 
@@ -344,24 +344,12 @@ fi
 
 if [[ $FEATURES == '' ]] || [[ $FEATURES == '1' ]]; then
 
-    cd $BUILDDIR
+    cd $SCRIPTDIR
 
-    echo -e "\033[33mExecuting the homepage installation script..."
+    echo -e "\033[33mExecuting the web portal installation scripts..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/portal/homepage.sh
-    $SCRIPTDIR/bash/portal/homepage.sh
-
-    echo -e "\033[33mExecuting the performance graphs installation script..."
-    echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/portal/graphs.sh
-    $SCRIPTDIR/bash/portal/graphs.sh
-
-    clear
-
-    echo -e "\033[33mExecuting the map installation script..."
-    echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/portal/map.sh
-    $SCRIPTDIR/bash/portal/map.sh
+    chmod +x $SCRIPTDIR/bash/portal/install.sh
+    $SCRIPTDIR/bash/portal/install.sh
 
     clear
 
