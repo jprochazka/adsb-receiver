@@ -56,26 +56,21 @@ printf "Configuring PiAware if it is installed..."
 if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") != 0 ]; then
     echo -e "\033[33m"
     echo "Adding the ADS-B Exchange feed to PiAware's configuration..."
-    ORIGINALFORMAT=`sudo piaware-config -show | sed -n 's/.*{\(.*\)}.*/\1/p'`
-    CLEANFORMAT=`sed 's/ beast,connect,feed.adsbexchange.com:30005//g' <<< $ORIGINALFORMAT`
+    ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
+    MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
+    CLEANFORMAT=`sed 's/ beast,connect,feed.adsbexchange.com:30005//g' <<< $MLATRESULTS`
     sudo piaware-config -mlatResultsFormat "${CLEANFORMAT} beast,connect,feed.adsbexchange.com:30005"
-    echo -e "\033[33m"
     echo "Restarting PiAware so new configuration takes effect..."
     echo -e "\033[37m"
     sudo piaware-config -restart
     echo ""
 fi
 
-## ADD SCRIPT TO EXECUTE NETCAT TO FEED ADS-B EXCHANGE
+## CONFIGURE SCRIPT TO EXECUTE NETCAT TO FEED ADS-B EXCHANGE
 
-echo -e "\033[33mDownloading ADS-B Exchange maintainance script..."
+echo -e "\033[33mSetting permissions on adsbexchange-maint.sh..."
 echo -e "\033[37m"
-mkdir $BUILDDIR/adsbexchange/
-wget http://bucket.adsbexchange.com/adsbexchange-maint.sh -O $BUILDDIR/adsbexchange/adsbexchange-maint.sh
-
-echo -e "\033[33mSetting permissions and updating rc.d..."
-echo -e "\033[37m"
-sudo chmod 755 $BUILDDIR/adsbexchange/adsbexchange-maint.sh
+sudo chmod +x $BUILDDIR/adsbexchange/adsbexchange-maint.sh
 
 echo -e "\033[33mAdding startup line to rc.local..."
 echo -e "\033[37m"
@@ -84,7 +79,7 @@ lnum=($(sed -n '/exit 0/=' /etc/rc.local))
 
 ## START NETCAT ADS-B EXCHANGE FEED
 
-echo -e "\033[33mRunning ADS-B Exchange startup script..."
+echo -e "\033[33mExecuting adsbexchange-maint.sh..."
 echo -e "\033[37m"
 sudo $BUILDDIR/adsbexchange/adsbexchange-maint.sh &
 
