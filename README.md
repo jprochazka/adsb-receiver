@@ -27,9 +27,10 @@ At this time the following software can be installed using these scripts.
 * Plane Finder ADS-B CLient:  https://planefinder.net
 * ADS-B Exchange:             http://adsbexchange.com
 
-**Additional Features**
+**Additional Features** *
 
-* Web accessable Dump1090 and system performance graphs. *
+* Web accessable Dump1090 and system performance graphs.
+* Add navigation to the stock Dump1090 map.
 
 ### Supported Operating Systems
 
@@ -37,14 +38,16 @@ This project is in it's early stages and still needs to be thuroughly tested in 
 The following is a list of operating systems which are currently going through testing as well as
 the status of the testing done so far on each. Those checked off have been tested successfully.
 
-- [X] **Raspbian Jessie**
-- [ ] **Raspbian Jessie Lite**
-- [ ] **Raspbian Wheezy**
-- [ ] **Debian 8.0 Jessie**
-- [ ] **Debian 7.0 Wheezy**
-- [X] **Ubuntu 15.04 Vivid Vervet**
-- [X] **Ubuntu 14.04 LTS Trusty Tahr**
-- [ ] **Ubuntu 12.04 LTS Precise Pangolin**
+- [X] Raspbian Jessie
+- [ ] Raspbian Jessie Lite
+- [ ] Raspbian Wheezy
+- [ ] Debian 8.0 Jessie
+- [ ] Debian 7.0 Wheezy
+- [X] Ubuntu 15.04 Vivid Vervet
+- [X] Ubuntu 14.04 LTS Trusty Tahr
+- [ ] Ubuntu 12.04 LTS Precise Pangolin
+- [ ] Linux Mint 13 Maya
+- [ ] Linux Mint 17.2 Rafaela
 
 ---
 
