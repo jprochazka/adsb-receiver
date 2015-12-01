@@ -511,36 +511,36 @@ remote_rate_graph() {
 
 
 dump1090_graphs() {
-  aircraft_graph /var/www/html/collectd/dump1090-$2-aircraft-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
-  cpu_graph_dump1090 /var/www/html/collectd/dump1090-$2-cpu-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
-  tracks_graph /var/www/html/collectd/dump1090-$2-tracks-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5" 
+  aircraft_graph /var/www/html/graphs/dump1090-$2-aircraft-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  cpu_graph_dump1090 /var/www/html/graphs/dump1090-$2-cpu-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  tracks_graph /var/www/html/graphs/dump1090-$2-tracks-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5" 
 }
 
 system_graphs() {
-  cpu_graph /var/www/html/collectd/system-$2-cpu-$4.png /var/lib/collectd/rrd/$1/aggregation-cpu-average "$3" "$4" "$5"
-  df_root_graph /var/www/html/collectd/system-$2-df_root-$4.png /var/lib/collectd/rrd/$1/df-root "$3" "$4" "$5"
-  disk_io_iops_graph /var/www/html/collectd/system-$2-disk_io_iops-$4.png /var/lib/collectd/rrd/$1/disk-mmcblk0 "$3" "$4" "$5"
-  disk_io_octets_graph /var/www/html/collectd/system-$2-disk_io_octets-$4.png /var/lib/collectd/rrd/$1/disk-mmcblk0 "$3" "$4" "$5"
-  memory_graph /var/www/html/collectd/system-$2-memory-$4.png /var/lib/collectd/rrd/$1/memory "$3" "$4" "$5"
-  temp_graph_imperial /var/www/html/collectd/system-$2-temperature-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
-  #temp_graph_metric /var/www/html/collectd/system-$2-temperature-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
-  wlan0_graph /var/www/html/collectd/system-$2-wlan0_bandwidth-$4.png /var/lib/collectd/rrd/$1/interface-wlan0 "$3" "$4" "$5"
+  cpu_graph /var/www/html/graphs/system-$2-cpu-$4.png /var/lib/collectd/rrd/$1/aggregation-cpu-average "$3" "$4" "$5"
+  df_root_graph /var/www/html/graphs/system-$2-df_root-$4.png /var/lib/collectd/rrd/$1/df-root "$3" "$4" "$5"
+  disk_io_iops_graph /var/www/html/graphs/system-$2-disk_io_iops-$4.png /var/lib/collectd/rrd/$1/disk-mmcblk0 "$3" "$4" "$5"
+  disk_io_octets_graph /var/www/html/graphs/system-$2-disk_io_octets-$4.png /var/lib/collectd/rrd/$1/disk-mmcblk0 "$3" "$4" "$5"
+  memory_graph /var/www/html/graphs/system-$2-memory-$4.png /var/lib/collectd/rrd/$1/memory "$3" "$4" "$5"
+  temp_graph_imperial /var/www/html/graphs/system-$2-temperature-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
+  #temp_graph_metric /var/www/html/graphs/system-$2-temperature-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
+  wlan0_graph /var/www/html/graphs/system-$2-wlan0_bandwidth-$4.png /var/lib/collectd/rrd/$1/interface-wlan0 "$3" "$4" "$5"
 }
 
 dump1090_receiver_graphs() {
   dump1090_graphs "$1" "$2" "$3" "$4" "$5"
   system_graphs "$1" "$2" "$3" "$4" "$5"
-  local_rate_graph /var/www/html/collectd/dump1090-$2-local_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
-  local_trailing_rate_graph /var/www/html/collectd/dump1090-$2-local_trailing_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
-  range_graph_imperial /var/www/html/collectd/dump1090-$2-range-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
-  #range_graph_metric /var/www/html/collectd/dump1090-$2-range-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
-  signal_graph /var/www/html/collectd/dump1090-$2-signal-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  local_rate_graph /var/www/html/graphs/dump1090-$2-local_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  local_trailing_rate_graph /var/www/html/graphs/dump1090-$2-local_trailing_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  range_graph_imperial /var/www/html/graphs/dump1090-$2-range-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  #range_graph_metric /var/www/html/graphs/dump1090-$2-range-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  signal_graph /var/www/html/graphs/dump1090-$2-signal-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
 }
 
 dump1090_hub_graphs() {
   dump1090_graphs "$1" "$2" "$3" "$4" "$5"
   system_graphs "$1" "$2" "$3" "$4" "$5"
-  remote_rate_graph /var/www/html/collectd/dump1090-$2-remote_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  remote_rate_graph /var/www/html/graphs/dump1090-$2-remote_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
 }
 
 period="$1"

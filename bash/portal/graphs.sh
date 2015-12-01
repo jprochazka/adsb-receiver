@@ -51,7 +51,7 @@ Hostname "localhost"
 # Added types for dump1090.                                                  #
 # Make sure the path to dump1090.db is correct.                              #
 #----------------------------------------------------------------------------#
-TypesDB "${BUILDDIR}/portal/graphs/dump1090.db" "/usr/share/graphs/types.db"
+TypesDB "${BUILDDIR}/portal/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 #----------------------------------------------------------------------------#
 # Interval at which to query values. This may be overwritten on a per-plugin #
