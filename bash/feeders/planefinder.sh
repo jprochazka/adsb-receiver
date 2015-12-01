@@ -75,12 +75,20 @@ read -p "Press enter to continue..." CONTINUE
 echo -e "\033[33m"
 echo "Installing packages needed to build and fulfill dependencies..."
 echo -e "\033[37m"
-CheckPackage wget
 if [[ `uname -m` == "x86_64" ]]; then
-	CheckPackage libc6:i386
+    if [[ `lsb_release -si` == "Debian" ]] && [ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]; then
+        echo -e "\033[33mAdding i386 Architecture..."
+        sudo dpkg --add-architecture i386
+        echo "Downloading latest package lists for enabled repositories and PPAs..."
+        echo -e "\033[37m"
+        sudo apt-get update
+        echo ""
+    fi
+    CheckPackage libc6:i386
 else
-	CheckPackage libc6
+    CheckPackage libc6
 fi
+CheckPackage wget
 
 ## DOWNLOAD THE PLANEFINDER ADS-B CLIENT PACKAGE
 
@@ -88,14 +96,9 @@ echo -e "\033[33m"
 echo "Downloading the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
-    sudo dpkg -i $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
+    wget http://client.planefinder.net/pfclient_${ARMVERSION}_armhf.deb -O $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
 else
-    if [[ `lsb_release -si` == "Debian" ]]; then
-        # Force architecture if this is Debian.
-        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${I386VERSION}_i386.deb
-    else
-        sudo dpkg -i $BUILDDIR/pfclient_${I386VERSION}_i386.deb
-    fi
+    wget http://client.planefinder.net/pfclient_${I386VERSION}_i386.deb -O $BUILDDIR/pfclient_${I386VERSION}_i386.deb
 fi
 
 ## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE
@@ -106,7 +109,12 @@ echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
     sudo dpkg -i $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
 else
-    sudo dpkg -i $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    if [[ `lsb_release -si` == "Debian" ]]; then
+        # Force architecture if this is Debian.
+        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    else
+        sudo dpkg -i $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    fi
 fi
 
 ## DISPLAY FINAL SETUP INSTRUCTIONS WHICH CONNOT BE HANDLED BY THIS SCRIPT
