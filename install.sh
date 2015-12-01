@@ -137,9 +137,11 @@ if [[ $DECODER != '2' ]]; then
     echo "Below is a list of additional features currently available for installation by this script."
     echo "Look for more features to be added in the near future!"
     echo ""
+    echo "  Web Portal: Includes performance graphs and adds site navigation to the dump1090-mutability map."
+    echo ""
     echo "The ADS-B Feeder Project:  https://github.com/jprochazka/adsb-feeder"
     echo ""
-    echo "  1) Install web based performance graphs."
+    echo "  1) Install the web portal."
     echo "  2) Do not install any additional features."
     echo "  3) Exit"
     echo -e "\033[37m"
@@ -171,7 +173,7 @@ if [[ $DECODER == '2' ]]; then echo "  Dump 1090 (MalcolmRobb):       https://gi
 if [[ $FEED == '' ]] || [[ $FEED == '1' ]] || [[ $FEED == '3' ]] || [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then echo "  PiAware by FlightAware:        https://github.com/flightaware/piaware"; fi
 if [[ $FEED == '2' ]] || [[ $FEED == '3' ]] || [[ $FEED == '5' ]]; then echo "  Plane Finder ADS-B Client:     https://planefinder.net/sharing/client"; fi
 if [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then echo "  ADS-B Exchange via PiAware:    http://www.adsbexchange.com/how-to-feed/"; fi
-if [[ $FEATURES == '' ]] || [[ $FEATURES == "1" ]]; then echo "  Collectd Graphs for Dump1090:  https://github.com/jprochazka/adsb-feeder"; fi
+if [[ $FEATURES == '' ]] || [[ $FEATURES == "1" ]]; then echo "  Web Portal:                    https://github.com/jprochazka/adsb-feeder"; fi
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
@@ -334,20 +336,32 @@ if [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then
 
 fi
 
-#########################
+############
 ## ADDITIONAL FEATURES
 ##
 
-## INSTALL AND CONFIGURE COLLECTD AND GRAPH MAKER
+## INSTALL AND CONFIGURE THE WEB PORTAL
 
 if [[ $FEATURES == '' ]] || [[ $FEATURES == '1' ]]; then
 
     cd $BUILDDIR
 
-    echo -e "\033[33mExecuting the collectd installation script..."
+    echo -e "\033[33mExecuting the homepage installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/features/collectd.sh
-    $SCRIPTDIR/bash/features/collectd.sh
+    chmod 755 $SCRIPTDIR/bash/portal/homepage.sh
+    $SCRIPTDIR/bash/portal/homepage.sh
+
+    echo -e "\033[33mExecuting the performance graphs installation script..."
+    echo -e "\033[37m"
+    chmod 755 $SCRIPTDIR/bash/portal/graphs.sh
+    $SCRIPTDIR/bash/portal/graphs.sh
+
+    clear
+
+    echo -e "\033[33mExecuting the map installation script..."
+    echo -e "\033[37m"
+    chmod 755 $SCRIPTDIR/bash/portal/map.sh
+    $SCRIPTDIR/bash/portal/map.sh
 
     clear
 

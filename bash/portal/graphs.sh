@@ -93,7 +93,7 @@ Hostname "localhost"
 # Added types for dump1090.                                                  #
 # Make sure the path to dump1090.db is correct.                              #
 #----------------------------------------------------------------------------#
-TypesDB "${BUILDDIR}/collectd/dump1090.db" "/usr/share/collectd/types.db"
+TypesDB "${BUILDDIR}/portal/graphs/dump1090.db" "/usr/share/graphs/types.db"
 
 #----------------------------------------------------------------------------#
 # Interval at which to query values. This may be overwritten on a per-plugin #
@@ -149,7 +149,7 @@ LoadPlugin disk
 # statistics will be loaded from http://localhost/dump1090/data/stats.json   #
 #----------------------------------------------------------------------------#
 <Plugin python>
-	ModulePath "${BUILDDIR}/collectd"
+	ModulePath "${BUILDDIR}/portal/graphs"
 	LogTraces true
 	Import "dump1090"
 	<Module dump1090>
@@ -221,28 +221,28 @@ sudo /etc/init.d/collectd force-reload
 ## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
 
 echo -e "\033[33m"
-echo "Placing HTML files in Lighttpd's www root directory..."
+echo "Placing HTML file in Lighttpd's www root directory..."
 echo -e "\033[37m"
-sudo mkdir /var/www/html/collectd
-sudo cp -r $BUILDDIR/collectd/html/* /var/www/html/collectd/
+sudo mkdir /var/www/html/graphs
+sudo cp -r $BUILDDIR/portal/graphs/html/* /var/www/html/graphs/
 
 ## EDIT CRONTAB
 
 echo -e "\033[33mAdding jobs to crontab..."
 echo -e "\033[37m"
-chmod 755 $BUILDDIR/collectd/make-collectd-graphs.sh
+chmod 755 $BUILDDIR/portal/graphs/make-collectd-graphs.sh
 crontab -l > crontents
-echo "*/5 * * * * sudo ${BUILDDIR}/collectd/make-collectd-graphs.sh 1h >/dev/null" >> crontents
-echo "*/10 * * * * sudo ${BUILDDIR}/collectd/make-collectd-graphs.sh 6h >/dev/null" >> crontents
-echo "2,12,22,32,42,52 * * * * sudo ${BUILDDIR}/collectd/make-collectd-graphs.sh 24h 180 >/dev/null" >> crontents
-echo "4,24,44 * * * * sudo ${BUILDDIR}/collectd/make-collectd-graphs.sh 7d 1200 >/dev/null" >> crontents
-echo "6 * * *	* sudo ${BUILDDIR}/collectd/make-collectd-graphs.sh 30d 5400 >/dev/null" >> crontents
-echo "8 */12 * * * sudo ${BUILDDIR}/collectd/make-collectd-graphs.sh 365d 86400 >/dev/null" >> crontents
+echo "*/5 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null" >> crontents
+echo "*/10 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null" >> crontents
+echo "2,12,22,32,42,52 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h 180 >/dev/null" >> crontents
+echo "4,24,44 * * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d 1200 >/dev/null" >> crontents
+echo "6 * * *	* sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d 5400 >/dev/null" >> crontents
+echo "8 */12 * * * sudo ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d 86400 >/dev/null" >> crontents
 crontab crontents
 rm crontents
 
 echo -e "\033[33m"
-echo "Installation and configuration of collectd is now complete."
+echo "Installation and configuration of the performance graphs is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
