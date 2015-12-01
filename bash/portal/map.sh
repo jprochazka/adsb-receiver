@@ -36,7 +36,7 @@ BUILDDIR="${PWD}/build"
 ## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
 
 echo -e "\033[33m"
-echo "Placing HTML file in Lighttpd's www root directory..."
+echo "Placing map HTML file in Lighttpd's www root directory..."
 echo -e "\033[37m"
 sudo mkdir /var/www/html/map
 sudo cp -r $BUILDDIR/portal/map/html/* /var/www/html/map/
