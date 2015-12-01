@@ -9,7 +9,7 @@ in order by the main install script depending on the installation options choose
     sudo apt-get install git
     git clone https://github.com/jprochazka/adsb-feeder.git
     cd adsb-feeder
-    chmod 755 install.sh
+    chmod +x install.sh
     ./install.sh
 
 ### What Can Be Installed
@@ -25,11 +25,11 @@ At this time the following software can be installed using these scripts.
 
 * FlightAware's PiAware:      http://flightaware.com
 * Plane Finder ADS-B CLient:  https://planefinder.net
-* ADS-B Exchange:             http://adsbexchange.com *
+* ADS-B Exchange:             http://adsbexchange.com
 
 **Additional Features**
 
-* Web accessable Dump1090 and system performance graphs. **
+* Web accessable Dump1090 and system performance graphs. *
 
 ### Supported Operating Systems
 
@@ -48,5 +48,4 @@ the status of the testing done so far on each. Those checked off have been teste
 
 ---
 
-\* *The ADS-B Exchange feed is sent via FlightAware's PiAware software.*  
-** *In order to utilize the performance graphs dump1090-mutability must be chosen as your mode s decoder.*
+\* *In order to utilize the performance graphs dump1090-mutability must be chosen as your mode s decoder.*
