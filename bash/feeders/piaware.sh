@@ -98,6 +98,7 @@ echo -e "\033[33m"
 echo "Downloading the source code for PiAware Builder..."
 echo -e "\033[37m"
 git clone https://github.com/flightaware/piaware_builder.git
+cd $BUILDDIR/piaware_builder
 git checkout tags/v2.1-3
 
 ## BUILD THE PIAWARE PACKAGE
@@ -105,7 +106,6 @@ git checkout tags/v2.1-3
 echo -e "\033[33m"
 echo "Building the PiAware package..."
 echo -e "\033[37m"
-cd $BUILDDIR/piaware_builder
 ./sensible-build.sh
 cd $BUILDDIR/piaware_builder/package
 dpkg-buildpackage -b
