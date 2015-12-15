@@ -131,6 +131,18 @@ echo "Installing the PiAware package..."
 echo -e "\033[37m"
 sudo dpkg -i $BUILDDIR/piaware_builder/piaware_2.1-3_*.deb
 
+## CHECK THAT THE PACKAGE INSTALLED
+
+if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    echo "\033[31m"
+    echo "The piaware package did not install properly!"
+    echo -e "\033[33m"
+    echo "This script has exited due to the error encountered."
+    echo "Please read over the above output in order to determine what went wrong."
+    echo ""
+    exit 1
+fi
+
 ## CONFIGURE FLIGHTAWARE
 
 echo -e "\033[33m"
@@ -139,7 +151,6 @@ echo "After supplying your login PiAware will ask you to enter your password for
 echo -e "\033[37m"
 read -p "Your FlightAware Login: " FALOGIN
 sudo piaware-config -user $FALOGIN -password
-
 
 echo -e "\033[33m"
 echo "PiAware now sends MLAT results to port 30104 by default. This change is to try to avoid accidentally"

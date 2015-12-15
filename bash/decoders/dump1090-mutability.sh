@@ -115,6 +115,18 @@ echo -e "\033[37m"
 cd $BUILDDIR
 sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 
+## CHECK THAT THE PACKAGE INSTALLED
+
+if [ $(dpkg-query -W -f='${Status}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    echo "\033[31m"
+    echo "The dump1090-mutability package did not install properly!"
+    echo -e "\033[33m"
+    echo "This script has exited due to the error encountered."
+    echo "Please read over the above output in order to determine what went wrong."
+    echo ""
+    exit 1
+fi
+
 ## START DUMP1090-MUTABILITY
 
 echo -e "\033[33m"
