@@ -4,6 +4,7 @@ The following is a history of the changes made to this project.
 
 ## The "web" branch.
 
+* Script halts if critical packages do not install.
 * Script halts if prerequisite packages are not installed within 5 attempts.
 * The piaware_builder source is now ran from the v2.1-3 tag.
 * Renamed the collectd folder to graphs.
