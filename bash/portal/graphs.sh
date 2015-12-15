@@ -190,6 +190,15 @@ echo -e "\033[33mAdding jobs to crontab..."
 echo -e "\033[37m"
 chmod 755 $BUILDDIR/portal/graphs/make-collectd-graphs.sh
 sudo tee -a /etc/cron.d/feeder-performance-graphs > /dev/null <<EOF
+# Updates the portal's performance graphs.
+#
+# Every 5 minutes new hourly graphs are generated.
+# Every 10 minutes new six hour graphs are generated.
+# At 2, 12, 22, 32, 42, and 52 minutes past the hour new 24 hour graphs are generated.
+# At 4, 24, and 44 minuites past the hour new 7 day graphs are generated.
+# At 6 minutes past the hour new 30 day graphs are generated.
+# At 8 minutes past every 12th hour new 365 day graphs are generated.
+
 */5 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null
 */10 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null
 2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h 180 >/dev/null
