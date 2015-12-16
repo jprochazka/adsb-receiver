@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## The "web" branch.
+## December 16th, 2015
 
 * Script halts if critical packages do not install.
 * Script halts if prerequisite packages are not installed within 5 attempts.
