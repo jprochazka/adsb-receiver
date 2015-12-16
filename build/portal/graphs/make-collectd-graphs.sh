@@ -192,6 +192,33 @@ disk_io_octets_graph() {
   --watermark "Drawn: $nowlit";
 }
 
+eth0_graph() {
+  rrdtool graph \
+  "$1" \
+  --start end-$4 \
+  --width 480 \
+  --height 200 \
+  --step "$5" \
+  --title "Bandwidth Usage (eth0)" \
+  --vertical-label "bytes/sec" \
+  "TEXTALIGN:center" \
+  "DEF:rx=$2/if_octets.rrd:rx:AVERAGE" \
+  "DEF:tx=$2/if_octets.rrd:tx:AVERAGE" \
+  "CDEF:tx_neg=tx,-1,*" \
+  "AREA:rx#32CD32:Incoming" \
+  "LINE1:rx#336600" \
+  "GPRINT:rx:MAX:Max\:%8.1lf %s" \
+  "GPRINT:rx:AVERAGE:Avg\:%8.1lf %S" \
+  "GPRINT:rx:LAST:Current\:%8.1lf %Sbytes/sec\n" \
+  "AREA:tx_neg#4169E1:Outgoing" \
+  "LINE1:tx_neg#0033CC" \
+  "GPRINT:tx:MAX:Max\:%8.1lf %S" \
+  "GPRINT:tx:AVERAGE:Avg\:%8.1lf %S" \
+  "GPRINT:tx:LAST:Current\:%8.1lf %Sbytes/sec\n" \
+  "HRULE:0#000000" \
+  --watermark "Drawn: $nowlit";
+}
+
 memory_graph() {
   rrdtool graph \
   "$1" \

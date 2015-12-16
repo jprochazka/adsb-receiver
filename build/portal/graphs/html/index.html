@@ -127,9 +127,16 @@
                         </div>
                         <div class="padding"></div>
                         <div class="row">
+                            <!--
                             <div class="col-md-6 text-center">
                                 <a id ="system-wlan0_bandwidth-link" href="#">
-                                   <img id="system-wlan0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage">
+                                   <img id="system-wlan0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage (wlan0)">
+                                </a>
+                            </div>
+                            -->
+                            <div class="col-md-6 text-center">
+                                <a id ="system-eth0_bandwidth-link" href="#">
+                                   <img id="system-eth0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage (eth0)">
                                 </a>
                             </div>
                             <div class="col-md-6 text-center">
@@ -159,7 +166,7 @@
         <footer id="footer">
             <div class="container">
                 <p class="muted credits">
-                    This ADS-B feeder setup using <a href="https://github.com/jprochazka/adsb-feeder">The ADS-B Feeder Project</a>.
+                    <a href="https://github.com/jprochazka/adsb-feeder">The ADS-B Feeder Project</a>
                 </p>
             </div>
         </footer>
@@ -209,7 +216,8 @@
                 $("#dump1090-signal-image").attr("src", "dump1090-" + $hostName + "-signal-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-cpu-image").attr("src", "dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#system-cpu-image").attr("src", "system-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#system-wlan0_bandwidth-image").attr("src", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-eth0_bandwidth-image").attr("src", "system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
+                //$("#system-wlan0_bandwidth-image").attr("src", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#system-memory-image").attr("src", "system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#system-temperature-image").attr("src", "system-" + $hostName + "-temperature-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#system-df_root-image").attr("src", "system-" + $hostName + "-df_root-" + $timeFrame + ".png?time=" + $timestamp);
@@ -225,7 +233,8 @@
                 $("#dump1090-signal-link").attr("href", "dump1090-" + $hostName + "-signal-" + $timeFrame + ".png");
                 $("#dump1090-cpu-link").attr("href", "dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png");
                 $("#system-cpu-image").attr("href", "system-" + $hostName + "-cpu-" + $timeFrame + ".png");
-                $("#system-wlan0_bandwidth-image").attr("href", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
+                $("#system-eth0_bandwidth-image").attr("href", "system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png");
+                //$("#system-wlan0_bandwidth-image").attr("href", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
                 $("#system-memory-image").attr("href", "system-" + $hostName + "-memory-" + $timeFrame + ".png");
                 $("#system-temperature-image").attr("href", "system-" + $hostName + "-temperature-" + $timeFrame + ".png");
                 $("#system-df_root-image").attr("href", "system-" + $hostName + "-df_root-" + $timeFrame + ".png");

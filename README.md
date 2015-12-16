@@ -12,6 +12,10 @@ in order by the main install script depending on the installation options choose
     chmod +x install.sh
     ./install.sh
 
+At this time some manual configuration is required.  
+Please refer to the project wiki for more infromation.  
+https://github.com/jprochazka/adsb-feeder/wiki
+
 ### What Can Be Installed
 
 At this time the following software can be installed using these scripts.
