@@ -36,17 +36,31 @@ BUILDDIR=${PWD}
 ## FUNCTIONS
 
 # Function used to check if a package is install and if not install it.
+ATTEMPT=1
 function CheckPackage(){
+    if (( $ATTEMPT > 5 )); then
+        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
+        echo ""
+        exit 1
+    fi
     printf "\e[33mChecking if the package $1 is installed..."
     if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        echo -e "\033[31m [NOT INSTALLED]\033[37m"
-        echo -e "\033[33mInstalling the package $1 and it's dependancies..."
+        if (( $ATTEMPT > 1 )); then
+            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
+            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
+            sleep 5
+        else
+            echo -e "\033[31m [NOT INSTALLED]\033[37m"
+            echo -e "\033[33mInstalling the package $1..."
+        fi
         echo -e "\033[37m"
+        ATTEMPT=$((ATTEMPT+1))
         sudo apt-get install -y $1;
         echo ""
-        echo -e "\033[33mThe package $1 has been installed."
+        CheckPackage $1
     else
         echo -e "\033[32m [OK]\033[37m"
+        ATTEMPT=0
     fi
 }
 
@@ -70,6 +84,7 @@ echo -e "\033[33m"
 echo "Installing packages needed to build and fulfill dependencies..."
 echo -e "\033[37m"
 CheckPackage git
+CheckPackage curl
 CheckPackage build-essential
 CheckPackage debhelper
 CheckPackage librtlsdr-dev
@@ -99,6 +114,18 @@ echo "Installing the dump1090-mutability package..."
 echo -e "\033[37m"
 cd $BUILDDIR
 sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
+
+## CHECK THAT THE PACKAGE INSTALLED
+
+if [ $(dpkg-query -W -f='${Status}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    echo "\033[31m"
+    echo "The dump1090-mutability package did not install properly!"
+    echo -e "\033[33m"
+    echo "This script has exited due to the error encountered."
+    echo "Please read over the above output in order to determine what went wrong."
+    echo ""
+    exit 1
+fi
 
 ## START DUMP1090-MUTABILITY
 

@@ -39,17 +39,31 @@ SCRIPTDIR=${PWD}
 ## FUNCTIONS
 
 # Function used to check if a package is install and if not install it.
+ATTEMPT=1
 function CheckPackage(){
+    if (( $ATTEMPT > 5 )); then
+        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
+        echo ""
+        exit 1
+    fi
     printf "\e[33mChecking if the package $1 is installed..."
     if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        echo -e "\033[31m [NOT INSTALLED]\033[37m"
-        echo -e "\033[33mInstalling the package $1..."
+        if (( $ATTEMPT > 1 )); then
+            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
+            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
+            sleep 5
+        else
+            echo -e "\033[31m [NOT INSTALLED]\033[37m"
+            echo -e "\033[33mInstalling the package $1..."
+        fi
         echo -e "\033[37m"
+        ATTEMPT=$((ATTEMPT+1))
         sudo apt-get install -y $1;
         echo ""
-        echo -e "\033[33mThe package $1 has been installed."
+        CheckPackage $1
     else
         echo -e "\033[32m [OK]\033[37m"
+        ATTEMPT=0
     fi
 }
 
@@ -137,9 +151,11 @@ if [[ $DECODER != '2' ]]; then
     echo "Below is a list of additional features currently available for installation by this script."
     echo "Look for more features to be added in the near future!"
     echo ""
+    echo "  Web Portal: Includes performance graphs and adds site navigation to the dump1090-mutability map."
+    echo ""
     echo "The ADS-B Feeder Project:  https://github.com/jprochazka/adsb-feeder"
     echo ""
-    echo "  1) Install web based performance graphs."
+    echo "  1) Install the web portal."
     echo "  2) Do not install any additional features."
     echo "  3) Exit"
     echo -e "\033[37m"
@@ -171,7 +187,7 @@ if [[ $DECODER == '2' ]]; then echo "  Dump 1090 (MalcolmRobb):       https://gi
 if [[ $FEED == '' ]] || [[ $FEED == '1' ]] || [[ $FEED == '3' ]] || [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then echo "  PiAware by FlightAware:        https://github.com/flightaware/piaware"; fi
 if [[ $FEED == '2' ]] || [[ $FEED == '3' ]] || [[ $FEED == '5' ]]; then echo "  Plane Finder ADS-B Client:     https://planefinder.net/sharing/client"; fi
 if [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then echo "  ADS-B Exchange via PiAware:    http://www.adsbexchange.com/how-to-feed/"; fi
-if [[ $FEATURES == '' ]] || [[ $FEATURES == "1" ]]; then echo "  Collectd Graphs for Dump1090:  https://github.com/jprochazka/adsb-feeder"; fi
+if [[ $FEATURES == '' ]] || [[ $FEATURES == "1" ]]; then echo "  Web Portal:                    https://github.com/jprochazka/adsb-feeder"; fi
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
@@ -267,7 +283,7 @@ if [[ $DECODER == '' ]] || [[ $DECODER == '1' ]]; then
 
     echo -e "\033[33mExecuting the dump1090-mutability installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
+    chmod +x $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
     $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
 
     clear
@@ -282,7 +298,7 @@ if [[ $DECODER == '2' ]]; then
 
     echo -e "\033[33mExecuting the dump1090-MalcolmRobb installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
+    chmod +x $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
     $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
 
     clear
@@ -303,7 +319,7 @@ if [[ $FEED == '' ]] || [[ $FEED == '1' ]] || [[ $FEED == '3' ]] || [[ $FEED == 
 
     echo -e "\033[33mExecuting the PiAware installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/feeders/piaware.sh
+    chmod +x $SCRIPTDIR/bash/feeders/piaware.sh
     $SCRIPTDIR/bash/feeders/piaware.sh
 
 fi
@@ -316,7 +332,7 @@ if [[ $FEED == '2' ]] || [[ $FEED == '3' ]] || [[ $FEED == '5' ]]; then
 
     echo -e "\033[33mExecuting the Plane Finder ADS=B Client installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/feeders/planefinder.sh
+    chmod +x $SCRIPTDIR/bash/feeders/planefinder.sh
     $SCRIPTDIR/bash/feeders/planefinder.sh
 
 fi
@@ -329,7 +345,7 @@ if [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then
 
     echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/feeders/adsbexchange.sh
+    chmod +x $SCRIPTDIR/bash/feeders/adsbexchange.sh
     $SCRIPTDIR/bash/feeders/adsbexchange.sh
 
 fi
@@ -338,16 +354,16 @@ fi
 ## ADDITIONAL FEATURES
 ##
 
-## INSTALL AND CONFIGURE COLLECTD AND GRAPH MAKER
+## INSTALL AND CONFIGURE THE WEB PORTAL
 
 if [[ $FEATURES == '' ]] || [[ $FEATURES == '1' ]]; then
 
-    cd $BUILDDIR
+    cd $SCRIPTDIR
 
-    echo -e "\033[33mExecuting the collectd installation script..."
+    echo -e "\033[33mExecuting the web portal installation scripts..."
     echo -e "\033[37m"
-    chmod 755 $SCRIPTDIR/bash/features/collectd.sh
-    $SCRIPTDIR/bash/features/collectd.sh
+    chmod +x $SCRIPTDIR/bash/portal/install.sh
+    $SCRIPTDIR/bash/portal/install.sh
 
     clear
 

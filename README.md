@@ -9,7 +9,7 @@ in order by the main install script depending on the installation options choose
     sudo apt-get install git
     git clone https://github.com/jprochazka/adsb-feeder.git
     cd adsb-feeder
-    chmod 755 install.sh
+    chmod +x install.sh
     ./install.sh
 
 ### What Can Be Installed
@@ -25,11 +25,12 @@ At this time the following software can be installed using these scripts.
 
 * FlightAware's PiAware:      http://flightaware.com
 * Plane Finder ADS-B CLient:  https://planefinder.net
-* ADS-B Exchange:             http://adsbexchange.com *
+* ADS-B Exchange:             http://adsbexchange.com
 
-**Additional Features**
+**Additional Features** *
 
-* Web accessable Dump1090 and system performance graphs. **
+* Web accessable Dump1090 and system performance graphs.
+* Add navigation to the stock Dump1090 map.
 
 ### Supported Operating Systems
 
@@ -37,15 +38,17 @@ This project is in it's early stages and still needs to be thuroughly tested in 
 The following is a list of operating systems which are currently going through testing as well as
 the status of the testing done so far on each. Those checked off have been tested successfully.
 
-- [X] **Raspbian Jessie**
-- [ ] **Raspbian Wheezy**
-- [ ] **Debian 8.0 Jessie**
-- [ ] **Debian 7.0 Wheezy**
-- [X] **Ubuntu 15.04 Vivid Vervet**
-- [X] **Ubuntu 14.04 LTS Trusty Tahr**
-- [ ] **Ubuntu 12.04 LTS Precise Pangolin**
+- [X] Raspbian Jessie
+- [X] Raspbian Jessie Lite
+- [ ] Raspbian Wheezy
+- [X] Debian 8.0 Jessie
+- [ ] Debian 7.0 Wheezy
+- [X] Ubuntu 15.04 Vivid Vervet
+- [X] Ubuntu 14.04 LTS Trusty Tahr
+- [ ] Ubuntu 12.04 LTS Precise Pangolin
+- [ ] Linux Mint 13 Maya
+- [ ] Linux Mint 17.2 Rafaela
 
 ---
 
-\* *The ADS-B Exchange feed is sent via FlightAware's PiAware software.*  
-** *In order to utilize the performance graphs dump1090-mutability must be chosen as your mode s decoder.*
+\* *In order to utilize the performance graphs dump1090-mutability must be chosen as your mode s decoder.*

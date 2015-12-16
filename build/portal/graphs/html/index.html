@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
     <meta charset="utf-8">
-    <title>ADS-B Feeder</title>
+    <title>ADS-B Feeder: Performance Graphs</title>
         <meta http-equiv="cache-control" content="no-cache" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -32,8 +32,8 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li id="graphs-link" class="active"><a href="/collectd/">Performance Graphs</a></li>
-                            <li id="map-link"><a href="/dump1090/">Live Dump1090 Map</a></li>
+                            <li id="graphs-link" class="active"><a href="/graphs/">Performance Graphs</a></li>
+                            <li id="map-link"><a href="/map/">Live Dump1090 Map</a></li>
                         </ul>
                     </div>
                 </div>
@@ -228,7 +228,7 @@
                 $("#system-wlan0_bandwidth-image").attr("href", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
                 $("#system-memory-image").attr("href", "system-" + $hostName + "-memory-" + $timeFrame + ".png");
                 $("#system-temperature-image").attr("href", "system-" + $hostName + "-temperature-" + $timeFrame + ".png");
-                $("#system-df_root-image-image").attr("href", "system-" + $hostName + "-df_root-" + $timeFrame + ".png");
+                $("#system-df_root-image").attr("href", "system-" + $hostName + "-df_root-" + $timeFrame + ".png");
                 $("#system-disk_io_iops-image").attr("href", "system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png");
                 $("#system-disk_io_octets-image").attr("href", "system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png");
 

@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+SCRIPTDIR=${PWD}
 
 ## FUNCTIONS
 
@@ -67,114 +67,48 @@ function CheckPackage(){
 clear
 
 echo -e "\033[31m"
-echo "-------------------------------"
-echo " Now ready to install PiAware."
-echo "-------------------------------"
-echo -e "\033[33mPiAware is a package used to forward data read from an ADS-B receiver to FlightAware."
-echo "It does this using a program, piaware, aided by some support programs."
+echo "-------------------------------------------"
+echo " Now ready to install dump1090-portal."
+echo "-------------------------------------------"
+echo -e "\033[33mThe goal of the dump1090-portal portal project is to create a very"
+echo "light weight easy to manage web interface for dump-1090 installations"
+echo "This project is at the moment very young with only a few of the planned"
+echo "featured currently available at this time."
 echo ""
-echo "piaware        - establishes an encrypted session to FlightAware and forwards data"
-echo "piaware-config - used to configure piaware like with a FlightAware username and password"
-echo "piaware-status - used to check the status of piaware"
-echo "faup1090       - run by piaware to connect to dump1090 or some other program producing beast-style ADS-B data and translate between its format and FlightAware's"
-echo "fa-mlat-client - run by piaware to gather data for multilateration"
-echo ""
-echo "https://github.com/flightaware/piaware"
+echo "https://github.com/jprochazka/dump1090-portal"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
+
+clear
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\033[33m"
 echo "Installing packages needed to build and fulfill dependencies..."
 echo -e "\033[37m"
-CheckPackage git
-CheckPackage build-essential
-CheckPackage debhelper
-CheckPackage tcl8.5-dev
-CheckPackage autoconf
-CheckPackage python3-dev
-CheckPackage python-virtualenv
-
-# libz-dev appears to have been replaced by zlib1g-dev at least in Ubuntu Vivid Vervet...
-# Will need to check if this is the case with Raspbian and Debian as well.
-#CheckPackage libz-dev
-CheckPackage zlib1g-dev
-
-CheckPackage tclx8.4
-CheckPackage tcllib
-CheckPackage tcl-tls
-CheckPackage itcl3
-
-## DOWNLOAD THE PIAWARE SOURCE
+CheckPackage collectd
+CheckPackage rrdtool
 
 echo -e "\033[33m"
-echo "Downloading the source code for PiAware Builder..."
+echo "Installing homepage..."
 echo -e "\033[37m"
-git clone https://github.com/flightaware/piaware_builder.git
-cd $BUILDDIR/piaware_builder
-git checkout tags/v2.1-3
-
-## BUILD THE PIAWARE PACKAGE
+chmod +x $SCRIPTDIR/bash/portal/homepage.sh
+$SCRIPTDIR/bash/portal/homepage.sh
 
 echo -e "\033[33m"
-echo "Building the PiAware package..."
+echo "Installing map container..."
 echo -e "\033[37m"
-./sensible-build.sh
-cd $BUILDDIR/piaware_builder/package
-dpkg-buildpackage -b
-
-## INSTALL THE PIAWARE PACKAGE
+chmod +x $SCRIPTDIR/bash/portal/map.sh
+$SCRIPTDIR/bash/portal/map.sh
 
 echo -e "\033[33m"
-echo "Installing the PiAware package..."
+echo "Installing performance graphs..."
 echo -e "\033[37m"
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_2.1-3_*.deb
-
-## CHECK THAT THE PACKAGE INSTALLED
-
-if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    echo "\033[31m"
-    echo "The piaware package did not install properly!"
-    echo -e "\033[33m"
-    echo "This script has exited due to the error encountered."
-    echo "Please read over the above output in order to determine what went wrong."
-    echo ""
-    exit 1
-fi
-
-## CONFIGURE FLIGHTAWARE
+chmod +x $SCRIPTDIR/bash/portal/graphs.sh
+$SCRIPTDIR/bash/portal/graphs.sh
 
 echo -e "\033[33m"
-echo "Please supply your FlightAware login in order to claim this device."
-echo "After supplying your login PiAware will ask you to enter your password for verification."
-echo -e "\033[37m"
-read -p "Your FlightAware Login: " FALOGIN
-sudo piaware-config -user $FALOGIN -password
-
-echo -e "\033[33m"
-echo "PiAware now sends MLAT results to port 30104 by default. This change is to try to avoid accidentally"
-echo "feeding MLAT results to a Dump 1090 that is not MLAT-aware and may forward the results on unexpectedly."
-echo "Dump 1090 from Mutability should be MLAT-aware meaning it should be safe to remap the MLAT port back to"
-echo "it's original port number which saves having to manually configure Dump 1090 later if you decide you"
-echo "would like to feed MLAT data to Dump 1090. This choice is left up to you."
-echo -e "\033[37m"
-read -p "Remap the MLAT port to 30004 in PiAware?: [Y/n] " MLATPORT
-
-if [[ ! $CONTINUE =~ ^[Nn]$ ]]; then
-    echo -e "\033[33m"
-    printf "Remapping MLAT results to use port 30004..."
-    sudo piaware-config -mlatResultsFormat beast,connect,localhost:30004
-    echo -e "\033[32m [OK]"
-fi
-
-echo -e "\e[33m"
-echo "Restarting PiAware to ensure all changes are applied..."
-echo -e "\033[37m"
-sudo /etc/init.d/piaware restart
-
-echo -e "\033[33m"
-echo "Installation and configuration of PiAware is now complete."
+echo "Installation and configuration of the performance graphs is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
