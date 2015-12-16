@@ -4,6 +4,7 @@ The following is a history of the changes made to this project.
 
 ## December 16th, 2015
 
+* Bandwidth graph now displays infromation for the eth0 interface by default.
 * Script halts if critical packages do not install.
 * Script halts if prerequisite packages are not installed within 5 attempts.
 * The piaware_builder source is now ran from the v2.1-3 tag.
