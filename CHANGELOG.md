@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## The "whiptail" branch.
+
+* Removed option to install the MalcolmRobb version of dump1090.
+
 ## December 16th, 2015
 
 * Bandwidth graph now displays information for the eth0 interface by default.
