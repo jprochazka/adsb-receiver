@@ -34,8 +34,14 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-SCRIPTDIR=${PWD}
+##############
+## VARIABLES
 
+SCRIPTDIR=${PWD}
+BUILDDIR="$SCRIPTDIR/build"
+
+
+##############
 ## FUNCTIONS
 
 # Function used to check if a package is install and if not install it.
@@ -67,159 +73,18 @@ function CheckPackage(){
     fi
 }
 
-clear
-
-## DISPLAY INSTALLATION OPTIONS
-
-echo -e "\033[31m"
-echo "##################################"
-echo "     ADS-B Feeder Installation    "
-echo "##################################"
-echo -e "\033[33m"
-echo "  MODE S DECODER SELECTION"
-echo ""
-echo "It is recommended that dump1090-mutability be selected as your mode s decoder."
-echo "However you are more than welcome to choose to install the MalcolmRobb version is you so desire."
-echo "If the MalcolmRobb version is selected not all installation features will be available to you."
-echo ""
-echo "Dump1090 (mutability):  https://github.com/mutability/dump1090"
-echo "Dump1090 (MalcolmRobb): https://github.com/MalcolmRobb/dump1090"
-echo ""
-echo "  1) Dump1090 (mutability)"
-echo "  2) Dump1090 (MalcolmRobb)"
-echo "  3) Exit"
-echo -e "\033[37m"
-read -r -p "Choose an installation option. [1] " DECODER
-
-# If option 3 (Exit) was selected exit this script.
-if [[ $DECODER == '3' ]]; then
+# Download the latest package lists for enabled repositories and PPAs.
+function AptUpdate() {
     clear
-    echo ""
-    echo "Installation exited."
-    echo ""
-    exit
-fi
-
-clear
-
-echo -e "\033[31m"
-echo "##################################"
-echo "     ADS-B Feeder Installation    "
-echo "##################################"
-echo -e "\033[33m"
-echo "  DATA SHARING OPTIONS"
-echo ""
-echo "Please select the site with which you wish to share the data collected by your new ADS-B feeder."
-echo "This script will setup the software needed to feed the selected sites during this installation."
-echo ""
-echo "FlightAware:    http://flightaware.com/"
-echo "Plane Finder:   https://planefinder.net"
-echo "ADS-B Exchange: http://adsbexchange.com/"
-echo ""
-echo "  1) Share data with FlightAware."
-echo "  2) Share data with Plane Finder."
-echo "  3) Share data with FlightAware and Plane Finder."
-echo "  4) Share data with FlightAware and ADS-B Exchange."
-echo "  5) Share data with FlightAware, Plane Finder and ADS-B Exchange."
-echo "  6) Do not share data with any external sites."
-echo "  7) Exit"
-echo -e "\033[37m"
-read -r -p "Choose an installation option. [1] " FEED
-
-# If option 7 (Exit) was selected exit this script.
-if [[ $FEED == '7' ]]; then
-    clear
-    echo ""
-    echo "Installation exited."
-    echo ""
-    exit
-fi
-
-clear
-
-# If the MalcolmRobb version of Dump1090 was selected skip additional features.
-if [[ $DECODER != '2' ]]; then
-
-    echo -e "\033[31m"
-    echo "##################################"
-    echo "     ADS-B Feeder Installation    "
-    echo "##################################"
     echo -e "\033[33m"
-    echo "  ADDITIONAL FEATURES"
-    echo ""
-    echo "This script is capable of installing a few additional features of it's own."
-    echo "Below is a list of additional features currently available for installation by this script."
-    echo "Look for more features to be added in the near future!"
-    echo ""
-    echo "  Web Portal: Includes performance graphs and adds site navigation to the dump1090-mutability map."
-    echo ""
-    echo "The ADS-B Feeder Project:  https://github.com/jprochazka/adsb-feeder"
-    echo ""
-    echo "  1) Install the web portal."
-    echo "  2) Do not install any additional features."
-    echo "  3) Exit"
+    echo "Downloading latest package lists for enabled repositories and PPAs..."
     echo -e "\033[37m"
-    read -r -p "Choose an installation option. [1] " FEATURES
+    sudo apt-get update
+}
 
-    # If option 3 (Exit) was selected exit this script.
-    if [[ $FEATURES == '3' ]]; then
-        clear
-        echo ""
-        echo "Installation exited."
-        echo ""
-        exit
-    fi
-
+# Update the operating system.
+function UpdateOperatingSystem() {
     clear
-
-fi
-
-## EXPLAIN WHAT IS TO BE DONE
-
-echo -e "\033[31m"
-echo "-------------------------------------"
-echo " Installation is now ready to begin."
-echo "-------------------------------------"
-echo -e "\033[33mThe following will be installed or configured on this system."
-echo ""
-if [[ $DECODER == '' ]] || [[ $DECODER == '1' ]]; then echo "  Dump 1090 (mutability):        https://github.com/mutability/dump1090"; fi
-if [[ $DECODER == '2' ]]; then echo "  Dump 1090 (MalcolmRobb):       https://github.com/MalcolmRobb/dump1090"; fi
-if [[ $FEED == '' ]] || [[ $FEED == '1' ]] || [[ $FEED == '3' ]] || [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then echo "  PiAware by FlightAware:        https://github.com/flightaware/piaware"; fi
-if [[ $FEED == '2' ]] || [[ $FEED == '3' ]] || [[ $FEED == '5' ]]; then echo "  Plane Finder ADS-B Client:     https://planefinder.net/sharing/client"; fi
-if [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then echo "  ADS-B Exchange via PiAware:    http://www.adsbexchange.com/how-to-feed/"; fi
-if [[ $FEATURES == '' ]] || [[ $FEATURES == "1" ]]; then echo "  Web Portal:                    https://github.com/jprochazka/adsb-feeder"; fi
-echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE
-
-clear
-
-BUILDDIR="$SCRIPTDIR/build"
-
-## GET THE LATEST LISTS OF PACKAGES AVAILABLE IN REPOSITORIES AND PPAS
-
-echo -e "\033[33m"
-echo "Downloading latest package lists for enabled repositories and PPAs..."
-echo -e "\033[37m"
-sudo apt-get update
-
-clear
-
-## ASK IF THE USER WISHES TO UPDATE THIER SYSTEM AT THIS TIME
-
-echo -e "\033[31m"
-echo "-------------------------------------"
-echo " Check for system updates."
-echo "-------------------------------------"
-echo -e "\033[33mIt is recommended that you update your system before continuing the installation."
-echo "This script can do this for you at this time if you like."
-echo -e "\033[37m"
-read -p "Update system before continuing installation? [Y/n] " UPDATE
-
-if [[ ! $UPDATE =~ ^[Nn]$ ]]; then
-
-    ## UPDATE INSTALLED PACKAGES
-
-    # Install any available updates using the command apt-get update.
     echo -e "\033[33m"
     echo "Downloading and installing the latest updates for your operating system..."
     echo -e "\033[37m"
@@ -228,169 +93,285 @@ if [[ ! $UPDATE =~ ^[Nn]$ ]]; then
     echo "Your system should now be up to date."
     echo -e "\033[37m"
     read -p "Press enter to continue..." CONTINUE
+}
 
-    ## UPDATE THIS RASPBERRY PI FIRMWARE IF THE USER APPROVES THIS STEP
-
-    if [[ `uname -m` == "armv7l" ]]; then
-
-        clear
-
-        # Ask the user if this is running on a Raspberry Pi and if so do they want to update it's firmware.
-        echo -e "\033[31m"
-        echo "-------------------------------------"
-        echo " Check for firmware updates."
-        echo "-------------------------------------"
-        echo -e "\033[33mIf this is a Raspberry Pi this script can update the firmware now as well."
-        echo "If you choose to update your Raspberry Pi firmware this script will check for the existance"
-        echo "of the package rpi-update and install it if it is not install already. After confirming that"
-        echo "rpi-update is installed it will be used to update your firmware."
-        echo -e "\033[37m"
-        read -p "Is this a Raspberry Pi and if so do you want to update the firmware now? [y/N] " FIRMWARE
-
-        # If the user chose yes check for and install the package rpi-update and use it to update this devices firmware.
-        if [[ $FIRMWARE =~ ^[Yy]$ ]]; then
-
-            CheckPackage rpi-update
-            echo -e "\033[33m"
-            echo "Updating Raspberry Pi firmware..."
-            echo -e "\033[37m"
-            sudo rpi-update
-            echo -e "\033[33m"
-            echo "Your Raspberry Pi firmware is now up to date."
-            echo "If in fact your firmware was update it is recommended that you restart your device now."
-            echo "After the reboot execute this script again to enter the installation process once more."
-            echo -e "\033[37m"
-            read -p "Would you like to reboot your device now? [y/N] " REBOOT
-
-	    if [[ $REBOOT =~ ^[Yy]$ ]]; then
-                sudo reboot
-            fi
-        fi
+# Update Raspberry Pi firmware.
+function UpdateFirmware() {
+    clear
+    CheckPackage rpi-update
+    echo -e "\033[33m"
+    echo "Updating Raspberry Pi firmware..."
+    echo -e "\033[37m"
+    sudo rpi-update
+    echo -e "\033[33m"
+    echo "Your Raspberry Pi firmware is now up to date."
+    echo "If in fact your firmware was update it is recommended that you restart your device now."
+    echo "After the reboot execute this script again to enter the installation process once more."
+    echo -e "\033[37m"
+    read -p "Would you like to reboot your device now? [y/N] " REBOOT
+    if [[ $REBOOT =~ ^[Yy]$ ]]; then
+        sudo reboot
     fi
-fi
+}
 
-clear
-
-#####################
-## MODE S DECODERS
-##
-
-## INSTALL DUMP1090-MUTABILITY
-
-if [[ $DECODER == '' ]] || [[ $DECODER == '1' ]]; then
-
+# Download, build and then install the dump1090-mutability package.
+function InstallDump1090() {
+    clear
     cd $BUILDDIR
-
     echo -e "\033[33mExecuting the dump1090-mutability installation script..."
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
     $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
+}
 
+# Download, build and then install the PiAware package.
+function InstallPiAware() {
     clear
-
-fi
-
-## INSTALL DUMP1090-MALCOLMROBB
-
-if [[ $DECODER == '2' ]]; then
-
     cd $BUILDDIR
-
-    echo -e "\033[33mExecuting the dump1090-MalcolmRobb installation script..."
-    echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
-    $SCRIPTDIR/bash/decoders/dump1090-malcolmrobb.sh
-
-    clear
-
-fi
-
-clear
-
-##################
-## SITE FEEDERS
-##
-
-## INSTALL PIAWARE
-
-if [[ $FEED == '' ]] || [[ $FEED == '1' ]] || [[ $FEED == '3' ]] || [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then
-
-    cd $BUILDDIR
-
     echo -e "\033[33mExecuting the PiAware installation script..."
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/feeders/piaware.sh
     $SCRIPTDIR/bash/feeders/piaware.sh
+}
 
-fi
-
-## INSTALL THE PLANE FINDER ADS-B CLIENT
-
-if [[ $FEED == '2' ]] || [[ $FEED == '3' ]] || [[ $FEED == '5' ]]; then
-
+# Download and install the Plane Finder ADS-B Client package.
+function InstallPlaneFinder() {
+    clear
     cd $BUILDDIR
-
-    echo -e "\033[33mExecuting the Plane Finder ADS=B Client installation script..."
+    echo -e "\033[33mExecuting the Plane Finder ADS-B Client installation script..."
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/feeders/planefinder.sh
     $SCRIPTDIR/bash/feeders/planefinder.sh
+}
 
-fi
-
-## FEED ADS-B EXCHANGE USING PIAWARE
-
-if [[ $FEED == '4' ]] || [[ $FEED == '5' ]]; then
-
+# Setup the ADS-B Exchange feed.
+function InstallAdsbExchange() {
+    clear
     cd $BUILDDIR
-
     echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/feeders/adsbexchange.sh
     $SCRIPTDIR/bash/feeders/adsbexchange.sh
+}
 
-fi
-
-#########################
-## ADDITIONAL FEATURES
-##
-
-## INSTALL AND CONFIGURE THE WEB PORTAL
-
-if [[ $FEATURES == '' ]] || [[ $FEATURES == '1' ]]; then
-
+# Setup and execute the web portal installation scripts.
+function InstallWebportal() {
+    clear
     cd $SCRIPTDIR
-
     echo -e "\033[33mExecuting the web portal installation scripts..."
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/portal/install.sh
     $SCRIPTDIR/bash/portal/install.sh
+}
 
-    clear
 
+#############
+## WHIPTAIL
+
+##
+## MESSAGES
+##
+
+# The title of the installer.
+TITLE="The ADS-B Feeder Project"
+
+# The welcome message displayed when this scrip[t it first executed.
+read -d '' WELCOME <<"EOF"
+The ADS-B Project is a series of bash scripts and files which
+can be used to setup an ADS-B feeder on a clean installation
+of certain Debian derived operating system.
+
+More information on the project can be found on GitHub.
+https://github.com/jprochazka/adsb-feeder
+
+Would you like to continue setup?
+EOF
+
+# Message displayed asking to update the operating system.
+read -d '' UPDATEFIRST <<"EOF"
+It is recommended that you update your system before building
+and/or installing any ADS-B feeder related packages. This
+script can do this for you at this time if you like.
+
+Update system before installing any ADS-B feeder related software?
+EOF
+
+# Message displayed asking to update the Raspberry Pi firmware.
+read -d '' UPDATEFIRMWAREFIRST <<"EOF"
+This script has detected that this may be a Raspberry Pi. If
+this is in fact a Raspberry Pi this script can update the
+system's firmware now as well.
+
+If you choose to update your Raspberry Pi firmware this script
+will check for the existance of the package rpi-update and
+install it if it is not install already. After confirming that
+rpi-update is installed it will be used to update your firmware.
+
+Is this in fact a Raspberry Pi and if so do you want to update
+the firmware now? (This will require a reboot.)
+EOF
+
+# Message displayed if dump1090-mutability is installed.
+read -d '' DUMP1090INSTALLED <<"EOF"
+The dump1090-mutability package appears to be installed
+on your system. Mode S decoder setup will be skipped.
+EOF
+
+# Message displayed if dump1090-mutability is not installed.
+read -d '' DUMP1090NOTINSTALLED <<"EOF"
+The dump1090-mutability package does not appear to be
+installed on your system. In order to continue setup
+dump1090-mutability will be downloaded, compiled and
+installed on this system.
+
+Do you wish to continue setup?
+Answering no will exit this script with no actions taken.
+EOF
+
+# Message displayed above feeder selection check list.
+FEEDERSAVAILABLE="The folowing feeders are available for installation."
+
+# Message displayed asking if the user wishes to install the web portal.
+read -d '' INSTALLWEBPORTAL <<"EOF"
+The ADS-B Feeder Project web portal is a light weight
+web interface for dump-1090-mutability installations.
+
+Current features include the following:
+  Unified navigation between all web pages.
+  System and dump1090 performance graphs.
+
+Would you like to install the ADS-B Feeder Project
+web portal on this device?
+EOF
+
+# Message displayed once installation has been completed.
+read -d '' INSTALLATIONCOMPLETE <<"EOF"
+INSTALLATION COMPLETE
+
+It is hoped these scripts and files were found useful
+while setting up your ADS-B Feeder. Feedback reguarding
+this software is always welcome. If you ran into and
+problems or wish to submit feed back feel free to do so
+on the project's GitHub site.
+
+https://github.com/jprochazka/adsb-feeder
+EOF
+
+##
+## DIALOGS
+##
+
+# Display the welcome message.
+whiptail --title "$TITLE" --msgbox "$WELCOME" 16 65
+
+# Ask to update the operating system.
+whiptail --title "$TITLE" --yesno "$UPDATEFIRST" 8 78
+UPDATEOS=$?
+
+# Ask to update the Raspberry Pi firmware.
+if [[ `uname -m` == "armv7l" ]]; then
+    whiptail --title "$TITLE" --yesno "$UPDATEFIRMWAREFIRST" 8 78
+    UPDATEFIRMWARENOW=$?
 fi
 
-## SAY GOODBYE AND EXIT THE SCRIPT
+## DUMP1090-MUTABILITY CHECK
 
-cd $PWD
+# Check if the dump1090-mutability package is installed.
+if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    # The dump1090-mutability package appear to be installed.
+    # A version check will be added here as well at a later date to enable upgrades.
+    whiptail --title "$TITLE" --msgbox "$DUMP1090INSTALLED" 8 78
+else
+    whiptail --title "$TITLE" --yesno "$DUMP1090NOTINSTALLED" 8 78
+    DUMP1090CHOICE=$?
+    if [ $DUMP1090CHOICE = 1 ]; then
+        # If the user decided not to install dump1090-mutability exit setup.
+        echo "Setup exited by user."
+        echo ""
+        exit 0
+    fi
+fi
 
-clear
+## FEEDER OPTIONS
 
-echo -e "\033[31m"
-echo "##################################"
-echo "     ADS-B Feeder Installation    "
-echo "##################################"
-echo -e "\033[33m"
-echo "  INSTALLATION COMPLETE"
-echo ""
-echo "I hope you enjoyed using this software to install and configure your new or revialized ADS-B feeder."
-echo "If you ran into any issues using this script feel free to report them on the project site hosted on GitHub."
-echo ""
-echo "https://github.com/jprochazka/adsb-feeder."
-echo ""
-echo "Good luck and happy tracking!"
-echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE
+declare -A FEEDERARRAY
 
-clear
+# Check if the PiAware package is installed.
+if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    # The PiAware package appear to be installed.
+    # A version check will be added here as well at a later date to enable upgrades.
+    FEEDERARRAY["DOINSTALLPIAWARE","FlightAware PiAware",OFF]
+fi
 
-exit
+# Check if the Plane Finder ADS-B Client package is installed.
+if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    # The Plane Finder ADS-B Client package appear to be installed.
+    # A version check will be added here as well at a later date to enable upgrades.
+    FEEDERARRAY["DOINSTALLPLANEFINDER","Plane Finder ADS-B Client",OFF]
+fi
+
+# Check if ADS-B Exchange sharing has been set up.
+if ! grep -Fxq "${SCRIPTPATH}/adsbexchange-maint.sh &" /etc/rc.local; then
+    # The ADS-B Exchange maintainance script does not appear to be executed on start up.
+    FEEDERARRAY["DOINSTALLADSBEXCHANGE","ADS-B Exchange Script",OFF]
+fi
+
+whiptail --title "$TITLE" --checklist "$FEEDERSAVAILABLE" --notag 20 78 4 "${FEEDERARRAY[@]}" 2>FEEDERCHOICES
+
+## WEB PORTAL
+
+# Ask if the web portal should be installed.
+DOINSTALLWEBPORTAL=1
+if (whiptail --title "$TITLE" --yesno "$INSTALLWEBPORTAL" 8 78) then
+    DOINSTALLWEBPORTAL=0
+fi
+
+
+################
+## BEGIN SETUP
+
+## System updates.
+
+AptUpdate
+
+if [ $UPDATEOS = 0 ]; then
+    UpdateOperatingSystem
+fi
+
+if [ $UPDATEFIRMWARENOW = 0 ]; then
+    UpdateFirmware
+fi
+
+## Mode S decoder.
+
+if [ $DUMP1090CHOICE = 0 ]; then
+    InstallDump1090
+fi
+
+## Feeders.
+
+while read $FEEDERCHOICE
+do
+    case $FEEDERCHOICE in
+        DOINSTALLPIAWARE) InstallPiAware
+        ;;
+        DOINSTALLPLANEFINDER) InstallPlaneFinder
+        ;;
+        DOINSTALLADSBEXCHANGE) InstallAdsbExchange
+    esac
+done <$FEEDERCHOICES
+
+## Web portal.
+
+if [ $DOINSTALLWEBPORTAL = 0 ]; then
+    InstallWebPortal
+fi
+
+
+##########################
+## INSTALLATION COMPLETE
+
+# Display the installation complete message box.
+whiptail --title "$TITLE" --msgbox "$INSTALLATIONCOMPLETE" 16 65
+
+exit 0
