@@ -177,7 +177,7 @@ TITLE="The ADS-B Feeder Project"
 
 # The welcome message displayed when this scrip[t it first executed.
 read -d '' WELCOME <<"EOF"
-The ADS-B Project is a series of bash scripts and files which can be used to setup an ADS-B feeder on a clean installation of certain Debian derived operating system.
+The ADS-B Project is a series of bash scripts and files which can be used to setup an ADS-B feeder on certain Debian derived operating system.
 
 More information on the project can be found on GitHub.
 https://github.com/jprochazka/adsb-feeder
@@ -216,11 +216,11 @@ Answering no will exit this script with no actions taken.
 EOF
 
 # Message displayed above feeder selection check list.
-FEEDERSAVAILABLE="The folowing feeders are available for installation."
+FEEDERSAVAILABLE="The following feeders are available for installation. Choose the feeders you wish to install."
 
 # Message displayed asking if the user wishes to install the web portal.
 read -d '' INSTALLWEBPORTAL <<"EOF"
-The ADS-B Feeder Project web portal is a light weight web interface for dump-1090-mutability installations.
+The ADS-B Feeder Project Web Portal is a light weight web interface for dump-1090-mutability installations.
 
 Current features include the following:
   Unified navigation between all web pages.
@@ -258,6 +258,7 @@ fi
 
 ## DUMP1090-MUTABILITY CHECK
 
+DUMP1090CHOICE=1
 # Check if the dump1090-mutability package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
@@ -282,33 +283,68 @@ declare array FEEDERLIST
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The PiAware package appear to be installed.
     # A version check will be added here as well at a later date to enable upgrades.
-    FEEDERLIST=("${FEEDERLIST[@]}" DOINSTALLPIAWARE 'FlightAware PiAware' OFF)
+    FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
 fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Plane Finder ADS-B Client package appear to be installed.
     # A version check will be added here as well at a later date to enable upgrades.
-    FEEDERLIST=("${FEEDERLIST[@]}" DOINSTALLPLANEFINDER 'Plane Finder ADS-B Client' OFF)
+    FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
 if ! grep -Fxq "${SCRIPTPATH}/adsbexchange-maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
-    FEEDERLIST=("${FEEDERLIST[@]}" DOINSTALLADSBEXCHANGE 'ADS-B Exchange Script' OFF)
+    FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
 
+declare FEEDERCHOICES
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
-    whiptail --title "$TITLE" --checklist "$FEEDERSAVAILABLE" --notags 16 78 5 "${FEEDERLIST[@]}" 2>FEEDERCHOICE
+    whiptail --title "$TITLE" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 42 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 fi
 
 ## WEB PORTAL
 
 # Ask if the web portal should be installed.
-DOINSTALLWEBPORTAL=1
-if (whiptail --title "$TITLE" --yesno "$INSTALLWEBPORTAL" 8 78) then
-    DOINSTALLWEBPORTAL=0
+whiptail --title "$TITLE" --yesno "$INSTALLWEBPORTAL" 8 78
+DOINSTALLWEBPORTAL=$?
+
+## CONFIRMATION
+
+CONFIRMATION="The following software will be installed:\n"
+
+if [ $DUMP1090CHOICE = 0 ]; then
+    CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+fi
+
+while read FEEDERCHOICE
+do
+    case $FEEDERCHOICE in
+        "FlightAware PiAware") CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
+        ;;
+        "Plane Finder ADS-B Client") CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
+        ;;
+        "ADS-B Exchange Script") CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
+        ;;
+    esac
+done < FEEDERCHOICES
+
+if [ $DOINSTALLWEBPORTAL = 0 ]; then
+    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Feeder Project Web Portal"
+fi
+
+CONFIRMATION="${CONFIRMATION}\n\nDo you wish to continue with the installation of this software?"
+
+whiptail --title "$TITLE" --yesno "$CONFIRMATION" 15 78
+CONFIRMATION=$?
+
+if [ $CONFIRMATION = 1 ]; then
+    echo -e "\033[31m"
+    echo "Installation cancelled by user."
+    echo -e "\033[37m"
+    exit 0
 fi
 
 
@@ -317,7 +353,7 @@ fi
 
 ## System updates.
 
-#AptUpdate
+AptUpdate
 
 if [ $UPDATEOS = 0 ]; then
     echo "UpdateOperatingSystem"
@@ -338,18 +374,19 @@ fi
 while read FEEDERCHOICE
 do
     case $FEEDERCHOICE in
-        DOINSTALLPIAWARE) echo "InstallPiAware"
+        "FlightAware PiAware") InstallPiAware
         ;;
-        DOINSTALLPLANEFINDER) echo "InstallPlaneFinder"
+        "Plane Finder ADS-B Client") InstallPlaneFinder
         ;;
-        DOINSTALLADSBEXCHANGE) echo "InstallAdsbExchange"
+        "ADS-B Exchange Script") InstallAdsbExchange
+        ;;
     esac
-done <$FEEDERCHOICES
+done < FEEDERCHOICES
 
 ## Web portal.
 
 if [ $DOINSTALLWEBPORTAL = 0 ]; then
-    echo "InstallWebPortal"
+    InstallWebPortal
 fi
 
 
@@ -357,6 +394,6 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-#whiptail --title "$TITLE" --msgbox "$INSTALLATIONCOMPLETE" 16 65
+whiptail --title "$TITLE" --msgbox "$INSTALLATIONCOMPLETE" 16 65
 
 exit 0
