@@ -122,6 +122,7 @@ function InstallDump1090() {
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
     $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
+    cd $SCRIPTDIR
 }
 
 # Download, build and then install the PiAware package.
@@ -132,6 +133,7 @@ function InstallPiAware() {
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/feeders/piaware.sh
     $SCRIPTDIR/bash/feeders/piaware.sh
+    cd $SCRIPTDIR
 }
 
 # Download and install the Plane Finder ADS-B Client package.
@@ -142,6 +144,7 @@ function InstallPlaneFinder() {
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/feeders/planefinder.sh
     $SCRIPTDIR/bash/feeders/planefinder.sh
+    cd $SCRIPTDIR
 }
 
 # Setup the ADS-B Exchange feed.
@@ -152,16 +155,18 @@ function InstallAdsbExchange() {
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/feeders/adsbexchange.sh
     $SCRIPTDIR/bash/feeders/adsbexchange.sh
+    cd $SCRIPTDIR
 }
 
 # Setup and execute the web portal installation scripts.
-function InstallWebportal() {
+function InstallWebPortal() {
     clear
     cd $SCRIPTDIR
     echo -e "\033[33mExecuting the web portal installation scripts..."
     echo -e "\033[37m"
     chmod +x $SCRIPTDIR/bash/portal/install.sh
     $SCRIPTDIR/bash/portal/install.sh
+    cd $SCRIPTDIR
 }
 
 
@@ -288,7 +293,7 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
 fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
-if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Plane Finder ADS-B Client package appear to be installed.
     # A version check will be added here as well at a later date to enable upgrades.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
@@ -355,7 +360,6 @@ if [ $CONFIRMATION = 1 ]; then
     exit 0
 fi
 
-
 ################
 ## BEGIN SETUP
 
@@ -407,5 +411,9 @@ whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msg
 # Once again cannot make the whiptail checkbox not create this file and still work...
 # Will work on figuring this out at a later date but until then we will delete the file created.
 rm -f FEEDERCHOICES
+
+echo -e "\033[32m'"
+echo "Installation complete."
+echo -e "\033[37m"
 
 exit 0
