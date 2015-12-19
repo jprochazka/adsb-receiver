@@ -364,17 +364,17 @@ fi
 AptUpdate
 
 if [ $UPDATEOS = 0 ]; then
-    echo "UpdateOperatingSystem"
+    UpdateOperatingSystem
 fi
 
 if [ $UPDATEFIRMWARENOW == 0 ]; then
-    echo "UpdateFirmware"
+    UpdateFirmware
 fi
 
 ## Mode S decoder.
 
 if [ $DUMP1090CHOICE == 0 ]; then
-    echo "InstallDump1090"
+    InstallDump1090
 fi
 
 ## Feeders.
