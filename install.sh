@@ -173,7 +173,7 @@ function InstallWebportal() {
 ##
 
 # The title of the installer.
-TITLE="The ADS-B Feeder Project"
+BACKTITLE="The ADS-B Feeder Project"
 
 # The welcome message displayed when this scrip[t it first executed.
 read -d '' WELCOME <<"EOF"
@@ -243,16 +243,16 @@ EOF
 ##
 
 # Display the welcome message.
-whiptail --title "$TITLE" --msgbox "$WELCOME" 16 65
+whiptail --backtitle "$BACKTITLE" --title "The ADS-B Feeder Project" --msgbox "$WELCOME" 16 65
 
 # Ask to update the operating system.
-whiptail --title "$TITLE" --yesno "$UPDATEFIRST" 10 65
+whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 10 65
 UPDATEOS=$?
 
 # Ask to update the Raspberry Pi firmware.
 UPDATEFIRMWARENOW=1
 if [[ `uname -m` == "armv7l" ]]; then
-    whiptail --title "$TITLE" --yesno "$UPDATEFIRMWAREFIRST" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Update Raspberry Pi Firmware" --yesno "$UPDATEFIRMWAREFIRST" 10 65
     UPDATEFIRMWARENOW=$?
 fi
 
@@ -263,14 +263,15 @@ DUMP1090CHOICE=1
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
     # A version check will be added here as well at a later date to enable upgrades.
-    whiptail --title "$TITLE" --msgbox "$DUMP1090INSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --msgbox "$DUMP1090INSTALLED" 10 65
 else
-    whiptail --title "$TITLE" --yesno "$DUMP1090NOTINSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Not Installed" --yesno "$DUMP1090NOTINSTALLED" 10 65
     DUMP1090CHOICE=$?
     if [ $DUMP1090CHOICE = 1 ]; then
         # If the user decided not to install dump1090-mutability exit setup.
-        echo "Setup exited by user."
-        echo ""
+        echo -e "\033[31m"
+        echo "Installation cancelled by user."
+        echo -e "\033[37m"
         exit 0
     fi
 fi
@@ -300,15 +301,17 @@ if ! grep -Fxq "${SCRIPTPATH}/adsbexchange-maint.sh &" /etc/rc.local; then
 fi
 
 declare FEEDERCHOICES
+
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
+    # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
     whiptail --title "$TITLE" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 42 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 fi
 
 ## WEB PORTAL
 
 # Ask if the web portal should be installed.
-whiptail --title "$TITLE" --yesno "$INSTALLWEBPORTAL" 8 78
+whiptail --backtitle "$BACKTITLE" --title "Install The ADS-B Feeder Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
 DOINSTALLWEBPORTAL=$?
 
 ## CONFIRMATION
@@ -337,13 +340,18 @@ fi
 
 CONFIRMATION="${CONFIRMATION}\n\nDo you wish to continue with the installation of this software?"
 
-whiptail --title "$TITLE" --yesno "$CONFIRMATION" 15 78
+whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 15 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
     echo -e "\033[31m"
     echo "Installation cancelled by user."
     echo -e "\033[37m"
+
+    # Dirty hack but cannot make the whiptail checkbox not create this file and still work...
+    # Will work on figuring this out at a later date so until then we will delete the file it created.
+    rm -f FEEDERCHOICES
+
     exit 0
 fi
 
@@ -394,6 +402,10 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --title "$TITLE" --msgbox "$INSTALLATIONCOMPLETE" 16 65
+whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 16 65
+
+# Once again cannot make the whiptail checkbox not create this file and still work...
+# Will work on figuring this out at a later date but until then we will delete the file created.
+rm -f FEEDERCHOICES
 
 exit 0
