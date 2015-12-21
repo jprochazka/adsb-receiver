@@ -12,7 +12,9 @@ in order by the main install script depending on the installation options choose
     chmod +x install.sh
     ./install.sh
 
-At this time some manual configuration is required to properly display the max range graph. Please refer to the project wiki for more infromation on what will need to be changed as well as how to display bandwidth usage for a wireless connections. https://github.com/jprochazka/adsb-feeder/wiki
+At this time some manual configuration is required to properly display the max range graph. Please
+refer to the project wiki for more infromation on what will need to be changed as well as how to
+display bandwidth usage for a wireless connections. https://github.com/jprochazka/adsb-feeder/wiki
 
 ### What Can Be Installed
 
@@ -21,7 +23,6 @@ At this time the following software can be installed using these scripts.
 **Mode S Decoders**
 
 * Dump1090 (mutability):   https://github.com/mutability/dump1090
-* Dump1090 (MalcolmRobb):  https://github.com/MalcolmRobb/dump1090
 
 **Site Feeders**
 
@@ -29,28 +30,17 @@ At this time the following software can be installed using these scripts.
 * Plane Finder ADS-B CLient:  https://planefinder.net
 * ADS-B Exchange:             http://adsbexchange.com
 
-**Additional Features** *
+**Additional Features**
 
 * Web accessable Dump1090 and system performance graphs.
 * Add navigation to the stock Dump1090 map.
 
 ### Supported Operating Systems
 
-This project is in it's early stages and still needs to be thuroughly tested in live environments.
-The following is a list of operating systems which are currently going through testing as well as
-the status of the testing done so far on each. Those checked off have been tested successfully.
+The scripts and packages have been tested on the following operating systems.
 
 - [X] Raspbian Jessie
 - [X] Raspbian Jessie Lite
-- [ ] Raspbian Wheezy
 - [X] Debian 8.0 Jessie
-- [ ] Debian 7.0 Wheezy
 - [X] Ubuntu 15.04 Vivid Vervet
 - [X] Ubuntu 14.04 LTS Trusty Tahr
-- [ ] Ubuntu 12.04 LTS Precise Pangolin
-- [ ] Linux Mint 13 Maya
-- [ ] Linux Mint 17.2 Rafaela
-
----
-
-\* *In order to utilize the performance graphs dump1090-mutability must be chosen as your mode s decoder.*

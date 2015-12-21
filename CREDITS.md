@@ -4,7 +4,6 @@ I would like to thank the developers and contributors to the following projects.
 hard work and dedication this project would not have been possible.
 
 * Dump1090 (mutability):      https://github.com/mutability/dump1090
-* Dump1090 (MalcolmRobb):     https://github.com/MalcolmRobb/dump1090
 * FlightAware's PiAware:      http://flightaware.com
 * Plane Finder ADS-B Client:  https://planefinder.net
 * Dump1090-Tools:             https://github.com/mutability/dump1090-tools
