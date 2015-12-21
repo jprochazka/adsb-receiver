@@ -223,6 +223,9 @@ EOF
 # Message displayed above feeder selection check list.
 FEEDERSAVAILABLE="The following feeders are available for installation. Choose the feeders you wish to install."
 
+# Message displayed if all available feeders have already been installed.
+ALLFEEDERSINSTALLED="It appears that all the feeders available for installation by this script have been installed already."
+
 # Message displayed asking if the user wishes to install the web portal.
 read -d '' INSTALLWEBPORTAL <<"EOF"
 The ADS-B Feeder Project Web Portal is a light weight web interface for dump-1090-mutability installations.
@@ -233,6 +236,9 @@ Current features include the following:
 
 Would you like to install the ADS-B Feeder Project web portal on this device?
 EOF
+
+# Message to display if there is nothing to install or do.
+NOTHINGTODO="Nothing has been selected to be installed so the script will exit now."
 
 # Message displayed once installation has been completed.
 read -d '' INSTALLATIONCOMPLETE <<"EOF"
@@ -248,7 +254,16 @@ EOF
 ##
 
 # Display the welcome message.
-whiptail --backtitle "$BACKTITLE" --title "The ADS-B Feeder Project" --msgbox "$WELCOME" 16 65
+whiptail --backtitle "$BACKTITLE" --title "The ADS-B Feeder Project" --yesno "$WELCOME" 16 65
+BEGININSTALLATION=$?
+
+if [ $BEGININSTALLATION = 1 ]; then
+    # Exit the script if the user wishes not to continue.
+    echo -e "\033[31m"
+    echo "Installation cancelled by user."
+    echo -e "\033[37m"
+    exit 0
+fi
 
 # Ask to update the operating system.
 whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 10 65
@@ -300,7 +315,7 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -Fxq "${SCRIPTPATH}/adsbexchange-maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "${BUILDDIR}/adsbexchange-maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
@@ -311,6 +326,9 @@ if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
     # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
     whiptail --title "$TITLE" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 42 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+else
+    # Since all available feeders appear to be installed inform the user of the fact.
+    whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 10 65
 fi
 
 ## WEB PORTAL
@@ -321,31 +339,71 @@ DOINSTALLWEBPORTAL=$?
 
 ## CONFIRMATION
 
-CONFIRMATION="The following software will be installed:\n"
+# Check if anything is to be done before moving on.
+if [ $UPDATEOS = 1 ] && [ $UPDATEFIRMWARENOW = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
+    whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
-if [ $DUMP1090CHOICE = 0 ]; then
-    CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+    echo -e "\033[31m"
+    echo "Nothing was selected to do or be installed."
+    echo "The script has been exited."
+    echo -e "\033[37m"
+
+    # Dirty hack but cannot make the whiptail checkbox not create this file and still work...
+    # Will work on figuring this out at a later date so until then we will delete the file it created.
+    rm -f FEEDERCHOICES
+
+    exit 0
 fi
 
-while read FEEDERCHOICE
-do
-    case $FEEDERCHOICE in
-        "FlightAware PiAware") CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
-        ;;
-        "Plane Finder ADS-B Client") CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
-        ;;
-        "ADS-B Exchange Script") CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
-        ;;
-    esac
-done < FEEDERCHOICES
+declare CONFIRMATION
+# If the user decided to install updates...
+if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
+    CONFIRMATION="The following actions will be performed:\n"
 
-if [ $DOINSTALLWEBPORTAL = 0 ]; then
-    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Feeder Project Web Portal"
+    if [ $UPDATEOS = 0 ]; then
+        # Operating system updates message.
+        CONFIRMATION="${CONFIRMATION}\n  * Operating system updates will be applied."
+    fi
+
+    if [ $UPDATEFIRMWARENOW = 0 ]; then
+        # Firmware update message.
+        CONFIRMATION="${CONFIRMATION}\n  * Raspberry Pi firmware updates will be applied."
+    fi
+    CONFIRMATION="${CONFIRMATION}\n"
 fi
 
-CONFIRMATION="${CONFIRMATION}\n\nDo you wish to continue with the installation of this software?"
+# If the user decided rto install software...
+if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
+    CONFIRMATION="${CONFIRMATION}\nThe following software will be installed:\n"
 
-whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 15 78
+    if [ $DUMP1090CHOICE = 0 ]; then
+        CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+    fi
+
+    if [ -f FEEDERCHOICE ]; then
+        while read FEEDERCHOICE
+        do
+            case $FEEDERCHOICE in
+                "FlightAware PiAware") CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
+                ;;
+                "Plane Finder ADS-B Client") CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
+                ;;
+                "ADS-B Exchange Script") CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
+                ;;
+            esac
+        done < FEEDERCHOICES
+    fi
+
+    if [ $DOINSTALLWEBPORTAL = 0 ]; then
+        CONFIRMATION="${CONFIRMATION}\n  * ADS-B Feeder Project Web Portal"
+    fi
+    CONFIRMATION="${CONFIRMATION}\n"
+fi
+
+# Ask for confirmation before moving on.
+CONFIRMATION="${CONFIRMATION}\nDo you wish to continue?"
+
+whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 19 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
@@ -371,29 +429,52 @@ if [ $UPDATEOS = 0 ]; then
     UpdateOperatingSystem
 fi
 
-if [ $UPDATEFIRMWARENOW == 0 ]; then
+if [ $UPDATEFIRMWARENOW = 0 ]; then
     UpdateFirmware
 fi
 
 ## Mode S decoder.
 
-if [ $DUMP1090CHOICE == 0 ]; then
+if [ $DUMP1090CHOICE = 0 ]; then
     InstallDump1090
 fi
 
 ## Feeders.
 
-while read FEEDERCHOICE
-do
-    case $FEEDERCHOICE in
-        "FlightAware PiAware") InstallPiAware
-        ;;
-        "Plane Finder ADS-B Client") InstallPlaneFinder
-        ;;
-        "ADS-B Exchange Script") InstallAdsbExchange
-        ;;
-    esac
-done < FEEDERCHOICES
+# Moved execution of functions outside of while loop.
+# Inside the while loop the installation scripts are not stopping at reads.
+RUNPIAWARESCRIPT=1
+RUNPLANEFINDERSCRIPT=1
+RUNADSBEXCHANGESCRIPT=1
+
+if [ -f FEEDERCHOICE ]; then
+    while read FEEDERCHOICE
+    do
+        case $FEEDERCHOICE in
+            "FlightAware PiAware") RUNPIAWARESCRIPT=0
+            ;;
+            "Plane Finder ADS-B Client") RUNPLANEFINDERSCRIPT=0
+            ;;
+            "ADS-B Exchange Script") RUNADSBEXCHANGESCRIPT=0
+            ;;
+        esac
+    done < FEEDERCHOICES
+fi
+
+if [ $RUNPIAWARESCRIPT = 0 ]; then
+    InstallPiAware
+fi
+
+if [ $RUNPLANEFINDERSCRIPT = 0 ]; then
+    InstallPlaneFinder
+fi
+
+if [ $RUNADSBEXCHANGESCRIPT = 0 ]; then
+    InstallAdsbExchange
+fi
+
+
+
 
 ## Web portal.
 
@@ -412,7 +493,7 @@ whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msg
 # Will work on figuring this out at a later date but until then we will delete the file created.
 rm -f FEEDERCHOICES
 
-echo -e "\033[32m'"
+echo -e "\033[32m"
 echo "Installation complete."
 echo -e "\033[37m"
 
