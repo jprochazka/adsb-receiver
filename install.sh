@@ -380,7 +380,7 @@ if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES 
         CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
     fi
 
-    if [ -f FEEDERCHOICE ]; then
+    if [ -s FEEDERCHOICES ]; then
         while read FEEDERCHOICE
         do
             case $FEEDERCHOICE in
@@ -403,7 +403,7 @@ fi
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}\nDo you wish to continue?"
 
-whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 19 78
+whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 20 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
@@ -447,7 +447,7 @@ RUNPIAWARESCRIPT=1
 RUNPLANEFINDERSCRIPT=1
 RUNADSBEXCHANGESCRIPT=1
 
-if [ -f FEEDERCHOICE ]; then
+if [ -s FEEDERCHOICES ]; then
     while read FEEDERCHOICE
     do
         case $FEEDERCHOICE in
