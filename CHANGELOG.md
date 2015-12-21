@@ -2,8 +2,13 @@
 
 The following is a history of the changes made to this project.
 
-## The "whiptail" branch.
+## December 21st, 2015
 
+* Can now choose to install only certain items while leaving others out.
+* Uses whiptail dialogs during the intital portion of the setup.
+* Data sharing options are now presented in multiple choice form.
+* Does not display installation options for software already installed.
+* Dump1090-mutability map now positioned correctly within the map page.
 * Removed option to install the MalcolmRobb version of dump1090.
 
 ## December 16th, 2015
