@@ -37,17 +37,10 @@ At this time the following software can be installed using these scripts.
 
 ### Supported Operating Systems
 
-This project is in it's early stages and still needs to be thuroughly tested in live environments.
-The following is a list of operating systems which are currently going through testing as well as
-the status of the testing done so far on each. Those checked off have been tested successfully.
+The scripts and packages have been tested on the following operating systems.
 
 - [X] Raspbian Jessie
 - [X] Raspbian Jessie Lite
-- [ ] Raspbian Wheezy
 - [X] Debian 8.0 Jessie
-- [ ] Debian 7.0 Wheezy
 - [X] Ubuntu 15.04 Vivid Vervet
 - [X] Ubuntu 14.04 LTS Trusty Tahr
-- [ ] Ubuntu 12.04 LTS Precise Pangolin
-- [ ] Linux Mint 13 Maya
-- [ ] Linux Mint 17.2 Rafaela
