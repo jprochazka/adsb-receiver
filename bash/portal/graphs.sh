@@ -191,7 +191,7 @@ sudo cp -r $BUILDDIR/portal/graphs/html/* /var/www/html/graphs/
 echo -e "\033[33mAdding jobs to crontab..."
 echo -e "\033[37m"
 chmod 755 $BUILDDIR/portal/graphs/make-collectd-graphs.sh
-sudo tee -a /etc/cron.d/feeder-performance-graphs > /dev/null <<EOF
+sudo tee -a /etc/cron.d/adsb-feeder-performance-graphs > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
 # Every 5 minutes new hourly graphs are generated.
