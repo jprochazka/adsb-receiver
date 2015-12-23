@@ -2,7 +2,12 @@
 
 The following is a history of the changes made to this project.
 
-## December 21st, 2015
+## December 23st, 2015
+
+* Terrain limitation data able to be downloaded for display in the dump1090 map.
+* Added check to make sure whiptail is installed.
+
+## December 21rd, 2015
 
 * Can now choose to install only certain items while leaving others out.
 * Uses whiptail dialogs during the intital portion of the setup.
