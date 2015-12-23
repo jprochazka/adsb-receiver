@@ -173,6 +173,9 @@ function InstallWebPortal() {
 #############
 ## WHIPTAIL
 
+# Check that whiptail is installed.
+CheckPackage whiptail
+
 ##
 ## MESSAGES
 ##
