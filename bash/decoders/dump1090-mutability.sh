@@ -189,7 +189,7 @@ if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then
     echo -e "\033[33m"
     echo "Downloading JSON data pertaining to the panorama ID you supplied..."
     echo -e "\033[37m"
-    sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json http://www.heywhatsthat.com/api/upintheair.json?view=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=3048,12192
+    sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=3048,12192"
 fi
 
 ## DISPLAY MESSAGE STATING DUMP1090-MUTABILITY SETUP IS COMPLETE
