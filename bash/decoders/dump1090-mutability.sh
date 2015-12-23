@@ -149,6 +149,49 @@ echo "Startng dump1090-mutability..."
 echo -e "\033[37m"
 sudo /etc/init.d/dump1090-mutability start
 
+## HEYWHATSTHAT.COM TERRAIN LIMIT RINGS
+
+echo -e "\033[33m"
+echo "Dump1090-mutability is able to display terrain limit rings using data obtained."
+echo "from the website http://www.heywhatsthat.com. Some work will be required on your"
+echo "part including visiting http://www.heywhatsthat.com and generating a new"
+echo "panorama set to your location."
+echo -e "\033[37m"
+read -p "Do you wish to add terrain limit rings to the dump1090 map?" ADDTERRAINRINGS
+
+if [[ $ADDTERRAINRINGS =~ ^[Yy]$ ]]; then
+    echo -e "\033[33m"
+    echo "READ THE FOLLOWING INSTRUCTION CAREFULLY!"
+    echo ""
+    echo -e "\033[33m"
+    echo "To set up terrain limit rings you will need to first generate a panorama on the website"
+    echo "heywhatsthat.com. To do so visit the following URL:"
+    echo ""
+    echo "  http://www.heywhatsthat.com"
+    echo ""
+    echo "Once the webpage has loaded click on the tab titled New panorama. Fill out the required"
+    echo "information in the form to the left of the map."
+    echo ""
+    echo "After submitting the form your request will be put into a queue to be generated shortly."
+    echo "You will be informed when the generation of your panorama has been completed."
+    echo ""
+    echo "Once generated visit your newly created panorama. Near the top left of the page you will"
+    echo "see a URL displayed which will point you to your newly created panorama. Within this URL's"
+    echo "query string you will see ?view=XXXXXXXX where XXXXXXXX is the identifier for this panorama."
+    echo "Enter below the letters and numbers making up the view identifier displayed there."
+    echo ""
+    echo "Positions for terrain rings for both 10,000 and 40,000 feet will be downloaded by this"
+    echo "script once the panorama has been generated and you are ready to continue."
+    echo -e "\033[37m"
+    read -p "Your heywhatsthat.com view identifier: " HEYWHATSTHATVIEWID
+
+    # Download the generated panoramas JSON data.
+    echo -e "\033[33m"
+    echo "Downloading JSON data pertaining to the panorama ID you supplied..."
+    echo -e "\033[37m"
+    sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json 'http://www.heywhatsthat.com/api/upintheair.json?view=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=3048,12192'
+fi
+
 ## DISPLAY MESSAGE STATING DUMP1090-MUTABILITY SETUP IS COMPLETE
 
 echo -e "\033[33m"
