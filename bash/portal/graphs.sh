@@ -208,6 +208,8 @@ sudo tee -a /etc/cron.d/adsb-feeder-performance-graphs > /dev/null <<EOF
 # At 6 minutes past the hour new 30 day graphs are generated.
 # At 8 minutes past every 12th hour new 365 day graphs are generated.
 
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
 */5 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null
 */10 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null
 2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h 180 >/dev/null
