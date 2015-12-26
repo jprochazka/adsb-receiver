@@ -318,7 +318,7 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -Fxq "${BUILDDIR}/adsbexchange-maint.sh &" /etc/rc.local; then
+if ! grep -q "${BUILDDIR}/adsbexchange-maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
