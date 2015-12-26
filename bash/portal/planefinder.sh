@@ -37,10 +37,16 @@ BUILDDIR="${PWD}/build"
 RAWDOCUMENTROOT=`lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
-## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
+# ADD LOCAL PLANEFINDER INTERFACE LINK
 
 echo -e "\033[33m"
-echo "Placing map HTML file in Lighttpd's www root directory..."
+echo "Adding links to the Plane Finder ADS-B Client web interface to the portal pages..."
 echo -e "\033[37m"
-sudo mkdir /var/www/html/map
-sudo cp -r $BUILDDIR/portal/map/html/* ${DOCUMENTROOT}/map/
+
+PLACEHOLDER="<!-- Plane Finder ADS-B Client Link Placeholder -->"
+IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk -F'[/ ]+' '{print $3}'`
+HTMLLINK="<li id=\"planefinder-link\"><a href=\"http://${IPADDRESS}:30053\">Plane Finder Client</a></li>"
+
+sudo sed -i "s@${PLACEHOLDER}@${HTMLLINK}@g" ${DOCUMENTROOT}/index.html
+sudo sed -i "s@${PLACEHOLDER}@${HTMLLINK}@g" ${DOCUMENTROOT}/map/index.html
+sudo sed -i "s@${PLACEHOLDER}@${HTMLLINK}@g" ${DOCUMENTROOT}/graphs/index.html

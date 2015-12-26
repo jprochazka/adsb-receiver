@@ -33,9 +33,13 @@
 
 BUILDDIR="${PWD}/build"
 
+# Assign the Lighthttpd document root directory to a variable.
+RAWDOCUMENTROOT=`lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
+DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+
 ## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
 
 echo -e "\033[33m"
 echo "Placing homepage HTML file in Lighttpd's www root directory..."
 echo -e "\033[37m"
-sudo cp -r $BUILDDIR/portal/map/html/* /var/www/html/
+sudo cp -r $BUILDDIR/portal/map/html/* ${DOCUMENTROOT}/

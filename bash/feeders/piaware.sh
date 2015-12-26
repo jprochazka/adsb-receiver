@@ -129,7 +129,7 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_2.1-3_*.deb
+sudo dpkg -i $BUILDDIR/piaware_builder/piaware_2.1-5_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 

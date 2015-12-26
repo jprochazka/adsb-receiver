@@ -107,6 +107,14 @@ echo -e "\033[37m"
 chmod +x $SCRIPTDIR/bash/portal/graphs.sh
 $SCRIPTDIR/bash/portal/graphs.sh
 
+if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    echo -e "\033[33m"
+    echo "Installing performance graphs..."
+    echo -e "\033[37m"
+    chmod +x $SCRIPTDIR/bash/portal/planefinder.sh
+    $SCRIPTDIR/bash/portal/planefinder.sh
+fi
+
 echo -e "\033[33m"
 echo "Installation and configuration of the performance graphs is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."

@@ -33,6 +33,10 @@
 
 BUILDDIR="${PWD}/build"
 
+# Assign the Lighthttpd document root directory to a variable.
+RAWDOCUMENTROOT=`lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
+DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+
 ## BACKUP AND REPLACE COLLECTD.CONF
 
 echo -e "\033[33m"
@@ -182,9 +186,9 @@ sudo /etc/init.d/collectd force-reload
 echo -e "\033[33m"
 echo "Placing performance graph HTML file in Lighttpd's www root directory..."
 echo -e "\033[37m"
-sudo mkdir /var/www/html/collectd
-sudo mkdir /var/www/html/graphs
-sudo cp -r $BUILDDIR/portal/graphs/html/* /var/www/html/graphs/
+sudo mkdir ${DOCUMENTROOT}/collectd
+sudo mkdir ${DOCUMENTROOT}/graphs
+sudo cp -r $BUILDDIR/portal/graphs/html/* ${DOCUMENTROOT}/graphs/
 
 ## EDIT CRONTAB
 
