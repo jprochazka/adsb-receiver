@@ -113,7 +113,7 @@ echo "Downloading the source code for PiAware Builder..."
 echo -e "\033[37m"
 git clone https://github.com/flightaware/piaware_builder.git
 cd $BUILDDIR/piaware_builder
-git checkout tags/v2.1-3
+git checkout tags/v2.1-5
 
 ## BUILD THE PIAWARE PACKAGE
 
