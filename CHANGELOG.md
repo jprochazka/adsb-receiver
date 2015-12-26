@@ -2,6 +2,13 @@
 
 The following is a history of the changes made to this project.
 
+## December 25th, 2015
+
+* Scripts now properly detect if an ADS-B Exchange sharing has already set up.
+* The PiAware 2.1-5 tag is now used when installing the PiAware software.
+* Added link to portal pointing to the local Plane Finder ADS-B Client web interface.
+* The path to Lighttpd's root directory is now read from the Lighttpd configuration.
+
 ## December 23st, 2015
 
 * Terrain limitation data able to be downloaded for display in the dump1090 map.
