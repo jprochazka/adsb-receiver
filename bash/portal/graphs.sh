@@ -193,7 +193,7 @@ sudo cp -r $BUILDDIR/portal/graphs/html/* ${DOCUMENTROOT}/graphs/
 ## EDIT CRONTAB
 
 echo -e "\033[33mAdding jobs to crontab..."
-if [ -f /tmp/foo.txt ]
+if [ -f /tmp/foo.txt ]; then
     echo -e "Removing previously install cron file..."
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
 fi
