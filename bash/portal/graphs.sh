@@ -34,7 +34,7 @@
 BUILDDIR="${PWD}/build"
 
 # Assign the Lighthttpd document root directory to a variable.
-RAWDOCUMENTROOT=`lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
+RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
 ## BACKUP AND REPLACE COLLECTD.CONF

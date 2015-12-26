@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Assign the Lighthttpd document root directory to a variable.
-RAWDOCUMENTROOT=`lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root` renice -n 5 -p $$
+RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root` renice -n 5 -p $$
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
 ## DUMP1090 GRAPHS
