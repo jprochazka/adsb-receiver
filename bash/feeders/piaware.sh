@@ -106,14 +106,25 @@ CheckPackage tcllib
 CheckPackage tcl-tls
 CheckPackage itcl3
 
-## DOWNLOAD THE PIAWARE SOURCE
+## DOWNLOAD OR UPDATE THE PIAWARE_BUILDER SOURCE
 
-echo -e "\033[33m"
-echo "Downloading the source code for PiAware Builder..."
-echo -e "\033[37m"
-git clone https://github.com/flightaware/piaware_builder.git
-cd $BUILDDIR/piaware_builder
-git checkout tags/v2.1-5
+# Check if the git repository already exists locally.
+if [ -d "$BUILDDIR/piaware_builder" ] && [ -d $BUILDDIR/piaware_builder/.git ]; then
+    # A directory with a git repository containing the source code exists.
+    echo -e "\033[33m"
+    echo "Updating the local piaware_builder git repository..."
+    echo -e "\033[37m"
+    cd $BUILDDIR/piaware_builder
+    git pull origin master
+else
+    # A directory containing the source code does not exist in the build directory.
+    echo -e "\033[33m"
+    echo "Cloning the piaware_builder git repository locally..."
+    echo -e "\033[37m"
+    git clone https://github.com/flightaware/piaware_builder.git
+    cd $BUILDDIR/piaware_builder
+    git checkout tags/v2.1-5
+fi
 
 ## BUILD THE PIAWARE PACKAGE
 

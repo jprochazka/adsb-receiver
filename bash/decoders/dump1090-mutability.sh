@@ -93,12 +93,23 @@ CheckPackage libusb-1.0-0-dev
 CheckPackage pkg-config
 CheckPackage lighttpd
 
-## DOWNLOAD THE DUMP1090-MUTABILITY SOURCE
+## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
-echo -e "\033[33m"
-echo "Downloading the source code for dump1090-mutability..."
-echo -e "\033[37m"
-git clone https://github.com/mutability/dump1090.git
+# Check if the git repository already exists locally.
+if [ -d "$BUILDDIR/dump1090" ] && [ -d $BUILDDIR/dump1090/.git ]; then
+    # A directory with a git repository containing the source code exists.
+    echo -e "\033[33m"
+    echo "Updating the local dump1090-mutability git repository..."
+    echo -e "\033[37m"
+    cd $BUILDDIR/dump1090
+    git pull origin master
+else
+    # A directory containing the source code does not exist in the build directory.
+    echo -e "\033[33m"
+    echo "Cloning the dump1090-mutability git repository locally..."
+    echo -e "\033[37m"
+    git clone https://github.com/mutability/dump1090.git
+fi
 
 ## BUILD THE DUMP1090-MUTABILITY PACKAGE
 
