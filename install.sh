@@ -37,6 +37,8 @@
 ##############
 ## VARIABLES
 
+PIAWAREVERSION="2.1-4"
+
 SCRIPTDIR=${PWD}
 BUILDDIR="$SCRIPTDIR/build"
 
@@ -286,6 +288,7 @@ fi
 ## DUMP1090-MUTABILITY CHECK
 
 DUMP1090CHOICE=1
+DUMP1090REINSTALL=1
 # Check if the dump1090-mutability package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
@@ -310,11 +313,17 @@ fi
 
 declare array FEEDERLIST
 
-# Check if the PiAware package is installed.
+# Check if the PiAware package is installed or if it needs upgraded.
+PIAWAREUPGRADE=1
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The PiAware package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
     FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
+else
+    # Check if a newer version can be installed.
+    if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWAREVERSION}") -eq 0 ]; then
+        FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
+        PIAWAREUPGRADE=0
+    fi
 fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
@@ -382,24 +391,34 @@ if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
     CONFIRMATION="${CONFIRMATION}\n"
 fi
 
-# If the user decided rto install software...
+# If the user decided to install software...
 if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
     CONFIRMATION="${CONFIRMATION}\nThe following software will be installed:\n"
 
     if [ $DUMP1090CHOICE = 0 ]; then
-        CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+        if [ $DUMP1090REINSTALL -eq 0 ]; then
+            CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability (reinstall)"
+        else
+            CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+        fi
     fi
 
     if [ -s FEEDERCHOICES ]; then
         while read FEEDERCHOICE
         do
             case $FEEDERCHOICE in
-                "FlightAware PiAware") CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
-                ;;
-                "Plane Finder ADS-B Client") CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
-                ;;
-                "ADS-B Exchange Script") CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
-                ;;
+                "FlightAware PiAware")
+                    CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
+                    ;;
+                "FlightAware PiAware (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware (upgrade)"
+                    ;;
+                "Plane Finder ADS-B Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
+                    ;;
+                "ADS-B Exchange Script")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
+                    ;;
             esac
         done < FEEDERCHOICES
     fi
@@ -461,11 +480,14 @@ if [ -s FEEDERCHOICES ]; then
     while read FEEDERCHOICE
     do
         case $FEEDERCHOICE in
-            "FlightAware PiAware") RUNPIAWARESCRIPT=0
+            "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
+                RUNPIAWARESCRIPT=0
             ;;
-            "Plane Finder ADS-B Client") RUNPLANEFINDERSCRIPT=0
+            "Plane Finder ADS-B Client")
+                RUNPLANEFINDERSCRIPT=0
             ;;
-            "ADS-B Exchange Script") RUNADSBEXCHANGESCRIPT=0
+            "ADS-B Exchange Script")
+                RUNADSBEXCHANGESCRIPT=0
             ;;
         esac
     done < FEEDERCHOICES
