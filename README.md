@@ -6,7 +6,7 @@ in order by the main install script depending on the installation options choose
 
 ### Obtaining And Using This Software
 
-On new installations use the following commands...
+#### For new installations...
 
     sudo apt-get install git
     cd ~/
@@ -15,15 +15,15 @@ On new installations use the following commands...
     chmod +x install.sh
     ./install.sh
     
-If updating software previously installed using these scripts use the following commands...
+At this time some manual configuration is required to properly display the max range graph. Please
+refer to the project wiki for more infromation on what will need to be changed as well as how to
+display bandwidth usage for a wireless connections. https://github.com/jprochazka/adsb-feeder/wiki
+    
+#### Updating existing installations...
 
     cd ~/adsb-feeder
     git pull
     ./install.sh
-
-At this time some manual configuration is required to properly display the max range graph. Please
-refer to the project wiki for more infromation on what will need to be changed as well as how to
-display bandwidth usage for a wireless connections. https://github.com/jprochazka/adsb-feeder/wiki
 
 ### What Can Be Installed
 
