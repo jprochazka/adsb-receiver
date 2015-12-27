@@ -205,6 +205,11 @@ if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
         echo -e "\033[37m"
         sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=3048,12192"
     fi
+else
+    # Heywhatsthis.com upintheair.json file already exists.
+    echo -e "\033[33m"
+    echo "Exisitng heywhatsthat.com position data found."
+    echo -e "Skipping terrain limit ring setup...\033[37m"
 fi
 
 ## DISPLAY MESSAGE STATING DUMP1090-MUTABILITY SETUP IS COMPLETE
