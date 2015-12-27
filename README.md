@@ -6,10 +6,19 @@ in order by the main install script depending on the installation options choose
 
 ### Obtaining And Using This Software
 
+On new installations use the following commands...
+
     sudo apt-get install git
+    cd ~/
     git clone https://github.com/jprochazka/adsb-feeder.git
-    cd adsb-feeder
+    cd ~/adsb-feeder
     chmod +x install.sh
+    ./install.sh
+    
+If updating software previously installed using these scripts use the following commands...
+
+    cd ~/adsb-feeder
+    git pull
     ./install.sh
 
 At this time some manual configuration is required to properly display the max range graph. Please
