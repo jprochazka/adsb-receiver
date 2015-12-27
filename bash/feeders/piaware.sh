@@ -31,6 +31,9 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Set to the most current stable version of PiAware available.
+CURRENTVERSION="2.1-5"
+
 BUILDDIR=${PWD}
 
 ## FUNCTIONS
@@ -123,7 +126,7 @@ else
     echo -e "\033[37m"
     git clone https://github.com/flightaware/piaware_builder.git
     cd $BUILDDIR/piaware_builder
-    git checkout tags/v2.1-5
+    git checkout tags/v${CURRENTVERSION}
 fi
 
 ## BUILD THE PIAWARE PACKAGE
@@ -140,7 +143,7 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_2.1-5_*.deb
+sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSION}_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
