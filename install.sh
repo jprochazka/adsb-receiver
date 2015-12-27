@@ -212,12 +212,11 @@ EOF
 
 # Message displayed if dump1090-mutability is installed.
 read -d '' DUMP1090INSTALLED <<"EOF"
-The dump1090-mutability package appears to be installed on your device.
+The dump1090-mutability package appears to be installed on your device However...
 
-However...
 The dump1090-mutability source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.
 
-Do you wish to download, build, and reinstall this package?
+Download, build, and reinstall this package?
 EOF
 
 # Message displayed if dump1090-mutability is not installed.
@@ -290,9 +289,9 @@ DUMP1090CHOICE=1
 # Check if the dump1090-mutability package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
-    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 16 65
     DUMP1090REINSTALL=$?
-    if [ $DUMP1090REINSTALL = 1 ]; then
+    if [ $DUMP1090REINSTALL = 0 ]; then
         DUMP1090CHOICE=0
     fi
 else
