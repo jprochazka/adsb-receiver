@@ -216,7 +216,7 @@ EOF
 read -d '' DUMP1090INSTALLED <<"EOF"
 The dump1090-mutability package appears to be installed on your device However...
 
-The dump1090-mutability source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.
+The dump1090-mutability v1.15~dev source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.
 
 Download, build, and reinstall this package?
 EOF
