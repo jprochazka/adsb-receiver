@@ -1,5 +1,12 @@
 # Credits :airplane:
 
+First off I would like to thank those who are actively contributing directly to this project. Their 
+contributions in the form of code, issues, and suggestions have done much to greatly improve the
+quality of this project.
+
+* @mgunther68
+* @dschaper
+
 I would like to thank the developers and contributors to the following projects. Without their
 hard work and dedication this project would not have been possible.
 
