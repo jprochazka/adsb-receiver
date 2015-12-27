@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Assign the Lighthttpd document root directory to a variable.
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
