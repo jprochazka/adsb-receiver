@@ -22,7 +22,8 @@ display bandwidth usage for a wireless connections. https://github.com/jprochazk
 #### Updating existing installations...
 
     cd ~/adsb-feeder
-    git pull
+    git fetch --all
+    git reset --hard origin/master
     ./install.sh
 
 ### What Can Be Installed
