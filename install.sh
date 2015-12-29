@@ -37,6 +37,10 @@
 ##############
 ## VARIABLES
 
+PIAWAREVERSION="2.1-5"
+PFCLIENTI386VERSION="3.1.201"
+PFCLIENTARMVERSION="3.0.2080"
+
 SCRIPTDIR=${PWD}
 BUILDDIR="$SCRIPTDIR/build"
 
@@ -212,7 +216,11 @@ EOF
 
 # Message displayed if dump1090-mutability is installed.
 read -d '' DUMP1090INSTALLED <<"EOF"
-The dump1090-mutability package appears to be installed on your system. Mode S decoder setup will be skipped.
+The dump1090-mutability package appears to be installed on your device However...
+
+The dump1090-mutability v1.15~dev source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.
+
+Download, build, and reinstall this package?
 EOF
 
 # Message displayed if dump1090-mutability is not installed.
@@ -282,11 +290,15 @@ fi
 ## DUMP1090-MUTABILITY CHECK
 
 DUMP1090CHOICE=1
+DUMP1090REINSTALL=1
 # Check if the dump1090-mutability package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
-    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --msgbox "$DUMP1090INSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 16 65
+    DUMP1090REINSTALL=$?
+    if [ $DUMP1090REINSTALL = 0 ]; then
+        DUMP1090CHOICE=0
+    fi
 else
     whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Not Installed" --yesno "$DUMP1090NOTINSTALLED" 10 65
     DUMP1090CHOICE=$?
@@ -303,22 +315,39 @@ fi
 
 declare array FEEDERLIST
 
-# Check if the PiAware package is installed.
+# Check if the PiAware package is installed or if it needs upgraded.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The PiAware package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
     FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
+else
+    # Check if a newer version can be installed.
+    if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWAREVERSION}") -eq 0 ]; then
+        FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
+    fi
 fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Plane Finder ADS-B Client package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
+else
+    # Set version depending on the device architecture.
+    PFCLIENTVERSION=$PFCLIENTARMVERSION
+
+    ## The i386 version even though labeled as 3.1.201 is in fact reported as 3.0.2080.
+    ## So for now we will skip the architecture check and use the ARM version variable for both.
+    #if [[ `uname -m` != "armv7l" ]]; then
+    #    PFCLIENTVERSION=$PFCLIENTI386VERSION
+    #fi
+
+    # Check if a newer version can be installed.
+    if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PFCLIENTVERSION}") -eq 0 ]; then
+        FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client (upgrade)' '' OFF)
+    fi
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -q "${BUILDDIR}/adsbexchange-maint.sh &" /etc/rc.local; then
+if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
@@ -328,7 +357,7 @@ declare FEEDERCHOICES
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
     # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
-    whiptail --title "$TITLE" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 42 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
     whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 10 65
@@ -375,24 +404,37 @@ if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
     CONFIRMATION="${CONFIRMATION}\n"
 fi
 
-# If the user decided rto install software...
+# If the user decided to install software...
 if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
     CONFIRMATION="${CONFIRMATION}\nThe following software will be installed:\n"
 
     if [ $DUMP1090CHOICE = 0 ]; then
-        CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+        if [ $DUMP1090REINSTALL -eq 0 ]; then
+            CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability (reinstall)"
+        else
+            CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+        fi
     fi
 
     if [ -s FEEDERCHOICES ]; then
         while read FEEDERCHOICE
         do
             case $FEEDERCHOICE in
-                "FlightAware PiAware") CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
-                ;;
-                "Plane Finder ADS-B Client") CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
-                ;;
-                "ADS-B Exchange Script") CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
-                ;;
+                "FlightAware PiAware")
+                    CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
+                    ;;
+                "FlightAware PiAware (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware (upgrade)"
+                    ;;
+                "Plane Finder ADS-B Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
+                    ;;
+                "Plane Finder ADS-B Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client (upgrade)"
+                    ;;
+                "ADS-B Exchange Script")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
+                    ;;
             esac
         done < FEEDERCHOICES
     fi
@@ -454,11 +496,14 @@ if [ -s FEEDERCHOICES ]; then
     while read FEEDERCHOICE
     do
         case $FEEDERCHOICE in
-            "FlightAware PiAware") RUNPIAWARESCRIPT=0
+            "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
+                RUNPIAWARESCRIPT=0
             ;;
-            "Plane Finder ADS-B Client") RUNPLANEFINDERSCRIPT=0
+            "Plane Finder ADS-B Client"|"Plane Finder ADS-B Client (upgrade)")
+                RUNPLANEFINDERSCRIPT=0
             ;;
-            "ADS-B Exchange Script") RUNADSBEXCHANGESCRIPT=0
+            "ADS-B Exchange Script")
+                RUNADSBEXCHANGESCRIPT=0
             ;;
         esac
     done < FEEDERCHOICES
@@ -475,9 +520,6 @@ fi
 if [ $RUNADSBEXCHANGESCRIPT = 0 ]; then
     InstallAdsbExchange
 fi
-
-
-
 
 ## Web portal.
 

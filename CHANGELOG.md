@@ -2,6 +2,13 @@
 
 The following is a history of the changes made to this project.
 
+## "Upgrade" Branch
+
+* Now asks if the user wishes to reinstall dump1090-mutability.
+* Added ability to upgrade FlightAware's PiAware if a newer verison is available.
+* Added ability to upgrade the Plane Finder ADS-B Client if a newer version is available.
+* PiAware mlatResultsFormat setting is no longer reset when ran more than once.
+
 ## December 25th, 2015
 
 * Scripts now properly detect if an ADS-B Exchange sharing has already set up.

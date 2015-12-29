@@ -31,6 +31,9 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Set to the most current stable version of PiAware available.
+CURRENTVERSION="2.1-5"
+
 BUILDDIR=${PWD}
 
 ## FUNCTIONS
@@ -106,14 +109,25 @@ CheckPackage tcllib
 CheckPackage tcl-tls
 CheckPackage itcl3
 
-## DOWNLOAD THE PIAWARE SOURCE
+## DOWNLOAD OR UPDATE THE PIAWARE_BUILDER SOURCE
 
-echo -e "\033[33m"
-echo "Downloading the source code for PiAware Builder..."
-echo -e "\033[37m"
-git clone https://github.com/flightaware/piaware_builder.git
-cd $BUILDDIR/piaware_builder
-git checkout tags/v2.1-5
+# Check if the git repository already exists locally.
+if [ -d "$BUILDDIR/piaware_builder" ] && [ -d $BUILDDIR/piaware_builder/.git ]; then
+    # A directory with a git repository containing the source code exists.
+    echo -e "\033[33m"
+    echo "Updating the local piaware_builder git repository..."
+    echo -e "\033[37m"
+    cd $BUILDDIR/piaware_builder
+    git pull origin master
+else
+    # A directory containing the source code does not exist in the build directory.
+    echo -e "\033[33m"
+    echo "Cloning the piaware_builder git repository locally..."
+    echo -e "\033[37m"
+    git clone https://github.com/flightaware/piaware_builder.git
+    cd $BUILDDIR/piaware_builder
+    git checkout tags/v${CURRENTVERSION}
+fi
 
 ## BUILD THE PIAWARE PACKAGE
 
@@ -129,7 +143,7 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_2.1-5_*.deb
+sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSION}_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
@@ -153,20 +167,13 @@ read -p "Your FlightAware Login: " FALOGIN
 sudo piaware-config -user $FALOGIN -password
 
 echo -e "\033[33m"
-echo "PiAware now sends MLAT results to port 30104 by default. This change is to try to avoid accidentally"
-echo "feeding MLAT results to a Dump 1090 that is not MLAT-aware and may forward the results on unexpectedly."
-echo "Dump 1090 from Mutability should be MLAT-aware meaning it should be safe to remap the MLAT port back to"
-echo "it's original port number which saves having to manually configure Dump 1090 later if you decide you"
-echo "would like to feed MLAT data to Dump 1090. This choice is left up to you."
-echo -e "\033[37m"
-read -p "Remap the MLAT port to 30004 in PiAware?: [Y/n] " MLATPORT
-
-if [[ ! $CONTINUE =~ ^[Nn]$ ]]; then
-    echo -e "\033[33m"
-    printf "Remapping MLAT results to use port 30004..."
-    sudo piaware-config -mlatResultsFormat beast,connect,localhost:30004
-    echo -e "\033[32m [OK]"
-fi
+printf "Remapping MLAT results to use port 30004..."
+ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
+MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
+CLEANFORMAT=`sed 's/beast,connect,localhost:30004//g' <<< $MLATRESULTS`
+FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30004" | sed -e 's/^[ \t]*//'
+sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
+echo -e "\033[32m [OK]"
 
 echo -e "\e[33m"
 echo "Restarting PiAware to ensure all changes are applied..."
