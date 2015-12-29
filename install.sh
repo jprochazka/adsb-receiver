@@ -38,6 +38,8 @@
 ## VARIABLES
 
 PIAWAREVERSION="2.1-5"
+PFCLIENTI386VERSION="3.1.201"
+PFCLIENTARMVERSION="3.0.2080"
 
 SCRIPTDIR=${PWD}
 BUILDDIR="$SCRIPTDIR/build"
@@ -314,7 +316,6 @@ fi
 declare array FEEDERLIST
 
 # Check if the PiAware package is installed or if it needs upgraded.
-PIAWAREUPGRADE=1
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The PiAware package appear to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
@@ -322,15 +323,27 @@ else
     # Check if a newer version can be installed.
     if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWAREVERSION}") -eq 0 ]; then
         FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
-        PIAWAREUPGRADE=0
     fi
 fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Plane Finder ADS-B Client package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
+else
+    # Set version depending on the device architecture.
+    PFCLIENTVERSION=$PFCLIENTARMVERSION
+
+    ## The i386 version even though labeled as 3.1.201 is in fact reported as 3.0.2080.
+    ## So for now we will skip the architecture check and use the ARM version variable for both.
+    #if [[ `uname -m` != "armv7l" ]]; then
+    #    PFCLIENTVERSION=$PFCLIENTI386VERSION
+    #fi
+
+    # Check if a newer version can be installed.
+    if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PFCLIENTVERSION}") -eq 0 ]; then
+        FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client (upgrade)' '' OFF)
+    fi
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
@@ -344,7 +357,7 @@ declare FEEDERCHOICES
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
     # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
-    whiptail --title "$TITLE" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 42 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
     whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 10 65
@@ -416,6 +429,9 @@ if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES 
                 "Plane Finder ADS-B Client")
                     CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
                     ;;
+                "Plane Finder ADS-B Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client (upgrade)"
+                    ;;
                 "ADS-B Exchange Script")
                     CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
                     ;;
@@ -483,7 +499,7 @@ if [ -s FEEDERCHOICES ]; then
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
                 RUNPIAWARESCRIPT=0
             ;;
-            "Plane Finder ADS-B Client")
+            "Plane Finder ADS-B Client"|"Plane Finder ADS-B Client (upgrade)")
                 RUNPLANEFINDERSCRIPT=0
             ;;
             "ADS-B Exchange Script")
@@ -504,9 +520,6 @@ fi
 if [ $RUNADSBEXCHANGESCRIPT = 0 ]; then
     InstallAdsbExchange
 fi
-
-
-
 
 ## Web portal.
 
