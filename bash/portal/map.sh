@@ -42,5 +42,7 @@ DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 echo -e "\033[33m"
 echo "Placing map HTML file in Lighttpd's www root directory..."
 echo -e "\033[37m"
-sudo mkdir ${DOCUMENTROOT}/map
+if [ ! -d "${DOCUMENTROOT}/map" ]; then
+    sudo mkdir ${DOCUMENTROOT}/map
+fi
 sudo cp -r $BUILDDIR/portal/map/html/* ${DOCUMENTROOT}/map/

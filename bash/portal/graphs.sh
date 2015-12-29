@@ -186,7 +186,9 @@ sudo /etc/init.d/collectd force-reload
 echo -e "\033[33m"
 echo "Placing performance graph HTML file in Lighttpd's www root directory..."
 echo -e "\033[37m"
-sudo mkdir ${DOCUMENTROOT}/graphs
+if [ ! -d "${DOCUMENTROOT}/graphs" ]; then
+    sudo mkdir ${DOCUMENTROOT}/graphs
+fi
 sudo cp -r $BUILDDIR/portal/graphs/html/* ${DOCUMENTROOT}/graphs/
 
 ## EDIT CRONTAB
