@@ -86,6 +86,7 @@ clear
 echo -e "\033[33m"
 echo "Installing packages needed to build and fulfill dependencies..."
 echo -e "\033[37m"
+CheckPackage cron
 CheckPackage collectd
 CheckPackage rrdtool
 
