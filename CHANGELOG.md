@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## "Upgrade" Branch
+## December 29th, 2015
 
 * Now asks if the user wishes to reinstall dump1090-mutability.
 * Added ability to upgrade FlightAware's PiAware if a newer verison is available.
