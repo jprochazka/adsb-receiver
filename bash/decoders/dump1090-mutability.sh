@@ -87,7 +87,7 @@ CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
 CheckPackage debhelper
-CheckPackage systemd-cron
+CheckPackage cron
 CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
