@@ -172,6 +172,17 @@ ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlat
 MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
 CLEANFORMAT=`sed 's/beast,connect,localhost:30004//g' <<< $MLATRESULTS`
 FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30004" | sed -e 's/^[ \t]*//'
+
+# Make sure that the mlatResultsFormat setting is not left blank if no other settings exist.
+if [ -n "$FINALFORMAT" ]; then
+    sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
+else
+    sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30004"
+fi
+
+exit 0
+
+
 sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
 echo -e "\033[32m [OK]"
 
