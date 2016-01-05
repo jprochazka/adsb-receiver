@@ -180,10 +180,6 @@ else
     sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30004"
 fi
 
-exit 0
-
-
-sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
 echo -e "\033[32m [OK]"
 
 echo -e "\e[33m"
