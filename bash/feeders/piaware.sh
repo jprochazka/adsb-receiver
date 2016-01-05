@@ -32,7 +32,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Set to the most current stable version of PiAware available.
-CURRENTVERSION="2.1-5"
+CURRENTVERSION="2.1-5-jessie"
 
 BUILDDIR=${PWD}
 
