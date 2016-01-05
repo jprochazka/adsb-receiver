@@ -2,6 +2,13 @@
 
 The following is a history of the changes made to this project.
 
+## January 5th, 2016
+
+* The PiAware 2.1-5-jessie tag is now used when installing the PiAware software to address certificate errors.
+* There is a known issue with upgrade detection for PiAware since changing to the 2.1-5-jessie tag.
+* Fixed PiAware mlatResultsFormat setting were not being set on clean installations.
+* Changes relating to Orange Pi compatability mainly pertaining to prerequisite packages.
+
 ## December 29th, 2015
 
 * Now asks if the user wishes to reinstall dump1090-mutability.
