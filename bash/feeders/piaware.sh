@@ -34,6 +34,11 @@
 # Set to the most current stable version of PiAware available.
 CURRENTVERSION="2.1-5-jessie"
 
+# This next line was added temporarily due to the fact the version of PiAware containing a certificate
+# error fix is still pacakaged with the version number 2.1-5. This should be able to be removed once
+# PiAware's versioning matches back up with that of the tag being used to build the packages.
+CURRENTVERSIONNAME="2.1-5"
+
 BUILDDIR=${PWD}
 
 ## FUNCTIONS
@@ -143,7 +148,12 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSION}_*.deb
+
+### TEMPORARY FIX #########################################################################
+# READ THE COMMENT PERTAINING TO THE VARIABLE CURRENTVERSIONNAME AT THE TOP OF THE SCRIPT #
+###########################################################################################
+#sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSION}_*.deb
+sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSIONNAME}_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
