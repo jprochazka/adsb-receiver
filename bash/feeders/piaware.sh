@@ -41,36 +41,7 @@ CURRENTVERSIONNAME="2.1-5"
 
 BUILDDIR=${PWD}
 
-## FUNCTIONS
-
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
+source ../functions.sh
 
 clear
 
