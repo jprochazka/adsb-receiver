@@ -41,10 +41,11 @@ PIAWAREVERSION="2.1-5-jessie"
 PFCLIENTI386VERSION="3.1.201"
 PFCLIENTARMVERSION="3.0.2080"
 
-SCRIPTDIR=${PWD}
-BUILDDIR="$SCRIPTDIR/build"
+BASEDIR=${PWD}
+BASHDIR="$BASEDIR/bash"
+BUILDDIR="$BASEDIR/build"
 
-source ./bash/functions.sh
+source $BASHDIR/functions.sh
 
 # Download the latest package lists for enabled repositories and PPAs.
 function AptUpdate() {
@@ -93,9 +94,9 @@ function InstallDump1090() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the dump1090-mutability installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
-    $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/decoders/dump1090-mutability.sh
+    $BASHDIR/decoders/dump1090-mutability.sh
+    cd $BASEDIR
 }
 
 # Download, build and then install the PiAware package.
@@ -104,9 +105,9 @@ function InstallPiAware() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the PiAware installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/piaware.sh
-    $SCRIPTDIR/bash/feeders/piaware.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/feeders/piaware.sh
+    $BASHDIR/feeders/piaware.sh
+    cd $BASEDIR
 }
 
 # Download and install the Plane Finder ADS-B Client package.
@@ -115,9 +116,9 @@ function InstallPlaneFinder() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the Plane Finder ADS-B Client installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/planefinder.sh
-    $SCRIPTDIR/bash/feeders/planefinder.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/feeders/planefinder.sh
+    $BASHDIR/feeders/planefinder.sh
+    cd $BASEDIR
 }
 
 # Setup the ADS-B Exchange feed.
@@ -134,12 +135,12 @@ function InstallAdsbExchange() {
 # Setup and execute the web portal installation scripts.
 function InstallWebPortal() {
     clear
-    cd $SCRIPTDIR
+    cd $BUILDDIR
     echo -e "\033[33mExecuting the web portal installation scripts..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/portal/install.sh
-    $SCRIPTDIR/bash/portal/install.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/portal/install.sh
+    $BASHDIR/portal/install.sh
+    cd $BASEDIR
 }
 
 

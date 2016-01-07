@@ -31,9 +31,10 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+BUILDDIR=$PWD
+DUMP1090DIR="$BUILDDIR/dump1090"
 
-source ../functions.sh
+source ../bash/functions.sh
 
 clear
 
@@ -68,12 +69,12 @@ CheckPackage lighttpd
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
 # Check if the git repository already exists locally.
-if [ -d "$BUILDDIR/dump1090" ] && [ -d $BUILDDIR/dump1090/.git ]; then
+if [ -d $DUMP1090DIR ] && [ -d $DUMP1090DIR/.git ]; then
     # A directory with a git repository containing the source code exists.
     echo -e "\033[33m"
     echo "Updating the local dump1090-mutability git repository..."
     echo -e "\033[37m"
-    cd $BUILDDIR/dump1090
+    cd $DUMP1090DIR
     git pull origin master
 else
     # A directory containing the source code does not exist in the build directory.
@@ -88,7 +89,7 @@ fi
 echo -e "\033[33m"
 echo "Building the dump1090-mutability package..."
 echo -e "\033[37m"
-cd $BUILDDIR/dump1090
+cd $DUMP1090DIR
 dpkg-buildpackage -b
 
 ## INSTALL THE DUMP1090-MUTABILITY PACKAGE
@@ -138,7 +139,7 @@ sudo /etc/init.d/dump1090-mutability start
 # Check if the heywhatsthis.com range position file has already been downloaded.
 if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
     echo -e "\033[33m"
-    echo "Dump1090-mutability is able to display terrain limit rings using data obtained."
+    echo "Dump1090-mutability is able to display terrain limit rings using data obtained"
     echo "from the website http://www.heywhatsthat.com. Some work will be required on your"
     echo "part including visiting http://www.heywhatsthat.com and generating a new"
     echo "panorama set to your location."
@@ -148,7 +149,6 @@ if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
     if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then 
         echo -e "\033[31m"
         echo "READ THE FOLLOWING INSTRUCTION CAREFULLY!"
-        echo ""
         echo -e "\033[33m"
         echo "To set up terrain limit rings you will need to first generate a panorama on the website"
         echo "heywhatsthat.com. To do so visit the following URL:"
