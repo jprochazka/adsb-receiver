@@ -127,9 +127,9 @@ function InstallAdsbExchange() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/adsbexchange.sh
-    $SCRIPTDIR/bash/feeders/adsbexchange.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/bash/feeders/adsbexchange.sh
+    $BASHDIR/feeders/adsbexchange.sh
+    cd $BASEDIR
 }
 
 # Setup and execute the web portal installation scripts.

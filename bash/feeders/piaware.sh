@@ -40,8 +40,9 @@ CURRENTVERSION="2.1-5-jessie"
 CURRENTVERSIONNAME="2.1-5"
 
 BUILDDIR=${PWD}
+PIAWAREDIR="$PWD/piaware_builder"
 
-source ../functions.sh
+source ../bash/functions.sh
 
 clear
 
@@ -88,12 +89,12 @@ CheckPackage itcl3
 ## DOWNLOAD OR UPDATE THE PIAWARE_BUILDER SOURCE
 
 # Check if the git repository already exists locally.
-if [ -d "$BUILDDIR/piaware_builder" ] && [ -d $BUILDDIR/piaware_builder/.git ]; then
+if [ -d $PIAWAREDIR ] && [ -d $PIAWAREDIR/.git ]; then
     # A directory with a git repository containing the source code exists.
     echo -e "\033[33m"
     echo "Updating the local piaware_builder git repository..."
     echo -e "\033[37m"
-    cd $BUILDDIR/piaware_builder
+    cd $PIAWAREDIR
     git pull origin master
 else
     # A directory containing the source code does not exist in the build directory.
@@ -101,7 +102,7 @@ else
     echo "Cloning the piaware_builder git repository locally..."
     echo -e "\033[37m"
     git clone https://github.com/flightaware/piaware_builder.git
-    cd $BUILDDIR/piaware_builder
+    cd $PIAWAREDIR
     git checkout tags/v${CURRENTVERSION}
 fi
 
@@ -111,7 +112,7 @@ echo -e "\033[33m"
 echo "Building the PiAware package..."
 echo -e "\033[37m"
 ./sensible-build.sh
-cd $BUILDDIR/piaware_builder/package
+cd $PIAWAREDIR/package
 dpkg-buildpackage -b
 
 ## INSTALL THE PIAWARE PACKAGE
@@ -124,11 +125,11 @@ echo -e "\033[37m"
 # READ THE COMMENT PERTAINING TO THE VARIABLE CURRENTVERSIONNAME AT THE TOP OF THE SCRIPT #
 ###########################################################################################
 #sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSION}_*.deb
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSIONNAME}_*.deb
+sudo dpkg -i $PIAWAREDIR/piaware_${CURRENTVERSIONNAME}_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
     echo "The piaware package did not install properly!"
     echo -e "\033[33m"

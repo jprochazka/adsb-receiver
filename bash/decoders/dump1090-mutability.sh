@@ -102,7 +102,7 @@ sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${Status}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
     echo "The dump1090-mutability package did not install properly!"
     echo -e "\033[33m"

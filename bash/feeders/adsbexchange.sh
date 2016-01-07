@@ -31,9 +31,10 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+BUILDDIR=$PWD
+ADSBEXCHANGEDIR="$PWD/adsbexchange"
 
-source ../functions.sh
+source ../bash/functions.sh
 
 clear
 
@@ -79,7 +80,7 @@ fi
 
 echo -e "\033[33mSetting permissions on adsbexchange-maint.sh..."
 echo -e "\033[37m"
-sudo chmod +x $BUILDDIR/adsbexchange/adsbexchange-maint.sh
+sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-maint.sh
 
 echo -e "\033[33mAdding startup line to rc.local..."
 echo -e "\033[37m"
@@ -90,7 +91,7 @@ lnum=($(sed -n '/exit 0/=' /etc/rc.local))
 
 echo -e "\033[33mExecuting adsbexchange-maint.sh..."
 echo -e "\033[37m"
-sudo $BUILDDIR/adsbexchange/adsbexchange-maint.sh &
+sudo $ADSBEXCHANGEDIR/adsbexchange-maint.sh &
 
 echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."

@@ -31,14 +31,14 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+BUILDDIR=$PWD
 
 ## DECLARE THE CURRENT VERSIONS OF THE SOFTWARE
 
 ARMVERSION="3.1.201"
 I386VERSION="3.0.2080"
 
-source functions.sh
+source ../bash/functions.sh
 
 clear
 
@@ -104,7 +104,7 @@ fi
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${Status}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
     echo "The piaware package did not install properly!"
     echo -e "\033[33m"

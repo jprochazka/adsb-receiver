@@ -69,7 +69,7 @@ function CheckPackage {
             fi
 
             # Attempt to install the required package.
-            echo ""
+            echo -e "\033[37m"
             ATTEMPT=$((ATTEMPT+1))
             sudo apt-get install -y $1
             echo ""
