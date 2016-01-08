@@ -2,6 +2,13 @@
 
 The following is a history of the changes made to this project.
 
+## January 8th, 2016
+
+* Behind the scenes work mainly dealling with cleaning up the scripting a little.
+* Consolidated software version variables into a single file.
+* The CheckPackage function is no longer repeatative throughout all the scripts needing it.
+* Removed the ability to use rpi-updater to update Raspberry Pi firmware from the scripts.
+
 ## January 5th, 2016
 
 * The PiAware 2.1-5-jessie tag is now used when installing the PiAware software to address certificate errors.
