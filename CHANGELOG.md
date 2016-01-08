@@ -4,7 +4,7 @@ The following is a history of the changes made to this project.
 
 ## January 8th, 2016
 
-* Now asks user for the latitude and longitude of the feeder.
+* The dump1090-mutability install Script now asks user for the latitude and longitude of the feeder.
 * Dump1090-mutability is now set to listen for BEAST input on port 30104.
 * PiAware is no longer configured to send MLAT data over port 30001.
 * Behind the scenes work mainly dealling with cleaning up the scripting a little.
