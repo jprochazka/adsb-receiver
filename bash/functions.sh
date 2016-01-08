@@ -81,3 +81,19 @@ function CheckPackage {
     done
 }
 
+#################################################################################
+# Change a setting in a configuration file.
+# The function expects 3 parameters to be passed to it in the following order.
+# ChangeConfig KEY VALUE FILE
+
+function ChangeConfig {
+    # For clearity I am assigning the parameters to named variables.
+    KEY=$1
+    VALUE=$2
+    FILE=$3
+
+    # Use sed to locate the "KEY" then replace the "VALUE", the portion after the equals sign, in the specified "FILE".
+    # This function should work with any configuration file formated KEY="VALUE".
+    echo -e "\033[33mChanging the value for $KEY to $VALUE in the file $FILE...\033[37m"
+    sudo sed -i "s/\($1 *= *\).*/\1\"$2\"/" $3
+}

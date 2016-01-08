@@ -112,13 +112,6 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     exit 1
 fi
 
-## START DUMP1090-MUTABILITY
-
-echo -e "\033[33m"
-echo "Starting dump1090-mutability..."
-echo -e "\033[37m"
-sudo /etc/init.d/dump1090-mutability start
-
 ## CONFIGURE LIGHTTPD
 
 echo -e "\033[33m"
@@ -127,12 +120,30 @@ echo -e "\033[37m"
 sudo lighty-enable-mod dump1090
 sudo /etc/init.d/lighttpd force-reload
 
-## START DUMP1090-MUTABILITY
+## DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
 
+# Set latitude and longitude.
+echo -e "\033[31m"
+echo "SET THE LATITUDE AND LONGITUDE OF YOUR FEEDER"
 echo -e "\033[33m"
-echo "Startng dump1090-mutability..."
+echo "In order for some performance graphs to work properly you will need to"
+echo "set the latitude and longitude of your feeder. If you do not know the"
+echo "latitude and longitude of your feeder you can find out this information"
+echo "by using Geocode by Address tool found on my web site."
+echo ""
+echo "  https://www.swiftbyte.com/toolbox/geocode"
 echo -e "\033[37m"
-sudo /etc/init.d/dump1090-mutability start
+read -p "Feeder Latitude: " FEEDERLAT
+read -p "Feeder Longitude: " FEEDERLON
+echo ""
+ChangeConfig "LAT" $FEEDERLAT "/etc/default/dump1090-mutability"
+ChangeConfig "LON" $FEEDERLON "/etc/default/dump1090-mutability"
+
+# Set dump190-mutability's BEAST_INPUT_PORT to 30104.
+echo -e "\033[33m"
+echo "Configuring dump1090-mutability to listen for BEAST input on port 30104..."
+echo -e "\033[37m"
+ChangeConfig "BEAST_INPUT_PORT" "30104" "/etc/default/dump1090-mutability"
 
 ## HEYWHATSTHAT.COM TERRAIN LIMIT RINGS
 
@@ -183,6 +194,13 @@ else
     echo "Exisitng heywhatsthat.com position data found."
     echo -e "Skipping terrain limit ring setup...\033[37m"
 fi
+
+## START DUMP1090-MUTABILITY
+
+echo -e "\033[33m"
+echo "Startng dump1090-mutability..."
+echo -e "\033[37m"
+sudo /etc/init.d/dump1090-mutability start
 
 ## DISPLAY MESSAGE STATING DUMP1090-MUTABILITY SETUP IS COMPLETE
 

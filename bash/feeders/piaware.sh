@@ -133,28 +133,16 @@ fi
 
 ## CONFIGURE FLIGHTAWARE
 
+echo -e "\033[31m"
+echo "CLAIM YOUR PIAWARE DEVICE"
 echo -e "\033[33m"
 echo "Please supply your FlightAware login in order to claim this device."
 echo "After supplying your login PiAware will ask you to enter your password for verification."
+echo "If you decide not to supply a login and password you should still be able to claim your"
+echo "feeder by visting the page http://flightaware.com/adsb/piaware/claim."
 echo -e "\033[37m"
 read -p "Your FlightAware Login: " FALOGIN
 sudo piaware-config -user $FALOGIN -password
-
-echo -e "\033[33m"
-printf "Remapping MLAT results to use port 30004..."
-ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
-MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
-CLEANFORMAT=`sed 's/beast,connect,localhost:30004//g' <<< $MLATRESULTS`
-FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30004" | sed -e 's/^[ \t]*//'
-
-# Make sure that the mlatResultsFormat setting is not left blank if no other settings exist.
-if [ -n "$FINALFORMAT" ]; then
-    sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
-else
-    sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30004"
-fi
-
-echo -e "\033[32m [OK]"
 
 echo -e "\e[33m"
 echo "Restarting PiAware to ensure all changes are applied..."
