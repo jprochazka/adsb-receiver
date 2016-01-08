@@ -32,7 +32,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Set to the most current stable version of PiAware available.
-CURRENTVERSION="2.1-5-jessie"
+CURRENTVERSION="5c77c4924"
 
 # This next line was added temporarily due to the fact the version of PiAware containing a certificate
 # error fix is still pacakaged with the version number 2.1-5. This should be able to be removed once
