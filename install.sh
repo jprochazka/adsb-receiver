@@ -67,25 +67,6 @@ function UpdateOperatingSystem() {
     read -p "Press enter to continue..." CONTINUE
 }
 
-# Update Raspberry Pi firmware.
-function UpdateFirmware() {
-    clear
-    CheckPackage rpi-update
-    echo -e "\033[33m"
-    echo "Updating Raspberry Pi firmware..."
-    echo -e "\033[37m"
-    sudo rpi-update
-    echo -e "\033[33m"
-    echo "Your Raspberry Pi firmware is now up to date."
-    echo "If in fact your firmware was update it is recommended that you restart your device now."
-    echo "After the reboot execute this script again to enter the installation process once more."
-    echo -e "\033[37m"
-    read -p "Would you like to reboot your device now? [y/N] " REBOOT
-    if [[ $REBOOT =~ ^[Yy]$ ]]; then
-        sudo reboot
-    fi
-}
-
 # Download, build and then install the dump1090-mutability package.
 function InstallDump1090() {
     clear
@@ -172,16 +153,6 @@ It is recommended that you update your system before building and/or installing 
 Update system before installing any ADS-B feeder related software?
 EOF
 
-# Message displayed asking to update the Raspberry Pi firmware.
-read -d '' UPDATEFIRMWAREFIRST <<"EOF"
-This script has detected that this may be a Raspberry Pi. If this is in fact a Raspberry Pi this script can update the system's firmware now as well.
-
-If you choose to update your Raspberry Pi firmware this script will check for the existance of the package rpi-update and install it if it is not install already. After confirming that rpi-update is installed it will be used to update your firmware.
-
-Is this in fact a Raspberry Pi and if so do you want to update
-the firmware now? (This will require a reboot.)
-EOF
-
 # Message displayed if dump1090-mutability is installed.
 read -d '' DUMP1090INSTALLED <<"EOF"
 The dump1090-mutability package appears to be installed on your device However...
@@ -247,13 +218,6 @@ fi
 # Ask to update the operating system.
 whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 10 65
 UPDATEOS=$?
-
-# Ask to update the Raspberry Pi firmware.
-UPDATEFIRMWARENOW=1
-if [[ `uname -m` == "armv7l" ]]; then
-    whiptail --backtitle "$BACKTITLE" --title "Update Raspberry Pi Firmware" --yesno "$UPDATEFIRMWAREFIRST" 10 65
-    UPDATEFIRMWARENOW=$?
-fi
 
 ## DUMP1090-MUTABILITY CHECK
 
@@ -340,7 +304,7 @@ DOINSTALLWEBPORTAL=$?
 ## CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ $UPDATEOS = 1 ] && [ $UPDATEFIRMWARENOW = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
+if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
     whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
     echo -e "\033[31m"
@@ -357,7 +321,7 @@ fi
 
 declare CONFIRMATION
 # If the user decided to install updates...
-if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
+if [ $UPDATEOS = 0 ]; then
     CONFIRMATION="The following actions will be performed:\n"
 
     if [ $UPDATEOS = 0 ]; then
@@ -365,10 +329,6 @@ if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
         CONFIRMATION="${CONFIRMATION}\n  * Operating system updates will be applied."
     fi
 
-    if [ $UPDATEFIRMWARENOW = 0 ]; then
-        # Firmware update message.
-        CONFIRMATION="${CONFIRMATION}\n  * Raspberry Pi firmware updates will be applied."
-    fi
     CONFIRMATION="${CONFIRMATION}\n"
 fi
 
@@ -440,10 +400,6 @@ AptUpdate
 
 if [ $UPDATEOS = 0 ]; then
     UpdateOperatingSystem
-fi
-
-if [ $UPDATEFIRMWARENOW = 0 ]; then
-    UpdateFirmware
 fi
 
 ## Mode S decoder.
