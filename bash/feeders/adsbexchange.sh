@@ -31,38 +31,14 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+## VARIABLES
 
-## FUNCTIONS
+BUILDDIR=$PWD
+ADSBEXCHANGEDIR="$BUILDDIR/adsbexchange"
 
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
+source ../bash/functions.sh
+
+## INFORMATIVE MESSAAGE ABOUT THIS SOFTWARE
 
 clear
 
@@ -108,7 +84,7 @@ fi
 
 echo -e "\033[33mSetting permissions on adsbexchange-maint.sh..."
 echo -e "\033[37m"
-sudo chmod +x $BUILDDIR/adsbexchange/adsbexchange-maint.sh
+sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-maint.sh
 
 echo -e "\033[33mAdding startup line to rc.local..."
 echo -e "\033[37m"
@@ -119,7 +95,7 @@ lnum=($(sed -n '/exit 0/=' /etc/rc.local))
 
 echo -e "\033[33mExecuting adsbexchange-maint.sh..."
 echo -e "\033[37m"
-sudo $BUILDDIR/adsbexchange/adsbexchange-maint.sh &
+sudo $ADSBEXCHANGEDIR/adsbexchange-maint.sh &
 
 echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."

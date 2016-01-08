@@ -31,43 +31,14 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+## VARIABLES
 
-## DECLARE THE CURRENT VERSIONS OF THE SOFTWARE
+BUILDDIR=$PWD
 
-ARMVERSION="3.1.201"
-I386VERSION="3.0.2080"
+source ../bash/variables.sh
+source ../bash/functions.sh
 
-## FUNCTIONS
-
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
+## INFORMATIVE MESSAGE ABOUT THIS SOFTWARE
 
 clear
 
@@ -110,9 +81,9 @@ echo -e "\033[33m"
 echo "Downloading the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
-    wget http://client.planefinder.net/pfclient_${ARMVERSION}_armhf.deb -O $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
+    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONARM}_armhf.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
-    wget http://client.planefinder.net/pfclient_${I386VERSION}_i386.deb -O $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONI386}_i386.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
 fi
 
 ## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE
@@ -121,19 +92,19 @@ echo -e "\033[33m"
 echo "Installing the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
-    sudo dpkg -i $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
+    sudo dpkg -i $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
     if [[ `lsb_release -si` == "Debian" ]]; then
         # Force architecture if this is Debian.
-        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     else
-        sudo dpkg -i $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+        sudo dpkg -i $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     fi
 fi
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${Status}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
     echo "The piaware package did not install properly!"
     echo -e "\033[33m"

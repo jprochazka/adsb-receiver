@@ -34,48 +34,16 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-##############
 ## VARIABLES
 
-PIAWAREVERSION="2.1-5-jessie"
-PFCLIENTI386VERSION="3.1.201"
-PFCLIENTARMVERSION="3.0.2080"
+BASEDIR=$PWD
+BASHDIR="$BASEDIR/bash"
+BUILDDIR="$BASEDIR/build"
 
-SCRIPTDIR=${PWD}
-BUILDDIR="$SCRIPTDIR/build"
+source $BASHDIR/variables.sh
+source $BASHDIR/functions.sh
 
-
-##############
 ## FUNCTIONS
-
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
 
 # Download the latest package lists for enabled repositories and PPAs.
 function AptUpdate() {
@@ -99,34 +67,15 @@ function UpdateOperatingSystem() {
     read -p "Press enter to continue..." CONTINUE
 }
 
-# Update Raspberry Pi firmware.
-function UpdateFirmware() {
-    clear
-    CheckPackage rpi-update
-    echo -e "\033[33m"
-    echo "Updating Raspberry Pi firmware..."
-    echo -e "\033[37m"
-    sudo rpi-update
-    echo -e "\033[33m"
-    echo "Your Raspberry Pi firmware is now up to date."
-    echo "If in fact your firmware was update it is recommended that you restart your device now."
-    echo "After the reboot execute this script again to enter the installation process once more."
-    echo -e "\033[37m"
-    read -p "Would you like to reboot your device now? [y/N] " REBOOT
-    if [[ $REBOOT =~ ^[Yy]$ ]]; then
-        sudo reboot
-    fi
-}
-
 # Download, build and then install the dump1090-mutability package.
 function InstallDump1090() {
     clear
     cd $BUILDDIR
     echo -e "\033[33mExecuting the dump1090-mutability installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
-    $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/decoders/dump1090-mutability.sh
+    $BASHDIR/decoders/dump1090-mutability.sh
+    cd $BASEDIR
 }
 
 # Download, build and then install the PiAware package.
@@ -135,9 +84,9 @@ function InstallPiAware() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the PiAware installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/piaware.sh
-    $SCRIPTDIR/bash/feeders/piaware.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/feeders/piaware.sh
+    $BASHDIR/feeders/piaware.sh
+    cd $BASEDIR
 }
 
 # Download and install the Plane Finder ADS-B Client package.
@@ -146,9 +95,9 @@ function InstallPlaneFinder() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the Plane Finder ADS-B Client installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/planefinder.sh
-    $SCRIPTDIR/bash/feeders/planefinder.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/feeders/planefinder.sh
+    $BASHDIR/feeders/planefinder.sh
+    cd $BASEDIR
 }
 
 # Setup the ADS-B Exchange feed.
@@ -157,20 +106,20 @@ function InstallAdsbExchange() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/adsbexchange.sh
-    $SCRIPTDIR/bash/feeders/adsbexchange.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/bash/feeders/adsbexchange.sh
+    $BASHDIR/feeders/adsbexchange.sh
+    cd $BASEDIR
 }
 
 # Setup and execute the web portal installation scripts.
 function InstallWebPortal() {
     clear
-    cd $SCRIPTDIR
+    cd $BUILDDIR
     echo -e "\033[33mExecuting the web portal installation scripts..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/portal/install.sh
-    $SCRIPTDIR/bash/portal/install.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/portal/install.sh
+    $BASHDIR/portal/install.sh
+    cd $BASEDIR
 }
 
 
@@ -202,16 +151,6 @@ read -d '' UPDATEFIRST <<"EOF"
 It is recommended that you update your system before building and/or installing any ADS-B feeder related packages. This script can do this for you at this time if you like.
 
 Update system before installing any ADS-B feeder related software?
-EOF
-
-# Message displayed asking to update the Raspberry Pi firmware.
-read -d '' UPDATEFIRMWAREFIRST <<"EOF"
-This script has detected that this may be a Raspberry Pi. If this is in fact a Raspberry Pi this script can update the system's firmware now as well.
-
-If you choose to update your Raspberry Pi firmware this script will check for the existance of the package rpi-update and install it if it is not install already. After confirming that rpi-update is installed it will be used to update your firmware.
-
-Is this in fact a Raspberry Pi and if so do you want to update
-the firmware now? (This will require a reboot.)
 EOF
 
 # Message displayed if dump1090-mutability is installed.
@@ -280,13 +219,6 @@ fi
 whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 10 65
 UPDATEOS=$?
 
-# Ask to update the Raspberry Pi firmware.
-UPDATEFIRMWARENOW=1
-if [[ `uname -m` == "armv7l" ]]; then
-    whiptail --backtitle "$BACKTITLE" --title "Update Raspberry Pi Firmware" --yesno "$UPDATEFIRMWAREFIRST" 10 65
-    UPDATEFIRMWARENOW=$?
-fi
-
 ## DUMP1090-MUTABILITY CHECK
 
 DUMP1090CHOICE=1
@@ -332,12 +264,12 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 else
     # Set version depending on the device architecture.
-    PFCLIENTVERSION=$PFCLIENTARMVERSION
+    PFCLIENTVERSION=$PFCLIENTVERSIONARM
 
     ## The i386 version even though labeled as 3.1.201 is in fact reported as 3.0.2080.
     ## So for now we will skip the architecture check and use the ARM version variable for both.
     #if [[ `uname -m` != "armv7l" ]]; then
-    #    PFCLIENTVERSION=$PFCLIENTI386VERSION
+    #    PFCLIENTVERSION=$PFCLIENTVERSIONI386
     #fi
 
     # Check if a newer version can be installed.
@@ -372,7 +304,7 @@ DOINSTALLWEBPORTAL=$?
 ## CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ $UPDATEOS = 1 ] && [ $UPDATEFIRMWARENOW = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
+if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
     whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
     echo -e "\033[31m"
@@ -389,7 +321,7 @@ fi
 
 declare CONFIRMATION
 # If the user decided to install updates...
-if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
+if [ $UPDATEOS = 0 ]; then
     CONFIRMATION="The following actions will be performed:\n"
 
     if [ $UPDATEOS = 0 ]; then
@@ -397,10 +329,6 @@ if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
         CONFIRMATION="${CONFIRMATION}\n  * Operating system updates will be applied."
     fi
 
-    if [ $UPDATEFIRMWARENOW = 0 ]; then
-        # Firmware update message.
-        CONFIRMATION="${CONFIRMATION}\n  * Raspberry Pi firmware updates will be applied."
-    fi
     CONFIRMATION="${CONFIRMATION}\n"
 fi
 
@@ -472,10 +400,6 @@ AptUpdate
 
 if [ $UPDATEOS = 0 ]; then
     UpdateOperatingSystem
-fi
-
-if [ $UPDATEFIRMWARENOW = 0 ]; then
-    UpdateFirmware
 fi
 
 ## Mode S decoder.

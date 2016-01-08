@@ -31,15 +31,53 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=$PWD
+#######################################################################
+# Detect if a package is installed and if not attempt to install it.
 
-# Assign the Lighthttpd document root directory to a variable.
-RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+function CheckPackage {
+    ATTEMPT=1
+    MAXATTEMPTS=5
+    WAITTIME=5
 
-## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
+    while (( $ATTEMPT -le `(($MAXATTEMPTS + 1))` )); do
 
-echo -e "\033[33m"
-echo "Placing homepage HTML file in Lighttpd's www root directory..."
-echo -e "\033[37m"
-sudo cp -r $BUILDDIR/portal/map/html/* ${DOCUMENTROOT}/
+        # If the maximum attempts has been reached...
+        if [ $ATTEMPT -gt $MAXATTEMPTS ]; then
+            echo -e "\033[31m"
+            echo "#########################################"
+            echo "# INSTALLATION HALTED!                  #"
+            echo "# UNABLE TO INSTALL A REQUIRED PACKAGE. #"
+            echo "#########################################"
+            echo -e "\033[33m"
+            echo "The package \"$1\" could not be installed in $MAXATTEMPTS attempts."
+            echo -e "\033[37m"
+            exit 1
+        fi
+
+        # Check if the package is already installed.
+        printf "\033[33mChecking if the package $1 is installed..."
+        if [ $(dpkg-query -W -f='${STATUS}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+
+            # If this is not the first attempt at installing this package...
+            if [ $ATTEMPT -gt 1 ]; then
+                echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]"
+                echo -e "\033[33mAttempting to Install the package $1 again in $WAITTIME seconds (ATTEMPT $ATTEMPT OF $MAXATTEMPTS)..."
+                sleep $WAITTIME
+            else
+                echo -e "\033[31m [NOT INSTALLED]"
+                echo -e "\033[33mInstalling the package $1..."
+            fi
+
+            # Attempt to install the required package.
+            echo -e "\033[37m"
+            ATTEMPT=$((ATTEMPT+1))
+            sudo apt-get install -y $1
+            echo ""
+        else
+            # The package appears to be installed.
+            echo -e "\033[32m [OK]\033[37m"
+            break
+        fi
+    done
+}
+

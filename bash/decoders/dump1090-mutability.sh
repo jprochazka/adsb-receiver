@@ -31,38 +31,10 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+BUILDDIR=$PWD
+DUMP1090DIR="$BUILDDIR/dump1090"
 
-## FUNCTIONS
-
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
+source ../bash/functions.sh
 
 clear
 
@@ -97,12 +69,12 @@ CheckPackage lighttpd
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
 # Check if the git repository already exists locally.
-if [ -d "$BUILDDIR/dump1090" ] && [ -d $BUILDDIR/dump1090/.git ]; then
+if [ -d $DUMP1090DIR ] && [ -d $DUMP1090DIR/.git ]; then
     # A directory with a git repository containing the source code exists.
     echo -e "\033[33m"
     echo "Updating the local dump1090-mutability git repository..."
     echo -e "\033[37m"
-    cd $BUILDDIR/dump1090
+    cd $DUMP1090DIR
     git pull origin master
 else
     # A directory containing the source code does not exist in the build directory.
@@ -117,7 +89,7 @@ fi
 echo -e "\033[33m"
 echo "Building the dump1090-mutability package..."
 echo -e "\033[37m"
-cd $BUILDDIR/dump1090
+cd $DUMP1090DIR
 dpkg-buildpackage -b
 
 ## INSTALL THE DUMP1090-MUTABILITY PACKAGE
@@ -130,7 +102,7 @@ sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${Status}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
     echo "The dump1090-mutability package did not install properly!"
     echo -e "\033[33m"
@@ -167,7 +139,7 @@ sudo /etc/init.d/dump1090-mutability start
 # Check if the heywhatsthis.com range position file has already been downloaded.
 if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
     echo -e "\033[33m"
-    echo "Dump1090-mutability is able to display terrain limit rings using data obtained."
+    echo "Dump1090-mutability is able to display terrain limit rings using data obtained"
     echo "from the website http://www.heywhatsthat.com. Some work will be required on your"
     echo "part including visiting http://www.heywhatsthat.com and generating a new"
     echo "panorama set to your location."
@@ -177,7 +149,6 @@ if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
     if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then 
         echo -e "\033[31m"
         echo "READ THE FOLLOWING INSTRUCTION CAREFULLY!"
-        echo ""
         echo -e "\033[33m"
         echo "To set up terrain limit rings you will need to first generate a panorama on the website"
         echo "heywhatsthat.com. To do so visit the following URL:"

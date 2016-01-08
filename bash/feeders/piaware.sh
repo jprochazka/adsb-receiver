@@ -31,46 +31,15 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# Set to the most current stable version of PiAware available.
-CURRENTVERSION="2.1-5-jessie"
+## VAARIABLES
 
-# This next line was added temporarily due to the fact the version of PiAware containing a certificate
-# error fix is still pacakaged with the version number 2.1-5. This should be able to be removed once
-# PiAware's versioning matches back up with that of the tag being used to build the packages.
-CURRENTVERSIONNAME="2.1-5"
+BUILDDIR=$PWD
+PIAWAREDIR="$PWD/piaware_builder"
 
-BUILDDIR=${PWD}
+source ../bash/variables.sh
+source ../bash/functions.sh
 
-## FUNCTIONS
-
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
+## INFORMATIVE MESSAGE ABOUT THIS SOFTWARE
 
 clear
 
@@ -117,12 +86,12 @@ CheckPackage itcl3
 ## DOWNLOAD OR UPDATE THE PIAWARE_BUILDER SOURCE
 
 # Check if the git repository already exists locally.
-if [ -d "$BUILDDIR/piaware_builder" ] && [ -d $BUILDDIR/piaware_builder/.git ]; then
+if [ -d $PIAWAREDIR ] && [ -d $PIAWAREDIR/.git ]; then
     # A directory with a git repository containing the source code exists.
     echo -e "\033[33m"
     echo "Updating the local piaware_builder git repository..."
     echo -e "\033[37m"
-    cd $BUILDDIR/piaware_builder
+    cd $PIAWAREDIR
     git pull origin master
 else
     # A directory containing the source code does not exist in the build directory.
@@ -130,8 +99,8 @@ else
     echo "Cloning the piaware_builder git repository locally..."
     echo -e "\033[37m"
     git clone https://github.com/flightaware/piaware_builder.git
-    cd $BUILDDIR/piaware_builder
-    git checkout tags/v${CURRENTVERSION}
+    cd $PIAWAREDIR
+    git checkout ${PIAWAREBRANCH}
 fi
 
 ## BUILD THE PIAWARE PACKAGE
@@ -140,7 +109,7 @@ echo -e "\033[33m"
 echo "Building the PiAware package..."
 echo -e "\033[37m"
 ./sensible-build.sh
-cd $BUILDDIR/piaware_builder/package
+cd $PIAWAREDIR/package
 dpkg-buildpackage -b
 
 ## INSTALL THE PIAWARE PACKAGE
@@ -148,16 +117,11 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-
-### TEMPORARY FIX #########################################################################
-# READ THE COMMENT PERTAINING TO THE VARIABLE CURRENTVERSIONNAME AT THE TOP OF THE SCRIPT #
-###########################################################################################
-#sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSION}_*.deb
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_${CURRENTVERSIONNAME}_*.deb
+sudo dpkg -i $PIAWAREDIR/piaware_${PIAWAREVERSION}_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
     echo "The piaware package did not install properly!"
     echo -e "\033[33m"

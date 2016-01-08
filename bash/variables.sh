@@ -31,15 +31,12 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=$PWD
+## SOFTWARE VERSIONS
 
-# Assign the Lighthttpd document root directory to a variable.
-RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+# FlightAware PiAware
+PIAWAREVERSION="2.1-5"
+PIAWAREBRANCH="5c77c4924"
 
-## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
-
-echo -e "\033[33m"
-echo "Placing homepage HTML file in Lighttpd's www root directory..."
-echo -e "\033[37m"
-sudo cp -r $BUILDDIR/portal/map/html/* ${DOCUMENTROOT}/
+# PlaneFinder ADS-B Client
+PFCLIENTVERSIONARM="3.1.201"
+PFCLIENTVERSIONI386="3.0.2080"
