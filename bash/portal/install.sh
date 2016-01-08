@@ -31,9 +31,10 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-SCRIPTDIR=${PWD}
+BUILDDIR=$PWD
+BASHDIR=$BUILDDIR/../bash
 
-source ../functions.sh
+source ../bash/functions.sh
 
 clear
 
@@ -64,27 +65,27 @@ CheckPackage rrdtool
 echo -e "\033[33m"
 echo "Installing homepage..."
 echo -e "\033[37m"
-chmod +x $SCRIPTDIR/bash/portal/homepage.sh
-$SCRIPTDIR/bash/portal/homepage.sh
+chmod +x $BASHDIR/portal/homepage.sh
+$BASHDIR/portal/homepage.sh
 
 echo -e "\033[33m"
 echo "Installing map container..."
 echo -e "\033[37m"
-chmod +x $SCRIPTDIR/bash/portal/map.sh
-$SCRIPTDIR/bash/portal/map.sh
+chmod +x $BASHDIR/portal/map.sh
+$BASHDIR/portal/map.sh
 
 echo -e "\033[33m"
 echo "Installing performance graphs..."
 echo -e "\033[37m"
-chmod +x $SCRIPTDIR/bash/portal/graphs.sh
-$SCRIPTDIR/bash/portal/graphs.sh
+chmod +x $BASHDIR/portal/graphs.sh
+$BASHDIR/portal/graphs.sh
 
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     echo -e "\033[33m"
     echo "Installing performance graphs..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/portal/planefinder.sh
-    $SCRIPTDIR/bash/portal/planefinder.sh
+    chmod +x $BASHDIR/portal/planefinder.sh
+    $BASHDIR/portal/planefinder.sh
 fi
 
 echo -e "\033[33m"

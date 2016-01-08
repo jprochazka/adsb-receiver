@@ -33,7 +33,7 @@
 
 ## VAARIABLES
 
-BUILDDIR=${PWD}
+BUILDDIR=$PWD
 PIAWAREDIR="$PWD/piaware_builder"
 
 source ../bash/variables.sh
