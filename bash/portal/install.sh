@@ -33,7 +33,7 @@
 
 SCRIPTDIR=${PWD}
 
-source ../functions.sh
+source ../bash/functions.sh
 
 clear
 
