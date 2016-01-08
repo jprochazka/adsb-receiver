@@ -10,6 +10,7 @@ The following is a history of the changes made to this project.
 * Behind the scenes work mainly dealling with cleaning up the scripting a little.
 * Consolidated software version variables into a single file.
 * The CheckPackage function is no longer repeatative throughout all the scripts needing it.
+* Added the ChangeConfig function as a way to easily change settings stored in a configuration file.
 * Removed the ability to use rpi-updater to update Raspberry Pi firmware from the scripts.
 
 ## January 5th, 2016
