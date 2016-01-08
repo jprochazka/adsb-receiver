@@ -31,10 +31,14 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+## VARIABLES
+
 BUILDDIR=$PWD
-ADSBEXCHANGEDIR="$PWD/adsbexchange"
+ADSBEXCHANGEDIR="$BUILDDIR/adsbexchange"
 
 source ../bash/functions.sh
+
+## INFORMATIVE MESSAAGE ABOUT THIS SOFTWARE
 
 clear
 

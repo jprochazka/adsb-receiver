@@ -31,14 +31,14 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+## VARIABLES
+
 BUILDDIR=$PWD
 
-## DECLARE THE CURRENT VERSIONS OF THE SOFTWARE
-
-ARMVERSION="3.1.201"
-I386VERSION="3.0.2080"
-
+source ../bash/variables.sh
 source ../bash/functions.sh
+
+## INFORMATIVE MESSAGE ABOUT THIS SOFTWARE
 
 clear
 
@@ -81,9 +81,9 @@ echo -e "\033[33m"
 echo "Downloading the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
-    wget http://client.planefinder.net/pfclient_${ARMVERSION}_armhf.deb -O $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
+    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONARM}_armhf.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
-    wget http://client.planefinder.net/pfclient_${I386VERSION}_i386.deb -O $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONI386}_i386.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
 fi
 
 ## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE
@@ -92,13 +92,13 @@ echo -e "\033[33m"
 echo "Installing the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
-    sudo dpkg -i $BUILDDIR/pfclient_${ARMVERSION}_armhf.deb
+    sudo dpkg -i $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
     if [[ `lsb_release -si` == "Debian" ]]; then
         # Force architecture if this is Debian.
-        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     else
-        sudo dpkg -i $BUILDDIR/pfclient_${I386VERSION}_i386.deb
+        sudo dpkg -i $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     fi
 fi
 

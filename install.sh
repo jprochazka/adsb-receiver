@@ -34,18 +34,16 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-##############
 ## VARIABLES
-
-PIAWAREVERSION="2.1-5-jessie"
-PFCLIENTI386VERSION="3.1.201"
-PFCLIENTARMVERSION="3.0.2080"
 
 BASEDIR=${PWD}
 BASHDIR="$BASEDIR/bash"
 BUILDDIR="$BASEDIR/build"
 
+source $BASHDIR/variables.sh
 source $BASHDIR/functions.sh
+
+## FUNCTIONS
 
 # Download the latest package lists for enabled repositories and PPAs.
 function AptUpdate() {
@@ -302,12 +300,12 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 else
     # Set version depending on the device architecture.
-    PFCLIENTVERSION=$PFCLIENTARMVERSION
+    PFCLIENTVERSION=$PFCLIENTVERSIONARM
 
     ## The i386 version even though labeled as 3.1.201 is in fact reported as 3.0.2080.
     ## So for now we will skip the architecture check and use the ARM version variable for both.
     #if [[ `uname -m` != "armv7l" ]]; then
-    #    PFCLIENTVERSION=$PFCLIENTI386VERSION
+    #    PFCLIENTVERSION=$PFCLIENTVERSIONI386
     #fi
 
     # Check if a newer version can be installed.
