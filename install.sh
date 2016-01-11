@@ -106,7 +106,7 @@ function InstallAdsbExchange() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
     echo -e "\033[37m"
-    chmod +x $BASHDIR/bash/feeders/adsbexchange.sh
+    chmod +x $BASHDIR/feeders/adsbexchange.sh
     $BASHDIR/feeders/adsbexchange.sh
     cd $BASEDIR
 }
