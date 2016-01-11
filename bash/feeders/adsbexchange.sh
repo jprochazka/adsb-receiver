@@ -89,7 +89,7 @@ sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-maint.sh
 echo -e "\033[33mAdding startup line to rc.local..."
 echo -e "\033[37m"
 lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &\n" /etc/rc.local
+((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-maint.sh &\n" /etc/rc.local
 
 ## START NETCAT ADS-B EXCHANGE FEED
 
