@@ -37,6 +37,16 @@ BUILDDIR=$PWD
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
+## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
+
+echo -e "\033[33m"
+echo "Configuring dump1090-mutability to measure and save noise data."
+echo "Modifying the dump1090-mutability init script..."
+sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
+echo "Restarting dump1090-mutability..."
+echo -e "\033[37m"
+sudo /etc/init.d/dump1090-mutability restart
+
 ## BACKUP AND REPLACE COLLECTD.CONF
 
 echo -e "\033[33m"
