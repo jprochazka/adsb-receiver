@@ -500,21 +500,26 @@ signal_graph() {
   --step "$5" \
   --title "$3 Signal Level" \
   --vertical-label "dBFS" \
-  --upper-limit 2    \
-  --lower-limit -15 \
+  --upper-limit 1    \
+  --lower-limit -25 \
   --rigid \
   --units-exponent 0 \
   "TEXTALIGN:center" \
   "DEF:signal=$2/dump1090_dbfs-signal.rrd:value:AVERAGE" \
   "DEF:peak=$2/dump1090_dbfs-peak_signal.rrd:value:AVERAGE" \
+  "DEF:noise=$2/dump1090_dbfs-noise.rrd:value:AVERAGE" \
   "CDEF:us=signal,UN,-100,signal,IF" \
   "AREA:-100#00FF00:Mean Level\\:" \
   "AREA:us#FFFFFF" \
   "GPRINT:signal:AVERAGE:%4.1lf" \
-  "LINE1:peak#0000FF:Peak Level\\:" \
-  "GPRINT:peak:MAX:%4.1lf" \
+  "LINE1:peak#0000FF:Peak Level\:" \
+  "GPRINT:peak:MAX:%4.1lf\n" \
+  "LINE:noise#7F00FF:Noise" \
+  "GPRINT:noise:MAX:Max\: %4.1lf" \
+  "GPRINT:noise:MIN:Min\: %4.1lf" \
+  "GPRINT:noise:AVERAGE:Avg\: %4.1lf\n" \
   "LINE1:0#000000:Zero dBFS" \
-  "LINE1:-3#FF0000:-3 dBFS" \
+  "LINE1:-3#FF0000:-3 dBFS\n" \
   --watermark "Drawn: $nowlit";
 }
 
