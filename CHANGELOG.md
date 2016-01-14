@@ -2,6 +2,11 @@
 
 The following is a history of the changes made to this project.
 
+## January 14th, 2016
+
+* When the portal is installed the argument --measure-noise is added to the dump1090-mutability init script.
+* Added "noise" level line and information to the signal level performance graph.
+
 ## January 8th, 2016
 
 * The dump1090-mutability install Script now asks user for the latitude and longitude of the feeder.
