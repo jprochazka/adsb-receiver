@@ -501,7 +501,7 @@ signal_graph() {
   --title "$3 Signal Level" \
   --vertical-label "dBFS" \
   --upper-limit 1    \
-  --lower-limit -25 \
+  --lower-limit -40 \
   --rigid \
   --units-exponent 0 \
   "TEXTALIGN:center" \
