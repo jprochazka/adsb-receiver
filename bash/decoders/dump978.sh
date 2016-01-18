@@ -102,7 +102,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     # Assign the specified dongle to dump1090-mutability.
     echo -e "\033[33m"
     echo "Configuring dump1090-mutability to use the specified dongle..."
-    ChangeConfig "LAT" $FEEDERLAT "/etc/default/dump1090-mutability"
+    ChangeConfig "DEVICE" $DUMP1090DONGLE "/etc/default/dump1090-mutability"
     echo "Restarting dump1090-mutability..."
     echo -e "\033[37m"
     sudo /etc/init.d/dump1090-mutability restart
@@ -114,9 +114,18 @@ echo -e "\033[33mCreating the script dump978-maint.sh..."
 echo -e "\033[37m"
 sudo tee -a $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 #! /bin/sh
+
+# Start with logging.
+#rtl_sdr -d ${DUMP978DONGLE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /tmp/dump978.out &
+#while true; do
+#    tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+#    sleep 15
+#done
+
+# Start without logging.
 while true; do
     sleep 30
-    ${DUMP978DIR}/rtl_sdr -d ${DUMP978DONGLE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    rtl_sdr -d ${DUMP978DONGLE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
 done
 EOF
 
@@ -136,7 +145,7 @@ echo "Executing the dump978 maintainance script..."
 echo -e "\033[37m"
 sudo $DUMP978DIR/dump978-maint.sh &
 
-## DISPLAY MESSAGE STATING DUMP1090-MUTABILITY SETUP IS COMPLETE
+## DISPLAY MESSAGE STATING DUMP978 SETUP IS COMPLETE
 
 echo -e "\033[33m"
 echo "Installation of dump978 is now complete."
