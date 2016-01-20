@@ -348,7 +348,7 @@ DOINSTALLWEBPORTAL=$?
 ## CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
+if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DUMP978CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
     whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
     echo -e "\033[31m"
