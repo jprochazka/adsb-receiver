@@ -87,29 +87,29 @@ fi
 cd $DUMP978DIR
 make all
 
-## ASSIGN DONGLES TO DUMP1090-MUTABILITY AND DUMP978 IF DUMP1090-MUTABILITY IS INSTALLED
+## ASSIGN DEVICES TO DUMP1090-MUTABILITY AND DUMP978 IF DUMP1090-MUTABILITY IS INSTALLED
 
 # Check if the dump1090-mutability package is installed.
-DUMP978DONGLE=0
+DUMP978DEVICE=0
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
     echo -e "\033[31m"
-    echo "SET THE LATITUDE AND LONGITUDE OF YOUR FEEDER"
+    echo "ASSIGN RTL-SDR DEVICES TO DECODERS"
     echo -e "\033[33m"
     echo "It appears the dump1090-mutability package is installed on this device."
     echo "In order to run dump978 in tandem with dump1090-mutability you will"
-    echo "need to specifiy which dongle each decoder is to use."
+    echo "need to specifiy which device each decoder is to use."
     echo ""
     echo "Keep in mind in order to run both decoders on a single device you will"
     echo "need to have two separate RTL-SDR devices connected to your device."
     echo -e "\033[37m"
-    read -p "Dump1090 Dongle: " DUMP1090DONGLE
-    read -p "Dump978 Dongle: " DUMP978DONGLE
+    read -p "Dump1090 Device: " DUMP1090DEVICE
+    read -p "Dump978 Device: " DUMP978DEVICE
 
-    # Assign the specified dongle to dump1090-mutability.
+    # Assign the specified device to dump1090-mutability.
     echo -e "\033[33m"
-    echo "Configuring dump1090-mutability to use the specified dongle..."
-    ChangeConfig "DEVICE" $DUMP1090DONGLE "/etc/default/dump1090-mutability"
+    echo "Configuring dump1090-mutability to use the specified device..."
+    ChangeConfig "DEVICE" $DUMP1090DEVICE "/etc/default/dump1090-mutability"
     echo "Restarting dump1090-mutability..."
     echo -e "\033[37m"
     sudo /etc/init.d/dump1090-mutability restart
@@ -123,7 +123,7 @@ sudo tee -a $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 #! /bin/sh
 
 # Start with logging.
-rtl_sdr -d ${DUMP978DONGLE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /tmp/dump978.out &
+rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /tmp/dump978.out &
 while true; do
     tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
     sleep 15
@@ -132,7 +132,7 @@ done
 # Start without logging.
 #while true; do
 #    sleep 30
-#    rtl_sdr -d ${DUMP978DONGLE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+#    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
 #done
 EOF
 
