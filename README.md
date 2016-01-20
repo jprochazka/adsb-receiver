@@ -38,13 +38,13 @@ At this time the following software can be installed using these scripts.
 **Site Feeders**
 
 * FlightAware's PiAware:      http://flightaware.com
-* Plane Finder ADS-B CLient:  https://planefinder.net
+* Plane Finder ADS-B Client:  https://planefinder.net
 * ADS-B Exchange:             http://adsbexchange.com
 
 **Additional Features**
 
 * Web accessable Dump1090 and system performance graphs.
-* Matching website site navigation layout.
+* A more uniform website site layout.
 
 ### Supported Operating Systems
 
@@ -56,9 +56,9 @@ The scripts and packages have been tested on the following operating systems.
 - [X] Ubuntu 15.04 Vivid Vervet
 - [X] Ubuntu 14.04 LTS Trusty Tahr
 
-#### Dump978
+### Dump978 Notes
 
 In order to utilize dump978 a second RTL-SDR device is required.
 
-Please review the dump978 wiki page before installation.  
-https://github.com/jprochazka/adsb-feeder/wiki/dump978
+It is important to review the dump978 wiki page before installation.  
+https://github.com/jprochazka/adsb-feeder/wiki/Configuring-Dump978
