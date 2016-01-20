@@ -78,6 +78,17 @@ function InstallDump1090() {
     cd $BASEDIR
 }
 
+# Download and build dump978.
+function InstallDump978() {
+    clear
+    cd $BUILDDIR
+    echo -e "\033[33mExecuting the dump978 installation script..."
+    echo -e "\033[37m"
+    chmod +x $BASHDIR/decoders/dump978.sh
+    $BASHDIR/decoders/dump978.sh
+    cd $BASEDIR
+}
+
 # Download, build and then install the PiAware package.
 function InstallPiAware() {
     clear
@@ -157,7 +168,8 @@ EOF
 read -d '' DUMP1090INSTALLED <<"EOF"
 The dump1090-mutability package appears to be installed on your device However...
 
-The dump1090-mutability v1.15~dev source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.
+The dump1090-mutability v1.15~dev source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of
+dump1090-mutability you may opt to rebuild and reinstall this package.
 
 Download, build, and reinstall this package?
 EOF
@@ -168,6 +180,22 @@ The dump1090-mutability package does not appear to be installed on your system. 
 
 Do you wish to continue setup?
 Answering no will exit this script with no actions taken.
+EOF
+
+# Message displayed if dump978 is installed.
+read -d '' DUMP978INSTALLED <<"EOF"
+Dump978 appears to be installed on your device However...
+
+The dump978 source code may have been updated since it was built last. In order to insure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.
+
+Download and rebuild the dump978 binaries?
+EOF
+
+# Message displayed if dump978 is not installed.
+read -d '' DUMP978NOTINSTALLED <<"EOF"
+Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts are able to setup dump978 for you. However keep in mind a second RTL-SDR device will be required in order to feed data to it.
+
+Do you wish to install dump978?
 EOF
 
 # Message displayed above feeder selection check list.
@@ -243,6 +271,22 @@ else
     fi
 fi
 
+DUMP978CHOICE=1
+DUMP978REBUILD=1
+# Check if the dump978 has been built.
+if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f $BUILDDIR/dump978/uat2esnt ] && [ -f $BUILDDIR/dump978/uat2json ]; then
+    # Dump978 appears to have been built already.
+    whiptail --backtitle "$BACKTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 16 65
+    DUMP978REBUILD=$?
+    if [ $DUMP978REBUILD = 0 ]; then
+        DUMP978CHOICE=0
+    fi
+else
+    # Dump978 does not appear to have been built yet.
+    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --yesno "$DUMP978NOTINSTALLED" 10 65
+    DUMP978CHOICE=$?
+fi
+
 ## FEEDER OPTIONS
 
 declare array FEEDERLIST
@@ -304,7 +348,7 @@ DOINSTALLWEBPORTAL=$?
 ## CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
+if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DUMP978CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
     whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
     echo -e "\033[31m"
@@ -333,7 +377,7 @@ if [ $UPDATEOS = 0 ]; then
 fi
 
 # If the user decided to install software...
-if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
+if [ $DUMP1090CHOICE = 0 ] || [ $DUMP978CHOICE = 0 || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
     CONFIRMATION="${CONFIRMATION}\nThe following software will be installed:\n"
 
     if [ $DUMP1090CHOICE = 0 ]; then
@@ -341,6 +385,14 @@ if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES 
             CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability (reinstall)"
         else
             CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+        fi
+    fi
+
+    if [ $DUMP978CHOICE = 0 ]; then
+        if [ $DUMP978REBUILD -eq 0 ]; then
+            CONFIRMATION="${CONFIRMATION}\n  * dump978 (rebuild)"
+        else
+            CONFIRMATION="${CONFIRMATION}\n  * dump978"
         fi
     fi
 
@@ -376,7 +428,7 @@ fi
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}\nDo you wish to continue?"
 
-whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 20 78
+whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
@@ -406,6 +458,10 @@ fi
 
 if [ $DUMP1090CHOICE = 0 ]; then
     InstallDump1090
+fi
+
+if [ $DUMP978CHOICE = 0 ]; then
+    InstallDump978
 fi
 
 ## Feeders.
