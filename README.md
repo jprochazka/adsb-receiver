@@ -30,9 +30,10 @@ display bandwidth usage for a wireless connections. https://github.com/jprochazk
 
 At this time the following software can be installed using these scripts.
 
-**Mode S Decoders**
+**Decoders**
 
-* Dump1090 (mutability):   https://github.com/mutability/dump1090
+* Dump1090 (mutability):  https://github.com/mutability/dump1090
+* Dump978:                https://github.com/mutability/dump978
 
 **Site Feeders**
 
@@ -43,7 +44,7 @@ At this time the following software can be installed using these scripts.
 **Additional Features**
 
 * Web accessable Dump1090 and system performance graphs.
-* Add navigation to the stock Dump1090 map.
+* Matching website site navigation layout.
 
 ### Supported Operating Systems
 
@@ -54,3 +55,10 @@ The scripts and packages have been tested on the following operating systems.
 - [X] Debian 8.0 Jessie
 - [X] Ubuntu 15.04 Vivid Vervet
 - [X] Ubuntu 14.04 LTS Trusty Tahr
+
+#### Dump978
+
+In order to utilize dump978 a second RTL-SDR device is required.
+
+Please review the dump978 wiki page before installation.  
+https://github.com/jprochazka/adsb-feeder/wiki/dump978

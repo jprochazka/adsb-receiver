@@ -45,6 +45,13 @@ echo "-------------------------------------------"
 echo -e "\033[33mDump 978 is an experimental demodulator/decoder for 978MHz UAT signals.."
 echo ""
 echo "https://github.com/mutability/dump978"
+echo ""
+echo -e "\033[31mBEFORE CONTINUING:\033[33m"
+echo "It is recommended before continuing with the dump978 setup you read the wiki page"
+echo "related to the installation of dump978. Doing so will help you through configuring"
+echo "dump978 properly using this script."
+echo ""
+echo "https://github.com/jprochazka/adsb-feeder/wiki/dump978"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
