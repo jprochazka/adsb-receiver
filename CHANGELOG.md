@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## January 20th, 2016
+
+* Added the ability to build and execute dump978.
+
 ## January 14th, 2016
 
 * When the portal is installed the argument --measure-noise is added to the dump1090-mutability init script.
