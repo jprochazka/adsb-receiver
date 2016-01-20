@@ -272,14 +272,14 @@ else
 fi
 
 DUMP978CHOICE=1
-DUMP978REINSTALL=1
+DUMP978REBUILD=1
 # Check if the dump978 has been built.
 if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f $BUILDDIR/dump978/uat2esnt ] && [ -f $BUILDDIR/dump978/uat2json ]; then
     # Dump978 appears to have been built already.
     whiptail --backtitle "$BACKTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 16 65
-    DUMP978REINSTALL=$?
-    if [ $DUMP978REINSTALL = 0 ]; then
-        DUMP1090CHOICE=0
+    DUMP978REBUILD=$?
+    if [ $DUMP978REBUILD = 0 ]; then
+        DUMP978CHOICE=0
     fi
 else
     # Dump978 does not appear to have been built yet.
@@ -377,7 +377,7 @@ if [ $UPDATEOS = 0 ]; then
 fi
 
 # If the user decided to install software...
-if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
+if [ $DUMP1090CHOICE = 0 ] || [ $DUMP978CHOICE = 0 || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
     CONFIRMATION="${CONFIRMATION}\nThe following software will be installed:\n"
 
     if [ $DUMP1090CHOICE = 0 ]; then
@@ -389,8 +389,8 @@ if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES 
     fi
 
     if [ $DUMP978CHOICE = 0 ]; then
-        if [ $DUMP978REINSTALL -eq 0 ]; then
-            CONFIRMATION="${CONFIRMATION}\n  * dump978 (reinstall)"
+        if [ $DUMP978REBUILD -eq 0 ]; then
+            CONFIRMATION="${CONFIRMATION}\n  * dump978 (rebuild)"
         else
             CONFIRMATION="${CONFIRMATION}\n  * dump978"
         fi
@@ -428,7 +428,7 @@ fi
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}\nDo you wish to continue?"
 
-whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 20 78
+whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
