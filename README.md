@@ -15,9 +15,8 @@ in order by the main install script depending on the installation options choose
     chmod +x install.sh
     ./install.sh
     
-At this time some manual configuration is required to properly display the max range graph. Please
-refer to the project wiki for more infromation on what will need to be changed as well as how to
-display bandwidth usage for a wireless connections. https://github.com/jprochazka/adsb-feeder/wiki
+Please refer to the project wiki for more ways to customize your installation.  
+https://github.com/jprochazka/adsb-feeder/wiki
     
 #### Updating existing installations...
 
