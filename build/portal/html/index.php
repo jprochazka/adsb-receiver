@@ -35,12 +35,9 @@
     require_once('classes/common.class.php');
     $common = new common();
 
-    // Get the name of the template to use from the settings.
-    $template = $common->getSetting("template");
+    // Get the default page from the settings.
+    $defaultPage = $common->getSetting("defaultPage");
 
-    // Include the index template.
-    require_once('templates/'.$template.'/dump978.tpl.php');
-
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+    // Forward the user to the default page defined in the settings.
+    header ("Location: ".$defaultPage);
 ?>

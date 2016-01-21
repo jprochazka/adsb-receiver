@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,19 +28,23 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
-    session_start();
+    class sysinfo {
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    $common = new common();
+        function memoryUsage(){
+            $free = shell_exec('free');
+            $free = (string)trim($free);
+            $free_arr = explode("\n", $free);
+            $mem = explode(" ", $free_arr[1]);
+            $mem = array_filter($mem);
+            $mem = array_merge($mem);
+            $memory_usage = $mem[2]/$mem[1]*100;
+            return $memoryUsage;
+        }
 
-    // Get the name of the template to use from the settings.
-    $template = $common->getSetting("template");
+        function cpuUsage(){
+            $load = sys_getloadavg();
+            return $load[0];
+        }
 
-    // Include the index template.
-    require_once('templates/'.$template.'/dump978.tpl.php');
-
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+    }
 ?>

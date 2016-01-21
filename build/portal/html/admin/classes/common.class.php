@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,19 +28,53 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
-    session_start();
+    class common {
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    $common = new common();
+        ////////////////////////////////////////
+        // Check if page load is a post back.
 
-    // Get the name of the template to use from the settings.
-    $template = $common->getSetting("template");
+        function postBack() {
+            if (empty($_SERVER['HTTP_REFERER'])) {
+                return FALSE;
+            }
+            $methodUsed = strtoupper($_SERVER['REQUEST_METHOD']);
+            $referer = strtolower(basename($_SERVER['HTTP_REFERER']));
+            $thisScript = strtolower(basename($_SERVER['SCRIPT_NAME']));
+            if ($methodUsed == 'POST' && $referer == $thisScript) {
+                return TRUE;
+            }
+            return FALSE;
+        }
 
-    // Include the index template.
-    require_once('templates/'.$template.'/dump978.tpl.php');
+        /////////////////////////////////////
+        // Return a boolean from a string.
 
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+        function stringToBoolean($value) {
+            switch(strtoupper($value)) {
+                case 'TRUE': return TRUE;
+                case 'FALSE': return FALSE;
+                default: return NULL;
+            }
+        }
+
+        //////////////////////////////////////////////////////////
+        // Returns the supplied file name without an extension.
+
+        function removeExtension($fileName) {
+            return pathinfo($fileName, PATHINFO_FILENAME);
+        }
+
+        ///////////////////////////////////////////////////////
+        // Returns the value for the specified setting name.
+
+        function getSetting($name) {
+            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
+            foreach ($settings as $setting) {
+                if ($setting->name == $name) {
+                    return $setting->value;
+                }
+            }
+            return "default";
+        }
+    }
 ?>

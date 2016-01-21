@@ -31,8 +31,8 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../classes/common.class.php');
-    require_once('../classes/account.class.php');
+    require_once('classes/common.class.php');
+    require_once('classes/account.class.php');
 
     $common = new common();
     $account = new account();
@@ -43,6 +43,34 @@
         header ("Location: login.php");
     }
 
+    // Get general settings from settings.xml.
+    $siteName = $common->getSetting("siteName");
+    $currentTemplate = $common->getSetting("template");
+    $defaultPage = $common->getSetting("defaultPage");
+
+    // Get navigation settings from settings.xml.
+    $enableInfo = $common->getSetting("enableInfo");
+    $enableGraphs = $common->getSetting("enableGraphs");
+    $enableDump1090 = $common->getSetting("enableDump1090");
+    $enableDump978 = $common->getSetting("enableDump978");
+    $enablePfclient = $common->getSetting("enablePfclient");
+
+    // Get unit of measurement setting from settings.xml
+    $measurment = $common->getSetting("measurment");
+
+    // Create an array of all directories in the template folder.
+    $templates = array();
+    $path = "../templates/";
+    $directoryHandle = @opendir($path) or die('Unable to open directory "'.$path.'".');
+    while($templateDirectory = readdir($directoryHandle)) {
+        if (is_dir($path."/".$templateDirectory)) {
+            if ($templateDirectory != "." && $templateDirectory != "..") {
+                array_push($templates, $templateDirectory);
+            }
+        }
+    }
+    closedir($directoryHandle);
+
     require_once('includes/header.inc.php')
 ?>
         <form method="post" action="index.php">
@@ -51,12 +79,25 @@
                 <div class="panel-body">
                     <div class="form-group">
                         <label for="siteName">Site Name</label>
-                        <input type="text" class="form-control" id="siteName" name="siteName">
+                        <input type="text" class="form-control" id="siteName" name="siteName" value="<?php echo $siteName; ?>">
                     </div>
                     <div class="form-group">
                         <label for="template">Template</label>
                         <select class="form-control" id="template" name="template">
-                            <option value="default">default</option>
+<?php
+    foreach ($templates as $template) {
+			echo '                          <option value="'.$template.'"'.($template == $currentTemplate ? ' selected' : '').'>'.$template.'</option>'."\n";
+    }
+?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="template">Default Page</label>
+                        <select class="form-control" id="template" name="template">
+                            <option value="index.php"<?php ($defaultPage == "index.php" ? print ' selected' : ''); ?>>System Information</option>
+                            <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
+                            <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
+                            <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
                         </select>
                     </div>
                 </div>
@@ -66,26 +107,45 @@
                 <div class="panel-body">
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableGraphs" value="TRUE"> Enable dump1090 map link.
+                            <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == "TRUE" ? print ' checked' : ''); ?>> Enable system information link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableDump1090" value="TRUE"> Enable dump1090 map link.
+                            <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == "TRUE" ? print ' checked' : ''); ?>> Enable performance graphs link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableDump978" value="TRUE"> Enable dump978 map link.
+                            <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == "TRUE" ? print ' checked' : ''); ?>> Enable live dump1090 map link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enablePfclient" value="TRUE"> Enable Planfinder ADS-B Client link.
+                            <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == "TRUE" ? print ' checked' : ''); ?>> Enable live dump978 map link.
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == "TRUE" ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
                         </label>
                     </div>
                 </div>
             </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Unit of Measurment</div>
+                <div class="panel-body">
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default active">
+                            <input type="radio" name="options" id="imperial" autocomplete="off"<?php ($measurment == "imperial" ? print ' checked' : ''); ?>> Imperial
+                        </label>
+                        <label class="btn btn-default">
+                            <input type="radio" name="options" id="metric" autocomplete="off"<?php ($measurment == "metric" ? print ' checked' : ''); ?>> Metric
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <input type="submit" class="btn btn-default" value="Save Settings">
         </form>
 <?php
     require_once('includes/footer.inc.php')

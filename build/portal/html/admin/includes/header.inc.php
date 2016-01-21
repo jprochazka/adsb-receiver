@@ -22,13 +22,14 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="/">ADS-B Feeder Administration</a>
+                        <a class="navbar-brand" href="/admin">ADS-B Feeder Administration</a>
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li id="logout-link"><a href="logout.php">Portal</a></li>
-                            <li id="logout-link"><a href="logout.php">Account</a></li>
+                            <li id="logout-link"><a href="/admin">Settings</a></li>
+                            <li id="logout-link"><a href="account.php">Account</a></li>
                             <li id="logout-link"><a href="logout.php">Logout</a></li>
+                            <li id="logout-link"><a href="/" target="_blank">Portal Home</a></li>
                         </ul>
                     </div>
                 </div>

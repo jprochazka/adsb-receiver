@@ -9,19 +9,31 @@
         <value>default</value>
     </setting>
     <setting>
+        <name>defaultPage</name>
+        <value>graphs.php</value>
+    </setting>
+    <setting>
+        <name>enableInfo</name>
+        <value>TRUE</value>
+    </setting>
+    <setting>
         <name>enableGraphs</name>
-        <value>true</value>
+        <value>TRUE</value>
     </setting>
     <setting>
         <name>enableDump1090</name>
-        <value>true</value>
+        <value>TRUE</value>
     </setting>
     <setting>
         <name>enableDump978</name>
-        <value>true</value>
+        <value>TRUE</value>
     </setting>
     <setting>
         <name>enablePfclient</name>
-        <value>true</value>
+        <value>TRUE</value>
+    </setting>
+    <setting>
+        <name>measurment</name>
+        <value>imperial</value>
     </setting>
 </settings>
