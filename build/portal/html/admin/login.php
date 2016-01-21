@@ -46,8 +46,8 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/account.class.php');
+    require_once('../classes/common.class.php');
+    require_once('../classes/account.class.php');
 
     $common = new common();
     $account = new account();
@@ -81,7 +81,7 @@
         <title></title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="../assets/css/admin.login.css" />
+        <link rel="stylesheet" href="assets/css/login.css" />
     </head>
     <body>
         <div class="container">

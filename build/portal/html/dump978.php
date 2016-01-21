@@ -31,15 +31,11 @@
     // Start session
     session_start();
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    $common = new common();
-
     // Get the name of the template to use from the settings.
-    $template = $common->getSetting("template");
+    $template = getSetting("template");
 
     // Include the index template.
-    require_once('templates/'.$template.'/dump1090.tpl.php');
+    require_once('templates/'.$template.'/dump978.tpl.php');
 
     // Include the master template.
     require_once('templates/'.$template.'/master.tpl.php');

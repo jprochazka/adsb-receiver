@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<settings>
+    <setting>
+        <name>siteName</name>
+        <value>ADS-B Feeder</value>
+    </setting>
+    <setting>
+        <name>template</name>
+        <value>default</value>
+    </setting>
+    <setting>
+        <name>enableGraphs</name>
+        <value>true</value>
+    </setting>
+    <setting>
+        <name>enableDump1090</name>
+        <value>true</value>
+    </setting>
+    <setting>
+        <name>enableDump978</name>
+        <value>true</value>
+    </setting>
+    <setting>
+        <name>enablePfclient</name>
+        <value>true</value>
+    </setting>
+</settings>
