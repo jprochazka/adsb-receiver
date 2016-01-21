@@ -1,40 +1,32 @@
 <?php
 
-    /*
-    #####################################################################################
-    #                                   ADS-B FEEDER                                    #
-    #####################################################################################
-    #                                                                                   #
-    #  A set of scripts created to automate the process of installing the software      #
-    #  needed to setup a Mode S decoder as well as feeders which are capable of         #
-    #  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
-    #                                                                                   #
-    #  Project Hosted On GitHub: https://github.com/jprochazka/adsb-feeder              #
-    #                                                                                   #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    #                                                                                   #
-    # Copyright (c) 2015 Joseph A. Prochazka                                            #
-    #                                                                                   #
-    # Permission is hereby granted, free of charge, to any person obtaining a copy      #
-    # of this software and associated documentation files (the "Software"), to deal     #
-    # in the Software without restriction, including without limitation the rights      #
-    # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell         #
-    # copies of the Software, and to permit persons to whom the Software is             #
-    # furnished to do so, subject to the following conditions:                          #
-    #                                                                                   #
-    # The above copyright notice and this permission notice shall be included in all    #
-    # copies or substantial portions of the Software.                                   #
-    #                                                                                   #
-    # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR        #
-    # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,          #
-    # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE       #
-    # AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER            #
-    # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,     #
-    # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE     #
-    # SOFTWARE.                                                                         #
-    #                                                                                   #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    */
+    /////////////////////////////////////////////////////////////////////////////////////
+    //                             ADS-B FEEDER PORTAL                                 //
+    // =============================================================================== //
+    // Copyright and Licensing Information:                                            //
+    //                                                                                 //
+    // The MIT License (MIT)                                                           //
+    //                                                                                 //
+    // Copyright (c) 2015 Joseph A. Prochazka                                          //
+    //                                                                                 //
+    // Permission is hereby granted, free of charge, to any person obtaining a copy    //
+    // of this software and associated documentation files (the "Software"), to deal   //
+    // in the Software without restriction, including without limitation the rights    //
+    // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       //
+    // copies of the Software, and to permit persons to whom the Software is           //
+    // furnished to do so, subject to the following conditions:                        //
+    //                                                                                 //
+    // The above copyright notice and this permission notice shall be included in all  //
+    // copies or substantial portions of the Software.                                 //
+    //                                                                                 //
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      //
+    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        //
+    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     //
+    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          //
+    // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   //
+    // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   //
+    // SOFTWARE.                                                                       //
+    /////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////
     // Default Login Information //
@@ -85,14 +77,6 @@
     </head>
     <body>
         <div class="container">
-<?php
-    // If authentication failed display the following error message.
-    if ($common->postBack() && !$authenticated) {
-?>
-            <div>The supplied login and/or password did not match.</div>
-<?php
-    }
-?>
             <form class="form-signin" method="post" action="login.php">
                 <h2 class="form-signin-heading">ADS-B Feeder Login</h2>
                 <div>
@@ -109,6 +93,19 @@
                     </label>
                 </div>
                 <input type="submit" value="Login" class="btn btn-lg btn-primary btn-block">
+<?php
+    // If authentication failed display the following error message.
+    if ($common->postBack() && !$authenticated) {
+?>
+                <div class="alert alert-danger" role="alert" id="failure-alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    Authentication failed.
+                </div>
+<?php
+    }
+?>
             </form>
         </div>
         <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script>
