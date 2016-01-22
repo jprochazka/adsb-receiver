@@ -78,6 +78,7 @@
         $common->updateSetting("enableDump978", $enableDump978);
         $common->updateSetting("enablePfclient", $enablePfclient);
         $common->updateSetting("measurment", $_POST['measurment']);
+        $common->updateSetting("networkInterface", $_POST['networkInterface']);
 
         // Set updated to TRUE since settings were updated.
         $updated = TRUE;
@@ -95,8 +96,11 @@
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
 
-    // Get unit of measurement setting from settings.xml
+    // Get unit of measurement setting from settings.xml.
     $measurment = $common->getSetting("measurment");
+
+    // Get the network interface from settings.xml.
+    $networkInterface = $common->getSetting("networkInterface");
 
     // Create an array of all directories in the template folder.
     $templates = array();
@@ -196,6 +200,19 @@
                         </label>
                         <label class="btn btn-default<?php ($measurment == "metric" ? print ' active' : ''); ?>">
                             <input type="radio" name="measurment" id="metric" value="metric" autocomplete="off"<?php ($measurment == "metric" ? print ' checked' : ''); ?>> Metric
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Network Interface</div>
+                <div class="panel-body">
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default<?php ($networkInterface == "eth0" ? print ' active' : ''); ?>">
+                            <input type="radio" name="networkInterface" id="imperial" value="eth0" autocomplete="off"<?php ($networkInterface == "eth0" ? print ' checked' : ''); ?>> etho
+                        </label>
+                        <label class="btn btn-default<?php ($networkInterface == "wlan0" ? print ' active' : ''); ?>">
+                            <input type="radio" name="networkInterface" id="metric" value="wlan0" autocomplete="off"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
                         </label>
                     </div>
                 </div>

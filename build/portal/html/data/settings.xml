@@ -36,4 +36,8 @@
         <name>measurment</name>
         <value>imperial</value>
     </setting>
+    <setting>
+        <name>networkInterface</name>
+        <value>eth0</value>
+    </setting>
 </settings>
