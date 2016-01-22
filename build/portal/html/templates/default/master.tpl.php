@@ -48,6 +48,7 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
+                            <?php ($enableInfo ? print '<li id="system-link"><a href="/system.php">System Information</a></li>' : ''); ?>
                             <?php ($enableGraphs ? print '<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>' : ''); ?>
                             <?php ($enableDump1090 ? print '<li id="dump1090-link"><a href="/dump1090.php">Live Dump1090 Map</a></li>' : ''); ?>
                             <?php ($enableDump978 ? print '<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>' : ''); ?>

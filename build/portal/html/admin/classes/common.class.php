@@ -46,6 +46,17 @@
             return FALSE;
         }
 
+        /////////////////////////////////////
+        // Return a boolean from a string.
+
+        function stringToBoolean($value) {
+            switch(strtoupper($value)) {
+                case 'TRUE': return TRUE;
+                case 'FALSE': return FALSE;
+                default: return NULL;
+            }
+        }
+
         ///////////////////////////////////////////////////////
         // Returns the value for the specified setting name.
 

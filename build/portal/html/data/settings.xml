@@ -10,7 +10,7 @@
     </setting>
     <setting>
         <name>defaultPage</name>
-        <value>dump1090.php</value>
+        <value>graphs.php</value>
     </setting>
     <setting>
         <name>enableInfo</name>

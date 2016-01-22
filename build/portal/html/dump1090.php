@@ -42,6 +42,8 @@
     $siteName = $common->getSetting("siteName");
     $template = $common->getSetting("template");
 
+    // Enable/disable navigation links.
+    $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
     $enableDump1090 = $common->getSetting("enableDump1090");
     $enableDump978 = $common->getSetting("enableDump978");
