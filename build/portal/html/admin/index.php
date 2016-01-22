@@ -43,6 +43,19 @@
         header ("Location: login.php");
     }
 
+    if ($common->postBack()) {
+        // Update settings using those supplied byt the form.
+        $common->updateSetting("siteName", $_POST['siteName']);
+        $common->updateSetting("template", $_POST['template']);
+        $common->updateSetting("defaultPage", $_POST['defaultPage']);
+        $common->updateSetting("enableInfo", $_POST['enableInfo']);
+        $common->updateSetting("enableGraphs", $_POST['enableGraphs']);
+        $common->updateSetting("enableDump1090", $_POST['enableDump1090']);
+        $common->updateSetting("enableDump978", $_POST['enableDump978']);
+        $common->updateSetting("enablePfclient", $_POST['enablePfclient']);
+        $common->updateSetting("measurment", $_POST['measurment']);
+    }
+
     // Get general settings from settings.xml.
     $siteName = $common->getSetting("siteName");
     $currentTemplate = $common->getSetting("template");
@@ -71,6 +84,9 @@
     }
     closedir($directoryHandle);
 
+    ////////////////
+    // BEGIN HTML
+
     require_once('includes/header.inc.php')
 ?>
         <form method="post" action="index.php">
@@ -92,8 +108,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="template">Default Page</label>
-                        <select class="form-control" id="template" name="template">
+                        <label for="defaultPage">Default Page</label>
+                        <select class="form-control" id="defaultPage" name="defaultPage">
                             <option value="index.php"<?php ($defaultPage == "index.php" ? print ' selected' : ''); ?>>System Information</option>
                             <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
                             <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
@@ -136,11 +152,11 @@
                 <div class="panel-heading">Unit of Measurment</div>
                 <div class="panel-body">
                     <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default active">
-                            <input type="radio" name="options" id="imperial" autocomplete="off"<?php ($measurment == "imperial" ? print ' checked' : ''); ?>> Imperial
+                        <label class="btn btn-default<?php ($measurment == "imperial" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurment" id="imperial" value="imperial" autocomplete="off"<?php ($measurment == "imperial" ? print ' checked' : ''); ?>> Imperial
                         </label>
-                        <label class="btn btn-default">
-                            <input type="radio" name="options" id="metric" autocomplete="off"<?php ($measurment == "metric" ? print ' checked' : ''); ?>> Metric
+                        <label class="btn btn-default<?php ($measurment == "metric" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurment" id="metric" value="metric" autocomplete="off"<?php ($measurment == "metric" ? print ' checked' : ''); ?>> Metric
                         </label>
                     </div>
                 </div>

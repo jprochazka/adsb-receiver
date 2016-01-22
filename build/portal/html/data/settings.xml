@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <settings>
     <setting>
         <name>siteName</name>
@@ -10,7 +10,7 @@
     </setting>
     <setting>
         <name>defaultPage</name>
-        <value>graphs.php</value>
+        <value>index.php</value>
     </setting>
     <setting>
         <name>enableInfo</name>
@@ -30,7 +30,7 @@
     </setting>
     <setting>
         <name>enablePfclient</name>
-        <value>TRUE</value>
+        <value/>
     </setting>
     <setting>
         <name>measurment</name>

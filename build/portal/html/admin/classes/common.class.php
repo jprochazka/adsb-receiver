@@ -76,5 +76,16 @@
             }
             return "default";
         }
+
+        ///////////////////////////////////////////////////////
+        // Updates the value for the specified setting name.
+
+        function updateSetting($name, $value) {
+            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
+            foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
+                $setting->value = $value;
+            }
+            file_put_contents("../data/settings.xml", $settings->asXML());
+        }
     }
 ?>
