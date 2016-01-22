@@ -123,17 +123,17 @@ sudo tee -a $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 #! /bin/sh
 
 # Start with logging.
-rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /tmp/dump978.out &
-while true; do
-    tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
-    sleep 15
-done
+#rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /tmp/dump978.out &
+#while true; do
+#    tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+#    sleep 15
+#done
 
 # Start without logging.
-#while true; do
-#    sleep 30
-#    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
-#done
+while true; do
+    sleep 30
+    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+done
 EOF
 
 echo -e "\033[33mSetting permissions on dump978-maint.sh..."

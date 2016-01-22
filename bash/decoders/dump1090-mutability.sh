@@ -181,12 +181,14 @@ if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
         echo "script once the panorama has been generated and you are ready to continue."
         echo -e "\033[37m"
         read -p "Your heywhatsthat.com view identifier: " HEYWHATSTHATVIEWID
+        read -e -p "First ring altitude in meters (default 3048 meters or 10000 feet): " -i "3048" HEYWHATSTHATRINGONE
+        read -e -p "Second ring altitude in meters (default 12192 meters or 40000 feet): " -i "12192" HEYWHATSTHATRINGTWO
 
         # Download the generated panoramas JSON data.
         echo -e "\033[33m"
         echo "Downloading JSON data pertaining to the panorama ID you supplied..."
         echo -e "\033[37m"
-        sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=3048,12192"
+        sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
     fi
 else
     # Heywhatsthis.com upintheair.json file already exists.
