@@ -2,6 +2,12 @@
 
 The following is a history of the changes made to this project.
 
+## The "admin" Branch
+
+* Added a web based administration area which can be used to modify portal settings.
+* The files making up the portal website have been overhauld almost completely.
+* Users can now specify the distance of range rings displayed on the dump1090 map during installation.
+
 ## January 20th, 2016
 
 * Added the ability to build and execute dump978.
