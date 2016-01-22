@@ -35,8 +35,19 @@
     require_once('classes/common.class.php');
     $common = new common();
 
+    // The title and navigation link ID of this page.
+    $pageTitle = "Live Dump1090 Map";
+
     // Get the name of the template to use from the settings.
+    $siteName = $common->getSetting("siteName");
     $template = $common->getSetting("template");
+
+    $enableGraphs = $common->getSetting("enableGraphs");
+    $enableDump1090 = $common->getSetting("enableDump1090");
+    $enableDump978 = $common->getSetting("enableDump978");
+    $enablePfclient = $common->getSetting("enablePfclient");
+
+    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
 
     // Include the index template.
     require_once('templates/'.$template.'/dump1090.tpl.php');

@@ -43,17 +43,44 @@
         header ("Location: login.php");
     }
 
+    // Set updated variable to FALSE.
+    $updated = FALSE;
+
     if ($common->postBack()) {
+        // Set TRUE or FALSE for checkbox items.
+        $enableInfo = FALSE;
+        if (isset($_POST['enableInfo']) && $_POST['enableInfo'] == "TRUE")
+            $enableInfo = TRUE;
+
+        $enableGraphs = FALSE;
+        if (isset($_POST['enableGraphs']) && $_POST['enableGraphs'] == "TRUE")
+            $enableGraphs = TRUE;
+
+        $enableDump1090 = FALSE;
+        if (isset($_POST['enableDump1090']) && $_POST['enableDump1090'] == "TRUE")
+            $enableDump1090 = TRUE;
+
+        $enableDump978 = FALSE;
+        if (isset($_POST['enableDump978']) && $_POST['enableDump978'] == "TRUE")
+            $enableDump978 = TRUE;
+
+        $enablePfclient = FALSE;
+        if (isset($_POST['enablePfclient']) && $_POST['enablePfclient'] == "TRUE")
+            $enablePfclient = TRUE;
+
         // Update settings using those supplied byt the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
-        $common->updateSetting("enableInfo", $_POST['enableInfo']);
-        $common->updateSetting("enableGraphs", $_POST['enableGraphs']);
-        $common->updateSetting("enableDump1090", $_POST['enableDump1090']);
-        $common->updateSetting("enableDump978", $_POST['enableDump978']);
-        $common->updateSetting("enablePfclient", $_POST['enablePfclient']);
+        $common->updateSetting("enableInfo", $enableInfo);
+        $common->updateSetting("enableGraphs", $enableGraphs);
+        $common->updateSetting("enableDump1090", $enableDump1090);
+        $common->updateSetting("enableDump978", $enableDump978);
+        $common->updateSetting("enablePfclient", $enablePfclient);
         $common->updateSetting("measurment", $_POST['measurment']);
+
+        // Set updated to TRUE since settings were updated.
+        $updated = TRUE;
     }
 
     // Get general settings from settings.xml.
@@ -87,7 +114,19 @@
     ////////////////
     // BEGIN HTML
 
-    require_once('includes/header.inc.php')
+    require_once('includes/header.inc.php');
+
+    // Display the updated message if settings were updated.
+    if ($updated) {
+?>
+        <div id="settings-saved" class="alert alert-success fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            Settings have been updated.
+        </div>
+<?php
+    }
 ?>
         <form method="post" action="index.php">
             <div class="panel panel-default">
@@ -110,7 +149,7 @@
                     <div class="form-group">
                         <label for="defaultPage">Default Page</label>
                         <select class="form-control" id="defaultPage" name="defaultPage">
-                            <option value="index.php"<?php ($defaultPage == "index.php" ? print ' selected' : ''); ?>>System Information</option>
+                            <option value="information.php"<?php ($defaultPage == "information.php" ? print ' selected' : ''); ?>>System Information</option>
                             <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
                             <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
                             <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
@@ -123,27 +162,27 @@
                 <div class="panel-body">
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == "TRUE" ? print ' checked' : ''); ?>> Enable system information link.
+                            <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == TRUE ? print ' checked' : ''); ?>> Enable system information link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == "TRUE" ? print ' checked' : ''); ?>> Enable performance graphs link.
+                            <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == TRUE ? print ' checked' : ''); ?>> Enable performance graphs link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == "TRUE" ? print ' checked' : ''); ?>> Enable live dump1090 map link.
+                            <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == TRUE ? print ' checked' : ''); ?>> Enable live dump1090 map link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == "TRUE" ? print ' checked' : ''); ?>> Enable live dump978 map link.
+                            <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == TRUE ? print ' checked' : ''); ?>> Enable live dump978 map link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == "TRUE" ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
+                            <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == TRUE ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
                         </label>
                     </div>
                 </div>

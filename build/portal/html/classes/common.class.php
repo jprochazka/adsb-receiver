@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,30 +28,26 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
-    session_start();
+    class common {
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    $common = new common();
+        ///////////////////////////////////////////////////////
+        // Returns the value for the specified setting name.
 
-    // The title and navigation link ID of this page.
-    $pageTitle = "Live Dump1090 Map";
+        function getSetting($name) {
+            $settings = simplexml_load_file("data/settings.xml") or die("Error: Cannot create settings object");
+            foreach ($settings as $setting) {
+                if ($setting->name == $name) {
+                    return $setting->value;
+                }
+            }
+            return "";
+        }
 
-    // Get the name of the template to use from the settings.
-    $siteName = $common->getSetting("siteName");
-    $template = $common->getSetting("template");
+        //////////////////////////////////////////////////////////
+        // Returns the supplied file name without an extension.
 
-    $enableGraphs = $common->getSetting("enableGraphs");
-    $enableDump1090 = $common->getSetting("enableDump1090");
-    $enableDump978 = $common->getSetting("enableDump978");
-    $enablePfclient = $common->getSetting("enablePfclient");
-
-    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
-
-    // Include the index template.
-    require_once('templates/'.$template.'/dump978.tpl.php');
-
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+        function removeExtension($fileName) {
+            return pathinfo($fileName, PATHINFO_FILENAME);
+        }
+    }
 ?>

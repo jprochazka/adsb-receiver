@@ -18,14 +18,12 @@
     // A copy of the license can be found package along with these files.         //
     ////////////////////////////////////////////////////////////////////////////////
 
-    // The title of this page.
-    $pageTitle = "Live Dump978 Map";
-
     ////////////////////////////////
     // Additional <head> content.
     function headContent() {
+        global $template;
 ?>
-        <link rel="stylesheet" href="assets/css/dump978.css">
+        <link rel="stylesheet" href="templates/<?php echo $template; ?>/assets/css/dump978.css">
 <?php
     }
 

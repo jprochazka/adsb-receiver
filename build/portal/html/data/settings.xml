@@ -10,27 +10,27 @@
     </setting>
     <setting>
         <name>defaultPage</name>
-        <value>index.php</value>
+        <value>dump1090.php</value>
     </setting>
     <setting>
         <name>enableInfo</name>
-        <value>TRUE</value>
+        <value>1</value>
     </setting>
     <setting>
         <name>enableGraphs</name>
-        <value>TRUE</value>
+        <value>1</value>
     </setting>
     <setting>
         <name>enableDump1090</name>
-        <value>TRUE</value>
+        <value>1</value>
     </setting>
     <setting>
         <name>enableDump978</name>
-        <value>TRUE</value>
+        <value>1</value>
     </setting>
     <setting>
         <name>enablePfclient</name>
-        <value/>
+        <value>1</value>
     </setting>
     <setting>
         <name>measurment</name>

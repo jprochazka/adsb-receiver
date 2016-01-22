@@ -46,24 +46,6 @@
             return FALSE;
         }
 
-        /////////////////////////////////////
-        // Return a boolean from a string.
-
-        function stringToBoolean($value) {
-            switch(strtoupper($value)) {
-                case 'TRUE': return TRUE;
-                case 'FALSE': return FALSE;
-                default: return NULL;
-            }
-        }
-
-        //////////////////////////////////////////////////////////
-        // Returns the supplied file name without an extension.
-
-        function removeExtension($fileName) {
-            return pathinfo($fileName, PATHINFO_FILENAME);
-        }
-
         ///////////////////////////////////////////////////////
         // Returns the value for the specified setting name.
 
@@ -74,7 +56,7 @@
                     return $setting->value;
                 }
             }
-            return "default";
+            return "";
         }
 
         ///////////////////////////////////////////////////////
