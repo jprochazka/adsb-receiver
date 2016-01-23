@@ -144,6 +144,20 @@ echo -e "\033[37m"
 read -p "Your FlightAware Login: " FALOGIN
 sudo piaware-config -user $FALOGIN -password
 
+echo -e "\033[33m"
+printf "Setting PiAware to send MLAT results on port 30104..."
+ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
+MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
+CLEANFORMAT=`sed 's/beast,connect,localhost:30104//g' <<< $MLATRESULTS`
+FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30104" | sed -e 's/^[ \t]*//'
+# Make sure that the mlatResultsFormat setting is not left blank if no other settings exist..
+if [ -n "$FINALFORMAT" ]; then
+    sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
+else
+    sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30104"
+fi
+echo -e "\033[32m [OK]"
+
 echo -e "\e[33m"
 echo "Restarting PiAware to ensure all changes are applied..."
 echo -e "\033[37m"
