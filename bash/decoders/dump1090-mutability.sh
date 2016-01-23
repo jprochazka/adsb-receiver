@@ -145,20 +145,6 @@ echo "Configuring dump1090-mutability to listen for BEAST input on port 30104...
 echo -e "\033[37m"
 ChangeConfig "BEAST_INPUT_PORT" "30104" "/etc/default/dump1090-mutability"
 
-echo -e "\033[33m"
-printf "Setting PiAware to send MLAT results on port 30104..."
-ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
-MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
-CLEANFORMAT=`sed 's/beast,connect,localhost:30104//g' <<< $MLATRESULTS`
-FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30104" | sed -e 's/^[ \t]*//'
-# Make sure that the mlatResultsFormat setting is not left blank if no other settings exist..
-if [ -n "$FINALFORMAT" ]; then 
-    sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
-else
-    sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30104"
-fi
-echo -e "\033[32m [OK]"  
-
 ## HEYWHATSTHAT.COM TERRAIN LIMIT RINGS
 
 # Check if the heywhatsthis.com range position file has already been downloaded.
