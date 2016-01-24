@@ -71,12 +71,6 @@ CheckPackage php5-cgi
 
 ## SETUP THE PORTAL WEBSITE
 
-echo -e "\033[33m"
-echo "Setting up performance graphs..."
-echo -e "\033[37m"
-chmod +x $BASHDIR/portal/graphs.sh
-$BASHDIR/portal/graphs.sh
-
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     echo -e "\033[33m"
     echo -e "Inserting the Planefinder ADS-B Client links...\033[37m"
@@ -90,6 +84,16 @@ fi
 echo -e "\033[33m"
 echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
 sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
+
+echo -e "\033[33m"
+echo "Setting permissions on graphs folder...\033[37m"
+chmod +w ${DOCUMENTROOT}/graphs/
+
+echo -e "\033[33m"
+echo "Setting up performance graphs..."
+echo -e "\033[37m"
+chmod +x $BASHDIR/portal/graphs.sh
+$BASHDIR/portal/graphs.sh
 
 ## CHECK IF DUMP978 HAS BEEN BUILT
 
@@ -156,20 +160,24 @@ sudo chmod +w ${DOCUMENTROOT}/data/*.xml
 echo -e "\033[33m"
 echo -e "Removing conflicting redirect from the Lighttpd dump1090.conf file...\033[37m"
 # Remove this line completely.
-sudo sed "/$(echo '  "^/dump1090$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/d" /etc/lighttpd/conf-available/89-dump1090.conf
+sudo sed -i "/$(echo '  "^/dump1090$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/d" /etc/lighttpd/conf-available/89-dump1090.conf
 # Remove the trailing coma from this line.
-sudo sed "s/$(echo '"^/dump1090/$" => "/dump1090/gmap.html",' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/$(echo '"^/dump1090/$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/g"  /etc/lighttpd/conf-available/89-dump1090.conf
+sudo sed -i "s/$(echo '"^/dump1090/$" => "/dump1090/gmap.html",' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/$(echo '"^/dump1090/$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/g"  /etc/lighttpd/conf-available/89-dump1090.conf
 
 echo -e "\033[33m"
 echo -e "Configuring Lighttpd...\033[37m"
 sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 # Block all access to the data directory accept for local requests.
-$HTTP["remoteip"] !~ "127.0.0.1" {
-    $HTTP["url"] =~ "^/data/" {
+\$HTTP["remoteip"] !~ "127.0.0.1" {
+    \$HTTP["url"] =~ "^/data/" {
         url.access-deny = ( "" )
     }
 }
 EOF
+
+echo -e "\033[33m"
+echo -e "Enabling Lighttpd portal configuration...\033[37m"
+sudo ln -s /etc/lighttpd/conf-available/89-adsb-portal.conf /etc/lighttpd/conf-enabled/89-adsb-portal.conf
 
 echo -e "\033[33m"
 echo -e "Enabling the Lighttpd fastcgi-php module...\033[37m"
@@ -178,9 +186,11 @@ sudo lighty-enable-mod fastcgi-php
 echo -e "\033[33m"
 if pgrep "lighttpd" > /dev/null; then
     echo "Reloading Lighttpd..."
+    echo -e "\033[37m"
     sudo /etc/init.d/lighttpd force-reload
 else
     echo "Starting Lighttpd..."
+    echo -e "\033[37m"
     sudo /etc/init.d/lighttpd start
 fi
 

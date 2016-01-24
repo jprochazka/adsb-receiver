@@ -166,27 +166,27 @@
                 <div class="panel-body">
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == TRUE ? print ' checked' : ''); ?>> Enable system information link.
+                            <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == 1 ? print ' checked' : ''); ?>> Enable system information link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == TRUE ? print ' checked' : ''); ?>> Enable performance graphs link.
+                            <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == 1 ? print ' checked' : ''); ?>> Enable performance graphs link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == TRUE ? print ' checked' : ''); ?>> Enable live dump1090 map link.
+                            <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == 1 ? print ' checked' : ''); ?>> Enable live dump1090 map link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == TRUE ? print ' checked' : ''); ?>> Enable live dump978 map link.
+                            <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == 1 ? print ' checked' : ''); ?>> Enable live dump978 map link.
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == TRUE ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
+                            <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == 1 ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
                         </label>
                     </div>
                 </div>
