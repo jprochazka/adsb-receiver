@@ -63,6 +63,7 @@ CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage gcc
+CheckPackage netcat
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
