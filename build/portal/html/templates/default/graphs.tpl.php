@@ -127,14 +127,14 @@
                         <div class="row">
 <?php   if ($networkInterface == "eth0") { ?>
                             <div class="col-md-6 text-center">
-                                <a id ="system-wlan0_bandwidth-link" href="#">
-                                   <img id="system-wlan0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage (wlan0)">
+                                <a id ="system-eth0_bandwidth-link" href="#">
+                                   <img id="system-eth0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage (eth0)">
                                 </a>
                             </div>
 <?php   } else { ?>
                             <div class="col-md-6 text-center">
-                                <a id ="system-eth0_bandwidth-link" href="#">
-                                   <img id="system-eth0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage (eth0)">
+                                <a id ="system-wlan0_bandwidth-link" href="#">
+                                   <img id="system-wlan0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage (wlan0)">
                                 </a>
                             </div>
 <?php   } ?>
