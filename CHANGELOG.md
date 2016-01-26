@@ -8,8 +8,8 @@ The following is a history of the changes made to this project.
 * The files making up the portal website have been overhauled completely.
 * A basic template system for the portal has been added which will be made more user friendly over time.
 * Users can now specify the distance of range rings displayed on the dump1090 map during installation.
-* Uses the package collectd-core instead of collectd to eliminate the installation of uneeded packages.
-* Added odified the dump1090-mutability HTML files to be used as a dump978 map to the portal.
+* Uses the package collectd-core instead of collectd to eliminate the installation of unneeded packages.
+* Added modified the dump1090-mutability HTML files to be used as a dump978 map to the portal.
 * Added the ability to specify the heywhatsthat.com range rings ranges.
 
 ## January 20th, 2016
