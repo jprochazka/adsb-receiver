@@ -145,7 +145,7 @@ LoadPlugin disk
 
 <Plugin "interface">
 	Interface "eth0"
-        #Interface "wlan0"
+        Interface "wlan0"
 </Plugin>
 
 <Plugin "aggregation">
