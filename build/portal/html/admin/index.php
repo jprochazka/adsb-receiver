@@ -77,7 +77,7 @@
         $common->updateSetting("enableDump1090", $enableDump1090);
         $common->updateSetting("enableDump978", $enableDump978);
         $common->updateSetting("enablePfclient", $enablePfclient);
-        $common->updateSetting("measurment", $_POST['measurment']);
+        $common->updateSetting("measurement", $_POST['measurement']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
 
         // Set updated to TRUE since settings were updated.
@@ -97,7 +97,7 @@
     $enablePfclient = $common->getSetting("enablePfclient");
 
     // Get unit of measurement setting from settings.xml.
-    $measurment = $common->getSetting("measurment");
+    $measurement = $common->getSetting("measurement");
 
     // Get the network interface from settings.xml.
     $networkInterface = $common->getSetting("networkInterface");
@@ -192,14 +192,14 @@
                 </div>
             </div>
             <div class="panel panel-default">
-                <div class="panel-heading">Unit of Measurment</div>
+                <div class="panel-heading">Unit of Measurement</div>
                 <div class="panel-body">
                     <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default<?php ($measurment == "imperial" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurment" id="imperial" value="imperial" autocomplete="off"<?php ($measurment == "imperial" ? print ' checked' : ''); ?>> Imperial
+                        <label class="btn btn-default<?php ($measurement == "imperial" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurement" id="imperial" value="imperial" autocomplete="off"<?php ($measurement == "imperial" ? print ' checked' : ''); ?>> Imperial
                         </label>
-                        <label class="btn btn-default<?php ($measurment == "metric" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurment" id="metric" value="metric" autocomplete="off"<?php ($measurment == "metric" ? print ' checked' : ''); ?>> Metric
+                        <label class="btn btn-default<?php ($measurement == "metric" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurement" id="metric" value="metric" autocomplete="off"<?php ($measurement == "metric" ? print ' checked' : ''); ?>> Metric
                         </label>
                     </div>
                 </div>

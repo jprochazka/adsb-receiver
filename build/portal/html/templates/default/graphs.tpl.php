@@ -166,7 +166,7 @@
     /////////////////////////////////////////////////
     // Content to be added to the scripts section.
     function scriptContent() {
-        global $measurment, $networkInterface;
+        global $measurement, $networkInterface;
 ?>
         <script type="text/javascript">
             //*** BEGIN USER DEFINED VARIABLES ***//
@@ -209,7 +209,7 @@
                 $("#dump1090-aircraft_message_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-aircraft-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-tracks-image").attr("src", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
-<?php   if ($measurment == "imperial") { ?>
+<?php   if ($measurement == "imperial") { ?>
                 $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } else { ?>
                 $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);
@@ -223,7 +223,7 @@
                 $("#system-wlan0_bandwidth-image").attr("src", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } ?>
                 $("#system-memory-image").attr("src", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
-<?php   if ($measurment == "imperial") { ?>
+<?php   if ($measurement == "imperial") { ?>
                 $("#system-temperature-image").attr("src", "graphs/system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } else { ?>
                 $("#system-temperature-image").attr("src", "graphs/system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png?time=" + $timestamp);
@@ -238,7 +238,7 @@
                 $("#dump1090-aircraft_message_rate-image-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png");
                 $("#dump1090-aircraft-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
                 $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
-<?php   if ($measurment == "imperial") { ?>
+<?php   if ($measurement == "imperial") { ?>
                 $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png");
 <?php   } else { ?>
                 $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png");
@@ -252,7 +252,7 @@
                 $("#system-wlan0_bandwidth-image").attr("href", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
 <?php   } ?>
                 $("#system-memory-image").attr("href", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png");
-<?php   if ($measurment == "imperial") { ?>
+<?php   if ($measurement == "imperial") { ?>
                 $("#system-temperature-image").attr("href", "graphs/system-" + $hostName + "-temperature-imperial" + $timeFrame + ".png");
 <?php   } else { ?>
                 $("#system-temperature-image").attr("href", "graphs/system-" + $hostName + "-temperature-metric" + $timeFrame + ".png");

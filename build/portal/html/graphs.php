@@ -50,7 +50,7 @@
     $enablePfclient = $common->getSetting("enablePfclient");
 
     // Measurement type to use.
-    $measurement = $common->getSetting("measurment");
+    $measurement = $common->getSetting("measurement");
 
     // Get the network interface being used.
     $networkInterface = $common->getSetting("networkInterface");
