@@ -40,10 +40,13 @@ At this time the following software can be installed using these scripts.
 * Plane Finder ADS-B Client:  https://planefinder.net
 * ADS-B Exchange:             http://adsbexchange.com
 
-**Additional Features**
+**Web Portal Features**
 
-* Web accessable Dump1090 and system performance graphs.
-* A more uniform website site layout.
+* Control what is displayed online via a web based administration area.
+* A more uniform website site layout that can be easily navigated.
+* Web accessable dump1090 and system performance graphs.
+* A web accessable live dump1090 map.
+* A web accessable live dump978 map.
 
 ### Supported Operating Systems
 
