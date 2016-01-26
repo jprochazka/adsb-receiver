@@ -209,7 +209,7 @@
                 <div class="panel-body">
                     <div class="btn-group" data-toggle="buttons">
                         <label class="btn btn-default<?php ($networkInterface == "eth0" ? print ' active' : ''); ?>">
-                            <input type="radio" name="networkInterface" id="imperial" value="eth0" autocomplete="off"<?php ($networkInterface == "eth0" ? print ' checked' : ''); ?>> etho
+                            <input type="radio" name="networkInterface" id="imperial" value="eth0" autocomplete="off"<?php ($networkInterface == "eth0" ? print ' checked' : ''); ?>> eth0
                         </label>
                         <label class="btn btn-default<?php ($networkInterface == "wlan0" ? print ' active' : ''); ?>">
                             <input type="radio" name="networkInterface" id="metric" value="wlan0" autocomplete="off"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
