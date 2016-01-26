@@ -64,7 +64,7 @@ echo -e "\033[33m"
 echo "Installing packages needed to build and fulfill dependencies..."
 echo -e "\033[37m"
 CheckPackage cron
-CheckPackage collectd
+CheckPackage collectd-core
 CheckPackage rrdtool
 CheckPackage lighttpd
 CheckPackage php5-cgi
@@ -87,7 +87,7 @@ sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
 
 echo -e "\033[33m"
 echo "Setting permissions on graphs folder...\033[37m"
-chmod +w ${DOCUMENTROOT}/graphs/
+chmod 777 ${DOCUMENTROOT}/graphs/
 
 echo -e "\033[33m"
 echo "Setting up performance graphs..."
@@ -155,7 +155,7 @@ fi
 
 echo -e "\033[33m"
 echo -e "Setting permissions on data files...\033[37m"
-sudo chmod +w ${DOCUMENTROOT}/data/*.xml
+sudo chmod 777 ${DOCUMENTROOT}/data/*.xml
 
 echo -e "\033[33m"
 echo -e "Removing conflicting redirect from the Lighttpd dump1090.conf file...\033[37m"
@@ -166,7 +166,7 @@ sudo sed -i "s/$(echo '"^/dump1090/$" => "/dump1090/gmap.html",' | sed -e 's/\\/
 
 echo -e "\033[33m"
 echo -e "Configuring Lighttpd...\033[37m"
-sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
+sudo tee /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 # Block all access to the data directory accept for local requests.
 \$HTTP["remoteip"] !~ "127.0.0.1" {
     \$HTTP["url"] =~ "^/data/" {

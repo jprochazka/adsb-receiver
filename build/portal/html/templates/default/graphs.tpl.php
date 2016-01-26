@@ -195,60 +195,60 @@
                 $timestamp = new Date().getTime() / 1000
 
                 // Display images for the requested time frame.
-                $("#dump1090-local_trailing_rate-image").attr("src", "dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#dump1090-local_rate-image").attr("src", "dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#dump1090-aircraft-image").attr("src", "dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#dump1090-tracks-image").attr("src", "dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-local_trailing_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-local_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-aircraft-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-tracks-image").attr("src", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   if ($measurment == "imperial") { ?>
-                $("#dump1090-range-image").attr("src", "dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } else { ?>
-                $("#dump1090-range-image").attr("src", "dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } ?>
-                $("#dump1090-signal-image").attr("src", "dump1090-" + $hostName + "-signal-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#dump1090-cpu-image").attr("src", "dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#system-cpu-image").attr("src", "system-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-signal-image").attr("src", "graphs/dump1090-" + $hostName + "-signal-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-cpu-image").attr("src", "graphs/dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-cpu-image").attr("src", "graphs/system-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   if ($networkInterface == "eth0") { ?>
-                $("#system-eth0_bandwidth-image").attr("src", "system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-eth0_bandwidth-image").attr("src", "graphs/system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } else { ?>
-                $("#system-wlan0_bandwidth-image").attr("src", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-wlan0_bandwidth-image").attr("src", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } ?>
-                $("#system-memory-image").attr("src", "system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-memory-image").attr("src", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   if ($measurment == "imperial") { ?>
-                $("#system-temperature-image").attr("src", "system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-temperature-image").attr("src", "graphs/system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } else { ?>
-                $("#system-temperature-image").attr("src", "system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-temperature-image").attr("src", "graphs/system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } ?>
-                $("#system-df_root-image").attr("src", "system-" + $hostName + "-df_root-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#system-disk_io_iops-image").attr("src", "system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png?time=" + $timestamp);
-                $("#system-disk_io_octets-image").attr("src", "system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-df_root-image").attr("src", "graphs/system-" + $hostName + "-df_root-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-disk_io_iops-image").attr("src", "graphs/system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#system-disk_io_octets-image").attr("src", "graphs/system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png?time=" + $timestamp);
 
                 // Create links to full sized images for the requested time frame.
-                $("#dump1090-local_trailing_rate-link").attr("href", "dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png");
-                $("#dump1090-local_rate-image-link").attr("href", "dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png");
-                $("#dump1090-aircraft-link").attr("href", "dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
-                $("#dump1090-tracks-link").attr("href", "dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
+                $("#dump1090-local_trailing_rate-link").attr("href", "graphs/dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png");
+                $("#dump1090-local_rate-image-link").attr("href", "graphs/dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png");
+                $("#dump1090-aircraft-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
+                $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
 <?php   if ($measurment == "imperial") { ?>
-                $("#dump1090-range-link").attr("href", "dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png");
+                $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png");
 <?php   } else { ?>
-                $("#dump1090-range-link").attr("href", "dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png");
+                $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png");
 <?php   } ?>
-                $("#dump1090-signal-link").attr("href", "dump1090-" + $hostName + "-signal-" + $timeFrame + ".png");
-                $("#dump1090-cpu-link").attr("href", "dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png");
-                $("#system-cpu-image").attr("href", "system-" + $hostName + "-cpu-" + $timeFrame + ".png");
+                $("#dump1090-signal-link").attr("href", "graphs/dump1090-" + $hostName + "-signal-" + $timeFrame + ".png");
+                $("#dump1090-cpu-link").attr("href", "graphs/dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png");
+                $("#system-cpu-image").attr("href", "graphs/system-" + $hostName + "-cpu-" + $timeFrame + ".png");
 <?php   if ($networkInterface == "eth0") { ?>
-                $("#system-eth0_bandwidth-image").attr("href", "system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png");
+                $("#system-eth0_bandwidth-image").attr("href", "graphs/system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png");
 <?php   } else { ?>
-                $("#system-wlan0_bandwidth-image").attr("href", "system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
+                $("#system-wlan0_bandwidth-image").attr("href", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
 <?php   } ?>
-                $("#system-memory-image").attr("href", "system-" + $hostName + "-memory-" + $timeFrame + ".png");
+                $("#system-memory-image").attr("href", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png");
 <?php   if ($measurment == "imperial") { ?>
-                $("#system-temperature-image").attr("href", "system-" + $hostName + "-temperature-imperial" + $timeFrame + ".png");
+                $("#system-temperature-image").attr("href", "graphs/system-" + $hostName + "-temperature-imperial" + $timeFrame + ".png");
 <?php   } else { ?>
-                $("#system-temperature-image").attr("href", "system-" + $hostName + "-temperature-metric" + $timeFrame + ".png");
+                $("#system-temperature-image").attr("href", "graphs/system-" + $hostName + "-temperature-metric" + $timeFrame + ".png");
 <?php   } ?>
-                $("#system-df_root-image").attr("href", "system-" + $hostName + "-df_root-" + $timeFrame + ".png");
-                $("#system-disk_io_iops-image").attr("href", "system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png");
-                $("#system-disk_io_octets-image").attr("href", "system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png");
+                $("#system-df_root-image").attr("href", "graphs/system-" + $hostName + "-df_root-" + $timeFrame + ".png");
+                $("#system-disk_io_iops-image").attr("href", "graphs/system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png");
+                $("#system-disk_io_octets-image").attr("href", "graphs/system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png");
 
 	            // Set the button related to the selected time frame to active.
                 $("#btn-1h").removeClass('active');
