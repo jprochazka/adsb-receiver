@@ -116,6 +116,13 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     sudo /etc/init.d/dump1090-mutability restart
 fi
 
+## CREATE JSON DATA DIRECTORY
+
+echo -e "\033[33mCreating Json data directory..."
+echo -e "\033[37m"
+sudo mkdir /var/www/html/dump978/data
+sudo chmod 777 /var/www/html/dump978/data
+
 ## ADD SCRIPT AND COMMAND TO EXECUTE MAINTAINANCE SCRIPT USING RC.LOCAL
 
 echo -e "\033[33mCreating the script dump978-maint.sh..."
@@ -126,14 +133,14 @@ sudo tee -a $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 # Start with logging.
 #rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /tmp/dump978.out &
 #while true; do
-#    tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+#    tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
 #    sleep 15
 #done
 
 # Start without logging.
 while true; do
     sleep 30
-    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
 done
 EOF
 
