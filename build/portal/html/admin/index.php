@@ -153,7 +153,7 @@
                     <div class="form-group">
                         <label for="defaultPage">Default Page</label>
                         <select class="form-control" id="defaultPage" name="defaultPage">
-                            <option value="information.php"<?php ($defaultPage == "system.php" ? print ' selected' : ''); ?>>System Information</option>
+                            <option value="system.php"<?php ($defaultPage == "system.php" ? print ' selected' : ''); ?>>System Information</option>
                             <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
                             <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
                             <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
