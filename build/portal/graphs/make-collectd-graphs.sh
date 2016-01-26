@@ -35,6 +35,32 @@ aircraft_graph() {
   --watermark "Drawn: $nowlit";
 }
 
+aircraft_message_rate_graph() {
+  rrdtool graph \
+  "$1" \
+  --start end-$4 \
+  --width 480 \
+  --height 200 \
+  --step "$5" \
+  --title "$3 Message Rate / Aircraft / Second" \
+  --vertical-label "Rate/Aircraft/Second" \
+  --lower-limit 0 \
+  --units-exponent 0 \
+  "TEXTALIGN:center" \
+  "DEF:all=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
+  "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
+  "CDEF:rate=messages,all,/" \
+  "VDEF:avgrate=rate,AVERAGE" \
+  "VDEF:maxrate=rate,MAXIMUM" \
+  "GPRINT:avgrate:Average\:%3.0lf " \
+  "GPRINT:maxrate:Maximum\:%3.0lf " \
+  "LINE1:all#990000:A/C" \
+  "LINE1:rate#0000FF:Rate" \
+  "LINE1:maxrate#FF0000:Max Rate" \
+  "LINE1:avgrate#666666:Avg Rate:dashes" \
+  --watermark "Drawn: $nowlit";
+}
+
 cpu_graph_dump1090() {
   rrdtool graph \
   "$1" \
@@ -548,6 +574,7 @@ remote_rate_graph() {
 
 dump1090_graphs() {
   aircraft_graph ${DOCUMENTROOT}/graphs/dump1090-$2-aircraft-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  aircraft_message_rate_graph ${DOCUMENTROOT}/graphs/dump1090-$2-aircraft_message_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
   cpu_graph_dump1090 ${DOCUMENTROOT}/graphs/dump1090-$2-cpu-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
   tracks_graph ${DOCUMENTROOT}/graphs/dump1090-$2-tracks-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5" 
 }
@@ -561,7 +588,7 @@ system_graphs() {
   memory_graph ${DOCUMENTROOT}/graphs/system-$2-memory-$4.png /var/lib/collectd/rrd/$1/memory "$3" "$4" "$5"
   temp_graph_imperial ${DOCUMENTROOT}/graphs/system-$2-temperature-imperial-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
   temp_graph_metric ${DOCUMENTROOT}/graphs/system-$2-temperature-metric-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
-  #wlan0_graph ${DOCUMENTROOT}/graphs/system-$2-wlan0_bandwidth-$4.png /var/lib/collectd/rrd/$1/interface-wlan0 "$3" "$4" "$5"
+  wlan0_graph ${DOCUMENTROOT}/graphs/system-$2-wlan0_bandwidth-$4.png /var/lib/collectd/rrd/$1/interface-wlan0 "$3" "$4" "$5"
 }
 
 dump1090_receiver_graphs() {

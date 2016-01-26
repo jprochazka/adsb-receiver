@@ -84,9 +84,18 @@
                             </div>
                             <div class="col-md-6 text-center">
                                 <a id ="dump1090-cpu-link" href="#">
+                                    <img id="dump1090-aircraft_message_rate-image" class="img-responsive" src="#" alt="Aircraft Message Rate">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="padding"></div>
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-cpu-link" href="#">
                                     <img id="dump1090-cpu-image" class="img-responsive" src="#" alt="CPU Utilization">
                                 </a>
                             </div>
+                            <div class="col-md-6 text-center"></div>
                         </div>
                     </div>
                 </div>
@@ -197,6 +206,7 @@
                 // Display images for the requested time frame.
                 $("#dump1090-local_trailing_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-local_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png?time=" + $timestamp);
+                $("#dump1090-aircraft_message_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-aircraft-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-tracks-image").attr("src", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   if ($measurment == "imperial") { ?>
@@ -225,6 +235,7 @@
                 // Create links to full sized images for the requested time frame.
                 $("#dump1090-local_trailing_rate-link").attr("href", "graphs/dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png");
                 $("#dump1090-local_rate-image-link").attr("href", "graphs/dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png");
+                $("#dump1090-aircraft_message_rate-image-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png");
                 $("#dump1090-aircraft-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
                 $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
 <?php   if ($measurment == "imperial") { ?>
