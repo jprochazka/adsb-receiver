@@ -140,7 +140,7 @@ tee $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 # Start without logging.
 while true; do
     sleep 30
-    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001 &
 done
 EOF
 
