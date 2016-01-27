@@ -65,6 +65,19 @@ CheckPackage libusb-1.0-0-dev
 CheckPackage gcc
 CheckPackage netcat
 
+## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+
+echo -e "\033[33mStopping unwanted kernel modules from being loaded..."
+echo -e "\033[37m"
+tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_v2
+blacklist rtl_2830
+blacklist rtl_2832
+blacklist r820t
+EOF
+sudo rmmod dvb_usb_rtl28xxu
+
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
 # Check if the git repository already exists locally.
