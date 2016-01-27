@@ -148,10 +148,12 @@ echo -e "\033[33mSetting permissions on dump978-maint.sh..."
 echo -e "\033[37m"
 sudo chmod +x $DUMP978DIR/dump978-maint.sh
 
-echo -e "\033[33mAdding startup line to rc.local..."
-echo -e "\033[37m"
-lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${DUMP978DIR}/dump978-maint.sh &\n" /etc/rc.local
+if ! grep -Fxq "${DUMP978DIR}/dump978-maint.sh &" /etc/rc.local; then
+    echo -e "\033[33mAdding startup line to rc.local..."
+    echo -e "\033[37m"
+    lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${DUMP978DIR}/dump978-maint.sh &\n" /etc/rc.local
+fi
 
 ## EXECUTE THE MAINTAINANCE SCRIPT
 
