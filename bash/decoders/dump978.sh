@@ -127,7 +127,7 @@ sudo chmod 777 /var/www/html/dump978/data
 
 echo -e "\033[33mCreating the script dump978-maint.sh..."
 echo -e "\033[37m"
-tee -a $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
+tee $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 #! /bin/sh
 
 # Start with logging.
