@@ -69,7 +69,7 @@ CheckPackage netcat
 
 echo -e "\033[33mStopping unwanted kernel modules from being loaded..."
 echo -e "\033[37m"
-tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
+sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
 blacklist dvb_usb_rtl28xxu
 blacklist dvb_usb_v2
 blacklist rtl_2830
