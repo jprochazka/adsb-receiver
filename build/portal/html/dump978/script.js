@@ -131,7 +131,7 @@ function fetchData() {
                 if (LastReceiverTimestamp === now) {
                         StaleReceiverCount++;
                         if (StaleReceiverCount > 5) {
-                                $("#update_error_detail").text("The data from dump1090 hasn't been updated in a while. Maybe dump1090 is no longer running?");
+                                $("#update_error_detail").text("The data from dump978 hasn't been updated in a while. Maybe dump978 is no longer running?");
                                 $("#update_error").css('display','block');
                         }
                 } else { 
@@ -142,7 +142,7 @@ function fetchData() {
 	});
 
         FetchPending.fail(function(jqxhr, status, error) {
-                $("#update_error_detail").text("AJAX call failed (" + status + (error ? (": " + error) : "") + "). Maybe dump1090 is no longer running?");
+                $("#update_error_detail").text("AJAX call failed (" + status + (error ? (": " + error) : "") + "). Maybe dump978 is no longer running?");
                 $("#update_error").css('display','block');
         });
 }
