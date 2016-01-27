@@ -36,7 +36,7 @@
     $common = new common();
 
     // The title and navigation link ID of this page.
-    $pageTitle = "Live Dump1090 Map";
+    $pageTitle = "Live Dump978 Map";
 
     // Get the name of the template to use from the settings.
     $siteName = $common->getSetting("siteName");
