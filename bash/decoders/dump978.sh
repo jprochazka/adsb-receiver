@@ -120,7 +120,7 @@ fi
 
 echo -e "\033[33mCreating Json data directory..."
 echo -e "\033[37m"
-sudo mkdir /var/www/html/dump978/data
+sudo mkdir -p /var/www/html/dump978/data
 sudo chmod 777 /var/www/html/dump978/data
 
 ## ADD SCRIPT AND COMMAND TO EXECUTE MAINTAINANCE SCRIPT USING RC.LOCAL
