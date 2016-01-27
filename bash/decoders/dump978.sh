@@ -133,7 +133,7 @@ tee $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 # Start with logging.
 rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /var/log/dump978.log &
 while true; do
-    tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    tail -n0 -f /var/log/dump978.log | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
     sleep 15
 done
 EOF
