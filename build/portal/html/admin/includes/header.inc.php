@@ -7,7 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="assets/css/admin.css">
+        <link rel="stylesheet" href="/admin/assets/css/admin.css">
         <script src="http://code.jquery.com/jquery-2.2.0.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     </head>
@@ -26,9 +26,10 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
+                            <li id="logout-link"><a href="/admin/blog">Blog</a></li>
                             <li id="logout-link"><a href="/admin">Settings</a></li>
-                            <li id="logout-link"><a href="account.php">Account</a></li>
-                            <li id="logout-link"><a href="logout.php">Logout</a></li>
+                            <li id="logout-link"><a href="/admin/account.php">Account</a></li>
+                            <li id="logout-link"><a href="/admin/logout.php">Logout</a></li>
                             <li id="logout-link"><a href="/" target="_blank">Portal Home</a></li>
                         </ul>
                     </div>

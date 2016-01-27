@@ -68,7 +68,7 @@
         if (isset($_POST['enablePfclient']) && $_POST['enablePfclient'] == "TRUE")
             $enablePfclient = TRUE;
 
-        // Update settings using those supplied byt the form.
+        // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
@@ -220,5 +220,5 @@
             <input type="submit" class="btn btn-default" value="Save Settings">
         </form>
 <?php
-    require_once('includes/footer.inc.php')
+    require_once('includes/footer.inc.php');
 ?>

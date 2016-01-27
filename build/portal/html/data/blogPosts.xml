@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<blogPosts>
+    <blogPost>
+        <title>Example Post</title>
+        <date>1/27/2016</date>
+        <author>admin</author>
+        <contents>This is an example post.</contents>
+    </blogPost>
+    <blogPost>
+        <title>Example Post 5</title>
+        <date>1/26/2016</date>
+        <author>admin</author>
+        <contents>&lt;p&gt;This is example post 5.&lt;/p&gt;&#13;
+&lt;p&gt;This has been edited again.&lt;/p&gt;</contents>
+    </blogPost>
+    <blogPost>
+        <title>Example Post 4</title>
+        <date>1/25/2016</date>
+        <author>admin</author>
+        <contents>&lt;p&gt;This is example post 4.&lt;br /&gt;&lt;em&gt;&lt;strong&gt;Has been edited...&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</contents>
+    </blogPost>
+    <blogPost>
+        <title>Example Post 3</title>
+        <date>1/24/2016</date>
+        <author>admin</author>
+        <contents>This is example post 3.</contents>
+    </blogPost>
+    <blogPost>
+        <title>Example Post 2</title>
+        <date>1/23/2016</date>
+        <author>admin</author>
+        <contents>This is example post 2.</contents>
+    </blogPost>
+    <blogPost>
+        <title>Example Post 1</title>
+        <date>1/22/2016</date>
+        <author>admin</author>
+        <contents>This is example post 1.</contents>
+    </blogPost>
+</blogPosts>

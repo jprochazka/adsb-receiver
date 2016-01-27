@@ -28,65 +28,58 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    class common {
+    class blog {
 
-        ////////////////////////////////////////
-        // Check if page load is a post back.
-
-        function postBack() {
-            if (empty($_SERVER['HTTP_REFERER'])) {
-                return FALSE;
+        function getTitlesAndDates($orderBy = "desc") {
+            // Get all posts from the blogposts.xml file.
+            $posts = array();
+            $blogPosts = simplexml_load_file("../../data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
+            foreach ($blogPosts as $blogPost) {
+                $posts[] = array("title"=>$blogPost->title, "date"=>$blogPost->date);
             }
-            $methodUsed = strtoupper($_SERVER['REQUEST_METHOD']);
-            $referer = strtolower(preg_replace('/\?.*/', '', basename($_SERVER['HTTP_REFERER'])));
-            $thisScript = strtolower(basename($_SERVER['SCRIPT_NAME']));
-            if ($methodUsed == 'POST' && $referer == $thisScript) {
-                return TRUE;
+            // Sort the results by date either desc or asc.
+            if(strtolower($orderBy) == "desc") {
+                usort($posts, function($a, $b) {
+                    return strtotime($b["date"]) - strtotime($a["date"]);
+                });
+            } else {
+                usort($posts, function($a, $b) {
+                    return strtotime($a["date"]) - strtotime($b["date"]);
+                });
             }
-            return FALSE;
+            return $posts;
         }
 
-        /////////////////////////////////////
-        // Return a boolean from a string.
-
-        function stringToBoolean($value) {
-            switch(strtoupper($value)) {
-                case 'TRUE': return TRUE;
-                case 'FALSE': return FALSE;
-                default: return NULL;
-            }
-        }
-
-        ///////////////////////////////////////////////////////
-        // Returns the value for the specified setting name.
-
-        function getSetting($name) {
-            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
-            foreach ($settings as $setting) {
-                if ($setting->name == $name) {
-                    return $setting->value;
+        function getPostByTitle($title) {
+            $blogPosts = simplexml_load_file("../../data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
+            foreach ($blogPosts as $blogPost) {
+                if ($blogPost->title == $title) {
+                    return $blogPost;
                 }
             }
-            return "";
         }
 
-        ///////////////////////////////////////////////////////
-        // Updates the value for the specified setting name.
-
-        function updateSetting($name, $value) {
-            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
-            foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
-                $setting->value = $value;
+        function editContentsByTitle($title, $contents) {
+            $blogPosts = simplexml_load_file("../../data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
+            foreach ($blogPosts->xpath("blogPost[title='".$title."']") as $blogPost) {
+                $blogPost->contents = $contents;
             }
-            file_put_contents("../data/settings.xml", $settings->asXML());
+            file_put_contents("../../data/blogPosts.xml", $blogPosts->asXML());
         }
 
-        // Pagination.
-        function paganateArray($inArray, $page, $itemsPerPage) {
-            $page = $page < 1 ? 1 : $page;
-            $start = ($page - 1) * ($itemsPerPage + 1);
-            $offset = $itemsPerPage + 1;
-            return array_slice($inArray, $start, $offset);
+        function deletePostByTitle($title) {
+            $blogPosts = simplexml_load_file("../../data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
+            foreach($blogPosts as $blogPost) {
+                if($blogPost->title == $title) {
+                    $dom = dom_import_simplexml($blogPost);
+                    $dom->parentNode->removeChild($dom);
+                }
+            }
+            // Remove empty lines.
+            while(pathsElement.hasChildNodes())
+                pathsElement.removeChild( pathsElement.getFirstChild() );
+
+            file_put_contents("../../data/blogPosts.xml", $blogPosts->asXml());
         }
     }
 ?>
