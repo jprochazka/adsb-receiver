@@ -10,7 +10,7 @@
     </setting>
     <setting>
         <name>defaultPage</name>
-        <value>graphs.php</value>
+        <value>blog.php</value>
     </setting>
     <setting>
         <name>enableBlog</name>
