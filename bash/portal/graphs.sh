@@ -33,10 +33,6 @@
 
 BUILDDIR=$PWD
 
-# Assign the Lighthttpd document root directory to a variable.
-RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
-
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
 echo -e "\033[33m"
@@ -191,16 +187,6 @@ echo -e "\033[33mReloading collectd so the new configuration is used..."
 echo -e "\033[37m"
 sudo /etc/init.d/collectd force-reload
 
-## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
-
-echo -e "\033[33m"
-echo "Placing performance graph HTML file in Lighttpd's www root directory..."
-echo -e "\033[37m"
-if [ ! -d "${DOCUMENTROOT}/graphs" ]; then
-    sudo mkdir ${DOCUMENTROOT}/graphs
-fi
-sudo cp -r $BUILDDIR/portal/graphs/html/* ${DOCUMENTROOT}/graphs/
-
 ## EDIT CRONTAB
 
 echo -e "\033[33mAdding jobs to crontab..."
@@ -209,7 +195,7 @@ if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
 fi
 echo -e "\033[37m"
-chmod 755 $BUILDDIR/portal/graphs/make-collectd-graphs.sh
+chmod +x $BUILDDIR/portal/graphs/make-collectd-graphs.sh
 sudo tee -a /etc/cron.d/adsb-feeder-performance-graphs > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
@@ -224,8 +210,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 */5 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null
 */10 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null
-2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h 180 >/dev/null
-4,24,44 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d 1200 >/dev/null
-6 * * *	* root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d 5400 >/dev/null
-8 */12 * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d 86400 >/dev/null
+2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h >/dev/null
+4,24,44 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d >/dev/null
+6 * * *	* root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d >/dev/null
+8 */12 * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d >/dev/null
 EOF

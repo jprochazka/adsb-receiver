@@ -63,6 +63,20 @@ CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage gcc
+CheckPackage netcat
+
+## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+
+echo -e "\033[33mStopping unwanted kernel modules from being loaded..."
+echo -e "\033[37m"
+sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_v2
+blacklist rtl_2830
+blacklist rtl_2832
+blacklist r820t
+EOF
+sudo rmmod dvb_usb_rtl28xxu
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
@@ -115,42 +129,55 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     sudo /etc/init.d/dump1090-mutability restart
 fi
 
+## CREATE JSON DATA DIRECTORY
+
+echo -e "\033[33mCreating Json data directory..."
+echo -e "\033[37m"
+sudo mkdir -p /var/www/html/dump978/data
+sudo chmod 777 /var/www/html/dump978/data
+
 ## ADD SCRIPT AND COMMAND TO EXECUTE MAINTAINANCE SCRIPT USING RC.LOCAL
 
 echo -e "\033[33mCreating the script dump978-maint.sh..."
 echo -e "\033[37m"
-sudo tee -a $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
+tee $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 #! /bin/sh
 
 # Start with logging.
-#rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /tmp/dump978.out &
-#while true; do
-#    tail -n0 -f /tmp/dump978.out | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
-#    sleep 15
-#done
-
-# Start without logging.
+rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /var/log/dump978.log &
 while true; do
-    sleep 30
-    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -d 1 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    tail -n0 -f /var/log/dump978.log | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    sleep 15
 done
+EOF
+
+echo -e "\033[33mCreating logrotate file..."
+echo -e "\033[37m"
+tee /etc/logrotate.d/dump978-maint.sh > /dev/null <<EOF
+/var/log/dump978.log {
+    weekly
+    rotate 4
+    copytruncate
+}
 EOF
 
 echo -e "\033[33mSetting permissions on dump978-maint.sh..."
 echo -e "\033[37m"
 sudo chmod +x $DUMP978DIR/dump978-maint.sh
 
-echo -e "\033[33mAdding startup line to rc.local..."
-echo -e "\033[37m"
-lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${DUMP978DIR}/dump978-maint.sh &\n" /etc/rc.local
+if ! grep -Fxq "${DUMP978DIR}/dump978-maint.sh &" /etc/rc.local; then
+    echo -e "\033[33mAdding startup line to rc.local..."
+    echo -e "\033[37m"
+    lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${DUMP978DIR}/dump978-maint.sh &\n" /etc/rc.local
+fi
 
 ## EXECUTE THE MAINTAINANCE SCRIPT
 
 echo -e "\033[33m"
 echo "Executing the dump978 maintainance script..."
 echo -e "\033[37m"
-sudo $DUMP978DIR/dump978-maint.sh &
+sudo $DUMP978DIR/dump978-maint.sh > /dev/null &
 
 ## DISPLAY MESSAGE STATING DUMP978 SETUP IS COMPLETE
 

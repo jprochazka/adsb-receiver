@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings>
+    <setting>
+        <name>siteName</name>
+        <value>ADS-B Feeder</value>
+    </setting>
+    <setting>
+        <name>template</name>
+        <value>default</value>
+    </setting>
+    <setting>
+        <name>defaultPage</name>
+        <value>blog.php</value>
+    </setting>
+    <setting>
+        <name>enableBlog</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>enableInfo</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>enableGraphs</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>enableDump1090</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>enableDump978</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>enablePfclient</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>measurement</name>
+        <value>imperial</value>
+    </setting>
+    <setting>
+        <name>networkInterface</name>
+        <value>eth0</value>
+    </setting>
+</settings>
