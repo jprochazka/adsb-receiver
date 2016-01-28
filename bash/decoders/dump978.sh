@@ -177,7 +177,7 @@ fi
 echo -e "\033[33m"
 echo "Executing the dump978 maintainance script..."
 echo -e "\033[37m"
-sudo $DUMP978DIR/dump978-maint.sh &
+sudo $DUMP978DIR/dump978-maint.sh > /dev/null &
 
 ## DISPLAY MESSAGE STATING DUMP978 SETUP IS COMPLETE
 
