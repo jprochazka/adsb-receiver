@@ -2,11 +2,13 @@
 
 The following is a history of the changes made to this project.
 
-## The "admin" Branch
+## January 28th, 2016
 
-* Added a web based administration area which can be used to modify portal settings.
 * The files making up the portal website have been overhauled completely.
-* A basic template system for the portal has been added which will be made more user friendly over time.
+* Added a web based administration area which can be used to modify portal settings.
+* A simple blog system has been added which is functional but beta quality at best at this time.
+* A template system for the portal has been added which will over time evolve into a more user friendly system.
+* There is now a messages/aircraft/second graph displayed on the performance graphs web page.
 * Users can now specify the distance of range rings displayed on the dump1090 map during installation.
 * Uses the package collectd-core instead of collectd to eliminate the installation of unneeded packages.
 * Added modified the dump1090-mutability HTML files to be used as a dump978 map to the portal.
