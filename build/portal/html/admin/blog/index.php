@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,33 +28,80 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
     session_start();
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
+    // Load the require PHP classes.
+    require_once('../../classes/common.class.php');
+    require_once('../../classes/account.class.php');
+    require_once('../../classes/blog.class.php');
+
     $common = new common();
+    $account = new account();
+    $blog = new blog();
 
-    // The title and navigation link ID of this page.
-    $pageTitle = "Live Dump978 Map";
+    // Check if the user is logged in.
+    if (!$account->isAuthenticated()) {
+        // The user is not logged in so forward them to the login page.
+        header ("Location: login.php");
+    }
 
-    // Get the name of the template to use from the settings.
-    $siteName = $common->getSetting("siteName");
-    $template = $common->getSetting("template");
+    // Get titles and dates for all blog posts.
+    $allPosts = $blog->getTitlesAndDates();
 
-    // Enable/disable navigation links.
-    $enableBlog = $common->getSetting("enableBlog");
-    $enableInfo = $common->getSetting("enableInfo");
-    $enableGraphs = $common->getSetting("enableGraphs");
-    $enableDump1090 = $common->getSetting("enableDump1090");
-    $enableDump978 = $common->getSetting("enableDump978");
-    $enablePfclient = $common->getSetting("enablePfclient");
+    // Pagination.
+    $itemsPerPage = 10;
+    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
+    $posts = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
 
-    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
+    ////////////////
+    // BEGIN HTML
 
-    // Include the index template.
-    require_once('templates/'.$template.'/dump978.tpl.php');
+    require_once('../includes/header.inc.php');
+?>
 
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+            <h1>Blog Management</h1>
+            <hr />
+            <h2>Blog Posts</h2>
+            <a href="/admin/blog/add.php" class="btn btn-info" style="margin-bottom:  10px;" role="button">Add Post</a>
+            <div class="table-responsive">
+                <table class="table table-striped table-condensed">
+                    <tr>
+                        <th></th>
+                        <th>Title</th>
+                        <th>Date</th>
+                    </tr>
+<?php
+    foreach ($posts as $post) {
+?>
+                    <tr>
+                        <td><a href="edit.php?title=<?php echo urlencode($post['title']); ?>">edit</a> <a href="delete.php?title=<?php echo urlencode($post['title']); ?>">delete</a></td>
+                        <td><?php echo $post['title']; ?></td>
+                        <td><?php echo $post['date']; ?></td>
+                    </tr>
+<?php
+    }
+?>
+                </table>
+            </div>
+<?php
+    $count = 0;
+    foreach ($allPosts as $post) {
+        $count++;
+    }
+    $pageLinks = $count / $itemsPerPage;
+?>
+            <!-- This is a placeholder for pagination which is not implemented at this time. -->
+            <ul class="pagination">
+<?php
+    $i = 1;
+    while ($i <= $pageLinks) {
+?>
+                <li><a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+<?php
+        $i++;
+    }
+?>
+            </ul>
+<?php
+    require_once('../includes/footer.inc.php');
 ?>

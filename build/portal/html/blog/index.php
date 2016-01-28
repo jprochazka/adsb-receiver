@@ -31,7 +31,49 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../classes/account.class.php');
-    $account = new account();
-    $account->logout();
+    require_once('../classes/common.class.php');
+    require_once('../classes/blog.class.php');
+
+    $common = new common();
+    $blog = new blog();
+
+    // The title and navigation link ID of this page.
+    $pageTitle = "Blog";
+
+    // Get the name of the template to use from the settings.
+    $siteName = $common->getSetting("siteName");
+    $template = $common->getSetting("template");
+
+    // Enable/disable navigation links.
+    $enableBlog = $common->getSetting("enableBlog");
+    $enableInfo = $common->getSetting("enableInfo");
+    $enableGraphs = $common->getSetting("enableGraphs");
+    $enableDump1090 = $common->getSetting("enableDump1090");
+    $enableDump978 = $common->getSetting("enableDump978");
+    $enablePfclient = $common->getSetting("enablePfclient");
+
+    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
+
+    // Get titles and dates for all blog posts.
+    $allPosts = $blog->getAllPosts();
+
+    // Pagination.
+    $itemsPerPage = 5;
+    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
+    $posts = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
+
+    // Preview length.
+    $previewLength = 500;
+
+    $count = 0;
+    foreach ($allPosts as $post) {
+        $count++;
+    }
+    $pageLinks = $count / $itemsPerPage;
+
+    // Include the index template.
+    require_once('../templates/'.$template.'/blog/index.tpl.php');
+
+    // Include the master template.
+    require_once('../templates/'.$template.'/master.tpl.php');
 ?>

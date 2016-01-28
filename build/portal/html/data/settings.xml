@@ -10,7 +10,11 @@
     </setting>
     <setting>
         <name>defaultPage</name>
-        <value>graphs.php</value>
+        <value>blog.php</value>
+    </setting>
+    <setting>
+        <name>enableBlog</name>
+        <value>1</value>
     </setting>
     <setting>
         <name>enableInfo</name>

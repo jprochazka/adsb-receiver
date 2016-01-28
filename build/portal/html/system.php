@@ -43,6 +43,7 @@
     $template = $common->getSetting("template");
 
     // Enable/disable navigation links.
+    $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
     $enableDump1090 = $common->getSetting("enableDump1090");

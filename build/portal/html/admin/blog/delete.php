@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,33 +28,56 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
     session_start();
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
+    // Load the require PHP classes.
+    require_once('../../classes/common.class.php');
+    require_once('../../classes/account.class.php');
+    require_once('../../classes/blog.class.php');
+
     $common = new common();
+    $account = new account();
+    $blog = new blog();
 
-    // The title and navigation link ID of this page.
-    $pageTitle = "Live Dump978 Map";
+    // Check if the user is logged in.
+    if (!$account->isAuthenticated()) {
+        // The user is not logged in so forward them to the login page.
+        header ("Location: login.php");
+    }
 
-    // Get the name of the template to use from the settings.
-    $siteName = $common->getSetting("siteName");
-    $template = $common->getSetting("template");
+    if ($common->postBack()) {
+        // Delete the selected blog post.
+        $blog->deletePostByTitle(urldecode($_GET['title']));
 
-    // Enable/disable navigation links.
-    $enableBlog = $common->getSetting("enableBlog");
-    $enableInfo = $common->getSetting("enableInfo");
-    $enableGraphs = $common->getSetting("enableGraphs");
-    $enableDump1090 = $common->getSetting("enableDump1090");
-    $enableDump978 = $common->getSetting("enableDump978");
-    $enablePfclient = $common->getSetting("enablePfclient");
+        // Forward the user to the blog management index page.
+        header ("Location: /admin/blog/");
+    }
 
-    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
+    // Get titles and dates for all blog posts.
+    $post = $blog->getPostByTitle(urldecode($_GET['title']));
 
-    // Include the index template.
-    require_once('templates/'.$template.'/dump978.tpl.php');
 
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+    ////////////////
+    // BEGIN HTML
+
+    require_once('../includes/header.inc.php');
+
+?>
+            <h1>Blog Management</h1>
+            <hr />
+            <h2>Delete Blog Post</h2>
+            <h3><?php echo $post->title; ?></h3>
+            <p>Posted <strong><?php echo date_format(date_create($post->date), "F jS, Y"); ?></strong> by <strong><?php echo $post->author; ?></strong>.</p>
+            <div class="alert alert-danger" role="alert">
+                <p>
+                    <strong>Confirm Delete</strong><br />
+                    Are you sure you want to delete this blog post?
+                </p>
+            </div>
+            <form id="delete-blog-post" method="post" action="delete.php?title=<?php echo urlencode($post->title); ?>">
+                <input type="submit" class="btn btn-default" value="Delete Post">
+                <a href="/admin/blog/" class="btn btn-info" role="button">Cancel</a>
+            </form>
+<?php
+    require_once('../includes/footer.inc.php');
 ?>
