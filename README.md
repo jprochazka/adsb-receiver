@@ -20,6 +20,9 @@ https://github.com/jprochazka/adsb-feeder/wiki
     
 #### Updating existing installations...
 
+**If updating an installation created before January 28th, 2016...**  
+Due to the fact the portal was entirly overhauled after the above date you should first backup then delete all files contained in the /var/www/html directory before fetching and running the latest version. Fresh installations and installations created using these files after the above date can disregard the above notice.
+
     cd ~/adsb-feeder
     git fetch --all
     git reset --hard origin/master
@@ -47,6 +50,7 @@ At this time the following software can be installed using these scripts.
 * Web accessable dump1090 and system performance graphs.
 * A web accessable live dump1090 map.
 * A web accessable live dump978 map.
+* A blog which can be used to share your plane tracking experiences with others.
 
 ### Supported Operating Systems
 
