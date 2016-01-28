@@ -31,9 +31,9 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../classes/common.class.php');
-    require_once('../classes/account.class.php');
-    require_once('../classes/blog.class.php');
+    require_once('../../classes/common.class.php');
+    require_once('../../classes/account.class.php');
+    require_once('../../classes/blog.class.php');
 
     $common = new common();
     $account = new account();

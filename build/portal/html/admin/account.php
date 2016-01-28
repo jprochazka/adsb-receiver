@@ -34,8 +34,8 @@
     $didNotMatch = FALSE;
 
     // Load the require PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/account.class.php');
+    require_once('../classes/common.class.php');
+    require_once('../classes/account.class.php');
 
     $common = new common();
     $account = new account();

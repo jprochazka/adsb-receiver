@@ -45,48 +45,31 @@
         header ("Location: login.php");
     }
 
-    // Set updated variable to FALSE.
-    $updated = FALSE;
-
     if ($common->postBack()) {
         // Update the contents of the blog post.
-        $blog->editContentsByTitle(urldecode($_GET['title']), $_POST['contents']);
+        $blog->addPost($_SESSION['login'], $_POST['title'], $_POST['contents']);
 
-        // Set updated to TRUE since settings were updated.
-        $updated = TRUE;
+        // Forward the user to the blog management index page.
+        header ("Location: /admin/blog/");
     }
-
-    // Get titles and dates for all blog posts.
-    $post = $blog->getPostByTitle(urldecode($_GET['title']));
-
 
     ////////////////
     // BEGIN HTML
 
     require_once('../includes/header.inc.php');
-
-    // Display the updated message if settings were updated.
-    if ($updated) {
-?>
-        <div id="contents-saved" class="alert alert-success fade in" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            Blog post contents have been updated.
-        </div>
-<?php
-    }
 ?>
             <h1>Blog Management</h1>
             <hr />
-            <h2>Edit Blog Post</h2>
-            <h3><?php echo $post->title; ?></h3>
-            <p>Posted <strong><?php echo date_format(date_create($post->date), "F jS, Y"); ?></strong> by <strong><?php echo $post->author; ?></strong>.</p>
-            <form id="edit-blog-post" method="post" action="edit.php?title=<?php echo urlencode($post->title); ?>">
+            <h2>Add Blog Post</h2>
+            <form id="add-blog-post" method="post" action="add.php">
                 <div class="form-group">
-                    <textarea id="contents" name="contents"><?php echo $post->contents; ?></textarea>
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" class="form-control" required>
                 </div>
-                <input type="submit" class="btn btn-default" value="Commit Changes">
+                <div class="form-group">
+                    <textarea id="contents" name="contents"><?php echo $_SESSION['login']; ?></textarea>
+                </div>
+                <input type="submit" class="btn btn-default" value="Publish">
             </form>
             <script src='//cdn.tinymce.com/4/tinymce.min.js'></script>
             <script>

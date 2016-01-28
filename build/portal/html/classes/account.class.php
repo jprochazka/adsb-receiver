@@ -61,7 +61,7 @@
         function authenticate($login, $password, $remember = FALSE, $forward = TRUE, $origin = NULL) {
             $common = new common();
             // Get all the administrators from the administrators.xml file.
-            $administrators = simplexml_load_file("../data/administrators.xml") or die("Error: Cannot create administrators object");
+            $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml") or die("Error: Cannot create administrators object");
             foreach ($administrators as $administrator) {
                 // If or when we get to a matching login compare the supplied password to the one stored inadministrators.xml.
                 if ($administrator->login == $login) {
@@ -114,12 +114,12 @@
         // Change a password stored for an existing administrator in the file administrators.xml.
 
         function changePassword($login, $password) {
-            $administrators = simplexml_load_file("../data/administrators.xml") or die("Error: Cannot create administrators object");
+            $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml") or die("Error: Cannot create administrators object");
             foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
                 $administrator->password = password_hash($password, PASSWORD_DEFAULT);
                 $administrator->firstLogin = "FALSE";
             }
-            file_put_contents("../data/administrators.xml", $administrators->asXML());
+            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml", $administrators->asXML());
         }
 
     }

@@ -31,8 +31,8 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/account.class.php');
+    require_once('../classes/common.class.php');
+    require_once('../classes/account.class.php');
 
     $common = new common();
     $account = new account();
@@ -48,6 +48,10 @@
 
     if ($common->postBack()) {
         // Set TRUE or FALSE for checkbox items.
+        $enableBlog = FALSE;
+        if (isset($_POST['enableBlog']) && $_POST['enableBlog'] == "TRUE")
+            $enableBlog = TRUE;
+
         $enableInfo = FALSE;
         if (isset($_POST['enableInfo']) && $_POST['enableInfo'] == "TRUE")
             $enableInfo = TRUE;
@@ -72,6 +76,7 @@
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
+        $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
         $common->updateSetting("enableDump1090", $enableDump1090);
@@ -90,6 +95,7 @@
     $defaultPage = $common->getSetting("defaultPage");
 
     // Get navigation settings from settings.xml.
+    $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
     $enableDump1090 = $common->getSetting("enableDump1090");
@@ -164,6 +170,11 @@
             <div class="panel panel-default">
                 <div class="panel-heading">Navigation Settings</div>
                 <div class="panel-body">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="enableBlog" value="TRUE"<?php ($enableBlog == 1 ? print ' checked' : ''); ?>> Enable blog link.
+                        </label>
+                    </div>
                     <div class="checkbox">
                         <label>
                             <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == 1 ? print ' checked' : ''); ?>> Enable system information link.

@@ -31,9 +31,9 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../classes/common.class.php');
-    require_once('../classes/account.class.php');
-    require_once('../classes/blog.class.php');
+    require_once('../../classes/common.class.php');
+    require_once('../../classes/account.class.php');
+    require_once('../../classes/blog.class.php');
 
     $common = new common();
     $account = new account();
@@ -50,7 +50,8 @@
 
     // Pagination.
     $itemsPerPage = 10;
-    $posts = $common->paganateArray($allPosts, $_GET['page'], $itemsPerPage - 1);
+    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
+    $posts = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
 
     ////////////////
     // BEGIN HTML
@@ -61,6 +62,7 @@
             <h1>Blog Management</h1>
             <hr />
             <h2>Blog Posts</h2>
+            <a href="/admin/blog/add.php" class="btn btn-info" style="margin-bottom:  10px;" role="button">Add Post</a>
             <div class="table-responsive">
                 <table class="table table-striped table-condensed">
                     <tr>

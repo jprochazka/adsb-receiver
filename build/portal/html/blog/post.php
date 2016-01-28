@@ -1,5 +1,5 @@
 <?php
-
+    
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,65 +28,38 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    class common {
+    // Start session
+    session_start();
 
-        ////////////////////////////////////////
-        // Check if page load is a post back.
+    // Load the common PHP classes.
+    require_once('../classes/common.class.php');
+    require_once('../classes/blog.class.php');
+    $common = new common();
+    $blog = new blog();
 
-        function postBack() {
-            if (empty($_SERVER['HTTP_REFERER'])) {
-                return FALSE;
-            }
-            $methodUsed = strtoupper($_SERVER['REQUEST_METHOD']);
-            $referer = strtolower(preg_replace('/\?.*/', '', basename($_SERVER['HTTP_REFERER'])));
-            $thisScript = strtolower(basename($_SERVER['SCRIPT_NAME']));
-            if ($methodUsed == 'POST' && $referer == $thisScript) {
-                return TRUE;
-            }
-            return FALSE;
-        }
+    // Get the requested blog post.
+    $post = $blog->getPostByTitle(urldecode($_GET['title']));
 
-        /////////////////////////////////////
-        // Return a boolean from a string.
+    // The title and navigation link ID of this page.
+    $pageTitle = $post->title;
 
-        function stringToBoolean($value) {
-            switch(strtoupper($value)) {
-                case 'TRUE': return TRUE;
-                case 'FALSE': return FALSE;
-                default: return NULL;
-            }
-        }
+    // Get the name of the template to use from the settings.
+    $siteName = $common->getSetting("siteName");
+    $template = $common->getSetting("template");
 
-        ///////////////////////////////////////////////////////
-        // Returns the value for the specified setting name.
+    // Enable/disable navigation links.
+    $enableBlog = $common->getSetting("enableBlog");
+    $enableInfo = $common->getSetting("enableInfo");
+    $enableGraphs = $common->getSetting("enableGraphs");
+    $enableDump1090 = $common->getSetting("enableDump1090");
+    $enableDump978 = $common->getSetting("enableDump978");
+    $enablePfclient = $common->getSetting("enablePfclient");
 
-        function getSetting($name) {
-            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
-            foreach ($settings as $setting) {
-                if ($setting->name == $name) {
-                    return $setting->value;
-                }
-            }
-            return "";
-        }
+    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
 
-        ///////////////////////////////////////////////////////
-        // Updates the value for the specified setting name.
+    // Include the index template.
+    require_once('../templates/'.$template.'/blog/post.tpl.php');
 
-        function updateSetting($name, $value) {
-            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
-            foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
-                $setting->value = $value;
-            }
-            file_put_contents("../data/settings.xml", $settings->asXML());
-        }
-
-        // Pagination.
-        function paganateArray($inArray, $page, $itemsPerPage) {
-            $page = $page < 1 ? 1 : $page;
-            $start = ($page - 1) * ($itemsPerPage + 1);
-            $offset = $itemsPerPage + 1;
-            return array_slice($inArray, $start, $offset);
-        }
-    }
+    // Include the master template.
+    require_once('../templates/'.$template.'/master.tpl.php');
 ?>
