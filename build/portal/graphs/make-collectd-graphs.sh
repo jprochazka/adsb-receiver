@@ -366,8 +366,8 @@ local_trailing_rate_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 1010 \
-  --height 217 \
+  --width 959 \
+  --height 200 \
   --step "$5" \
   --title "$3 Message Rate" \
   --vertical-label "Messages/Second" \
@@ -458,12 +458,13 @@ local_trailing_rate_graph() {
   "CDEF:max5=max3,gmax1,MAX" \
   "CDEF:max=max4,max5,MAX" \
   "CDEF:maxarea=max,min,-" \
-  "LINE1:min#FFFF99:mins" \
-  "AREA:maxarea#FFFF99:max:STACK" \
-  "LINE1:7dayaverage#00FF00:7 Day Average" \
-  "AREA:y2strong#FF0000:messages >-3dBFS/Hr (RHS)" \
-  "LINE1:y2positions#00c0FF:Positions/Hr (RHS)" \
   "LINE1:messages#0000FF:Messages Received" \
+  "LINE1:min#FFFF99" \
+  "AREA:maxarea#FFFF99:Min/Max:STACK" \
+  "LINE1:7dayaverage#00FF00:7 Day Average" \
+  "LINE1:messages#0000FF" \
+  "AREA:y2strong#FF0000:Messages > -3dBFS/Hr (RHS)" \
+  "LINE1:y2positions#00c0FF:Positions/Hr (RHS)\c" \
   --watermark "Drawn: $nowlit";
 }
 
