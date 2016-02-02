@@ -93,15 +93,16 @@ tracks_graph() {
   --height 200 \
   --step "$5" \
   --title "$3 Tracks Seen" \
-  --vertical-label "tracks/hour" \
+  --vertical-label "Tracks/Hour" \
   --lower-limit 0 \
   --units-exponent 0 \
   "DEF:all=$2/dump1090_tracks-all.rrd:value:AVERAGE" \
   "DEF:single=$2/dump1090_tracks-single_message.rrd:value:AVERAGE" \
   "CDEF:hall=all,3600,*" \
   "CDEF:hsingle=single,3600,*" \
-  "AREA:hsingle#FF0000:tracks with single message" \
-  "AREA:hall#00FF00:unique tracks:STACK" \
+  "AREA:hsingle#FF0000:Tracks with single message" \
+  "AREA:hall#00FF00:Unique tracks\c:STACK" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
