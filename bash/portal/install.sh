@@ -87,7 +87,7 @@ sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
 
 echo -e "\033[33m"
 echo "Setting permissions on graphs folder...\033[37m"
-chmod 777 ${DOCUMENTROOT}/graphs/
+sudo chmod 777 ${DOCUMENTROOT}/graphs/
 
 echo -e "\033[33m"
 echo "Setting up performance graphs..."
