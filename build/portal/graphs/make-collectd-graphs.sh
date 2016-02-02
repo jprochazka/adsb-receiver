@@ -42,23 +42,22 @@ aircraft_message_rate_graph() {
   --width 480 \
   --height 200 \
   --step "$5" \
-  --title "$3 Message Rate / Aircraft" \
-  --vertical-label "Messages/Aircraft/Second" \
+  --title "$3 Message Rate / Aircraft / Second" \
+  --vertical-label "Rate/Aircraft/Second" \
   --lower-limit 0 \
   --units-exponent 0 \
   "TEXTALIGN:center" \
-  "DEF:aircrafts=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
+  "DEF:all=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
   "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
-  "CDEF:rate-provisional=messages,aircrafts,/" \
-  "CDEF:rate=aircrafts,0,GT,rate-provisional,0,IF" \
+  "CDEF:rate=messages,all,/" \
   "VDEF:avgrate=rate,AVERAGE" \
   "VDEF:maxrate=rate,MAXIMUM" \
-  "LINE1:rate#0000FF:Messages / AC" \
-  "LINE1:avgrate#666666:Average\::dashes" \
-  "GPRINT:avgrate:%3.1lf" \
-  "LINE1:maxrate#FF0000:Maximum\:" \
-  "GPRINT:maxrate:%3.1lf\c" \
-  "LINE1:aircrafts#990000:Aircraft Seen / Tracked \c" \
+  "GPRINT:avgrate:Average\:%3.0lf " \
+  "GPRINT:maxrate:Maximum\:%3.0lf " \
+  "LINE1:all#990000:A/C" \
+  "LINE1:rate#0000FF:Rate" \
+  "LINE1:maxrate#FF0000:Max Rate" \
+  "LINE1:avgrate#666666:Avg Rate:dashes" \
   --watermark "Drawn: $nowlit";
 }
 
