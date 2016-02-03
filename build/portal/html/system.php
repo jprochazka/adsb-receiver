@@ -33,14 +33,15 @@
 
     // Load the common PHP classes.
     require_once('classes/common.class.php');
+    require_once('classes/template.class.php');
     $common = new common();
+    $template = new template();
 
     // The title and navigation link ID of this page.
     $pageTitle = "System Information";
 
     // Get the name of the template to use from the settings.
     $siteName = $common->getSetting("siteName");
-    $template = $common->getSetting("template");
 
     // Enable/disable navigation links.
     $enableBlog = $common->getSetting("enableBlog");
@@ -52,9 +53,5 @@
 
     $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
 
-    // Include the index template.
-    require_once('templates/'.$template.'/system.tpl.php');
-
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+    $template->display("system");
 ?>

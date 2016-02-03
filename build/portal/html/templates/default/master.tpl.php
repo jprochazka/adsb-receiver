@@ -23,15 +23,13 @@
 <html lang="en">
     <head>
     <meta charset="utf-8">
-    <title><?php echo $siteName ?>: <?php echo $pageTitle; ?></title>
+    <title>{$siteName}: {$title}</title>
         <meta http-equiv="cache-control" content="no-cache" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="/templates/<?php echo $template; ?>/assets/css/portal.css">
-<?php
-    headContent();
-?>
+        <link rel="stylesheet" href="/templates/{$template}/assets/css/portal.css">
+        {area:head}
     </head>
         <body>
         <div id="wrapper">
@@ -44,23 +42,21 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="/"><?php echo $siteName; ?></title></a>
+                        <a class="navbar-brand" href="/">{$siteName}</title></a>
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <?php ($enableBlog == 1 ? print '<li id="blog-link"><a href="/blog/">Blog</a></li>' : ''); ?>
-                            <?php ($enableInfo == 1 ? print '<li id="system-link"><a href="/system.php">System Information</a></li>' : ''); ?>
-                            <?php ($enableGraphs == 1 ? print '<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>' : ''); ?>
-                            <?php ($enableDump1090 == 1 ? print '<li id="dump1090-link"><a href="/dump1090.php">Live Dump1090 Map</a></li>' : ''); ?>
-                            <?php ($enableDump978 == 1 ? print '<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>' : ''); ?>
-                            <?php ($enablePfclient == 1 ? print '<!-- Plane Finder ADS-B Client Link Placeholder -->' : ''); ?>
+                            {if $enableBlog}<li id="blog-link"><a href="/blog/">Blog</a></li>{/if}
+                            {if $enableInfo}<li id="system-link"><a href="/system.php">System Information</a></li>{/if}
+                            {if $enableGraphs}<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>{/if}
+                            {if $enableDump1090}<li id="dump1090-link"><a href="/dump1090.php">Live Dump1090 Map</a></li>{/if}
+                            {if $enableDump978}<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>{/if}
+                            {if $enableDump978}<!-- Plane Finder ADS-B Client Link Placeholder -->{/if}
                         </ul>
                     </div>
                 </div>
             </nav>
-<?php
-    pageContent();
-?>
+            {area:content}
             <div id="push"></div>
         </div>
         <footer id="footer">
@@ -73,10 +69,8 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
         <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
         <script type="text/javascript">
-            $('#<?php echo $linkId ?>').addClass("active");
+            $('#{$id}').addClass("active");
         </script>
-<?php
-    scriptContent();
-?>
+        {area:scripts}
    </body>
 </html>

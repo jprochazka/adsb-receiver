@@ -18,21 +18,13 @@
     // A copy of the license can be found package along with these files.         //
     ////////////////////////////////////////////////////////////////////////////////
 
-    ////////////////////////////////
-    // Additional <head> content.
-    function headContent() { }
-
-    ///////////////////
-    // Page content.
-    function pageContent() {
 ?>
+{area:head}
+            <style></style>
+{/area}
+{area:contents}
             <div class="container">
-                <h1>System information coming soon...</h1>
+                <h1>{$comingSoon}</h1>
             </div>
-<?php
-    }
-
-    /////////////////////////////////////////////////
-    // Content to be added to the scripts section.
-    function scriptContent() {}
-?>
+{/area}
+{area:scripts/}

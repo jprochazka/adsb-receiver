@@ -28,23 +28,80 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    class sysinfo {
+    /*
 
-        function memoryUsage(){
-            $free = shell_exec('free');
-            $free = (string)trim($free);
-            $free_arr = explode("\n", $free);
-            $mem = explode(" ", $free_arr[1]);
-            $mem = array_filter($mem);
-            $mem = array_merge($mem);
-            $memory_usage = $mem[2]/$mem[1]*100;
-            return $memoryUsage;
+    {area:name}
+    {$variable}
+    {* comment *}
+
+    */
+
+    class template {
+
+        // PUT THE TEMPLATE TOGETHER
+
+        function display($page) {
+            // Load the master template.
+            $master = $this->readTemplate('master.tpl.php');
+
+            // Load the template for the requested page.
+            $page = $this->readTemplate($page.'.tpl.php');
+
+            $output = $master;
+            $output = mergeAreas($output, $page);
+            $output = mergeComments($output);
+            $output = mergeVariables($output);
+            
+
+            return $output;
         }
 
-        function cpuUsage(){
-            $load = sys_getloadavg();
-            return $load[0];
+
+        // TEMPLATE SYSTEM FUNCTIONS
+
+        // Return the contents of the requested template.
+        function readTemplate($template) {
+            $common = new Common($this);
+            return file_get_contents($_SERVER['DOCUMENT_ROOT']."/templates/".$common->getSetting('language')."/".$template, "r");
         }
 
+
+        function mergeAreas($master, $template) {
+            $pattern = '\{area:(.*)/\}#U';
+            preg_match_all($pattern, $master, $areas, PREG_PATTERN_ORDER);
+            foreach ($areas[0] as $element) {
+                $id = extractString($element, 'id="', '"');
+                if if (strpos($template, '{area:'.$id.'/}') !== TRUE) {
+                    $content = extractString($template, '{area:'.$id.'}', '{/area}');
+                    $master = str_replace("{area:'.$id.'}", $content, $master);
+                } else {
+                    $master = str_replace("{area:'.$id.'}", "", $master);
+                }
+            }
+            return $master;
+        }
+
+        function mergeComments($template) {
+
+        }
+
+        function mergeVariables($template) {
+
+        }
+
+        function processIfs($template) {
+
+        }
+
+
+        // Function that returns the string contained between two strings.
+        function extractString($string, $start, $end) {
+            $string = " ".$string;
+            $ini = strpos($string, $start);
+            if ($ini == 0) return "";
+            $ini += strlen($start);
+            $len = strpos($string, $end, $ini) - $ini;
+            return substr($string, $ini, $len);
+        }
     }
 ?>
