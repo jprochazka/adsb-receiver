@@ -42,22 +42,23 @@ aircraft_message_rate_graph() {
   --width 480 \
   --height 200 \
   --step "$5" \
-  --title "$3 Message Rate / Aircraft / Second" \
-  --vertical-label "Rate/Aircraft/Second" \
+  --title "$3 Message Rate / Aircraft" \
+  --vertical-label "Messages/Aircraft/Second" \
   --lower-limit 0 \
   --units-exponent 0 \
   "TEXTALIGN:center" \
-  "DEF:all=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
+  "DEF:aircrafts=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
   "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
-  "CDEF:rate=messages,all,/" \
+  "CDEF:rate-provisional=messages,aircrafts,/" \
+  "CDEF:rate=aircrafts,0,GT,rate-provisional,0,IF" \
   "VDEF:avgrate=rate,AVERAGE" \
   "VDEF:maxrate=rate,MAXIMUM" \
-  "GPRINT:avgrate:Average\:%3.0lf " \
-  "GPRINT:maxrate:Maximum\:%3.0lf " \
-  "LINE1:all#990000:A/C" \
-  "LINE1:rate#0000FF:Rate" \
-  "LINE1:maxrate#FF0000:Max Rate" \
-  "LINE1:avgrate#666666:Avg Rate:dashes" \
+  "LINE1:rate#0000FF:Messages / AC" \
+  "LINE1:avgrate#666666:Average\::dashes" \
+  "GPRINT:avgrate:%3.1lf" \
+  "LINE1:maxrate#FF0000:Maximum\:" \
+  "GPRINT:maxrate:%3.1lf\c" \
+  "LINE1:aircrafts#990000:Aircraft Seen / Tracked \c" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -81,7 +82,8 @@ cpu_graph_dump1090() {
   "CDEF:backgroundp=background,10,/" \
   "AREA:readerp#008000:USB" \
   "AREA:backgroundp#00C000:other:STACK" \
-  "AREA:demodp#00FF00:demodulator:STACK" \
+  "AREA:demodp#00FF00:demodulator\c:STACK" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -112,7 +114,7 @@ cpu_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 1110 \
+  --width 1010 \
   --height 200 \
   --step "$5" \
   --title "Overall CPU Utilization" \
@@ -143,7 +145,7 @@ cpu_graph() {
   "AREA:pwait#C00000:io:STACK" \
   "AREA:psystem#FF0000:sys:STACK" \
   "AREA:puser#40FF40:user:STACK" \
-  "AREA:pnice#008000:nice:STACK" \
+  "AREA:pnice#008000:nice\c:STACK" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -151,7 +153,7 @@ df_root_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 480 \
+  --width 496 \
   --height 200 \
   --step "$5" \
   --title "Disk Usage (/)" \
@@ -163,7 +165,8 @@ df_root_graph() {
   "DEF:free=$2/df_complex-free.rrd:value:AVERAGE" \
   "CDEF:totalused=used,reserved,+" \
   "AREA:totalused#4169E1:used:STACK" \
-  "AREA:free#32C734:free:STACK" \
+  "AREA:free#32C734:free\c:STACK" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -191,7 +194,6 @@ disk_io_iops_graph() {
   "GPRINT:write:MAX:Max\:%4.1lf iops" \
   "GPRINT:write:AVERAGE:Avg\:%4.1lf iops" \
   "GPRINT:write:LAST:Current\:%4.1lf iops\c" \
-  "HRULE:0#000000" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -219,7 +221,6 @@ disk_io_octets_graph() {
   "GPRINT:write:MAX:Max\: %4.1lf %sB/sec" \
   "GPRINT:write:AVERAGE:Avg\: %4.1lf %SB/sec" \
   "GPRINT:write:LAST:Current\: %4.1lf %SB/sec\c" \
-  "HRULE:0#000000" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -240,13 +241,12 @@ eth0_graph() {
   "LINE1:rx#336600" \
   "GPRINT:rx:MAX:Max\:%8.1lf %s" \
   "GPRINT:rx:AVERAGE:Avg\:%8.1lf %S" \
-  "GPRINT:rx:LAST:Current\:%8.1lf %Sbytes/sec\n" \
+  "GPRINT:rx:LAST:Current\:%8.1lf %Sbytes/sec\c" \
   "AREA:tx_neg#4169E1:Outgoing" \
   "LINE1:tx_neg#0033CC" \
   "GPRINT:tx:MAX:Max\:%8.1lf %S" \
   "GPRINT:tx:AVERAGE:Avg\:%8.1lf %S" \
-  "GPRINT:tx:LAST:Current\:%8.1lf %Sbytes/sec\n" \
-  "HRULE:0#000000" \
+  "GPRINT:tx:LAST:Current\:%8.1lf %Sbytes/sec\c" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -254,7 +254,7 @@ memory_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 480 \
+  --width 496 \
   --height 200 \
   --step "$5" \
   --title "Memory Utilization" \
@@ -267,7 +267,8 @@ memory_graph() {
   "AREA:used#4169E1:used:STACK" \
   "AREA:buffered#32C734:buffered:STACK" \
   "AREA:cached#00FF00:cached:STACK" \
-  "AREA:free#FFFFFF:free:STACK" \
+  "AREA:free#FFFFFF:free\c:STACK" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -289,6 +290,8 @@ temp_graph_imperial() {
   "CDEF:ttb=tta,1.8,*" \
   "CDEF:ttc=ttb,32,+" \
   "AREA:ttc#ffcc00" \
+  "COMMENT: \n" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -308,6 +311,8 @@ temp_graph_metric() {
   "DEF:traw=$2/gauge-cpu_temp.rrd:value:MAX" \
   "CDEF:tfin=traw,1000,/" \
   "AREA:tfin#ffcc00" \
+  "COMMENT: \n" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -328,13 +333,12 @@ wlan0_graph() {
   "LINE1:rx#336600" \
   "GPRINT:rx:MAX:Max\:%8.1lf %s" \
   "GPRINT:rx:AVERAGE:Avg\:%8.1lf %S" \
-  "GPRINT:rx:LAST:Current\:%8.1lf %Sbytes/sec\n" \
+  "GPRINT:rx:LAST:Current\:%8.1lf %Sbytes/sec\c" \
   "AREA:tx_neg#4169E1:Outgoing" \
   "LINE1:tx_neg#0033CC" \
   "GPRINT:tx:MAX:Max\:%8.1lf %S" \
   "GPRINT:tx:AVERAGE:Avg\:%8.1lf %S" \
-  "GPRINT:tx:LAST:Current\:%8.1lf %Sbytes/sec\n" \
-  "HRULE:0#000000" \
+  "GPRINT:tx:LAST:Current\:%8.1lf %Sbytes/sec\c" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -344,7 +348,7 @@ local_rate_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 480 \
+  --width 429 \
   --height 200 \
   --step "$5" \
   --title "$3 Message Rate" \
@@ -359,7 +363,8 @@ local_rate_graph() {
   "CDEF:y2positions=positions,10,*" \
   "LINE1:messages#0000FF:messages received" \
   "AREA:y2strong#FF0000:messages >-3dBFS / hr (RHS)" \
-  "LINE1:y2positions#00c0FF:positions / hr (RHS)" \
+  "LINE1:y2positions#00c0FF:positions / hr (RHS)\c" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -367,8 +372,8 @@ local_trailing_rate_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 1010 \
-  --height 217 \
+  --width 959 \
+  --height 200 \
   --step "$5" \
   --title "$3 Message Rate" \
   --vertical-label "Messages/Second" \
@@ -459,12 +464,13 @@ local_trailing_rate_graph() {
   "CDEF:max5=max3,gmax1,MAX" \
   "CDEF:max=max4,max5,MAX" \
   "CDEF:maxarea=max,min,-" \
-  "LINE1:min#FFFF99:mins" \
-  "AREA:maxarea#FFFF99:max:STACK" \
-  "LINE1:7dayaverage#00FF00:7 Day Average" \
-  "AREA:y2strong#FF0000:messages >-3dBFS/Hr (RHS)" \
-  "LINE1:y2positions#00c0FF:Positions/Hr (RHS)" \
   "LINE1:messages#0000FF:Messages Received" \
+  "LINE1:min#FFFF99" \
+  "AREA:maxarea#FFFF99:Min/Max:STACK" \
+  "LINE1:7dayaverage#00FF00:7 Day Average" \
+  "LINE1:messages#0000FF" \
+  "AREA:y2strong#FF0000:Messages > -3dBFS/Hr (RHS)" \
+  "LINE1:y2positions#00c0FF:Positions/Hr (RHS)\c" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -472,7 +478,7 @@ range_graph_imperial(){
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 480 \
+  --width 428 \
   --height 200 \
   --step "$5" \
   --title "$3 Max Range" \
@@ -489,7 +495,8 @@ range_graph_imperial(){
   "VDEF:peakrange=rangenm,MAXIMUM" \
   "GPRINT:avgrange:%1.1lf NM" \
   "LINE1:peakrange#FF0000:Peak Range\\:" \
-  "GPRINT:peakrange:%1.1lf NM" \
+  "GPRINT:peakrange:%1.1lf NM\c" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -497,7 +504,7 @@ range_graph_metric() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 480 \
+  --width 428 \
   --height 200 \
   --step "$5" \
   --title "$3 Max Range" \
@@ -514,7 +521,8 @@ range_graph_metric() {
   "GPRINT:avgrange:%1.1lf km" \
   "LINE1:peakrange#FF0000:Peak Range\\:" \
   "GPRINT:peakrange:%1.1lf km" \
-  "LINE1:463#000000:250 NM" \
+  "LINE1:463#000000:250 NM\c" \
+  "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -523,7 +531,7 @@ signal_graph() {
   "$1" \
   --start end-$4 \
   --width 480 \
-  --height 200 \
+  --height 186 \
   --step "$5" \
   --title "$3 Signal Level" \
   --vertical-label "dBFS" \
@@ -540,13 +548,13 @@ signal_graph() {
   "AREA:us#FFFFFF" \
   "GPRINT:signal:AVERAGE:%4.1lf" \
   "LINE1:peak#0000FF:Peak Level\:" \
-  "GPRINT:peak:MAX:%4.1lf\n" \
+  "GPRINT:peak:MAX:%4.1lf\c" \
   "LINE:noise#7F00FF:Noise" \
   "GPRINT:noise:MAX:Max\: %4.1lf" \
   "GPRINT:noise:MIN:Min\: %4.1lf" \
-  "GPRINT:noise:AVERAGE:Avg\: %4.1lf\n" \
+  "GPRINT:noise:AVERAGE:Avg\: %4.1lf\c" \
   "LINE1:0#000000:Zero dBFS" \
-  "LINE1:-3#FF0000:-3 dBFS\n" \
+  "LINE1:-3#FF0000:-3 dBFS\c" \
   --watermark "Drawn: $nowlit";
 }
 
