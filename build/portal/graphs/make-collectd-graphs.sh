@@ -42,22 +42,23 @@ aircraft_message_rate_graph() {
   --width 480 \
   --height 200 \
   --step "$5" \
-  --title "$3 Message Rate / Aircraft / Second" \
-  --vertical-label "Rate/Aircraft/Second" \
+  --title "$3 Message Rate / Aircraft" \
+  --vertical-label "Messages/Aircraft/Second" \
   --lower-limit 0 \
   --units-exponent 0 \
   "TEXTALIGN:center" \
-  "DEF:all=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
+  "DEF:aircrafts=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
   "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
-  "CDEF:rate=messages,all,/" \
+  "CDEF:rate-provisional=messages,aircrafts,/" \
+  "CDEF:rate=aircrafts,0,GT,rate-provisional,0,IF" \
   "VDEF:avgrate=rate,AVERAGE" \
   "VDEF:maxrate=rate,MAXIMUM" \
-  "GPRINT:avgrate:Average\:%3.0lf " \
-  "GPRINT:maxrate:Maximum\:%3.0lf " \
-  "LINE1:all#990000:A/C" \
-  "LINE1:rate#0000FF:Rate" \
-  "LINE1:maxrate#FF0000:Max Rate" \
-  "LINE1:avgrate#666666:Avg Rate:dashes" \
+  "LINE1:rate#0000FF:Messages / AC" \
+  "LINE1:avgrate#666666:Average\::dashes" \
+  "GPRINT:avgrate:%3.1lf" \
+  "LINE1:maxrate#FF0000:Maximum\:" \
+  "GPRINT:maxrate:%3.1lf\c" \
+  "LINE1:aircrafts#990000:Aircraft Seen / Tracked \c" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -94,26 +95,16 @@ tracks_graph() {
   --height 200 \
   --step "$5" \
   --title "$3 Tracks Seen" \
-  --vertical-label "tracks/hour" \
+  --vertical-label "Tracks/Hour" \
   --lower-limit 0 \
   --units-exponent 0 \
   "DEF:all=$2/dump1090_tracks-all.rrd:value:AVERAGE" \
   "DEF:single=$2/dump1090_tracks-single_message.rrd:value:AVERAGE" \
   "CDEF:hall=all,3600,*" \
   "CDEF:hsingle=single,3600,*" \
-<<<<<<< HEAD
-<<<<<<< HEAD
   "AREA:hsingle#FF0000:Tracks with single message" \
   "AREA:hall#00FF00:Unique tracks\c:STACK" \
-=======
-  "AREA:hsingle#FF0000:tracks with single message" \
-  "AREA:hall#00FF00:unique tracks\c:STACK" \
->>>>>>> 82576755a77e5581c4fedd3e1ee0bad45cadc064
   "COMMENT: \n" \
-=======
-  "AREA:hsingle#FF0000:tracks with single message" \
-  "AREA:hall#00FF00:unique tracks:STACK" \
->>>>>>> 0825d25e6c782511daa9f29c5d51136ea2666882
   --watermark "Drawn: $nowlit";
 }
 
@@ -381,8 +372,8 @@ local_trailing_rate_graph() {
   rrdtool graph \
   "$1" \
   --start end-$4 \
-  --width 1010 \
-  --height 217 \
+  --width 959 \
+  --height 200 \
   --step "$5" \
   --title "$3 Message Rate" \
   --vertical-label "Messages/Second" \
@@ -473,8 +464,6 @@ local_trailing_rate_graph() {
   "CDEF:max5=max3,gmax1,MAX" \
   "CDEF:max=max4,max5,MAX" \
   "CDEF:maxarea=max,min,-" \
-<<<<<<< HEAD
-<<<<<<< HEAD
   "LINE1:messages#0000FF:Messages Received" \
   "LINE1:min#FFFF99" \
   "AREA:maxarea#FFFF99:Min/Max:STACK" \
@@ -482,22 +471,6 @@ local_trailing_rate_graph() {
   "LINE1:messages#0000FF" \
   "AREA:y2strong#FF0000:Messages > -3dBFS/Hr (RHS)" \
   "LINE1:y2positions#00c0FF:Positions/Hr (RHS)\c" \
-=======
-  "LINE1:min#FFFF99:mins" \
-  "AREA:maxarea#FFFF99:max:STACK" \
-  "LINE1:7dayaverage#00FF00:7 Day Average" \
-  "AREA:y2strong#FF0000:messages >-3dBFS/Hr (RHS)" \
-  "LINE1:y2positions#00c0FF:Positions/Hr (RHS)" \
-  "LINE1:messages#0000FF:Messages Received\c" \
->>>>>>> 82576755a77e5581c4fedd3e1ee0bad45cadc064
-=======
-  "LINE1:min#FFFF99:mins" \
-  "AREA:maxarea#FFFF99:max:STACK" \
-  "LINE1:7dayaverage#00FF00:7 Day Average" \
-  "AREA:y2strong#FF0000:messages >-3dBFS/Hr (RHS)" \
-  "LINE1:y2positions#00c0FF:Positions/Hr (RHS)" \
-  "LINE1:messages#0000FF:Messages Received" \
->>>>>>> 0825d25e6c782511daa9f29c5d51136ea2666882
   --watermark "Drawn: $nowlit";
 }
 
