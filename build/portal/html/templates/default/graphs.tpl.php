@@ -4,15 +4,16 @@
     //                  ADS-B FEEDER PORTAL TEMPLATE INFORMATION                  //
     // ========================================================================== //
     // Template Set: default                                                      //
-    // Template Name: master                                                      //
-    // Version: 1.0.0                                                             //
-    // Release Date:                                                              //
+    // Template Name: graphs                                                      //
+    // Version: 1.0.1                                                             //
+    // Release Date: 03-02-2016                                                   //
     // Author: Joe Prochazka                                                      //
     // Website: https://www.swiftbyte.com                                         //
+    // Contributor: Marcus Gunther                                                //
     // ========================================================================== //
     // Copyright and Licensing Information:                                       //
     //                                                                            //
-    // Copyright (c) 2015 Joseph A. Prochazka                                     //
+    // Copyright (c) 2016 Joseph A. Prochazka                                     //
     //                                                                            //
     // This template set is licensed under The MIT License (MIT)                  //
     // A copy of the license can be found package along with these files.         //
@@ -83,7 +84,7 @@
                                 </a>
                             </div>
                             <div class="col-md-6 text-center">
-                                <a id ="dump1090-cpu-link" href="#">
+                                <a id ="dump1090-aircraft_message_rate-link" href="#">
                                     <img id="dump1090-aircraft_message_rate-image" class="img-responsive" src="#" alt="Aircraft Message Rate">
                                 </a>
                             </div>
@@ -234,8 +235,8 @@
 
                 // Create links to full sized images for the requested time frame.
                 $("#dump1090-local_trailing_rate-link").attr("href", "graphs/dump1090-" + $hostName + "-local_trailing_rate-" + $timeFrame + ".png");
-                $("#dump1090-local_rate-image-link").attr("href", "graphs/dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png");
-                $("#dump1090-aircraft_message_rate-image-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png");
+                $("#dump1090-local_rate-link").attr("href", "graphs/dump1090-" + $hostName + "-local_rate-" + $timeFrame + ".png");
+                $("#dump1090-aircraft_message_rate-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png");
                 $("#dump1090-aircraft-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
                 $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
 <?php   if ($measurement == "imperial") { ?>
@@ -245,21 +246,21 @@
 <?php   } ?>
                 $("#dump1090-signal-link").attr("href", "graphs/dump1090-" + $hostName + "-signal-" + $timeFrame + ".png");
                 $("#dump1090-cpu-link").attr("href", "graphs/dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png");
-                $("#system-cpu-image").attr("href", "graphs/system-" + $hostName + "-cpu-" + $timeFrame + ".png");
+                $("#system-cpu-link").attr("href", "graphs/system-" + $hostName + "-cpu-" + $timeFrame + ".png");
 <?php   if ($networkInterface == "eth0") { ?>
-                $("#system-eth0_bandwidth-image").attr("href", "graphs/system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png");
+                $("#system-eth0_bandwidth-link").attr("href", "graphs/system-" + $hostName + "-eth0_bandwidth-" + $timeFrame + ".png");
 <?php   } else { ?>
-                $("#system-wlan0_bandwidth-image").attr("href", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
+                $("#system-wlan0_bandwidth-link").attr("href", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
 <?php   } ?>
-                $("#system-memory-image").attr("href", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png");
+                $("#system-memory-link").attr("href", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png");
 <?php   if ($measurement == "imperial") { ?>
-                $("#system-temperature-image").attr("href", "graphs/system-" + $hostName + "-temperature-imperial" + $timeFrame + ".png");
+                $("#system-temperature-link").attr("href", "graphs/system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png");
 <?php   } else { ?>
-                $("#system-temperature-image").attr("href", "graphs/system-" + $hostName + "-temperature-metric" + $timeFrame + ".png");
+                $("#system-temperature-link").attr("href", "graphs/system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png");
 <?php   } ?>
-                $("#system-df_root-image").attr("href", "graphs/system-" + $hostName + "-df_root-" + $timeFrame + ".png");
-                $("#system-disk_io_iops-image").attr("href", "graphs/system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png");
-                $("#system-disk_io_octets-image").attr("href", "graphs/system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png");
+                $("#system-df_root-link").attr("href", "graphs/system-" + $hostName + "-df_root-" + $timeFrame + ".png");
+                $("#system-disk_io_iops-link").attr("href", "graphs/system-" + $hostName + "-disk_io_iops-" + $timeFrame + ".png");
+                $("#system-disk_io_octets-link").attr("href", "graphs/system-" + $hostName + "-disk_io_octets-" + $timeFrame + ".png");
 
 	            // Set the button related to the selected time frame to active.
                 $("#btn-1h").removeClass('active');
