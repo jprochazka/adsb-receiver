@@ -54,8 +54,8 @@ if [ -f $BASEDIR/image ]; then
     echo -e "\033[32m"
     echo "Image setup complete."
     echo -e "\033[33m"
-    echo "At any time you can xecute install.sh to add additional features"
-    echo "Or update existing packages installed on this device."
+    echo "At any time you can execute install.sh to add additional features"
+    echo "or update existing packages installed on this device."
     echo -e "\033[37m"
 
     exit 0
