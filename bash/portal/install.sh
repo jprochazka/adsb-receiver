@@ -68,6 +68,7 @@ CheckPackage collectd-core
 CheckPackage rrdtool
 CheckPackage lighttpd
 CheckPackage php5-cgi
+CheckPackage libpython2.7
 
 ## SETUP THE PORTAL WEBSITE
 
