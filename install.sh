@@ -43,6 +43,23 @@ BUILDDIR="$BASEDIR/build"
 source $BASHDIR/variables.sh
 source $BASHDIR/functions.sh
 
+## CHECK IF FIRST RUN USING IMAGE
+
+if [ -f $BASEDIR/image ]; then
+    # Execute image setup script.
+    $BASHDIR/image_setup.sh
+
+    # Exit scripts once the the image setup script has completed.
+    echo -e "\033[32m"
+    echo "Image setup complete."
+    echo -e "\033[33m"
+    echo "At any time you can xecute install.sh to add additional features"
+    echo "Or update existing packages installed on this device."
+    echo -e "\033[37m"
+
+    exit 0
+fi
+
 ## FUNCTIONS
 
 # Download the latest package lists for enabled repositories and PPAs.
