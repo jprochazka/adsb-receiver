@@ -2,6 +2,12 @@
 
 The following is a history of the changes made to this project.
 
+## February 5th, 2016
+
+* Raspbian Jessie Lite image available for testing.
+* Added script to configure pre installed images.
+* Added ADS-B Message Rate/Aircraft/Second graph.
+
 ## January 28th, 2016
 
 * The files making up the portal website have been overhauled completely.
