@@ -47,6 +47,7 @@ source $BASHDIR/functions.sh
 
 if [ -f $BASEDIR/image ]; then
     # Execute image setup script.
+    chmod +x $BASHDIR/image_setup.sh
     $BASHDIR/image_setup.sh
 
     # Exit scripts once the the image setup script has completed.
