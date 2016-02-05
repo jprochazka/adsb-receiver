@@ -24,7 +24,7 @@
 {/area}
 {area:contents}
             <div class="container">
-                <h1>{$comingSoon}</h1>
+                <h1>System information coming soon...</h1>
             </div>
 {/area}
 {area:scripts/}
