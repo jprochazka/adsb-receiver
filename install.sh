@@ -47,8 +47,8 @@ source $BASHDIR/functions.sh
 
 if [ -f $BASEDIR/image ]; then
     # Execute image setup script.
-    chmod +x $BASHDIR/image_setup.sh
-    $BASHDIR/image_setup.sh
+    chmod +x $BASHDIR/image.sh
+    $BASHDIR/image.sh
 
     # Exit scripts once the the image setup script has completed.
     echo -e "\033[32m"

@@ -98,27 +98,12 @@ if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then
     sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
 fi
 
-# Pair PiAware with the users account.
+# Restart dump1090-mutability.
 
-echo -e "\033[33m"
-echo "Configure PiAware with your FlightAware account."
-echo "To do so enter the login name and password for your FlightAware account."
-echo "This information will only be used by PiAware to associate it to your account."
-echo -e "\033[37m"
-read -p "FlightAware Login: " PIAWAREUSER
-
-# Restart both dump1090-mutability and PiAware.
-
-sudo piaware-config -user $PIAWAREUSER -password
 echo -e "\033[33m"
 echo "Restarting dump1090-mutability..."
 echo -e "\033[37m"
 sudo /etc/init.d/dump1090-mutability restart
-
-echo -e "\033[33m"
-echo "Restarting PiAware..."
-echo -e "\033[37m"
-sudo /etc/init.d/piaware restart
 
 # Remove the "image" file now that setup has been ran.
 
