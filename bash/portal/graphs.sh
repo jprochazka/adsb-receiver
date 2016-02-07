@@ -31,11 +31,17 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR="${PWD}/build"
+BUILDDIR=$PWD
 
-# Assign the Lighthttpd document root directory to a variable.
-RAWDOCUMENTROOT=`lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
+
+echo -e "\033[33m"
+echo "Configuring dump1090-mutability to measure and save noise data."
+echo "Modifying the dump1090-mutability init script..."
+sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
+echo "Restarting dump1090-mutability..."
+echo -e "\033[37m"
+sudo /etc/init.d/dump1090-mutability restart
 
 ## BACKUP AND REPLACE COLLECTD.CONF
 
@@ -135,7 +141,7 @@ LoadPlugin disk
 
 <Plugin "interface">
 	Interface "eth0"
-        #Interface "wlan0"
+        Interface "wlan0"
 </Plugin>
 
 <Plugin "aggregation">
@@ -181,24 +187,15 @@ echo -e "\033[33mReloading collectd so the new configuration is used..."
 echo -e "\033[37m"
 sudo /etc/init.d/collectd force-reload
 
-## PLACE HTML FILES IN LIGHTTPD'S WWW ROOT
-
-echo -e "\033[33m"
-echo "Placing performance graph HTML file in Lighttpd's www root directory..."
-echo -e "\033[37m"
-sudo mkdir ${DOCUMENTROOT}/collectd
-sudo mkdir ${DOCUMENTROOT}/graphs
-sudo cp -r $BUILDDIR/portal/graphs/html/* ${DOCUMENTROOT}/graphs/
-
 ## EDIT CRONTAB
 
 echo -e "\033[33mAdding jobs to crontab..."
-if [ -f /tmp/foo.txt ]
-    echo -e "Removing previously install cron file..."
+if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
+    echo -e "Removing previously installed cron file..."
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
 fi
 echo -e "\033[37m"
-chmod 755 $BUILDDIR/portal/graphs/make-collectd-graphs.sh
+chmod +x $BUILDDIR/portal/graphs/make-collectd-graphs.sh
 sudo tee -a /etc/cron.d/adsb-feeder-performance-graphs > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
@@ -209,10 +206,12 @@ sudo tee -a /etc/cron.d/adsb-feeder-performance-graphs > /dev/null <<EOF
 # At 6 minutes past the hour new 30 day graphs are generated.
 # At 8 minutes past every 12th hour new 365 day graphs are generated.
 
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
 */5 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null
 */10 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null
-2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h 180 >/dev/null
-4,24,44 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d 1200 >/dev/null
-6 * * *	* root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d 5400 >/dev/null
-8 */12 * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d 86400 >/dev/null
+2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h >/dev/null
+4,24,44 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d >/dev/null
+6 * * *	* root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d >/dev/null
+8 */12 * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d >/dev/null
 EOF

@@ -31,38 +31,15 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+## VAARIABLES
 
-## FUNCTIONS
+BUILDDIR=$PWD
+PIAWAREDIR="$PWD/piaware_builder"
 
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
+source ../bash/variables.sh
+source ../bash/functions.sh
+
+## INFORMATIVE MESSAGE ABOUT THIS SOFTWARE
 
 clear
 
@@ -106,14 +83,25 @@ CheckPackage tcllib
 CheckPackage tcl-tls
 CheckPackage itcl3
 
-## DOWNLOAD THE PIAWARE SOURCE
+## DOWNLOAD OR UPDATE THE PIAWARE_BUILDER SOURCE
 
-echo -e "\033[33m"
-echo "Downloading the source code for PiAware Builder..."
-echo -e "\033[37m"
-git clone https://github.com/flightaware/piaware_builder.git
-cd $BUILDDIR/piaware_builder
-git checkout tags/v2.1-5
+# Check if the git repository already exists locally.
+if [ -d $PIAWAREDIR ] && [ -d $PIAWAREDIR/.git ]; then
+    # A directory with a git repository containing the source code exists.
+    echo -e "\033[33m"
+    echo "Updating the local piaware_builder git repository..."
+    echo -e "\033[37m"
+    cd $PIAWAREDIR
+    git pull origin master
+else
+    # A directory containing the source code does not exist in the build directory.
+    echo -e "\033[33m"
+    echo "Cloning the piaware_builder git repository locally..."
+    echo -e "\033[37m"
+    git clone https://github.com/flightaware/piaware_builder.git
+    cd $PIAWAREDIR
+    git checkout ${PIAWAREBRANCH}
+fi
 
 ## BUILD THE PIAWARE PACKAGE
 
@@ -121,7 +109,7 @@ echo -e "\033[33m"
 echo "Building the PiAware package..."
 echo -e "\033[37m"
 ./sensible-build.sh
-cd $BUILDDIR/piaware_builder/package
+cd $PIAWAREDIR/package
 dpkg-buildpackage -b
 
 ## INSTALL THE PIAWARE PACKAGE
@@ -129,11 +117,11 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-sudo dpkg -i $BUILDDIR/piaware_builder/piaware_2.1-5_*.deb
+sudo dpkg -i $PIAWAREDIR/piaware_${PIAWAREVERSION}_*.deb
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
     echo "The piaware package did not install properly!"
     echo -e "\033[33m"
@@ -145,28 +133,30 @@ fi
 
 ## CONFIGURE FLIGHTAWARE
 
+echo -e "\033[31m"
+echo "CLAIM YOUR PIAWARE DEVICE"
 echo -e "\033[33m"
 echo "Please supply your FlightAware login in order to claim this device."
 echo "After supplying your login PiAware will ask you to enter your password for verification."
+echo "If you decide not to supply a login and password you should still be able to claim your"
+echo "feeder by visting the page http://flightaware.com/adsb/piaware/claim."
 echo -e "\033[37m"
 read -p "Your FlightAware Login: " FALOGIN
 sudo piaware-config -user $FALOGIN -password
 
 echo -e "\033[33m"
-echo "PiAware now sends MLAT results to port 30104 by default. This change is to try to avoid accidentally"
-echo "feeding MLAT results to a Dump 1090 that is not MLAT-aware and may forward the results on unexpectedly."
-echo "Dump 1090 from Mutability should be MLAT-aware meaning it should be safe to remap the MLAT port back to"
-echo "it's original port number which saves having to manually configure Dump 1090 later if you decide you"
-echo "would like to feed MLAT data to Dump 1090. This choice is left up to you."
-echo -e "\033[37m"
-read -p "Remap the MLAT port to 30004 in PiAware?: [Y/n] " MLATPORT
-
-if [[ ! $CONTINUE =~ ^[Nn]$ ]]; then
-    echo -e "\033[33m"
-    printf "Remapping MLAT results to use port 30004..."
-    sudo piaware-config -mlatResultsFormat beast,connect,localhost:30004
-    echo -e "\033[32m [OK]"
+printf "Setting PiAware to send MLAT results on port 30104..."
+ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
+MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
+CLEANFORMAT=`sed 's/beast,connect,localhost:30104//g' <<< $MLATRESULTS`
+FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30104" | sed -e 's/^[ \t]*//'
+# Make sure that the mlatResultsFormat setting is not left blank if no other settings exist..
+if [ -n "$FINALFORMAT" ]; then
+    sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
+else
+    sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30104"
 fi
+echo -e "\033[32m [OK]"
 
 echo -e "\e[33m"
 echo "Restarting PiAware to ensure all changes are applied..."

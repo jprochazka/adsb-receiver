@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<administrators>
+    <administrator>
+        <login>admin</login>
+        <password>$2y$10$uDSOA6NhbgmtMAiNp.QAROD/PG6RUQE/m0xp6fRgo5/TBkMWxReBq</password>
+        <firstLogin>TRUE</firstLogin>
+    </administrator>
+</administrators>

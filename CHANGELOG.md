@@ -2,6 +2,58 @@
 
 The following is a history of the changes made to this project.
 
+## February 5th, 2016
+
+* Raspbian Jessie Lite image available for testing.
+* Added script to configure pre installed images.
+* Added ADS-B Message Rate/Aircraft/Second graph.
+
+## January 28th, 2016
+
+* The files making up the portal website have been overhauled completely.
+* Added a web based administration area which can be used to modify portal settings.
+* A simple blog system has been added which is functional but beta quality at best at this time.
+* A template system for the portal has been added which will over time evolve into a more user friendly system.
+* There is now a messages/aircraft/second graph displayed on the performance graphs web page.
+* Users can now specify the distance of range rings displayed on the dump1090 map during installation.
+* Uses the package collectd-core instead of collectd to eliminate the installation of unneeded packages.
+* Added modified the dump1090-mutability HTML files to be used as a dump978 map to the portal.
+* Added the ability to specify the heywhatsthat.com range rings ranges.
+
+## January 20th, 2016
+
+* Added the ability to build and execute dump978.
+
+## January 14th, 2016
+
+* When the portal is installed the argument --measure-noise is added to the dump1090-mutability init script.
+* Added "noise" level line and information to the signal level performance graph.
+
+## January 8th, 2016
+
+* The dump1090-mutability install Script now asks user for the latitude and longitude of the feeder.
+* Dump1090-mutability is now set to listen for BEAST input on port 30104.
+* PiAware is no longer configured to send MLAT data over port 30001.
+* Behind the scenes work mainly dealling with cleaning up the scripting a little.
+* Consolidated software version variables into a single file.
+* The CheckPackage function is no longer repeatative throughout all the scripts needing it.
+* Added the ChangeConfig function as a way to easily change settings stored in a configuration file.
+* Removed the ability to use rpi-updater to update Raspberry Pi firmware from the scripts.
+
+## January 5th, 2016
+
+* The PiAware 2.1-5-jessie tag is now used when installing the PiAware software to address certificate errors.
+* There is a known issue with upgrade detection for PiAware since changing to the 2.1-5-jessie tag.
+* Fixed PiAware mlatResultsFormat setting were not being set on clean installations.
+* Changes relating to Orange Pi compatability mainly pertaining to prerequisite packages.
+
+## December 29th, 2015
+
+* Now asks if the user wishes to reinstall dump1090-mutability.
+* Added ability to upgrade FlightAware's PiAware if a newer verison is available.
+* Added ability to upgrade the Plane Finder ADS-B Client if a newer version is available.
+* PiAware mlatResultsFormat setting is no longer reset when ran more than once.
+
 ## December 25th, 2015
 
 * Scripts now properly detect if an ADS-B Exchange sharing has already set up.

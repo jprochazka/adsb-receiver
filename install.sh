@@ -34,44 +34,34 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-##############
 ## VARIABLES
 
-SCRIPTDIR=${PWD}
-BUILDDIR="$SCRIPTDIR/build"
+BASEDIR=$PWD
+BASHDIR="$BASEDIR/bash"
+BUILDDIR="$BASEDIR/build"
 
+source $BASHDIR/variables.sh
+source $BASHDIR/functions.sh
 
-##############
+## CHECK IF FIRST RUN USING IMAGE
+
+if [ -f $BASEDIR/image ]; then
+    # Execute image setup script.
+    chmod +x $BASHDIR/image.sh
+    $BASHDIR/image.sh
+
+    # Exit scripts once the the image setup script has completed.
+    echo -e "\033[32m"
+    echo "Image setup complete."
+    echo -e "\033[33m"
+    echo "At any time you can execute install.sh to add additional features"
+    echo "or update existing packages installed on this device."
+    echo -e "\033[37m"
+
+    exit 0
+fi
+
 ## FUNCTIONS
-
-# Function used to check if a package is install and if not install it.
-ATTEMPT=1
-function CheckPackage(){
-    if (( $ATTEMPT > 5 )); then
-        echo -e "\033[33mSCRIPT HALETED! \033[31m[FAILED TO INSTALL PREREQUISITE PACKAGE]\033[37m"
-        echo ""
-        exit 1
-    fi
-    printf "\e[33mChecking if the package $1 is installed..."
-    if [ $(dpkg-query -W -f='${Status}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-        if (( $ATTEMPT > 1 )); then
-            echo -e "\033[31m [PREVIOUS INSTALLATION FAILED]\033[37m"
-            echo -e "\033[33mAttempting to Install the package $1 again in 5 seconds (ATTEMPT $ATTEMPT OF 5)..."
-            sleep 5
-        else
-            echo -e "\033[31m [NOT INSTALLED]\033[37m"
-            echo -e "\033[33mInstalling the package $1..."
-        fi
-        echo -e "\033[37m"
-        ATTEMPT=$((ATTEMPT+1))
-        sudo apt-get install -y $1;
-        echo ""
-        CheckPackage $1
-    else
-        echo -e "\033[32m [OK]\033[37m"
-        ATTEMPT=0
-    fi
-}
 
 # Download the latest package lists for enabled repositories and PPAs.
 function AptUpdate() {
@@ -95,34 +85,26 @@ function UpdateOperatingSystem() {
     read -p "Press enter to continue..." CONTINUE
 }
 
-# Update Raspberry Pi firmware.
-function UpdateFirmware() {
-    clear
-    CheckPackage rpi-update
-    echo -e "\033[33m"
-    echo "Updating Raspberry Pi firmware..."
-    echo -e "\033[37m"
-    sudo rpi-update
-    echo -e "\033[33m"
-    echo "Your Raspberry Pi firmware is now up to date."
-    echo "If in fact your firmware was update it is recommended that you restart your device now."
-    echo "After the reboot execute this script again to enter the installation process once more."
-    echo -e "\033[37m"
-    read -p "Would you like to reboot your device now? [y/N] " REBOOT
-    if [[ $REBOOT =~ ^[Yy]$ ]]; then
-        sudo reboot
-    fi
-}
-
 # Download, build and then install the dump1090-mutability package.
 function InstallDump1090() {
     clear
     cd $BUILDDIR
     echo -e "\033[33mExecuting the dump1090-mutability installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
-    $SCRIPTDIR/bash/decoders/dump1090-mutability.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/decoders/dump1090-mutability.sh
+    $BASHDIR/decoders/dump1090-mutability.sh
+    cd $BASEDIR
+}
+
+# Download and build dump978.
+function InstallDump978() {
+    clear
+    cd $BUILDDIR
+    echo -e "\033[33mExecuting the dump978 installation script..."
+    echo -e "\033[37m"
+    chmod +x $BASHDIR/decoders/dump978.sh
+    $BASHDIR/decoders/dump978.sh
+    cd $BASEDIR
 }
 
 # Download, build and then install the PiAware package.
@@ -131,9 +113,9 @@ function InstallPiAware() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the PiAware installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/piaware.sh
-    $SCRIPTDIR/bash/feeders/piaware.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/feeders/piaware.sh
+    $BASHDIR/feeders/piaware.sh
+    cd $BASEDIR
 }
 
 # Download and install the Plane Finder ADS-B Client package.
@@ -142,9 +124,9 @@ function InstallPlaneFinder() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the Plane Finder ADS-B Client installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/planefinder.sh
-    $SCRIPTDIR/bash/feeders/planefinder.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/feeders/planefinder.sh
+    $BASHDIR/feeders/planefinder.sh
+    cd $BASEDIR
 }
 
 # Setup the ADS-B Exchange feed.
@@ -153,20 +135,20 @@ function InstallAdsbExchange() {
     cd $BUILDDIR
     echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/feeders/adsbexchange.sh
-    $SCRIPTDIR/bash/feeders/adsbexchange.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/feeders/adsbexchange.sh
+    $BASHDIR/feeders/adsbexchange.sh
+    cd $BASEDIR
 }
 
 # Setup and execute the web portal installation scripts.
 function InstallWebPortal() {
     clear
-    cd $SCRIPTDIR
+    cd $BUILDDIR
     echo -e "\033[33mExecuting the web portal installation scripts..."
     echo -e "\033[37m"
-    chmod +x $SCRIPTDIR/bash/portal/install.sh
-    $SCRIPTDIR/bash/portal/install.sh
-    cd $SCRIPTDIR
+    chmod +x $BASHDIR/portal/install.sh
+    $BASHDIR/portal/install.sh
+    cd $BASEDIR
 }
 
 
@@ -200,19 +182,14 @@ It is recommended that you update your system before building and/or installing 
 Update system before installing any ADS-B feeder related software?
 EOF
 
-# Message displayed asking to update the Raspberry Pi firmware.
-read -d '' UPDATEFIRMWAREFIRST <<"EOF"
-This script has detected that this may be a Raspberry Pi. If this is in fact a Raspberry Pi this script can update the system's firmware now as well.
-
-If you choose to update your Raspberry Pi firmware this script will check for the existance of the package rpi-update and install it if it is not install already. After confirming that rpi-update is installed it will be used to update your firmware.
-
-Is this in fact a Raspberry Pi and if so do you want to update
-the firmware now? (This will require a reboot.)
-EOF
-
 # Message displayed if dump1090-mutability is installed.
 read -d '' DUMP1090INSTALLED <<"EOF"
-The dump1090-mutability package appears to be installed on your system. Mode S decoder setup will be skipped.
+The dump1090-mutability package appears to be installed on your device However...
+
+The dump1090-mutability v1.15~dev source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of
+dump1090-mutability you may opt to rebuild and reinstall this package.
+
+Download, build, and reinstall this package?
 EOF
 
 # Message displayed if dump1090-mutability is not installed.
@@ -221,6 +198,22 @@ The dump1090-mutability package does not appear to be installed on your system. 
 
 Do you wish to continue setup?
 Answering no will exit this script with no actions taken.
+EOF
+
+# Message displayed if dump978 is installed.
+read -d '' DUMP978INSTALLED <<"EOF"
+Dump978 appears to be installed on your device However...
+
+The dump978 source code may have been updated since it was built last. In order to insure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.
+
+Download and rebuild the dump978 binaries?
+EOF
+
+# Message displayed if dump978 is not installed.
+read -d '' DUMP978NOTINSTALLED <<"EOF"
+Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts are able to setup dump978 for you. However keep in mind a second RTL-SDR device will be required in order to feed data to it.
+
+Do you wish to install dump978?
 EOF
 
 # Message displayed above feeder selection check list.
@@ -272,21 +265,18 @@ fi
 whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 10 65
 UPDATEOS=$?
 
-# Ask to update the Raspberry Pi firmware.
-UPDATEFIRMWARENOW=1
-if [[ `uname -m` == "armv7l" ]]; then
-    whiptail --backtitle "$BACKTITLE" --title "Update Raspberry Pi Firmware" --yesno "$UPDATEFIRMWAREFIRST" 10 65
-    UPDATEFIRMWARENOW=$?
-fi
-
 ## DUMP1090-MUTABILITY CHECK
 
 DUMP1090CHOICE=1
+DUMP1090REINSTALL=1
 # Check if the dump1090-mutability package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
-    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --msgbox "$DUMP1090INSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 16 65
+    DUMP1090REINSTALL=$?
+    if [ $DUMP1090REINSTALL = 0 ]; then
+        DUMP1090CHOICE=0
+    fi
 else
     whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Not Installed" --yesno "$DUMP1090NOTINSTALLED" 10 65
     DUMP1090CHOICE=$?
@@ -299,26 +289,59 @@ else
     fi
 fi
 
+DUMP978CHOICE=1
+DUMP978REBUILD=1
+# Check if the dump978 has been built.
+if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f $BUILDDIR/dump978/uat2esnt ] && [ -f $BUILDDIR/dump978/uat2json ]; then
+    # Dump978 appears to have been built already.
+    whiptail --backtitle "$BACKTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 16 65
+    DUMP978REBUILD=$?
+    if [ $DUMP978REBUILD = 0 ]; then
+        DUMP978CHOICE=0
+    fi
+else
+    # Dump978 does not appear to have been built yet.
+    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --yesno "$DUMP978NOTINSTALLED" 10 65
+    DUMP978CHOICE=$?
+fi
+
 ## FEEDER OPTIONS
 
 declare array FEEDERLIST
 
-# Check if the PiAware package is installed.
+# Check if the PiAware package is installed or if it needs upgraded.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The PiAware package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
     FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
+else
+    # Check if a newer version can be installed.
+    if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWAREVERSION}") -eq 0 ]; then
+        FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
+    fi
 fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Plane Finder ADS-B Client package appear to be installed.
-    # A version check will be added here as well at a later date to enable upgrades.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
+else
+    # Set version depending on the device architecture.
+    PFCLIENTVERSION=$PFCLIENTVERSIONARM
+
+    ## The i386 version even though labeled as 3.1.201 is in fact reported as 3.0.2080.
+    ## So for now we will skip the architecture check and use the ARM version variable for both.
+    #if [[ `uname -m` != "armv7l" ]]; then
+    #    PFCLIENTVERSION=$PFCLIENTVERSIONI386
+    #fi
+
+    # Check if a newer version can be installed.
+    if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PFCLIENTVERSION}") -eq 0 ]; then
+        FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client (upgrade)' '' OFF)
+    fi
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -q "${BUILDDIR}/adsbexchange-maint.sh &" /etc/rc.local; then
+if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
@@ -328,7 +351,7 @@ declare FEEDERCHOICES
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
     # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
-    whiptail --title "$TITLE" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 42 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
     whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 10 65
@@ -343,7 +366,7 @@ DOINSTALLWEBPORTAL=$?
 ## CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ $UPDATEOS = 1 ] && [ $UPDATEFIRMWARENOW = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
+if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DUMP978CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
     whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
     echo -e "\033[31m"
@@ -360,7 +383,7 @@ fi
 
 declare CONFIRMATION
 # If the user decided to install updates...
-if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
+if [ $UPDATEOS = 0 ]; then
     CONFIRMATION="The following actions will be performed:\n"
 
     if [ $UPDATEOS = 0 ]; then
@@ -368,31 +391,48 @@ if [ $UPDATEOS = 0 ] || [ $UPDATEFIRMWARENOW = 0 ]; then
         CONFIRMATION="${CONFIRMATION}\n  * Operating system updates will be applied."
     fi
 
-    if [ $UPDATEFIRMWARENOW = 0 ]; then
-        # Firmware update message.
-        CONFIRMATION="${CONFIRMATION}\n  * Raspberry Pi firmware updates will be applied."
-    fi
     CONFIRMATION="${CONFIRMATION}\n"
 fi
 
-# If the user decided rto install software...
-if [ $DUMP1090CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
+# If the user decided to install software...
+if [ $DUMP1090CHOICE = 0 ] || [ $DUMP978CHOICE = 0 || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
     CONFIRMATION="${CONFIRMATION}\nThe following software will be installed:\n"
 
     if [ $DUMP1090CHOICE = 0 ]; then
-        CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+        if [ $DUMP1090REINSTALL -eq 0 ]; then
+            CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability (reinstall)"
+        else
+            CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+        fi
+    fi
+
+    if [ $DUMP978CHOICE = 0 ]; then
+        if [ $DUMP978REBUILD -eq 0 ]; then
+            CONFIRMATION="${CONFIRMATION}\n  * dump978 (rebuild)"
+        else
+            CONFIRMATION="${CONFIRMATION}\n  * dump978"
+        fi
     fi
 
     if [ -s FEEDERCHOICES ]; then
         while read FEEDERCHOICE
         do
             case $FEEDERCHOICE in
-                "FlightAware PiAware") CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
-                ;;
-                "Plane Finder ADS-B Client") CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
-                ;;
-                "ADS-B Exchange Script") CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
-                ;;
+                "FlightAware PiAware")
+                    CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
+                    ;;
+                "FlightAware PiAware (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware (upgrade)"
+                    ;;
+                "Plane Finder ADS-B Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client"
+                    ;;
+                "Plane Finder ADS-B Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client (upgrade)"
+                    ;;
+                "ADS-B Exchange Script")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
+                    ;;
             esac
         done < FEEDERCHOICES
     fi
@@ -406,7 +446,7 @@ fi
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}\nDo you wish to continue?"
 
-whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 20 78
+whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
@@ -432,14 +472,14 @@ if [ $UPDATEOS = 0 ]; then
     UpdateOperatingSystem
 fi
 
-if [ $UPDATEFIRMWARENOW = 0 ]; then
-    UpdateFirmware
-fi
-
 ## Mode S decoder.
 
 if [ $DUMP1090CHOICE = 0 ]; then
     InstallDump1090
+fi
+
+if [ $DUMP978CHOICE = 0 ]; then
+    InstallDump978
 fi
 
 ## Feeders.
@@ -454,11 +494,14 @@ if [ -s FEEDERCHOICES ]; then
     while read FEEDERCHOICE
     do
         case $FEEDERCHOICE in
-            "FlightAware PiAware") RUNPIAWARESCRIPT=0
+            "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
+                RUNPIAWARESCRIPT=0
             ;;
-            "Plane Finder ADS-B Client") RUNPLANEFINDERSCRIPT=0
+            "Plane Finder ADS-B Client"|"Plane Finder ADS-B Client (upgrade)")
+                RUNPLANEFINDERSCRIPT=0
             ;;
-            "ADS-B Exchange Script") RUNADSBEXCHANGESCRIPT=0
+            "ADS-B Exchange Script")
+                RUNADSBEXCHANGESCRIPT=0
             ;;
         esac
     done < FEEDERCHOICES
@@ -475,9 +518,6 @@ fi
 if [ $RUNADSBEXCHANGESCRIPT = 0 ]; then
     InstallAdsbExchange
 fi
-
-
-
 
 ## Web portal.
 

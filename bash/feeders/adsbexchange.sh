@@ -31,7 +31,14 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=${PWD}
+## VARIABLES
+
+BUILDDIR=$PWD
+ADSBEXCHANGEDIR="$BUILDDIR/adsbexchange"
+
+source ../bash/functions.sh
+
+## INFORMATIVE MESSAAGE ABOUT THIS SOFTWARE
 
 clear
 
@@ -48,6 +55,13 @@ echo "http://www.adsbexchange.com/how-to-feed/"
 echo "https://github.com/flightaware/piaware"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
+
+## CHECK FOR PREREQUISITE PACKAGES
+
+echo -e "\033[33m"
+echo "Installing packages needed to build and fulfill dependencies..."
+echo -e "\033[37m"
+CheckPackage netcat
 
 ## CONFIGURE PIAWARE TO FEED ADS-B EXCHANGE IF PIAWARE IS INSTALLED
 
@@ -70,18 +84,18 @@ fi
 
 echo -e "\033[33mSetting permissions on adsbexchange-maint.sh..."
 echo -e "\033[37m"
-sudo chmod +x $BUILDDIR/adsbexchange/adsbexchange-maint.sh
+sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-maint.sh
 
 echo -e "\033[33mAdding startup line to rc.local..."
 echo -e "\033[37m"
 lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &\n" /etc/rc.local
+((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-maint.sh &\n" /etc/rc.local
 
 ## START NETCAT ADS-B EXCHANGE FEED
 
 echo -e "\033[33mExecuting adsbexchange-maint.sh..."
 echo -e "\033[37m"
-sudo $BUILDDIR/adsbexchange/adsbexchange-maint.sh &
+sudo $ADSBEXCHANGEDIR/adsbexchange-maint.sh &
 
 echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
