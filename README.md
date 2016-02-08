@@ -1,8 +1,10 @@
 # The ADS-B Feeder Project :airplane:
 
 This repository contains a set of bash scripts and files which can be used to setup an ADS-B
-feeder on a clean installation of a Debian derived operating system. The scripts are executed
+receiver on a clean installation of a Debian derived operating system. The scripts are executed
 in order by the main install script depending on the installation options choosen by the user.
+
+The project website is located at https://www.adsbreceiver.net.
 
 ### Obtaining And Using This Software
 
