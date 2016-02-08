@@ -37,7 +37,11 @@
         <value>1</value>
     </setting>
     <setting>
-        <name>measurement</name>
+        <name>measurementRange</name>
+        <value>imperial</value>
+    </setting>
+    <setting>
+        <name>measurementTemperature</name>
         <value>imperial</value>
     </setting>
     <setting>

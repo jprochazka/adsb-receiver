@@ -5,8 +5,8 @@
     // ========================================================================== //
     // Template Set: default                                                      //
     // Template Name: graphs                                                      //
-    // Version: 1.0.1                                                             //
-    // Release Date: 03-02-2016                                                   //
+    // Version: 1.0.2                                                             //
+    // Release Date: 07-02-2016                                                   //
     // Author: Joe Prochazka                                                      //
     // Website: https://www.swiftbyte.com                                         //
     // Contributor: Marcus Gunther                                                //
@@ -167,7 +167,7 @@
     /////////////////////////////////////////////////
     // Content to be added to the scripts section.
     function scriptContent() {
-        global $measurement, $networkInterface;
+        global $measurementRange, $measurementTemperature, $networkInterface;
 ?>
         <script type="text/javascript">
             //*** BEGIN USER DEFINED VARIABLES ***//
@@ -210,7 +210,7 @@
                 $("#dump1090-aircraft_message_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-aircraft-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-tracks-image").attr("src", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
-<?php   if ($measurement == "imperial") { ?>
+<?php   if ($measurementRange == "imperial") { ?>
                 $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } else { ?>
                 $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);
@@ -224,7 +224,7 @@
                 $("#system-wlan0_bandwidth-image").attr("src", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } ?>
                 $("#system-memory-image").attr("src", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
-<?php   if ($measurement == "imperial") { ?>
+<?php   if ($measurementTemperature == "imperial") { ?>
                 $("#system-temperature-image").attr("src", "graphs/system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png?time=" + $timestamp);
 <?php   } else { ?>
                 $("#system-temperature-image").attr("src", "graphs/system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png?time=" + $timestamp);
@@ -239,7 +239,7 @@
                 $("#dump1090-aircraft_message_rate-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png");
                 $("#dump1090-aircraft-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
                 $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
-<?php   if ($measurement == "imperial") { ?>
+<?php   if ($measurementRange == "imperial") { ?>
                 $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png");
 <?php   } else { ?>
                 $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png");
@@ -253,7 +253,7 @@
                 $("#system-wlan0_bandwidth-link").attr("href", "graphs/system-" + $hostName + "-wlan0_bandwidth-" + $timeFrame + ".png");
 <?php   } ?>
                 $("#system-memory-link").attr("href", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png");
-<?php   if ($measurement == "imperial") { ?>
+<?php   if ($measurementTemperature == "imperial") { ?>
                 $("#system-temperature-link").attr("href", "graphs/system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png");
 <?php   } else { ?>
                 $("#system-temperature-link").attr("href", "graphs/system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png");
