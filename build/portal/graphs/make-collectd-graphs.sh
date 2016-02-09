@@ -520,8 +520,7 @@ range_graph_metric() {
   "VDEF:peakrange=range,MAXIMUM" \
   "GPRINT:avgrange:%1.1lf km" \
   "LINE1:peakrange#FF0000:Peak Range\\:" \
-  "GPRINT:peakrange:%1.1lf km" \
-  "LINE1:463#000000:250 NM\c" \
+  "GPRINT:peakrange:%1.1lf km\c" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
