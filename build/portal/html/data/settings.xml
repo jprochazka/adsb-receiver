@@ -44,8 +44,4 @@
         <name>networkInterface</name>
         <value>eth0</value>
     </setting>
-    <setting>
-        <name>language</name>
-        <value>en-us</value>
-    </setting>
 </settings>

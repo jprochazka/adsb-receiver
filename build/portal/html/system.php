@@ -44,5 +44,5 @@
     $pageData['title'] = "System Information";
 
     $template->pageData = $pageData;
-    $template->display("system");
+    $template->display();
 ?>
