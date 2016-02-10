@@ -6,6 +6,7 @@ quality of this project.
 
 * @mgunther68
 * @dschaper
+* @leearmstrong
 
 I would like to thank the developers and contributors to the following projects. Without their
 hard work and dedication this project would not have been possible.
