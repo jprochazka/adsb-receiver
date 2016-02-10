@@ -4,7 +4,12 @@ First off I would like to thank those who are actively contributing directly to 
 contributions in the form of code, issues, and suggestions have done much to greatly improve the
 quality of this project.
 
+**Collaborators**
+
 * @mgunther68
+
+**Contributors**
+
 * @dschaper
 * @leearmstrong
 
