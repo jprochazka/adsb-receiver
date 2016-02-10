@@ -28,18 +28,6 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    /*
-    ====================
-     TEMPLATE ELEMENTS:
-    ====================
-    {area:name}
-    {setting:name}
-    {page:variable}
-    {string:id}
-    {* comment *}
-    ====================
-    */
-
     class template {
 
         // PUT THE TEMPLATE TOGETHER
@@ -55,9 +43,9 @@
 
             $output = $this->mergeAreas($master, $page);
             $output = $this->mergeSettings($output);
-            $output = $this->mergeStrings($output);
             $output = $this->mergePageData($output, $pageData);
             $output = $this->processIfs($output);
+            $output = $this->processForeach($output);
             $output = $this->removeComments($output);
 
             // Insert page ID mainly used to mark an active navigation link when using Bootstrap.
@@ -77,12 +65,18 @@
 
 
         function mergeAreas($master, $template) {
+
+            // {area:name}
+            // ...
+            // {/area}
+
+            $common = new Common($this);
             $pattern = '/\{area:(.*?)\}/';
             preg_match_all($pattern, $master, $areas);
             foreach ($areas[0] as $element) {
-                $id = $this->extractString($element, ':', '}');
+                $id = $common->extractString($element, ':', '}');
                 if (strpos($template, '{area:'.$id.'/}') !== TRUE) {
-                    $content = $this->extractString($template, '{area:'.$id.'}', '{/area}');
+                    $content = $common->extractString($template, '{area:'.$id.'}', '{/area}');
                     $master = str_replace("{area:".$id."}", $content, $master);
                 } else {
                     $master = str_replace("{area:'.$id.'}", "", $master);
@@ -92,26 +86,29 @@
         }
 
         function mergeSettings($output) {
+
+            // {setting:key}
+
             $common = new Common($this);
             $pattern = '/\{setting:(.*?)\}/';
             preg_match_all($pattern, $output, $settings, PREG_PATTERN_ORDER);
             foreach ($settings[0] as $element) {
-                $name = $this->extractString($element, ':', '}');
+                $name = $common->extractString($element, ':', '}');
                 $value = $common->getSetting($name);
                 $output = str_replace("{setting:".$name."}", $value, $output);
             }
             return $output;
         }
 
-        function mergeStrings($output) {
-            return $output;
-        }
-
         function mergePageData($output, $pageData) {
+
+            // {page:key}
+
+            $common = new Common($this);
             $pattern = '/\{page:(.*?)\}/';
             preg_match_all($pattern, $output, $pageVariables, PREG_PATTERN_ORDER);
             foreach ($pageVariables[0] as $element) {
-                $variable = $this->extractString($element, ':', '}');
+                $variable = $common->extractString($element, ':', '}');
                 foreach ($pageData as $key => $value) {
                     if ($key == $variable) {
                         $output = str_replace("{page:".$key."}", $value, $output);
@@ -122,6 +119,9 @@
         }
 
         function processIfs($output) {
+
+            // {if setting:key eq TRUE} .. {/if}
+
             $common = new Common($this);
             $pattern = '/\{if (.*)\}/';
             preg_match_all($pattern, $output, $ifs, PREG_PATTERN_ORDER);
@@ -131,23 +131,22 @@
                 } else {
                     $operator = "neq";
                 }
-                $ifThis = $this->extractString($element, "{if ", " ");
+                $ifThis = $common->extractString($element, "{if ", " ");
                 if (strpos($element, 'setting:') !== FALSE) {
-                    $ifThis = $common->getSetting($this->extractString($element, "{if setting:", " "));
+                    $ifThis = $common->getSetting($common->extractString($element, "{if setting:", " "));
                 } elseif (strpos($element, 'page:') !== FALSE) {
-                    $variable = $this->extractString($element, "{if page:", " ");
+                    $variable = $common->extractString($element, "{if page:", " ");
                     foreach ($pageData as $key => $value) {
                         if ($key == $variable) {
                             $ifThis = $value;
                         }
                     }
                 }
-
-                $that = $this->extractString($element, " ".$operator." ", "}");
+                $that = $common->extractString($element, " ".$operator." ", "}");
                 if ($that == "TRUE") {
                     $that = $common->stringToBoolean($that);
                 }
-                $content = $this->extractString($element, "}", "{/if}");
+                $content = $common->extractString($element, "}", "{/if}");
                 if ($operator == "eq") {
                     if ($ifThis == $that) {
                         $output = str_replace($element, $content, $output);
@@ -165,23 +164,35 @@
             return $output;
         }
 
+        function processForeach($output) {
+
+            // {foreach array:name key:name item:name}
+            //     ...
+            // {/foreach}
+
+            return $output;
+        }
+
+        function processWhile($output) {
+
+            // {while i eq 1 | i lte 5}
+            //     ...
+            //     {i++}
+            // {/while}
+
+            return $output;
+        }
+
         function removeComments($output) {
+
+            // {* This comment is not to be rendered... *}
+
             $pattern = '/\{\*(.*?)\*\}/s';
             preg_match_all($pattern, $output, $comments, PREG_PATTERN_ORDER);
             foreach ($comments[0] as $element) {
                 $output = str_replace($element, "", $output);
             }
             return $output;
-        }
-
-        // Function that returns the string contained between two strings.
-        function extractString($string, $start, $end) {
-            $string = " ".$string;
-            $ini = strpos($string, $start);
-            if ($ini == 0) return "";
-            $ini += strlen($start);
-            $len = strpos($string, $end, $ini) - $ini;
-            return substr($string, $ini, $len);
         }
     }
 ?>

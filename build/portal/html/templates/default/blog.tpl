@@ -30,8 +30,9 @@
                 <div>{post:contents}</div>
                 {/foreach}
                 <ul class="pagination">
-                {while pageNumber eq 0 | pageNumber lteq page:pageLinks}
+                {while pageNumber eq 0 | pageNumber lte page:pageLinks}
                     <li><a href="?page={pageNumber}">{pageNumber}</a></li>
+                    {pageNumber++}
                 {/while}
                 </ul>
             </div>

@@ -104,5 +104,15 @@
             $offset = $itemsPerPage + 1;
             return array_slice($inArray, $start, $offset);
         }
+
+        // Function that returns the string contained between two strings.
+        function extractString($string, $start, $end) {
+            $string = " ".$string;
+            $ini = strpos($string, $start);
+            if ($ini == 0) return "";
+            $ini += strlen($start);
+            $len = strpos($string, $end, $ini) - $ini;
+            return substr($string, $ini, $len);
+        }
     }
 ?>
