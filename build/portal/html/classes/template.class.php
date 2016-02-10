@@ -111,6 +111,7 @@
             $pattern = '/\{page:(.*)\}/';
             preg_match_all($pattern, $output, $pageVariables, PREG_PATTERN_ORDER);
             foreach ($pageVariables[0] as $element) {
+                echo $element."<br />";
                 $variable = $this->extractString($element, ':', '}');
                 foreach ($pageData as $key => $value) {
                     if ($key == $variable) {
