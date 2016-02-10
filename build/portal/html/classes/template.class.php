@@ -123,7 +123,7 @@
 
         function processIfs($output) {
             $common = new Common($this);
-            $pattern = '/\{if (.*?)\}/';
+            $pattern = '/\{if (.*)\}/';
             preg_match_all($pattern, $output, $ifs, PREG_PATTERN_ORDER);
             foreach ($ifs[0] as $element) {
                 if (strpos($element, ' eq ') !== FALSE){
