@@ -82,7 +82,8 @@
         $common->updateSetting("enableDump1090", $enableDump1090);
         $common->updateSetting("enableDump978", $enableDump978);
         $common->updateSetting("enablePfclient", $enablePfclient);
-        $common->updateSetting("measurement", $_POST['measurement']);
+        $common->updateSetting("measurementRange", $_POST['measurementRange']);
+        $common->updateSetting("measurementTemperature", $_POST['measurementTemperature']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
 
         // Set updated to TRUE since settings were updated.
@@ -102,8 +103,9 @@
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
 
-    // Get unit of measurement setting from settings.xml.
-    $measurement = $common->getSetting("measurement");
+    // Get units of measurement setting from settings.xml.
+    $measurementRange = $common->getSetting("measurementRange");
+    $measurementTemperature = $common->getSetting("measurementTemperature");
 
     // Get the network interface from settings.xml.
     $networkInterface = $common->getSetting("networkInterface");
@@ -204,14 +206,27 @@
                 </div>
             </div>
             <div class="panel panel-default">
-                <div class="panel-heading">Unit of Measurement</div>
+                <div class="panel-heading">Unit of Measurement (Range)</div>
                 <div class="panel-body">
                     <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default<?php ($measurement == "imperial" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurement" id="imperial" value="imperial" autocomplete="off"<?php ($measurement == "imperial" ? print ' checked' : ''); ?>> Imperial
+                        <label class="btn btn-default<?php ($measurementRange == "imperial" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementRange" id="imperial" value="imperial" autocomplete="off"<?php ($measurementRange == "imperial" ? print ' checked' : ''); ?>> Imperial
                         </label>
-                        <label class="btn btn-default<?php ($measurement == "metric" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurement" id="metric" value="metric" autocomplete="off"<?php ($measurement == "metric" ? print ' checked' : ''); ?>> Metric
+                        <label class="btn btn-default<?php ($measurementRange == "metric" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementRange" id="metric" value="metric" autocomplete="off"<?php ($measurementRange == "metric" ? print ' checked' : ''); ?>> Metric
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Unit of Measurement (Temperature)</div>
+                <div class="panel-body">
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default<?php ($measurementTemperature == "imperial" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementTemperature" id="imperial" value="imperial" autocomplete="off"<?php ($measurementTemperature == "imperial" ? print ' checked' : ''); ?>> Imperial
+                        </label>
+                        <label class="btn btn-default<?php ($measurementTemperature == "metric" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementTemperature" id="metric" value="metric" autocomplete="off"<?php ($measurementTemperature == "metric" ? print ' checked' : ''); ?>> Metric
                         </label>
                     </div>
                 </div>

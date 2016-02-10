@@ -9,6 +9,7 @@
     // Release Date:                                                              //
     // Author: Joe Prochazka                                                      //
     // Website: https://www.swiftbyte.com                                         //
+    // Contributor: Marcus Gunther                                                //
     // ========================================================================== //
     // Copyright and Licensing Information:                                       //
     //                                                                            //

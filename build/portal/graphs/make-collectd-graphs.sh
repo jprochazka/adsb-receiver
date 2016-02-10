@@ -72,7 +72,6 @@ cpu_graph_dump1090() {
   --title "$3 CPU Utilization" \
   --vertical-label "CPU %" \
   --lower-limit 0 \
-  --upper-limit 100 \
   --rigid \
   "DEF:demod=$2/dump1090_cpu-demod.rrd:value:AVERAGE" \
   "CDEF:demodp=demod,10,/" \
@@ -81,8 +80,8 @@ cpu_graph_dump1090() {
   "DEF:background=$2/dump1090_cpu-background.rrd:value:AVERAGE" \
   "CDEF:backgroundp=background,10,/" \
   "AREA:readerp#008000:USB" \
-  "AREA:backgroundp#00C000:other:STACK" \
-  "AREA:demodp#00FF00:demodulator\c:STACK" \
+  "AREA:backgroundp#00C000:Other:STACK" \
+  "AREA:demodp#00FF00:Demodulator\c:STACK" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
@@ -118,9 +117,8 @@ cpu_graph() {
   --height 200 \
   --step "$5" \
   --title "Overall CPU Utilization" \
-  --vertical-label "CPU / %" \
+  --vertical-label "CPU %" \
   --lower-limit 0 \
-  --upper-limit 100 \
   --rigid \
   --units-exponent 0 \
   "DEF:idle=$2/cpu-idle.rrd:value:AVERAGE" \
@@ -141,7 +139,7 @@ cpu_graph() {
   "CDEF:pwait=100,wait,*,all,/" \
   "AREA:pinterrupt#000080:irq" \
   "AREA:psoftirq#0000C0:softirq:STACK" \
-  "AREA:psteal#0000FF::STACK" \
+  "AREA:psteal#0000FF:steal:STACK" \
   "AREA:pwait#C00000:io:STACK" \
   "AREA:psystem#FF0000:sys:STACK" \
   "AREA:puser#40FF40:user:STACK" \
@@ -164,8 +162,8 @@ df_root_graph() {
   "DEF:reserved=$2/df_complex-reserved.rrd:value:AVERAGE" \
   "DEF:free=$2/df_complex-free.rrd:value:AVERAGE" \
   "CDEF:totalused=used,reserved,+" \
-  "AREA:totalused#4169E1:used:STACK" \
-  "AREA:free#32C734:free\c:STACK" \
+  "AREA:totalused#4169E1:Used:STACK" \
+  "AREA:free#32C734:Free\c:STACK" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
@@ -205,7 +203,7 @@ disk_io_octets_graph() {
   --height 200 \
   --step "$5" \
   --title "Disk I/O - Bandwidth" \
-  --vertical-label "Bytes/s" \
+  --vertical-label "Bytes/Sec" \
   "TEXTALIGN:center" \
   "DEF:read=$2/disk_octets.rrd:read:AVERAGE" \
   "DEF:write=$2/disk_octets.rrd:write:AVERAGE" \
@@ -232,7 +230,7 @@ eth0_graph() {
   --height 200 \
   --step "$5" \
   --title "Bandwidth Usage (eth0)" \
-  --vertical-label "bytes/sec" \
+  --vertical-label "Bytes/Sec" \
   "TEXTALIGN:center" \
   "DEF:rx=$2/if_octets.rrd:rx:AVERAGE" \
   "DEF:tx=$2/if_octets.rrd:tx:AVERAGE" \
@@ -257,6 +255,7 @@ memory_graph() {
   --width 496 \
   --height 200 \
   --step "$5" \
+  --lower-limit 0 \
   --title "Memory Utilization" \
   --vertical-label "" \
   "TEXTALIGN:center" \
@@ -264,10 +263,10 @@ memory_graph() {
   "DEF:cached=$2/memory-cached.rrd:value:AVERAGE" \
   "DEF:free=$2/memory-free.rrd:value:AVERAGE" \
   "DEF:used=$2/memory-used.rrd:value:AVERAGE" \
-  "AREA:used#4169E1:used:STACK" \
-  "AREA:buffered#32C734:buffered:STACK" \
-  "AREA:cached#00FF00:cached:STACK" \
-  "AREA:free#FFFFFF:free\c:STACK" \
+  "AREA:used#4169E1:Used:STACK" \
+  "AREA:buffered#32C734:Buffered:STACK" \
+  "AREA:cached#00FF00:Cached:STACK" \
+  "AREA:free#FFFFFF:Free\c:STACK" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
@@ -324,7 +323,7 @@ wlan0_graph() {
   --height 200 \
   --step "$5" \
   --title "Bandwidth Usage (wlan0)" \
-  --vertical-label "bytes/sec" \
+  --vertical-label "Bytes/Sec" \
   "TEXTALIGN:center" \
   "DEF:rx=$2/if_octets.rrd:rx:AVERAGE" \
   "DEF:tx=$2/if_octets.rrd:tx:AVERAGE" \
@@ -352,7 +351,7 @@ local_rate_graph() {
   --height 200 \
   --step "$5" \
   --title "$3 Message Rate" \
-  --vertical-label "messages/second" \
+  --vertical-label "Messages/Second" \
   --lower-limit 0  \
   --units-exponent 0 \
   --right-axis 360:0 \
@@ -361,9 +360,9 @@ local_rate_graph() {
   "DEF:positions=$2/dump1090_messages-positions.rrd:value:AVERAGE" \
   "CDEF:y2strong=strong,10,*" \
   "CDEF:y2positions=positions,10,*" \
-  "LINE1:messages#0000FF:messages received" \
-  "AREA:y2strong#FF0000:messages >-3dBFS / hr (RHS)" \
-  "LINE1:y2positions#00c0FF:positions / hr (RHS)\c" \
+  "LINE1:messages#0000FF:Messages Received" \
+  "AREA:y2strong#FF0000:Messages > -3dBFS / Hr (RHS)" \
+  "LINE1:y2positions#00c0FF:Positions / Hr (RHS)\c" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
@@ -520,8 +519,7 @@ range_graph_metric() {
   "VDEF:peakrange=range,MAXIMUM" \
   "GPRINT:avgrange:%1.1lf km" \
   "LINE1:peakrange#FF0000:Peak Range\\:" \
-  "GPRINT:peakrange:%1.1lf km" \
-  "LINE1:463#000000:250 NM\c" \
+  "GPRINT:peakrange:%1.1lf km\c" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }

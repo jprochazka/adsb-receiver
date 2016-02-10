@@ -33,34 +33,15 @@
 
     // Load the common PHP classes.
     require_once('classes/common.class.php');
-    $common = new common();
+    require_once('classes/template.class.php');
 
-    // The title and navigation link ID of this page.
+    $common = new common();
+    $template = new template();
+
+    $pageData = array();
+
+    // The title of this page.
     $pageTitle = "Performance Graphs";
 
-    // Get the name of the template to use from the settings.
-    $siteName = $common->getSetting("siteName");
-    $template = $common->getSetting("template");
-
-    // Enable/disable navigation links.
-    $enableBlog = $common->getSetting("enableBlog");
-    $enableInfo = $common->getSetting("enableInfo");
-    $enableGraphs = $common->getSetting("enableGraphs");
-    $enableDump1090 = $common->getSetting("enableDump1090");
-    $enableDump978 = $common->getSetting("enableDump978");
-    $enablePfclient = $common->getSetting("enablePfclient");
-
-    // Measurement type to use.
-    $measurement = $common->getSetting("measurement");
-
-    // Get the network interface being used.
-    $networkInterface = $common->getSetting("networkInterface");
-
-    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
-
-    // Include the index template.
-    require_once('templates/'.$template.'/graphs.tpl.php');
-
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+    $template->display($pageData);
 ?>
