@@ -77,7 +77,7 @@
 
 
         function mergeAreas($master, $template) {
-            $pattern = '/\{area:(.*)\}/';
+            $pattern = '/\{area:(.*?)\}/';
             preg_match_all($pattern, $master, $areas);
             foreach ($areas[0] as $element) {
                 $id = $this->extractString($element, ':', '}');
@@ -93,7 +93,7 @@
 
         function mergeSettings($output) {
             $common = new Common($this);
-            $pattern = '/\{setting:(.*)\}/';
+            $pattern = '/\{setting:(.*?)\}/';
             preg_match_all($pattern, $output, $settings, PREG_PATTERN_ORDER);
             foreach ($settings[0] as $element) {
                 $name = $this->extractString($element, ':', '}');
@@ -108,10 +108,9 @@
         }
 
         function mergePageData($output, $pageData) {
-            $pattern = '/\{page:(.*)\}/';
+            $pattern = '/\{page:(.*?)\}/';
             preg_match_all($pattern, $output, $pageVariables, PREG_PATTERN_ORDER);
             foreach ($pageVariables[0] as $element) {
-                echo $element."<br />";
                 $variable = $this->extractString($element, ':', '}');
                 foreach ($pageData as $key => $value) {
                     if ($key == $variable) {
@@ -124,7 +123,7 @@
 
         function processIfs($output) {
             $common = new Common($this);
-            $pattern = '/\{if (.*)\}/';
+            $pattern = '/\{if (.*?)\}/';
             preg_match_all($pattern, $output, $ifs, PREG_PATTERN_ORDER);
             foreach ($ifs[0] as $element) {
                 if (strpos($element, ' eq ') !== FALSE){
