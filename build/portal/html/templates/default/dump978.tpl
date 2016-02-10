@@ -1,11 +1,11 @@
-<?php
+{*
 
     ////////////////////////////////////////////////////////////////////////////////
     //                  ADS-B FEEDER PORTAL TEMPLATE INFORMATION                  //
     // ========================================================================== //
     // Template Set: default                                                      //
-    // Template Name: master                                                      //
-    // Version: 1.0.0                                                             //
+    // Template Name: dump978.tpl                                                 //
+    // Version: 2.0.0                                                             //
     // Release Date:                                                              //
     // Author: Joe Prochazka                                                      //
     // Website: https://www.swiftbyte.com                                         //
@@ -18,13 +18,13 @@
     // A copy of the license can be found package along with these files.         //
     ////////////////////////////////////////////////////////////////////////////////
 
-?>
+*}
 {area:head}
-            <style></style>
+        <link rel="stylesheet" href="templates/{setting:template}/assets/css/dump978.css">
 {/area}
 {area:contents}
-            <div class="container">
-                <h1>System information coming soon...</h1>
+            <div id="iframe-wrapper">
+                <iframe id="map" src="/dump978/gmap.html"></iframe>
             </div>
 {/area}
 {area:scripts/}

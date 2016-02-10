@@ -42,25 +42,22 @@
 
     class template {
 
-        var $pageData;
-
         // PUT THE TEMPLATE TOGETHER
 
-        function display() {
+        function display(&$pageData) {
             $common = new Common($this);
 
             // Load the master template.
-            $master = $this->readTemplate('master.tpl.php');
+            $master = $this->readTemplate('master.tpl');
 
             // Load the template for the requested page.
-            $page = $this->readTemplate($common->removeExtension($_SERVER["SCRIPT_NAME"]).'.tpl.php');
-
-            print_r($pageData);
+            $page = $this->readTemplate($common->removeExtension($_SERVER["SCRIPT_NAME"]).'.tpl');
 
             $output = $this->mergeAreas($master, $page);
             $output = $this->mergeSettings($output);
             $output = $this->mergeStrings($output);
-            $output = $this->mergePageData($output);
+            $output = $this->mergePageData($output, $pageData);
+            $output = $this->processIfs($output);
             $output = $this->removeComments($output);
 
             // Insert page ID mainly used to mark an active navigation link when using Bootstrap.
@@ -86,7 +83,7 @@
                 $id = $this->extractString($element, ':', '}');
                 if (strpos($template, '{area:'.$id.'/}') !== TRUE) {
                     $content = $this->extractString($template, '{area:'.$id.'}', '{/area}');
-                    $master = str_replace("{area:'.$id.'}", $content, $master);
+                    $master = str_replace("{area:".$id."}", $content, $master);
                 } else {
                     $master = str_replace("{area:'.$id.'}", "", $master);
                 }
@@ -101,7 +98,7 @@
             foreach ($settings[0] as $element) {
                 $name = $this->extractString($element, ':', '}');
                 $value = $common->getSetting($name);
-                $output = str_replace("{setting:'.$name.'}", $value, $output);
+                $output = str_replace("{setting:".$name."}", $value, $output);
             }
             return $output;
         }
@@ -110,40 +107,30 @@
             return $output;
         }
 
-        function mergePageData($output) {
+        function mergePageData($output, $pageData) {
             $pattern = '/\{page:(.*)\}/';
             preg_match_all($pattern, $output, $pageVariables, PREG_PATTERN_ORDER);
             foreach ($pageVariables[0] as $element) {
                 $variable = $this->extractString($element, ':', '}');
                 foreach ($pageData as $key => $value) {
                     if ($key == $variable) {
-                        $output = str_replace("{page:'.$variable.'}", $value, $output);
+                        $output = str_replace("{page:".$key."}", $value, $output);
                     }
                 }
-            }
-        }
-
-        function removeComments($output) {
-            $pattern = '/\{\*(.*)\*\}/';
-            preg_match_all($pattern, $output, $comments, PREG_PATTERN_ORDER);
-            foreach ($comments[0] as $element) {
-                $output = str_replace($element, "", $output);
             }
             return $output;
         }
 
         function processIfs($output) {
             $common = new Common($this);
-            $pattern = '\{if (.*)/\*{/if}#U';
+            $pattern = '/\{if (.*)\}/';
             preg_match_all($pattern, $output, $ifs, PREG_PATTERN_ORDER);
             foreach ($ifs[0] as $element) {
-
                 if (strpos($element, ' eq ') !== FALSE){
-                    $operator == "eq";
+                    $operator = "eq";
                 } else {
-                    $operator == "neq";
+                    $operator = "neq";
                 }
-
                 $ifThis = $this->extractString($element, "{if ", " ");
                 if (strpos($element, 'setting:') !== FALSE) {
                     $ifThis = $common->getSetting($this->extractString($element, "{if setting:", " "));
@@ -157,8 +144,10 @@
                 }
 
                 $that = $this->extractString($element, " ".$operator." ", "}");
+                if ($that == "TRUE") {
+                    $that = $common->stringToBoolean($that);
+                }
                 $content = $this->extractString($element, "}", "{/if}");
-                
                 if ($operator == "eq") {
                     if ($ifThis == $that) {
                         $output = str_replace($element, $content, $output);
@@ -176,6 +165,14 @@
             return $output;
         }
 
+        function removeComments($output) {
+            $pattern = '/\{\*(.*?)\*\}/s';
+            preg_match_all($pattern, $output, $comments, PREG_PATTERN_ORDER);
+            foreach ($comments[0] as $element) {
+                $output = str_replace($element, "", $output);
+            }
+            return $output;
+        }
 
         // Function that returns the string contained between two strings.
         function extractString($string, $start, $end) {

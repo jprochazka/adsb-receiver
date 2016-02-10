@@ -32,16 +32,34 @@
     session_start();
 
     // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/template.class.php');
-
+    require_once('../classes/common.class.php');
+    require_once('../classes/blog.class.php');
     $common = new common();
-    $template = new template();
+    $blog = new blog();
 
-    $pageData = array();
+    // Get the requested blog post.
+    $post = $blog->getPostByTitle(urldecode($_GET['title']));
 
-    // The title of this page.
-    $pageData['title'] = "System Information";
+    // The title and navigation link ID of this page.
+    $pageTitle = $post->title;
 
-    $template->display($pageData);
+    // Get the name of the template to use from the settings.
+    $siteName = $common->getSetting("siteName");
+    $template = $common->getSetting("template");
+
+    // Enable/disable navigation links.
+    $enableBlog = $common->getSetting("enableBlog");
+    $enableInfo = $common->getSetting("enableInfo");
+    $enableGraphs = $common->getSetting("enableGraphs");
+    $enableDump1090 = $common->getSetting("enableDump1090");
+    $enableDump978 = $common->getSetting("enableDump978");
+    $enablePfclient = $common->getSetting("enablePfclient");
+
+    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
+
+    // Include the index template.
+    require_once('../templates/'.$template.'/blog/post.tpl.php');
+
+    // Include the master template.
+    require_once('../templates/'.$template.'/master.tpl.php');
 ?>

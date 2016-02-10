@@ -10,7 +10,7 @@
     </setting>
     <setting>
         <name>defaultPage</name>
-        <value>blog</value>
+        <value>blog.php</value>
     </setting>
     <setting>
         <name>enableBlog</name>
@@ -30,11 +30,11 @@
     </setting>
     <setting>
         <name>enableDump978</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>enablePfclient</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>measurement</name>

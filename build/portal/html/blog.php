@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,20 +28,52 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
     session_start();
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/template.class.php');
+    // Load the require PHP classes.
+    require_once('../classes/common.class.php');
+    require_once('../classes/blog.class.php');
 
     $common = new common();
-    $template = new template();
+    $blog = new blog();
 
-    $pageData = array();
+    // The title and navigation link ID of this page.
+    $pageTitle = "Blog";
 
-    // The title of this page.
-    $pageData['title'] = "System Information";
+    // Get the name of the template to use from the settings.
+    $siteName = $common->getSetting("siteName");
+    $template = $common->getSetting("template");
 
-    $template->display($pageData);
+    // Enable/disable navigation links.
+    $enableBlog = $common->getSetting("enableBlog");
+    $enableInfo = $common->getSetting("enableInfo");
+    $enableGraphs = $common->getSetting("enableGraphs");
+    $enableDump1090 = $common->getSetting("enableDump1090");
+    $enableDump978 = $common->getSetting("enableDump978");
+    $enablePfclient = $common->getSetting("enablePfclient");
+
+    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
+
+    // Get titles and dates for all blog posts.
+    $allPosts = $blog->getAllPosts();
+
+    // Pagination.
+    $itemsPerPage = 5;
+    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
+    $posts = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
+
+    // Preview length.
+    $previewLength = 500;
+
+    $count = 0;
+    foreach ($allPosts as $post) {
+        $count++;
+    }
+    $pageLinks = $count / $itemsPerPage;
+
+    // Include the index template.
+    require_once('../templates/'.$template.'/blog/index.tpl.php');
+
+    // Include the master template.
+    require_once('../templates/'.$template.'/master.tpl.php');
 ?>
