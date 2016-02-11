@@ -38,7 +38,7 @@
     </setting>
     <setting>
         <name>measurementRange</name>
-        <value>imperial</value>
+        <value>imperial_nm</value>
     </setting>
     <setting>
         <name>measurementTemperature</name>
