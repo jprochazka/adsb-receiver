@@ -45,7 +45,7 @@
             $output = $this->mergeSettings($output);
             $output = $this->mergePageData($output, $pageData);
             $output = $this->processIfs($output);
-            $output = $this->processForeach($output);
+            $output = $this->processForeach($output, $pageData);
             $output = $this->removeComments($output);
 
             // Insert page ID mainly used to mark an active navigation link when using Bootstrap.
@@ -123,7 +123,7 @@
             // {if setting:key eq TRUE} .. {/if}
 
             $common = new Common($this);
-            $pattern = '/\{if (.*)\}/';
+            $pattern = '/\{if[\s](.*)\}/';
             preg_match_all($pattern, $output, $ifs, PREG_PATTERN_ORDER);
             foreach ($ifs[0] as $element) {
                 if (strpos($element, ' eq ') !== FALSE){
@@ -164,12 +164,47 @@
             return $output;
         }
 
-        function processForeach($output) {
+        function processForeach($output, $pageData) {
 
-            // {foreach array:name key:name item:name}
+            // {foreach array as item}
             //     ...
             // {/foreach}
 
+            $common = new Common($this);
+
+            $html = NULL;
+
+            $pattern = '/\{foreach(.*?)\{\/foreach\}/s';
+            preg_match_all($pattern, $output, $foreach, PREG_PATTERN_ORDER);
+            foreach ($foreach[0] as $element) {
+
+                // Loop through $pageData.
+                if (strpos($element, 'page:') !== false) {
+                    $variable = $common->extractString($element, "{foreach page:", " ");
+                    $itemName = $common->extractString($element, "{foreach page:".$variable." as ", "}");
+                    $contents = $common->extractString($element, "{foreach page:".$variable." as ".$itemName."}", "{/foreach}");
+                    $thisIteration = $contents;
+                    foreach ($pageData as $key => $value) {
+                        if ($key == $variable) {
+                            foreach ($value as $item) {
+                                foreach ($item as $key => $value) {
+                                    $pattern = '/\{'.$itemName.'->(.*?)\}/';
+                                    preg_match_all($pattern, $thisIteration, $placeholders, PREG_PATTERN_ORDER);
+                                    foreach ($placeholders as $placeholder) {
+                                        if (strpos($thisIteration, '{'.$itemName.'->'.$key.'}') !== false) {
+                                            $thisIteration = str_replace('{'.$itemName.'->'.$key.'}', $value, $thisIteration);
+                                        }
+                                    }
+                                }
+                                $html .= $thisIteration;
+                                $thisIteration = $contents;
+                            }
+                        }
+                    }
+                    $output = str_replace($element, $html, $output);
+                }
+
+            }
             return $output;
         }
 

@@ -28,52 +28,43 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
+    // Start session
     session_start();
 
-    // Load the require PHP classes.
-    require_once('../classes/common.class.php');
-    require_once('../classes/blog.class.php');
+    // Load the common PHP classes.
+    require_once('classes/common.class.php');
+    require_once('classes/template.class.php');
+    require_once('classes/blog.class.php');
 
     $common = new common();
+    $template = new template();
     $blog = new blog();
 
-    // The title and navigation link ID of this page.
-    $pageTitle = "Blog";
+    $pageData = array();
 
-    // Get the name of the template to use from the settings.
-    $siteName = $common->getSetting("siteName");
-    $template = $common->getSetting("template");
+    // The title of this page.
+    $pageData['title'] = "Blog";
 
-    // Enable/disable navigation links.
-    $enableBlog = $common->getSetting("enableBlog");
-    $enableInfo = $common->getSetting("enableInfo");
-    $enableGraphs = $common->getSetting("enableGraphs");
-    $enableDump1090 = $common->getSetting("enableDump1090");
-    $enableDump978 = $common->getSetting("enableDump978");
-    $enablePfclient = $common->getSetting("enablePfclient");
+    // Get all blog posts from the XML file storing them.
+    $pageData['blogPosts'] = $blog->getAllPosts();
 
-    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
+    // Set the length of the text used to display the preview snippet.
+    $pageData['previewLength'] = 500;
 
-    // Get titles and dates for all blog posts.
-    $allPosts = $blog->getAllPosts();
 
+    /*
     // Pagination.
     $itemsPerPage = 5;
     $page = (isset($_GET['page']) ? $_GET['page'] : 1);
     $posts = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
 
-    // Preview length.
-    $previewLength = 500;
-
+    // Calculate the number of pagination links to show.
     $count = 0;
     foreach ($allPosts as $post) {
         $count++;
     }
-    $pageLinks = $count / $itemsPerPage;
+    $pageData['pageLinks'] = $count / $itemsPerPage;
+    */
 
-    // Include the index template.
-    require_once('../templates/'.$template.'/blog/index.tpl.php');
-
-    // Include the master template.
-    require_once('../templates/'.$template.'/master.tpl.php');
+    $template->display($pageData);
 ?>

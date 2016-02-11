@@ -24,13 +24,13 @@
             <div class="container">
                 <h1>Blog Posts</h1>
                 <hr />
-                {foreach $posts as $post}
-                <h2><a href="post.php?title=<?php echo urlencode($post['title']) ?>">{post:title}</a></h2>
-                <p>Posted <strong>{post:date}</strong> by <strong>{post:author}</strong>.</p>
-                <div>{post:contents}</div>
+                {foreach page:blogPosts as post}
+                <h2><a href="post.php?title={post->title}">{post->title}</a></h2>
+                <p>Posted <strong>{post->date}</strong> by <strong>{post->author}</strong>.</p>
+                <div>{post->contents}</div>
                 {/foreach}
                 <ul class="pagination">
-                {while pageNumber eq 0 | pageNumber lte page:pageLinks}
+                {while pageNumber eq 1 | pageNumber lte page:pageLinks}
                     <li><a href="?page={pageNumber}">{pageNumber}</a></li>
                     {pageNumber++}
                 {/while}
