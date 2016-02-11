@@ -30,9 +30,9 @@
                 <div>{post->contents}</div>
                 {/foreach}
                 <ul class="pagination">
-                {for pageNumber eq 1 to page:pageLinks}
+                    {for pageNumber eq 1 to page:pageLinks}
                     <li><a href="blog.php?page={pageNumber}">{pageNumber}</a></li>
-                {/for}
+                    {/for}
                 </ul>
             </div>
 {/area}

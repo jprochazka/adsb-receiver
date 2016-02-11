@@ -1,5 +1,5 @@
 <?php
-
+    
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,37 +28,22 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
-    session_start();
+    $possibleActions = array("checkFlight");
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/template.class.php');
-    require_once('classes/blog.class.php');
-
-    $common = new common();
-    $template = new template();
-    $blog = new blog();
-
-    $pageData = array();
-
-    // The title of this page.
-    $pageData['title'] = "Blog";
-
-    // Get all blog posts from the XML file storing them.
-    $allPosts = $blog->getAllPosts();
-
-    // Pagination.
-    $itemsPerPage = 5;
-    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
-    $pageData['blogPosts'] = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
-
-    // Calculate the number of pagination links to show.
-    $count = 1;
-    foreach ($allPosts as $post) {
-        $count++;
+    if (isset$_GET['action'] && in_array($_GET["action"], $possibleActions)) {
+        switch ($_GET["action"]) {
+            case "checkFlight"
+                parse_str($_GET['values'], $flights);
+                $queryArray = checkFlight($flights);
+                break;
+        }
+        exit(json_encode($queryArray));
+    } else {
+        http_response_code(418);
     }
-    $pageData['pageLinks'] = $count / $itemsPerPage;
 
-    $template->display($pageData);
+    function getOsInformation() {
+        
+        return $results;
+    }
 ?>

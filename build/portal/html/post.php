@@ -50,7 +50,7 @@
 
     // Add blog post data to the $pageData array.
     $pageData['postTitle'] = $post->title;
-    $pageData['postDate'] = date_format(date_create($post->date), "F jS, Y"); 
+    $pageData['postDate'] = $post->date; 
     $pageData['postAuthor'] = $post->author;
     $pageData['postContents'] = $post->contents;
 
