@@ -46,6 +46,8 @@
             $output = $this->mergePageData($output, $pageData);
             $output = $this->processIfs($output);
             $output = $this->processForeach($output, $pageData);
+            $output = $this->processFors($output, $pageData);
+            $output = $this->processWhiles($output, $pageData);
             $output = $this->removeComments($output);
 
             // Insert page ID mainly used to mark an active navigation link when using Bootstrap.
@@ -171,7 +173,6 @@
             // {/foreach}
 
             $common = new Common($this);
-
             $html = NULL;
 
             $pattern = '/\{foreach(.*?)\{\/foreach\}/s';
@@ -208,9 +209,45 @@
             return $output;
         }
 
-        function processWhile($output) {
+        function processFors($output, $pageData) {
 
-            // {while i eq 1 | i lte 5}
+            // {for i eq 1 | i lte 5 | i++}
+            //     ...
+            // {/for}
+            
+            $common = new Common($this);
+            $html = NULL;
+
+            $pattern = '/\{for(.*?)\{\/for\}/s';
+            preg_match_all($pattern, $output, $fors, PREG_PATTERN_ORDER);
+            foreach ($fors[0] as $element) {
+
+                // {for pageNumber eq 1 to page:pageLinks}
+                $counterName = $common->extractString($element, "{for ", " ");
+                $counter = $common->extractString($element, "{for ", " ");
+                $counterValue = $common->extractString($element, "{for ".$counter." eq ", " ");
+                $counterLimit = $common->extractString($element, "{for ".$counter." eq ".$counterValue." to ", "}");
+                $contents = $common->extractString($element, "{for ".$counter." eq ".$counterValue." to ".$counterLimit."}", "{/for}");
+                $thisIteration = $contents;
+
+                // Loop through $pageData.
+                if (strpos($element, 'page:') !== false) {
+                    $thisCounterValue = $counterValue;
+                    $limit = $pageData[str_replace("page:", "", $counterLimit)];
+                    for ($counter = $counterValue; $thisCounterValue <= $limit; $thisCounterValue++) {
+                        $thisIteration = str_replace('{'.$counterName.'}', $thisCounterValue, $thisIteration);
+                        $html .= $thisIteration;
+                        $thisIteration = $contents;
+                    }
+                    $output = str_replace($element, $html, $output);
+                }
+            }
+            return $output;
+        }
+
+        function processWhiles($output) {
+
+            // {while i lte 5}
             //     ...
             //     {i++}
             // {/while}

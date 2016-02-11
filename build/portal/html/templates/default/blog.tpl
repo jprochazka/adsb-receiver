@@ -30,10 +30,9 @@
                 <div>{post->contents}</div>
                 {/foreach}
                 <ul class="pagination">
-                {while pageNumber eq 1 | pageNumber lte page:pageLinks}
-                    <li><a href="?page={pageNumber}">{pageNumber}</a></li>
-                    {pageNumber++}
-                {/while}
+                {for pageNumber eq 1 to page:pageLinks}
+                    <li><a href="blog.php?page={pageNumber}">{pageNumber}</a></li>
+                {/for}
                 </ul>
             </div>
 {/area}

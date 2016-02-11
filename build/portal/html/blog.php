@@ -45,26 +45,24 @@
     // The title of this page.
     $pageData['title'] = "Blog";
 
-    // Get all blog posts from the XML file storing them.
-    $pageData['blogPosts'] = $blog->getAllPosts();
-
     // Set the length of the text used to display the preview snippet.
+    // This variable is not of any use at this time...
     $pageData['previewLength'] = 500;
 
+    // Get all blog posts from the XML file storing them.
+    $allPosts = $blog->getAllPosts();
 
-    /*
     // Pagination.
     $itemsPerPage = 5;
     $page = (isset($_GET['page']) ? $_GET['page'] : 1);
-    $posts = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
+    $pageData['blogPosts'] = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
 
     // Calculate the number of pagination links to show.
-    $count = 0;
+    $count = 1;
     foreach ($allPosts as $post) {
         $count++;
     }
     $pageData['pageLinks'] = $count / $itemsPerPage;
-    */
 
     $template->display($pageData);
 ?>
