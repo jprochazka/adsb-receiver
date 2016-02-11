@@ -117,7 +117,7 @@
 
         // Remove/clean HTML from a string and shorten to the specified length.
         function cleanAndShortenString($string, $length) {
-            return = substr($this->removeHtmlTags($string), 0, $length);
+            return substr($this->removeHtmlTags($string), 0, $length);
         }
     }
 ?>
