@@ -5,8 +5,8 @@
     // ========================================================================== //
     // Template Set: default                                                      //
     // Template Name: graphs                                                      //
-    // Version: 1.0.2                                                             //
-    // Release Date: 07-02-2016                                                   //
+    // Version: 1.0.3                                                             //
+    // Release Date: 11-02-2016                                                   //
     // Author: Joe Prochazka                                                      //
     // Website: https://www.swiftbyte.com                                         //
     // Contributor: Marcus Gunther                                                //
@@ -210,11 +210,12 @@
                 $("#dump1090-aircraft_message_rate-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-aircraft-image").attr("src", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-tracks-image").attr("src", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
-<?php   if ($measurementRange == "imperial") { ?>
-                $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png?time=" + $timestamp);
-<?php   } else { ?>
-                $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);
-<?php   } ?>
+<?php   if ($measurementRange == "imperial_nm") { ?>
+                $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-nm-" + $timeFrame + ".png?time=" + $timestamp);<?php   } ?>
+<?php   if ($measurementRange == "imperial_sm") { ?>
+                $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-sm-" + $timeFrame + ".png?time=" + $timestamp);<?php   } ?>
+<?php   if ($measurementRange == "metric") { ?>
+                $("#dump1090-range-image").attr("src", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);<?php   } ?>
                 $("#dump1090-signal-image").attr("src", "graphs/dump1090-" + $hostName + "-signal-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#dump1090-cpu-image").attr("src", "graphs/dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
                 $("#system-cpu-image").attr("src", "graphs/system-" + $hostName + "-cpu-" + $timeFrame + ".png?time=" + $timestamp);
@@ -239,11 +240,12 @@
                 $("#dump1090-aircraft_message_rate-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft_message_rate-" + $timeFrame + ".png");
                 $("#dump1090-aircraft-link").attr("href", "graphs/dump1090-" + $hostName + "-aircraft-" + $timeFrame + ".png");
                 $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png");
-<?php   if ($measurementRange == "imperial") { ?>
-                $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png");
-<?php   } else { ?>
-                $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png");
-<?php   } ?>
+<?php   if ($measurementRange == "imperial_nm") { ?>
+                $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-nm-" + $timeFrame + ".png"); <?php   } ?>
+<?php   if ($measurementRange == "imperial_sm") { ?>
+                $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-sm-" + $timeFrame + ".png"); <?php   } ?>
+<?php   if ($measurementRange == "metric") { ?>
+                $("#dump1090-range-link").attr("href", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png"); <?php   } ?>
                 $("#dump1090-signal-link").attr("href", "graphs/dump1090-" + $hostName + "-signal-" + $timeFrame + ".png");
                 $("#dump1090-cpu-link").attr("href", "graphs/dump1090-" + $hostName + "-cpu-" + $timeFrame + ".png");
                 $("#system-cpu-link").attr("href", "graphs/system-" + $hostName + "-cpu-" + $timeFrame + ".png");
