@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015 Joseph A. Prochazka                                          //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -113,6 +113,11 @@
             $ini += strlen($start);
             $len = strpos($string, $end, $ini) - $ini;
             return substr($string, $ini, $len);
+        }
+
+        // Remove/clean HTML from a string and shorten to the specified length.
+        function cleanAndShortenString($string, $length) {
+            return = substr($this->removeHtmlTags($string), 0, $length);
         }
     }
 ?>

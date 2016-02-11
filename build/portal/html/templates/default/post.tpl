@@ -12,7 +12,7 @@
     // ========================================================================== //
     // Copyright and Licensing Information:                                       //
     //                                                                            //
-    // Copyright (c) 2015 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                //
     //                                                                            //
     // This template set is licensed under The MIT License (MIT)                  //
     // A copy of the license can be found package along with these files.         //
