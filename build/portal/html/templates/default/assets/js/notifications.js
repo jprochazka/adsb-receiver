@@ -1,5 +1,9 @@
 function checkFlights() {
-    $.getJSON("/api/notifications.php?type=flights&time=" + new Date().getTime(), function (data) {
+    pathArray = location.href.split( '/' );
+    protocol = pathArray[0];
+    host = pathArray[2];
+
+    $.getJSON(protocol + '//' + host + "/api/notifications.php?type=flights&time=" + new Date().getTime(), function (data) {
         var flightCount = 0;
         $("#flight-notifications ul").empty();
         $.each(data, function (key, val) {

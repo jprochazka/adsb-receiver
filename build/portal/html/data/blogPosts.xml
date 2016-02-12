@@ -6,16 +6,4 @@
         <author>admin</author>
         <contents>&lt;p&gt;Welcome to my ADS-B feeder!&lt;/p&gt;</contents>
     </blogPost>
-    <blogPost>
-        <title>Test One</title>
-        <date>2016-02-10 10:00:00</date>
-        <author>admin</author>
-        <contents>&lt;p&gt;Test post one.&lt;/p&gt;</contents>
-    </blogPost>
-    <blogPost>
-        <title>Test Two</title>
-        <date>2016-02-09 10:00:00</date>
-        <author>admin</author>
-        <contents>&lt;p&gt;Test post two.&lt;/p&gt;</contents>
-    </blogPost>
 </blogPosts>

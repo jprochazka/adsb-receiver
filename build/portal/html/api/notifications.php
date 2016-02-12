@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,6 +28,10 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
+    // Load the common PHP classes.
+    require_once('../classes/common.class.php');
+    $common = new common();
+
     $possibleActions = array("flights");
 
     if (isset($_GET['type']) && in_array($_GET["type"], $possibleActions)) {
@@ -42,6 +46,8 @@
     }
 
     function getVisibleFlights() {
+        $common = new common();
+
         // Get all flights to be notified about from the flightNotifications.xml file.
         $lookingFor = array();
         $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
@@ -51,8 +57,7 @@
 
         // Check dump1090-mutability's aircraft JSON output to see if the flight is visible.
         $visibleFlights = array();
-        //$url = "http://localhost/dump1090/data/aircraft.json";
-        $url = "http://dump1090.duckdns.org/dump1090/data/aircraft.json";
+        $url = $common->getBaseUrl()."/dump1090/data/aircraft.json";
         $json = file_get_contents($url);
         $data = json_decode($json, true);
         foreach ($data['aircraft'] as $aircraft) {

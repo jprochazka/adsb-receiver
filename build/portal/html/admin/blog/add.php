@@ -67,7 +67,7 @@
                     <input type="text" id="title" name="title" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <textarea id="contents" name="contents"><?php echo $_SESSION['login']; ?></textarea>
+                    <textarea id="contents" name="contents"></textarea>
                 </div>
                 <input type="submit" class="btn btn-default" value="Publish">
             </form>

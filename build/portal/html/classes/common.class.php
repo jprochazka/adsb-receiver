@@ -119,5 +119,15 @@
         function cleanAndShortenString($string, $length) {
             return substr($this->removeHtmlTags($string), 0, $length);
         }
+
+        // Returns the base URL from the requested URL.
+        function getBaseUrl(){
+            if(isset($_SERVER['HTTPS'])){
+                $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
+            } else {
+                $protocol = 'http';
+            }
+            return $protocol."://".$_SERVER['HTTP_HOST'];
+        }
     }
 ?>
