@@ -76,6 +76,7 @@
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
+        $common->updateSetting("dateFormat", $_POST['dateFormat']);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
@@ -94,6 +95,7 @@
     $siteName = $common->getSetting("siteName");
     $currentTemplate = $common->getSetting("template");
     $defaultPage = $common->getSetting("defaultPage");
+    $dateFormat = $common->getSetting("dateFormat");
 
     // Get navigation settings from settings.xml.
     $enableBlog = $common->getSetting("enableBlog");
@@ -167,6 +169,22 @@
                             <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
                             <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="defaultPage">Date Format</label>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="F jS, Y"<?php ($dateFormat == "F jS, Y" ? print ' checked' : ''); ?>>October 16, 2015</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="Y-m-d"<?php ($dateFormat == "Y-m-d" ? print ' checked' : ''); ?>>2015-10-16</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="m/d/Y"<?php ($dateFormat == "m/d/Y" ? print ' checked' : ''); ?>>16/10/2015</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="d/m/Y"<?php ($dateFormat == "d/m/Y" ? print ' checked' : ''); ?>>10/16/2015</label>
+                        </div>
+                        <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
                     </div>
                 </div>
             </div>

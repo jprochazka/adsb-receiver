@@ -13,6 +13,10 @@
         <value>blog.php</value>
     </setting>
     <setting>
+        <name>dateFormat</name>
+        <value>F jS, Y</value>
+    </setting>
+    <setting>
         <name>enableBlog</name>
         <value>1</value>
     </setting>

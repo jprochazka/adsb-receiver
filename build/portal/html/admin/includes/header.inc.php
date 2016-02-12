@@ -10,6 +10,13 @@
         <link rel="stylesheet" href="/admin/assets/css/admin.css">
         <script src="http://code.jquery.com/jquery-2.2.0.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<?php
+    if (basename($_SERVER['PHP_SELF']) == "index.php") {
+?>
+        <script src="assets/js/index.js"></script>
+<?php
+    }
+?>
     </head>
         <body>
         <div id="wrapper">
@@ -26,8 +33,8 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li id="logout-link"><a href="/admin/blog">Blog</a></li>
                             <li id="logout-link"><a href="/admin">Settings</a></li>
+                            <li id="logout-link"><a href="/admin/blog">Blog</a></li>
                             <li id="logout-link"><a href="/admin/account.php">Account</a></li>
                             <li id="logout-link"><a href="/admin/logout.php">Logout</a></li>
                             <li id="logout-link"><a href="/" target="_blank">Portal Home</a></li>
