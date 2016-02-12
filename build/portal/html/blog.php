@@ -48,6 +48,11 @@
     // Get all blog posts from the XML file storing them.
     $allPosts = $blog->getAllPosts();
 
+    // Format the post dates according to the related setting.
+    foreach ($allPosts as &$post) {
+        $post['date'] = date_format(date_create($post['date']), $common->getSetting('dateFormat'));
+    }
+
     // Pagination.
     $itemsPerPage = 5;
     $page = (isset($_GET['page']) ? $_GET['page'] : 1);
