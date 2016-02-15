@@ -44,7 +44,7 @@
             $output = $this->mergeAreas($master, $page);
             $output = $this->mergeSettings($output);
             $output = $this->mergePageData($output, $pageData);
-            $output = $this->processIfs($output);
+            $output = $this->processIfs($output, $pageData);
             $output = $this->processForeach($output, $pageData);
             $output = $this->processFors($output, $pageData);
             $output = $this->processWhiles($output, $pageData);
@@ -120,46 +120,69 @@
             return $output;
         }
 
-        function processIfs($output) {
+        function processIfs($output, $pageData) {
 
-            // {if setting:key eq TRUE} .. {/if}
+            // {if setting:key eq TRUE} ... {else} ... {/if}
 
             $common = new Common($this);
-            $pattern = '/\{if[\s](.*)\}/';
+            $pattern = '/\{if[\s](.*?)\{\/if}/s';
             preg_match_all($pattern, $output, $ifs, PREG_PATTERN_ORDER);
             foreach ($ifs[0] as $element) {
-                if (strpos($element, ' eq ') !== FALSE){
+                $pattern = '/\{if[\s](.*?)\}/s';
+                preg_match($pattern, $element, $statement);
+                if (strpos($statement[0], ' eq ') !== FALSE){
                     $operator = "eq";
                 } else {
                     $operator = "neq";
                 }
-                $ifThis = $common->extractString($element, "{if ", " ");
-                if (strpos($element, 'setting:') !== FALSE) {
-                    $ifThis = $common->getSetting($common->extractString($element, "{if setting:", " "));
-                } elseif (strpos($element, 'page:') !== FALSE) {
-                    $variable = $common->extractString($element, "{if page:", " ");
+                $ifThis = $common->extractString($statement[0], "{if ", " ");
+                if (strpos($statement[0], 'setting:') !== FALSE) {
+                    $ifThis = $common->getSetting($common->extractString($statement[0], "{if setting:", " "));
+                } elseif (strpos($statement[0], 'page:') !== FALSE) {
+                    $variable = $common->extractString($statement[0], "{if page:", " ");
                     foreach ($pageData as $key => $value) {
                         if ($key == $variable) {
                             $ifThis = $value;
                         }
                     }
                 }
-                $that = $common->extractString($element, " ".$operator." ", "}");
+                $that = $common->extractString($statement[0], " ".$operator." ", "}");
                 if ($that == "TRUE") {
                     $that = $common->stringToBoolean($that);
                 }
-                $content = $common->extractString($element, "}", "{/if}");
                 if ($operator == "eq") {
                     if ($ifThis == $that) {
-                        $output = str_replace($element, $content, $output);
+                        if (preg_match("/\{else\}/s", $element)) {
+                            $content = $common->extractString($element, "}", "{else}");
+                            $output = str_replace($element, $content, $output);
+                        } else {
+                            $content = $common->extractString($element, "}", "{/if}");
+                            $output = str_replace($element, $content, $output);
+                        }
                     } else {
-                        $output = str_replace($element, "", $output);
+                        if (preg_match("/\{else\}/s", $element)) {
+                            $content = $common->extractString($element, "{else}", "{/if}");
+                            $output = str_replace($element, $content, $output);
+                        } else {
+                            $output = str_replace($element, "", $output);
+                        }
                     }
                 } else {
                     if ($ifThis != $that) {
-                        $output = str_replace($element, $content, $output);
+                        if (preg_match("/\{else\}/s", $element)) {
+                            $content = $common->extractString($element, "}", "{else}");
+                            $output = str_replace($element, $content, $output);
+                        } else {
+                            $content = $common->extractString($element, "}", "{/if}");
+                            $output = str_replace($element, $content, $output);
+                        }
                     } else {
-                        $output = str_replace($element, "", $output);
+                        if (preg_match("/\{else\}/s", $element)) {
+                            $elseContent = $common->extractString($element, "{else}", "{/if}");
+                            $output = str_replace($element, $elseContent, $output);
+                        } else {
+                            $output = str_replace($element, "", $output);
+                        }
                     }
                 }
             }

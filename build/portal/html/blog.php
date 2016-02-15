@@ -50,6 +50,9 @@
 
     // Format the post dates according to the related setting.
     foreach ($allPosts as &$post) {
+        if (strpos($post['contents'], '{more}') !== false) {
+            $post['contents'] = substr($post['contents'], 0, strpos($post['contents'], '{more}'));
+        }
         $post['date'] = date_format(date_create($post['date']), $common->getSetting('dateFormat'));
     }
 

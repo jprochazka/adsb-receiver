@@ -120,7 +120,7 @@
                         </div>
                         <div class="padding"></div>
                         <div class="row">
-                            {if page:networkInterface eq "eth0"}
+                            {if setting:networkInterface eq eth0}
                             <div class="col-md-6 text-center">
                                 <a id ="system-eth0_bandwidth-link" href="#">
                                    <img id="system-eth0_bandwidth-image" class="img-responsive" src="#" alt="Bandwidth Usage (eth0)">

@@ -41,7 +41,7 @@
     $pageData = array();
 
     // The title of this page.
-    $pageTitle = "Performance Graphs";
+    $pageData['title'] = "Performance Graphs";
 
     $template->display($pageData);
 ?>
