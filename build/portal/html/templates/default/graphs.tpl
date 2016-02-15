@@ -59,11 +59,27 @@
                         </div>
                         <div class="padding"></div>
                         <div class="row">
+                            {if setting:measurementRange eq imperialNautical}
                             <div class="col-md-6 text-center">
-                                <a id ="dump1090-range-link" href="#">
-                                    <img id="dump1090-range-image" class="img-responsive" src="#" alt="Max Range">
+                                <a id ="dump1090-range-imperial-nautical-link" href="#">
+                                    <img id="dump1090-range-imperial-nautical-image" class="img-responsive" src="#" alt="Max Range">
                                 </a>
                             </div>
+                            {/if}
+                            {if setting:measurementRange eq imperialStatute}
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-range-imperial-statute-link" href="#">
+                                    <img id="dump1090-range-imperial-statute-image" class="img-responsive" src="#" alt="Max Range">
+                                </a>
+                            </div>
+                            {/if}
+                            {if setting:measurementRange eq metric}
+                            <div class="col-md-6 text-center">
+                                <a id ="dump1090-range-metric-link" href="#">
+                                    <img id="dump1090-range-metric-image" class="img-responsive" src="#" alt="Max Range">
+                                </a>
+                            </div>
+                            {/if}
                             <div class="col-md-6 text-center">
                                 <a id ="dump1090-signal-link" href="#">
                                     <img id="dump1090-signal-image" class="img-responsive" src="#" alt="Signal Level">

@@ -227,8 +227,11 @@
                 <div class="panel-heading">Unit of Measurement (Range)</div>
                 <div class="panel-body">
                     <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default<?php ($measurementRange == "imperial" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementRange" id="imperial" value="imperial" autocomplete="off"<?php ($measurementRange == "imperial" ? print ' checked' : ''); ?>> Imperial
+                        <label class="btn btn-default<?php ($measurementRange == "imperialNautical" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementRange" id="imperialNautical" value="imperialNautical" autocomplete="off"<?php ($measurementRange == "imperialNautical" ? print ' checked' : ''); ?>> Imperial (Nautical Miles)
+                        </label>
+                        <label class="btn btn-default<?php ($measurementRange == "imperialStatute" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementRange" id="imperialStatute" value="imperialStatute" autocomplete="off"<?php ($measurementRange == "imperialStatute" ? print ' checked' : ''); ?>> Imperial (Statute Miles)
                         </label>
                         <label class="btn btn-default<?php ($measurementRange == "metric" ? print ' active' : ''); ?>">
                             <input type="radio" name="measurementRange" id="metric" value="metric" autocomplete="off"<?php ($measurementRange == "metric" ? print ' checked' : ''); ?>> Metric

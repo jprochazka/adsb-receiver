@@ -49,10 +49,16 @@ function switchView(newTimeFrame) {
     $("#dump1090-tracks-image").attr("src", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
     $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
 
-    element =  document.getElementById('dump1090-range-imperial-image');
+    element =  document.getElementById('dump1090-range-imperial-nautical-image');
     if (typeof(element) != 'undefined' && element != null) {
-        $("#dump1090-range-imperial-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png?time=" + $timestamp);
-        $("#dump1090-range-imperial-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range-imperial-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-nautical-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range-imperial-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-nautical-" + $timeFrame + ".png?time=" + $timestamp);
+    }
+
+    element =  document.getElementById('dump1090-range-imperial-statute-image');
+    if (typeof(element) != 'undefined' && element != null) {
+        $("#dump1090-range-imperial-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-statute-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range-imperial-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-statute-" + $timeFrame + ".png?time=" + $timestamp);
     }
 
     element =  document.getElementById('dump1090-range-metric-image');

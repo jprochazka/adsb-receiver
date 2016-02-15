@@ -473,7 +473,7 @@ local_trailing_rate_graph() {
   --watermark "Drawn: $nowlit";
 }
 
-range_graph_imperial(){
+range_graph_imperial_nautical(){
   rrdtool graph \
   "$1" \
   --start end-$4 \
@@ -495,6 +495,32 @@ range_graph_imperial(){
   "GPRINT:avgrange:%1.1lf NM" \
   "LINE1:peakrange#FF0000:Peak Range\\:" \
   "GPRINT:peakrange:%1.1lf NM\c" \
+  "COMMENT: \n" \
+  --watermark "Drawn: $nowlit";
+}
+
+range_graph_imperial_statute(){
+  rrdtool graph \
+  "$1" \
+  --start end-$4 \
+  --width 428 \
+  --height 200 \
+  --step "$5" \
+  --title "$3 Max Range" \
+  --vertical-label "Statute Miles" \
+  --units-exponent 0 \
+  --right-axis 1.609:0 \
+  --right-axis-label "Kilometres" \
+  "DEF:rangem=$2/dump1090_range-max_range.rrd:value:MAX" \
+  "CDEF:rangekm=rangem,0.001,*" \
+  "CDEF:rangesm=rangekm,0.621371,*" \
+  "LINE1:rangesm#0000FF:Max Range" \
+  "VDEF:avgrange=rangesm,AVERAGE" \
+  "LINE1:avgrange#666666:Avr Range\\::dashes" \
+  "VDEF:peakrange=rangesm,MAXIMUM" \
+  "GPRINT:avgrange:%1.1lf SM" \
+  "LINE1:peakrange#FF0000:Peak Range\\:" \
+  "GPRINT:peakrange:%1.1lf SM\c" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
 }
@@ -603,7 +629,8 @@ dump1090_receiver_graphs() {
   system_graphs "$1" "$2" "$3" "$4" "$5"
   local_rate_graph ${DOCUMENTROOT}/graphs/dump1090-$2-local_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
   local_trailing_rate_graph ${DOCUMENTROOT}/graphs/dump1090-$2-local_trailing_rate-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
-  range_graph_imperial ${DOCUMENTROOT}/graphs/dump1090-$2-range-imperial-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  range_graph_imperial_nautical ${DOCUMENTROOT}/graphs/dump1090-$2-range-imperial-nautical-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  range_graph_imperial_statute ${DOCUMENTROOT}/graphs/dump1090-$2-range-imperial-statute-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
   range_graph_metric ${DOCUMENTROOT}/graphs/dump1090-$2-range-metric-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
   signal_graph ${DOCUMENTROOT}/graphs/dump1090-$2-signal-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
 }

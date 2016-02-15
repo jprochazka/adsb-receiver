@@ -42,7 +42,7 @@
     </setting>
     <setting>
         <name>measurementRange</name>
-        <value>imperial</value>
+        <value>imperialNautical</value>
     </setting>
     <setting>
         <name>measurementTemperature</name>
