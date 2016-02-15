@@ -50,6 +50,6 @@
     </setting>
     <setting>
         <name>networkInterface</name>
-        <value>wlan0</value>
+        <value>eth0</value>
     </setting>
 </settings>

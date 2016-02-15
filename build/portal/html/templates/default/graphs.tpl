@@ -62,21 +62,21 @@
                             {if setting:measurementRange eq imperialNautical}
                             <div class="col-md-6 text-center">
                                 <a id ="dump1090-range-imperial-nautical-link" href="#">
-                                    <img id="dump1090-range-imperial-nautical-image" class="img-responsive" src="#" alt="Max Range">
+                                    <img id="dump1090-range-imperial-nautical-image" class="img-responsive" src="#" alt="Max Range (Nautical Miles)">
                                 </a>
                             </div>
                             {/if}
                             {if setting:measurementRange eq imperialStatute}
                             <div class="col-md-6 text-center">
                                 <a id ="dump1090-range-imperial-statute-link" href="#">
-                                    <img id="dump1090-range-imperial-statute-image" class="img-responsive" src="#" alt="Max Range">
+                                    <img id="dump1090-range-imperial-statute-image" class="img-responsive" src="#" alt="Max Range (Statute Miles)">
                                 </a>
                             </div>
                             {/if}
                             {if setting:measurementRange eq metric}
                             <div class="col-md-6 text-center">
                                 <a id ="dump1090-range-metric-link" href="#">
-                                    <img id="dump1090-range-metric-image" class="img-responsive" src="#" alt="Max Range">
+                                    <img id="dump1090-range-metric-image" class="img-responsive" src="#" alt="Max Range (Kilometers)">
                                 </a>
                             </div>
                             {/if}
