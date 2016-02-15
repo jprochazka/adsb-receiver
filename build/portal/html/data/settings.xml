@@ -52,4 +52,8 @@
         <name>networkInterface</name>
         <value>eth0</value>
     </setting>
+    <setting>
+        <name>displayNotifications</name>
+        <value>1</value>
+    </setting>
 </settings>

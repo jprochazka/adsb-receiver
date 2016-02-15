@@ -28,13 +28,15 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    $possibleActions = array("checkFlight");
+    $possibleActions = array("flight", "icao");
 
-    if (isset$_GET['action'] && in_array($_GET["action"], $possibleActions)) {
+    if (isset$_GET['action'] && in_array($_GET["type"], $possibleActions)) {
         switch ($_GET["action"]) {
-            case "checkFlight"
-                parse_str($_GET['values'], $flights);
-                $queryArray = checkFlight($flights);
+            case "flight"
+                getVisibleFlights();
+                break;
+            case "icao"
+                checkIcaos();
                 break;
         }
         exit(json_encode($queryArray));
@@ -42,8 +44,45 @@
         http_response_code(418);
     }
 
-    function getOsInformation() {
-        
-        return $results;
+    function getVisibleFlights() {
+        // Get all flights to be notified about from the flightNotifications.xml file.
+        $flights = array();
+        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
+        foreach ($savedFlights as $savedFlight) {
+            $flights[] = array($savedFlight);
+        }
+
+        // Check dump1090-mutability's aircraft JSON output to see if the flight is visible.
+        $visibleFlights = array();
+        $url = "http://localhost/dump1090/data/aircraft.json";
+        $json = file_get_contents($url);
+        $json = json_decode($content, true);
+        foreach($json['aircraft'] as $aircraft) {
+            if (in_array($aircraft['flight'], $flights)) {
+                $flights[] = $aircraft['flight'];
+            }
+        }
+        return $visibleFlights;
+    }
+
+    function getVisibleIcaos() {
+        // Get all flights to be notified about from the flightNotifications.xml file.
+        $icaos = array();
+        $savedIcaos = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/icaoNotifications.xml") or die("Error: Cannot create flightNotifications object");
+        foreach ($savedIcaos as $savedIcao) {
+            $icaos[] = array($savedIcao);
+        }
+
+        // Check dump1090-mutability's aircraft JSON output to see if the flight is visible.
+        $visibleIcaos = array();
+        $url = "http://localhost/dump1090/data/aircraft.json";
+        $json = file_get_contents($url);
+        $json = json_decode($content, true);
+        foreach($json['aircraft'] as $aircraft) {
+            if (in_array($aircraft['icao'], $icaos)) {
+                $icaos[] = $aircraft['icao'];
+            }
+        }
+        return $visibleIcaos;
     }
 ?>
