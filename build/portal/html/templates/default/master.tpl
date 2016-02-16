@@ -29,6 +29,7 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/portal.css">
+        {if setting:enableFlightNotifications eq TRUE}<link rel="stylesheet" href="/templates/{setting:template}/assets/css/notifications.css">{/if}
         {area:head}
     </head>
         <body>
@@ -56,6 +57,16 @@
                     </div>
                 </div>
             </nav>
+            {if setting:enableFlightNotifications eq TRUE}
+            <div id="flight-notifications" class="container">
+                <div class="alert alert-success" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <strong>Flight Spotted!</strong>
+                    <p>This receiver is currently receiving data from the following flight number(s).</p>
+                    <ul></ul>
+                </div>
+            </div>
+            {/if}
             {area:contents}
             <div id="push"></div>
         </div>
@@ -68,7 +79,7 @@
         </footer>
         <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-        {if setting:displayNotifications eq TRUE}
+        {if setting:enableFlightNotifications eq TRUE}
         <script src="/templates/{setting:template}/assets/js/notifications.js"></script>
         {/if}
         <script type="text/javascript">

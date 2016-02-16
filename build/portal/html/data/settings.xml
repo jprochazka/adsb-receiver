@@ -53,7 +53,7 @@
         <value>eth0</value>
     </setting>
     <setting>
-        <name>displayNotifications</name>
+        <name>enableFlightNotifications</name>
         <value>1</value>
     </setting>
 </settings>

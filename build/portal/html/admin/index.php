@@ -47,7 +47,22 @@
     $updated = FALSE;
 
     if ($common->postBack()) {
+        // Flight notifications
+        $notificationArray = explode(',', $_POST['flightNotifications']);
+        $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
+        unset($notifications->flight);
+        foreach ($notificationArray as $notification) {
+            $newNotification = $notifications->addChild('flight', $notification);
+            $dom = dom_import_simplexml($notifications)->ownerDocument;
+            $dom->formatOutput = TRUE;
+            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml", $dom->saveXML());
+        }
+        
         // Set TRUE or FALSE for checkbox items.
+        $enableFlightNotifications = FALSE;
+        if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
+            $enableFlightNotifications = TRUE;
+
         $enableBlog = FALSE;
         if (isset($_POST['enableBlog']) && $_POST['enableBlog'] == "TRUE")
             $enableBlog = TRUE;
@@ -77,6 +92,7 @@
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
+        $common->updateSetting("enableFlightNotifications", $enableFlightNotifications);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
@@ -90,6 +106,14 @@
         // Set updated to TRUE since settings were updated.
         $updated = TRUE;
     }
+
+    // Get all flights to be notified about from the flightNotifications.xml file.
+    $flightNotifications = NULL;
+    $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
+    foreach ($savedFlights as $savedFlight) {
+        $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
+    }
+    $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
 
     // Get general settings from settings.xml.
     $siteName = $common->getSetting("siteName");
@@ -185,6 +209,15 @@
                             <label><input type="radio" name="dateFormatSlelection" value="d/m/Y"<?php ($dateFormat == "d/m/Y" ? print ' checked' : ''); ?>>10/16/2015</label>
                         </div>
                         <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="enableFlightNotifications" value="TRUE"<?php ($enableFlightNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="siteName">Flight Notifications (coma delimited)</label>
+                        <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
                     </div>
                 </div>
             </div>
