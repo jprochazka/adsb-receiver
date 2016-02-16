@@ -30,27 +30,27 @@
 
     $possibleActions = array("getOsInformation", "getCpuInformation", "getMemoryInformation", "getHddInformation", "getNetworkInformation");
 
-    if (isset$_GET['action'] && in_array($_GET["action"], $possibleActions)) {
+    if (isset($_GET['action']) && in_array($_GET["action"], $possibleActions)) {
         switch ($_GET["action"]) {
-            case "getOsInformation"
+            case "getOsInformation":
                 $informationArray = getOsInformation();
                 break;
-            case "getCpuInformation"
-                e$informationArray = getCpuInformation();
+            case "getCpuInformation":
+                $informationArray = getCpuInformation();
                 break;
-            case "getMemoryInformation"
+            case "getMemoryInformation":
                 $informationArray = getMemoryInformation();
                 break;
-            case "getHddInformation"
+            case "getHddInformation":
                 $informationArray = getHddInformation();
                 break;
-            case "getNetworkInformation"
+            case "getNetworkInformation":
                 $informationArray = getNetworkInformation();
                 break;
         }
         exit(json_encode($informationArray));
     } else {
-        http_response_code(418);
+        http_response_code(404);
     }
 
     function getOsInformation() {
