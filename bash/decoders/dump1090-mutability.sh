@@ -155,7 +155,7 @@ echo "Some people like for dump1090-mutability to bind on all available IP addre
 echo "The scripts can bind dump190-mutability to all available IP addresses however this is not recommended"
 echo "unless you understand the possible consequences of doing so."
 echo -e "\033[37m"
-read "Would you like dump1090-mutability to bind to all available IP addresses? [y/N] " BINDTOALLIPS
+read -p "Would you like dump1090-mutability to bind to all available IP addresses? [y/N] " BINDTOALLIPS
 
 if [[ $BINDTOALLIPS =~ ^[yY]$ ]]; then
     ChangeConfig "NET_BIND_ADDRESS" "0.0.0.0" "/etc/default/dump1090-mutability"
