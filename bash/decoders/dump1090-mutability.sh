@@ -145,6 +145,22 @@ echo "Configuring dump1090-mutability to listen for BEAST input on port 30104...
 echo -e "\033[37m"
 ChangeConfig "BEAST_INPUT_PORT" "30104" "/etc/default/dump1090-mutability"
 
+# Ask if dump1090-mutability should bind on all IP addresses.
+
+echo -e "\033[33m"
+echo "By default dump1090-mutability on binds to the localhost IP address of 127.0.0.1 which is a good thing."
+echo ""
+echo "However..."
+echo "Some people like for dump1090-mutability to bind on all available IP addresses for a mutitude of reasons."
+echo "The scripts can bind dump190-mutability to all available IP addresses however this is not recommended"
+echo "unless you understand the possible consequences of doing so."
+echo -e "\033[37m"
+read "Would you like dump1090-mutability to bind to all available IP addresses? [y/N] " BINDTOALLIPS
+
+if [[ $BINDTOALLIPS =~ ^[yY]$ ]]; then
+    ChangeConfig "NET_BIND_ADDRESS" "0.0.0.0" "/etc/default/dump1090-mutability"
+fi
+
 ## HEYWHATSTHAT.COM TERRAIN LIMIT RINGS
 
 # Check if the heywhatsthis.com range position file has already been downloaded.
@@ -209,5 +225,11 @@ sudo /etc/init.d/dump1090-mutability start
 echo -e "\033[33m"
 echo "Installation of dump-1090-mutability is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
+echo ""
+echo "After setup has completed you can run the following command to configure"
+echo "other dump1090-mutability options."
+echo -e "\033[32m"
+echo "sudo dpkg-reconfigure dump1090-mutability"
+echo ""
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
