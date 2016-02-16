@@ -3,8 +3,10 @@ function checkFlights() {
         var flightCount = 0;
         $("#flight-notifications ul").empty();
         $.each(data, function (key, val) {
-            $("#flight-notifications ul").append("<li id='" + key + "'>" + val + "</li>");
-            flightCount++
+            if (val != '') {
+                $("#flight-notifications ul").append("<li id='" + key + "'>" + val + "</li>");
+                flightCount++;
+            }
         });
 
         if (flightCount > 0) {
