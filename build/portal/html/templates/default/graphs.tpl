@@ -61,22 +61,22 @@
                         <div class="row">
                             {if setting:measurementRange eq imperialNautical}
                             <div class="col-md-6 text-center">
-                                <a id ="dump1090-range-imperial-nautical-link" href="#">
-                                    <img id="dump1090-range-imperial-nautical-image" class="img-responsive" src="#" alt="Max Range (Nautical Miles)">
+                                <a id ="dump1090-range_imperial_nautical-link" href="#">
+                                    <img id="dump1090-range_imperial_nautical-image" class="img-responsive" src="#" alt="Max Range (Nautical Miles)">
                                 </a>
                             </div>
                             {/if}
                             {if setting:measurementRange eq imperialStatute}
                             <div class="col-md-6 text-center">
-                                <a id ="dump1090-range-imperial-statute-link" href="#">
-                                    <img id="dump1090-range-imperial-statute-image" class="img-responsive" src="#" alt="Max Range (Statute Miles)">
+                                <a id ="dump1090-range_imperial_statute-link" href="#">
+                                    <img id="dump1090-range_imperial_statute-image" class="img-responsive" src="#" alt="Max Range (Statute Miles)">
                                 </a>
                             </div>
                             {/if}
                             {if setting:measurementRange eq metric}
                             <div class="col-md-6 text-center">
-                                <a id ="dump1090-range-metric-link" href="#">
-                                    <img id="dump1090-range-metric-image" class="img-responsive" src="#" alt="Max Range (Kilometers)">
+                                <a id ="dump1090-range_metric-link" href="#">
+                                    <img id="dump1090-range_metric-image" class="img-responsive" src="#" alt="Max Range (Kilometers)">
                                 </a>
                             </div>
                             {/if}
@@ -123,11 +123,20 @@
                         </div>
                         <div class="padding"></div>
                         <div class="row">
+                            {if setting:measurementTemperature eq imperial}
                             <div class="col-md-6 text-center">
-                                <a id ="system-temperature-link" href="#">
-                                   <img id="system-temperature-image" class="img-responsive" src="#" alt="Core Temperature">
+                                <a id ="system-temperature_imperial-link" href="#">
+                                   <img id="system-temperature_imperial-image" class="img-responsive" src="#" alt="Core Temperature">
                                 </a>
                             </div>
+                            {/if}
+                            {if setting:measurementTemperature eq metric}
+                            <div class="col-md-6 text-center">
+                                <a id ="system-temperature_metric-link" href="#">
+                                   <img id="system-temperature_metric-image" class="img-responsive" src="#" alt="Core Temperature">
+                                </a>
+                            </div>
+                            {/if}
                             <div class="col-md-6 text-center">
                                 <a id ="system-memory-link" href="#">
                                    <img id="system-memory-image" class="img-responsive" src="#" alt="Memory Utilization">

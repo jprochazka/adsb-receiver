@@ -49,22 +49,22 @@ function switchView(newTimeFrame) {
     $("#dump1090-tracks-image").attr("src", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
     $("#dump1090-tracks-link").attr("href", "graphs/dump1090-" + $hostName + "-tracks-" + $timeFrame + ".png?time=" + $timestamp);
 
-    element =  document.getElementById('dump1090-range-imperial-nautical-image');
+    element =  document.getElementById('dump1090-range_imperial_nautical-image');
     if (typeof(element) != 'undefined' && element != null) {
-        $("#dump1090-range-imperial-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-nautical-" + $timeFrame + ".png?time=" + $timestamp);
-        $("#dump1090-range-imperial-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-nautical-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range_imperial_nautical-image").attr("src", "graphs/dump1090-" + $hostName + "-range_imperial_nautical-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range_imperial_nautical-link").attr("href", "graphs/dump1090-" + $hostName + "-range_imperial_nautical-" + $timeFrame + ".png?time=" + $timestamp);
     }
 
-    element =  document.getElementById('dump1090-range-imperial-statute-image');
+    element =  document.getElementById('dump1090-range_imperial_statute-image');
     if (typeof(element) != 'undefined' && element != null) {
-        $("#dump1090-range-imperial-image").attr("src", "graphs/dump1090-" + $hostName + "-range-imperial-statute-" + $timeFrame + ".png?time=" + $timestamp);
-        $("#dump1090-range-imperial-link").attr("href", "graphs/dump1090-" + $hostName + "-range-imperial-statute-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range_imperial_statute-image").attr("src", "graphs/dump1090-" + $hostName + "-range_imperial_statute-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range_imperial_statute-link").attr("href", "graphs/dump1090-" + $hostName + "-range_imperial_statute-" + $timeFrame + ".png?time=" + $timestamp);
     }
 
-    element =  document.getElementById('dump1090-range-metric-image');
+    element =  document.getElementById('dump1090-range_metric-image');
     if (typeof(element) != 'undefined' && element != null) {
-        $("#dump1090-range-metric-image").attr("src", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);
-        $("#dump1090-range-metric-link").attr("href", "graphs/dump1090-" + $hostName + "-range-metric-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range_metric-image").attr("src", "graphs/dump1090-" + $hostName + "-range_metric-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#dump1090-range_metric-link").attr("href", "graphs/dump1090-" + $hostName + "-range_metric-" + $timeFrame + ".png?time=" + $timestamp);
     }
 
     $("#dump1090-signal-image").attr("src", "graphs/dump1090-" + $hostName + "-signal-" + $timeFrame + ".png?time=" + $timestamp);
@@ -90,15 +90,15 @@ function switchView(newTimeFrame) {
     $("#system-memory-image").attr("src", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
     $("#system-memory-link").attr("href", "graphs/system-" + $hostName + "-memory-" + $timeFrame + ".png?time=" + $timestamp);
 
-    element =  document.getElementById('system-temperature-imperial-image');
+    element =  document.getElementById('system-temperature_imperial-image');
     if (typeof(element) != 'undefined' && element != null) {
-        $("#system-temperature-imperial-image").attr("src", "graphs/system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png?time=" + $timestamp);
-        $("#system-temperature-imperial-link").attr("href", "graphs/system-" + $hostName + "-temperature-imperial-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#system-temperature_imperial-image").attr("src", "graphs/system-" + $hostName + "-temperature_imperial-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#system-temperature_imperial-link").attr("href", "graphs/system-" + $hostName + "-temperature_imperial-" + $timeFrame + ".png?time=" + $timestamp);
     }
-    element =  document.getElementById('system-temperature-metric-image');
+    element =  document.getElementById('system-temperature_metric-image');
     if (typeof(element) != 'undefined' && element != null) {
-        $("#system-temperature-metric-image").attr("src", "graphs/system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png?time=" + $timestamp);
-        $("#system-temperature-metric-link").attr("href", "graphs/system-" + $hostName + "-temperature-metric-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#system-temperature_metric-image").attr("src", "graphs/system-" + $hostName + "-temperature_metric-" + $timeFrame + ".png?time=" + $timestamp);
+        $("#system-temperature_metric-link").attr("href", "graphs/system-" + $hostName + "-temperature_metric-" + $timeFrame + ".png?time=" + $timestamp);
     }
 
     $("#system-df_root-image").attr("src", "graphs/system-" + $hostName + "-df_root-" + $timeFrame + ".png?time=" + $timestamp);
