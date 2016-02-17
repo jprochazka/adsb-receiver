@@ -208,10 +208,14 @@
                     $itemName = $common->extractString($element, "{foreach page:".$variable." as ", "}");
                     $contents = $common->extractString($element, "{foreach page:".$variable." as ".$itemName."}", "{/foreach}");
                     $thisIteration = $contents;
-                    foreach ($pageData as $key => $value) {
-                        if ($key == $variable) {
-                            foreach ($value as $item) {
+                    foreach ($pageData as $keys => $values) {
+
+                        if ($keys == $variable) {
+                            foreach ($values as $item) {
+                                
                                 foreach ($item as $key => $value) {
+                                    
+
                                     $pattern = '/\{'.$itemName.'->(.*?)\}/';
                                     preg_match_all($pattern, $thisIteration, $placeholders, PREG_PATTERN_ORDER);
                                     foreach ($placeholders as $placeholder) {

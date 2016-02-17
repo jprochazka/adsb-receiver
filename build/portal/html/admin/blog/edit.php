@@ -59,7 +59,6 @@
     // Get titles and dates for all blog posts.
     $post = $blog->getPostByTitle(urldecode($_GET['title']));
 
-
     ////////////////
     // BEGIN HTML
 
