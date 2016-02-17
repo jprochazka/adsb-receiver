@@ -1,7 +1,7 @@
 {*
 
     ////////////////////////////////////////////////////////////////////////////////
-    //                  ADS-B FEEDER PORTAL TEMPLATE INFORMATION                  //
+    //                 ADS-B RECEIVER PORTAL TEMPLATE INFORMATION                 //
     // ========================================================================== //
     // Template Set: default                                                      //
     // Template Name: master.tpl                                                  //
@@ -73,7 +73,7 @@
         <footer id="footer">
             <div class="container">
                 <p class="muted credits">
-                    <a href="https://github.com/jprochazka/adsb-feeder">The ADS-B Feeder Project</a>
+                    <a href="https://www.adsbreceiver.net">The ADS-B Receiver Project</a>
                 </p>
             </div>
         </footer>

@@ -1,7 +1,7 @@
 {*
 
     ////////////////////////////////////////////////////////////////////////////////
-    //                  ADS-B FEEDER PORTAL TEMPLATE INFORMATION                  //
+    //                 ADS-B RECEIVER PORTAL TEMPLATE INFORMATION                 //
     // ========================================================================== //
     // Template Set: default                                                      //
     // Template Name: post.tpl                                                    //

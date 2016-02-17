@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
     <meta charset="utf-8">
-    <title>ADS-B Feeder Administration</title>
+    <title>ADS-B Receiver Administration</title>
         <meta http-equiv="cache-control" content="no-cache" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -29,7 +29,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="/admin">ADS-B Feeder Administration</a>
+                        <a class="navbar-brand" href="/admin">ADS-B Receiver Administration</a>
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">

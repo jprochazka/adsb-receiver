@@ -2,7 +2,7 @@
 <settings>
     <setting>
         <name>siteName</name>
-        <value>ADS-B Feeder</value>
+        <value>ADS-B Receiver</value>
     </setting>
     <setting>
         <name>template</name>
