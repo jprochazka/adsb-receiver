@@ -12,4 +12,5 @@ The following is a history of the changes made to this project.
 
 ## February 5th, 2016
 
-* Raspbian Jessie Lite image is now available.
+* Initial tagged release.
+* Raspbian Jessie Lite image now available.
