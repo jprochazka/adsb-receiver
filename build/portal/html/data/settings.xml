@@ -22,7 +22,7 @@
     </setting>
     <setting>
         <name>enableInfo</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>enableGraphs</name>
