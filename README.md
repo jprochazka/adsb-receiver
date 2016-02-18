@@ -15,7 +15,7 @@ https://github.com/jprochazka/adsb-receiver/releases/latest
 
     sudo apt-get update
     sudo apt-get install git
-    git clone https://github.com/jprochazka/adsb-receiver.git ~/adsb-receiver
+    git clone https://github.com/jprochazka/adsb-receiver.git
     cd ~/adsb-receiver
     chmod +x install.sh
     ./install.sh
