@@ -9,7 +9,7 @@ The ADS-B Receiver Project website is located at https://www.adsbreceiver.net.
 ### Obtaining And Using This Software
 
 Download the latest ADS-B Receiver Raspbian Jessie Lite image for Raspberry Pi devices.
-https://github.com/jprochazka/adsb-feeder/releases/latest
+https://github.com/jprochazka/adsb-receiver/releases/latest
 
 #### Manual installations...
 
