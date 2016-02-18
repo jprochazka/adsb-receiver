@@ -1,13 +1,13 @@
 <?php
 
     /////////////////////////////////////////////////////////////////////////////////////
-    //                             ADS-B FEEDER PORTAL                                 //
+    //                            ADS-B RECEIVER PORTAL                                //
     // =============================================================================== //
     // Copyright and Licensing Information:                                            //
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015 Joseph A. Prochazka                                          //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -103,6 +103,31 @@
             $start = ($page - 1) * ($itemsPerPage + 1);
             $offset = $itemsPerPage + 1;
             return array_slice($inArray, $start, $offset);
+        }
+
+        // Function that returns the string contained between two strings.
+        function extractString($string, $start, $end) {
+            $string = " ".$string;
+            $ini = strpos($string, $start);
+            if ($ini == 0) return "";
+            $ini += strlen($start);
+            $len = strpos($string, $end, $ini) - $ini;
+            return substr($string, $ini, $len);
+        }
+
+        // Remove/clean HTML from a string and shorten to the specified length.
+        function cleanAndShortenString($string, $length) {
+            return substr($this->removeHtmlTags($string), 0, $length);
+        }
+
+        // Returns the base URL from the requested URL.
+        function getBaseUrl(){
+            if(isset($_SERVER['HTTPS'])){
+                $protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
+            } else {
+                $protocol = 'http';
+            }
+            return $protocol."://".$_SERVER['HTTP_HOST'];
         }
     }
 ?>

@@ -1,13 +1,13 @@
 <?php
 
     /////////////////////////////////////////////////////////////////////////////////////
-    //                             ADS-B FEEDER PORTAL                                 //
+    //                            ADS-B RECEIVER PORTAL                                //
     // =============================================================================== //
     // Copyright and Licensing Information:                                            //
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015 Joseph A. Prochazka                                          //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -47,7 +47,22 @@
     $updated = FALSE;
 
     if ($common->postBack()) {
+        // Flight notifications
+        $notificationArray = explode(',', $_POST['flightNotifications']);
+        $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
+        unset($notifications->flight);
+        foreach ($notificationArray as $notification) {
+            $newNotification = $notifications->addChild('flight', $notification);
+            $dom = dom_import_simplexml($notifications)->ownerDocument;
+            $dom->formatOutput = TRUE;
+            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml", $dom->saveXML());
+        }
+        
         // Set TRUE or FALSE for checkbox items.
+        $enableFlightNotifications = FALSE;
+        if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
+            $enableFlightNotifications = TRUE;
+
         $enableBlog = FALSE;
         if (isset($_POST['enableBlog']) && $_POST['enableBlog'] == "TRUE")
             $enableBlog = TRUE;
@@ -76,6 +91,8 @@
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
+        $common->updateSetting("dateFormat", $_POST['dateFormat']);
+        $common->updateSetting("enableFlightNotifications", $enableFlightNotifications);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
@@ -90,10 +107,19 @@
         $updated = TRUE;
     }
 
+    // Get all flights to be notified about from the flightNotifications.xml file.
+    $flightNotifications = NULL;
+    $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
+    foreach ($savedFlights as $savedFlight) {
+        $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
+    }
+    $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
+
     // Get general settings from settings.xml.
     $siteName = $common->getSetting("siteName");
     $currentTemplate = $common->getSetting("template");
     $defaultPage = $common->getSetting("defaultPage");
+    $dateFormat = $common->getSetting("dateFormat");
 
     // Get navigation settings from settings.xml.
     $enableBlog = $common->getSetting("enableBlog");
@@ -161,12 +187,37 @@
                     <div class="form-group">
                         <label for="defaultPage">Default Page</label>
                         <select class="form-control" id="defaultPage" name="defaultPage">
-                            <option value="blog"<?php ($defaultPage == "blog" ? print ' selected' : ''); ?>>Blog</option>
+                            <option value="blog.php"<?php ($defaultPage == "blog.php" ? print ' selected' : ''); ?>>Blog</option>
                             <option value="system.php"<?php ($defaultPage == "system.php" ? print ' selected' : ''); ?>>System Information</option>
                             <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
                             <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
                             <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="defaultPage">Date Format</label>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="F jS, Y"<?php ($dateFormat == "F jS, Y" ? print ' checked' : ''); ?>>October 16, 2015</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="Y-m-d"<?php ($dateFormat == "Y-m-d" ? print ' checked' : ''); ?>>2015-10-16</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="m/d/Y"<?php ($dateFormat == "m/d/Y" ? print ' checked' : ''); ?>>16/10/2015</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="dateFormatSlelection" value="d/m/Y"<?php ($dateFormat == "d/m/Y" ? print ' checked' : ''); ?>>10/16/2015</label>
+                        </div>
+                        <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="enableFlightNotifications" value="TRUE"<?php ($enableFlightNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="siteName">Flight Notifications (coma delimited)</label>
+                        <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
                     </div>
                 </div>
             </div>
@@ -209,11 +260,11 @@
                 <div class="panel-heading">Unit of Measurement (Range)</div>
                 <div class="panel-body">
                     <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default<?php ($measurementRange == "imperial_nm" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementRange" id="imperial_nm" value="imperial_nm" autocomplete="off"<?php ($measurementRange == "imperial_nm" ? print ' checked' : ''); ?>> Imperial (Nautical Miles)
+                        <label class="btn btn-default<?php ($measurementRange == "imperialNautical" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementRange" id="imperialNautical" value="imperialNautical" autocomplete="off"<?php ($measurementRange == "imperialNautical" ? print ' checked' : ''); ?>> Imperial (Nautical Miles)
                         </label>
-                        <label class="btn btn-default<?php ($measurementRange == "imperial_sm" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementRange" id="imperial_sm" value="imperial_sm" autocomplete="off"<?php ($measurementRange == "imperial_sm" ? print ' checked' : ''); ?>> Imperial (Statute Miles)
+                        <label class="btn btn-default<?php ($measurementRange == "imperialStatute" ? print ' active' : ''); ?>">
+                            <input type="radio" name="measurementRange" id="imperialStatute" value="imperialStatute" autocomplete="off"<?php ($measurementRange == "imperialStatute" ? print ' checked' : ''); ?>> Imperial (Statute Miles)
                         </label>
                         <label class="btn btn-default<?php ($measurementRange == "metric" ? print ' active' : ''); ?>">
                             <input type="radio" name="measurementRange" id="metric" value="metric" autocomplete="off"<?php ($measurementRange == "metric" ? print ' checked' : ''); ?>> Metric

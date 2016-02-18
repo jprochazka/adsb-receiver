@@ -1,7 +1,7 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
-    //                            ADS-B RECEIVER PORTAL                                //
+    //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
     // Copyright and Licensing Information:                                            //
     //                                                                                 //
@@ -28,20 +28,51 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
-    session_start();
-
     // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/template.class.php');
-
+    require_once('../classes/common.class.php');
     $common = new common();
-    $template = new template();
 
-    $pageData = array();
+    $possibleActions = array("flights");
 
-    // The title of this page.
-    $pageData['title'] = "Live Dump1090 Map";
+    if (isset($_GET['type']) && in_array($_GET["type"], $possibleActions)) {
+        switch ($_GET["type"]) {
+            case "flights":
+                $queryArray = getVisibleFlights();
+                break;
+        }
+        exit(json_encode($queryArray));
+    } else {
+        http_response_code(404);
+    }
 
-    $template->display($pageData);
+    function getVisibleFlights() {
+        $common = new common();
+
+        // Get all flights to be notified about from the flightNotifications.xml file.
+        $lookingFor = array();
+        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
+        foreach ($savedFlights as $savedFlight) {
+            $lookingFor[] = array($savedFlight);
+        }
+
+        // Check dump1090-mutability's aircraft JSON output to see if the flight is visible.
+        $visibleFlights = array();
+        $url = $common->getBaseUrl()."/dump1090/data/aircraft.json";
+        $json = file_get_contents($url);
+        $data = json_decode($json, true);
+        foreach ($data['aircraft'] as $aircraft) {
+            if (array_key_exists('flight', $aircraft)) {
+                $visibleFlights[] = strtoupper(trim($aircraft['flight']));
+            }
+        }
+
+        $foundFlights = array();
+        foreach ($lookingFor as $flight) {
+            if (in_array($flight[0], $visibleFlights)) {
+                $foundFlights[] = $flight[0];
+            }
+        }
+
+        return json_decode(json_encode((array)$foundFlights), true);
+    }
 ?>

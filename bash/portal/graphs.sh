@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #####################################################################################
-#                                   ADS-B FEEDER                                    #
+#                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
 # This script is not meant to be executed directly.                                 #
@@ -190,13 +190,21 @@ sudo /etc/init.d/collectd force-reload
 ## EDIT CRONTAB
 
 echo -e "\033[33mAdding jobs to crontab..."
+
+# The next block is temporary in order to insure this file is
+# deleted on older installation before the project renaming.
 if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
     echo -e "Removing previously installed cron file..."
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
 fi
+
+if [ -f /etc/cron.d/adsb-receiver-performance-graphs ]; then
+    echo -e "Removing previously installed cron file..."
+    sudo rm -f /etc/cron.d/adsb-receiver-performance-graphs
+fi
 echo -e "\033[37m"
 chmod +x $BUILDDIR/portal/graphs/make-collectd-graphs.sh
-sudo tee -a /etc/cron.d/adsb-feeder-performance-graphs > /dev/null <<EOF
+sudo tee -a /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
 # Every 5 minutes new hourly graphs are generated.

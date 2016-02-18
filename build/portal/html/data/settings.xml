@@ -2,7 +2,7 @@
 <settings>
     <setting>
         <name>siteName</name>
-        <value>ADS-B Feeder</value>
+        <value>ADS-B Receiver</value>
     </setting>
     <setting>
         <name>template</name>
@@ -10,7 +10,11 @@
     </setting>
     <setting>
         <name>defaultPage</name>
-        <value>blog</value>
+        <value>blog.php</value>
+    </setting>
+    <setting>
+        <name>dateFormat</name>
+        <value>F jS, Y</value>
     </setting>
     <setting>
         <name>enableBlog</name>
@@ -18,7 +22,7 @@
     </setting>
     <setting>
         <name>enableInfo</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>enableGraphs</name>
@@ -30,15 +34,15 @@
     </setting>
     <setting>
         <name>enableDump978</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>enablePfclient</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>measurementRange</name>
-        <value>imperial_nm</value>
+        <value>imperialNautical</value>
     </setting>
     <setting>
         <name>measurementTemperature</name>
@@ -47,5 +51,9 @@
     <setting>
         <name>networkInterface</name>
         <value>eth0</value>
+    </setting>
+    <setting>
+        <name>enableFlightNotifications</name>
+        <value>1</value>
     </setting>
 </settings>

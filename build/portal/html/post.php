@@ -34,14 +34,25 @@
     // Load the common PHP classes.
     require_once('classes/common.class.php');
     require_once('classes/template.class.php');
+    require_once('classes/blog.class.php');
 
     $common = new common();
     $template = new template();
+    $blog = new blog();
 
     $pageData = array();
 
+    // Get the requested blog post.
+    $post = $blog->getPostByTitle(strtolower(urldecode($_GET['title'])));
+
     // The title of this page.
-    $pageData['title'] = "Live Dump1090 Map";
+    $pageData['title'] = $post->title;
+
+    // Add blog post data to the $pageData array.
+    $pageData['postTitle'] = $post->title;
+    $pageData['postDate'] = date_format(date_create($post->date), $common->getSetting('dateFormat'));
+    $pageData['postAuthor'] = $post->author;
+    $pageData['postContents'] = $post->contents;
 
     $template->display($pageData);
 ?>

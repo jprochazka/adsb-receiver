@@ -1,13 +1,13 @@
 <?php
 
     /////////////////////////////////////////////////////////////////////////////////////
-    //                             ADS-B FEEDER PORTAL                                 //
+    //                            ADS-B RECEIVER PORTAL                                //
     // =============================================================================== //
     // Copyright and Licensing Information:                                            //
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015 Joseph A. Prochazka                                          //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -58,7 +58,6 @@
 
     // Get titles and dates for all blog posts.
     $post = $blog->getPostByTitle(urldecode($_GET['title']));
-
 
     ////////////////
     // BEGIN HTML

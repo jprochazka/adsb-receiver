@@ -1,13 +1,13 @@
 <?php
 
     /////////////////////////////////////////////////////////////////////////////////////
-    //                             ADS-B FEEDER PORTAL                                 //
+    //                            ADS-B RECEIVER PORTAL                                //
     // =============================================================================== //
     // Copyright and Licensing Information:                                            //
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015 Joseph A. Prochazka                                          //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -67,7 +67,7 @@
                     <input type="text" id="title" name="title" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <textarea id="contents" name="contents"><?php echo $_SESSION['login']; ?></textarea>
+                    <textarea id="contents" name="contents"></textarea>
                 </div>
                 <input type="submit" class="btn btn-default" value="Publish">
             </form>
@@ -81,11 +81,17 @@
                         'searchreplace visualblocks code fullscreen',
                         'insertdatetime media table contextmenu paste code'
                     ],
-                    toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-                    content_css: [
-                        '//fast.fonts.net/cssapi/e6dc9b99-64fe-4292-ad98-6974f93cd2a2.css',
-                        '//www.tinymce.com/css/codepen.min.css'
-                    ]
+                    toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image moreButton',
+                    setup: function (editor) {
+                        editor.addButton('moreButton', {
+                            type: 'button',
+                            text: 'Read more...',
+                            icon: false,
+                            onclick: function () {
+                                editor.execCommand('mceInsertContent', false, "{more}");
+                            }
+                        });
+                    }
                 });
             </script>
 <?php

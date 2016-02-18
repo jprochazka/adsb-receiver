@@ -1,13 +1,13 @@
 <?php
     
     /////////////////////////////////////////////////////////////////////////////////////
-    //                             ADS-B FEEDER PORTAL                                 //
+    //                            ADS-B RECEIVER PORTAL                                //
     // =============================================================================== //
     // Copyright and Licensing Information:                                            //
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015 Joseph A. Prochazka                                          //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -33,28 +33,15 @@
 
     // Load the common PHP classes.
     require_once('classes/common.class.php');
+    require_once('classes/template.class.php');
+
     $common = new common();
+    $template = new template();
 
-    // The title and navigation link ID of this page.
-    $pageTitle = "Live Dump978 Map";
+    $pageData = array();
 
-    // Get the name of the template to use from the settings.
-    $siteName = $common->getSetting("siteName");
-    $template = $common->getSetting("template");
+    // The title of this page.
+    $pageData['title'] = "Live Dump978 Map";
 
-    // Enable/disable navigation links.
-    $enableBlog = $common->getSetting("enableBlog");
-    $enableInfo = $common->getSetting("enableInfo");
-    $enableGraphs = $common->getSetting("enableGraphs");
-    $enableDump1090 = $common->getSetting("enableDump1090");
-    $enableDump978 = $common->getSetting("enableDump978");
-    $enablePfclient = $common->getSetting("enablePfclient");
-
-    $linkId = $common->removeExtension($_SERVER["SCRIPT_NAME"])."-link";
-
-    // Include the index template.
-    require_once('templates/'.$template.'/dump978.tpl.php');
-
-    // Include the master template.
-    require_once('templates/'.$template.'/master.tpl.php');
+    $template->display($pageData);
 ?>

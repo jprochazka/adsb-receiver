@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                            ADS-B RECEIVER PORTAL                                //
     // =============================================================================== //
@@ -34,14 +34,35 @@
     // Load the common PHP classes.
     require_once('classes/common.class.php');
     require_once('classes/template.class.php');
+    require_once('classes/blog.class.php');
 
     $common = new common();
     $template = new template();
+    $blog = new blog();
 
     $pageData = array();
 
     // The title of this page.
-    $pageData['title'] = "Live Dump1090 Map";
+    $pageData['title'] = "Blog";
+
+    // Get all blog posts from the XML file storing them.
+    $allPosts = $blog->getAllPosts();
+
+    // Format the post dates according to the related setting.
+    foreach ($allPosts as &$post) {
+        if (strpos($post['contents'], '{more}') !== false) {
+            $post['contents'] = substr($post['contents'], 0, strpos($post['contents'], '{more}'));
+        }
+        $post['date'] = date_format(date_create($post['date']), $common->getSetting('dateFormat'));
+    }
+
+    // Pagination.
+    $itemsPerPage = 5;
+    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
+    $pageData['blogPosts'] = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
+
+    // Calculate the number of pagination links to show.
+    $pageData['pageLinks'] = count($allPosts) / $itemsPerPage;
 
     $template->display($pageData);
 ?>

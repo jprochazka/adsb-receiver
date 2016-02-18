@@ -1,31 +1,28 @@
-# The ADS-B Feeder Project :airplane:
+# The ADS-B Receiver Project :airplane:
 
-This repository contains a set of bash scripts and files which can be used to setup an ADS-B
+This repository contains a set of scripts and files which can be used to setup an ADS-B
 receiver on a clean installation of a Debian derived operating system. The scripts are executed
 in order by the main install script depending on the installation options choosen by the user.
 
-The project website is located at https://www.adsbreceiver.net.
+The ADS-B Receiver Project website is located at https://www.adsbreceiver.net.
 
 ### Obtaining And Using This Software
 
-#### For new installations...
+Download the latest ADS-B Receiver Raspbian Jessie Lite image for Raspberry Pi devices.
+https://github.com/jprochazka/adsb-feeder/releases/latest
 
+#### Manual installations...
+
+    sudo apt-get update
     sudo apt-get install git
-    cd ~/
-    git clone https://github.com/jprochazka/adsb-feeder.git
-    cd ~/adsb-feeder
+    git clone https://github.com/jprochazka/adsb-receiver.git ~/adsb-receiver
+    cd ~/adsb-receiver
     chmod +x install.sh
     ./install.sh
     
-Please refer to the project wiki for more ways to customize your installation.  
-https://github.com/jprochazka/adsb-feeder/wiki
-    
 #### Updating existing installations...
 
-**If updating an installation created before January 28th, 2016...**  
-Due to the fact the portal was entirly overhauled after the above date you should first backup then delete all files contained in the /var/www/html directory before fetching and running the latest version. Fresh installations and installations created using these files after the above date can disregard the above notice.
-
-    cd ~/adsb-feeder
+    cd ~/adsb-receiver
     git fetch --all
     git reset --hard origin/master
     ./install.sh
@@ -45,7 +42,7 @@ At this time the following software can be installed using these scripts.
 * Plane Finder ADS-B Client:  https://planefinder.net
 * ADS-B Exchange:             http://adsbexchange.com
 
-**Web Portal Features**
+**ADS-B Receiver Web Portal Features**
 
 * Control what is displayed online via a web based administration area.
 * A more uniform website site layout that can be easily navigated.
@@ -53,20 +50,9 @@ At this time the following software can be installed using these scripts.
 * A web accessable live dump1090 map.
 * A web accessable live dump978 map.
 * A blog which can be used to share your plane tracking experiences with others.
+* Informs visitors when specific flights are being tracked by dump1090.
+* Easily customize the look of your portal using the template system.
 
 ### Supported Operating Systems
 
-The scripts and packages have been tested on the following operating systems.
-
-- [X] Raspbian Jessie
-- [X] Raspbian Jessie Lite
-- [X] Debian 8.0 Jessie
-- [X] Ubuntu 15.04 Vivid Vervet
-- [X] Ubuntu 14.04 LTS Trusty Tahr
-
-### Dump978 Notes
-
-In order to utilize dump978 a second RTL-SDR device is required.
-
-It is important to review the dump978 wiki page before installation.  
-https://github.com/jprochazka/adsb-feeder/wiki/Configuring-Dump978
+The scripts and packages have been tested on most Debian Jessie based operating systems.
