@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## template branch
+## February 18th, 2016
 
 * Greatly improved the template system used by the web portal.
 * Vistitors to the web portal can be alerted to the presence of aircraft using specified flight numbers.
