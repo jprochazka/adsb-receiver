@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #####################################################################################
-#                                   ADS-B FEEDER                                    #
+#                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
 #  A set of scripts created to automate the process of installing the software      #

@@ -1,6 +1,6 @@
 # The ADS-B Receiver Project :airplane:
 
-This repository contains a set of bash scripts and files which can be used to setup an ADS-B
+This repository contains a set of scripts and files which can be used to setup an ADS-B
 receiver on a clean installation of a Debian derived operating system. The scripts are executed
 in order by the main install script depending on the installation options choosen by the user.
 
@@ -16,7 +16,7 @@ https://github.com/jprochazka/adsb-feeder/releases/latest
     sudo apt-get update
     sudo apt-get install git
     git clone https://github.com/jprochazka/adsb-receiver.git ~/adsb-receiver
-    cd ~/adsb-feeder
+    cd ~/adsb-receiver
     chmod +x install.sh
     ./install.sh
     
