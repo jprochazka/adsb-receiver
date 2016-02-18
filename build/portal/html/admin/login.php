@@ -32,7 +32,7 @@
     // Default Login Information //
     ///////////////////////////////
     // Login: admin              //
-    // Password: adsbfeeder      //
+    // Password: adsbreceiver    //
     ///////////////////////////////
 
     session_start();
