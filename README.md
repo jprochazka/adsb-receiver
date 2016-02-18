@@ -46,9 +46,9 @@ At this time the following software can be installed using these scripts.
 
 * Control what is displayed online via a web based administration area.
 * A more uniform website site layout that can be easily navigated.
-* Web accessable dump1090 and system performance graphs.
-* A web accessable live dump1090 map.
-* A web accessable live dump978 map.
+* Web accessible dump1090 and system performance graphs.
+* A web accessible live dump1090 map.
+* A web accessible live dump978 map.
 * A blog which can be used to share your plane tracking experiences with others.
 * Informs visitors when specific flights are being tracked by dump1090.
 * Easily customize the look of your portal using the template system.
