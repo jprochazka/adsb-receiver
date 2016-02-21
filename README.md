@@ -4,6 +4,8 @@ This repository contains a set of scripts and files which can be used to setup a
 receiver on a clean installation of a Debian derived operating system. The scripts are executed
 in order by the main install script depending on the installation options choosen by the user.
 
+Please note: As of February 2016, the scripts do not work when run on an SD card where the current PiAware image was installed. The scripts require a clean installation of a Debian derived operating system.
+
 The ADS-B Receiver Project website is located at https://www.adsbreceiver.net.
 
 ### Obtaining And Using This Software
@@ -56,3 +58,5 @@ At this time the following software can be installed using these scripts.
 ### Supported Operating Systems
 
 The scripts and packages have been tested on most Debian Jessie based operating systems.
+
+The scripts are NOT supported on existing PiAware *image based* installations. The PiAware image is still based on Raspbian Wheezey version which is missing some required libraries for dump1090-mutability installation.
