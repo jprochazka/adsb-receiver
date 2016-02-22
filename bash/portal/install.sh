@@ -72,16 +72,6 @@ CheckPackage libpython2.7
 
 ## SETUP THE PORTAL WEBSITE
 
-if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-    echo -e "\033[33m"
-    echo -e "Inserting the Planefinder ADS-B Client links...\033[37m"
-
-    PLACEHOLDER="<!-- Plane Finder ADS-B Client Link Placeholder -->"
-    IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk -F'[/ ]+' '{print $3}'`
-    HTMLLINK="<li id=\"planefinder-link\"><a href=\"http://${IPADDRESS}:30053\">Plane Finder Client</a></li>"
-    sudo sed -i "s@${PLACEHOLDER}@${HTMLLINK}@g" ${HTMLDIR}/templates/default/master.tpl.php
-fi
-
 echo -e "\033[33m"
 echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
 sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
