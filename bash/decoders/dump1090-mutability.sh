@@ -148,10 +148,10 @@ ChangeConfig "BEAST_INPUT_PORT" "30104" "/etc/default/dump1090-mutability"
 # Ask if dump1090-mutability should bind on all IP addresses.
 
 echo -e "\033[33m"
-echo "By default dump1090-mutability on binds to the localhost IP address of 127.0.0.1 which is a good thing."
+echo "By default dump1090-mutability binds to the localhost IP address of 127.0.0.1 which is a good thing."
 echo ""
 echo "However..."
-echo "Some people like for dump1090-mutability to bind on all available IP addresses for a mutitude of reasons."
+echo "Some people like for dump1090-mutability to bind to all available IP addresses for a multitude of reasons."
 echo "The scripts can bind dump190-mutability to all available IP addresses however this is not recommended"
 echo "unless you understand the possible consequences of doing so."
 echo -e "\033[37m"

@@ -48,11 +48,11 @@ echo "-------------------------------------------"
 echo " Now ready to install ADS-B Portal."
 echo "-------------------------------------------"
 echo -e "\033[33mThe goal of the ADS-B Portal project is to create a very"
-echo "light weight easy to manage web interface for dump-1090 installations"
+echo "light weight easy to manage web interface for dump-1090 installations."
 echo "This project is at the moment very young with only a few of the planned"
-echo "featured currently available at this time."
+echo "features currently available at this time."
 echo ""
-echo "https://github.com/jprochazka/dump1090-portal"
+echo "https://github.com/jprochazka/adsb-receiver"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
@@ -71,16 +71,6 @@ CheckPackage php5-cgi
 CheckPackage libpython2.7
 
 ## SETUP THE PORTAL WEBSITE
-
-if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-    echo -e "\033[33m"
-    echo -e "Inserting the Planefinder ADS-B Client links...\033[37m"
-
-    PLACEHOLDER="<!-- Plane Finder ADS-B Client Link Placeholder -->"
-    IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk -F'[/ ]+' '{print $3}'`
-    HTMLLINK="<li id=\"planefinder-link\"><a href=\"http://${IPADDRESS}:30053\">Plane Finder Client</a></li>"
-    sudo sed -i "s@${PLACEHOLDER}@${HTMLLINK}@g" ${HTMLDIR}/templates/default/master.tpl.php
-fi
 
 echo -e "\033[33m"
 echo -e "Placing portal files in Lighttpd's root directory...\033[37m"

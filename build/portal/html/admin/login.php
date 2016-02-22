@@ -78,7 +78,7 @@
     <body>
         <div class="container">
             <form class="form-signin" method="post" action="login.php">
-                <h2 class="form-signin-heading">ADS-B Feeder Login</h2>
+                <h2 class="form-signin-heading">ADS-B Receiver Login</h2>
                 <div>
                     <label for="login" class="sr-only">Login</label>
                     <input type="text" id="login" name="login" class="form-control" placeholder="Login" required autofocus>

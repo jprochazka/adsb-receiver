@@ -35,6 +35,9 @@
         function display(&$pageData) {
             $common = new Common($this);
 
+			// The Base URL of this page (needed for Plane Finder client link)
+			$pageData['baseurl'] = $common->getBaseUrl();
+
             // Load the master template.
             $master = $this->readTemplate('master.tpl');
 
