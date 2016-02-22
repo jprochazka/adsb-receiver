@@ -240,7 +240,7 @@ NOTHINGTODO="Nothing has been selected to be installed so the script will exit n
 read -d '' INSTALLATIONCOMPLETE <<"EOF"
 INSTALLATION COMPLETE
 
-It is hoped these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you ran into and problems or wish to submit feed back feel free to do so on the project's GitHub site.
+It is hoped these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you ran into any problems or wish to submit feed back feel free to do so on the project's GitHub site.
 
 https://github.com/jprochazka/adsb-receiver
 EOF
