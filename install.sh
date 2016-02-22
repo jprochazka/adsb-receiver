@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #####################################################################################
-#                                   ADS-B FEEDER                                    #
+#                                   ADS-B RECEIVER                                  #
 #####################################################################################
 #                                                                                   #
 #  A set of scripts created to automate the process of installing the software      #
 #  needed to setup a Mode S decoder as well as feeders which are capable of         #
 #  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
 #                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-feeder              #
+#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-receiver            #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
@@ -163,23 +163,23 @@ CheckPackage whiptail
 ##
 
 # The title of the installer.
-BACKTITLE="The ADS-B Feeder Project"
+BACKTITLE="The ADS-B Receiver Project"
 
 # The welcome message displayed when this scrip[t it first executed.
 read -d '' WELCOME <<"EOF"
-The ADS-B Project is a series of bash scripts and files which can be used to setup an ADS-B feeder on certain Debian derived operating system.
+The ADS-B Project is a series of bash scripts and files which can be used to setup an ADS-B receiver on certain Debian derived operating system.
 
 More information on the project can be found on GitHub.
-https://github.com/jprochazka/adsb-feeder
+https://github.com/jprochazka/adsb-receiver
 
 Would you like to continue setup?
 EOF
 
 # Message displayed asking to update the operating system.
 read -d '' UPDATEFIRST <<"EOF"
-It is recommended that you update your system before building and/or installing any ADS-B feeder related packages. This script can do this for you at this time if you like.
+It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.
 
-Update system before installing any ADS-B feeder related software?
+Update system before installing any ADS-B receiver related software?
 EOF
 
 # Message displayed if dump1090-mutability is installed.
@@ -224,13 +224,13 @@ ALLFEEDERSINSTALLED="It appears that all the feeders available for installation 
 
 # Message displayed asking if the user wishes to install the web portal.
 read -d '' INSTALLWEBPORTAL <<"EOF"
-The ADS-B Feeder Project Web Portal is a light weight web interface for dump-1090-mutability installations.
+The ADS-B Receiver Project Web Portal is a light weight web interface for dump-1090-mutability installations.
 
 Current features include the following:
   Unified navigation between all web pages.
   System and dump1090 performance graphs.
 
-Would you like to install the ADS-B Feeder Project web portal on this device?
+Would you like to install the ADS-B Receiver Project web portal on this device?
 EOF
 
 # Message to display if there is nothing to install or do.
@@ -240,9 +240,9 @@ NOTHINGTODO="Nothing has been selected to be installed so the script will exit n
 read -d '' INSTALLATIONCOMPLETE <<"EOF"
 INSTALLATION COMPLETE
 
-It is hoped these scripts and files were found useful while setting up your ADS-B Feeder. Feedback reguarding this software is always welcome. If you ran into and problems or wish to submit feed back feel free to do so on the project's GitHub site.
+It is hoped these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you ran into and problems or wish to submit feed back feel free to do so on the project's GitHub site.
 
-https://github.com/jprochazka/adsb-feeder
+https://github.com/jprochazka/adsb-receiver
 EOF
 
 ##
@@ -250,7 +250,7 @@ EOF
 ##
 
 # Display the welcome message.
-whiptail --backtitle "$BACKTITLE" --title "The ADS-B Feeder Project" --yesno "$WELCOME" 16 65
+whiptail --backtitle "$BACKTITLE" --title "The ADS-B Receiver Project" --yesno "$WELCOME" 16 65
 BEGININSTALLATION=$?
 
 if [ $BEGININSTALLATION = 1 ]; then
@@ -360,7 +360,7 @@ fi
 ## WEB PORTAL
 
 # Ask if the web portal should be installed.
-whiptail --backtitle "$BACKTITLE" --title "Install The ADS-B Feeder Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
+whiptail --backtitle "$BACKTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
 DOINSTALLWEBPORTAL=$?
 
 ## CONFIRMATION
@@ -438,7 +438,7 @@ if [ $DUMP1090CHOICE = 0 ] || [ $DUMP978CHOICE = 0 || [ $DOINSTALLWEBPORTAL = 0 
     fi
 
     if [ $DOINSTALLWEBPORTAL = 0 ]; then
-        CONFIRMATION="${CONFIRMATION}\n  * ADS-B Feeder Project Web Portal"
+        CONFIRMATION="${CONFIRMATION}\n  * ADS-B Receiver Project Web Portal"
     fi
     CONFIRMATION="${CONFIRMATION}\n"
 fi
