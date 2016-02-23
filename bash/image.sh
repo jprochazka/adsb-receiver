@@ -46,6 +46,8 @@ echo "set the latitude and longitude of your feeder. If you do not know the"
 echo "latitude and longitude of your feeder you can find out this information"
 echo "by using Geocode by Address tool found on my web site."
 echo ""
+echo "NOT SETTING LATITUDE AND LONGITUDE WILL BREAK THE RANGE PERFORMANCE GRAPH"
+echo ""
 echo "  https://www.swiftbyte.com/toolbox/geocode"
 echo -e "\033[37m"
 read -p "Feeder Latitude: " FEEDERLAT
