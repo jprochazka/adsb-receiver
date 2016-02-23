@@ -217,7 +217,7 @@ Do you wish to install dump978?
 EOF
 
 # Message displayed above feeder selection check list.
-FEEDERSAVAILABLE="The following feeders are available for installation. Choose the feeders you wish to install."
+FEEDERSAVAILABLE="The following feeders are available for installation. Choose the feeders you wish to install. (Hint: Use spacebar to select/deselect.)"
 
 # Message displayed if all available feeders have already been installed.
 ALLFEEDERSINSTALLED="It appears that all the feeders available for installation by this script have been installed already."
