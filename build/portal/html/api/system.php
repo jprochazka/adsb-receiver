@@ -55,29 +55,41 @@
 
     function getOsInformation() {
         $osInformation['phpUname'] = php_uname();
-        $osInformation['name'] = php_uname('s');
-        $osInformation['hostName'] = php_uname('n');
-        $osInformation['releaseName'] = php_uname('r');
-        $osInformation['version'] = php_uname('v');
-        $osInformation['machineType'] = php_uname('m');
+        $osInformation['kernelName'] = php_uname('s');
+        $osInformation['nodeName'] = php_uname('n');
+        $osInformation['kernelRelease'] = php_uname('r');
+        $osInformation['kernelVersion'] = php_uname('v');
+        $osInformation['machine'] = php_uname('m');
+        $osInformation['processor'] = php_uname('p');
+        $osInformation['hardwarePlatform'] = php_uname('i');
+        $osInformation['operatingSystem'] = php_uname('o');
+
+        // cat /etc/os-release
+
         return $osInformation;
     }
 
     function getCpuInformation() {
-        $firstRead = shell_exec("cat /proc/stat");
-        $firstArray = explode(' ',trim($firstRead));
-        $firstTotal = $firstArray[2] + $firstArray[3] + $firstArray[4] + $firstArray[5];
-        $firstIdle = $firstArray[5];
-        usleep(0.15 * 1000000);
-        $secondRead = shell_exec("cat /proc/stat");
-        $secondArray = explode(' ', trim($secondRead));
-        $secondTotal = $secondArray[2] + $secondArray[3] + $secondArray[4] + $secondArray[5];
-        $secondIdle = $secondArray[5];
-        $intervalTotal = intval($secondTotal - $firstTotal);
-        $cpuInformation['cpu'] =  intval(100 * (($intervalTotal - ($secondIdle - $firstIdle)) / $intervalTotal));
+        $firstRead = file('/proc/stat');
+        sleep(1);
+        $secondRead = file('/proc/stat');
+        $firstInfo = explode(" ", preg_replace("!cpu +!", "", $firstRead[0]));
+        $secondInfo = explode(" ", preg_replace("!cpu +!", "", $secondRead[0]));
+        $difference = array();
+        $difference['user'] = $secondInfo[0] - $firstInfo[0];
+        $difference['nice'] = $secondInfo[1] - $firstInfo[1];
+        $difference['sys'] = $secondInfo[2] - $firstInfo[2];
+        $difference['idle'] = $secondInfo[3] - $firstInfo[3];
+        $total = array_sum($difference);
+        $cpuInformation = array();
+        foreach($difference as $x=>$y){
+            $cpuInformation[$x] = round($y / $total * 100, 1);
+        }
+
         $cpuInfo = shell_exec("cat /proc/cpuinfo | grep model\ name");
-        $cpuInformation['cpuModel'] = strstr($cpuInfo, "\n", true);
-        $cpuInformation['cpuModel'] = str_replace("model name    : ", "", $stat['cpuModel']);
+        $cpuModel = strstr($cpuInfo, "\n", true);
+        $cpuInformation['model'] = str_replace("model name\t: ", "", $cpuModel);
+
         return $cpuInformation;
     }
 
@@ -87,7 +99,7 @@
         $memoryInformation['total'] = round(preg_replace("#[^0-9]+(?:\.[0-9]*)?#", "", $memInfo) / 1024 / 1024, 3);
         $memInfo = shell_exec("cat /proc/meminfo | grep MemFree");
         $memoryInformation['free'] = round(preg_replace("#[^0-9]+(?:\.[0-9]*)?#", "", $memInfo) / 1024 / 1024, 3);
-        $memoryInformation['used'] = $stat['total'] - $stat['free'];
+        $memoryInformation['used'] = $memoryInformation['total'] - $memoryInformation['free'];
         return $memoryInformation;
     }
 
@@ -100,8 +112,8 @@
     }
 
     function getNetworkInformation() {
-        $networkInformation['rx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes")) / 1024/ 1024/ 1024, 2);
-        $networkInformation['tx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes")) / 1024/ 1024/ 1024, 2);
+        $networkInformation['rx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes")) / 1024 / 1024 / 1024, 2);
+        $networkInformation['tx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes")) / 1024 / 1024 / 1024, 2);
         return $networkInformation;
     }
 ?>
