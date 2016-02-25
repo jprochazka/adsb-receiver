@@ -30,26 +30,28 @@
 
     class common {
 
-        // PDO Database Access
+        /*/ PDO Database Access
         /////////////////////////
     
         // Open a connection to the database.
         function pdoOpen() {
-            switch(setting::database->driver) {
+            $settings = new settings($this);
+
+            switch($settings::database->driver) {
                 case 'mysql':
-                    $dsn = "mysql:host=".settings::database->host.";dbname=".settings::database->database;
+                    $dsn = "mysql:host=".$settings::database->host.";dbname=".$settings::database->database;
                     break;
                 case 'sqlsrv':
-                    $dsn = "sqlsrv:server=".settings::database->host.";database=".settings::database->database;
+                    $dsn = "sqlsrv:server=".$settings::database->host.";database=".$settings::database->database;
                     break;
                 case 'pgsql':
-                    $dsn = "pgsql:host=".settings::database->host.";dbname=".settings::database->database;
+                    $dsn = "pgsql:host=".$settings::database->host.";dbname=".$settings::database->database;
                     break;
                 case 'sqlite':
-                    $dsn = "sqlite:".settings::database->database;
+                    $dsn = "sqlite:".$settings::database->database;
                     break;
             }
-            $dbh = new PDO($dsn, settings::database->username, settings::database->password);
+            $dbh = new PDO($dsn, $settings::database->username, $settings::database->password);
             if (setting::database->driver = 'sqlite')
                 $dbh = new PDO($dsn);
             if (settings::pdoDebug == TRUE)
@@ -80,6 +82,7 @@
             $sth = NULL;
             return;
         }
+        */
 
         // XML Data Storage
         //////////////////////
