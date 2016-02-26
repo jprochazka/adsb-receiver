@@ -43,5 +43,10 @@
     // The title of this page.
     $pageData['title'] = "System Information";
 
+    $pageData['flightAwareLink'] = "http://flightaware.com/adsb/stats/user/".$common->getSetting('flightAwareLogin')."#stats-".$common->getSetting('flightAwareSite');
+    $pageData['planeFinderLink'] = "https://planefinder.net/sharing/receiver/".$common->getSetting('planeFinderReceiver');
+    $pageData['flightRader24Link'] = "https://www.flightradar24.com/premium/feed_stats.php?id=".$common->getSetting('flightRader24Id');
+    $pageData['adsbExchangeLink'] = "https://www.adsbexchange.com";
+
     $template->display($pageData);
 ?>

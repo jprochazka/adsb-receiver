@@ -22,8 +22,17 @@
 {area:head/}
 {area:contents}
             <div class="container">
-                <h1>System information coming soon...</h1>
+                <h1>System Information</h1>
+                <h2>Aggregate Sites Statistics</h2>
+                <ul>
+                    {if setting:enableFlightAwareLink eq TRUE}<li><a href="{page:flightAwareLink}">FlightAware Stats</a></li>{/if}
+                    {if setting:enablePlaneFinderLink eq TRUE}<li><a href="{page:planeFinderLink}">Planfinder Stats</a></li>{/if}
+                    {if setting:enableFlightRadar24Link eq TRUE}<li><a href="{page:flightRader24Link}">Flightradar24 Stats</a></li>{/if}
+                    {if setting:enableAdsbExchangeLink eq TRUE}<li><a href="{page:adsbExchangeLink}">ADS-B Exchange</a></li>{/if}
+                </ul>
+                <h2>System Charts</h2>
                 <div id="chart_div" style="width: 400px; height: 120px;"></div>
+                <h2>System Information</h2>
             </div>
 {/area}
 {area:scripts}

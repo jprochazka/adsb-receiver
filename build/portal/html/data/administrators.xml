@@ -3,6 +3,6 @@
     <administrator>
         <login>admin</login>
         <password>$2y$10$ZII5KKsaL0vz.18kO7O1p.LO4fHnxqs40sbQqtJuIkOEHTDXx6ovC</password>
-        <firstLogin>TRUE</firstLogin>
+        <firstLogin>FALSE</firstLogin>
     </administrator>
 </administrators>

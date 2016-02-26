@@ -22,7 +22,7 @@
     </setting>
     <setting>
         <name>enableInfo</name>
-        <value/>
+        <value>1</value>
     </setting>
     <setting>
         <name>enableGraphs</name>
@@ -39,6 +39,38 @@
     <setting>
         <name>enablePfclient</name>
         <value/>
+    </setting>
+    <setting>
+        <name>enableFlightAwareLink</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>flightAwareLogin</name>
+        <value>jprochazka</value>
+    </setting>
+    <setting>
+        <name>flightAwareSite</name>
+        <value>12378</value>
+    </setting>
+    <setting>
+        <name>enablePlaneFinderLink</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>planeFinderReceiver</name>
+        <value>91728</value>
+    </setting>
+    <setting>
+        <name>enableFlightRadar24Link</name>
+        <value>1</value>
+    </setting>
+    <setting>
+        <name>flightRader24Id</name>
+        <value>8080</value>
+    </setting>
+    <setting>
+        <name>enableAdsbExchangeLink</name>
+        <value>1</value>
     </setting>
     <setting>
         <name>measurementRange</name>
