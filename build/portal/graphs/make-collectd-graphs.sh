@@ -36,35 +36,35 @@ aircraft_graph() {
 }
 
 aircraft_message_rate_graph() {
-rrdtool graph \
-"$1" \
---start end-$4 \
---width 428 \
---height 200 \
---step "$5" \
---title "$3 Message Rate / Aircraft" \
---vertical-label "Aircraft" \
---right-axis-label "Messages/Aircraft/Second" \
---lower-limit 0 \
---units-exponent 0 \
---right-axis 0.1:0 \
-"TEXTALIGN:center" \
-"DEF:aircrafts=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
-"DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
-"CDEF:rate-provisional=messages,aircrafts,/" \
-"CDEF:rate=aircrafts,0,GT,rate-provisional,0,IF" \
-"CDEF:rate10=rate,10,*" \
-"VDEF:avgrate=rate,AVERAGE" \
-"VDEF:maxrate=rate,MAXIMUM" \
-"VDEF:avgrate10=rate10,AVERAGE" \
-"VDEF:maxrate10=rate10,MAXIMUM" \
-"LINE1:rate10#0000FF:Messages / AC (RHS)" \
-"LINE1:avgrate10#666666:Average:dashes" \
-"GPRINT:avgrate:%3.1lf" \
-"LINE1:maxrate10#FF0000:Maximum:" \
-"GPRINT:maxrate:%3.1lf\c" \
-"LINE1:aircrafts#990000:Aircraft Seen / Tracked \c" \
---watermark "Drawn: $nowlit";
+  rrdtool graph \
+  "$1" \
+  --start end-$4 \
+  --width 428 \
+  --height 200 \
+  --step "$5" \
+  --title "$3 Message Rate / Aircraft" \
+  --vertical-label "Aircraft" \
+  --right-axis-label "Messages/Aircraft/Second" \
+  --lower-limit 0 \
+  --units-exponent 0 \
+  --right-axis 0.1:0 \
+  "TEXTALIGN:center" \
+  "DEF:aircrafts=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
+  "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
+  "CDEF:rate-provisional=messages,aircrafts,/" \
+  "CDEF:rate=aircrafts,0,GT,rate-provisional,0,IF" \
+  "CDEF:rate10=rate,10,*" \
+  "VDEF:avgrate=rate,AVERAGE" \
+  "VDEF:maxrate=rate,MAXIMUM" \
+  "VDEF:avgrate10=rate10,AVERAGE" \
+  "VDEF:maxrate10=rate10,MAXIMUM" \
+  "LINE1:rate10#0000FF:Messages / AC (RHS)" \
+  "LINE1:avgrate10#666666:Average:dashes" \
+  "GPRINT:avgrate:%3.1lf" \
+  "LINE1:maxrate10#FF0000:Maximum:" \
+  "GPRINT:maxrate:%3.1lf\c" \
+  "LINE1:aircrafts#990000:Aircraft Seen / Tracked \c" \
+  --watermark "Drawn: $nowlit";
 }
 
 cpu_graph_dump1090() {
