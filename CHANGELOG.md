@@ -2,6 +2,16 @@
 
 The following is a history of the changes made to this project.
 
+## upgrade Branch
+
+* Added administrator name and email address settings.
+* Administrators are no longer required to change their password after their first login.
+* Added the ability to display links to aggregate site statistics pages.
+* Added near real time charts displaying current CPU, memory, and bandwidth usage.
+* The author's name is now displayed when blog posts are rendered instead of their login.
+* The settings page has been categorized and split into tabs.
+* The portal no longer uses public CDN's to server jQuery and Bootstrap files.
+
 ## February 18th, 2016
 
 * Greatly improved the template system used by the web portal.
