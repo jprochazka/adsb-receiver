@@ -30,34 +30,28 @@
 
     class account {
 
-        /////////////////////////////////////////////////////////
-        // Check if the administrator is authenticated or not.
+        // Authentication
+        ////////////////////
 
+        // Check if the administrator is authenticated or not.
         function isAuthenticated() {
             // Check if the remeber me cookie is set and if so set sessions variables using the stored values.
-            if (isset($_COOKIE['login']) && isset($_COOKIE['authenticated']) && isset($_COOKIE['firstLogin']) && $_COOKIE['authenticated']) {
+            if (isset($_COOKIE['login']) && isset($_COOKIE['authenticated']) && $_COOKIE['authenticated']) {
                 $_SESSION['authenticated'] = TRUE;
                 $_SESSION['login'] = $_COOKIE['login'];
-                $_SESSION['firstLogin'] = $_COOKIE['firstLogin'];
             } else {
                 // Unset any cookies pertaining to user authentication since something is wrong or missing.
                 unset($_COOKIE["authenticated"]);
                 unset($_COOKIE["login"]);
-                unset($_COOKIE["firstLogin"]);
             }
             // Make sure that the session variable Authenticated is set to TRUE and that the session Login variable is set.
-            if (isset($_SESSION['login']) && isset($_SESSION['authenticated']) && isset($_SESSION['firstLogin']) && $_SESSION['authenticated']) {
-                if ($_SESSION['firstLogin'] && basename($_SERVER['PHP_SELF']) != "account.php") {
-                    header ("Location: account.php");
-                }
+            if (isset($_SESSION['login']) && isset($_SESSION['authenticated']) && $_SESSION['authenticated']) {
                 return TRUE;
             }
             return FALSE;
         }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Authenticate an administrator by comparing their supplied login and password with the ones stored in administrators.xml.
-
         function authenticate($login, $password, $remember = FALSE, $forward = TRUE, $origin = NULL) {
             $common = new common();
             // Get all the administrators from the administrators.xml file.
@@ -69,12 +63,10 @@
                         // Set the session variable Authenticated to TRUE and assign the variable Login the supplied login.
                         $_SESSION['authenticated'] = TRUE;
                         $_SESSION['login'] = $login;
-                        $_SESSION['firstLogin'] = $common->stringToBoolean($administrator->firstLogin);
                         // If the user wishes to be remembered set a cookie containg the authenticated and login variables.
                         if ($remember) {
                             setcookie("authenticated", TRUE, time() + (10 * 365 * 24 * 60 * 60));
                             setcookie("login", $login, time() + (10 * 365 * 24 * 60 * 60));
-                            setcookie("firstLogin", $common->stringToBoolean($administrator->firstLogin), time() + (10 * 365 * 24 * 60 * 60));
                         }
                         // Forward the user if the $forward variable is set to TRUE.
                         if ($forward) {
@@ -94,30 +86,44 @@
             return FALSE;
         }
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////
         // Logs the user out by deleting current session varialbes related to administrative functions.
-
         function logout() {
             // Unset any session variables pertaining to user authentication.
             unset($_SESSION['authenticated']);
             unset($_SESSION['login']);
-            unset($_SESSION['firstLogin']);
             // Unset any cookies pertaining to user authentication.
             unset($_COOKIE["authenticated"]);
             unset($_COOKIE["login"]);
-            unset($_COOKIE["firstLogin"]);
             // Redirect the user to the main homepage.
             header ("Location: login.php");
         }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        // Change a password stored for an existing administrator in the file administrators.xml.
+        // Change administrator settings.
+        ////////////////////////////////////
 
+        // Change the name associated to an existing administrator in the file administrators.xml.
+        function changeName($login, $name) {
+            $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml") or die("Error: Cannot create administrators object");
+            foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
+                $administrator->name = $name;
+            }
+            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml", $administrators->asXML());
+        }
+
+        // Change the name associated to an existing administrator in the file administrators.xml.
+        function changeEmail($login, $email) {
+            $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml") or die("Error: Cannot create administrators object");
+            foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
+                $administrator->email = $email;
+            }
+            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml", $administrators->asXML());
+        }
+
+        // Change a password stored for an existing administrator in the file administrators.xml.
         function changePassword($login, $password) {
             $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml") or die("Error: Cannot create administrators object");
             foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
                 $administrator->password = password_hash($password, PASSWORD_DEFAULT);
-                $administrator->firstLogin = "FALSE";
             }
             file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml", $administrators->asXML());
         }
