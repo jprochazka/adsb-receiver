@@ -31,19 +31,17 @@
     class settings {
 
         // Database Settings
-        const $database = array(
-            'driver' => 'xml',
-            'database' => 'data/adsb-receiver.db',
-            'username' => NULL,
-            'password' => NULL,
-            'host' => NULL,
-            'prefix' => NULL,
-        );
+        const db_driver = 'xml';
+        const db_database = NULL;
+        const db_username = NULL;
+        const db_password = NULL;
+        const db_host = NULL;
+        const db_prefix = NULL;
 
         // PDO Settings
-        const pdoDebug = TRUE;
+        const pdo_debug = FALSE;
 
         // Release Information
-        const thisRelease = '2016-02-18';
+        const rel_version = '2016-02-18';
     }
 ?>

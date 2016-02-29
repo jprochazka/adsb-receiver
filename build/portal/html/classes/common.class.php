@@ -30,31 +30,31 @@
 
     class common {
 
-        /*/ PDO Database Access
+        // PDO Database Access
         /////////////////////////
     
         // Open a connection to the database.
         function pdoOpen() {
-            $settings = new settings($this);
+            $settings = new settings();
 
-            switch($settings::database->driver) {
+            switch($settings::db_driver) {
                 case 'mysql':
-                    $dsn = "mysql:host=".$settings::database->host.";dbname=".$settings::database->database;
+                    $dsn = "mysql:host=".$settings::db_host.";dbname=".$settings::db_database;
                     break;
                 case 'sqlsrv':
-                    $dsn = "sqlsrv:server=".$settings::database->host.";database=".$settings::database->database;
+                    $dsn = "sqlsrv:server=".$settings::db_host.";database=".$settings::db_database;
                     break;
                 case 'pgsql':
-                    $dsn = "pgsql:host=".$settings::database->host.";dbname=".$settings::database->database;
+                    $dsn = "pgsql:host=".$settings::db_host.";dbname=".$settings::db_database;
                     break;
                 case 'sqlite':
-                    $dsn = "sqlite:".$settings::database->database;
+                    $dsn = "sqlite:".$settings::db_database;
                     break;
             }
-            $dbh = new PDO($dsn, $settings::database->username, $settings::database->password);
-            if (setting::database->driver = 'sqlite')
+            $dbh = new PDO($dsn, $settings::db_username, $settings::db_password);
+            if ($settings::db_driver == 'sqlite')
                 $dbh = new PDO($dsn);
-            if (settings::pdoDebug == TRUE)
+            if ($settings::pdo_debug == TRUE)
                 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             return $dbh;
         }
@@ -62,7 +62,7 @@
         // Returns the value for the specified setting name.
         public static function pdoGetSetting($name, $dbh) {
             global $dbh;
-            $sql = "SELECT value FROM ".settings::database->prefix."settings WHERE name = :name";
+            $sql = "SELECT value FROM ".$settings::db_prefix."settings WHERE name = :name";
             $sth = $dbh->prepare($sql);
             $sth->bindParam(':name', $name, PDO::PARAM_STR);
             $sth->execute();
@@ -74,7 +74,7 @@
         // Updates the value for the specified setting name.
         function pdoUpdateSetting($name, $value, $dbh) {
             global $dbh;
-            $sql = "UPDATE ".settings::database->prefix."settings SET value = :value WHERE name = :name";
+            $sql = "UPDATE ".$settings::db_prefix."settings SET value = :value WHERE name = :name";
             $sth = $dbh->prepare($sql);
             $sth->bindParam(':value', $value, PDO::PARAM_STR, 20000);
             $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
@@ -82,7 +82,6 @@
             $sth = NULL;
             return;
         }
-        */
 
         // XML Data Storage
         //////////////////////
