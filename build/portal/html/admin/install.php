@@ -46,12 +46,14 @@
     ///////////////////////////////////////
 
     $applicationDirectory = preg_replace( '~[/\\\\][^/\\\\]*$~', DIRECTORY_SEPARATOR, getcwd());
-    if (!is_writable($applicationDirectory.'data')) {
-        // Folder is not writable...
-    }
-    if (!is_writable($applicationDirectory.'classes/settings.class.php')) {
-        // File is not writable...
-    }
+
+    $writableData = FALSE;
+    if (is_writable($applicationDirectory.'data'))
+        $writableData = TRUE;
+
+    $writeableClass = FALSE;
+    if (is_writable($applicationDirectory.'classes/settings.class.php'))
+        $writeableClass = TRUE;
 
     // Display HTML
     //////////////////
@@ -59,9 +61,23 @@
     require_once('includes/header.inc.php');
 ?>
 <h1>ADS-B Receiver Portal Setup</h1>
+<p>The following wizard will guide you through the setup process.</p>
 <div class="padding"></div>
 <form id="install-form">
     <div class="form-group">
+
+        <h2>Directory Permissions</h2>
+        <section>
+            <div class="alert <?php echo ($writableData == TRUE ? 'alert-success' : 'alert-danger' ); ?>"><strong>/data</strong> is<?php echo ($writableData ? ' ' : ' not' ); ?> writable.</div>
+            <div class="alert <?php echo ($writeableClass ? 'alert-success' : 'alert-danger' ); ?>"><strong>/classes/settings.class.php</strong> is<?php echo ($writeableClass ? ' ' : ' not' ); ?> writable.</div>
+            <input type="hidden" name="permissions" id="permissions" value="<?php echo $writableData; ?>">
+<?php if (!$writableData || !$writeableClass) {?>
+            <p>
+                Please fix the permissions for the following directory and/or file to make sure they are writable before proceeding.
+                Once you have made the necessary changes please <a href="#" onclick="location.reload();">reload</a> this page to allow the installer to recheck permissions.
+            </p>
+<?php } ?>
+        </section>
 
         <h2>Data Storage</h2>
         <section>
@@ -75,27 +91,25 @@
             </select>
             <div class="form-group" id="host-div">
                 <label for="host">Database Server *</label>
-                <input type="text" class="form-control" name="host" required>
+                <input type="text" class="form-control" name="host" id="host" required>
             </div>
             <div class="form-group" id="username-div">
                 <label for="username">Database User *</label>
-                <input type="text" class="form-control" name="username" required>
+                <input type="text" class="form-control" name="username" id="username" required>
             </div>
             <div class="form-group" id="password-div">
                 <label for="password">Database Password *</label>
-                <input type="password" class="form-control" name="password" required>
+                <input type="password" class="form-control" name="password" id="password" required>
             </div>
             <div class="form-group" id="database-div">
                 <label for="database" id="database-name">Database Name *</label>
-                <input type="text" class="form-control" name="database" required>
+                <input type="text" class="form-control" name="database" id="database" required>
             </div>
             <div class="form-group" id="prefix-div">
                 <label for="prefix">Database Prefix</label>
-                <input type="text" class="form-control" name="prefix" id="prefix">
+                <input type="text" class="form-control" name="prefix" id="prefix" id="prefix">
             </div>
-            <div class="padding"></div>
-            <p>(*) Required</p>
-            <button type="submit" class="btn btn-default" id="test-connection">Test Connection</button>
+            <p id="required-p">(*) Required</p>
         </section>
 
         <h2>Administrator Account</h2>
@@ -113,7 +127,7 @@
                 <input type="text" class="form-control" name="login" required>
             </div>
             <div class="form-group">
-                <label for="adminPassword1">Administrator Password *</label>
+                <label for="adminPassword1">Administrator Password *</label> <span id="result"></span>
                 <input type="password" class="form-control" class="form-control" name="password1" id="password1" required>
             </div>
             <div class="form-group">

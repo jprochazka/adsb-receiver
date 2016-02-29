@@ -36,9 +36,11 @@
     // Load the require PHP classes.
     require_once('../classes/common.class.php');
     require_once('../classes/account.class.php');
+    require_once('../classes/settings.class.php');
 
     $common = new common();
     $account = new account();
+    $settings = new settings();
 
     // Check if the user is logged in.
     if (!$account->isAuthenticated()) {
@@ -54,6 +56,10 @@
         // Check that a vailid email address was supplied.
         if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))
             $invalidEmail = TRUE;
+
+        // Check the length of the password.
+        if (strlen($_POST['password1']) <= $settings::sec_length)
+            $tooShort = TRUE;
 
         // Check that all password reset data was supplied.
         if (!empty($_POST['password']) || !empty($_POST['password1']) || !empty($_POST['password2'])) {
@@ -85,7 +91,7 @@
         }
 
         // If validation passed make the requested changes to the administrator account data.
-        if (!$noName && !$invalidEmail && !$passwordIncorrect && !$noCurrent && !$notMatching && !$passwordMissing) {
+        if (!$noName && !$invalidEmail && !$tooShort && !$passwordIncorrect && !$noCurrent && !$notMatching && !$passwordMissing) {
             $account->changeName($_SESSION['login'], $_POST['name'])
             $account->changeEmail($_SESSION['login'], $_POST['email'])
             if (!empty($_POST['password1']) && !empty($_POST['password1']) && !empty($_POST['password2']))
@@ -111,6 +117,7 @@
                 <?php ($noName ? print "You must supply a name to associate with this account.<br />" : ''); ?>
                 <?php ($invalidEmail ? print "You must supply a valid email address to associate with this account.<br />" : ''); ?>
                 <?php ($passwordIncorrect || $noCurrent ? print "You did not supply the correct current password for this account.<br />" : ''); ?>
+                <?php ($tooShort ? print "Your password must be at least ".$settings::sec_length." characters long.<br />" : ''); ?>
                 <?php ($notMatching || $passwordMissing ? print "The password and password confirmation did not match or are missing.<br />" : ''); ?>
             </div>
 <?php

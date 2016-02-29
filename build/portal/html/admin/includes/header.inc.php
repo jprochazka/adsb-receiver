@@ -10,7 +10,10 @@
 <?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
         <link rel="stylesheet" href="assets/css/jquery.steps.css">
 <?php } ?>
-        <link rel="stylesheet" href="/admin/assets/css/admin.css">
+        <link rel="stylesheet" href="assets/css/admin.css">
+<?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
+        <link rel="stylesheet" href="assets/css/install.css">
+<?php } ?>
         <script src="assets/js/jquery-2.2.1.min.js"></script>
         <script src="assets/js/bootstrap.min.js"></script>
 <?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
