@@ -51,7 +51,7 @@
     // Add blog post data to the $pageData array.
     $pageData['postTitle'] = $post->title;
     $pageData['postDate'] = date_format(date_create($post->date), $common->getSetting('dateFormat'));
-    $pageData['postAuthor'] = $post->author;
+    $pageData['postAuthor'] = $common->getAdminstratorName($post->author);
     $pageData['postContents'] = $post->contents;
 
     $template->display($pageData);

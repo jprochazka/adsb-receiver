@@ -5,14 +5,14 @@
     <title>ADS-B Receiver Administration</title>
         <meta http-equiv="cache-control" content="no-cache" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+        <link rel="stylesheet" href="assets/css/bootstrap-theme.min.css">
 <?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
         <link rel="stylesheet" href="assets/css/jquery.steps.css">
 <?php } ?>
         <link rel="stylesheet" href="/admin/assets/css/admin.css">
-        <script src="http://code.jquery.com/jquery-2.2.0.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="assets/js/jquery-2.2.1.min.js"></script>
+        <script src="assets/js/bootstrap.min.js"></script>
 <?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
         <script src="assets/js/jquery.steps.min.js"></script>
         <script src="assets/js/js.cookie-2.1.0.min.js"></script>

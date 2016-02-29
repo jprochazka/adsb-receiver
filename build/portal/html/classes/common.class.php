@@ -99,11 +99,22 @@
 
         // Updates the value for the specified setting name.
         function updateSetting($name, $value) {
-            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
+            $settings = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/settings.xml") or die("Error: Cannot create settings object");
             foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
                 $setting->value = $value;
             }
             file_put_contents("../data/settings.xml", $settings->asXML());
+        }
+
+        // Returns the name associated to the specified administrator login.
+        function getAdminstratorName($login) {
+            $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/administrators.xml") or die("Error: Cannot create administrators object");
+            foreach ($administrators as $administrator) {
+                if ($administrator->login = $login) {
+                    return $administrator->name;
+                }
+            }
+            return "";
         }
 
         // Functions Not Related To Data Retrieval
