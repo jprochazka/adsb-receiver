@@ -121,7 +121,7 @@
         $common->updateSetting("enablePlaneFinderLink", $enablePlaneFinderLink);
         $common->updateSetting("planeFinderReceiver", $_POST['planeFinderReceiver']);
         $common->updateSetting("enableFlightRadar24Link", $enableFlightRadar24Link);
-        $common->updateSetting("flightRader24Id", $_POST['flightRader24Id']);
+        $common->updateSetting("flightRadar24Id", $_POST['flightRadar24Id']);
         $common->updateSetting("enableAdsbExchangeLink", $enableAdsbExchangeLink);
         $common->updateSetting("measurementRange", $_POST['measurementRange']);
         $common->updateSetting("measurementTemperature", $_POST['measurementTemperature']);
@@ -160,7 +160,7 @@
     $enablePlaneFinderLink = $common->getSetting("enablePlaneFinderLink");
     $planeFinderReceiver = $common->getSetting("planeFinderReceiver");
     $enableFlightRadar24Link = $common->getSetting("enableFlightRadar24Link");
-    $flightRader24Id = $common->getSetting("flightRader24Id");
+    $flightRadar24Id = $common->getSetting("flightRadar24Id");
     $enableAdsbExchangeLink = $common->getSetting("enableAdsbExchangeLink");
 
     // Get units of measurement setting from settings.xml.
@@ -335,8 +335,8 @@
                             </div>
                             <hr />
                             <div class="form-group">
-                                <label for="flightRader24FeedStatsId">FlightRadar24 Feed Stats ID</label>
-                                <input type="text" class="form-control" id="flightRader24Id" name="flightRader24FeedStatsId" value="<?php echo $flightRader24Id; ?>">
+                                <label for="flightRadar24FeedStatsId">FlightRadar24 Feed Stats ID</label>
+                                <input type="text" class="form-control" id="flightRadar24Id" name="flightRadar24Id" value="<?php echo $flightRadar24Id; ?>">
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" name="enableFlightRadar24Link" value="TRUE"<?php ($enableFlightRadar24Link == 1 ? print ' checked' : ''); ?>> Enable FlightRadar24 Statistics Link.

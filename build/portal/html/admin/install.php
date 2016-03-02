@@ -28,8 +28,8 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    require_once('../classes/settings.class.php');
-    $settings = new settings();
+    require_once('../classes/common.class.php');
+    $common = new common();
 
     // THE FOLLOWING COMMENTED LINES WILL BE USED IN FUTURE RELEASES
     ///////////////////////////////////////////////////////////////////
@@ -38,9 +38,148 @@
     //$currentRelease = "2016-02-18";
 
     // Begin the upgrade process if this release is newer than what is installed.
-    //if ($currentRelease > settings::thisRelease) {
+    //if ($currentRelease > $common->getRelease) {
     //    header ("Location: upgrade.php");
     //}
+    
+    $installed = FALSE;
+    if ($common->postBack()) {
+        $account = new account();
+
+        // Validate the submited form.
+        $passwordsMatch = FALSE;
+        if ($_POST['password1'] == $_POST['password2'])
+            $passwordsMatch = TRUE;
+
+        if ($passwordsMatch) {
+
+            // Create or edit the settings.class.php file.
+            $content = <<<EOF
+<?php
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //                            ADS-B RECEIVER PORTAL                                //
+    // =============================================================================== //
+    // Copyright and Licensing Information:                                            //
+    //                                                                                 //
+    // The MIT License (MIT)                                                           //
+    //                                                                                 //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
+    //                                                                                 //
+    // Permission is hereby granted, free of charge, to any person obtaining a copy    //
+    // of this software and associated documentation files (the "Software"), to deal   //
+    // in the Software without restriction, including without limitation the rights    //
+    // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       //
+    // copies of the Software, and to permit persons to whom the Software is           //
+    // furnished to do so, subject to the following conditions:                        //
+    //                                                                                 //
+    // The above copyright notice and this permission notice shall be included in all  //
+    // copies or substantial portions of the Software.                                 //
+    //                                                                                 //
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      //
+    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        //
+    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     //
+    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          //
+    // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   //
+    // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   //
+    // SOFTWARE.                                                                       //
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    class settings {
+
+        // Database Settings
+        const db_driver = '$_POST['driver']';
+        const db_database = '$_POST['database']';
+        const db_username = '$_POST['username']';
+        const db_password = '$_POST['password']';
+        const db_host = '$_POST['host']';
+        const db_prefix = '$_POST['prefix']';
+
+        // Security Settings
+        const sec_length = 6;
+
+        // PDO Settings
+        const pdo_debug = FALSE;
+    }
+
+?
+EOF;
+            file_put_contents('../classes/settings.class.php', $content);
+
+            // Setup data storage.
+            if ($_POST['driver'] == 'xml') {
+
+                // Create XML files used to store administrator data.
+                $xml = new XMLWriter();
+                $xml->openMemory();
+                $xml->setIndent(true);
+                $xml->startDocument('1.0','UTF-8');
+                $xml->startElement("administrators");
+                $xml->endElement();
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/administrators.xml', $xml->flush(true));
+
+                // Create XML files used to store blog post data.
+                $xml = new XMLWriter();
+                $xml->openMemory();
+                $xml->setIndent(true);
+                $xml->startDocument('1.0','UTF-8');
+                $xml->startElement("blogPosts");
+                $xml->endElement();
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/blogPosts.xml', $xml->flush(true));
+
+                // Create XML files used to store flight notification data.
+                $xml = new XMLWriter();
+                $xml->openMemory();
+                $xml->setIndent(true);
+                $xml->startDocument('1.0','UTF-8');
+                $xml->startElement("flights");
+                $xml->endElement();
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/flightNotifications.xml', $xml->flush(true));
+
+                // Create XML files used to store settings data.
+                $xml = new XMLWriter();
+                $xml->openMemory();
+                $xml->setIndent(true);
+                $xml->startDocument('1.0','UTF-8');
+                $xml->startElement("settings");
+                $xml->endElement();
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/settings.xml', $xml->flush(true));
+            } else {
+            
+            }
+
+            // Add settings.
+            $common->addSetting('siteName', 'ADS-B Receiver');
+            $common->addSetting('template', 'default');
+            $common->addSetting('defaultPage', 'blog.php');
+            $common->addSetting('dateFormat', 'F jS, Y');
+            $common->addSetting('enableBlog', TRUE);
+            $common->addSetting('enableInfo', TRUE);
+            $common->addSetting('enableGraphs', TRUE);
+            $common->addSetting('enableDump1090', TRUE);
+            $common->addSetting('enableDump978', FALSE);
+            $common->addSetting('enablePfclient', FALSE);
+            $common->addSetting('enableFlightAwareLink', FALSE);
+            $common->addSetting('flightAwareLogin', '');
+            $common->addSetting('flightAwareSite', '');
+            $common->addSetting('enablePlaneFinderLink', FALSE);
+            $common->addSetting('planeFinderReceiver', '');
+            $common->addSetting('enableFlightRadar24Link', '');
+            $common->addSetting('flightRader24Id', '');
+            $common->addSetting('enableAdsbExchangeLink', FALSE);
+            $common->addSetting('measurementRange', 'imperialNautical');
+            $common->addSetting('measurementTemperature', 'imperial');
+            $common->addSetting('networkInterface', 'eth0');
+            $common->addSetting('enableFlightNotifications', FALSE);
+        
+            // Add the administrator account.
+            require_once('../classes/account.class.php');
+            $account->addAdministrator($name, $email, $login, $password1)
+
+            // Mark the installation as complete.
+            $installed = TRUE;
+        }
+    }
 
     // Check Folder and File Permissions
     ///////////////////////////////////////
@@ -59,6 +198,9 @@
     //////////////////
 
     require_once('includes/header.inc.php');
+
+    // DIsplay the instalation wizard.
+    if ($installed = FALSE) {
 ?>
 <h1>ADS-B Receiver Portal Setup</h1>
 <p>The following wizard will guide you through the setup process.</p>
@@ -140,5 +282,23 @@
 </form>
 
 <?php
+    } else {
+?>
+<h1>ADS-B Receiver Portal Setup</h1>
+<p>Setup of your ADS-B Receiver Web Portal is now complete.</p>
+<p>
+    For security reasons it is highly recommended that the installation file be deleted permanently from your device.
+    At this time you should also ensure that the file containing the settings you specified is no longer writeable.
+    Please log into your device and run the following commands to accomplish these tasks.
+</p>
+<pre>sudo rm -f <?php echo $_SERVER['DOCUMENT_ROOT']; ?>/admin/install.php</pre>
+<pre>sudo chmod -w <?php echo $_SERVER['DOCUMENT_ROOT']; ?>/classes/settings.class.php</pre>
+<p>Once you have done so you can log in and administrate your portal <a href="/admin/">here</a>.</p>
+<p>
+    If you experienced any issues or have any questions or suggestions you would like to make regarding this project
+    feel free to do so on the projects homepage located at <a href="https://www.adsbreceiver.net">https://www.adsbreceiver.net</a>.
+</p>
+<?php
+    }
     require_once('includes/footer.inc.php');
 ?>

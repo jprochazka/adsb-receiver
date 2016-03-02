@@ -92,8 +92,8 @@
 
         // If validation passed make the requested changes to the administrator account data.
         if (!$noName && !$invalidEmail && !$tooShort && !$passwordIncorrect && !$noCurrent && !$notMatching && !$passwordMissing) {
-            $account->changeName($_SESSION['login'], $_POST['name'])
-            $account->changeEmail($_SESSION['login'], $_POST['email'])
+            $account->changeName($_SESSION['login'], $_POST['name']);
+            $account->changeEmail($_SESSION['login'], $_POST['email']);
             if (!empty($_POST['password1']) && !empty($_POST['password1']) && !empty($_POST['password2']))
                 $account->changePassword($_SESSION['login'], $_POST['password1']);
         }
@@ -123,20 +123,19 @@
 <?php
     }
 ?>
-        <h2>Change Password</h2>
         <form id="change-password" method="post" action="account.php">
 
             <div class="panel panel-default">
                 <div class="panel-heading">Account Settings</div>
                 <div class="panel-body">
                     <div class="form-group">
-                        <input type="text" class="form-control" name="login" id="login" placeholder="Login" disabled>
+                        <input type="text" class="form-control" name="login" id="login" placeholder="Login" value="<?php echo $_SESSION['login']; ?>" disabled>
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" name="name" id="name" placeholder="Name" required>
+                        <input type="text" class="form-control" name="name" id="name" placeholder="Name" value="<?php echo $account->getName($_SESSION['login']); ?>" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" class="form-control" name="email" id="email" placeholder="Email Address" required>
+                        <input type="email" class="form-control" name="email" id="email" placeholder="Email Address" value="<?php echo $account->getEmail($_SESSION['login']); ?>" required>
                     </div>
                 </div>
             </div>

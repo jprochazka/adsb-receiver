@@ -65,7 +65,7 @@
         <value>1</value>
     </setting>
     <setting>
-        <name>flightRader24Id</name>
+        <name>flightRadar24Id</name>
         <value>8080</value>
     </setting>
     <setting>

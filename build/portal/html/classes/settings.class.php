@@ -38,13 +38,10 @@
         const db_host = NULL;
         const db_prefix = NULL;
 
-        // PDO Settings
-        const pdo_debug = FALSE;
-
         // Security Settings
         const sec_length = 6;
 
-        // Release Information
-        const rel_version = '2016-02-18';
+        // PDO Settings
+        const pdo_debug = FALSE;
     }
 ?>
