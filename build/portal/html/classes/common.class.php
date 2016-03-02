@@ -107,7 +107,7 @@
             } else {
                 // PDO
                 $dbh = $this->pdoOpen();
-                $sql = "UPDATE settings value = :value WHERE name = :name";
+                $sql = "UPDATE ".$settings::db_prefix."settings value = :value WHERE name = :name";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
                 $sth->bindParam(':value', $value, PDO::PARAM_STR, 50);
@@ -127,11 +127,11 @@
                 $xmlSetting = $xmlSettings->addChild('setting');
                 $xmlSetting->addChild('name', $name);
                 $xmlSetting->addChild('value', $value);
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $administrators->asXML());
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $xmlSettings->asXML());
             } else {
                 // PDO
                 $dbh = $this->pdoOpen();
-                $sql = "INSERT INTO settings (name, value) VALUES (:name, :value)";
+                $sql = "INSERT INTO ".$settings::db_prefix."settings (name, value) VALUES (:name, :value)";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
                 $sth->bindParam(':value', $value, PDO::PARAM_STR, 50);

@@ -46,7 +46,7 @@
     }
 
     // Get titles and dates for all blog posts.
-    $allPosts = $blog->getTitlesAndDates();
+    $allPosts = $blog->getAllPosts();
 
     // Pagination.
     $itemsPerPage = 10;

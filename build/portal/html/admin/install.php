@@ -51,10 +51,11 @@
         if ($_POST['password1'] == $_POST['password2'])
             $passwordsMatch = TRUE;
 
+        // Validation passed so continue installation.
         if ($passwordsMatch) {
 
             // Create or edit the settings.class.php file.
-            $content = <<<EOF
+            $content  = <<<EOF
 <?php
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -88,12 +89,12 @@
     class settings {
 
         // Database Settings
-        const db_driver = '$_POST['driver']';
-        const db_database = '$_POST['database']';
-        const db_username = '$_POST['username']';
-        const db_password = '$_POST['password']';
-        const db_host = '$_POST['host']';
-        const db_prefix = '$_POST['prefix']';
+        const db_driver = '$_POST[driver]';
+        const db_database = '$_POST[database]';
+        const db_username = '$_POST[username]';
+        const db_password = '$_POST[password]';
+        const db_host = '$_POST[host]';
+        const db_prefix = '$_POST[prefix]';
 
         // Security Settings
         const sec_length = 6;
@@ -102,12 +103,14 @@
         const pdo_debug = FALSE;
     }
 
-?
+?>
 EOF;
             file_put_contents('../classes/settings.class.php', $content);
 
             // Setup data storage.
             if ($_POST['driver'] == 'xml') {
+
+                //XML
 
                 // Create XML files used to store administrator data.
                 $xml = new XMLWriter();
@@ -146,6 +149,8 @@ EOF;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/settings.xml', $xml->flush(true));
             } else {
             
+                // PDO
+
             }
 
             // Add settings.
@@ -174,7 +179,7 @@ EOF;
         
             // Add the administrator account.
             require_once('../classes/account.class.php');
-            $account->addAdministrator($name, $email, $login, $password1)
+            $account->addAdministrator($name, $email, $login, $password1);
 
             // Mark the installation as complete.
             $installed = TRUE;
@@ -199,8 +204,8 @@ EOF;
 
     require_once('includes/header.inc.php');
 
-    // DIsplay the instalation wizard.
-    if ($installed = FALSE) {
+    // Display the instalation wizard.
+    if (!$installed = FALSE) {
 ?>
 <h1>ADS-B Receiver Portal Setup</h1>
 <p>The following wizard will guide you through the setup process.</p>
