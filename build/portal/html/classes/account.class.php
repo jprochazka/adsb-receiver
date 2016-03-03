@@ -127,6 +127,7 @@
         ///////////////////////////////////////
 
         function addAdministrator($name, $email, $login, $password) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
@@ -218,7 +219,9 @@
 
         // Change the name associated to an existing administrator in the file administrators.xml.
         function changeName($login, $name) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             $settings = new settings();
+
             if ($settings::db_driver == "xml") {
                 // XML
                 $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
@@ -242,7 +245,10 @@
 
         // Change the name associated to an existing administrator in the file administrators.xml.
         function changeEmail($login, $email) {
-            if ($settings::db_driver == "xml") {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == 'xml') {
                 // XML
                 $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
                 foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
@@ -265,6 +271,9 @@
 
         // Change a password stored for an existing administrator in the file administrators.xml.
         function changePassword($login, $password) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
             if ($settings::db_driver == "xml") {
                 // XML
                 $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");

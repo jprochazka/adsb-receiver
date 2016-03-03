@@ -48,54 +48,55 @@
         header ("Location: login.php?origin=".urlencode('account.php'));
     }
 
+    // Set updated variable to FALSE.
+    $updated = FALSE;
+
     if ($common->postBack()) {
         // Check that a name was supplied.
-        if (empty($_POST['name']))
-            $noName = TRUE;
+        $nameSupplied = FALSE;
+        if (!empty($_POST['name']))
+            $nameSupplied = TRUE;
 
         // Check that a vailid email address was supplied.
-        if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))
-            $invalidEmail = TRUE;
+        $validEmail = FALSE;
+        if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL))
+            $validEmail = TRUE;
 
-        // Check the length of the password.
-        if (strlen($_POST['password1']) <= $settings::sec_length)
+        // If the current password was supplied process a password change.
+        $passwordChanged = FALSE;
+        if (!empty($_POST['password'])) {
+            // Check the length of the password.
             $tooShort = TRUE;
+            if (isset($_POST['password1']) && strlen($_POST['password1']) >= $settings::sec_length)
+                $tooShort = FALSE;
 
-        // Check that all password reset data was supplied.
-        if (!empty($_POST['password']) || !empty($_POST['password1']) || !empty($_POST['password2'])) {
-        
-            // Process a password change request if the existing and new password were supplied.
-            if (!empty($_POST['password1']) && !empty($_POST['password1']) && !empty($_POST['password2'])) {
-                
-                // Check that the user supplied a password matching the one currently stored in administrators.xml.
-                $authenticated = $account->authenticate($_SESSION['login'], $_POST['password'], FALSE, FALSE);
-                if (!$authenticated)
-                    $passwordIncorrect = TRUE;
-                if ($_POST['password1'] != $_POST['password2'])
-                    $notMatching = TRUE;
+            // Check that the supplied new passwords match.
+            $notMatching = TRUE;
+            if ($_POST['password1'] == $_POST['password2'])
+                $notMatching = FALSE;
 
-                if ($authenticated && $_POST['password1'] == $_POST['password2']) {
-                    // Change the password stored in administrators.xml related to this users login.
-                    $account->changePassword($_SESSION['login'], $_POST['password1']);
+            // Check that the supplied current password matches that which is stored.
+            $authenticated = $account->authenticate($_SESSION['login'], $_POST['password'], FALSE, FALSE);
 
-                    // Since the password has changed we will log the user out to clear older session variables.
-                    $account->logout();
-                }
+            // If everything associated with passwords is validated change the password.
+            if (!$tooShort && !$notMatching && $authenticated) {
+                // Change the password stored in administrators.xml related to this users login.
+                $account->changePassword($_SESSION['login'], $_POST['password1']);
+                $passwordChanged = TRUE;
+
             }
-        } else {
-            // Only partial data was supplied to change the current password.
-            if (!empty($_POST['password']))
-                $noCurrent = TRUE;
-            if (!empty($_POST['password1']) || !empty($_POST['password2']))
-                $passwordMissing = TRUE;
         }
 
         // If validation passed make the requested changes to the administrator account data.
-        if (!$noName && !$invalidEmail && !$tooShort && !$passwordIncorrect && !$noCurrent && !$notMatching && !$passwordMissing) {
+        if ($nameSupplied && $validEmail) {
             $account->changeName($_SESSION['login'], $_POST['name']);
             $account->changeEmail($_SESSION['login'], $_POST['email']);
-            if (!empty($_POST['password1']) && !empty($_POST['password1']) && !empty($_POST['password2']))
-                $account->changePassword($_SESSION['login'], $_POST['password1']);
+            $updated = TRUE;
+        }
+
+        // Since the password has changed we will log the user out to clear older session variables.
+        if ($passwordChanged) {
+            $account->logout();
         }
     }
 
@@ -104,6 +105,17 @@
     /////////////////////
     // BEGIN HTML BODY //
 
+    // Display the updated message if settings were updated.
+    if ($updated) {
+?>
+        <div id="settings-saved" class="alert alert-success fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            Changes to your account have been saved.
+        </div>
+<?php
+    }
 ?>
         <h1>Account Management</h1>
         <hr />
@@ -123,7 +135,7 @@
 <?php
     }
 ?>
-        <form id="change-password" method="post" action="account.php">
+        <form id="account-form" method="post" action="account.php">
 
             <div class="panel panel-default">
                 <div class="panel-heading">Account Settings</div>
@@ -144,7 +156,7 @@
                 <div class="panel-heading">Change Password</div>
                 <div class="panel-body">
                     <div class="form-group">
-                        <input type="password" class="form-control" name="password" id="password" placeholder="Current Password" required>
+                        <input type="password" class="form-control" name="password" id="password" placeholder="Current Password">
                     </div>
                     <div class="form-group">
                         <input type="password" class="form-control" name="password1" id="password1" placeholder="New Password" required>

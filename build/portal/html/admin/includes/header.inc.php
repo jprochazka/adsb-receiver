@@ -25,6 +25,10 @@
 <?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
         <script src="/admin/assets/js/index.js"></script>
 <?php } ?>
+<?php if (basename($_SERVER['PHP_SELF']) == "account.php") { ?>
+        <script src="/admin/assets/js/jquery.validate.min.js"></script>
+        <script src="/admin/assets/js/account.js"></script>
+<?php } ?>
     </head>
         <body>
         <div id="wrapper">
