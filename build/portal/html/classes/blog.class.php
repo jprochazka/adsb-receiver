@@ -87,7 +87,7 @@
                 $dbh = $common->pdoOpen();
                 $sql = "SELECT * FROM ".$settings::db_prefix."blogPosts WHERE title = :title";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':title', $title, PDO::PARAM_STR, 50);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
                 $sth->execute();
                 $post = $sth->fetch();
                 $sth = NULL;
@@ -114,8 +114,8 @@
                 $dbh = $common->pdoOpen();
                 $sql = "UPDATE ".$settings::db_prefix."blogPosts contents = :contents WHERE title = :title";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':title', $title, PDO::PARAM_STR, 50);
-                $sth->bindParam(':contents', $title, PDO::PARAM_STR, 50);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
+                $sth->bindParam(':contents', $title, PDO::PARAM_STR, 20000);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;
@@ -143,7 +143,7 @@
                 $dbh = $common->pdoOpen();
                 $sql = "DELETE FROM ".$settings::db_prefix."blogPosts WHERE title = :title";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':title', $title, PDO::PARAM_STR, 50);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;
@@ -172,10 +172,10 @@
                 $dbh = $common->pdoOpen();
                 $sql = "INSERT INTO ".$settings::db_prefix."blogPosts (title, date, author, content) VALUES (:title, :date, :author, :content)";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':title', $title, PDO::PARAM_STR, 50);
-                $sth->bindParam(':date', date('Y-m-d H:i:s'), PDO::PARAM_STR, 50);
-                $sth->bindParam(':author', $author, PDO::PARAM_STR, 50);
-                $sth->bindParam(':content', $contents, PDO::PARAM_STR, 50);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
+                $sth->bindParam(':date', date('Y-m-d H:i:s'), PDO::PARAM_STR, 20);
+                $sth->bindParam(':author', $author, PDO::PARAM_STR, 100);
+                $sth->bindParam(':content', $contents, PDO::PARAM_STR, 20000);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;

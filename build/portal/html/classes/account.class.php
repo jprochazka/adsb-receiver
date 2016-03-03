@@ -76,7 +76,7 @@
                 $dbh = $common->pdoOpen();
                 $sql = "SELECT * FROM ".$settings::db_prefix."administrators WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':login', $login, PDO::PARAM_STR, 50);
+                $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
                 $row = $sth->fetch();
                 $sth = NULL;
@@ -146,10 +146,10 @@
                 $dbh = $common->pdoOpen();
                 $sql = "INSERT INTO ".$settings::db_prefix."administrators (name, email, login, password) VALUES (:name, :email, :login, :password)";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
-                $sth->bindParam(':email', $email, PDO::PARAM_STR, 50);
-                $sth->bindParam(':login', $login, PDO::PARAM_STR, 50);
-                $sth->bindParam(':password', $password, PDO::PARAM_STR, 50);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 100);
+                $sth->bindParam(':email', $email, PDO::PARAM_STR, 75);
+                $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
+                $sth->bindParam(':password', $password, PDO::PARAM_STR, 255);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;
@@ -176,7 +176,7 @@
                 $dbh = $this->pdoOpen();
                 $sql = "SELECT * FROM ".$settings::db_prefix."administrators WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':login', $_SESSION['login'], PDO::PARAM_STR);
+                $sth->bindParam(':login', $_SESSION['login'], PDO::PARAM_STR, 25);
                 $sth->execute();
                 $row = $sth->fetch();
                 $sth = NULL;
@@ -203,7 +203,7 @@
                 $dbh = $this->pdoOpen();
                 $sql = "SELECT * FROM ".$settings::db_prefix."administrators WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':login', $_SESSION['login'], PDO::PARAM_STR);
+                $sth->bindParam(':login', $_SESSION['login'], PDO::PARAM_STR, 25);
                 $sth->execute();
                 $row = $sth->fetch();
                 $sth = NULL;
@@ -232,8 +232,8 @@
                 $dbh = $common->pdoOpen();
                 $sql = "UPDATE ".$settings::db_prefix."administrators SET name = :name WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
-                $sth->bindParam(':login', $login, PDO::PARAM_STR, 50);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 100);
+                $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;
@@ -255,8 +255,8 @@
                 $dbh = $common->pdoOpen();
                 $sql = "UPDATE ".$settings::db_prefix."administrators SET email = :email WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':email', $name, PDO::PARAM_STR, 50);
-                $sth->bindParam(':login', $login, PDO::PARAM_STR, 50);
+                $sth->bindParam(':email', $name, PDO::PARAM_STR, 75);
+                $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;
@@ -278,8 +278,8 @@
                 $dbh = $common->pdoOpen();
                 $sql = "UPDATE ".$settings::db_prefix."administrators SET password = :password WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':password', password_hash($password, PASSWORD_DEFAULT), PDO::PARAM_STR, 50);
-                $sth->bindParam(':login', $login, PDO::PARAM_STR, 50);
+                $sth->bindParam(':password', password_hash($password, PASSWORD_DEFAULT), PDO::PARAM_STR, 255);
+                $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;

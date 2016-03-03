@@ -82,7 +82,7 @@
                 $dbh = $this->pdoOpen();
                 $sql = "SELECT * FROM ".$settings::db_prefix."settings WHERE name = :name";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':name', $name, PDO::PARAM_STR);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
                 $sth->execute();
                 $row = $sth->fetch();
                 $sth = NULL;
@@ -110,7 +110,7 @@
                 $sql = "UPDATE ".$settings::db_prefix."settings value = :value WHERE name = :name";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
-                $sth->bindParam(':value', $value, PDO::PARAM_STR, 50);
+                $sth->bindParam(':value', $value, PDO::PARAM_STR, 100);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;
@@ -134,7 +134,7 @@
                 $sql = "INSERT INTO ".$settings::db_prefix."settings (name, value) VALUES (:name, :value)";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
-                $sth->bindParam(':value', $value, PDO::PARAM_STR, 50);
+                $sth->bindParam(':value', $value, PDO::PARAM_STR, 100);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;
@@ -159,7 +159,7 @@
                 $dbh = $this->pdoOpen();
                 $sql = "SELECT * FROM administrators WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':login', $login, PDO::PARAM_STR, 50);
+                $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
                 $row = $sth->fetch();
                 $sth = NULL;

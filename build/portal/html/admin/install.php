@@ -103,9 +103,9 @@
         const pdo_debug = FALSE;
     }
 
-?>
+?
 EOF;
-            file_put_contents('../classes/settings.class.php', $content);
+            file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php", $content);
 
             // Setup data storage.
             if ($_POST['driver'] == 'xml') {
@@ -119,7 +119,7 @@ EOF;
                 $xml->startDocument('1.0','UTF-8');
                 $xml->startElement("administrators");
                 $xml->endElement();
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/administrators.xml', $xml->flush(true));
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml", $xml->flush(true));
 
                 // Create XML files used to store blog post data.
                 $xml = new XMLWriter();
@@ -128,7 +128,7 @@ EOF;
                 $xml->startDocument('1.0','UTF-8');
                 $xml->startElement("blogPosts");
                 $xml->endElement();
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/blogPosts.xml', $xml->flush(true));
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml", $xml->flush(true));
 
                 // Create XML files used to store flight notification data.
                 $xml = new XMLWriter();
@@ -137,7 +137,7 @@ EOF;
                 $xml->startDocument('1.0','UTF-8');
                 $xml->startElement("flights");
                 $xml->endElement();
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/flightNotifications.xml', $xml->flush(true));
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $xml->flush(true));
 
                 // Create XML files used to store settings data.
                 $xml = new XMLWriter();
@@ -146,11 +146,52 @@ EOF;
                 $xml->startDocument('1.0','UTF-8');
                 $xml->startElement("settings");
                 $xml->endElement();
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].'/data/settings.xml', $xml->flush(true));
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $xml->flush(true));
+
             } else {
             
                 // PDO
 
+                // Create database tables.
+                $administratorsSql = "CREATE TABLE ".$_POST['prefix']."administrators(
+                                      id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                      name VARCHAR(100) NOT NULL,
+                                      email VARCHAR(75) NOT NULL,
+                                      login VARCHAR(25) NOT NULL,
+                                      password VARCHAR(255) NOT NULL;";
+                $blogPostsSql = "CREATE TABLE ".$_POST['prefix']."blogPosts(
+                                 id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                 title VARCHAR(100) NOT NULL,
+                                 date VARCHAR(20) NOT NULL,
+                                 author VARCHAR(100) NOT NULL,
+                                 contents VARCHAR(20000) NOT NULL;";
+                $flightNotificationsSql = "CREATE TABLE ".$_POST['prefix']."flightNotifications(
+                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                           flight VARCHAR(10) NOT NULL;";
+                $settingsSql = "CREATE TABLE ".$_POST['prefix']."settings(
+                                id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                name VARCHAR(50) NOT NULL,
+                                value VARCHAR(100) NOT NULL;";
+
+                $dbh = $common->pdoOpen();
+
+                $sth = $dbh->prepare($administratorsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($blogPostsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($flightNotificationsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($settingsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $dbh = NULL;
             }
 
             // Add settings.
@@ -215,8 +256,8 @@ EOF;
 
         <h2>Directory Permissions</h2>
         <section>
-            <div class="alert <?php echo ($writableData == TRUE ? 'alert-success' : 'alert-danger' ); ?>"><strong>/data</strong> is<?php echo ($writableData ? ' ' : ' not' ); ?> writable.</div>
-            <div class="alert <?php echo ($writeableClass ? 'alert-success' : 'alert-danger' ); ?>"><strong>/classes/settings.class.php</strong> is<?php echo ($writeableClass ? ' ' : ' not' ); ?> writable.</div>
+            <div class="alert <?php echo ($writableData == TRUE ? 'alert-success' : 'alert-danger' ); ?>">The <strong>data</strong> directory is<?php echo ($writableData ? ' ' : ' not' ); ?> writable.</div>
+            <div class="alert <?php echo ($writeableClass ? 'alert-success' : 'alert-danger' ); ?>">The <strong>settings.class.php</strong> file is<?php echo ($writeableClass ? ' ' : ' not' ); ?> writable.</div>
             <input type="hidden" name="permissions" id="permissions" value="<?php echo $writableData; ?>">
 <?php if (!$writableData || !$writeableClass) {?>
             <p>
