@@ -220,7 +220,7 @@ EOF;
         
             // Add the administrator account.
             require_once('../classes/account.class.php');
-            $account->addAdministrator($name, $email, $login, $password1);
+            $account->addAdministrator($_POST['name'], $_POST['email'], $_POST['login'], $_POST['password1']);
 
             // Mark the installation as complete.
             $installed = TRUE;

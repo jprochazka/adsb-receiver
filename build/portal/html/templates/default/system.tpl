@@ -33,6 +33,9 @@
                 <h2>System Charts</h2>
                 <div id="chart_div" style="width: 400px; height: 120px;"></div>
                 <h2>System Information</h2>
+                <ul>
+                    <li>Uptime: </li>
+                </ul>
             </div>
 {/area}
 {area:scripts}

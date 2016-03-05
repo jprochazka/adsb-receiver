@@ -28,7 +28,7 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    $possibleActions = array("getOsInformation", "getCpuInformation", "getMemoryInformation", "getHddInformation", "getNetworkInformation");
+    $possibleActions = array("getOsInformation", "getCpuInformation", "getMemoryInformation", "getHddInformation", "getNetworkInformation", "getUptimeInformation");
 
     if (isset($_GET['action']) && in_array($_GET["action"], $possibleActions)) {
         switch ($_GET["action"]) {
@@ -46,6 +46,9 @@
                 break;
             case "getNetworkInformation":
                 $informationArray = getNetworkInformation();
+                break;
+            case "getNetworkInformation":
+                $informationArray = getUptimeInformation();
                 break;
         }
         exit(json_encode($informationArray));
@@ -106,14 +109,29 @@
     function getHddInformation() {
         $hddInformation['free'] = round(disk_free_space("/") / 1024 / 1024 / 1024, 2);
         $hddInformation['total'] = round(disk_total_space("/") / 1024 / 1024/ 1024, 2);
-        $hddInformation['used'] = $hddInformation['total'] - $stat['hdd_free'];
+        $hddInformation['used'] = $hddInformation['total'] - $hddInformation['free'];
         $hddInformation['percent'] = round(sprintf('%.2f',($hddInformation['used'] / $hddInformation['total']) * 100), 2);
         return $hddInformation;
     }
 
     function getNetworkInformation() {
-        $networkInformation['rx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes")) / 1024 / 1024 / 1024, 2);
-        $networkInformation['tx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes")) / 1024 / 1024 / 1024, 2);
+        $networkInformation['rx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes")) / 125000, 2);
+        $networkInformation['tx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes")) / 125000, 2);
         return $networkInformation;
+    }
+
+    function getUptimeInformation() {
+        $procUptime = file('/proc/uptime');
+        $uptimeArray = preg_split('/ /', $procUptime);
+        $uptime['inSeconds'] = trim($uptimeArray[0]);
+        $uptime['hours'] = floor($uptime['inSeconds'] / 3600);
+        $uptime['minutes'] = floor(($uptime['inSeconds'] - ($uptime['hours'] * 3600)) / 60);
+        $uptime['seconds'] = floor($uptime['inSeconds'] % 60);
+        return $uptime;
+
+        //$idle['inSeconds'] = trim($uptimeArray[1]);
+        //$idle['hours'] = floor($idle['inSeconds'] / 3600);
+        //$idle['minutes'] = floor(($idle['inSeconds'] - ($idle['hours'] * 3600)) / 60);
+        //$idle['seconds'] = floor($idle['inSeconds'] % 60);
     }
 ?>

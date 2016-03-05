@@ -9,8 +9,8 @@ $(document).ready(function () {
             ['Label', 'Value'],
             ['Memory', 100],
             ['CPU', 100],
-            ['Network In', 100]
-            ['Network Out', 100]
+            ['Network In (Mbps)', 100]
+            ['Network Out (Mbps)', 100]
         ]);
 
         var options = {

@@ -30,6 +30,9 @@ threads I was able to add these very informative graphs.
 
 ## Third Party Software
 
+Thanks to the people over at JetBrains for the complementary licenses for PhpStorm which is being used
+to develop the portal portion of this project. https://www.jetbrains.com
+
 I would like to thank the developers and contributors to the following projects. Without their
 hard work and dedication this project would not have been possible.
 
