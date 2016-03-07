@@ -42,35 +42,35 @@
     </setting>
     <setting>
         <name>enableFlightAwareLink</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>flightAwareLogin</name>
-        <value>jprochazka</value>
+        <value/>
     </setting>
     <setting>
         <name>flightAwareSite</name>
-        <value>12378</value>
+        <value/>
     </setting>
     <setting>
         <name>enablePlaneFinderLink</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>planeFinderReceiver</name>
-        <value>91728</value>
+        <value/>
     </setting>
     <setting>
         <name>enableFlightRadar24Link</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>flightRadar24Id</name>
-        <value>8080</value>
+        <value/>
     </setting>
     <setting>
         <name>enableAdsbExchangeLink</name>
-        <value>1</value>
+        <value/>
     </setting>
     <setting>
         <name>measurementRange</name>
@@ -86,6 +86,6 @@
     </setting>
     <setting>
         <name>enableFlightNotifications</name>
-        <value>1</value>
+        <value/>
     </setting>
 </settings>
