@@ -4,6 +4,7 @@ The following is a history of the changes made to this project.
 
 ## upgrade Branch
 
+* Added the option to install the Flightradar24 client.
 * Added administrator name and email address settings.
 * Administrators are no longer required to change their password after their first login.
 * Added the ability to display links to aggregate site statistics pages.
@@ -11,6 +12,7 @@ The following is a history of the changes made to this project.
 * The author's name is now displayed when blog posts are rendered instead of their login.
 * The settings page has been categorized and split into tabs.
 * The portal no longer uses public CDN's to server jQuery and Bootstrap files.
+* Scripts now exit properly when package fails to install.
 
 ## March 4th, 2016
 

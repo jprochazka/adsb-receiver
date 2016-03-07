@@ -50,7 +50,7 @@ echo -e "\033[33mThe Flightradar24's Pi24 client can track flights within"
 echo "200-400 miles and will automatically share data with Flightradar24. You"
 echo "can track flights directly off your Pi24 device or via Flightradar24.com"
 echo ""
-echo "http://www.flightradar24.com/raspberry-pi"
+echo "http://www.flightradar24.com/share-your-data"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
@@ -72,7 +72,7 @@ if [[ `uname -m` == "x86_64" ]]; then
     CheckPackage libudev1:i386
     CheckPackage zlib1g:i386
     CheckPackage libusb-1.0-0:i386
-    CheckPackage libstdc++6:i386:i386
+    CheckPackage libstdc++6:i386
 else
     CheckPackage libc6
     CheckPackage libudev1
