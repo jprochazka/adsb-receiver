@@ -36,6 +36,20 @@
                     <strong>Uptime:</strong> <span id="uptime">{page:uptimeInSeconds}</span>
                 </div>
                 <h2>System Information</h2>
+                <ul>
+                    <li><strong>Name:</strong> {page:osNodeName}</li>
+                    <li><strong>Kernel:</strong> {page:osKernelRelease}</li>
+                    <li><strong>Machine:</strong> {page:osMachine}</li>
+                </ul>
+                <ul>
+                    <li><strong>CPU Model:</strong> {page:cpuModel}</li>
+                    <li><strong>Memory Installed:</strong> {page:memTotal}GB</li>
+                </ul>
+                <ul>
+                    <li><strong>HDD Total:</strong> {page:hddTotal}GB</li>
+                    <li><strong>HDD Used:</strong> {page:hddUsed}GB <i>({page:hddPercent}% used)</i></li>
+                    <li><strong>HDD Free:</strong> {page:hddFree}GB</li>
+                </ul>
             </div>
 {/area}
 {area:scripts}

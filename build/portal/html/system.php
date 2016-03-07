@@ -57,5 +57,30 @@
     $pageData['uptimeMinutes'] = $uptimeData['minutes'];
     $pageData['uptimeSeconds'] = $uptimeData['seconds'];
 
+    // Get operating system information.
+    $json = file_get_contents("http://localhost/api/system.php?action=getOsInformation");
+    $osData = json_decode($json, TRUE);
+    $pageData['osKernelRelease'] = $osData['kernelRelease'];
+    $pageData['osNodeName'] = $osData['nodeName'];
+    $pageData['osMachine'] = $osData['machine'];
+
+    // Get CPU information.
+    $json = file_get_contents("http://localhost/api/system.php?action=getCpuInformation");
+    $cpuData = json_decode($json, TRUE);
+    $pageData['cpuModel'] = $cpuData['model'];
+
+    // Get CPU information.
+    $json = file_get_contents("http://localhost/api/system.php?action=getHddInformation");
+    $hddData = json_decode($json, TRUE);
+    $pageData['hddTotal'] = $hddData['total'];
+    $pageData['hddUsed'] = $hddData['used'];
+    $pageData['hddFree'] = $hddData['free'];
+    $pageData['hddPercent'] = $hddData['percent'];
+
+    // Get memory information.
+    $json = file_get_contents("http://localhost/api/system.php?action=getMemoryInformation");
+    $memData = json_decode($json, TRUE);
+    $pageData['memTotal'] = $memData['total'];
+
     $template->display($pageData);
 ?>
