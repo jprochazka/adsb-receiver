@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## upgrade Branch
+## March 7th, 2016
 
 * Added the option to install the Flightradar24 client.
 * Added administrator name and email address settings.
