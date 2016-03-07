@@ -32,10 +32,10 @@
                 </ul>
                 <h2>System Charts</h2>
                 <div id="chart_div" style="width: 400px; height: 120px;"></div>
+                <div>
+                    <strong>Uptime:</strong> <span id="uptime">{page:uptimeInSeconds}</span>
+                </div>
                 <h2>System Information</h2>
-                <ul>
-                    <li>Uptime: <span id="uptime">{page:uptimeInSeconds}</span></li>
-                </ul>
             </div>
 {/area}
 {area:scripts}

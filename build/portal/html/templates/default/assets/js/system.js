@@ -9,8 +9,8 @@ $(document).ready(function () {
             ['Label', 'Value'],
             ['Memory', 100],
             ['CPU', 100],
-            ['In (Mbps)', 100],
-            ['Out (Mbps)', 100]
+            ['In (MB/s)', 100],
+            ['Out (MB/s)', 100]
         ]);
 
         var options = {
@@ -47,17 +47,17 @@ $(document).ready(function () {
         setInterval(function () {
             $timestamp = new Date().getTime() / 1000;
             $.getJSON("/api/system.php?action=getNetworkInformation&time=" + $timestamp, function (json) {
-                data.setValue(2, 1, Math.round(json.rx));
+                data.setValue(2, 1, Math.round(json.rxMbps));
                 chart.draw(data, options);
             });
-        }, 3000);
+        }, 7000);
         setInterval(function () {
             $timestamp = new Date().getTime() / 1000;
             $.getJSON("/api/system.php?action=getNetworkInformation&time=" + $timestamp, function (json) {
-                data.setValue(3, 1, Math.round(json.tx));
+                data.setValue(3, 1, Math.round(json.txMbps));
                 chart.draw(data, options);
             });
-        }, 3000);
+        }, 7000);
     }
 
     // Convert uptime to a more readable format and increment it every second.

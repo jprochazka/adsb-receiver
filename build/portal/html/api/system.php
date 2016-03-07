@@ -115,8 +115,15 @@
     }
 
     function getNetworkInformation() {
-        $networkInformation['rx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes")) / 125000, 2);
-        $networkInformation['tx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes")) / 125000, 2);
+        $firstLookRx = trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes"));
+        $firstLookTx = trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes"));
+        sleep(5);
+        $secondLookRx = trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes"));
+        $secondLookTx = trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes"));
+        $networkInformation['rxBytes'] = $secondLookRx - $firstLookRx;
+        $networkInformation['txBytes'] = $secondLookTx - $firstLookTx;
+        $networkInformation['rxMbps'] = round(($secondLookRx - $firstLookRx) / 1024 / 1024, 0);
+        $networkInformation['txMbps'] = round(($secondLookTx - $firstLookTx) / 1024 / 1024, 0);
         return $networkInformation;
     }
 
