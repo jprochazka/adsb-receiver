@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -47,7 +47,7 @@
             case "getNetworkInformation":
                 $informationArray = getNetworkInformation();
                 break;
-            case "getNetworkInformation":
+            case "getUptimeInformation":
                 $informationArray = getUptimeInformation();
                 break;
         }
@@ -121,8 +121,7 @@
     }
 
     function getUptimeInformation() {
-        $procUptime = file('/proc/uptime');
-        $uptimeArray = preg_split('/ /', $procUptime);
+        $uptimeArray = split(' ', exec("cat /proc/uptime"));
         $uptime['inSeconds'] = trim($uptimeArray[0]);
         $uptime['hours'] = floor($uptime['inSeconds'] / 3600);
         $uptime['minutes'] = floor(($uptime['inSeconds'] - ($uptime['hours'] * 3600)) / 60);

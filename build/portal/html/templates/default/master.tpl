@@ -83,7 +83,7 @@
                 </p>
             </div>
         </footer>
-        <script src="/templates/{setting:template}/assets/js/jquery-2.2.0.min.js"></script>
+        <script src="/templates/{setting:template}/assets/js/jquery-2.2.1.min.js"></script>
         <script src="/templates/{setting:template}/assets/js/bootstrap.min.js"></script>
         {if setting:enableFlightNotifications eq TRUE}
         <script src="/templates/{setting:template}/assets/js/notifications.js"></script>

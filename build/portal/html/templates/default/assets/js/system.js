@@ -9,8 +9,8 @@ $(document).ready(function () {
             ['Label', 'Value'],
             ['Memory', 100],
             ['CPU', 100],
-            ['Network In (Mbps)', 100]
-            ['Network Out (Mbps)', 100]
+            ['In (Mbps)', 100],
+            ['Out (Mbps)', 100]
         ]);
 
         var options = {
@@ -25,10 +25,9 @@ $(document).ready(function () {
         chart.draw(data, options);
 
         data.setValue(0, 1, 0);
-        chart.draw(data, options);
         data.setValue(1, 1, 0);
-        chart.draw(data, options);
         data.setValue(2, 1, 0);
+        data.setValue(3, 1, 0);
         chart.draw(data, options);
 
         setInterval(function () {
@@ -52,6 +51,33 @@ $(document).ready(function () {
                 chart.draw(data, options);
             });
         }, 3000);
-
+        setInterval(function () {
+            $timestamp = new Date().getTime() / 1000;
+            $.getJSON("/api/system.php?action=getNetworkInformation&time=" + $timestamp, function (json) {
+                data.setValue(3, 1, Math.round(json.tx));
+                chart.draw(data, options);
+            });
+        }, 3000);
     }
+
+    // Convert uptime to a more readable format and increment it every second.
+    var sec = Math.floor($("#uptime").text());
+    function pad(val) {
+        return val > 9 ? val : "0" + val;
+    }
+    setInterval( function(){
+        ++sec;
+        var seconds = sec;
+
+        var days = pad(parseInt(sec / 86400, 10));
+        seconds = seconds - (days * 86400);
+
+        var hours = pad(parseInt(seconds / 3600, 10));
+        seconds = seconds - (hours * 3600);
+
+        var minutes = pad(parseInt(seconds / 60, 10));
+        seconds = pad(seconds - (minutes * 60));
+
+        $("#uptime").text(days + ':' + hours + ':' + minutes + ':' + seconds);
+    }, 1000);
 });

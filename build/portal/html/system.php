@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                            ADS-B RECEIVER PORTAL                                //
     // =============================================================================== //
@@ -43,10 +43,19 @@
     // The title of this page.
     $pageData['title'] = "System Information";
 
+    // create aggregate site statistics page links.
     $pageData['flightAwareLink'] = "http://flightaware.com/adsb/stats/user/".$common->getSetting('flightAwareLogin')."#stats-".$common->getSetting('flightAwareSite');
     $pageData['planeFinderLink'] = "https://planefinder.net/sharing/receiver/".$common->getSetting('planeFinderReceiver');
     $pageData['flightRader24Link'] = "https://www.flightradar24.com/premium/feed_stats.php?id=".$common->getSetting('flightRader24Id');
     $pageData['adsbExchangeLink'] = "https://www.adsbexchange.com";
+
+    // Get the current system uptime.
+    $json = file_get_contents("http://localhost/api/system.php?action=getUptimeInformation");
+    $uptimeData = json_decode($json, TRUE);
+    $pageData['uptimeInSeconds'] = $uptimeData['inSeconds'];
+    $pageData['uptimeHours'] = $uptimeData['hours'];
+    $pageData['uptimeMinutes'] = $uptimeData['minutes'];
+    $pageData['uptimeSeconds'] = $uptimeData['seconds'];
 
     $template->display($pageData);
 ?>
