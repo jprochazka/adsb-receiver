@@ -58,12 +58,18 @@
                 </div>
             </nav>
             {if setting:enableFlightNotifications eq TRUE}
-            <div id="flight-notifications" class="container">
-                <div class="alert alert-success" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <strong>Flight Spotted!</strong>
-                    <p>This receiver is currently receiving data from the following flight number(s).</p>
-                    <ul></ul>
+            <div id="flight-notifications" class="modal fade in" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title">Flight Spotted</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>This receiver is currently receiving data from the following flight number(s).</p>
+                            <ul></ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             {/if}

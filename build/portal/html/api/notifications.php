@@ -57,7 +57,7 @@
 
         // Check dump1090-mutability's aircraft JSON output to see if the flight is visible.
         $visibleFlights = array();
-        $url = $common->getBaseUrl()."/dump1090/data/aircraft.json";
+        $url = "http://localhost/dump1090/data/aircraft.json";
         $json = file_get_contents($url);
         $data = json_decode($json, true);
         foreach ($data['aircraft'] as $aircraft) {
