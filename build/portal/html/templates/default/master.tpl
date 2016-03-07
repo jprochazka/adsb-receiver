@@ -58,7 +58,7 @@
                 </div>
             </nav>
             {if setting:enableFlightNotifications eq TRUE}
-            <div id="flight-notifications" class="modal fade in" role="dialog">
+            <div id="flight-notifications" class="modal fade" tabindex="-1" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -68,6 +68,9 @@
                         <div class="modal-body">
                             <p>This receiver is currently receiving data from the following flight number(s).</p>
                             <ul></ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
