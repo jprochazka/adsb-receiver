@@ -104,12 +104,17 @@ sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
+    echo "#########################################"
+    echo "# INSTALLATION HALTED!                  #"
+    echo "# UNABLE TO INSTALL A REQUIRED PACKAGE. #"
+    echo "#########################################"
+    echo ""
     echo "The dump1090-mutability package did not install properly!"
     echo -e "\033[33m"
     echo "This script has exited due to the error encountered."
     echo "Please read over the above output in order to determine what went wrong."
     echo ""
-    exit 1
+    kill -9 `ps --pid $$ -oppid=`; exit
 fi
 
 ## CONFIGURE LIGHTTPD

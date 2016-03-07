@@ -106,12 +106,17 @@ fi
 
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     echo "\033[31m"
-    echo "The piaware package did not install properly!"
+    echo "#########################################"
+    echo "# INSTALLATION HALTED!                  #"
+    echo "# UNABLE TO INSTALL A REQUIRED PACKAGE. #"
+    echo "#########################################"
+    echo ""
+    echo "The pfclient package did not install properly!"
     echo -e "\033[33m"
     echo "This script has exited due to the error encountered."
     echo "Please read over the above output in order to determine what went wrong."
     echo ""
-    exit 1
+    kill -9 `ps --pid $$ -oppid=`; exit
 fi
 
 ## DISPLAY FINAL SETUP INSTRUCTIONS WHICH CONNOT BE HANDLED BY THIS SCRIPT
