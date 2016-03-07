@@ -13,6 +13,7 @@ The following is a history of the changes made to this project.
 * The settings page has been categorized and split into tabs.
 * The portal no longer uses public CDN's to server jQuery and Bootstrap files.
 * Scripts now exit properly when package fails to install.
+* Flight notification alerts now display properly on map pages.
 
 ## March 4th, 2016
 
