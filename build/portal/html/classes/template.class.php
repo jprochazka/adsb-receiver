@@ -33,7 +33,7 @@
         // PUT THE TEMPLATE TOGETHER
 
         function display(&$pageData) {
-            $common = new Common($this);
+            $common = new common($this);
 
 			// The Base URL of this page (needed for Plane Finder client link)
 			$pageData['baseurl'] = $common->getBaseUrl();

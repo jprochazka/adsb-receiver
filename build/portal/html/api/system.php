@@ -1,5 +1,5 @@
 <?php
-    
+
     /////////////////////////////////////////////////////////////////////////////////////
     //                             ADS-B FEEDER PORTAL                                 //
     // =============================================================================== //
@@ -28,7 +28,7 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    $possibleActions = array("getOsInformation", "getCpuInformation", "getMemoryInformation", "getHddInformation", "getNetworkInformation");
+    $possibleActions = array("getOsInformation", "getCpuInformation", "getMemoryInformation", "getHddInformation", "getNetworkInformation", "getUptimeInformation");
 
     if (isset($_GET['action']) && in_array($_GET["action"], $possibleActions)) {
         switch ($_GET["action"]) {
@@ -47,6 +47,9 @@
             case "getNetworkInformation":
                 $informationArray = getNetworkInformation();
                 break;
+            case "getUptimeInformation":
+                $informationArray = getUptimeInformation();
+                break;
         }
         exit(json_encode($informationArray));
     } else {
@@ -55,29 +58,41 @@
 
     function getOsInformation() {
         $osInformation['phpUname'] = php_uname();
-        $osInformation['name'] = php_uname('s');
-        $osInformation['hostName'] = php_uname('n');
-        $osInformation['releaseName'] = php_uname('r');
-        $osInformation['version'] = php_uname('v');
-        $osInformation['machineType'] = php_uname('m');
+        $osInformation['kernelName'] = php_uname('s');
+        $osInformation['nodeName'] = php_uname('n');
+        $osInformation['kernelRelease'] = php_uname('r');
+        $osInformation['kernelVersion'] = php_uname('v');
+        $osInformation['machine'] = php_uname('m');
+        $osInformation['processor'] = php_uname('p');
+        $osInformation['hardwarePlatform'] = php_uname('i');
+        $osInformation['operatingSystem'] = php_uname('o');
+
+        // cat /etc/os-release
+
         return $osInformation;
     }
 
     function getCpuInformation() {
-        $firstRead = shell_exec("cat /proc/stat");
-        $firstArray = explode(' ',trim($firstRead));
-        $firstTotal = $firstArray[2] + $firstArray[3] + $firstArray[4] + $firstArray[5];
-        $firstIdle = $firstArray[5];
-        usleep(0.15 * 1000000);
-        $secondRead = shell_exec("cat /proc/stat");
-        $secondArray = explode(' ', trim($secondRead));
-        $secondTotal = $secondArray[2] + $secondArray[3] + $secondArray[4] + $secondArray[5];
-        $secondIdle = $secondArray[5];
-        $intervalTotal = intval($secondTotal - $firstTotal);
-        $cpuInformation['cpu'] =  intval(100 * (($intervalTotal - ($secondIdle - $firstIdle)) / $intervalTotal));
+        $firstRead = file('/proc/stat');
+        sleep(1);
+        $secondRead = file('/proc/stat');
+        $firstInfo = explode(" ", preg_replace("!cpu +!", "", $firstRead[0]));
+        $secondInfo = explode(" ", preg_replace("!cpu +!", "", $secondRead[0]));
+        $difference = array();
+        $difference['user'] = $secondInfo[0] - $firstInfo[0];
+        $difference['nice'] = $secondInfo[1] - $firstInfo[1];
+        $difference['sys'] = $secondInfo[2] - $firstInfo[2];
+        $difference['idle'] = $secondInfo[3] - $firstInfo[3];
+        $total = array_sum($difference);
+        $cpuInformation = array();
+        foreach($difference as $x=>$y){
+            $cpuInformation[$x] = round($y / $total * 100, 1);
+        }
+
         $cpuInfo = shell_exec("cat /proc/cpuinfo | grep model\ name");
-        $cpuInformation['cpuModel'] = strstr($cpuInfo, "\n", true);
-        $cpuInformation['cpuModel'] = str_replace("model name    : ", "", $stat['cpuModel']);
+        $cpuModel = strstr($cpuInfo, "\n", true);
+        $cpuInformation['model'] = str_replace("model name\t: ", "", $cpuModel);
+
         return $cpuInformation;
     }
 
@@ -87,21 +102,42 @@
         $memoryInformation['total'] = round(preg_replace("#[^0-9]+(?:\.[0-9]*)?#", "", $memInfo) / 1024 / 1024, 3);
         $memInfo = shell_exec("cat /proc/meminfo | grep MemFree");
         $memoryInformation['free'] = round(preg_replace("#[^0-9]+(?:\.[0-9]*)?#", "", $memInfo) / 1024 / 1024, 3);
-        $memoryInformation['used'] = $stat['total'] - $stat['free'];
+        $memoryInformation['used'] = $memoryInformation['total'] - $memoryInformation['free'];
         return $memoryInformation;
     }
 
     function getHddInformation() {
         $hddInformation['free'] = round(disk_free_space("/") / 1024 / 1024 / 1024, 2);
         $hddInformation['total'] = round(disk_total_space("/") / 1024 / 1024/ 1024, 2);
-        $hddInformation['used'] = $hddInformation['total'] - $stat['hdd_free'];
+        $hddInformation['used'] = $hddInformation['total'] - $hddInformation['free'];
         $hddInformation['percent'] = round(sprintf('%.2f',($hddInformation['used'] / $hddInformation['total']) * 100), 2);
         return $hddInformation;
     }
 
     function getNetworkInformation() {
-        $networkInformation['rx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes")) / 1024/ 1024/ 1024, 2);
-        $networkInformation['tx'] = round(trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes")) / 1024/ 1024/ 1024, 2);
+        $firstLookRx = trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes"));
+        $firstLookTx = trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes"));
+        sleep(5);
+        $secondLookRx = trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes"));
+        $secondLookTx = trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes"));
+        $networkInformation['rxBytes'] = $secondLookRx - $firstLookRx;
+        $networkInformation['txBytes'] = $secondLookTx - $firstLookTx;
+        $networkInformation['rxMbps'] = round(($secondLookRx - $firstLookRx) / 1024 / 1024, 0);
+        $networkInformation['txMbps'] = round(($secondLookTx - $firstLookTx) / 1024 / 1024, 0);
         return $networkInformation;
+    }
+
+    function getUptimeInformation() {
+        $uptimeArray = split(' ', exec("cat /proc/uptime"));
+        $uptime['inSeconds'] = trim($uptimeArray[0]);
+        $uptime['hours'] = floor($uptime['inSeconds'] / 3600);
+        $uptime['minutes'] = floor(($uptime['inSeconds'] - ($uptime['hours'] * 3600)) / 60);
+        $uptime['seconds'] = floor($uptime['inSeconds'] % 60);
+        return $uptime;
+
+        //$idle['inSeconds'] = trim($uptimeArray[1]);
+        //$idle['hours'] = floor($idle['inSeconds'] / 3600);
+        //$idle['minutes'] = floor(($idle['inSeconds'] - ($idle['hours'] * 3600)) / 60);
+        //$idle['seconds'] = floor($idle['inSeconds'] % 60);
     }
 ?>

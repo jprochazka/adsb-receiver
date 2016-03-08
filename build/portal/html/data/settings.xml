@@ -22,7 +22,7 @@
     </setting>
     <setting>
         <name>enableInfo</name>
-        <value/>
+        <value>1</value>
     </setting>
     <setting>
         <name>enableGraphs</name>
@@ -41,6 +41,38 @@
         <value/>
     </setting>
     <setting>
+        <name>enableFlightAwareLink</name>
+        <value/>
+    </setting>
+    <setting>
+        <name>flightAwareLogin</name>
+        <value/>
+    </setting>
+    <setting>
+        <name>flightAwareSite</name>
+        <value/>
+    </setting>
+    <setting>
+        <name>enablePlaneFinderLink</name>
+        <value/>
+    </setting>
+    <setting>
+        <name>planeFinderReceiver</name>
+        <value/>
+    </setting>
+    <setting>
+        <name>enableFlightRadar24Link</name>
+        <value/>
+    </setting>
+    <setting>
+        <name>flightRadar24Id</name>
+        <value/>
+    </setting>
+    <setting>
+        <name>enableAdsbExchangeLink</name>
+        <value/>
+    </setting>
+    <setting>
         <name>measurementRange</name>
         <value>imperialNautical</value>
     </setting>
@@ -54,6 +86,6 @@
     </setting>
     <setting>
         <name>enableFlightNotifications</name>
-        <value>1</value>
+        <value/>
     </setting>
 </settings>

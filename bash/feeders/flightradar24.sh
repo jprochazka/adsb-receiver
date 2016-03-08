@@ -44,14 +44,13 @@ clear
 
 echo -e "\033[31m"
 echo "-----------------------------------------------------"
-echo " Now ready to install the Plane Finder ADS-B Client."
+echo " Now ready to install the flightradar24 Pi24 Client."
 echo "-----------------------------------------------------"
-echo -e "\033[33mThe Plane Finder ADS-B Client is an easy and accurate way"
-echo "to share your ADS-B and MLAT data with Plane Finder. It comes with a"
-echo "beautiful user interface that helps you explore and interact with your"
-echo "data in realtime."
+echo -e "\033[33mThe Flightradar24's Pi24 client can track flights within"
+echo "200-400 miles and will automatically share data with Flightradar24. You"
+echo "can track flights directly off your Pi24 device or via Flightradar24.com"
 echo ""
-echo "https://planefinder.net/sharing/client"
+echo "http://www.flightradar24.com/share-your-data"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
@@ -70,88 +69,94 @@ if [[ `uname -m` == "x86_64" ]]; then
         echo ""
     fi
     CheckPackage libc6:i386
+    CheckPackage libudev1:i386
+    CheckPackage zlib1g:i386
+    CheckPackage libusb-1.0-0:i386
+    CheckPackage libstdc++6:i386
 else
     CheckPackage libc6
+    CheckPackage libudev1
+    CheckPackage zlib1g
+    CheckPackage libusb-1.0-0
+    CheckPackage libstdc++6
 fi
 CheckPackage wget
 
-## DOWNLOAD THE PLANEFINDER ADS-B CLIENT PACKAGE
 
-echo -e "\033[33m"
-echo "Downloading the Plane Finder ADS-B Client package..."
-echo -e "\033[37m"
 if [[ `uname -m` == "armv7l" ]]; then
-    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONARM}_armhf.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
-else
-    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONI386}_i386.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
-fi
 
-## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE
+    ## ARMV71 INSTALLATION
 
-echo -e "\033[33m"
-echo "Installing the Plane Finder ADS-B Client package..."
-echo -e "\033[37m"
-if [[ `uname -m` == "armv7l" ]]; then
-    sudo dpkg -i $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
+    echo -e "\033[31m"
+    echo "------------------------------------------------------"
+    echo " MAKE SURE TO READ THROUGH THE FOLLOWING INSTRUCTIONS"
+    echo "------------------------------------------------------"
+    echo -e "\033[33m"
+    echo "This script will now download and execute the script provided by Flightradar24."
+    echo "You will be asked for your email address, the latitude and longitude of your"
+    echo "receiver as well as its altitude above sea level."
+    echo ""
+    echo "Latitude and longitude can be calculated by address by my website."
+    echo "https://www.swiftbyte.com/toolbox/geocode"
+    echo ""
+    echo "As for distance abocve sea level I used heywhatsthat.com information."
+    echo ""
+    echo "once the Flightradar24 script has completed this script will once again take over."
+    echo -e "\033[37m"
+    read -p "Press enter to continue..." CONTINUE
+
+    ## DOWNLOAD AND EXECUTE THE FLIGHTRADAR24 SCRIPT
+
+    sudo bash -c "$(wget -O - http://repo.feed.flightradar24.com/install_fr24_rpi.sh)"
+
+    ## START THE FLIGHTAWARE24 CLIENT
+
+    echo -e "\033[33m"
+    echo "Starting the flightradar24 feeder client..."
+    echo -e "\033[37m"
+    sudo service fr24feed start
 else
+
+    ## I386 INSTALLATION
+
+    echo -e "\033[33m"
+    echo "Downloading the Flightradar24 feeder client package..."
+    echo -e "\033[37m"
+    wget http://feed.flightradar24.com/linux/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb -O $BUILDDIR/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+
+    echo -e "\033[33m"
+    echo "Installing the Flightradar24 feeder client package..."
+    echo -e "\033[37m"
     if [[ `lsb_release -si` == "Debian" ]]; then
         # Force architecture if this is Debian.
-        sudo dpkg -i --force-architecture $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i --force-architecture $BUILDDIR/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
     else
-        sudo dpkg -i $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i $BUILDDIR/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+    fi
+
+    ## CHECK THAT THE PACKAGE INSTALLED
+
+    if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+        echo "\033[31m"
+        echo "#########################################"
+        echo "# INSTALLATION HALTED!                  #"
+        echo "# UNABLE TO INSTALL A REQUIRED PACKAGE. #"
+        echo "#########################################"
+        echo ""
+        echo "The fr24feed package did not install properly!"
+        echo -e "\033[33m"
+        echo "This script has exited due to the error encountered."
+        echo "Please read over the above output in order to determine what went wrong."
+        echo ""
+        kill -9 `ps --pid $$ -oppid=`; exit
     fi
 fi
 
-## CHECK THAT THE PACKAGE INSTALLED
 
-if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    echo "\033[31m"
-    echo "#########################################"
-    echo "# INSTALLATION HALTED!                  #"
-    echo "# UNABLE TO INSTALL A REQUIRED PACKAGE. #"
-    echo "#########################################"
-    echo ""
-    echo "The pfclient package did not install properly!"
-    echo -e "\033[33m"
-    echo "This script has exited due to the error encountered."
-    echo "Please read over the above output in order to determine what went wrong."
-    echo ""
-    kill -9 `ps --pid $$ -oppid=`; exit
-fi
+## INSTALLATION COMPLETE
 
-## DISPLAY FINAL SETUP INSTRUCTIONS WHICH CONNOT BE HANDLED BY THIS SCRIPT
-
-echo -e "\033[31m"
-echo "------------------------------------------------------"
-echo " MAKE SURE TO READ THROUGH THE FOLLOWING INSTRUCTIONS"
-echo "------------------------------------------------------"
 echo -e "\033[33m"
-echo "First off please look over the output generated to be sure no errors were encountered."
-echo ""
-echo "At this point the Plane Finder ADS-B Client should be installed and running however"
-echo "This script is only capable of installing the Plane Finder ADS-B Client. There are still"
-echo "a few steps left which you must manually do through the Plane Finder ADS-B Client itself"
-echo ""
-echo "Visit http://${HOSTNAME}:30053 in your favorite web browser."
-echo ""
-echo "You will be asked to enter the email address associated with your Plane Finder account."
-echo "You will also be asked to enter the latitude and longitude of your receiver."
-echo "If you do not know the coordinates you can look them up using one of two page I created to do so."
-echo ""
-echo "To look up coordinates using a street address goto https://www.swiftbyte.com/toolbox/geocode."
-echo "To look up coordinates using your IP address goto https://www.swiftbyte.com/toolbox/myip."
-echo ""
-echo "Once this information has been entered and submitted your share code will be emailed to you."
-echo ""
-echo "Next you will also be asked to choose the data format to use as well as network information"
-echo "pertaining to Dump 1090. THe following is the information which should be supplied."
-echo ""
-echo "Data Format: Beast"
-echo "Tcp Address: 127.0.0.1"
-echo "Tcp Port:    30005"
-echo ""
-echo "After entering this information click the complete configuration button to do exactly that."
-echo "Once you have successfully completed these steps you can continue on with the installation"
-echo "of any other features you have choosen for this set of scripts to install."
+echo "Installation and configuration of flightradar24 feeder client is now complete."
+echo "Please look over the output generated to be sure no errors were encountered."
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE

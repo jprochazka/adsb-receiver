@@ -87,6 +87,22 @@
         if (isset($_POST['enablePfclient']) && $_POST['enablePfclient'] == "TRUE")
             $enablePfclient = TRUE;
 
+        $enableFlightAwareLink = FALSE;
+        if (isset($_POST['enableFlightAwareLink']) && $_POST['enableFlightAwareLink'] == "TRUE")
+            $enableFlightAwareLink = TRUE;
+
+        $enablePlaneFinderLink = FALSE;
+        if (isset($_POST['enablePlaneFinderLink']) && $_POST['enablePlaneFinderLink'] == "TRUE")
+            $enablePlaneFinderLink = TRUE;
+
+        $enableFlightRadar24Link = FALSE;
+        if (isset($_POST['enableFlightRadar24Link']) && $_POST['enableFlightRadar24Link'] == "TRUE")
+            $enableFlightRadar24Link = TRUE;
+
+        $enableAdsbExchangeLink = FALSE;
+        if (isset($_POST['enableAdsbExchangeLink']) && $_POST['enableAdsbExchangeLink'] == "TRUE")
+            $enableAdsbExchangeLink = TRUE;
+
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
@@ -99,6 +115,14 @@
         $common->updateSetting("enableDump1090", $enableDump1090);
         $common->updateSetting("enableDump978", $enableDump978);
         $common->updateSetting("enablePfclient", $enablePfclient);
+        $common->updateSetting("enableFlightAwareLink", $enableFlightAwareLink);
+        $common->updateSetting("flightAwareLogin", $_POST['flightAwareLogin']);
+        $common->updateSetting("flightAwareSite", $_POST['flightAwareSite']);
+        $common->updateSetting("enablePlaneFinderLink", $enablePlaneFinderLink);
+        $common->updateSetting("planeFinderReceiver", $_POST['planeFinderReceiver']);
+        $common->updateSetting("enableFlightRadar24Link", $enableFlightRadar24Link);
+        $common->updateSetting("flightRadar24Id", $_POST['flightRadar24Id']);
+        $common->updateSetting("enableAdsbExchangeLink", $enableAdsbExchangeLink);
         $common->updateSetting("measurementRange", $_POST['measurementRange']);
         $common->updateSetting("measurementTemperature", $_POST['measurementTemperature']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
@@ -128,6 +152,16 @@
     $enableDump1090 = $common->getSetting("enableDump1090");
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
+
+    // Get aggregate site settings from settings.xml.
+    $enableFlightAwareLink = $common->getSetting("enableFlightAwareLink");
+    $flightAwareLogin = $common->getSetting("flightAwareLogin");
+    $flightAwareSite = $common->getSetting("flightAwareSite");
+    $enablePlaneFinderLink = $common->getSetting("enablePlaneFinderLink");
+    $planeFinderReceiver = $common->getSetting("planeFinderReceiver");
+    $enableFlightRadar24Link = $common->getSetting("enableFlightRadar24Link");
+    $flightRadar24Id = $common->getSetting("flightRadar24Id");
+    $enableAdsbExchangeLink = $common->getSetting("enableAdsbExchangeLink");
 
     // Get units of measurement setting from settings.xml.
     $measurementRange = $common->getSetting("measurementRange");
@@ -167,134 +201,203 @@
     }
 ?>
         <form method="post" action="index.php">
-            <div class="panel panel-default">
-                <div class="panel-heading">General Settings</div>
-                <div class="panel-body">
-                    <div class="form-group">
-                        <label for="siteName">Site Name</label>
-                        <input type="text" class="form-control" id="siteName" name="siteName" value="<?php echo $siteName; ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="template">Template</label>
-                        <select class="form-control" id="template" name="template">
-<?php
-    foreach ($templates as $template) {
-			echo '                          <option value="'.$template.'"'.($template == $currentTemplate ? ' selected' : '').'>'.$template.'</option>'."\n";
-    }
-?>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="defaultPage">Default Page</label>
-                        <select class="form-control" id="defaultPage" name="defaultPage">
-                            <option value="blog.php"<?php ($defaultPage == "blog.php" ? print ' selected' : ''); ?>>Blog</option>
-                            <option value="system.php"<?php ($defaultPage == "system.php" ? print ' selected' : ''); ?>>System Information</option>
-                            <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
-                            <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
-                            <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="defaultPage">Date Format</label>
-                        <div class="radio">
-                            <label><input type="radio" name="dateFormatSlelection" value="F jS, Y"<?php ($dateFormat == "F jS, Y" ? print ' checked' : ''); ?>>October 16, 2015</label>
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#general" aria-controls="general" role="tab" data-toggle="tab">General</a></li>
+                <li role="presentation"><a href="#notifications" aria-controls="notifications" role="tab" data-toggle="tab">Notifications</a></li>
+                <li role="presentation"><a href="#navigation" aria-controls="navigation" role="tab" data-toggle="tab">Navigation</a></li>
+                <li role="presentation"><a href="#measurments" aria-controls="measurments" role="tab" data-toggle="tab">Measurements</a></li>
+                <li role="presentation"><a href="#system" aria-controls="system" role="tab" data-toggle="tab">System</a></li>
+            </ul>
+            <div class="padding"></div>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="general">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Site Layout</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="siteName">Site Name</label>
+                                <input type="text" class="form-control" id="siteName" name="siteName" value="<?php echo $siteName; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="template">Template</label>
+                                <select class="form-control" id="template" name="template">
+        <?php
+            foreach ($templates as $template) {
+			        echo '                          <option value="'.$template.'"'.($template == $currentTemplate ? ' selected' : '').'>'.$template.'</option>'."\n";
+            }
+        ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="defaultPage">Default Page</label>
+                                <select class="form-control" id="defaultPage" name="defaultPage">
+                                    <option value="blog.php"<?php ($defaultPage == "blog.php" ? print ' selected' : ''); ?>>Blog</option>
+                                    <option value="system.php"<?php ($defaultPage == "system.php" ? print ' selected' : ''); ?>>System Information</option>
+                                    <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
+                                    <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
+                                    <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="defaultPage">Date Format</label>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y"<?php ($dateFormat == "F jS, Y" ? print ' checked' : ''); ?>>October 16, 2015</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d"<?php ($dateFormat == "Y-m-d" ? print ' checked' : ''); ?>>2015-10-16</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y"<?php ($dateFormat == "m/d/Y" ? print ' checked' : ''); ?>>16/10/2015</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y"<?php ($dateFormat == "d/m/Y" ? print ' checked' : ''); ?>>10/16/2015</label>
+                                </div>
+                                <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                            </div>
                         </div>
-                        <div class="radio">
-                            <label><input type="radio" name="dateFormatSlelection" value="Y-m-d"<?php ($dateFormat == "Y-m-d" ? print ' checked' : ''); ?>>2015-10-16</label>
-                        </div>
-                        <div class="radio">
-                            <label><input type="radio" name="dateFormatSlelection" value="m/d/Y"<?php ($dateFormat == "m/d/Y" ? print ' checked' : ''); ?>>16/10/2015</label>
-                        </div>
-                        <div class="radio">
-                            <label><input type="radio" name="dateFormatSlelection" value="d/m/Y"<?php ($dateFormat == "d/m/Y" ? print ' checked' : ''); ?>>10/16/2015</label>
-                        </div>
-                        <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="enableFlightNotifications" value="TRUE"<?php ($enableFlightNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label for="siteName">Flight Notifications (coma delimited)</label>
-                        <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
                     </div>
                 </div>
-            </div>
-            <div class="panel panel-default">
-                <div class="panel-heading">Navigation Settings</div>
-                <div class="panel-body">
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="enableBlog" value="TRUE"<?php ($enableBlog == 1 ? print ' checked' : ''); ?>> Enable blog link.
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == 1 ? print ' checked' : ''); ?>> Enable system information link.
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == 1 ? print ' checked' : ''); ?>> Enable performance graphs link.
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == 1 ? print ' checked' : ''); ?>> Enable live dump1090 map link.
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == 1 ? print ' checked' : ''); ?>> Enable live dump978 map link.
-                        </label>
-                    </div>
-                    <div class="checkbox">
-                        <label>
-                            <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == 1 ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
-                        </label>
+                <div role="tabpanel" class="tab-pane fade" id="notifications">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Flight Notifications</div>
+                        <div class="panel-body">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableFlightNotifications" value="TRUE"<?php ($enableFlightNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="siteName">Flight Notifications (coma delimited)</label>
+                                <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="panel panel-default">
-                <div class="panel-heading">Unit of Measurement (Range)</div>
-                <div class="panel-body">
-                    <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default<?php ($measurementRange == "imperialNautical" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementRange" id="imperialNautical" value="imperialNautical" autocomplete="off"<?php ($measurementRange == "imperialNautical" ? print ' checked' : ''); ?>> Imperial (Nautical Miles)
-                        </label>
-                        <label class="btn btn-default<?php ($measurementRange == "imperialStatute" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementRange" id="imperialStatute" value="imperialStatute" autocomplete="off"<?php ($measurementRange == "imperialStatute" ? print ' checked' : ''); ?>> Imperial (Statute Miles)
-                        </label>
-                        <label class="btn btn-default<?php ($measurementRange == "metric" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementRange" id="metric" value="metric" autocomplete="off"<?php ($measurementRange == "metric" ? print ' checked' : ''); ?>> Metric
-                        </label>
+                <div role="tabpanel" class="tab-pane fade" id="navigation">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Enable/Disable Navigation Links</div>
+                        <div class="panel-body">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableBlog" value="TRUE"<?php ($enableBlog == 1 ? print ' checked' : ''); ?>> Enable blog link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == 1 ? print ' checked' : ''); ?>> Enable system information link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == 1 ? print ' checked' : ''); ?>> Enable performance graphs link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == 1 ? print ' checked' : ''); ?>> Enable live dump1090 map link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == 1 ? print ' checked' : ''); ?>> Enable live dump978 map link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == 1 ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Aggregate Site Settings</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="flightAwareLogin">FlightAware Login</label>
+                                <input type="text" class="form-control" id="flightAwareLogin" name="flightAwareLogin" value="<?php echo $flightAwareLogin; ?>">
+                                <label for="flightAwareSite">FlightAware Site</label>
+                                <input type="text" class="form-control" id="flightAwareSite" name="flightAwareSite" value="<?php echo $flightAwareSite; ?>">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="enableFlightAwareLink" value="TRUE"<?php ($enableFlightAwareLink == 1 ? print ' checked' : ''); ?>> Enable FlightAware Statistics Link.
+                                    </label>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="form-group">
+                                <label for="planeFinderReceiver">PlaneFinder Receiver Number</label>
+                                <input type="text" class="form-control" id="planeFinderReceiver" name="planeFinderReceiver" value="<?php echo $planeFinderReceiver; ?>">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="enablePlaneFinderLink" value="TRUE"<?php ($enablePlaneFinderLink == 1 ? print ' checked' : ''); ?>> Enable PlaneFinder Statistics Link.
+                                    </label>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="form-group">
+                                <label for="flightRadar24FeedStatsId">FlightRadar24 Feed Stats ID</label>
+                                <input type="text" class="form-control" id="flightRadar24Id" name="flightRadar24Id" value="<?php echo $flightRadar24Id; ?>">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="enableFlightRadar24Link" value="TRUE"<?php ($enableFlightRadar24Link == 1 ? print ' checked' : ''); ?>> Enable FlightRadar24 Statistics Link.
+                                    </label>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="enableAdsbExchangeLink" value="TRUE"<?php ($enableAdsbExchangeLink == 1 ? print ' checked' : ''); ?>> Enable ADSB-Exchange Link.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="panel panel-default">
-                <div class="panel-heading">Unit of Measurement (Temperature)</div>
-                <div class="panel-body">
-                    <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default<?php ($measurementTemperature == "imperial" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementTemperature" id="imperial" value="imperial" autocomplete="off"<?php ($measurementTemperature == "imperial" ? print ' checked' : ''); ?>> Imperial
-                        </label>
-                        <label class="btn btn-default<?php ($measurementTemperature == "metric" ? print ' active' : ''); ?>">
-                            <input type="radio" name="measurementTemperature" id="metric" value="metric" autocomplete="off"<?php ($measurementTemperature == "metric" ? print ' checked' : ''); ?>> Metric
-                        </label>
+                <div role="tabpanel" class="tab-pane fade" id="measurments">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Unit of Measurement (Range)</div>
+                        <div class="panel-body">
+                            <div class="btn-group" data-toggle="buttons">
+                                <label class="btn btn-default<?php ($measurementRange == "imperialNautical" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementRange" id="imperialNautical" value="imperialNautical" autocomplete="off"<?php ($measurementRange == "imperialNautical" ? print ' checked' : ''); ?>> Imperial (Nautical Miles)
+                                </label>
+                                <label class="btn btn-default<?php ($measurementRange == "imperialStatute" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementRange" id="imperialStatute" value="imperialStatute" autocomplete="off"<?php ($measurementRange == "imperialStatute" ? print ' checked' : ''); ?>> Imperial (Statute Miles)
+                                </label>
+                                <label class="btn btn-default<?php ($measurementRange == "metric" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementRange" id="metric" value="metric" autocomplete="off"<?php ($measurementRange == "metric" ? print ' checked' : ''); ?>> Metric
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Unit of Measurement (Temperature)</div>
+                        <div class="panel-body">
+                            <div class="btn-group" data-toggle="buttons">
+                                <label class="btn btn-default<?php ($measurementTemperature == "imperial" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementTemperature" id="imperial" value="imperial" autocomplete="off"<?php ($measurementTemperature == "imperial" ? print ' checked' : ''); ?>> Imperial
+                                </label>
+                                <label class="btn btn-default<?php ($measurementTemperature == "metric" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementTemperature" id="metric" value="metric" autocomplete="off"<?php ($measurementTemperature == "metric" ? print ' checked' : ''); ?>> Metric
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="panel panel-default">
-                <div class="panel-heading">Network Interface</div>
-                <div class="panel-body">
-                    <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default<?php ($networkInterface == "eth0" ? print ' active' : ''); ?>">
-                            <input type="radio" name="networkInterface" id="imperial" value="eth0" autocomplete="off"<?php ($networkInterface == "eth0" ? print ' checked' : ''); ?>> eth0
-                        </label>
-                        <label class="btn btn-default<?php ($networkInterface == "wlan0" ? print ' active' : ''); ?>">
-                            <input type="radio" name="networkInterface" id="metric" value="wlan0" autocomplete="off"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
-                        </label>
+                <div role="tabpanel" class="tab-pane fade" id="system">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Network Interface</div>
+                        <div class="panel-body">
+                            <div class="btn-group" data-toggle="buttons">
+                                <label class="btn btn-default<?php ($networkInterface == "eth0" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="networkInterface" id="imperial" value="eth0" autocomplete="off"<?php ($networkInterface == "eth0" ? print ' checked' : ''); ?>> eth0
+                                </label>
+                                <label class="btn btn-default<?php ($networkInterface == "wlan0" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="networkInterface" id="metric" value="wlan0" autocomplete="off"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

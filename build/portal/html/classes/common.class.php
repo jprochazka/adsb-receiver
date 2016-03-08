@@ -30,9 +30,149 @@
 
     class common {
 
-        ////////////////////////////////////////
-        // Check if page load is a post back.
+        // PDO Database Access
+        /////////////////////////
+    
+        // Open a connection to the database.
+        function pdoOpen() {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
 
+            switch($settings::db_driver) {
+                case 'mysql':
+                    $dsn = "mysql:host=".$settings::db_host.";dbname=".$settings::db_database;
+                    break;
+                case 'sqlsrv':
+                    $dsn = "sqlsrv:server=".$settings::db_host.";database=".$settings::db_database;
+                    break;
+                case 'pgsql':
+                    $dsn = "pgsql:host=".$settings::db_host.";dbname=".$settings::db_database;
+                    break;
+                case 'sqlite':
+                    $dsn = "sqlite:".$settings::db_database;
+                    break;
+            }
+
+            $dbh = new PDO($dsn, $settings::db_username, $settings::db_password);
+            if ($settings::db_driver == 'sqlite')
+                $dbh = new PDO($dsn);
+            if ($settings::pdo_debug == TRUE)
+                $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            return $dbh;
+        }
+
+        // Data Access
+        /////////////////
+        
+        // Returns the value for the specified setting name.
+        function getSetting($name) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == 'xml') {
+                // XML
+                $theseSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                foreach ($theseSettings as $setting) {
+                    if ($setting->name == $name) {
+                        return $setting->value;
+                    }
+                }
+            } else {
+                // PDO
+                $dbh = $this->pdoOpen();
+                $sql = "SELECT * FROM ".$settings::db_prefix."settings WHERE name = :name";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
+                $sth->execute();
+                $row = $sth->fetch();
+                $sth = NULL;
+                $dbh = NULL;
+                return $row['value'];
+            }
+            return "";
+        }
+
+        // Updates the value for the specified setting name.
+        function updateSetting($name, $value) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                // XML
+                $settings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
+                    $setting->value = $value;
+                }
+                file_put_contents("../data/settings.xml", $settings->asXML());
+            } else {
+                // PDO
+                $dbh = $this->pdoOpen();
+                $sql = "UPDATE ".$settings::db_prefix."settings value = :value WHERE name = :name";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
+                $sth->bindParam(':value', $value, PDO::PARAM_STR, 100);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
+        }
+
+        function addSetting($name, $value) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                // XML
+                $xmlSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                $xmlSetting = $xmlSettings->addChild('setting');
+                $xmlSetting->addChild('name', $name);
+                $xmlSetting->addChild('value', $value);
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $xmlSettings->asXML());
+            } else {
+                // PDO
+                $dbh = $this->pdoOpen();
+                $sql = "INSERT INTO ".$settings::db_prefix."settings (name, value) VALUES (:name, :value)";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
+                $sth->bindParam(':value', $value, PDO::PARAM_STR, 100);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
+        }
+
+        // Returns the name associated to the specified administrator login.
+        function getAdminstratorName($login) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                // XML
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                foreach ($administrators as $administrator) {
+                    if ($administrator->login = $login) {
+                        return $administrator->name;
+                    }
+                }
+            } else {
+                // PDO
+                $dbh = $this->pdoOpen();
+                $sql = "SELECT * FROM administrators WHERE login = :login";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
+                $sth->execute();
+                $row = $sth->fetch();
+                $sth = NULL;
+                $dbh = NULL;
+                return $row['value'];
+            }
+            return "";
+        }
+
+        // Functions Not Related To Data Retrieval
+        /////////////////////////////////////////////
+
+        // Check if page load is a post back.
         function postBack() {
             if (empty($_SERVER['HTTP_REFERER'])) {
                 return FALSE;
@@ -46,9 +186,7 @@
             return FALSE;
         }
 
-        /////////////////////////////////////
         // Return a boolean from a string.
-
         function stringToBoolean($value) {
             switch(strtoupper($value)) {
                 case 'TRUE': return TRUE;
@@ -57,37 +195,12 @@
             }
         }
 
-        ///////////////////////////////////////////////////////
-        // Returns the value for the specified setting name.
-
-        function getSetting($name) {
-            $settings = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/settings.xml") or die("Error: Cannot create settings object");
-            foreach ($settings as $setting) {
-                if ($setting->name == $name) {
-                    return $setting->value;
-                }
-            }
-            return "";
-        }
-
-        ///////////////////////////////////////////////////////
-        // Updates the value for the specified setting name.
-
-        function updateSetting($name, $value) {
-            $settings = simplexml_load_file("../data/settings.xml") or die("Error: Cannot create settings object");
-            foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
-                $setting->value = $value;
-            }
-            file_put_contents("../data/settings.xml", $settings->asXML());
-        }
-
-        //////////////////////////////////////////////////////////
         // Returns the supplied file name without an extension.
-
         function removeExtension($fileName) {
             return pathinfo($fileName, PATHINFO_FILENAME);
         }
 
+        // Remove all HTML tags from a string.
         function removeHtmlTags($string) {
             $string = preg_replace ('/<[^>]*>/', ' ', $string); 
             $string = str_replace("\r", '', $string);
@@ -95,6 +208,11 @@
             $string = str_replace("\t", ' ', $string);
             $string = trim(preg_replace('/ {2,}/', ' ', $string));
             return $string; 
+        }
+
+        // Remove HTML from a string and shorten to the specified length.
+        function cleanAndShortenString($string, $length) {
+            return substr($this->removeHtmlTags($string), 0, $length);
         }
 
         // Pagination.
@@ -113,11 +231,6 @@
             $ini += strlen($start);
             $len = strpos($string, $end, $ini) - $ini;
             return substr($string, $ini, $len);
-        }
-
-        // Remove/clean HTML from a string and shorten to the specified length.
-        function cleanAndShortenString($string, $length) {
-            return substr($this->removeHtmlTags($string), 0, $length);
         }
 
         // Returns the base URL from the requested URL.

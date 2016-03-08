@@ -129,6 +129,17 @@ function InstallPlaneFinder() {
     cd $BASEDIR
 }
 
+# Download and install the Flightradar24 client package.
+function InstallFlightradar24() {
+    clear
+    cd $BUILDDIR
+    echo -e "\033[33mExecuting the Flightradar24 client installation script..."
+    echo -e "\033[37m"
+    chmod +x $BASHDIR/feeders/flightradar24.sh
+    $BASHDIR/feeders/flightradar24.sh
+    cd $BASEDIR
+}
+
 # Setup the ADS-B Exchange feed.
 function InstallAdsbExchange() {
     clear
@@ -327,16 +338,25 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
 else
     # Set version depending on the device architecture.
     PFCLIENTVERSION=$PFCLIENTVERSIONARM
-
-    ## The i386 version even though labeled as 3.1.201 is in fact reported as 3.0.2080.
-    ## So for now we will skip the architecture check and use the ARM version variable for both.
-    #if [[ `uname -m` != "armv7l" ]]; then
-    #    PFCLIENTVERSION=$PFCLIENTVERSIONI386
-    #fi
+    if [[ `uname -m` != "armv7l" ]]; then
+        PFCLIENTVERSION=$PFCLIENTVERSIONI386
+    fi
 
     # Check if a newer version can be installed.
     if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PFCLIENTVERSION}") -eq 0 ]; then
         FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client (upgrade)' '' OFF)
+    fi
+fi
+
+# Check if the Flightradar24 client package is installed.
+if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    # The Flightradar24 client package appear to be installed.
+    FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24 Client' '' OFF)
+else
+    if [[ `uname -m` != "armv7l" ]]; then
+        if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FR24CLIENTVERSIONI386}") -eq 0 ]; then
+            FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24  Client (upgrade)' '' OFF)
+        fi
     fi
 fi
 
@@ -351,7 +371,7 @@ declare FEEDERCHOICES
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
     # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
-    whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 3 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
     whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 10 65
@@ -430,6 +450,12 @@ if [ $DUMP1090CHOICE = 0 ] || [ $DUMP978CHOICE = 0 || [ $DOINSTALLWEBPORTAL = 0 
                 "Plane Finder ADS-B Client (upgrade)")
                     CONFIRMATION="${CONFIRMATION}\n  * Plane Finder ADS-B Client (upgrade)"
                     ;;
+                "Flightradar24 Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * Flightradar24 Client"
+                   ;;
+                "Flightradar24 Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * Flightradar24 Client (upgrade)"
+                   ;;
                 "ADS-B Exchange Script")
                     CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange Script"
                     ;;
@@ -488,6 +514,7 @@ fi
 # Inside the while loop the installation scripts are not stopping at reads.
 RUNPIAWARESCRIPT=1
 RUNPLANEFINDERSCRIPT=1
+RUNFLIGHTRADAR24SCRIPT=1
 RUNADSBEXCHANGESCRIPT=1
 
 if [ -s FEEDERCHOICES ]; then
@@ -499,6 +526,9 @@ if [ -s FEEDERCHOICES ]; then
             ;;
             "Plane Finder ADS-B Client"|"Plane Finder ADS-B Client (upgrade)")
                 RUNPLANEFINDERSCRIPT=0
+            ;;
+            "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
+                RUNFLIGHTRADAR24SCRIPT=0
             ;;
             "ADS-B Exchange Script")
                 RUNADSBEXCHANGESCRIPT=0
@@ -513,6 +543,10 @@ fi
 
 if [ $RUNPLANEFINDERSCRIPT = 0 ]; then
     InstallPlaneFinder
+fi
+
+if [ $RUNFLIGHTRADAR24SCRIPT = 0 ]; then
+    InstallFlightradar24
 fi
 
 if [ $RUNADSBEXCHANGESCRIPT = 0 ]; then

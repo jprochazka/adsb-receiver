@@ -53,6 +53,7 @@
         if (strpos($post['contents'], '{more}') !== false) {
             $post['contents'] = substr($post['contents'], 0, strpos($post['contents'], '{more}'));
         }
+        $post['author'] = $common->getAdminstratorName($post['author']);
         $post['date'] = date_format(date_create($post['date']), $common->getSetting('dateFormat'));
     }
 

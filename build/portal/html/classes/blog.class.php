@@ -30,84 +30,156 @@
 
     class blog {
 
-        function getTitlesAndDates($orderBy = "desc") {
-            // Get all posts from the blogposts.xml file.
-            $posts = array();
-            $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
-            foreach ($blogPosts as $blogPost) {
-                $posts[] = array("title"=>$blogPost->title, "date"=>$blogPost->date);
-            }
-            // Sort the results by date either desc or asc.
-            if(strtolower($orderBy) == "desc") {
-                usort($posts, function($a, $b) {
-                    return strtotime($b["date"]) - strtotime($a["date"]);
-                });
-            } else {
-                usort($posts, function($a, $b) {
-                    return strtotime($a["date"]) - strtotime($b["date"]);
-                });
-            }
-            return $posts;
-        }
-
         function getAllPosts($orderBy = "desc") {
-            // Get all posts from the blogposts.xml file.
-            $posts = array();
-            $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
-            foreach ($blogPosts as $blogPost) {
-                $posts[] = array("title"=>$blogPost->title, "date"=>$blogPost->date, "author"=>$blogPost->author, "contents"=>$blogPost->contents);
-            }
-            // Sort the results by date either desc or asc.
-            if(strtolower($orderBy) == "desc") {
-                usort($posts, function($a, $b) {
-                    return strtotime($b["date"]) - strtotime($a["date"]);
-                });
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                // XML
+                $posts = array();
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                foreach ($blogPosts as $blogPost) {
+                    $posts[] = array("title"=>$blogPost->title, "date"=>$blogPost->date, "author"=>$blogPost->author, "contents"=>$blogPost->contents);
+                }
+                // Sort the results by date either desc or asc.
+                if(strtolower($orderBy) == "desc") {
+                    usort($posts, function($a, $b) {
+                        return strtotime($b["date"]) - strtotime($a["date"]);
+                    });
+                } else {
+                    usort($posts, function($a, $b) {
+                        return strtotime($a["date"]) - strtotime($b["date"]);
+                    });
+                }
             } else {
-                usort($posts, function($a, $b) {
-                    return strtotime($a["date"]) - strtotime($b["date"]);
-                });
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+
+                $dbh = $common->pdoOpen();
+                $sql = "SELECT * FROM ".$settings::db_prefix."blogPosts ORDER BY date ".$orderBy;
+                $sth->execute();
+                $posts = $sth->fetchAll();
+                $sth = NULL;
+                $dbh = NULL;
+                return $posts;
             }
             return $posts;
         }
 
         function getPostByTitle($title) {
-            $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
-            foreach ($blogPosts as $blogPost) {
-                if (strtolower($blogPost->title) == strtolower($title)) {
-                    return $blogPost;
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                // XML
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                foreach ($blogPosts as $blogPost) {
+                    if (strtolower($blogPost->title) == strtolower($title)) {
+                        return $blogPost;
+                    }
                 }
+            } else {
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+
+                $dbh = $common->pdoOpen();
+                $sql = "SELECT * FROM ".$settings::db_prefix."blogPosts WHERE title = :title";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
+                $sth->execute();
+                $post = $sth->fetch();
+                $sth = NULL;
+                $dbh = NULL;
+                return $post;
             }
         }
 
         function editContentsByTitle($title, $contents) {
-            $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
-            foreach ($blogPosts->xpath("blogPost[title='".$title."']") as $blogPost) {
-                $blogPost->contents = $contents;
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                foreach ($blogPosts->xpath("blogPost[title='".$title."']") as $blogPost) {
+                    $blogPost->contents = $contents;
+                }
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml", $blogPosts->asXML());
+            } else {
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+
+                $dbh = $common->pdoOpen();
+                $sql = "UPDATE ".$settings::db_prefix."blogPosts contents = :contents WHERE title = :title";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
+                $sth->bindParam(':contents', $title, PDO::PARAM_STR, 20000);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
             }
-            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml", $blogPosts->asXML());
         }
 
         function deletePostByTitle($title) {
-            $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
-            foreach($blogPosts as $blogPost) {
-                if($blogPost->title == $title) {
-                    $dom = dom_import_simplexml($blogPost);
-                    $dom->parentNode->removeChild($dom);
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                foreach($blogPosts as $blogPost) {
+                    if($blogPost->title == $title) {
+                        $dom = dom_import_simplexml($blogPost);
+                        $dom->parentNode->removeChild($dom);
+                    }
                 }
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml", $blogPosts->asXml());
+            } else {
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+
+                $dbh = $common->pdoOpen();
+                $sql = "DELETE FROM ".$settings::db_prefix."blogPosts WHERE title = :title";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
             }
-            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml", $blogPosts->asXml());
         }
 
         function addPost($author, $title, $contents) {
-            $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml") or die("Error: Cannot create blogPosts object");
-            $blogPost = $blogPosts->addChild('blogPost', '');
-            $blogPost->addChild('title', $title);
-            $blogPost->addChild('date', date('Y-m-d H:i:s'));
-            $blogPost->addChild('author', $author);
-            $blogPost->addChild('contents', $contents);
-            $dom = dom_import_simplexml($blogPosts)->ownerDocument;
-            $dom->formatOutput = TRUE;
-            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/blogPosts.xml", $dom->saveXML());
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                $blogPost = $blogPosts->addChild('blogPost', '');
+                $blogPost->addChild('title', $title);
+                $blogPost->addChild('date', date('Y-m-d H:i:s'));
+                $blogPost->addChild('author', $author);
+                $blogPost->addChild('contents', $contents);
+                $dom = dom_import_simplexml($blogPosts)->ownerDocument;
+                $dom->formatOutput = TRUE;
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml", $dom->saveXML());
+            } else {
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+
+                $dbh = $common->pdoOpen();
+                $sql = "INSERT INTO ".$settings::db_prefix."blogPosts (title, date, author, content) VALUES (:title, :date, :author, :content)";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
+                $sth->bindParam(':date', date('Y-m-d H:i:s'), PDO::PARAM_STR, 20);
+                $sth->bindParam(':author', $author, PDO::PARAM_STR, 100);
+                $sth->bindParam(':content', $contents, PDO::PARAM_STR, 20000);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
         }
     }
 ?>

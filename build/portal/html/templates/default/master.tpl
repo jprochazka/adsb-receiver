@@ -26,8 +26,8 @@
     <title>{setting:siteName}: {page:title}</title>
         <meta http-equiv="cache-control" content="no-cache" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="/templates/{setting:template}/assets/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/templates/{setting:template}/assets/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/portal.css">
         {if setting:enableFlightNotifications eq TRUE}<link rel="stylesheet" href="/templates/{setting:template}/assets/css/notifications.css">{/if}
         {area:head}
@@ -58,7 +58,7 @@
                 </div>
             </nav>
             {if setting:enableFlightNotifications eq TRUE}
-            <div id="flight-notifications" class="modal fade in" role="dialog">
+            <div id="flight-notifications" class="modal fade" tabindex="-1" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -68,6 +68,9 @@
                         <div class="modal-body">
                             <p>This receiver is currently receiving data from the following flight number(s).</p>
                             <ul></ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
@@ -83,8 +86,8 @@
                 </p>
             </div>
         </footer>
-        <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="/templates/{setting:template}/assets/js/jquery-2.2.1.min.js"></script>
+        <script src="/templates/{setting:template}/assets/js/bootstrap.min.js"></script>
         {if setting:enableFlightNotifications eq TRUE}
         <script src="/templates/{setting:template}/assets/js/notifications.js"></script>
         {/if}
