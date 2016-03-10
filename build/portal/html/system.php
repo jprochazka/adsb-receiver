@@ -46,7 +46,7 @@
     // create aggregate site statistics page links.
     $pageData['flightAwareLink'] = "http://flightaware.com/adsb/stats/user/".$common->getSetting('flightAwareLogin')."#stats-".$common->getSetting('flightAwareSite');
     $pageData['planeFinderLink'] = "https://planefinder.net/sharing/receiver/".$common->getSetting('planeFinderReceiver');
-    $pageData['flightRader24Link'] = "https://www.flightradar24.com/premium/feed_stats.php?id=".$common->getSetting('flightRadar24Id');
+    $pageData['flightRadar24Link'] = "https://www.flightradar24.com/premium/feed_stats.php?id=".$common->getSetting('flightRadar24Id');
     $pageData['adsbExchangeLink'] = "https://www.adsbexchange.com";
 
     // Get the current system uptime.
