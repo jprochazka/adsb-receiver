@@ -80,7 +80,7 @@ CheckPackage wget
 echo -e "\033[33m"
 echo "Downloading the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
-if [[ `uname -m` == "armv7l" ]]; then
+if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]]; then
     wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONARM}_armhf.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
     wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONI386}_i386.deb -O $BUILDDIR/pfclient_${PFCLIENTVERSIONI386}_i386.deb
@@ -91,7 +91,7 @@ fi
 echo -e "\033[33m"
 echo "Installing the Plane Finder ADS-B Client package..."
 echo -e "\033[37m"
-if [[ `uname -m` == "armv7l" ]]; then
+if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]]; then
     sudo dpkg -i $BUILDDIR/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
     if [[ `lsb_release -si` == "Debian" ]]; then

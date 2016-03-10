@@ -83,9 +83,9 @@ fi
 CheckPackage wget
 
 
-if [[ `uname -m` == "armv7l" ]]; then
+if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]]; then
 
-    ## ARMV71 INSTALLATION
+    ## ARM INSTALLATION
 
     echo -e "\033[31m"
     echo "------------------------------------------------------"
