@@ -72,6 +72,7 @@ CheckPackage tcl8.5-dev
 CheckPackage autoconf
 CheckPackage python3-dev
 CheckPackage python-virtualenv
+CheckPackage virtualenv
 
 # libz-dev appears to have been replaced by zlib1g-dev at least in Ubuntu Vivid Vervet...
 # Will need to check if this is the case with Raspbian and Debian as well.

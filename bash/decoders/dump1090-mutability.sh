@@ -65,6 +65,7 @@ CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage pkg-config
 CheckPackage lighttpd
+CheckPackage fakeroot
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
