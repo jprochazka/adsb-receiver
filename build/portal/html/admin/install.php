@@ -41,9 +41,11 @@
     //if ($currentRelease > $common->getRelease) {
     //    header ("Location: upgrade.php");
     //}
-    
+
     $installed = FALSE;
-    if ($common->postBack()) {
+    //if ($common->postBack()) {
+    if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
+        require_once('../classes/account.class.php');
         $account = new account();
 
         // Validate the submited form.
@@ -53,6 +55,27 @@
 
         // Validation passed so continue installation.
         if ($passwordsMatch) {
+
+            // Create database settings variables to handle possible NULL values.
+            $dbDatabase = "";
+            if (isset($_POST['database']))
+                $driver = $_POST['database'];
+
+            $dbUserName = "";
+            if (isset($_POST['username']))
+                $driver = $_POST['username'];
+
+            $dbPassword = "";
+            if (isset($_POST['password']))
+                $driver = $_POST['password'];
+
+            $dbHost = "";
+            if (isset($_POST['host']))
+                $driver = $_POST['host'];
+
+            $dbPrefix = "";
+            if (isset($_POST['prefix']))
+                $driver = $_POST['prefix'];
 
             // Create or edit the settings.class.php file.
             $content  = <<<EOF
@@ -90,11 +113,11 @@
 
         // Database Settings
         const db_driver = '$_POST[driver]';
-        const db_database = '$_POST[database]';
-        const db_username = '$_POST[username]';
-        const db_password = '$_POST[password]';
-        const db_host = '$_POST[host]';
-        const db_prefix = '$_POST[prefix]';
+        const db_database = '$dbDatabase';
+        const db_username = '$dbUserName';
+        const db_password = '$dbPassword';
+        const db_host = '$dbHost';
+        const db_prefix = '$dbPrefix';
 
         // Security Settings
         const sec_length = 6;
@@ -103,7 +126,7 @@
         const pdo_debug = FALSE;
     }
 
-?
+?>
 EOF;
             file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php", $content);
 
@@ -149,29 +172,29 @@ EOF;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $xml->flush(true));
 
             } else {
-            
+
                 // PDO
 
                 // Create database tables.
-                $administratorsSql = "CREATE TABLE ".$_POST['prefix']."administrators(
+                $administratorsSql = 'CREATE TABLE '.$_POST['prefix'].'administrators (
                                       id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                       name VARCHAR(100) NOT NULL,
                                       email VARCHAR(75) NOT NULL,
                                       login VARCHAR(25) NOT NULL,
-                                      password VARCHAR(255) NOT NULL;";
-                $blogPostsSql = "CREATE TABLE ".$_POST['prefix']."blogPosts(
+                                      password VARCHAR(255) NOT NULL);';
+                $blogPostsSql = 'CREATE TABLE '.$_POST['prefix'].'blogPosts (
                                  id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                  title VARCHAR(100) NOT NULL,
                                  date VARCHAR(20) NOT NULL,
                                  author VARCHAR(100) NOT NULL,
-                                 contents VARCHAR(20000) NOT NULL;";
-                $flightNotificationsSql = "CREATE TABLE ".$_POST['prefix']."flightNotifications(
+                                 contents VARCHAR(20000) NOT NULL);';
+                $flightNotificationsSql = 'CREATE TABLE '.$_POST['prefix'].'flightNotifications (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                           flight VARCHAR(10) NOT NULL;";
-                $settingsSql = "CREATE TABLE ".$_POST['prefix']."settings(
+                                           flight VARCHAR(10) NOT NULL);';
+                $settingsSql = 'CREATE TABLE '.$_POST['prefix'].'settings (
                                 id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                 name VARCHAR(50) NOT NULL,
-                                value VARCHAR(100) NOT NULL;";
+                                value VARCHAR(100) NOT NULL);';
 
                 $dbh = $common->pdoOpen();
 
@@ -217,7 +240,7 @@ EOF;
             $common->addSetting('measurementTemperature', 'imperial');
             $common->addSetting('networkInterface', 'eth0');
             $common->addSetting('enableFlightNotifications', FALSE);
-        
+
             // Add the administrator account.
             require_once('../classes/account.class.php');
             $account->addAdministrator($_POST['name'], $_POST['email'], $_POST['login'], $_POST['password1']);
@@ -246,12 +269,12 @@ EOF;
     require_once('includes/header.inc.php');
 
     // Display the instalation wizard.
-    if (!$installed = FALSE) {
+    if (!$installed) {
 ?>
 <h1>ADS-B Receiver Portal Setup</h1>
 <p>The following wizard will guide you through the setup process.</p>
 <div class="padding"></div>
-<form id="install-form">
+<form id="install-form" method="post" action="install.php">
     <div class="form-group">
 
         <h2>Directory Permissions</h2>

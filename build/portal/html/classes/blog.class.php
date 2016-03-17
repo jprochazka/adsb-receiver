@@ -37,7 +37,7 @@
             if ($settings::db_driver == "xml") {
                 // XML
                 $posts = array();
-                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts as $blogPost) {
                     $posts[] = array("title"=>$blogPost->title, "date"=>$blogPost->date, "author"=>$blogPost->author, "contents"=>$blogPost->contents);
                 }
@@ -73,7 +73,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts as $blogPost) {
                     if (strtolower($blogPost->title) == strtolower($title)) {
                         return $blogPost;
@@ -101,7 +101,7 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
-                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts->xpath("blogPost[title='".$title."']") as $blogPost) {
                     $blogPost->contents = $contents;
                 }
@@ -127,7 +127,7 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
-                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach($blogPosts as $blogPost) {
                     if($blogPost->title == $title) {
                         $dom = dom_import_simplexml($blogPost);
@@ -155,7 +155,7 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
-                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml") or die("Error: Cannot create blogPosts object");
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 $blogPost = $blogPosts->addChild('blogPost', '');
                 $blogPost->addChild('title', $title);
                 $blogPost->addChild('date', date('Y-m-d H:i:s'));

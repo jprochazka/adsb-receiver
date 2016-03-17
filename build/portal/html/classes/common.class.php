@@ -32,7 +32,7 @@
 
         // PDO Database Access
         /////////////////////////
-    
+
         // Open a connection to the database.
         function pdoOpen() {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
@@ -63,7 +63,7 @@
 
         // Data Access
         /////////////////
-        
+
         // Returns the value for the specified setting name.
         function getSetting($name) {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
@@ -71,7 +71,7 @@
 
             if ($settings::db_driver == 'xml') {
                 // XML
-                $theseSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                $theseSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
                 foreach ($theseSettings as $setting) {
                     if ($setting->name == $name) {
                         return $setting->value;
@@ -99,7 +99,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $settings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                $settings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
                 foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
                     $setting->value = $value;
                 }
@@ -123,7 +123,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $xmlSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                $xmlSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
                 $xmlSetting = $xmlSettings->addChild('setting');
                 $xmlSetting->addChild('name', $name);
                 $xmlSetting->addChild('value', $value);
@@ -148,7 +148,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators as $administrator) {
                     if ($administrator->login = $login) {
                         return $administrator->name;

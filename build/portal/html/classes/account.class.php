@@ -58,12 +58,12 @@
 
             $common = new common();
             $settings = new settings();
-            
+
             // Retrieve this administrator's account data from where it is stored.
             $storedPassword = NULL;
             if ($settings::db_driver == "xml") {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators as $administrator) {
                     if ($administrator->login == $login) {
                         $storedPassword = $administrator->password;
@@ -132,7 +132,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 $administrator = $administrators->addChild('administrator', '');
                 $administrator->addChild('name', $name);
                 $administrator->addChild('email', $email);
@@ -166,7 +166,7 @@
 
             if ($settings::db_driver == 'xml') {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators as $administrator) {
                     if ($administrator->login == $_SESSION['login']) {
                         return $administrator->name;
@@ -193,7 +193,7 @@
 
             if ($settings::db_driver == 'xml') {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators as $administrator) {
                     if ($administrator->login == $_SESSION['login']) {
                         return $administrator->email;
@@ -224,7 +224,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
                     $administrator->name = $name;
                 }
@@ -250,7 +250,7 @@
 
             if ($settings::db_driver == 'xml') {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
                     $administrator->email = $email;
                 }
@@ -276,7 +276,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
                     $administrator->password = password_hash($password, PASSWORD_DEFAULT);
                 }
