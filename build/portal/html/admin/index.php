@@ -315,7 +315,7 @@
                             <div class="form-group">
                                 <label for="flightAwareLogin">FlightAware Login</label>
                                 <input type="text" class="form-control" id="flightAwareLogin" name="flightAwareLogin" value="<?php echo $flightAwareLogin; ?>">
-                                <label for="flightAwareSite">FlightAware Site</label>
+                                <label for="flightAwareSite">FlightAware ADS-B Site</label>
                                 <input type="text" class="form-control" id="flightAwareSite" name="flightAwareSite" value="<?php echo $flightAwareSite; ?>">
                                 <div class="checkbox">
                                     <label>
