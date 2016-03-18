@@ -32,11 +32,11 @@
 
         // Database Settings
         const db_driver = 'xml';
-        const db_database = NULL;
-        const db_username = NULL;
-        const db_password = NULL;
-        const db_host = NULL;
-        const db_prefix = NULL;
+        const db_database = '';
+        const db_username = '';
+        const db_password = '';
+        const db_host = '';
+        const db_prefix = '';
 
         // Security Settings
         const sec_length = 6;
@@ -44,4 +44,5 @@
         // PDO Settings
         const pdo_debug = FALSE;
     }
+
 ?>
