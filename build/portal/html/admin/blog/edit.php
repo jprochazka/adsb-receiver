@@ -75,6 +75,7 @@
         </div>
 <?php
     }
+print_r($post);
 ?>
             <h1>Blog Management</h1>
             <hr />

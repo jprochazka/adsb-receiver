@@ -59,23 +59,23 @@
             // Create database settings variables to handle possible NULL values.
             $dbDatabase = "";
             if (isset($_POST['database']))
-                $driver = $_POST['database'];
+                $dbDatabase = $_POST['database'];
 
             $dbUserName = "";
             if (isset($_POST['username']))
-                $driver = $_POST['username'];
+                $dbUserName = $_POST['username'];
 
             $dbPassword = "";
             if (isset($_POST['password']))
-                $driver = $_POST['password'];
+                $dbPassword = $_POST['password'];
 
             $dbHost = "";
             if (isset($_POST['host']))
-                $driver = $_POST['host'];
+                $dbHost = $_POST['host'];
 
             $dbPrefix = "";
             if (isset($_POST['prefix']))
-                $driver = $_POST['prefix'];
+                $dbPrefix = $_POST['prefix'];
 
             // Create or edit the settings.class.php file.
             $content  = <<<EOF
@@ -123,7 +123,7 @@
         const sec_length = 6;
 
         // PDO Settings
-        const pdo_debug = FALSE;
+        const pdo_debug = TRUE;
     }
 
 ?>
@@ -243,7 +243,7 @@ EOF;
 
             // Add the administrator account.
             require_once('../classes/account.class.php');
-            $account->addAdministrator($_POST['name'], $_POST['email'], $_POST['login'], $_POST['password1']);
+            $account->addAdministrator($_POST['name'], $_POST['email'], $_POST['login'], password_hash($_POST['password1'], PASSWORD_DEFAULT));
 
             // Mark the installation as complete.
             $installed = TRUE;

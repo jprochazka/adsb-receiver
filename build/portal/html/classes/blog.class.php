@@ -58,6 +58,7 @@
 
                 $dbh = $common->pdoOpen();
                 $sql = "SELECT * FROM ".$settings::db_prefix."blogPosts ORDER BY date ".$orderBy;
+                $sth = $dbh->prepare($sql);
                 $sth->execute();
                 $posts = $sth->fetchAll();
                 $sth = NULL;
@@ -89,10 +90,11 @@
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
                 $sth->execute();
-                $post = $sth->fetch();
+                $blogPost = $sth->fetch();
                 $sth = NULL;
                 $dbh = NULL;
-                return $post;
+print_r($blogPost);
+                return $blogPost;
             }
         }
 
@@ -170,12 +172,12 @@
                 $common = new common();
 
                 $dbh = $common->pdoOpen();
-                $sql = "INSERT INTO ".$settings::db_prefix."blogPosts (title, date, author, content) VALUES (:title, :date, :author, :content)";
+                $sql = "INSERT INTO ".$settings::db_prefix."blogPosts (title, date, author, contents) VALUES (:title, :date, :author, :contents)";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
                 $sth->bindParam(':date', date('Y-m-d H:i:s'), PDO::PARAM_STR, 20);
                 $sth->bindParam(':author', $author, PDO::PARAM_STR, 100);
-                $sth->bindParam(':content', $contents, PDO::PARAM_STR, 20000);
+                $sth->bindParam(':contents', $contents, PDO::PARAM_STR, 20000);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;

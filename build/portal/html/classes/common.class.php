@@ -107,7 +107,7 @@
             } else {
                 // PDO
                 $dbh = $this->pdoOpen();
-                $sql = "UPDATE ".$settings::db_prefix."settings value = :value WHERE name = :name";
+                $sql = "UPDATE ".$settings::db_prefix."settings SET value = :value WHERE name = :name";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
                 $sth->bindParam(':value', $value, PDO::PARAM_STR, 100);
@@ -157,7 +157,7 @@
             } else {
                 // PDO
                 $dbh = $this->pdoOpen();
-                $sql = "SELECT * FROM administrators WHERE login = :login";
+                $sql = "SELECT * FROM ".$settings::db_prefix."administrators WHERE login = :login";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
