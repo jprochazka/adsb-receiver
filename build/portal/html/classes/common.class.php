@@ -164,9 +164,8 @@
                 $row = $sth->fetch();
                 $sth = NULL;
                 $dbh = NULL;
-                return $row['value'];
+                return $row['name'];
             }
-            return "";
         }
 
         // Functions Not Related To Data Retrieval

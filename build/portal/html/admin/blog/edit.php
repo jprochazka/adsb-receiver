@@ -31,9 +31,9 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../../classes/common.class.php');
-    require_once('../../classes/account.class.php');
-    require_once('../../classes/blog.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."blog.class.php");
 
     $common = new common();
     $account = new account();
@@ -75,16 +75,15 @@
         </div>
 <?php
     }
-print_r($post);
 ?>
             <h1>Blog Management</h1>
             <hr />
             <h2>Edit Blog Post</h2>
-            <h3><?php echo $post->title; ?></h3>
-            <p>Posted <strong><?php echo date_format(date_create($post->date), "F jS, Y"); ?></strong> by <strong><?php echo $post->author; ?></strong>.</p>
-            <form id="edit-blog-post" method="post" action="edit.php?title=<?php echo urlencode($post->title); ?>">
+            <h3><?php echo $post['title']; ?></h3>
+            <p>Posted <strong><?php echo date_format(date_create($post['date']), "F jS, Y"); ?></strong> by <strong><?php echo $common->getAdminstratorName($post['author']); ?></strong>.</p>
+            <form id="edit-blog-post" method="post" action="edit.php?title=<?php echo urlencode($post['title']); ?>">
                 <div class="form-group">
-                    <textarea id="contents" name="contents"><?php echo $post->contents; ?></textarea>
+                    <textarea id="contents" name="contents"><?php echo $post['contents']; ?></textarea>
                 </div>
                 <input type="submit" class="btn btn-default" value="Commit Changes">
             </form>

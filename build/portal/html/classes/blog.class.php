@@ -77,7 +77,7 @@
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts as $blogPost) {
                     if (strtolower($blogPost->title) == strtolower($title)) {
-                        return $blogPost;
+                        return (array)$blogPost;
                     }
                 }
             } else {
@@ -93,7 +93,7 @@
                 $blogPost = $sth->fetch();
                 $sth = NULL;
                 $dbh = NULL;
-print_r($blogPost);
+
                 return $blogPost;
             }
         }

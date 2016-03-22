@@ -31,12 +31,12 @@
     class settings {
 
         // Database Settings
-        const db_driver = 'mysql';
-        const db_database = 'adsb';
-        const db_username = 'adsbuser';
-        const db_password = 'password';
-        const db_host = 'localhost';
-        const db_prefix = 'adsb_';
+        const db_driver = 'xml';
+        const db_database = '';
+        const db_username = '';
+        const db_password = '';
+        const db_host = '';
+        const db_prefix = '';
 
         // Security Settings
         const sec_length = 6;
