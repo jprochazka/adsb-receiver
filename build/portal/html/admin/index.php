@@ -31,9 +31,11 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../classes/common.class.php');
-    require_once('../classes/account.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
 
+    $settings = new settings();
     $common = new common();
     $account = new account();
 
@@ -49,15 +51,52 @@
     if ($common->postBack()) {
         // Flight notifications
         $notificationArray = explode(',', $_POST['flightNotifications']);
-        $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
-        unset($notifications->flight);
-        foreach ($notificationArray as $notification) {
-            $newNotification = $notifications->addChild('flight', $notification);
-            $dom = dom_import_simplexml($notifications)->ownerDocument;
-            $dom->formatOutput = TRUE;
-            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml", $dom->saveXML());
+
+        if ($settings::db_driver == "xml") {
+            // XML
+            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+            unset($notifications->flight);
+            foreach ($notificationArray as $notification) {
+                $newNotification = $notifications->addChild('flight', $notification);
+                $dom = dom_import_simplexml($notifications)->ownerDocument;
+                $dom->formatOutput = TRUE;
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $dom->saveXML());
+            }
+        } else {
+            // PDO
+            $dbh = $common->pdoOpen();
+            $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $savedFlights = $sth->fetchAll();
+            $sth = NULL;
+            $dbh = NULL;
+            foreach ($savedFlights as $flight) {
+                // Remove flight if not in list.
+                if (!in_array($flight, $notificationArray)) {
+                    $dbh = $common->pdoOpen();
+                    $sql = "DELETE FROM ".$settings::db_prefix."flightNotifications WHERE flight = :flight";
+                    $sth = $dbh->prepare($sql);
+                    $sth->bindParam(':flight', $flight['flight'], PDO::PARAM_STR, 10);
+                    $sth->execute();
+                    $sth = NULL;
+                    $dbh = NULL;
+                }
+            }
+            foreach ($notificationArray as $flight) {
+                // Add flight if not saved already.
+                if (!in_array($flight, $savedFlights)) {
+                    $dbh = $common->pdoOpen();
+                    $sql = "INSERT INTO ".$settings::db_prefix."flightNotifications (flight) VALUES (:flight)";
+                    $sth = $dbh->prepare($sql);
+                    $sth->bindParam(':flight', $flight, PDO::PARAM_STR, 10);
+                    $sth->execute();
+                    $sth = NULL;
+                    $dbh = NULL;
+                }
+            }
         }
-        
+
         // Set TRUE or FALSE for checkbox items.
         $enableFlightNotifications = FALSE;
         if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
@@ -133,10 +172,24 @@
 
     // Get all flights to be notified about from the flightNotifications.xml file.
     $flightNotifications = NULL;
-    $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
-    foreach ($savedFlights as $savedFlight) {
-        $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
+    $savedFlights = array();
+    if ($settings::db_driver == "xml") {
+        // XML
+        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+    } else {
+        //PDO
+        $dbh = $common->pdoOpen();
+        $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $savedFlights = $sth->fetchAll();
+        $sth = NULL;
+        $dbh = NULL;
     }
+    foreach ($savedFlights as $savedFlight) {
+        $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
+    }
+
     $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
 
     // Get general settings from settings.xml.

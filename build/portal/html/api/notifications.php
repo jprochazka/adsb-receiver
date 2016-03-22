@@ -28,10 +28,6 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Load the common PHP classes.
-    require_once('../classes/common.class.php');
-    $common = new common();
-
     $possibleActions = array("flights");
 
     if (isset($_GET['type']) && in_array($_GET["type"], $possibleActions)) {
@@ -46,13 +42,30 @@
     }
 
     function getVisibleFlights() {
+        require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+        require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+
+        $settings = new settings();
         $common = new common();
 
         // Get all flights to be notified about from the flightNotifications.xml file.
         $lookingFor = array();
-        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
-        foreach ($savedFlights as $savedFlight) {
-            $lookingFor[] = array($savedFlight);
+
+        if ($settings::db_driver == "xml") {
+            // XML
+            $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+            foreach ($savedFlights as $savedFlight) {
+                $lookingFor[] = array($savedFlight);
+            }
+        } else {
+            // PDO
+            $dbh = $common->pdoOpen();
+            $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $lookingFor = $sth->fetchAll();
+            $sth = NULL;
+            $dbh = NULL;
         }
 
         // Check dump1090-mutability's aircraft JSON output to see if the flight is visible.
