@@ -176,6 +176,9 @@
     if ($settings::db_driver == "xml") {
         // XML
         $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+        foreach ($savedFlights as $savedFlight) {
+            $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
+        }
     } else {
         //PDO
         $dbh = $common->pdoOpen();
@@ -185,9 +188,9 @@
         $savedFlights = $sth->fetchAll();
         $sth = NULL;
         $dbh = NULL;
-    }
-    foreach ($savedFlights as $savedFlight) {
-        $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
+        foreach ($savedFlights as $savedFlight) {
+            $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
+        }
     }
 
     $enableFlightNotifications = $common->getSetting("enableFlightNotifications");

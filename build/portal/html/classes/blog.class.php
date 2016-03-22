@@ -98,13 +98,13 @@
             }
         }
 
-        function editContentsByTitle($title, $contents) {
+        function editContentsByTitle($originalTitle, $contents) {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
-                foreach ($blogPosts->xpath("blogPost[title='".$title."']") as $blogPost) {
+                foreach ($blogPosts->xpath("blogPost[title='".$originalTitle."']") as $blogPost) {
                     $blogPost->contents = $contents;
                 }
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml", $blogPosts->asXML());
@@ -114,10 +114,10 @@
                 $common = new common();
 
                 $dbh = $common->pdoOpen();
-                $sql = "UPDATE ".$settings::db_prefix."blogPosts contents = :contents WHERE title = :title";
+                $sql = "UPDATE ".$settings::db_prefix."blogPosts SET contents = :contents WHERE title = :title";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
-                $sth->bindParam(':contents', $title, PDO::PARAM_STR, 20000);
+                $sth->bindParam(':title', $originalTitle, PDO::PARAM_STR, 100);
+                $sth->bindParam(':contents', $contents, PDO::PARAM_STR, 20000);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;

@@ -81,7 +81,7 @@
             // If everything associated with passwords is validated change the password.
             if (!$tooShort && !$notMatching && $authenticated) {
                 // Change the password stored in administrators.xml related to this users login.
-                $account->changePassword($_SESSION['login'], $_POST['password1']);
+                $account->changePassword($_SESSION['login'], password_hash($_POST['password1'], PASSWORD_DEFAULT));
                 $passwordChanged = TRUE;
 
             }

@@ -50,7 +50,7 @@
 
     if ($common->postBack()) {
         // Update the contents of the blog post.
-        $blog->editContentsByTitle(urldecode($_GET['title']), $_POST['contents']);
+        $blog->editContentsByTitle($_POST['originalTitle'], $_POST['contents']);
 
         // Set updated to TRUE since settings were updated.
         $updated = TRUE;
@@ -85,6 +85,7 @@
                 <div class="form-group">
                     <textarea id="contents" name="contents"><?php echo $post['contents']; ?></textarea>
                 </div>
+                <input type="hidden" name="originalTitle" value="<?php echo $post['title']; ?>">
                 <input type="submit" class="btn btn-default" value="Commit Changes">
             </form>
             <script src='//cdn.tinymce.com/4/tinymce.min.js'></script>

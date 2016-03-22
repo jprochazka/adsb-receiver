@@ -137,7 +137,7 @@
                 $administrator->addChild('name', $name);
                 $administrator->addChild('email', $email);
                 $administrator->addChild('login', $login);
-                $administrator->addChild('password', password_hash($password, PASSWORD_DEFAULT));
+                $administrator->addChild('password', $password);
                 $dom = dom_import_simplexml($administrators)->ownerDocument;
                 $dom->formatOutput = TRUE;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml", $administrators->asXML());
@@ -290,7 +290,7 @@
                 // XML
                 $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
-                    $administrator->password = password_hash($password, PASSWORD_DEFAULT);
+                    $administrator->password = $password;
                 }
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml", $administrators->asXML());
             } else {
@@ -301,7 +301,7 @@
                 $dbh = $common->pdoOpen();
                 $sql = "UPDATE ".$settings::db_prefix."administrators SET password = :password WHERE login = :login";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':password', password_hash($password, PASSWORD_DEFAULT), PDO::PARAM_STR, 255);
+                $sth->bindParam(':password', $password, PDO::PARAM_STR, 255);
                 $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
                 $sth = NULL;
