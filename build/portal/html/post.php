@@ -43,7 +43,7 @@
     $pageData = array();
 
     // Get the requested blog post.
-    $post = $blog->getPostByTitle(strtolower(urldecode($_GET['title'])));
+    $post = $blog->getPostByTitle(urldecode($_GET['title']));
 
     // The title of this page.
     $pageData['title'] = $post['title'];

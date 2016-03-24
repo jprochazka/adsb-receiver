@@ -93,7 +93,6 @@
                 $blogPost = $sth->fetch();
                 $sth = NULL;
                 $dbh = NULL;
-
                 return $blogPost;
             }
         }

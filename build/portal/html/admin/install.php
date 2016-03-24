@@ -174,27 +174,79 @@ EOF;
             } else {
 
                 // PDO
+                $dbPrifix = "";
+                if (isset($_POST['prefix']))
+                    $dbPrifix = $_POST['prefix'];
 
                 // Create database tables.
-                $administratorsSql = 'CREATE TABLE '.$_POST['prefix'].'administrators (
-                                      id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                      name VARCHAR(100) NOT NULL,
-                                      email VARCHAR(75) NOT NULL,
-                                      login VARCHAR(25) NOT NULL,
-                                      password VARCHAR(255) NOT NULL);';
-                $blogPostsSql = 'CREATE TABLE '.$_POST['prefix'].'blogPosts (
-                                 id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                 title VARCHAR(100) NOT NULL,
-                                 date VARCHAR(20) NOT NULL,
-                                 author VARCHAR(100) NOT NULL,
-                                 contents VARCHAR(20000) NOT NULL);';
-                $flightNotificationsSql = 'CREATE TABLE '.$_POST['prefix'].'flightNotifications (
-                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                           flight VARCHAR(10) NOT NULL);';
-                $settingsSql = 'CREATE TABLE '.$_POST['prefix'].'settings (
-                                id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                name VARCHAR(50) NOT NULL,
-                                value VARCHAR(100) NOT NULL);';
+                switch ($_POST['driver']) {
+                    case "mysql":
+                        // MySQL
+                        $administratorsSql = 'CREATE TABLE '.$dbPrifix.'administrators (
+                                              id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                              name VARCHAR(100) NOT NULL,
+                                              email VARCHAR(75) NOT NULL,
+                                              login VARCHAR(25) NOT NULL,
+                                              password VARCHAR(255) NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                         id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                         title VARCHAR(100) NOT NULL,
+                                         date VARCHAR(20) NOT NULL,
+                                         author VARCHAR(100) NOT NULL,
+                                         contents VARCHAR(20000) NOT NULL);';
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                                                   id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                                   flight VARCHAR(10) NOT NULL);';
+                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                                        id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                        name VARCHAR(50) NOT NULL,
+                                        value VARCHAR(100) NOT NULL);';
+                    break;
+                    case "pgsql":
+                        // PostgreSQL
+                        $administratorsSql = 'CREATE TABLE '.$dbPrefix.'administrators (
+                                              id SERIAL PRIMARY KEY,
+                                              name VARCHAR(100) NOT NULL,
+                                              email VARCHAR(75) NOT NULL,
+                                              login VARCHAR(25) NOT NULL,
+                                              password VARCHAR(255) NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                         id SERIAL PRIMARY KEY,
+                                         title VARCHAR(100) NOT NULL,
+                                         date VARCHAR(20) NOT NULL,
+                                         author VARCHAR(100) NOT NULL,
+                                         contents VARCHAR(20000) NOT NULL);';
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                                                   id SERIAL PRIMARY KEY,
+                                                   flight VARCHAR(10) NOT NULL);';
+                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                                        id SERIAL PRIMARY KEY,
+                                        name VARCHAR(50) NOT NULL,
+                                        value VARCHAR(100) NOT NULL);';
+                    break;
+                    case "sqlite":
+                        // SQLite
+                        $administratorsSql = 'CREATE TABLE '.$dbPrefix.'administrators (
+                                              id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                              name TEXT NOT NULL,
+                                              email TEXT NOT NULL,
+                                              login TEXT NOT NULL,
+                                              password TEXT NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                         title TEXT NOT NULL,
+                                         date TEXT NOT NULL,
+                                         author TEXT NOT NULL,
+                                         contents TEXT NOT NULL);';
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                   flight TEXT NOT NULL);';
+                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        name TEXT NOT NULL,
+                                        value TEXT NOT NULL);';
+                    break;
+                }
 
                 $dbh = $common->pdoOpen();
 
