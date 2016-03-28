@@ -44,28 +44,41 @@ import datetime
 import json
 import MySQLdb
 import sqlite3
+import time
 
-# Read dump1090-mutability's aircraft.json.
-with open('/run/dump1090-mutability/aircraft.json') as data_file:
-    data = json.load(data_file)
+#import urllib2
 
+while True:
 
-## Connect to a MySQL database.
-db = MySQLdb.connect(host="localhost", user="adsbuser", passwd="password", db="adsbdb")
+    # Read dump1090-mutability's aircraft.json.
+    with open('/run/dump1090-mutability/aircraft.json') as data_file:
+        data = json.load(data_file)
+    # For testing using a remote JSON feed.
+    #response = urllib2.urlopen('http://xxx.xxxxxx.xxx/dump1090/data/aircraft.json')
+    #data = json.load(response)
 
-## Connect to a SQLite database.
-#db = sqlite3.connect("/var/www/html/data/portal.sqlite")
+    ## Connect to a MySQL database.
+    db = MySQLdb.connect(host="localhost", user="adsbuser", passwd="password", db="adsb")
 
-cursor = db.cursor()
-for flights in data:
-    # Make sure flight is specified.
-    if aircraft["flight"] is not None:
-        # Check to see if the flight already exists in the database.
-        count = cursor.fetchone("SELECT COUNT(*) FROM flights WHERE flight = " + aircraft["flight"]
-        if count eq 0:
-            # If the flight does not exist in the database add it.
-            cursor.execute("INSERT INTO flights (flight) VALUES (" + aircraft["flight"] + ")")
-        # Update the time it was last seen.
-        cursor.execute("UPDATE flights SET lastSeen = " + datetime.datetime.now() + " WHERE flight = " + aircraft["flight"]       
-# Close the database connection.
-db.close()
+    ## Connect to a SQLite database.
+    #db = sqlite3.connect("/var/www/html/data/portal.sqlite")
+
+    cursor = db.cursor()
+    for aircraft in data["aircraft"]:
+        # Make sure flight is specified.
+        if aircraft.has_key('flight'):
+            # Check to see if the flight already exists in the database.
+            cursor.execute("SELECT COUNT(*) FROM adsb_flights WHERE flight = '" + aircraft["flight"].strip() + "'")
+            row_count = cursor.fetchone()
+            if row_count[0] == 0:
+                print("Adding Flight: " + aircraft["flight"].strip())
+                # If the flight does not exist in the database add it.
+                cursor.execute("INSERT INTO adsb_flights (flight) VALUES ('" + aircraft["flight"] + "')")
+            # Update the time it was last seen.
+            cursor.execute("UPDATE adsb_flights SET lastSeen = '" + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "' WHERE flight = '" + aircraft["flight"] + "'")
+    # Close the database connection.
+    db.commit()
+    db.close()
+
+    print("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S") + ".") 
+    time.sleep(5)
