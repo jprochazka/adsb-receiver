@@ -150,15 +150,18 @@ while true; do
 done
 EOF
 
-echo -e "\033[33mCreating logrotate file..."
-echo -e "\033[37m"
-tee /etc/logrotate.d/dump978-maint.sh > /dev/null <<EOF
-/var/log/dump978.log {
-    weekly
-    rotate 4
-    copytruncate
-}
-EOF
+# Logging has been hopefully only temporarily removed until a viable startup option is created.
+# Until then there is no need for log rotation...
+
+#echo -e "\033[33mCreating logrotate file..."
+#echo -e "\033[37m"
+#tee /etc/logrotate.d/dump978-maint.sh > /dev/null <<EOF
+#/var/log/dump978.log {
+#    weekly
+#    rotate 4
+#    copytruncate
+#}
+#EOF
 
 echo -e "\033[33mSetting permissions on dump978-maint.sh..."
 echo -e "\033[37m"
