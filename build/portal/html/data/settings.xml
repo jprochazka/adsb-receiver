@@ -17,6 +17,10 @@
         <value>F jS, Y</value>
     </setting>
     <setting>
+        <name>enableFlights</name>
+        <value/>
+    </setting>
+    <setting>
         <name>enableBlog</name>
         <value>1</value>
     </setting>
@@ -87,5 +91,13 @@
     <setting>
         <name>enableFlightNotifications</name>
         <value/>
+    </setting>
+    <setting>
+        <name>emailFrom</name>
+        <value>noreply@adsbreceiver.net</value>
+    </setting>
+    <setting>
+        <name>emailReplyTo</name>
+        <value>noreply@adsbreceiver.net</value>
     </setting>
 </settings>

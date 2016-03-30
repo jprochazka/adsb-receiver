@@ -121,4 +121,4 @@ while True:
     db.close()
 
     print("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
-    time.sleep(5)
+    time.sleep(10)

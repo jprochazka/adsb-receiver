@@ -11,9 +11,6 @@ body {
 .form-signin .form-signin-heading, .form-signin .checkbox {
   margin-bottom: 10px;
 }
-.reset-password {
-  padding-bottom: 10px;
-}
 .form-signin .checkbox {
   font-weight: normal;
 }
@@ -41,4 +38,7 @@ body {
 }
 #failure-alert {
     margin-top: 15px;
+}
+.spacer {
+  padding-bottom: 10px;
 }

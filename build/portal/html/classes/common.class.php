@@ -194,6 +194,16 @@
             }
         }
 
+        // Generate a random string of the given length.
+        function randomString($length) {
+            $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $string = '';
+            for ($p = 0; $p < $length; $p++) {
+                 $string .= $characters[mt_rand(0, strlen($characters))];
+            }
+            return $string;
+        }
+
         // Returns the supplied file name without an extension.
         function removeExtension($fileName) {
             return pathinfo($fileName, PATHINFO_FILENAME);
@@ -240,6 +250,14 @@
                 $protocol = 'http';
             }
             return $protocol."://".$_SERVER['HTTP_HOST'];
+        }
+
+        // Send an email.
+        function sendEmail($to, $subject, $message) {
+            $headers = 'From: '.this->getSetting("emailFrom")."\r\n".
+                       'Reply-To: '.this->getSetting("emailReplyTo")."\r\n".
+                       'X-Mailer: PHP/'.phpversion();
+            mail($to, $subject, $message, $headers);
         }
     }
 ?>

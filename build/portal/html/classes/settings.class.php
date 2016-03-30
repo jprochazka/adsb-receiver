@@ -31,7 +31,7 @@
     class settings {
 
         // Database Settings
-        const db_driver = 'xml';
+        const db_driver = 'mysql';
         const db_database = 'adsb';
         const db_username = 'adsbuser';
         const db_password = 'password';

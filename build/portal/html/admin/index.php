@@ -102,6 +102,10 @@
         if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
             $enableFlightNotifications = TRUE;
 
+        $enableFLights = FALSE;
+        if (isset($_POST['enableFlights']) && $_POST['enableFlights'] == "TRUE")
+            $enableFlights = TRUE;
+
         $enableBlog = FALSE;
         if (isset($_POST['enableBlog']) && $_POST['enableBlog'] == "TRUE")
             $enableBlog = TRUE;
@@ -148,6 +152,7 @@
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
         $common->updateSetting("enableFlightNotifications", $enableFlightNotifications);
+        $common->updateSetting("enableFlights", $enableBlog);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
@@ -202,6 +207,7 @@
     $dateFormat = $common->getSetting("dateFormat");
 
     // Get navigation settings from settings.xml.
+    $enableBlog = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
@@ -333,6 +339,11 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Enable/Disable Navigation Links</div>
                         <div class="panel-body">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableFlights" value="TRUE"<?php ($enableFlights ? print ' checked' : ''); ?>> Enable flights link.
+                                </label>
+                            </div>
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enableBlog" value="TRUE"<?php ($enableBlog ? print ' checked' : ''); ?>> Enable blog link.
