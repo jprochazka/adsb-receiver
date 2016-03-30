@@ -415,7 +415,7 @@ if [ $UPDATEOS = 0 ]; then
 fi
 
 # If the user decided to install software...
-if [ $DUMP1090CHOICE = 0 ] || [ $DUMP978CHOICE = 0 || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
+if [ $DUMP1090CHOICE = 0 ] || [ $DUMP978CHOICE = 0 ] || [ $DOINSTALLWEBPORTAL = 0 ] || [ -s FEEDERCHOICES ]; then
     CONFIRMATION="${CONFIRMATION}\nThe following software will be installed:\n"
 
     if [ $DUMP1090CHOICE = 0 ]; then
