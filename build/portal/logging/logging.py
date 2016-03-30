@@ -45,16 +45,16 @@ import json
 import MySQLdb
 import sqlite3
 import time
-import urllib2
+#import urllib2
 
 while True:
 
     # Read dump1090-mutability's aircraft.json.
-    #with open('/run/dump1090-mutability/aircraft.json') as data_file:
-    #    data = json.load(data_file)
+    with open('/run/dump1090-mutability/aircraft.json') as data_file:
+        data = json.load(data_file)
     # For testing using a remote JSON feed.
-    response = urllib2.urlopen('http://dump1090.duckdns.org/dump1090/data/aircraft.json')
-    data = json.load(response)
+    #response = urllib2.urlopen('http://dump1090.duckdns.org/dump1090/data/aircraft.json')
+    #data = json.load(response)
 
     ## Connect to a MySQL database.
     db = MySQLdb.connect(host="localhost", user="adsbuser", passwd="password", db="adsb")
