@@ -60,7 +60,7 @@
         } else {
             // PDO
             $dbh = $common->pdoOpen();
-            $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+            $sql = "SELECT flight FROM ".$settings::db_prefix."flightNotifications";
             $sth = $dbh->prepare($sql);
             $sth->execute();
             $lookingFor = $sth->fetchAll();
