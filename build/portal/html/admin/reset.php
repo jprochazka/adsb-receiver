@@ -49,11 +49,14 @@
     }
 
     if ($common->postBack()) {
-        $validToken = FALSE
+        $validToken = FALSE;
 
         // Look up the login using the supplied token.
         $login = $account->getLoginUsingToken($_POST['token']);
+
         if (!is_null($login)) {
+            $validToken = TRUE;
+
             // Check the length of the password.
             $tooShort = TRUE;
             if (isset($_POST['password1']) && strlen($_POST['password1']) >= $settings::sec_length)
@@ -88,11 +91,11 @@
     </head>
     <body>
         <div class="container">
-            <form class="form-signin" method="post" action="login.php">
-                <h2 class="form-signin-heading">Reset Password</h2>
+            <form class="form-reset" method="post" action="reset.php">
+                <h2 class="form-reset-heading">Reset Password</h2>
                 <div>
                     <label for="token" class="sr-only">Token</label>
-                    <input type="text" id="token" name="token" class="form-control" placeholder="Token" required autofocus>
+                    <input type="text" id="token" name="token" class="form-control" placeholder="Token" <?php (isset($_GET['token']) == "eth0" ? print 'value="'.$_GET['token'].'" ' : ''); ?>required autofocus>
                 </div>
                 <div>
                     <label for="password1" class="sr-only">Password</label>
@@ -102,6 +105,7 @@
                     <label for="password2" class="sr-only">Confirm Password</label>
                     <input type="password" id="password2" name="password2" class="form-control" placeholder="Confirm password" required>
                 </div>
+                <div class="spacer"></div>
                 <input type="submit" value="Reset Password" class="btn btn-lg btn-primary btn-block">
 <?php
     // If authentication failed display the following error message.

@@ -31,8 +31,8 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php');
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
 
     $common = new common();
     $account = new account();
@@ -55,20 +55,18 @@
 
         if ($validLogin) {
             // Set a new token for the user.
-            $token = $account->setToken($_POST['login']));
+            $token = $account->setToken($_POST['login']);
 
             // Create and send the email.
             $subject = $common->getSetting("siteName")." Password Reset Request";
-            $message = "A password reset request has been received by your ADS-B portal./r/n";
-                    .= "If you did not request this password reset simply disregard this email./r/n";
-                    .= "If in fact you did request a password reset follow the link below to do so./r/n";
-                    .= "/r/n";
-                    .= "http://".$_SERVER['HTTP_HOST']."/admin/reset.php?token=".$token."/r/n";
-                    .= "Your password reset token is: ".$token;
+            $message  = "A password reset request has been received by your ADS-B portal./r/n";
+            $message .= "If you did not request this password reset simply disregard this email./r/n";
+            $message .= "If in fact you did request a password reset follow the link below to do so./r/n";
+            $message .= "/r/n";
+            $message .= "http://".$_SERVER['HTTP_HOST']."/admin/reset.php?token=".$token."/r/n";
+            $message .= "Your password reset token is: ".$token;
 
-            $common->sendEmail(account->getEmail($_POST['login']), $subject, $message);
-
-            $emailSent = TRUE;
+            $emailSent = $common->sendEmail($account->getEmail($_POST['login']), $subject, $message);
         }
     }
 
@@ -102,7 +100,7 @@
     } else {
 ?>
         <div class="container">
-            <form class="form-signin" method="post" action="login.php">
+            <form class="form-signin" method="post" action="forgot.php">
                 <h2 class="form-signin-heading">Reset Password</h2>
                 <div>
                     <label for="login" class="sr-only">Login</label>
@@ -121,6 +119,18 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                     The supplied login does not exist.
+                </div>
+<?php
+        }
+
+        // If the email failed to be sent display the following error message.
+        if ($common->postBack() && !$emailSent) {
+?>
+                <div class="alert alert-danger" role="alert" id="failure-alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    There was a problem sending the confirmation email.
                 </div>
 <?php
         }

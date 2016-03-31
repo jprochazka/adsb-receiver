@@ -257,7 +257,7 @@
             $headers = 'From: '.$this->getSetting("emailFrom")."\r\n".
                        'Reply-To: '.$this->getSetting("emailReplyTo")."\r\n".
                        'X-Mailer: PHP/'.phpversion();
-            mail($to, $subject, $message, $headers);
+            return mail($to, $subject, $message, $headers);
         }
     }
 ?>

@@ -163,6 +163,9 @@
         /////////////////////////////////
 
         function loginExists($login) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
             if ($settings::db_driver == 'xml') {
                 // XML
                 $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
@@ -344,7 +347,9 @@
 
         // Process password reset request.
         function setToken($login) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+            $settings = new settings();
             $common = new common();
 
             // Create a new token and make sure it is unique.
@@ -398,6 +403,9 @@
 
         // Geta login using a token.
         function getLoginUsingToken($token) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
             if ($settings::db_driver == "xml") {
                 // XML
                 $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
