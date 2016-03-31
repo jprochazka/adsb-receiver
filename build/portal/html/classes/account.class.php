@@ -339,13 +339,42 @@
             }
         }
 
+        // Token related code.
+        /////////////////////////
+
         // Process password reset request.
         function setToken($login) {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
             $common = new common();
 
-            // Create a new token specific to the user.
+            // Create a new token and make sure it is unique.
             $token = $common->randomString(10);
+            $goodToken = FALSE;
+            while (!$goodToken) {
+                $goodToken = TRUE;
+                if ($settings::db_driver == "xml") {
+                    // XML
+                    $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
+                    foreach ($administrators->xpath("administrator[login='".$login."']") as $administrator) {
+                        if ($administrator->token == $token)
+                            $goodToken = FALSE;
+                    }
+                } else {
+                    $dbh = $common->pdoOpen();
+                    $sql = "SELECT COUNT(*) FROM ".$settings::db_prefix."administrators WHERE token = :token";
+                    $sth = $dbh->prepare($sql);
+                    $sth->bindParam(':token', $token, PDO::PARAM_STR, 10);
+                    $sth->execute();
+                    $count = $sth->fetchColumn();
+                    $sth = NULL;
+                    $dbh = NULL;
+
+                    if ($count > 0)
+                        $goodToken = FALSE;
+                }
+            }
+
+            // Assign this token to the administrator.
             if ($settings::db_driver == "xml") {
                 // XML
                 $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
@@ -365,6 +394,34 @@
                 $dbh = NULL;
             }
             return $token;
+        }
+
+        // Geta login using a token.
+        function getLoginUsingToken($token) {
+            if ($settings::db_driver == "xml") {
+                // XML
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
+                foreach ($administrators as $administrator) {
+                    if ($administrator->token == $token) {
+                        return $administrator->login;
+                    }
+                }
+                return NULL;
+            } else {
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+
+                $dbh = $common->pdoOpen();
+                $sql = "SELECT * FROM ".$settings::db_prefix."administrators WHERE token = :token";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':token', $token, PDO::PARAM_STR, 10);
+                $sth->execute();
+                $row = $sth->fetch();
+                $sth = NULL;
+                $dbh = NULL;
+                return $row['login'];
+            }
         }
     }
 ?>

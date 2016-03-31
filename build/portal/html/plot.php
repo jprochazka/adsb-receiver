@@ -65,6 +65,10 @@
     $sth = NULL;
     $dbh = NULL;
 
+    $pageData['startingLatitude'] = array_values($positions)[0]['latitude'];
+    $pageData['startingLongitude'] = array_values($positions)[0]['longitude'];
+    $pageData['finishingLatitude'] = array_values($positions)[count(array_values($positions)) - 1]['latitude'];
+    $pageData['finishingLongitude'] = array_values($positions)[count(array_values($positions)) - 1]['longitude'];
     $pageData['positions'] = $positions;
 
     $template->display($pageData);

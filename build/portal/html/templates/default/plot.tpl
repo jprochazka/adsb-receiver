@@ -41,6 +41,15 @@
           mapTypeId: google.maps.MapTypeId.TERRAIN
         });
 
+        var marker = new google.maps.Marker({
+          position: {lat: {page:startingLatitude}, lng: {page:startingLongitude}},
+          map: map
+        });
+        var marker = new google.maps.Marker({
+          position: {lat: {page:finishingLatitude}, lng: {page:finishingLongitude}},
+          map: map
+        });
+
         var flightPlanCoordinates = [
             {foreach page:positions as position}
             {lat: {position->latitude}, lng: {position->longitude}},

@@ -28,18 +28,11 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////
-    // Default Login Information //
-    ///////////////////////////////
-    // Login: admin              //
-    // Password: adsbreceiver    //
-    ///////////////////////////////
-
     session_start();
 
     // Load the require PHP classes.
-    require_once('../classes/common.class.php');
-    require_once('../classes/account.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php');
 
     $common = new common();
     $account = new account();
@@ -56,17 +49,12 @@
     }
 
     if ($common->postBack()) {
-        // Check that a vailid login was supplied.
-        $validLogin = $account->loginExists($_POST['login']);
-        if ($validLogin) {
-            // Set a new token for the user.
-            $token = $account->setToken($_POST['login']));
+        $validToken = FALSE
 
-            // Create and send the email.
-            $subject = $common->getSetting("siteName")." Password Reset Request";
-            $message = $token;
+        // Look up the login using the supplied token.
+        $login = $account->getLoginUsingToken($_POST['token']);
+        if (!is_null($login)) {
 
-            $common->sendEmail(account->getEmail($_POST['login']), $subject, $message);
         }
     }
 
@@ -88,11 +76,31 @@
             <form class="form-signin" method="post" action="login.php">
                 <h2 class="form-signin-heading">Reset Password</h2>
                 <div>
-                    <label for="login" class="sr-only">Login</label>
-                    <input type="text" id="login" name="login" class="form-control" placeholder="Login" required autofocus>
+                    <label for="token" class="sr-only">Token</label>
+                    <input type="text" id="token" name="token" class="form-control" placeholder="Token" required autofocus>
                 </div>
-                <div class="spacer"></div>
-                <input type="submit" value="Submit" class="btn btn-lg btn-primary btn-block">
+                <div>
+                    <label for="password1" class="sr-only">Password</label>
+                    <input type="password" id="password1" name="password1" class="form-control" placeholder="Password" required>
+                </div>
+                <div>
+                    <label for="password2" class="sr-only">Confirm Password</label>
+                    <input type="password" id="password2" name="password2" class="form-control" placeholder="Confirm password" required>
+                </div>
+                <input type="submit" value="Reset Password" class="btn btn-lg btn-primary btn-block">
+<?php
+    // If authentication failed display the following error message.
+    if ($common->postBack() && !$validToken) {
+?>
+                <div class="alert alert-danger" role="alert" id="failure-alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    The supplied token is wrong or has already been used.
+                </div>
+<?php
+    }
+?>
             </form>
         </div>
         <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -104,4 +112,3 @@
     // END HTML BODY //
     ///////////////////
 ?>
-
