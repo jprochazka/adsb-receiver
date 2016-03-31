@@ -41,6 +41,11 @@
                         </td>
                     {/foreach}
                 </table>
+                <ul class="pagination">
+                    {for pageNumber eq 1 to page:pageLinks}
+                    <li><a href="flights.php?page={pageNumber}">{pageNumber}</a></li>
+                    {/for}
+                </ul>
             </div>
 {/area}
 {area:scripts/}
