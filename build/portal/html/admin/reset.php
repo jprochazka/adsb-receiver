@@ -31,8 +31,8 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php');
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
 
     $common = new common();
     $account = new account();
@@ -54,7 +54,22 @@
         // Look up the login using the supplied token.
         $login = $account->getLoginUsingToken($_POST['token']);
         if (!is_null($login)) {
+            // Check the length of the password.
+            $tooShort = TRUE;
+            if (isset($_POST['password1']) && strlen($_POST['password1']) >= $settings::sec_length)
+                $tooShort = FALSE;
 
+            // Check that the supplied new passwords match.
+            $notMatching = TRUE;
+            if ($_POST['password1'] == $_POST['password2'])
+                $notMatching = FALSE;
+
+            // If everything associated with passwords is validated change the password.
+            if (!$tooShort && !$notMatching && $authenticated) {
+                // Change the password stored in administrators.xml related to this users login.
+                $account->changePassword($login, password_hash($_POST['password1'], PASSWORD_DEFAULT));
+                header ("Location: login.php");
+            }
         }
     }
 

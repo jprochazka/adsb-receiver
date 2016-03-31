@@ -83,7 +83,6 @@
                 // Change the password stored in administrators.xml related to this users login.
                 $account->changePassword($_SESSION['login'], password_hash($_POST['password1'], PASSWORD_DEFAULT));
                 $passwordChanged = TRUE;
-
             }
         }
 

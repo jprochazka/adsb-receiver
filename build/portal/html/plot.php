@@ -57,7 +57,7 @@
     $flightId = $row['id'];
 
     $dbh = $common->pdoOpen();
-    $sql = "SELECT latitude, longitude FROM ".$settings::db_prefix."positions WHERE flight = :flight ORDER BY message";
+    $sql = "SELECT latitude, longitude, track FROM ".$settings::db_prefix."positions WHERE flight = :flight ORDER BY message";
     $sth = $dbh->prepare($sql);
     $sth->bindParam(':flight', $flightId, PDO::PARAM_STR, 50);
     $sth->execute();
@@ -67,8 +67,10 @@
 
     $pageData['startingLatitude'] = array_values($positions)[0]['latitude'];
     $pageData['startingLongitude'] = array_values($positions)[0]['longitude'];
+    $pageData['startingDegrees'] = array_values($positions)[0]['track'];
     $pageData['finishingLatitude'] = array_values($positions)[count(array_values($positions)) - 1]['latitude'];
     $pageData['finishingLongitude'] = array_values($positions)[count(array_values($positions)) - 1]['longitude'];
+    $pageData['finishingDegrees'] = array_values($positions)[count(array_values($positions)) - 1]['track'];
     $pageData['positions'] = $positions;
 
     $template->display($pageData);
