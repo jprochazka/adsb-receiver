@@ -143,24 +143,25 @@ echo -e "\033[37m"
 tee $DUMP978DIR/dump978-maint.sh > /dev/null <<EOF
 #! /bin/sh
 
-# Start with logging.
-rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 > /var/log/dump978.log &
+# Start without logging.
 while true; do
-    tail -n0 -f /var/log/dump978.log | ${DUMP978DIR}/uat2json /var/www/html/dump978/data
-    tail -n0 -f /var/log/dump978.log | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    rtl_sdr -d ${DUMP978DEVICE} -f 978000000 -s 2083334 -g 48 - | ${DUMP978DIR}/dump978 | ${DUMP978DIR}/uat2json /var/www/html/dump978/data | ${DUMP978DIR}/uat2esnt | /bin/nc -q1 127.0.0.1 30001 &
     sleep 15
 done
 EOF
 
-echo -e "\033[33mCreating logrotate file..."
-echo -e "\033[37m"
-tee /etc/logrotate.d/dump978-maint.sh > /dev/null <<EOF
-/var/log/dump978.log {
-    weekly
-    rotate 4
-    copytruncate
-}
-EOF
+# Logging has been hopefully only temporarily removed until a viable startup option is created.
+# Until then there is no need for log rotation...
+
+#echo -e "\033[33mCreating logrotate file..."
+#echo -e "\033[37m"
+#tee /etc/logrotate.d/dump978-maint.sh > /dev/null <<EOF
+#/var/log/dump978.log {
+#    weekly
+#    rotate 4
+#    copytruncate
+#}
+#EOF
 
 echo -e "\033[33mSetting permissions on dump978-maint.sh..."
 echo -e "\033[37m"
