@@ -102,7 +102,7 @@
         if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
             $enableFlightNotifications = TRUE;
 
-        $enableFLights = FALSE;
+        $enableFlights = FALSE;
         if (isset($_POST['enableFlights']) && $_POST['enableFlights'] == "TRUE")
             $enableFlights = TRUE;
 
@@ -207,7 +207,7 @@
     $dateFormat = $common->getSetting("dateFormat");
 
     // Get navigation settings from settings.xml.
-    $enableBlog = $common->getSetting("enableFlights");
+    $enableFlights = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
