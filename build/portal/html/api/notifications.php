@@ -81,10 +81,20 @@
 
         $foundFlights = array();
         foreach ($lookingFor as $flight) {
-            if (in_array($flight[0], $visibleFlights)) {
-                $foundFlights[] = $flight[0];
+            if(strpos($flight[0], "%") !== false) {
+                $searchFor = str_replace("%", "", $flight[0]);
+                foreach ($visibleFlights as $visible) {
+                    if (strpos(strtolower($visible), strtolower($searchFor)) !== false) {
+                        $foundFlights[] = $visible;
+                    }
+                }
+            } else {
+                if (in_array($flight[0], $visibleFlights)) {
+                    $foundFlights[] = $flight[0];
+                }
             }
         }
+
 
         return json_decode(json_encode((array)$foundFlights), true);
     }
