@@ -293,6 +293,8 @@ EOF;
             $common->addSetting('measurementTemperature', 'imperial');
             $common->addSetting('networkInterface', 'eth0');
             $common->addSetting('enableFlightNotifications', FALSE);
+            $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
+            $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
 
             // Add the administrator account.
             require_once('../classes/account.class.php');
