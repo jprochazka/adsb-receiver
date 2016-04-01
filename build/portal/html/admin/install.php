@@ -274,6 +274,7 @@ EOF;
             $common->addSetting('template', 'default');
             $common->addSetting('defaultPage', 'blog.php');
             $common->addSetting('dateFormat', 'F jS, Y');
+            $common->addSetting('enableFlights', FALSE);
             $common->addSetting('enableBlog', TRUE);
             $common->addSetting('enableInfo', TRUE);
             $common->addSetting('enableGraphs', TRUE);
