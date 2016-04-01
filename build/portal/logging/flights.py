@@ -45,22 +45,28 @@ import json
 import MySQLdb
 import sqlite3
 import time
-#import urllib2
+import os
+import urllib2
 
 while True:
 
+    # Read the configuration file.
+    with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
+        config = json.load(config_file)
+
     # Read dump1090-mutability's aircraft.json.
-    with open('/run/dump1090-mutability/aircraft.json') as data_file:
-        data = json.load(data_file)
+    #with open('/run/dump1090-mutability/aircraft.json') as data_file:
+    #    data = json.load(data_file)
     # For testing using a remote JSON feed.
-    #response = urllib2.urlopen('http://dump1090.duckdns.org/dump1090/data/aircraft.json')
-    #data = json.load(response)
+    response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
+    data = json.load(response)
 
-    ## Connect to a MySQL database.
-    db = MySQLdb.connect(host="localhost", user="adsbuser", passwd="password", db="adsb")
-
-    ## Connect to a SQLite database.
-    #db = sqlite3.connect("/var/www/html/data/portal.sqlite")
+    if config["database"]["type"] == "sqlite":
+        ## Connect to a SQLite database.
+        db = sqlite3.connect(config["database"]["db"])
+    else:
+        ## Connect to a MySQL database.
+        db = MySQLdb.connect(host=config["database"]["host"], user=config["database"]["user"], passwd=config["database"]["passwd"], db=config["database"]["db"])
 
     # Assign the time to a variable.
     time_now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
@@ -121,4 +127,4 @@ while True:
     db.close()
 
     print("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
-    time.sleep(10)
+    time.sleep(15)

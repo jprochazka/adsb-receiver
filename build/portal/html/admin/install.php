@@ -434,11 +434,9 @@ EOF;
         <section>
             <label for="driver">Database Type</label>
             <select class="form-control" name="driver" id="driver"> name="driver">
-                <option value="xml">XML</option>
-                <option value="sqlite">SQLite</option>
-                <option value="mysql">MySQL</option>
-                <option value="pgsql">PostgreSQL</option>
-                <option value="sqlsrv">Microsoft SQL Server</option>
+                <option value="xml">XML (Lite installation only)</option>
+                <option value="mysql">MySQL (Advanced installation only)</option>
+                <option value="sqlite">SQLite (Advanced installation only)</option>
             </select>
             <div class="form-group" id="host-div">
                 <label for="host">Database Server *</label>
