@@ -59,11 +59,13 @@
 
             // Create and send the email.
             $subject = $common->getSetting("siteName")." Password Reset Request";
-            $message  = "A password reset request has been received by your ADS-B portal./r/n";
-            $message .= "If you did not request this password reset simply disregard this email./r/n";
-            $message .= "If in fact you did request a password reset follow the link below to do so./r/n";
-            $message .= "/r/n";
-            $message .= "http://".$_SERVER['HTTP_HOST']."/admin/reset.php?token=".$token."/r/n";
+            $message  = "A password reset request has been received by your ADS-B portal.\r\n";
+            $message .= "\r\n";
+            $message .= "If you did not request this password reset simply disregard this email.\r\n";
+            $message .= "If in fact you did request a password reset follow the link below to do so.\r\n";
+            $message .= "\r\n";
+            $message .= "http://".$_SERVER['HTTP_HOST']."/admin/reset.php?token=".$token."\r\n";
+            $message .= "\r\n";
             $message .= "Your password reset token is: ".$token;
 
             $emailSent = $common->sendEmail($account->getEmail($_POST['login']), $subject, $message);

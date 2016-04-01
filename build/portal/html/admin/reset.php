@@ -32,9 +32,11 @@
 
     // Load the require PHP classes.
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
 
     $common = new common();
+    $settings = new settings();
     $account = new account();
 
     // Check if the user is already logged in.
@@ -68,8 +70,9 @@
                 $notMatching = FALSE;
 
             // If everything associated with passwords is validated change the password.
-            if (!$tooShort && !$notMatching && $authenticated) {
+            if (!$tooShort && !$notMatching) {
                 // Change the password stored in administrators.xml related to this users login.
+                $account->setToken($login);
                 $account->changePassword($login, password_hash($_POST['password1'], PASSWORD_DEFAULT));
                 header ("Location: login.php");
             }
