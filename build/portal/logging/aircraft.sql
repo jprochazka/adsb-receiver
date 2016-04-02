@@ -1,5 +1,0 @@
-CREATE TABLE adsb_aircraft( 
-  id INT(11) AUTO_INCREMENT PRIMARY KEY, 
-  icao VARCHAR(24) NOT NULL,
-  firstSeen VARCHAR(100) NOT NULL,
-  lastSeen VARCHAR(100) NOT NULL);
