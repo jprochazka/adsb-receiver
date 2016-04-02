@@ -104,12 +104,67 @@
         var flightPath = new google.maps.Polyline({
           path: flightPlanCoordinates,
           geodesic: true,
-          strokeColor: '#FF0000',
+          strokeColor: 'blue',
           strokeOpacity: 1.0,
           strokeWeight: 2
         });
 
         flightPath.setMap(map);
+
+        // Retain map state.
+        loadMapState();
+
+        google.maps.event.addListener(map, 'tilesloaded', tilesLoaded);
+        function tilesLoaded() {
+            google.maps.event.clearListeners(map, 'tilesloaded');
+            google.maps.event.addListener(map, 'zoom_changed', saveMapState);
+            google.maps.event.addListener(map, 'dragend', saveMapState);
+        }   
+
+        // Map state functions
+        function saveMapState() { 
+            var mapZoom=map.getZoom(); 
+            var mapCentre=map.getCenter(); 
+            var mapLat=mapCentre.lat(); 
+            var mapLng=mapCentre.lng(); 
+            var cookiestring=mapLat+"_"+mapLng+"_"+mapZoom; 
+            setCookie("myMapCookie",cookiestring, 30); 
+        } 
+
+        function loadMapState() { 
+            var gotCookieString=getCookie("myMapCookie"); 
+            var splitStr = gotCookieString.split("_");
+            var savedMapLat = parseFloat(splitStr[0]);
+            var savedMapLng = parseFloat(splitStr[1]);
+            var savedMapZoom = parseFloat(splitStr[2]);
+            if ((!isNaN(savedMapLat)) && (!isNaN(savedMapLng)) && (!isNaN(savedMapZoom))) {
+                map.setCenter(new google.maps.LatLng(savedMapLat,savedMapLng));
+                map.setZoom(savedMapZoom);
+            }
+        }
+
+        function setCookie(c_name,value,exdays) {
+            var exdate=new Date();
+            exdate.setDate(exdate.getDate() + exdays);
+            var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+            document.cookie=c_name + "=" + c_value;
+        }
+
+        function getCookie(c_name) {
+            var i,x,y,ARRcookies=document.cookie.split(";");
+            for (i=0;i<ARRcookies.length;i++)
+            {
+              x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+              y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+              x=x.replace(/^\s+|\s+$/g,"");
+              if (x==c_name)
+                {
+                return unescape(y);
+                }
+              }
+            return "";
+        }
+
       }
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAibOqEH7XseMCHOPQUdBon6LHKSlbGHj4&callback=initMap"></script>

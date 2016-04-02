@@ -341,7 +341,7 @@
                         <div class="panel-body">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableFlights" value="TRUE"<?php ($enableFlights ? print ' checked' : ''); ?>> Enable flights link.
+                                    <input type="checkbox" name="enableFlights" value="TRUE"<?php ($enableFlights ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Enable flights link.
                                 </label>
                             </div>
                             <div class="checkbox">

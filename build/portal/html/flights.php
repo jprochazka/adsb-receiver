@@ -47,8 +47,9 @@
 
     // Add blog post data to the $pageData array.
     $dbh = $common->pdoOpen();
-    $sql = "SELECT * FROM ".$settings::db_prefix."flights ORDER BY lastSeen DESC, flight";
+    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE ? ORDER BY lastSeen DESC, flight";
     $sth = $dbh->prepare($sql);
+    $sth->bindValue(1, "%".$_POST['flight']."%", PDO::PARAM_STR);
     $sth->execute();
     $flights = $sth->fetchAll();
     $sth = NULL;

@@ -183,24 +183,47 @@ EOF;
                     case "mysql":
                         // MySQL
                         $administratorsSql = 'CREATE TABLE '.$dbPrifix.'administrators (
-                                              id INT(11) PRIMARY KEY AUTO_INCREMENT,
-                                              name VARCHAR(100) NOT NULL,
-                                              email VARCHAR(75) NOT NULL,
-                                              login VARCHAR(25) NOT NULL,
-                                              password VARCHAR(255) NOT NULL);';
+                                                id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                                name VARCHAR(100) NOT NULL,
+                                                email VARCHAR(75) NOT NULL,
+                                                login VARCHAR(25) NOT NULL,
+                                                password VARCHAR(255) NOT NULL);';
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                          icao VARCHAR(24) NOT NULL,
+                                          firstSeen VARCHAR(100) NOT NULL,
+                                          lastSeen VARCHAR(100) NOT NULL);';
                         $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
-                                         id INT(11) PRIMARY KEY AUTO_INCREMENT,
-                                         title VARCHAR(100) NOT NULL,
-                                         date VARCHAR(20) NOT NULL,
-                                         author VARCHAR(100) NOT NULL,
-                                         contents VARCHAR(20000) NOT NULL);';
+                                           id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                           title VARCHAR(100) NOT NULL,
+                                           date VARCHAR(20) NOT NULL,
+                                           author VARCHAR(100) NOT NULL,
+                                           contents VARCHAR(20000) NOT NULL);';
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
-                                                   id INT(11) PRIMARY KEY AUTO_INCREMENT,
-                                                   flight VARCHAR(10) NOT NULL);';
+                                                     id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                                     flight VARCHAR(10) NOT NULL);';
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                                         id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                         aircraft INT(11) NOT NULL,
+                                         flight VARCHAR(100) NOT NULL,
+                                         firstSeen VARCHAR(100) NOT NULL,
+                                         lastSeen VARCHAR(100) NOT NULL);';
+                        $positionsSql = 'CREATE TABLE adsb_positions(
+                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                           flight BIGINT NOT NULL,
+                                           time VARCHAR(100) NOT NULL,
+                                           message INT NOT NULL,
+                                           squawk INT(4) NULL,
+                                           latitude DOUBLE NOT NULL,
+                                           longitude DOUBLE NOT NULL,
+                                           track INT(11) NOT NULL,
+                                           altitude INT(5) NOT NULL,
+                                           verticleRate INT(4) NOT NULL,
+                                           speed INT(4) NULL);';
                         $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
-                                        id INT(11) PRIMARY KEY AUTO_INCREMENT,
-                                        name VARCHAR(50) NOT NULL,
-                                        value VARCHAR(100) NOT NULL);';
+                                          id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                          name VARCHAR(50) NOT NULL,
+                                          value VARCHAR(100) NOT NULL);';
                     break;
                     case "pgsql":
                         // PostgreSQL
@@ -210,6 +233,11 @@ EOF;
                                               email VARCHAR(75) NOT NULL,
                                               login VARCHAR(25) NOT NULL,
                                               password VARCHAR(255) NOT NULL);';
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                                          id SERIAL PRIMARY KEY,
+                                          icao VARCHAR(24) NOT NULL,
+                                          firstSeen VARCHAR(100) NOT NULL,
+                                          lastSeen VARCHAR(100) NOT NULL);';
                         $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
                                          id SERIAL PRIMARY KEY,
                                          title VARCHAR(100) NOT NULL,
@@ -219,6 +247,24 @@ EOF;
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
                                                    id SERIAL PRIMARY KEY,
                                                    flight VARCHAR(10) NOT NULL);';
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                                         id SERIAL PRIMARY KEY,
+                                         aircraft INT(11) NOT NULL,
+                                         flight VARCHAR(100) NOT NULL,
+                                         firstSeen VARCHAR(100) NOT NULL,
+                                         lastSeen VARCHAR(100) NOT NULL);';
+                        $positionsSql = 'CREATE TABLE adsb_positions(
+                                           id SERIAL PRIMARY KEY,
+                                           flight BIGINT NOT NULL,
+                                           time VARCHAR(100) NOT NULL,
+                                           message INT NOT NULL,
+                                           squawk INT(4) NULL,
+                                           latitude DOUBLE NOT NULL,
+                                           longitude DOUBLE NOT NULL,
+                                           track INT(11) NOT NULL,
+                                           altitude INT(5) NOT NULL,
+                                           verticleRate INT(4) NOT NULL,
+                                           speed INT(4) NULL);';
                         $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
                                         id SERIAL PRIMARY KEY,
                                         name VARCHAR(50) NOT NULL,
@@ -232,6 +278,11 @@ EOF;
                                               email TEXT NOT NULL,
                                               login TEXT NOT NULL,
                                               password TEXT NOT NULL);';
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                          icao TEXT NOT NULL,
+                                          firstSeen TEXT NOT NULL,
+                                          lastSeen TEXT NOT NULL);';
                         $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          title TEXT NOT NULL,
@@ -241,6 +292,24 @@ EOF;
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                    flight TEXT NOT NULL);';
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                         aircraft INTEGER NOT NULL,
+                                         flight TEXT NOT NULL,
+                                         firstSeen TEXT NOT NULL,
+                                         lastSeen TEXT NOT NULL);';
+                        $positionsSql = 'CREATE TABLE adsb_positions(
+                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                           flight TEXT NOT NULL,
+                                           time TEXT NOT NULL,
+                                           message INTEGER NOT NULL,
+                                           squawk INTEGER NULL,
+                                           latitude INTEGER NOT NULL,
+                                           longitude INTEGER NOT NULL,
+                                           track INTEGER NOT NULL,
+                                           altitude INTEGER NOT NULL,
+                                           verticleRate INTEGER NOT NULL,
+                                           speed INTEGER NULL);';
                         $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         name TEXT NOT NULL,
@@ -254,11 +323,23 @@ EOF;
                 $sth->execute();
                 $sth = NULL;
 
+                $sth = $dbh->prepare($aircraftSql);
+                $sth->execute();
+                $sth = NULL;
+
                 $sth = $dbh->prepare($blogPostsSql);
                 $sth->execute();
                 $sth = NULL;
 
                 $sth = $dbh->prepare($flightNotificationsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($flightsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($positionsSql);
                 $sth->execute();
                 $sth = NULL;
 
@@ -274,7 +355,6 @@ EOF;
             $common->addSetting('template', 'default');
             $common->addSetting('defaultPage', 'blog.php');
             $common->addSetting('dateFormat', 'F jS, Y');
-            $common->addSetting('enableFlights', FALSE);
             $common->addSetting('enableBlog', TRUE);
             $common->addSetting('enableInfo', TRUE);
             $common->addSetting('enableGraphs', TRUE);
@@ -295,6 +375,11 @@ EOF;
             $common->addSetting('enableFlightNotifications', FALSE);
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
+
+            if ($_POST[driver] == "xml")
+                $common->addSetting('enableFlights', FALSE);
+            else
+                $common->addSetting('enableFlights', TRUE);
 
             // Add the administrator account.
             require_once('../classes/account.class.php');
