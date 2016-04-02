@@ -97,11 +97,44 @@
             }
         }
 
+        function titleExists($newTitle) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+
+            if ($settings::db_driver == "xml") {
+                // XML
+                foreach ($blogPosts as $blogPost) {
+                    if ($blogPost->title == $newTitle) {
+                        return TRUE;
+                    }
+                }
+                return FALSE;
+            } else {
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+
+                $dbh = $common->pdoOpen();
+                "SELECT COUNT(*) FROM ".$settings::db_prefix."blogPosts WHERE title = :title";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
+                $sth->execute();
+                $count = $sth->fetchColumn();
+                $sth = NULL;
+                $dbh = NULL;
+
+                if ($count > 0)
+                    return TRUE;
+                return FALSE;
+            }
+        }
+
         function editContentsByTitle($originalTitle, $contents) {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
+                // XML
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts->xpath("blogPost[title='".$originalTitle."']") as $blogPost) {
                     $blogPost->contents = $contents;
