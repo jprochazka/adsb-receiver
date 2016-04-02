@@ -169,6 +169,7 @@
         $common->updateSetting("enableAdsbExchangeLink", $enableAdsbExchangeLink);
         $common->updateSetting("measurementRange", $_POST['measurementRange']);
         $common->updateSetting("measurementTemperature", $_POST['measurementTemperature']);
+        $common->updateSetting("measurementBandwidth", $_POST['measurementBandwidth']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
 
         // Set updated to TRUE since settings were updated.
@@ -228,6 +229,7 @@
     // Get units of measurement setting from settings.xml.
     $measurementRange = $common->getSetting("measurementRange");
     $measurementTemperature = $common->getSetting("measurementTemperature");
+    $measurementBandwidth = $common->getSetting("measurementBandwidth");
 
     // Get the network interface from settings.xml.
     $networkInterface = $common->getSetting("networkInterface");
@@ -447,6 +449,19 @@
                                 </label>
                                 <label class="btn btn-default<?php ($measurementTemperature == "metric" ? print ' active' : ''); ?>">
                                     <input type="radio" name="measurementTemperature" id="metric" value="metric" autocomplete="off"<?php ($measurementTemperature == "metric" ? print ' checked' : ''); ?>> Metric
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Unit of Measurement (Bandwidth)</div>
+                        <div class="panel-body">
+                            <div class="btn-group" data-toggle="buttons">
+                                <label class="btn btn-default<?php ($measurementBandwidth == "kbps" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementBandwidth" id="imperial" value="kbps" autocomplete="off"<?php ($measurementBandwidth == "kbps" ? print ' checked' : ''); ?>> Kbps
+                                </label>
+                                <label class="btn btn-default<?php ($measurementBandwidth == "mbps" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementBandwidth" id="metric" value="mbps" autocomplete="off"<?php ($measurementBandwidth == "mbps" ? print ' checked' : ''); ?>> Mbps
                                 </label>
                             </div>
                         </div>

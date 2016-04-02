@@ -9,8 +9,8 @@ $(document).ready(function () {
             ['Label', 'Value'],
             ['Memory', 100],
             ['CPU', 100],
-            ['In (MB/s)', 100],
-            ['Out (MB/s)', 100]
+            ['In ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 100],
+            ['Out ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 100]
         ]);
 
         var options = {
@@ -47,14 +47,14 @@ $(document).ready(function () {
         setInterval(function () {
             $timestamp = new Date().getTime() / 1000;
             $.getJSON("/api/system.php?action=getNetworkInformation&time=" + $timestamp, function (json) {
-                data.setValue(2, 1, Math.round(json.rxMbps));
+                data.setValue(2, 1, Math.round(((bandwidthScale == 'kbps') ? json.rxKbps : json.rxMbps)));
                 chart.draw(data, options);
             });
         }, 7000);
         setInterval(function () {
             $timestamp = new Date().getTime() / 1000;
             $.getJSON("/api/system.php?action=getNetworkInformation&time=" + $timestamp, function (json) {
-                data.setValue(3, 1, Math.round(json.txMbps));
+                data.setValue(3, 1, Math.round(((bandwidthScale == 'kbps') ? json.txKbps : json.txMbps)));
                 chart.draw(data, options);
             });
         }, 7000);

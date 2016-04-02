@@ -122,6 +122,8 @@
         $secondLookTx = trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes"));
         $networkInformation['rxBytes'] = $secondLookRx - $firstLookRx;
         $networkInformation['txBytes'] = $secondLookTx - $firstLookTx;
+        $networkInformation['rxKbps'] = round(($secondLookRx - $firstLookRx) / 1024, 0);
+        $networkInformation['txKbps'] = round(($secondLookTx - $firstLookTx) / 1024, 0);
         $networkInformation['rxMbps'] = round(($secondLookRx - $firstLookRx) / 1024 / 1024, 0);
         $networkInformation['txMbps'] = round(($secondLookTx - $firstLookTx) / 1024 / 1024, 0);
         return $networkInformation;
