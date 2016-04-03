@@ -172,6 +172,17 @@
         $common->updateSetting("measurementBandwidth", $_POST['measurementBandwidth']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
 
+        // Purge older flight positions.
+        if (isset($_POST['purgepositions'])) {
+            $dbh = $common->pdoOpen();
+            $sql = "DELETE FROM ".$settings::db_prefix."positions WHERE time < :purgeDate";
+            $sth = $dbh->prepare($sql);
+            $sth->bindParam(':purgeDate', $_POST['purgepositionspicker'], PDO::PARAM_STR, 100);
+            $sth->execute();
+            $sth = NULL;
+            $dbh = NULL;
+        }
+
         // Set updated to TRUE since settings were updated.
         $updated = TRUE;
     }
@@ -271,6 +282,7 @@
                 <li role="presentation"><a href="#navigation" aria-controls="navigation" role="tab" data-toggle="tab">Navigation</a></li>
                 <li role="presentation"><a href="#measurments" aria-controls="measurments" role="tab" data-toggle="tab">Measurements</a></li>
                 <li role="presentation"><a href="#system" aria-controls="system" role="tab" data-toggle="tab">System</a></li>
+                <li role="presentation"><a href="#maintenance" aria-controls="maintenance" role="tab" data-toggle="tab">Maintenance</a></li>
             </ul>
             <div class="padding"></div>
             <div class="tab-content">
@@ -287,7 +299,7 @@
                                 <select class="form-control" id="template" name="template">
         <?php
             foreach ($templates as $template) {
-			        echo '                          <option value="'.$template.'"'.($template == $currentTemplate ? ' selected' : '').'>'.$template.'</option>'."\n";
+                                echo '                          <option value="'.$template.'"'.($template == $currentTemplate ? ' selected' : '').'>'.$template.'</option>'."\n";
             }
         ?>
                                 </select>
@@ -479,6 +491,27 @@
                                     <input type="radio" name="networkInterface" id="metric" value="wlan0" autocomplete="off"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
                                 </label>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="maintenance">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Purge Positions</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="purgepositionspicker">Purge flight positions old than...</label><br />
+                                <input type="text" class="form-control" id="purgepositionspicker" name="purgepositionspicker" autocomplete="off" <?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="purgepositions" value="purge"<?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Check to confirm purge of data.
+                                </label>
+                            </div>
+                            <script type="text/javascript">
+                                jQuery('#purgepositionspicker').datetimepicker({
+                                    inline:true
+                                });
+                            </script>
                         </div>
                     </div>
                 </div>
