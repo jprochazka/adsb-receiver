@@ -78,7 +78,7 @@ while True:
         row_count = cursor.fetchone()
         if row_count[0] == 0:
             # Insert the new aircraft.
-            print("Added Aircraft: " + aircraft["hex"])
+            #print("Added Aircraft: " + aircraft["hex"])
             cursor.execute("INSERT INTO adsb_aircraft (icao, firstSeen, lastSeen) VALUES (%s, %s, %s)", (aircraft["hex"], time_now, time_now))
         else:
             # Update the existing aircraft.
@@ -97,7 +97,7 @@ while True:
             if row_count[0] == 0:
                 # If the flight does not exist in the database add it.
                 cursor.execute("INSERT INTO adsb_flights (aircraft, flight, firstSeen, lastSeen) VALUES (%s, %s, %s, %s)", (aircraft_id, aircraft["flight"].strip(), time_now, time_now))
-                print("Added Flight: " + aircraft["flight"].strip())
+                #print("Added Flight: " + aircraft["flight"].strip())
             else:
                 # If it already exists pdate the time it was last seen.
                 cursor.execute("UPDATE adsb_flights SET aircraft = %s, lastSeen = %s WHERE flight = %s", (aircraft_id, time_now, aircraft["flight"].strip()))
@@ -126,5 +126,5 @@ while True:
     db.commit()
     db.close()
 
-    print("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
+    #print("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
     time.sleep(15)
