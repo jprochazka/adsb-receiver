@@ -70,10 +70,7 @@ echo "selecting to enable these features."
 echo ""
 echo "You have been warned."
 echo -e "\033[37m"
-read -p "Use portal with advanced features? [y/N] " ADDADVANCED
-if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
-    read -p "Confirm advanced features installation. [y/N] " ADVANCED
-fi
+read -p "Use portal with advanced features? [y/N] " ADVANCED
 
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
     echo -e "\033[31m"
@@ -96,7 +93,7 @@ CheckPackage rrdtool
 CheckPackage lighttpd
 CheckPackage php5-cgi
 CheckPackage libpython2.7
-if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
     if [[ $DATABASEENGINE == 2 ]]; then
        CheckPackage sqlite3
        CheckPackage php5-sqlite
@@ -110,7 +107,7 @@ fi
 
 ## CREATE THE DATABASE IF ADVANCED FEATURES WAS SELECTED
 
-if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
     if [[ $DATABASEENGINE != 2 ]]; then
         echo -e "\033[31m"
         echo "Create Database and User"
@@ -126,10 +123,10 @@ if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
         if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
         echo -e "\033[33m"
         echo "Creating MySQL database and user...\033[37m"
-            mysql -uroot -p$MYSQLROOTPASSWORD -e "CREATE DATABASE '${DATABASENAME}';"
-            mysql -uroot -p$MYSQLROOTPASSWORD -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY '${DATABASEPASSWORD}';"
-            mysql -uroot -p$MYSQLROOTPASSWORD -e "GRANT ALL PRIVILEGES ON '${DATABASENAME}'.'*' TO '${DATABASEUSER}'@'localhost';"
-            mysql -uroot -p$MYSQLROOTPASSWORD -e "FLUSH PRIVILEGES;"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e 'CREATE USER ${DATABASEUSER}@localhost IDENTIFIED BY "${DATABASEPASSWORD}";'
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO ${DATABASEUSER}@localhost;"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
         fi
 
         echo -e "\033[31m"
@@ -142,17 +139,17 @@ if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
         echo "Database Password: ${DATABASEPASSWORD}"
         echo "Database Name: ${DATABASENAME}"
         echo -e "\033[37m"
+        read -p "Press enter to continue..." CONTINUE
+
     fi
-fi
 
-## SETUP FLIGHT LOGGING SCRIPT
+    ## SETUP FLIGHT LOGGING SCRIPT
 
-if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
     echo -e "\033[33m"
     echo -e "Creating configuration file...\033[37m"
     case $DATABASEENGINE in
-        2)
-            sudo tee -a $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+        "2")
+            sudo tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"sqlite",
                 "host":"",
@@ -160,9 +157,10 @@ if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
                 "passwd":"",
                 "db":"${HTMLDIR}/data/portal.sqlite"}
 }
+EOF
             ;;
         *)
-            sudo tee -a $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+            sudo tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
                 "host":"localhost",
@@ -175,24 +173,27 @@ EOF
     esac
 
     # Create flight logging maintainance script.
-    sudo tee -a $BUILDDIR/portal/logging//flights-maint.sh > /dev/null <<EOF
-#! /bin/sh
+    PYTHONPATH=`which python`
+    sudo tee $BUILDDIR/portal/logging//flights-maint.sh > /dev/null <<EOF
+#!/bin/sh
 while true
   do
     sleep 30
-    python ${$BUILDDIR}/portal/logging/flights.py &
+    ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
   done
 EOF
     # Add flight logging maintainance script to rc.local.
-    echo -e "\033[33m"
-    echo -e "Adding startup line to rc.local...\033[37m"
-    lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${$BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
+    if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
+        echo -e "\033[33m"
+        echo -e "Adding startup line to rc.local...\033[37m"
+        lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
+    fi
 
     # Start flight logging.
     echo -e "\033[33m"
     echo -e "Starting flight logging...\033[37m"
-    python ${$BUILDDIR}/portal/logging/flights-maint.sh &
+    ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights-maint.sh &
 fi
 
 ## SETUP THE PORTAL WEBSITE
