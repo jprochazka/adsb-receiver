@@ -203,8 +203,11 @@ echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
 sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
 
 echo -e "\033[33m"
-echo "Setting permissions on graphs folder...\033[37m"
+echo "Setting permissions on portal folders...\033[37m"
 sudo chmod 777 ${DOCUMENTROOT}/graphs/
+sudo chmod 777 ${DOCUMENTROOT}/data/
+sudo chmod 666 ${DOCUMENTROOT}/data/*
+sudo chmod 666 ${DOCUMENTROOT}/classes/settings.class.php
 
 echo -e "\033[33m"
 echo "Setting up performance graphs..."
