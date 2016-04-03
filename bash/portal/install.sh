@@ -149,7 +149,7 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
     echo -e "Creating configuration file...\033[37m"
     case $DATABASEENGINE in
         "2")
-            sudo tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"sqlite",
                 "host":"",
@@ -160,7 +160,7 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
 EOF
             ;;
         *)
-            sudo tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
                 "host":"localhost",
@@ -172,9 +172,9 @@ EOF
             ;;
     esac
 
-    # Create flight logging maintainance script.
+    # Create and set permissions on the flight logging maintainance script.
     PYTHONPATH=`which python`
-    sudo tee $BUILDDIR/portal/logging//flights-maint.sh > /dev/null <<EOF
+    tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
 #!/bin/sh
 while true
   do
@@ -182,6 +182,8 @@ while true
     ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
   done
 EOF
+    chmod +x $BUILDDIR/portal/logging/flights-maint.sh
+    
     # Add flight logging maintainance script to rc.local.
     if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
         echo -e "\033[33m"
