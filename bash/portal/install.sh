@@ -122,7 +122,7 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
 
         if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
         echo -e "\033[33m"
-        echo "Creating MySQL database and user...\033[37m"
+        echo -e "Creating MySQL database and user...\033[37m"
             mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
             mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
             mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
