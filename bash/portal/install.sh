@@ -124,8 +124,8 @@ if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
         read -p "New Database User Password: " DATABASEPASSWORD
 
         if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
-        echo -e "\033[31m"
-        echo "Creating MySQL database and user..."
+        echo -e "\033[33m"
+        echo "Creating MySQL database and user...\033[37m"
             mysql -uroot -p$MYSQLROOTPASSWORD -e "CREATE DATABASE '${DATABASENAME}';"
             mysql -uroot -p$MYSQLROOTPASSWORD -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY '${DATABASEPASSWORD}';"
             mysql -uroot -p$MYSQLROOTPASSWORD -e "GRANT ALL PRIVILEGES ON '${DATABASENAME}'.'*' TO '${DATABASEUSER}'@'localhost';"
@@ -141,14 +141,15 @@ if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
         echo "Database User: ${DATABASEUSER}"
         echo "Database Password: ${DATABASEPASSWORD}"
         echo "Database Name: ${DATABASENAME}"
+        echo -e "\033[37m"
     fi
 fi
 
 ## SETUP FLIGHT LOGGING SCRIPT
 
 if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
-    echo -e "\033[31m"
-    echo -e "Creating configuration file...\033[33m"
+    echo -e "\033[33m"
+    echo -e "Creating configuration file...\033[37m"
     case $DATABASEENGINE in
         2)
             sudo tee -a $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
@@ -172,6 +173,26 @@ if [[ $ADDADVANCED =~ ^[yY]$ ]]; then
 EOF
             ;;
     esac
+
+    # Create flight logging maintainance script.
+    sudo tee -a $BUILDDIR/portal/logging//flights-maint.sh > /dev/null <<EOF
+#! /bin/sh
+while true
+  do
+    sleep 30
+    python ${$BUILDDIR}/portal/logging/flights.py &
+  done
+EOF
+    # Add flight logging maintainance script to rc.local.
+    echo -e "\033[33m"
+    echo -e "Adding startup line to rc.local...\033[37m"
+    lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${$BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
+
+    # Start flight logging.
+    echo -e "\033[33m"
+    echo -e "Starting flight logging...\033[37m"
+    python ${$BUILDDIR}/portal/logging/flights-maint.sh &
 fi
 
 ## SETUP THE PORTAL WEBSITE
