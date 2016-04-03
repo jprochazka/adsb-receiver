@@ -376,7 +376,7 @@ EOF;
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
 
-            if ($_POST[driver] == "xml")
+            if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);
             else
                 $common->addSetting('enableFlights', TRUE);
