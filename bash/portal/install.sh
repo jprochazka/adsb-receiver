@@ -124,8 +124,8 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         echo -e "\033[33m"
         echo "Creating MySQL database and user...\033[37m"
             mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
-            mysql -uroot -p${MYSQLROOTPASSWORD} -e 'CREATE USER ${DATABASEUSER}@localhost IDENTIFIED BY "${DATABASEPASSWORD}";'
-            mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO ${DATABASEUSER}@localhost;"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
             mysql -uroot -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
         fi
 
