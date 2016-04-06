@@ -11,7 +11,7 @@ The following is a history of the changes made to this project.
 * History of all flights seen including positions is available by choosing the advanced option.
 * Added a way to reset forgotten portal passwords.
 * Flight notifications can now process wildcards.
-* The bandwidth guage can now be set to a smaller scale.
+* The bandwidth gauge can now be set to a smaller scale.
 * When posting blog entries existing titles are now checked for.
 
 ## March 7th, 2016
