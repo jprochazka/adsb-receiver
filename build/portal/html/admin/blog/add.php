@@ -45,12 +45,18 @@
         header ("Location: login.php");
     }
 
+    $titleExists = FALSE;
     if ($common->postBack()) {
-        // Update the contents of the blog post.
-        $blog->addPost($_SESSION['login'], $_POST['title'], $_POST['contents']);
+        // Check if title already exists.
+        $titleExists = $blog->titleExists($_POST['title']);
 
-        // Forward the user to the blog management index page.
-        header ("Location: /admin/blog/");
+        if (!$titleExists) {
+            // Update the contents of the blog post.
+            $blog->addPost($_SESSION['login'], $_POST['title'], $_POST['contents']);
+
+            // Forward the user to the blog management index page.
+            header ("Location: /admin/blog/");
+        }
     }
 
     ////////////////
@@ -64,10 +70,22 @@
             <form id="add-blog-post" method="post" action="add.php">
                 <div class="form-group">
                     <label for="title">Title</label>
-                    <input type="text" id="title" name="title" class="form-control" required>
+                    <input type="text" id="title" name="title" class="form-control"<?php echo (isset($_POST['title']) ? ' value="'.$_POST['title'].'"' : '')?> required>
+<?php
+    if ($titleExists) {
+?>
+                    <div class="alert alert-danger" role="alert" id="failure-alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        Title already exists.
+                    </div>
+<?php
+    }
+?>
                 </div>
                 <div class="form-group">
-                    <textarea id="contents" name="contents"></textarea>
+                    <textarea id="contents" name="contents"><?php echo (isset($_POST['contents']) ? $_POST['contents'] : '')?></textarea>
                 </div>
                 <input type="submit" class="btn btn-default" value="Publish">
             </form>

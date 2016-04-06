@@ -31,9 +31,9 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../../classes/common.class.php');
-    require_once('../../classes/account.class.php');
-    require_once('../../classes/blog.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."blog.class.php");
 
     $common = new common();
     $account = new account();
@@ -66,15 +66,15 @@
             <h1>Blog Management</h1>
             <hr />
             <h2>Delete Blog Post</h2>
-            <h3><?php echo $post->title; ?></h3>
-            <p>Posted <strong><?php echo date_format(date_create($post->date), "F jS, Y"); ?></strong> by <strong><?php echo $post->author; ?></strong>.</p>
+            <h3><?php echo $post['title']; ?></h3>
+            <p>Posted <strong><?php echo date_format(date_create($post['date']), "F jS, Y"); ?></strong> by <strong><?php echo $common->getAdminstratorName($post['author']); ?></strong>.</p>
             <div class="alert alert-danger" role="alert">
                 <p>
                     <strong>Confirm Delete</strong><br />
                     Are you sure you want to delete this blog post?
                 </p>
             </div>
-            <form id="delete-blog-post" method="post" action="delete.php?title=<?php echo urlencode($post->title); ?>">
+            <form id="delete-blog-post" method="post" action="delete.php?title=<?php echo urlencode($post['title']); ?>">
                 <input type="submit" class="btn btn-default" value="Delete Post">
                 <a href="/admin/blog/" class="btn btn-info" role="button">Cancel</a>
             </form>

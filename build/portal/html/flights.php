@@ -28,21 +28,43 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    class settings {
+    // Start session
+    session_start();
 
-        // Database Settings
-        const db_driver = 'mysql';
-        const db_database = 'adsb';
-        const db_username = 'adsbuser';
-        const db_password = 'password';
-        const db_host = 'localhost';
-        const db_prefix = 'adsb_';
+    // Load the common PHP classes.
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."template.class.php");
 
-        // Security Settings
-        const sec_length = 6;
+    $common = new common();
+    $settings = new settings();
+    $template = new template();
 
-        // PDO Settings
-        const pdo_debug = TRUE;
-    }
+    $pageData = array();
 
+    // The title of this page.
+    $pageData['title'] = "Flights Seen";
+
+    // Add blog post data to the $pageData array.
+    $dbh = $common->pdoOpen();
+    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE ? ORDER BY lastSeen DESC, flight";
+    $sth = $dbh->prepare($sql);
+    $sth->bindValue(1, "%".$_POST['flight']."%", PDO::PARAM_STR);
+    $sth->execute();
+    $flights = $sth->fetchAll();
+    $sth = NULL;
+    $dbh = NULL;
+
+    //$pageData['flights'] = $flights;
+
+    // Pagination.
+    $itemsPerPage = 25;
+    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
+    $pageData['flights'] = $common->paginateArray($flights, $page, $itemsPerPage - 1);
+
+    // Calculate the number of pagination links to show.
+    $pageData['pageLinks'] = count($flights) / $itemsPerPage;
+
+    $template->display($pageData);
 ?>
+

@@ -31,9 +31,11 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../classes/common.class.php');
-    require_once('../classes/account.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
 
+    $settings = new settings();
     $common = new common();
     $account = new account();
 
@@ -49,19 +51,60 @@
     if ($common->postBack()) {
         // Flight notifications
         $notificationArray = explode(',', $_POST['flightNotifications']);
-        $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
-        unset($notifications->flight);
-        foreach ($notificationArray as $notification) {
-            $newNotification = $notifications->addChild('flight', $notification);
-            $dom = dom_import_simplexml($notifications)->ownerDocument;
-            $dom->formatOutput = TRUE;
-            file_put_contents($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml", $dom->saveXML());
+
+        if ($settings::db_driver == "xml") {
+            // XML
+            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+            unset($notifications->flight);
+            foreach ($notificationArray as $notification) {
+                $newNotification = $notifications->addChild('flight', $notification);
+                $dom = dom_import_simplexml($notifications)->ownerDocument;
+                $dom->formatOutput = TRUE;
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $dom->saveXML());
+            }
+        } else {
+            // PDO
+            $dbh = $common->pdoOpen();
+            $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $savedFlights = $sth->fetchAll();
+            $sth = NULL;
+            $dbh = NULL;
+            foreach ($savedFlights as $flight) {
+                // Remove flight if not in list.
+                if (!in_array($flight, $notificationArray)) {
+                    $dbh = $common->pdoOpen();
+                    $sql = "DELETE FROM ".$settings::db_prefix."flightNotifications WHERE flight = :flight";
+                    $sth = $dbh->prepare($sql);
+                    $sth->bindParam(':flight', $flight['flight'], PDO::PARAM_STR, 10);
+                    $sth->execute();
+                    $sth = NULL;
+                    $dbh = NULL;
+                }
+            }
+            foreach ($notificationArray as $flight) {
+                // Add flight if not saved already.
+                if (!in_array($flight, $savedFlights)) {
+                    $dbh = $common->pdoOpen();
+                    $sql = "INSERT INTO ".$settings::db_prefix."flightNotifications (flight) VALUES (:flight)";
+                    $sth = $dbh->prepare($sql);
+                    $sth->bindParam(':flight', $flight, PDO::PARAM_STR, 10);
+                    $sth->execute();
+                    $sth = NULL;
+                    $dbh = NULL;
+                }
+            }
         }
-        
+
         // Set TRUE or FALSE for checkbox items.
         $enableFlightNotifications = FALSE;
         if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
             $enableFlightNotifications = TRUE;
+
+        $enableFlights = FALSE;
+        if (isset($_POST['enableFlights']) && $_POST['enableFlights'] == "TRUE")
+            $enableFlights = TRUE;
 
         $enableBlog = FALSE;
         if (isset($_POST['enableBlog']) && $_POST['enableBlog'] == "TRUE")
@@ -109,6 +152,7 @@
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
         $common->updateSetting("enableFlightNotifications", $enableFlightNotifications);
+        $common->updateSetting("enableFlights", $enableBlog);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
@@ -125,7 +169,19 @@
         $common->updateSetting("enableAdsbExchangeLink", $enableAdsbExchangeLink);
         $common->updateSetting("measurementRange", $_POST['measurementRange']);
         $common->updateSetting("measurementTemperature", $_POST['measurementTemperature']);
+        $common->updateSetting("measurementBandwidth", $_POST['measurementBandwidth']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
+
+        // Purge older flight positions.
+        if (isset($_POST['purgepositions'])) {
+            $dbh = $common->pdoOpen();
+            $sql = "DELETE FROM ".$settings::db_prefix."positions WHERE time < :purgeDate";
+            $sth = $dbh->prepare($sql);
+            $sth->bindParam(':purgeDate', $_POST['purgepositionspicker'], PDO::PARAM_STR, 100);
+            $sth->execute();
+            $sth = NULL;
+            $dbh = NULL;
+        }
 
         // Set updated to TRUE since settings were updated.
         $updated = TRUE;
@@ -133,10 +189,27 @@
 
     // Get all flights to be notified about from the flightNotifications.xml file.
     $flightNotifications = NULL;
-    $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT']."/data/flightNotifications.xml") or die("Error: Cannot create flightNotifications object");
-    foreach ($savedFlights as $savedFlight) {
-        $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
+    $savedFlights = array();
+    if ($settings::db_driver == "xml") {
+        // XML
+        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+        foreach ($savedFlights as $savedFlight) {
+            $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
+        }
+    } else {
+        //PDO
+        $dbh = $common->pdoOpen();
+        $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $savedFlights = $sth->fetchAll();
+        $sth = NULL;
+        $dbh = NULL;
+        foreach ($savedFlights as $savedFlight) {
+            $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
+        }
     }
+
     $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
 
     // Get general settings from settings.xml.
@@ -146,6 +219,7 @@
     $dateFormat = $common->getSetting("dateFormat");
 
     // Get navigation settings from settings.xml.
+    $enableFlights = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
@@ -166,6 +240,7 @@
     // Get units of measurement setting from settings.xml.
     $measurementRange = $common->getSetting("measurementRange");
     $measurementTemperature = $common->getSetting("measurementTemperature");
+    $measurementBandwidth = $common->getSetting("measurementBandwidth");
 
     // Get the network interface from settings.xml.
     $networkInterface = $common->getSetting("networkInterface");
@@ -207,6 +282,7 @@
                 <li role="presentation"><a href="#navigation" aria-controls="navigation" role="tab" data-toggle="tab">Navigation</a></li>
                 <li role="presentation"><a href="#measurments" aria-controls="measurments" role="tab" data-toggle="tab">Measurements</a></li>
                 <li role="presentation"><a href="#system" aria-controls="system" role="tab" data-toggle="tab">System</a></li>
+                <li role="presentation"><a href="#maintenance" aria-controls="maintenance" role="tab" data-toggle="tab">Maintenance</a></li>
             </ul>
             <div class="padding"></div>
             <div class="tab-content">
@@ -223,7 +299,7 @@
                                 <select class="form-control" id="template" name="template">
         <?php
             foreach ($templates as $template) {
-			        echo '                          <option value="'.$template.'"'.($template == $currentTemplate ? ' selected' : '').'>'.$template.'</option>'."\n";
+                                echo '                          <option value="'.$template.'"'.($template == $currentTemplate ? ' selected' : '').'>'.$template.'</option>'."\n";
             }
         ?>
                                 </select>
@@ -279,32 +355,37 @@
                         <div class="panel-body">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableBlog" value="TRUE"<?php ($enableBlog == 1 ? print ' checked' : ''); ?>> Enable blog link.
+                                    <input type="checkbox" name="enableFlights" value="TRUE"<?php ($enableFlights ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Enable flights link.
                                 </label>
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == 1 ? print ' checked' : ''); ?>> Enable system information link.
+                                    <input type="checkbox" name="enableBlog" value="TRUE"<?php ($enableBlog ? print ' checked' : ''); ?>> Enable blog link.
                                 </label>
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == 1 ? print ' checked' : ''); ?>> Enable performance graphs link.
+                                    <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo ? print ' checked' : ''); ?>> Enable system information link.
                                 </label>
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 == 1 ? print ' checked' : ''); ?>> Enable live dump1090 map link.
+                                    <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs ? print ' checked' : ''); ?>> Enable performance graphs link.
                                 </label>
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 == 1 ? print ' checked' : ''); ?>> Enable live dump978 map link.
+                                    <input type="checkbox" name="enableDump1090" value="TRUE"<?php ($enableDump1090 ? print ' checked' : ''); ?>> Enable live dump1090 map link.
                                 </label>
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == 1 ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
+                                    <input type="checkbox" name="enableDump978" value="TRUE"<?php ($enableDump978 ? print ' checked' : ''); ?>> Enable live dump978 map link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
                                 </label>
                             </div>
                         </div>
@@ -384,6 +465,19 @@
                             </div>
                         </div>
                     </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Unit of Measurement (Bandwidth)</div>
+                        <div class="panel-body">
+                            <div class="btn-group" data-toggle="buttons">
+                                <label class="btn btn-default<?php ($measurementBandwidth == "kbps" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementBandwidth" id="imperial" value="kbps" autocomplete="off"<?php ($measurementBandwidth == "kbps" ? print ' checked' : ''); ?>> Kbps
+                                </label>
+                                <label class="btn btn-default<?php ($measurementBandwidth == "mbps" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="measurementBandwidth" id="metric" value="mbps" autocomplete="off"<?php ($measurementBandwidth == "mbps" ? print ' checked' : ''); ?>> Mbps
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="system">
                     <div class="panel panel-default">
@@ -397,6 +491,27 @@
                                     <input type="radio" name="networkInterface" id="metric" value="wlan0" autocomplete="off"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
                                 </label>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="maintenance">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Purge Positions</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="purgepositionspicker">Purge flight positions old than...</label><br />
+                                <input type="text" class="form-control" id="purgepositionspicker" name="purgepositionspicker" autocomplete="off" <?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="purgepositions" value="purge"<?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Check to confirm purge of data.
+                                </label>
+                            </div>
+                            <script type="text/javascript">
+                                jQuery('#purgepositionspicker').datetimepicker({
+                                    inline:true
+                                });
+                            </script>
                         </div>
                     </div>
                 </div>

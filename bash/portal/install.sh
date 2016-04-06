@@ -58,6 +58,30 @@ read -p "Press enter to continue..." CONTINUE
 
 clear
 
+echo -e "\033[31m"
+echo "Do you wish to enable advanced features?"
+echo -e "\033[33m"
+echo "ENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY"
+echo -e "\033[33m"
+echo "By enabling advanced features the portal will log all flights seen as well as the path of the flight."
+echo "This data is stored in either a MySQL or SQLite database. This will result in a lot more data being"
+echo "stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before"
+echo "selecting to enable these features."
+echo ""
+echo "You have been warned."
+echo -e "\033[37m"
+read -p "Use portal with advanced features? [y/N] " ADVANCED
+
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    echo -e "\033[31m"
+    echo "Select Database Engine"
+    echo -e "\033[33m"
+    echo "  1) MySQL"
+    echo "  2) SQLLite"
+    echo -e "\033[37m"
+    read -p "Use portal with advanced features? [1] " DATABASEENGINE
+fi
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\033[33m"
@@ -69,6 +93,110 @@ CheckPackage rrdtool
 CheckPackage lighttpd
 CheckPackage php5-cgi
 CheckPackage libpython2.7
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    if [[ $DATABASEENGINE == 2 ]]; then
+       CheckPackage sqlite3
+       CheckPackage php5-sqlite
+    else
+       CheckPackage mysql-server
+       CheckPackage mysql-client
+       CheckPackage php5-mysql
+       CheckPackage python-mysqldb
+    fi
+fi
+
+## CREATE THE DATABASE IF ADVANCED FEATURES WAS SELECTED
+
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    if [[ $DATABASEENGINE != 2 ]]; then
+        echo -e "\033[31m"
+        echo "Create Database and User"
+        echo -e "\033[33m"
+        echo "A database will now be created for you."
+        echo "Please supply the information pertaining to the new password when asked."
+        echo -e "\033[37m"
+        read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+        read -p "New Database Name: " DATABASENAME
+        read -p "New Database User Name: " DATABASEUSER
+        read -p "New Database User Password: " DATABASEPASSWORD
+
+        if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
+        echo -e "\033[33m"
+        echo -e "Creating MySQL database and user...\033[37m"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
+        fi
+
+        echo -e "\033[31m"
+        echo "BE SURE TO WRITE THIS INFORMATION DOWN."
+        echo -e "\033[33m"
+        echo "Ii will be needed in order to complete the installation of the portal."
+        echo ""
+        echo "Database Server: localhost"
+        echo "Database User: ${DATABASEUSER}"
+        echo "Database Password: ${DATABASEPASSWORD}"
+        echo "Database Name: ${DATABASENAME}"
+        echo -e "\033[37m"
+        read -p "Press enter to continue..." CONTINUE
+
+    fi
+
+    ## SETUP FLIGHT LOGGING SCRIPT
+
+    echo -e "\033[33m"
+    echo -e "Creating configuration file...\033[37m"
+    case $DATABASEENGINE in
+        "2")
+            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+{
+    "database":{"type":"sqlite",
+                "host":"",
+                "user":"",
+                "passwd":"",
+                "db":"${HTMLDIR}/data/portal.sqlite"}
+}
+EOF
+            ;;
+        *)
+            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+{
+    "database":{"type":"mysql",
+                "host":"localhost",
+                "user":"${DATABASEUSER}",
+                "passwd":"${DATABASEPASSWORD}",
+                "db":"${DATABASENAME}"}
+}
+EOF
+            ;;
+    esac
+
+    # Create and set permissions on the flight logging maintainance script.
+    PYTHONPATH=`which python`
+    tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
+#!/bin/sh
+while true
+  do
+    sleep 30
+    ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
+  done
+EOF
+    chmod +x $BUILDDIR/portal/logging/flights-maint.sh
+    
+    # Add flight logging maintainance script to rc.local.
+    if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
+        echo -e "\033[33m"
+        echo -e "Adding startup line to rc.local...\033[37m"
+        lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
+    fi
+
+    # Start flight logging.
+    echo -e "\033[33m"
+    echo -e "Starting flight logging...\033[37m"
+    ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights-maint.sh &
+fi
 
 ## SETUP THE PORTAL WEBSITE
 
@@ -77,8 +205,11 @@ echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
 sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
 
 echo -e "\033[33m"
-echo "Setting permissions on graphs folder...\033[37m"
+echo "Setting permissions on portal folders...\033[37m"
 sudo chmod 777 ${DOCUMENTROOT}/graphs/
+sudo chmod 777 ${DOCUMENTROOT}/data/
+sudo chmod 666 ${DOCUMENTROOT}/data/*
+sudo chmod 666 ${DOCUMENTROOT}/classes/settings.class.php
 
 echo -e "\033[33m"
 echo "Setting up performance graphs..."

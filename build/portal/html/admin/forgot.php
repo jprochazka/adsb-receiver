@@ -28,13 +28,6 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////
-    // Default Login Information //
-    ///////////////////////////////
-    // Login: admin              //
-    // Password: adsbreceiver    //
-    ///////////////////////////////
-
     session_start();
 
     // Load the require PHP classes.
@@ -56,10 +49,27 @@
     }
 
     if ($common->postBack()) {
-        // Try to authenticate the user using the credentials supplied.
-        $remember = (isset($_POST['remember']) ? TRUE : FALSE);
-        $origin = (isset($_REQUEST['origin']) ? $_REQUEST['origin'] : NULL);
-        $authenticated = $account->authenticate($_POST['login'], $_POST['password'], $remember, TRUE, $origin);
+        // Check that a vailid login was supplied.
+        $validLogin = $account->loginExists($_POST['login']);
+        $emailSent = FALSE;
+
+        if ($validLogin) {
+            // Set a new token for the user.
+            $token = $account->setToken($_POST['login']);
+
+            // Create and send the email.
+            $subject = $common->getSetting("siteName")." Password Reset Request";
+            $message  = "A password reset request has been received by your ADS-B portal.\r\n";
+            $message .= "\r\n";
+            $message .= "If you did not request this password reset simply disregard this email.\r\n";
+            $message .= "If in fact you did request a password reset follow the link below to do so.\r\n";
+            $message .= "\r\n";
+            $message .= "http://".$_SERVER['HTTP_HOST']."/admin/reset.php?token=".$token."\r\n";
+            $message .= "\r\n";
+            $message .= "Your password reset token is: ".$token;
+
+            $emailSent = $common->sendEmail($account->getEmail($_POST['login']), $subject, $message);
+        }
     }
 
     /////////////////////
@@ -73,44 +83,61 @@
         <title></title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="assets/css/login.css" />
+        <link rel="stylesheet" href="assets/css/forgot.css" />
     </head>
     <body>
+<?php
+    // If authentication failed display the following error message.
+    if ($common->postBack() && $emailSent) {
+?>
         <div class="container">
-            <form class="form-signin" method="post" action="login.php">
-                <h2 class="form-signin-heading">ADS-B Receiver</h2>
+            <h2>Confirmation Email Sent</h2>
+            <p>
+                An email containing a link and confirmation token has been sent via email to the address associated with the supplied login.
+                Please follow the instructions in this email in order to complete the password reset process.
+            </p>
+        </div>
+
+<?php
+    } else {
+?>
+        <div class="container">
+            <form class="form-signin" method="post" action="forgot.php">
+                <h2 class="form-signin-heading">Reset Password</h2>
                 <div>
                     <label for="login" class="sr-only">Login</label>
                     <input type="text" id="login" name="login" class="form-control" placeholder="Login" required autofocus>
                 </div>
-                <div>
-                    <label for="password" class="sr-only">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Password" required autofocus>
-                </div>
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" name="remember" value="TRUE"> Remember me
-                    </label>
-                </div>
-                <div class="forgot-password">
-                    <a href="forgot.php">Forgot password</a>
-                </div>
-                <input type="submit" value="Login" class="btn btn-lg btn-primary btn-block">
+                <div class="spacer"></div>
+                <input type="submit" value="Submit" class="btn btn-lg btn-primary btn-block">
+            </form>
+        </div>
 <?php
-    // If authentication failed display the following error message.
-    if ($common->postBack() && !$authenticated) {
+        // If authentication failed display the following error message.
+        if ($common->postBack() && !$validLogin) {
 ?>
                 <div class="alert alert-danger" role="alert" id="failure-alert">
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    Authentication failed.
+                    The supplied login does not exist.
                 </div>
 <?php
+        }
+
+        // If the email failed to be sent display the following error message.
+        if ($common->postBack() && !$emailSent) {
+?>
+                <div class="alert alert-danger" role="alert" id="failure-alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    There was a problem sending the confirmation email.
+                </div>
+<?php
+        }
     }
 ?>
-            </form>
-        </div>
         <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script>
         <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     </body>
@@ -120,3 +147,4 @@
     // END HTML BODY //
     ///////////////////
 ?>
+

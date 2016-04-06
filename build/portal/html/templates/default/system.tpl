@@ -54,5 +54,8 @@
 {/area}
 {area:scripts}
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script>
+            var bandwidthScale = '{setting:measurementBandwidth}';
+        </script>
         <script src="/templates/{setting:template}/assets/js/system.js"></script>
 {/area}

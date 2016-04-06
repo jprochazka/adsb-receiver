@@ -47,6 +47,7 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
+                            {if setting:enableflights eq TRUE}<li id="flights-link"><a href="/flights.php">Flights</a></li>{/if}
                             {if setting:enableBlog eq TRUE}<li id="blog-link"><a href="/blog.php">Blog</a></li>{/if}
                             {if setting:enableInfo eq TRUE}<li id="system-link"><a href="/system.php">System Information</a></li>{/if}
                             {if setting:enableGraphs eq TRUE}<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>{/if}
@@ -54,6 +55,12 @@
                             {if setting:enableDump978 eq TRUE}<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>{/if}
                             {if setting:enablePfclient eq TRUE}<li id="planefinder-link"><a href="{page:baseurl}:30053" target="_blank">Plane Finder Client</a></li>{/if}
                         </ul>
+                        <form name="search" method="post" action="flights.php" class="navbar-form navbar-right">
+                            <div class="form-group">
+                                <input type="text" name="flight" placeholder="Flight" class="form-control">
+                            </div>
+                            <button type="submit" class="btn btn-success">Search</button>
+                        </form>
                     </div>
                 </div>
             </nav>

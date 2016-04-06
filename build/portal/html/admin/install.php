@@ -41,9 +41,11 @@
     //if ($currentRelease > $common->getRelease) {
     //    header ("Location: upgrade.php");
     //}
-    
+
     $installed = FALSE;
-    if ($common->postBack()) {
+    //if ($common->postBack()) {
+    if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
+        require_once('../classes/account.class.php');
         $account = new account();
 
         // Validate the submited form.
@@ -53,6 +55,27 @@
 
         // Validation passed so continue installation.
         if ($passwordsMatch) {
+
+            // Create database settings variables to handle possible NULL values.
+            $dbDatabase = "";
+            if (isset($_POST['database']))
+                $dbDatabase = $_POST['database'];
+
+            $dbUserName = "";
+            if (isset($_POST['username']))
+                $dbUserName = $_POST['username'];
+
+            $dbPassword = "";
+            if (isset($_POST['password']))
+                $dbPassword = $_POST['password'];
+
+            $dbHost = "";
+            if (isset($_POST['host']))
+                $dbHost = $_POST['host'];
+
+            $dbPrefix = "";
+            if (isset($_POST['prefix']))
+                $dbPrefix = $_POST['prefix'];
 
             // Create or edit the settings.class.php file.
             $content  = <<<EOF
@@ -90,20 +113,20 @@
 
         // Database Settings
         const db_driver = '$_POST[driver]';
-        const db_database = '$_POST[database]';
-        const db_username = '$_POST[username]';
-        const db_password = '$_POST[password]';
-        const db_host = '$_POST[host]';
-        const db_prefix = '$_POST[prefix]';
+        const db_database = '$dbDatabase';
+        const db_username = '$dbUserName';
+        const db_password = '$dbPassword';
+        const db_host = '$dbHost';
+        const db_prefix = '$dbPrefix';
 
         // Security Settings
         const sec_length = 6;
 
         // PDO Settings
-        const pdo_debug = FALSE;
+        const pdo_debug = TRUE;
     }
 
-?
+?>
 EOF;
             file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php", $content);
 
@@ -149,33 +172,158 @@ EOF;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $xml->flush(true));
 
             } else {
-            
+
                 // PDO
+                $dbPrifix = "";
+                if (isset($_POST['prefix']))
+                    $dbPrifix = $_POST['prefix'];
 
                 // Create database tables.
-                $administratorsSql = "CREATE TABLE ".$_POST['prefix']."administrators(
-                                      id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                      name VARCHAR(100) NOT NULL,
-                                      email VARCHAR(75) NOT NULL,
-                                      login VARCHAR(25) NOT NULL,
-                                      password VARCHAR(255) NOT NULL;";
-                $blogPostsSql = "CREATE TABLE ".$_POST['prefix']."blogPosts(
-                                 id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                 title VARCHAR(100) NOT NULL,
-                                 date VARCHAR(20) NOT NULL,
-                                 author VARCHAR(100) NOT NULL,
-                                 contents VARCHAR(20000) NOT NULL;";
-                $flightNotificationsSql = "CREATE TABLE ".$_POST['prefix']."flightNotifications(
+                switch ($_POST['driver']) {
+                    case "mysql":
+                        // MySQL
+                        $administratorsSql = 'CREATE TABLE '.$dbPrifix.'administrators (
+                                                id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                                name VARCHAR(100) NOT NULL,
+                                                email VARCHAR(75) NOT NULL,
+                                                login VARCHAR(25) NOT NULL,
+                                                password VARCHAR(255) NOT NULL);';
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                          icao VARCHAR(24) NOT NULL,
+                                          firstSeen VARCHAR(100) NOT NULL,
+                                          lastSeen VARCHAR(100) NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                           id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                           title VARCHAR(100) NOT NULL,
+                                           date VARCHAR(20) NOT NULL,
+                                           author VARCHAR(100) NOT NULL,
+                                           contents VARCHAR(20000) NOT NULL);';
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                                                     id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                                     flight VARCHAR(10) NOT NULL);';
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                                         id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                         aircraft INT(11) NOT NULL,
+                                         flight VARCHAR(100) NOT NULL,
+                                         firstSeen VARCHAR(100) NOT NULL,
+                                         lastSeen VARCHAR(100) NOT NULL);';
+                        $positionsSql = 'CREATE TABLE adsb_positions(
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                           flight VARCHAR(10) NOT NULL;";
-                $settingsSql = "CREATE TABLE ".$_POST['prefix']."settings(
-                                id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                name VARCHAR(50) NOT NULL,
-                                value VARCHAR(100) NOT NULL;";
+                                           flight BIGINT NOT NULL,
+                                           time VARCHAR(100) NOT NULL,
+                                           message INT NOT NULL,
+                                           squawk INT(4) NULL,
+                                           latitude DOUBLE NOT NULL,
+                                           longitude DOUBLE NOT NULL,
+                                           track INT(11) NOT NULL,
+                                           altitude INT(5) NOT NULL,
+                                           verticleRate INT(4) NOT NULL,
+                                           speed INT(4) NULL);';
+                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                                          id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                          name VARCHAR(50) NOT NULL,
+                                          value VARCHAR(100) NOT NULL);';
+                    break;
+                    case "pgsql":
+                        // PostgreSQL
+                        $administratorsSql = 'CREATE TABLE '.$dbPrefix.'administrators (
+                                              id SERIAL PRIMARY KEY,
+                                              name VARCHAR(100) NOT NULL,
+                                              email VARCHAR(75) NOT NULL,
+                                              login VARCHAR(25) NOT NULL,
+                                              password VARCHAR(255) NOT NULL);';
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                                          id SERIAL PRIMARY KEY,
+                                          icao VARCHAR(24) NOT NULL,
+                                          firstSeen VARCHAR(100) NOT NULL,
+                                          lastSeen VARCHAR(100) NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                         id SERIAL PRIMARY KEY,
+                                         title VARCHAR(100) NOT NULL,
+                                         date VARCHAR(20) NOT NULL,
+                                         author VARCHAR(100) NOT NULL,
+                                         contents VARCHAR(20000) NOT NULL);';
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                                                   id SERIAL PRIMARY KEY,
+                                                   flight VARCHAR(10) NOT NULL);';
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                                         id SERIAL PRIMARY KEY,
+                                         aircraft INT(11) NOT NULL,
+                                         flight VARCHAR(100) NOT NULL,
+                                         firstSeen VARCHAR(100) NOT NULL,
+                                         lastSeen VARCHAR(100) NOT NULL);';
+                        $positionsSql = 'CREATE TABLE adsb_positions(
+                                           id SERIAL PRIMARY KEY,
+                                           flight BIGINT NOT NULL,
+                                           time VARCHAR(100) NOT NULL,
+                                           message INT NOT NULL,
+                                           squawk INT(4) NULL,
+                                           latitude DOUBLE NOT NULL,
+                                           longitude DOUBLE NOT NULL,
+                                           track INT(11) NOT NULL,
+                                           altitude INT(5) NOT NULL,
+                                           verticleRate INT(4) NOT NULL,
+                                           speed INT(4) NULL);';
+                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                                        id SERIAL PRIMARY KEY,
+                                        name VARCHAR(50) NOT NULL,
+                                        value VARCHAR(100) NOT NULL);';
+                    break;
+                    case "sqlite":
+                        // SQLite
+                        $administratorsSql = 'CREATE TABLE '.$dbPrefix.'administrators (
+                                              id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                              name TEXT NOT NULL,
+                                              email TEXT NOT NULL,
+                                              login TEXT NOT NULL,
+                                              password TEXT NOT NULL);';
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                          icao TEXT NOT NULL,
+                                          firstSeen TEXT NOT NULL,
+                                          lastSeen TEXT NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                         title TEXT NOT NULL,
+                                         date TEXT NOT NULL,
+                                         author TEXT NOT NULL,
+                                         contents TEXT NOT NULL);';
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                   flight TEXT NOT NULL);';
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                         aircraft INTEGER NOT NULL,
+                                         flight TEXT NOT NULL,
+                                         firstSeen TEXT NOT NULL,
+                                         lastSeen TEXT NOT NULL);';
+                        $positionsSql = 'CREATE TABLE adsb_positions(
+                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                           flight TEXT NOT NULL,
+                                           time TEXT NOT NULL,
+                                           message INTEGER NOT NULL,
+                                           squawk INTEGER NULL,
+                                           latitude INTEGER NOT NULL,
+                                           longitude INTEGER NOT NULL,
+                                           track INTEGER NOT NULL,
+                                           altitude INTEGER NOT NULL,
+                                           verticleRate INTEGER NOT NULL,
+                                           speed INTEGER NULL);';
+                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        name TEXT NOT NULL,
+                                        value TEXT NOT NULL);';
+                    break;
+                }
 
                 $dbh = $common->pdoOpen();
 
                 $sth = $dbh->prepare($administratorsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($aircraftSql);
                 $sth->execute();
                 $sth = NULL;
 
@@ -184,6 +332,14 @@ EOF;
                 $sth = NULL;
 
                 $sth = $dbh->prepare($flightNotificationsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($flightsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($positionsSql);
                 $sth->execute();
                 $sth = NULL;
 
@@ -217,10 +373,17 @@ EOF;
             $common->addSetting('measurementTemperature', 'imperial');
             $common->addSetting('networkInterface', 'eth0');
             $common->addSetting('enableFlightNotifications', FALSE);
-        
+            $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
+            $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
+
+            if ($_POST['driver'] == "xml")
+                $common->addSetting('enableFlights', FALSE);
+            else
+                $common->addSetting('enableFlights', TRUE);
+
             // Add the administrator account.
             require_once('../classes/account.class.php');
-            $account->addAdministrator($_POST['name'], $_POST['email'], $_POST['login'], $_POST['password1']);
+            $account->addAdministrator($_POST['name'], $_POST['email'], $_POST['login'], password_hash($_POST['password1'], PASSWORD_DEFAULT));
 
             // Mark the installation as complete.
             $installed = TRUE;
@@ -246,12 +409,12 @@ EOF;
     require_once('includes/header.inc.php');
 
     // Display the instalation wizard.
-    if (!$installed = FALSE) {
+    if (!$installed) {
 ?>
 <h1>ADS-B Receiver Portal Setup</h1>
 <p>The following wizard will guide you through the setup process.</p>
 <div class="padding"></div>
-<form id="install-form">
+<form id="install-form" method="post" action="install.php">
     <div class="form-group">
 
         <h2>Directory Permissions</h2>
@@ -271,11 +434,9 @@ EOF;
         <section>
             <label for="driver">Database Type</label>
             <select class="form-control" name="driver" id="driver"> name="driver">
-                <option value="xml">XML</option>
-                <option value="sqlite">SQLite</option>
-                <option value="mysql">MySQL</option>
-                <option value="pgsql">PostgreSQL</option>
-                <option value="sqlsrv">Microsoft SQL Server</option>
+                <option value="xml">XML (Lite installation only)</option>
+                <option value="mysql">MySQL (Advanced installation only)</option>
+                <option value="sqlite">SQLite (Advanced installation only)</option>
             </select>
             <div class="form-group" id="host-div">
                 <label for="host">Database Server *</label>
@@ -295,7 +456,7 @@ EOF;
             </div>
             <div class="form-group" id="prefix-div">
                 <label for="prefix">Database Prefix</label>
-                <input type="text" class="form-control" name="prefix" id="prefix" id="prefix">
+                <input type="text" class="form-control" name="prefix" id="prefix" id="prefix" value="adsb_" disabled>
             </div>
             <p id="required-p">(*) Required</p>
         </section>

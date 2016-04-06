@@ -7,6 +7,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/admin/assets/css/bootstrap.min.css">
         <link rel="stylesheet" href="/admin/assets/css/bootstrap-theme.min.css">
+<?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
+        <link rel="stylesheet" href="/admin/assets/css/jquery.datetimepicker.css">
+<?php } ?>
 <?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
         <link rel="stylesheet" href="/admin/assets/css/jquery.steps.css">
 <?php } ?>
@@ -24,6 +27,7 @@
 <?php } ?>
 <?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
         <script src="/admin/assets/js/index.js"></script>
+        <script src="/admin/assets/js/jquery.datetimepicker.full.min.js"></script>
 <?php } ?>
 <?php if (basename($_SERVER['PHP_SELF']) == "account.php") { ?>
         <script src="/admin/assets/js/jquery.validate.min.js"></script>

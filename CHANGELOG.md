@@ -2,6 +2,18 @@
 
 The following is a history of the changes made to this project.
 
+## v2.0.0 *(April 5th, 2016)*
+
+* Versioning no longer going by date.
+* MySQL is now a data storage option.
+* SQLite is now a data storage option.
+* Added an advanced portal option for use by those using more durable storage solutions.
+* History of all flights seen including positions is available by choosing the advanced option.
+* Added a way to reset forgotten portal passwords.
+* Flight notifications can now process wildcards.
+* The bandwidth guage can now be set to a smaller scale.
+* When posting blog entries existing titles are now checked for.
+
 ## March 7th, 2016
 
 * Added the option to install the Flightradar24 client.

@@ -28,20 +28,15 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////
-    // Default Login Information //
-    ///////////////////////////////
-    // Login: admin              //
-    // Password: adsbreceiver    //
-    ///////////////////////////////
-
     session_start();
 
     // Load the require PHP classes.
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
 
     $common = new common();
+    $settings = new settings();
     $account = new account();
 
     // Check if the user is already logged in.
@@ -56,10 +51,32 @@
     }
 
     if ($common->postBack()) {
-        // Try to authenticate the user using the credentials supplied.
-        $remember = (isset($_POST['remember']) ? TRUE : FALSE);
-        $origin = (isset($_REQUEST['origin']) ? $_REQUEST['origin'] : NULL);
-        $authenticated = $account->authenticate($_POST['login'], $_POST['password'], $remember, TRUE, $origin);
+        $validToken = FALSE;
+
+        // Look up the login using the supplied token.
+        $login = $account->getLoginUsingToken($_POST['token']);
+
+        if (!is_null($login)) {
+            $validToken = TRUE;
+
+            // Check the length of the password.
+            $tooShort = TRUE;
+            if (isset($_POST['password1']) && strlen($_POST['password1']) >= $settings::sec_length)
+                $tooShort = FALSE;
+
+            // Check that the supplied new passwords match.
+            $notMatching = TRUE;
+            if ($_POST['password1'] == $_POST['password2'])
+                $notMatching = FALSE;
+
+            // If everything associated with passwords is validated change the password.
+            if (!$tooShort && !$notMatching) {
+                // Change the password stored in administrators.xml related to this users login.
+                $account->setToken($login);
+                $account->changePassword($login, password_hash($_POST['password1'], PASSWORD_DEFAULT));
+                header ("Location: login.php");
+            }
+        }
     }
 
     /////////////////////
@@ -73,38 +90,35 @@
         <title></title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" />
-        <link rel="stylesheet" href="assets/css/login.css" />
+        <link rel="stylesheet" href="assets/css/reset.css" />
     </head>
     <body>
         <div class="container">
-            <form class="form-signin" method="post" action="login.php">
-                <h2 class="form-signin-heading">ADS-B Receiver</h2>
+            <form class="form-reset" method="post" action="reset.php">
+                <h2 class="form-reset-heading">Reset Password</h2>
                 <div>
-                    <label for="login" class="sr-only">Login</label>
-                    <input type="text" id="login" name="login" class="form-control" placeholder="Login" required autofocus>
+                    <label for="token" class="sr-only">Token</label>
+                    <input type="text" id="token" name="token" class="form-control" placeholder="Token" <?php (isset($_GET['token']) == "eth0" ? print 'value="'.$_GET['token'].'" ' : ''); ?>required autofocus>
                 </div>
                 <div>
-                    <label for="password" class="sr-only">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Password" required autofocus>
+                    <label for="password1" class="sr-only">Password</label>
+                    <input type="password" id="password1" name="password1" class="form-control" placeholder="Password" required>
                 </div>
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" name="remember" value="TRUE"> Remember me
-                    </label>
+                <div>
+                    <label for="password2" class="sr-only">Confirm Password</label>
+                    <input type="password" id="password2" name="password2" class="form-control" placeholder="Confirm password" required>
                 </div>
-                <div class="forgot-password">
-                    <a href="forgot.php">Forgot password</a>
-                </div>
-                <input type="submit" value="Login" class="btn btn-lg btn-primary btn-block">
+                <div class="spacer"></div>
+                <input type="submit" value="Reset Password" class="btn btn-lg btn-primary btn-block">
 <?php
     // If authentication failed display the following error message.
-    if ($common->postBack() && !$authenticated) {
+    if ($common->postBack() && !$validToken) {
 ?>
                 <div class="alert alert-danger" role="alert" id="failure-alert">
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    Authentication failed.
+                    The supplied token is wrong or has already been used.
                 </div>
 <?php
     }

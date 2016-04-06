@@ -32,7 +32,7 @@
 
         // PDO Database Access
         /////////////////////////
-    
+
         // Open a connection to the database.
         function pdoOpen() {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
@@ -49,7 +49,7 @@
                     $dsn = "pgsql:host=".$settings::db_host.";dbname=".$settings::db_database;
                     break;
                 case 'sqlite':
-                    $dsn = "sqlite:".$settings::db_database;
+                    $dsn = "sqlite:".$_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite";
                     break;
             }
 
@@ -63,7 +63,7 @@
 
         // Data Access
         /////////////////
-        
+
         // Returns the value for the specified setting name.
         function getSetting($name) {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
@@ -71,7 +71,7 @@
 
             if ($settings::db_driver == 'xml') {
                 // XML
-                $theseSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                $theseSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
                 foreach ($theseSettings as $setting) {
                     if ($setting->name == $name) {
                         return $setting->value;
@@ -99,7 +99,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $settings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                $settings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
                 foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
                     $setting->value = $value;
                 }
@@ -107,7 +107,7 @@
             } else {
                 // PDO
                 $dbh = $this->pdoOpen();
-                $sql = "UPDATE ".$settings::db_prefix."settings value = :value WHERE name = :name";
+                $sql = "UPDATE ".$settings::db_prefix."settings SET value = :value WHERE name = :name";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':name', $name, PDO::PARAM_STR, 50);
                 $sth->bindParam(':value', $value, PDO::PARAM_STR, 100);
@@ -123,7 +123,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $xmlSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml") or die("Error: Cannot create settings object");
+                $xmlSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
                 $xmlSetting = $xmlSettings->addChild('setting');
                 $xmlSetting->addChild('name', $name);
                 $xmlSetting->addChild('value', $value);
@@ -148,7 +148,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml") or die("Error: Cannot create administrators object");
+                $administrators = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."administrators.xml");
                 foreach ($administrators as $administrator) {
                     if ($administrator->login = $login) {
                         return $administrator->name;
@@ -157,16 +157,15 @@
             } else {
                 // PDO
                 $dbh = $this->pdoOpen();
-                $sql = "SELECT * FROM administrators WHERE login = :login";
+                $sql = "SELECT * FROM ".$settings::db_prefix."administrators WHERE login = :login";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':login', $login, PDO::PARAM_STR, 25);
                 $sth->execute();
                 $row = $sth->fetch();
                 $sth = NULL;
                 $dbh = NULL;
-                return $row['value'];
+                return $row['name'];
             }
-            return "";
         }
 
         // Functions Not Related To Data Retrieval
@@ -193,6 +192,16 @@
                 case 'FALSE': return FALSE;
                 default: return NULL;
             }
+        }
+
+        // Generate a random string of the given length.
+        function randomString($length) {
+            $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $string = '';
+            for ($p = 0; $p < $length; $p++) {
+                 $string .= $characters[mt_rand(0, strlen($characters))];
+            }
+            return $string;
         }
 
         // Returns the supplied file name without an extension.
@@ -241,6 +250,14 @@
                 $protocol = 'http';
             }
             return $protocol."://".$_SERVER['HTTP_HOST'];
+        }
+
+        // Send an email.
+        function sendEmail($to, $subject, $message) {
+            $headers = 'From: '.$this->getSetting("emailFrom")."\r\n".
+                       'Reply-To: '.$this->getSetting("emailReplyTo")."\r\n".
+                       'X-Mailer: PHP/'.phpversion();
+            return mail($to, $subject, $message, $headers);
         }
     }
 ?>

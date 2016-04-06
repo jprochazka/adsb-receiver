@@ -32,27 +32,47 @@
     session_start();
 
     // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/template.class.php');
-    require_once('classes/blog.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."template.class.php");
 
     $common = new common();
+    $settings = new settings();
     $template = new template();
-    $blog = new blog();
 
     $pageData = array();
 
-    // Get the requested blog post.
-    $post = $blog->getPostByTitle(urldecode($_GET['title']));
-
     // The title of this page.
-    $pageData['title'] = $post['title'];
+    $pageData['title'] = "Flight Plot for Flight ".$_GET['flight'];
 
-    // Add blog post data to the $pageData array.
-    $pageData['postTitle'] = $post['title'];
-    $pageData['postDate'] = date_format(date_create($post['date']), $common->getSetting('dateFormat'));
-    $pageData['postAuthor'] = $common->getAdminstratorName($post['author']);
-    $pageData['postContents'] = $post['contents'];
+    // Add position data to the $pageData array.
+    $dbh = $common->pdoOpen();
+    $sql = "SELECT id FROM ".$settings::db_prefix."flights WHERE flight = :flight";
+    $sth = $dbh->prepare($sql);
+    $sth->bindParam(':flight', $_GET['flight'], PDO::PARAM_STR, 50);
+    $sth->execute();
+    $row = $sth->fetch();
+    $sth = NULL;
+    $dbh = NULL;
+    $flightId = $row['id'];
+
+    $dbh = $common->pdoOpen();
+    $sql = "SELECT latitude, longitude, track FROM ".$settings::db_prefix."positions WHERE flight = :flight ORDER BY message";
+    $sth = $dbh->prepare($sql);
+    $sth->bindParam(':flight', $flightId, PDO::PARAM_STR, 50);
+    $sth->execute();
+    $positions = $sth->fetchAll();
+    $sth = NULL;
+    $dbh = NULL;
+
+    $pageData['startingLatitude'] = array_values($positions)[0]['latitude'];
+    $pageData['startingLongitude'] = array_values($positions)[0]['longitude'];
+    $pageData['startingDegrees'] = array_values($positions)[0]['track'];
+    $pageData['finishingLatitude'] = array_values($positions)[count(array_values($positions)) - 1]['latitude'];
+    $pageData['finishingLongitude'] = array_values($positions)[count(array_values($positions)) - 1]['longitude'];
+    $pageData['finishingDegrees'] = array_values($positions)[count(array_values($positions)) - 1]['track'];
+    $pageData['positions'] = $positions;
 
     $template->display($pageData);
 ?>
+
