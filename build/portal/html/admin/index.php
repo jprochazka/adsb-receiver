@@ -152,7 +152,7 @@
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
         $common->updateSetting("enableFlightNotifications", $enableFlightNotifications);
-        $common->updateSetting("enableFlights", $enableBlog);
+        $common->updateSetting("enableFlights", $enableFlights);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
