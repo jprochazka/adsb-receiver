@@ -85,6 +85,10 @@
         <value>imperial</value>
     </setting>
     <setting>
+        <name>measurementBandwidth</name>
+        <value>kbps</value>
+    </setting>
+    <setting>
         <name>networkInterface</name>
         <value>eth0</value>
     </setting>
