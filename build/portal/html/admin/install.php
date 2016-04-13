@@ -456,7 +456,7 @@ EOF;
             </div>
             <div class="form-group" id="prefix-div">
                 <label for="prefix">Database Prefix</label>
-                <input type="text" class="form-control" name="prefix" id="prefix" id="prefix" value="adsb_" disabled>
+                <input type="text" class="form-control" name="prefix" id="prefix" id="prefix" value="adsb_" readonly>
             </div>
             <p id="required-p">(*) Required</p>
         </section>
