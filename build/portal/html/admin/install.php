@@ -371,6 +371,7 @@ EOF;
             $common->addSetting('enableAdsbExchangeLink', FALSE);
             $common->addSetting('measurementRange', 'imperialNautical');
             $common->addSetting('measurementTemperature', 'imperial');
+            $common->addSetting('measurementBandwidth', 'kbps');
             $common->addSetting('networkInterface', 'eth0');
             $common->addSetting('enableFlightNotifications', FALSE);
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
