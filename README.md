@@ -35,7 +35,7 @@ When setting up the portal you will have to choose between a lite or advanced in
     
 #### Portal setup...
 
-After running the installation scripts you will need to setup the portal by visiting the following web address.
+This step pertains to both fresh installations as well as when updating and existing installation. After running the installation scripts you will need to setup the portal by visiting the following web address.
 
     http://<IP_ADDRESS_OF_YOUR_DEVICE>/admin/install.php
     
@@ -58,6 +58,7 @@ At this time the following software can be installed using these scripts.
 
 **ADS-B Receiver Web Portal Features**
 
+* Saves all flights seen as well as displays a plot for the flight. (advanced)
 * Control what is displayed online via a web based administration area.
 * A more uniform website site layout that can be easily navigated.
 * Web accessible dump1090 and system performance graphs.
