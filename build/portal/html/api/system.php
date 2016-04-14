@@ -115,11 +115,14 @@
     }
 
     function getNetworkInformation() {
-        $firstLookRx = trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes"));
-        $firstLookTx = trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes"));
+        require_once($_SERVER['Document_Root'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+        $common = new common();
+
+        $firstLookRx = trim(file_get_contents("/sys/class/net/".$common->getSetting("networkInterface")."/statistics/rx_bytes"));
+        $firstLookTx = trim(file_get_contents("/sys/class/net/".$common->getSetting("networkInterface")."/statistics/tx_bytes"));
         sleep(5);
-        $secondLookRx = trim(file_get_contents("/sys/class/net/eth0/statistics/rx_bytes"));
-        $secondLookTx = trim(file_get_contents("/sys/class/net/eth0/statistics/tx_bytes"));
+        $secondLookRx = trim(file_get_contents("/sys/class/net/".$common->getSetting("networkInterface")."/statistics/rx_bytes"));
+        $secondLookTx = trim(file_get_contents("/sys/class/net/".$common->getSetting("networkInterface")."/statistics/tx_bytes"));
         $networkInformation['rxBytes'] = $secondLookRx - $firstLookRx;
         $networkInformation['txBytes'] = $secondLookTx - $firstLookTx;
         $networkInformation['rxKbps'] = round(($secondLookRx - $firstLookRx) / 1024, 0);
