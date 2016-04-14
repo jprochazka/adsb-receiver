@@ -142,8 +142,8 @@ echo ""
 echo "NOT SETTING LATITUDE AND LONGITUDE WILL BREAK THE RANGE PERFORMANCE GRAPH"
 echo ""
 echo -e "\033[37m"
-read -p "Feeder Latitude: " FEEDERLAT
-read -p "Feeder Longitude: " FEEDERLON
+read -p "Feeder Latitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLAT
+read -p "Feeder Longitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLON
 echo ""
 ChangeConfig "LAT" $FEEDERLAT "/etc/default/dump1090-mutability"
 ChangeConfig "LON" $FEEDERLON "/etc/default/dump1090-mutability"

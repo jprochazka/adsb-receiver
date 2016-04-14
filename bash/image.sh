@@ -36,8 +36,9 @@
 
 source bash/functions.sh
 
-# Set latitude and longitude in the dump1090-mutability configuration file.
+## CONFIGURE DUMP1090-MUTABILITY
 
+# Set latitude and longitude in the dump1090-mutability configuration file.
 echo -e "\033[31m"
 echo "SET THE LATITUDE AND LONGITUDE OF YOUR FEEDER"
 echo -e "\033[33m"
@@ -51,14 +52,13 @@ echo ""
 echo "NOT SETTING LATITUDE AND LONGITUDE WILL BREAK THE RANGE PERFORMANCE GRAPH"
 echo ""
 echo -e "\033[37m"
-read -p "Feeder Latitude: " FEEDERLAT
-read -p "Feeder Longitude: " FEEDERLON
+read -p "Feeder Latitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLAT
+read -p "Feeder Longitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLON
 echo ""
 ChangeConfig "LAT" $FEEDERLAT "/etc/default/dump1090-mutability"
 ChangeConfig "LON" $FEEDERLON "/etc/default/dump1090-mutability"
 
 # Ask if dump1090-mutability should bind on all IP addresses.
-
 echo -e "\033[33m"
 echo "By default dump1090-mutability on binds to the localhost IP address of 127.0.0.1 which is a good thing."
 echo ""
@@ -74,7 +74,6 @@ if [[ $BINDTOALLIPS =~ ^[yY]$ ]]; then
 fi
 
 # Setup Heywhatsthat.com max range circles for dump1090-mutability.
-
 echo -e "\033[33m"
 echo "Dump1090-mutability is able to display terrain limit rings using data obtained"
 echo "from the website http://www.heywhatsthat.com. Some work will be required on your"
@@ -118,12 +117,163 @@ if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then
 fi
 
 # Restart dump1090-mutability.
-
 echo -e "\033[33m"
 echo "Restarting dump1090-mutability..."
 echo -e "\033[37m"
 sudo /etc/init.d/dump1090-mutability restart
 
-# Remove the "image" file now that setup has been ran.
+## SETUP THE PORTAL
 
+echo -e "\033[31m"
+echo "Do you wish to enable advanced features?"
+echo -e "\033[33m"
+echo "ENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY"
+echo -e "\033[33m"
+echo "By enabling advanced features the portal will log all flights seen as well as the path of the flight."
+echo "This data is stored in either a MySQL or SQLite database. This will result in a lot more data being"
+echo "stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before"
+echo "selecting to enable these features."
+echo ""
+echo "You have been warned."
+echo -e "\033[37m"
+read -p "Use portal with advanced features? [y/N] " ADVANCED
+
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    echo -e "\033[31m"
+    echo "Select Database Engine"
+    echo -e "\033[33m"
+    echo "  1) MySQL"
+    echo "  2) SQLLite"
+    echo -e "\033[37m"
+    read -p "Use portal with advanced features? [1] " DATABASEENGINE
+fi
+
+# Check for prerequisite packages.
+echo -e "\033[33m"
+echo "Installing packages needed to build and fulfill dependencies..."
+echo -e "\033[37m"
+CheckPackage cron
+CheckPackage collectd-core
+CheckPackage rrdtool
+CheckPackage lighttpd
+CheckPackage php5-cgi
+CheckPackage libpython2.7
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    if [[ $DATABASEENGINE == 2 ]]; then
+       CheckPackage sqlite3
+       CheckPackage php5-sqlite
+    else
+       CheckPackage mysql-server
+       CheckPackage mysql-client
+       CheckPackage php5-mysql
+       CheckPackage python-mysqldb
+    fi
+fi
+
+# Create the database If advanced features was selected
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    if [[ $DATABASEENGINE != 2 ]]; then
+        echo -e "\033[31m"
+        echo "Create Database and User"
+        echo -e "\033[33m"
+        echo "A database will now be created for you."
+        echo "Please supply the information pertaining to the new password when asked."
+        echo -e "\033[37m"
+        read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+        read -p "New Database Name: " DATABASENAME
+        read -p "New Database User Name: " DATABASEUSER
+        read -p "New Database User Password: " DATABASEPASSWORD
+
+        if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
+        echo -e "\033[33m"
+        echo -e "Creating MySQL database and user...\033[37m"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
+        fi
+
+        echo -e "\033[31m"
+        echo "BE SURE TO WRITE THIS INFORMATION DOWN."
+        echo -e "\033[33m"
+        echo "Ii will be needed in order to complete the installation of the portal."
+        echo ""
+        echo "Database Server: localhost"
+        echo "Database User: ${DATABASEUSER}"
+        echo "Database Password: ${DATABASEPASSWORD}"
+        echo "Database Name: ${DATABASENAME}"
+        echo -e "\033[37m"
+        read -p "Press enter to continue..." CONTINUE
+
+    fi
+
+    # Setup the flight logging script.
+    echo -e "\033[33m"
+    echo -e "Creating configuration file...\033[37m"
+    case $DATABASEENGINE in
+        "2")
+            tee ~/adsb-receiver/build/portal/logging/config.json > /dev/null <<EOF
+{
+    "database":{"type":"sqlite",
+                "host":"",
+                "user":"",
+                "passwd":"",
+                "db":"${HTMLDIR}/data/portal.sqlite"}
+}
+EOF
+            ;;
+        *)
+            tee ~/adsb-receiver/build/portal/logging/config.json > /dev/null <<EOF
+{
+    "database":{"type":"mysql",
+                "host":"localhost",
+                "user":"${DATABASEUSER}",
+                "passwd":"${DATABASEPASSWORD}",
+                "db":"${DATABASENAME}"}
+}
+EOF
+            ;;
+    esac
+
+    # Create and set permissions on the flight logging maintainance script.
+    PYTHONPATH=`which python`
+    tee ~/adsb-receiver/build/portal/logging/flights-maint.sh > /dev/null <<EOF
+#!/bin/sh
+while true
+  do
+    sleep 30
+    ${PYTHONPATH} ~/adsb-receiver/build/portal/logging/flights.py
+  done
+EOF
+    chmod +x ~/adsb-receiver/build/portal/logging/flights-maint.sh
+
+    # Add flight logging maintainance script to rc.local.
+    if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
+        echo -e "\033[33m"
+        echo -e "Adding startup line to rc.local...\033[37m"
+        lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
+    fi
+
+    # Start flight logging.
+    echo -e "\033[33m"
+    echo -e "Starting flight logging...\033[37m"
+    ~/adsb-receiver/build/portal/logging/flights-maint.sh &
+fi
+
+## FINISH CONFIGURATION
+
+# Display further portal setup instructions.
+echo -e "\033[33m"
+echo "PORTAL SETUP IS NOT YET COMPLETE"
+echo -e "\033[33m"
+echo "In order to complete the portal setup process visit the following URL in your favorite web browser."
+echo ""
+echo "http://<IP_ADDRESS_OF_THIS_DEVICE>/admin/install.php"
+echo ""
+echo "Enter the requested information and submit the form to complete the portal setup."
+echo "It is recomended that after setting up the portal you delete the install.php file."
+echo -e "\033[37m"
+
+# Remove the "image" file now that setup has been ran.
 rm -f image

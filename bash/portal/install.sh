@@ -183,7 +183,7 @@ while true
   done
 EOF
     chmod +x $BUILDDIR/portal/logging/flights-maint.sh
-    
+
     # Add flight logging maintainance script to rc.local.
     if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
         echo -e "\033[33m"
@@ -321,5 +321,18 @@ fi
 echo -e "\033[33m"
 echo "Installation and configuration of the performance graphs is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
+echo -e "\033[37m"
+read -p "Press enter to continue..." CONTINUE
+
+# Display further portal setup instructions.
+echo -e "\033[33m"
+echo "PORTAL SETUP IS NOT YET COMPLETE"
+echo -e "\033[33m"
+echo "In order to complete the portal setup process visit the following URL in your favorite web browser."
+echo ""
+echo "http://<IP_ADDRESS_OF_THIS_DEVICE>/admin/install.php"
+echo ""
+echo "Enter the requested information and submit the form to complete the portal setup."
+echo "It is recomended that after setting up the portal you delete the install.php file."
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
