@@ -367,7 +367,7 @@ EOF;
             $common->addSetting('enablePlaneFinderLink', FALSE);
             $common->addSetting('planeFinderReceiver', '');
             $common->addSetting('enableFlightRadar24Link', '');
-            $common->addSetting('flightRader24Id', '');
+            $common->addSetting('flightRadar24Id', '');
             $common->addSetting('enableAdsbExchangeLink', FALSE);
             $common->addSetting('measurementRange', 'imperialNautical');
             $common->addSetting('measurementTemperature', 'imperial');
