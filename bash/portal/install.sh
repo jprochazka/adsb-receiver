@@ -195,7 +195,7 @@ EOF
     # Start flight logging.
     echo -e "\033[33m"
     echo -e "Starting flight logging...\033[37m"
-    ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights-maint.sh &
+    ${BUILDDIR}/portal/logging/flights-maint.sh &
 fi
 
 ## SETUP THE PORTAL WEBSITE
