@@ -13,6 +13,10 @@ The ADS-B Receiver Project website is located at https://www.adsbreceiver.net.
 Download the latest ADS-B Receiver Raspbian Jessie Lite image for Raspberry Pi devices.
 https://github.com/jprochazka/adsb-receiver/releases/latest
 
+When setting up the portal you will have to choose between a lite or advanced installation. Advanced features adds flight logging and plotting and should only be chosen on devices running a more sturdy data storage solution.
+
+*It is recommended that anyone using a SD card as they storage medium not attempt to use the advanced features.*
+
 #### Manual installations...
 
     sudo apt-get update
@@ -28,6 +32,14 @@ https://github.com/jprochazka/adsb-receiver/releases/latest
     git fetch --all
     git reset --hard origin/master
     ./install.sh
+    
+#### Portal setup...
+
+After running the installation scripts you will need to setup the portal by visiting the following web address.
+
+    http://<IP_ADDRESS_OF_YOUR_DEVICE>/admin/install.php
+    
+Supply the infromation asked for and submit the form once done to complete the setup.
 
 ### What Can Be Installed
 
