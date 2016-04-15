@@ -52,9 +52,10 @@ At this time the following software can be installed using these scripts.
 
 **Site Feeders**
 
-* FlightAware's PiAware:      http://flightaware.com
-* Plane Finder ADS-B Client:  https://planefinder.net
-* ADS-B Exchange:             http://adsbexchange.com
+* FlightAware's PiAware:       http://flightaware.com
+* Flightradar24 Feeder Client: http://flightradar24.com
+* Plane Finder ADS-B Client:   https://planefinder.net
+* ADS-B Exchange:              http://adsbexchange.com
 
 **ADS-B Receiver Web Portal Features**
 
