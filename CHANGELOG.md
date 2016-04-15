@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.0.0 *(April 5th, 2016)*
+## v2.0.0 *(April 14th, 2016)*
 
 * Versioning no longer going by date.
 * MySQL is now a data storage option.
