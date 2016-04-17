@@ -115,7 +115,7 @@
     }
 
     function getNetworkInformation() {
-        require_once($_SERVER['Document_Root'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+        require_once("../classes/common.class.php");
         $common = new common();
 
         $firstLookRx = trim(file_get_contents("/sys/class/net/".$common->getSetting("networkInterface")."/statistics/rx_bytes"));
