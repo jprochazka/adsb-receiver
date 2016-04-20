@@ -133,7 +133,7 @@
     }
 
     function getUptimeInformation() {
-        $uptimeArray = split(' ', exec("cat /proc/uptime"));
+        $uptimeArray = explode(' ', exec("cat /proc/uptime"));
         $uptime['inSeconds'] = trim($uptimeArray[0]);
         $uptime['hours'] = floor($uptime['inSeconds'] / 3600);
         $uptime['minutes'] = floor(($uptime['inSeconds'] - ($uptime['hours'] * 3600)) / 60);
