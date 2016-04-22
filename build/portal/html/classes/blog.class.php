@@ -135,6 +135,10 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
+
+                // Since &nbsp; is not defined as an XML entity we need to replace it with it's numeric character reference &#160;.
+                $contents = str_replace("&nbsp;", "&#160;", $contents);
+
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts->xpath("blogPost[title='".$originalTitle."']") as $blogPost) {
                     $blogPost->contents = $contents;
@@ -189,6 +193,11 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
+                // XML
+
+                // Since &nbsp; is not defined as an XML entity we need to replace it with it's numeric character reference &#160;.
+                $contents = str_replace("&nbsp;", "&#160;", $contents);
+
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 $blogPost = $blogPosts->addChild('blogPost', '');
                 $blogPost->addChild('title', $title);
