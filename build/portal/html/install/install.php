@@ -31,16 +31,17 @@
     require_once('../classes/common.class.php');
     $common = new common();
 
-    // THE FOLLOWING COMMENTED LINES WILL BE USED IN FUTURE RELEASES
-    ///////////////////////////////////////////////////////////////////
-
     // The most current stable release.
-    //$currentRelease = "2016-02-18";
+    $thisVersion = "2.0.1";
 
     // Begin the upgrade process if this release is newer than what is installed.
-    //if ($currentRelease > $common->getRelease) {
-    //    header ("Location: upgrade.php");
-    //}
+    if (file_exists("../classes/settings.class.php")) {
+        if ($thisVersion > $common->getSetting("version") {
+            header ("Location: upgrade.php");
+        }
+    }
+
+    // BEGIN FRESH INSTALLATION
 
     $installed = FALSE;
     //if ($common->postBack()) {
@@ -110,7 +111,6 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     class settings {
-
         // Database Settings
         const db_driver = '$_POST[driver]';
         const db_database = '$dbDatabase';
@@ -351,6 +351,7 @@ EOF;
             }
 
             // Add settings.
+            $common->addSetting('version', $thisVersion);
             $common->addSetting('siteName', 'ADS-B Receiver');
             $common->addSetting('template', 'default');
             $common->addSetting('defaultPage', 'blog.php');
