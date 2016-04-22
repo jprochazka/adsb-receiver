@@ -582,7 +582,7 @@ range_graph_imperial_nautical(){
   --font "$UNIT_FONT" \
   --font "$LEGEND_FONT" \
   --start end-$4 \
-  --width 428 \
+  --width 480 \
   --height 200 \
   --step "$5" \
   --title "$3 Max Range" \
@@ -614,7 +614,7 @@ range_graph_imperial_statute(){
   --font "$UNIT_FONT" \
   --font "$LEGEND_FONT" \
   --start end-$4 \
-  --width 428 \
+  --width 480 \
   --height 200 \
   --step "$5" \
   --title "$3 Max Range" \
@@ -646,7 +646,7 @@ range_graph_metric() {
   --font "$UNIT_FONT" \
   --font "$LEGEND_FONT" \
   --start end-$4 \
-  --width 428 \
+  --width 480 \
   --height 200 \
   --step "$5" \
   --title "$3 Max Range" \
