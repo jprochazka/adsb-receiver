@@ -62,12 +62,12 @@ echo -e "\033[31m"
 echo "Do you wish to enable advanced features?"
 echo -e "\033[33m"
 echo "ENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY"
-echo -e "\033[33m"
+echo ""
 echo "By enabling advanced features the portal will log all flights seen as well as the path of the flight."
 echo "This data is stored in either a MySQL or SQLite database. This will result in a lot more data being"
 echo "stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before"
 echo "selecting to enable these features."
-echo ""
+echo -e "\033[31m"
 echo "You have been warned."
 echo -e "\033[37m"
 read -p "Use portal with advanced features? [y/N] " ADVANCED
@@ -357,7 +357,7 @@ echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
 # Display further portal setup instructions.
-echo -e "\033[33m"
+echo -e "\033[31m"
 echo "PORTAL SETUP IS NOT YET COMPLETE"
 echo -e "\033[33m"
 echo "In order to complete the portal setup process visit the following URL in your favorite web browser."

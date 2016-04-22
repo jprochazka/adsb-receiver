@@ -251,6 +251,10 @@ NOTHINGTODO="Nothing has been selected to be installed so the script will exit n
 read -d '' INSTALLATIONCOMPLETE <<"EOF"
 INSTALLATION COMPLETE
 
+DO NOT DELETE THIS DIRECTORY!
+
+Files needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.
+
 It is hoped these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you ran into any problems or wish to submit feed back feel free to do so on the project's GitHub site.
 
 https://github.com/jprochazka/adsb-receiver
@@ -564,7 +568,7 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 16 65
+whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 19 65
 
 # Once again cannot make the whiptail checkbox not create this file and still work...
 # Will work on figuring this out at a later date but until then we will delete the file created.
