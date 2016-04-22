@@ -352,6 +352,7 @@ EOF;
 
             // Add settings.
             $common->addSetting('version', $thisVersion);
+            $common->addSetting('patch', '');
             $common->addSetting('siteName', 'ADS-B Receiver');
             $common->addSetting('template', 'default');
             $common->addSetting('defaultPage', 'blog.php');

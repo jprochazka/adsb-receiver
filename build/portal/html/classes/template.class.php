@@ -28,6 +28,9 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
+    // The most current stable release.
+    $thisVersion = "2.0.1";
+
     class template {
 
         // PUT THE TEMPLATE TOGETHER
@@ -35,8 +38,17 @@
         function display(&$pageData) {
             $common = new common($this);
 
-			// The Base URL of this page (needed for Plane Finder client link)
-			$pageData['baseurl'] = $common->getBaseUrl();
+            // Check if the portal is installed or needs upgraded.
+            if (file_exists("settings.class.php")) {
+                if ($thisVersion > $common->getSetting("version") {
+                    header ("Location: upgrade.php");
+                }
+            } else {
+                header ("Location: install.php");
+            }
+
+            // The Base URL of this page (needed for Plane Finder client link)
+            $pageData['baseurl'] = $common->getBaseUrl();
 
             // Load the master template.
             $master = $this->readTemplate('master.tpl');
