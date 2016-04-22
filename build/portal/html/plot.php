@@ -65,13 +65,18 @@
     $sth = NULL;
     $dbh = NULL;
 
-    $pageData['startingLatitude'] = array_values($positions)[0]['latitude'];
-    $pageData['startingLongitude'] = array_values($positions)[0]['longitude'];
-    $pageData['startingDegrees'] = array_values($positions)[0]['track'];
-    $pageData['finishingLatitude'] = array_values($positions)[count(array_values($positions)) - 1]['latitude'];
-    $pageData['finishingLongitude'] = array_values($positions)[count(array_values($positions)) - 1]['longitude'];
-    $pageData['finishingDegrees'] = array_values($positions)[count(array_values($positions)) - 1]['track'];
-    $pageData['positions'] = $positions;
+    if (count($positions) > 0) {
+        $pageData['positionsAvailable'] = TRUE;
+        $pageData['startingLatitude'] = array_values($positions)[0]['latitude'];
+        $pageData['startingLongitude'] = array_values($positions)[0]['longitude'];
+        $pageData['startingDegrees'] = array_values($positions)[0]['track'];
+        $pageData['finishingLatitude'] = array_values($positions)[count(array_values($positions)) - 1]['latitude'];
+        $pageData['finishingLongitude'] = array_values($positions)[count(array_values($positions)) - 1]['longitude'];
+        $pageData['finishingDegrees'] = array_values($positions)[count(array_values($positions)) - 1]['track'];
+        $pageData['positions'] = $positions;
+    } else {
+        $pageData['positionsAvailable'] = FALSE;
+    }
 
     $template->display($pageData);
 ?>

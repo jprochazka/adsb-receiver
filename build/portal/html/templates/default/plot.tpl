@@ -23,11 +23,36 @@
         <link rel="stylesheet" href="templates/{setting:template}/assets/css/dump1090.css">
 {/area}
 {area:contents}
+            {if page:positionsAvailable eq FALSE}
+            <div class="modal fade in" id="no-data-modal" tabindex="-1" role="dialog" aria-labelledby="no-data-modal-label">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="no-data-modal-label">No Position Data</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>There is no position data for this flight.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/if}
             <div id="iframe-wrapper">
                 <div id="map"></div>
             </div>
 {/area}
 {area:scripts}
+    {if page:positionsAvailable eq FALSE}
+    <script type="text/javascript">
+        $(window).load(function(){
+            $('#no-data-modal').modal('show');
+        });
+    </script>
+    {/if}
     <script>
       var genericPlaneSvg = "M 0,0 " +
         "M 1.9565564,41.694305 C 1.7174505,40.497708 1.6419973,38.448747 " +
