@@ -103,7 +103,7 @@
                 foreach ($settings->xpath("setting[name='".$name."']") as $setting) {
                     $setting->value = $value;
                 }
-                file_put_contents("../data/settings.xml", $settings->asXML());
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $settings->asXML());
             } else {
                 // PDO
                 $dbh = $this->pdoOpen();
