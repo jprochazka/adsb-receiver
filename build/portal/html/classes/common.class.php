@@ -140,6 +140,34 @@
                 $dbh = NULL;
             }
         }
+        
+        function deleteSetting($name) {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+    
+            if ($settings::db_driver == "xml") {
+                $xmlSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
+                foreach($xmlSettings as $xmlSetting) {
+                    if($xmlSetting->name == $name) {
+                        $dom = dom_import_simplexml($xmlSetting);
+                        $dom->parentNode->removeChild($dom);
+                    }
+                }
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml", $xmlSettings->asXml());
+            } else {
+                // PDO
+                require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+                $common = new common();
+    
+                $dbh = $common->pdoOpen();
+                $sql = "DELETE FROM ".$settings::db_prefix."settings WHERE name = :name";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 100);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
+        }
 
         // Returns the name associated to the specified administrator login.
         function getAdminstratorName($login) {
