@@ -55,12 +55,14 @@
                             {if setting:enableDump978 eq TRUE}<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>{/if}
                             {if setting:enablePfclient eq TRUE}<li id="planefinder-link"><a href="{page:baseurl}:30053" target="_blank">Plane Finder Client</a></li>{/if}
                         </ul>
+                        {if setting:dataStorage neq "xml"}
                         <form name="search" method="post" action="flights.php" class="navbar-form navbar-right">
                             <div class="form-group">
                                 <input type="text" name="flight" placeholder="Flight" class="form-control">
                             </div>
                             <button type="submit" class="btn btn-success">Search</button>
                         </form>
+                        {/if}
                     </div>
                 </div>
             </nav>
