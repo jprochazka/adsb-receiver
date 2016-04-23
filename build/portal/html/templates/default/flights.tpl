@@ -28,12 +28,14 @@
                     <tr>
                         <th>Flight</th>
                         <th>Last Seen</th>
+                        <th>First Seen</th>
                         <th>Links</th>
                     </tr>
                     {foreach page:flights as flight}
                     <tr>
                         <td><a href="plot.php?flight={flight->flight}">{flight->flight}</a></td>
                         <td>{flight->lastSeen}</td>
+                        <td>{flight->firstSeen}</td>
                         <td>
                             <a href="http://flightaware.com/live/flight/{flight->flight}" target="_blank">FlightAware</a> |
                             <a href="https://planefinder.net/flight/{flight->flight}" target="_blank">Planefinder</a> |

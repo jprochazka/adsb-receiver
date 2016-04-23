@@ -26,7 +26,7 @@
                 <h2>Aggregate Sites Statistics</h2>
                 <ul>
                     {if setting:enableFlightAwareLink eq TRUE}<li><a href="{page:flightAwareLink}">FlightAware Stats</a></li>{/if}
-                    {if setting:enablePlaneFinderLink eq TRUE}<li><a href="{page:planeFinderLink}">Planfinder Stats</a></li>{/if}
+                    {if setting:enablePlaneFinderLink eq TRUE}<li><a href="{page:planeFinderLink}">Planefinder Stats</a></li>{/if}
                     {if setting:enableFlightRadar24Link eq TRUE}<li><a href="{page:flightRadar24Link}">Flightradar24 Stats</a></li>{/if}
                     {if setting:enableAdsbExchangeLink eq TRUE}<li><a href="{page:adsbExchangeLink}">ADS-B Exchange</a></li>{/if}
                 </ul>

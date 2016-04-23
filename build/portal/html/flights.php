@@ -55,7 +55,16 @@
     $sth = NULL;
     $dbh = NULL;
 
-    //$pageData['flights'] = $flights;
+    // Change dates to the proper timezone and format.
+    foreach ($flights as &$flight) {
+        $date = new DateTime($flight['firstSeen'], new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+        $flight['firstSeen'] = $date->format($common->getSetting('dateFormat'));
+
+        $date = new DateTime($flight['lastSeen'], new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+        $flight['lastSeen'] = $date->format($common->getSetting('dateFormat'));
+    }
 
     // Pagination.
     $itemsPerPage = 25;

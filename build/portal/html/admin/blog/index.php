@@ -76,7 +76,14 @@
                     <tr>
                         <td><a href="edit.php?title=<?php echo urlencode($post['title']); ?>">edit</a> <a href="delete.php?title=<?php echo urlencode($post['title']); ?>">delete</a></td>
                         <td><?php echo $post['title']; ?></td>
-                        <td><?php echo $post['date']; ?></td>
+                        <td>
+<?php 
+    // Properly format the date and convert to slected time zone.
+    $date = new DateTime($post['date'], new DateTimeZone('UTC'));
+    $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+    echo $date->format($common->getSetting('dateFormat'));
+?>
+                        </td>
                     </tr>
 <?php
     }
