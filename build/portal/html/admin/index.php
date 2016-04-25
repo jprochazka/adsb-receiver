@@ -385,7 +385,7 @@
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == 1 ? print ' checked' : ''); ?>> Enable Planfinder ADS-B Client link.
+                                    <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == 1 ? print ' checked' : ''); ?>> Enable Planefinder ADS-B Client link.
                                 </label>
                             </div>
                         </div>
