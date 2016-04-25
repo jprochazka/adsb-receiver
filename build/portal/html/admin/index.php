@@ -258,6 +258,13 @@
     }
     closedir($directoryHandle);
 
+    // Function used to format offsets of timezones.
+    function formatOffset($offset) {
+        return sprintf('%+03d:%02u', floor($offset / 3600), floor(abs($offset) % 3600 / 60));
+    }
+    $utc = new DateTimeZone('UTC');
+    $dt = new DateTime('now', $utc);
+
     ////////////////
     // BEGIN HTML
 
@@ -329,6 +336,20 @@
                                     <label><input type="radio" name="dateFormatSlelection" value="d/m/Y"<?php ($dateFormat == "d/m/Y" ? print ' checked' : ''); ?>>10/16/2015</label>
                                 </div>
                                 <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="defaultPage">Default Page</label>
+                                <select class="form-control" id="timeZone" name="timeZone">
+<?php
+    foreach (DateTimeZone::listIdentifiers() as $timeZone) {
+        $currentTimeZone = new DateTimeZone($timeZone);
+        $offSet = $currentTimeZone->getOffset($dt);
+        $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
+        $abbr = $transition[0]['abbr'];
+        echo '                                    <option value="'.$timeZone.'">'.$timeZone.' ['.$abbr.' '.formatOffset($offSet).']</option>';
+    }
+?>
+                                </select>
                             </div>
                         </div>
                     </div>
