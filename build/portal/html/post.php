@@ -50,9 +50,13 @@
 
     // Add blog post data to the $pageData array.
     $pageData['postTitle'] = $post['title'];
-    $pageData['postDate'] = date_format(date_create($post['date']), $common->getSetting('dateFormat'));
     $pageData['postAuthor'] = $common->getAdminstratorName($post['author']);
     $pageData['postContents'] = $post['contents'];
+
+    // Properly format the date and convert to slected time zone.
+    $date = new DateTime($post['date'], new DateTimeZone('UTC'));
+    $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+    $pageData['postDate'] = $date->format($common->getSetting('dateFormat'));
 
     $template->display($pageData);
 ?>

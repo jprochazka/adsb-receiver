@@ -71,22 +71,22 @@
     $lastMessage = 0;
     $firstPass = TRUE;
     $firstPosition = TRUE;
+    $totalPositions = count($positions);
+    $counter = 0;
     foreach ($positions as $position) {
-        if ($firstPass == TRUE && $firstPosition == TRUE) {
-            $startingLatitude = $position["latitude"];
-            $startingLongitude = $position["longitude"];
-            $firstPosition == FALSE;
-        }
+        $counter++;
 
-        if ($position["message"] < $lastMessage) {
+        if ($position["message"] < $lastMessage || $counter == $totalPositions) {
             if ($firstPass == TRUE) {
                 $flightPath["startingLatitude"] = $startingLatitude;
                 $flightPath["startingLongitude"] = $startingLongitude;
+                $flightPath["startingTrack"] = $startingTrack;
+                $firstPass = FALSE;
             } else {
                 $flightPath["startingLatitude"] = $position["latitude"];
                 $flightPath["startingLongitude"] = $position["longitude"];
+                $flightPath["startingTrack"] = $position["track"];
             }
-            $flightPath["startingTrack"] = $position["track"];
             $flightPath["finishingLatitude"] = $lastLatitude;
             $flightPath["finishingLongitude"] = $lastLongitude;
             $flightPath["finishingTrack"] = $lastTrack;
@@ -94,7 +94,15 @@
             $flightPaths[] = $flightPath;
             unset($thisPath);
             unset($flightPath);
-            $firstPass = FALSE;
+            $thisPath = array();
+            $flightPath = array();
+        }
+
+        if ($firstPosition == TRUE) {
+            $startingLatitude = $position["latitude"];
+            $startingLongitude = $position["longitude"];
+            $startingTrack = $position["track"];
+            $firstPosition = FALSE;
         }
 
         $thisPosition["time"] = $position["time"];
@@ -102,7 +110,6 @@
         $thisPosition["longitude"] = $position["longitude"];
         $thisPosition["track"] = $position["track"];
         $thisPosition["message"] = $position["message"];
-
         $thisPath[] = $thisPosition;
 
         $lastMessage = $position["message"];

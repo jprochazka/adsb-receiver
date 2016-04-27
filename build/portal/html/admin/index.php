@@ -171,6 +171,7 @@
         $common->updateSetting("measurementTemperature", $_POST['measurementTemperature']);
         $common->updateSetting("measurementBandwidth", $_POST['measurementBandwidth']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
+        $common->updateSetting("timeZone", $_POST['timeZone']);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -217,6 +218,7 @@
     $currentTemplate = $common->getSetting("template");
     $defaultPage = $common->getSetting("defaultPage");
     $dateFormat = $common->getSetting("dateFormat");
+    $timeZone = $common->getSetting("timeZone");
 
     // Get navigation settings from settings.xml.
     $enableFlights = $common->getSetting("enableFlights");
@@ -324,16 +326,16 @@
                             <div class="form-group">
                                 <label for="defaultPage">Date Format</label>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y"<?php ($dateFormat == "F jS, Y" ? print ' checked' : ''); ?>>October 16, 2015</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y g:i A"<?php ($dateFormat == "F jS, Y g:i A" ? print ' checked' : ''); ?>>October 16, 2015 12:00 PM</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d"<?php ($dateFormat == "Y-m-d" ? print ' checked' : ''); ?>>2015-10-16</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d g:i A"<?php ($dateFormat == "Y-m-d g:i A" ? print ' checked' : ''); ?>>2015-10-16 12:00 PM</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y"<?php ($dateFormat == "m/d/Y" ? print ' checked' : ''); ?>>16/10/2015</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y g:i A"<?php ($dateFormat == "m/d/Y g:i A" ? print ' checked' : ''); ?>>16/10/2015 12:00 PM</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y"<?php ($dateFormat == "d/m/Y" ? print ' checked' : ''); ?>>10/16/2015</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y g:i A"<?php ($dateFormat == "d/m/Y g:i A" ? print ' checked' : ''); ?>>10/16/2015 12:00 PM</label>
                                 </div>
                                 <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
                             </div>
@@ -341,12 +343,12 @@
                                 <label for="defaultPage">Default Page</label>
                                 <select class="form-control" id="timeZone" name="timeZone">
 <?php
-    foreach (DateTimeZone::listIdentifiers() as $timeZone) {
-        $currentTimeZone = new DateTimeZone($timeZone);
+    foreach (DateTimeZone::listIdentifiers() as $tz) {
+        $currentTimeZone = new DateTimeZone($tz);
         $offSet = $currentTimeZone->getOffset($dt);
         $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
         $abbr = $transition[0]['abbr'];
-        echo '                                    <option value="'.$timeZone.'">'.$timeZone.' ['.$abbr.' '.formatOffset($offSet).']</option>';
+        echo '                                    <option name="timeZone" value="'.$tz.'"'.($tz == $timeZone ? print " selected" : "").'>'.$tz.' ['.$abbr.' '.formatOffset($offSet).']</option>';
     }
 ?>
                                 </select>

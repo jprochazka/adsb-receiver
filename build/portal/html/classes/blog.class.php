@@ -115,7 +115,7 @@
                 $common = new common();
 
                 $dbh = $common->pdoOpen();
-                "SELECT COUNT(*) FROM ".$settings::db_prefix."blogPosts WHERE title = :title";
+                $sql = "SELECT COUNT(*) FROM ".$settings::db_prefix."blogPosts WHERE title = :title";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
                 $sth->execute();
@@ -135,10 +135,6 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-
-                // Since &nbsp; is not defined as an XML entity we need to replace it with it's numeric character reference &#160;.
-                $contents = str_replace("&nbsp;", "&#160;", $contents);
-
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts->xpath("blogPost[title='".$originalTitle."']") as $blogPost) {
                     $blogPost->contents = $contents;
@@ -193,15 +189,10 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
-                // XML
-
-                // Since &nbsp; is not defined as an XML entity we need to replace it with it's numeric character reference &#160;.
-                $contents = str_replace("&nbsp;", "&#160;", $contents);
-
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 $blogPost = $blogPosts->addChild('blogPost', '');
                 $blogPost->addChild('title', $title);
-                $blogPost->addChild('date', date('Y-m-d H:i:s'));
+                $blogPost->addChild('date', gmdate('Y-m-d H:i:s', time()));
                 $blogPost->addChild('author', $author);
                 $blogPost->addChild('contents', $contents);
                 $dom = dom_import_simplexml($blogPosts)->ownerDocument;
@@ -216,7 +207,7 @@
                 $sql = "INSERT INTO ".$settings::db_prefix."blogPosts (title, date, author, contents) VALUES (:title, :date, :author, :contents)";
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
-                $sth->bindParam(':date', date('Y-m-d H:i:s'), PDO::PARAM_STR, 20);
+                $sth->bindParam(':date', gmdate('Y-m-d H:i:s', time()), PDO::PARAM_STR, 20);
                 $sth->bindParam(':author', $author, PDO::PARAM_STR, 100);
                 $sth->bindParam(':contents', $contents, PDO::PARAM_STR, 20000);
                 $sth->execute();

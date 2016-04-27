@@ -378,6 +378,7 @@ EOF;
             $common->addSetting('enableFlightNotifications', FALSE);
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
+            $common->addSetting('timeZone', '');
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);
@@ -405,6 +406,15 @@ EOF;
     $writeableClass = FALSE;
     if (is_writable($applicationDirectory.'classes/settings.class.php'))
         $writeableClass = TRUE;
+
+    // Function used to format offsets of timezones.
+    ///////////////////////////////////////////////////
+
+    function formatOffset($offset) {
+        return sprintf('%+03d:%02u', floor($offset / 3600), floor(abs($offset) % 3600 / 60));
+    }
+    $utc = new DateTimeZone('UTC');
+    $dt = new DateTime('now', $utc);
 
     // Display HTML
     //////////////////
@@ -462,6 +472,24 @@ EOF;
                 <input type="text" class="form-control" name="prefix" id="prefix" id="prefix" value="adsb_" readonly>
             </div>
             <p id="required-p">(*) Required</p>
+        </section>
+
+        <h2>Portal Settings</h2>
+        <section>
+            <div> class="form-group">
+                <label for="timeZone">Time Zone *<label>
+                <select class="form-control" id="timeZone" name="timeZone">
+<?php
+    foreach (DateTimeZone::listIdentifiers() as $timeZone) {
+        $currentTimeZone = new DateTimeZone($timeZone);
+        $offSet = $currentTimeZone->getOffset($dt);
+        $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
+        $abbr = $transition[0]['abbr'];
+        echo '<option value="'.$timeZone.'">'.$timeZone.' [$
+    }
+?>
+                </select>
+            </div>
         </section>
 
         <h2>Administrator Account</h2>

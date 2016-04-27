@@ -37,10 +37,6 @@
 
 import datetime
 import json
-if config["database"]["type"] == "mysql":
-    import MySQLdb
-if config["database"]["type"] == "sqlite":
-    import sqlite3
 import time
 import os
 #import urllib2
@@ -50,6 +46,12 @@ while True:
     # Read the configuration file.
     with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
         config = json.load(config_file)
+
+    # Import the needed database library.
+    if config["database"]["type"] == "mysql":
+        import MySQLdb
+    if config["database"]["type"] == "sqlite":
+        import sqlite3
 
     # Read dump1090-mutability's aircraft.json.
     with open('/run/dump1090-mutability/aircraft.json') as data_file:
@@ -66,7 +68,7 @@ while True:
         db = MySQLdb.connect(host=config["database"]["host"], user=config["database"]["user"], passwd=config["database"]["passwd"], db=config["database"]["db"])
 
     # Assign the time to a variable.
-    time_now = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    time_now = datetime.datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
 
     cursor = db.cursor()
     for aircraft in data["aircraft"]:
