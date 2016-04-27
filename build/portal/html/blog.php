@@ -31,8 +31,6 @@
     // Start session
     session_start();
 
-echo pathinfo(__FILE__, PATHINFO_FILENAME);
-
     // Load the common PHP classes.
     require_once('classes/common.class.php');
     require_once('classes/template.class.php');

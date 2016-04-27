@@ -45,11 +45,16 @@
     // The title of this page.
     $pageData['title'] = "Flights Seen";
 
-    // Add blog post data to the $pageData array.
+    // Add flight data to the $pageData array using the search string if available.
+    if (isset($_POST['flight'])) {
+        $searchString = $_POST['flight'];
+    } else {
+        $searchString = "";
+    }
     $dbh = $common->pdoOpen();
     $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE ? ORDER BY lastSeen DESC, flight";
     $sth = $dbh->prepare($sql);
-    $sth->bindValue(1, "%".$_POST['flight']."%", PDO::PARAM_STR);
+    $sth->bindValue(1, "%".$searchString."%", PDO::PARAM_STR);
     $sth->execute();
     $flights = $sth->fetchAll();
     $sth = NULL;

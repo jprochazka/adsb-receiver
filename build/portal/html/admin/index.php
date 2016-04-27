@@ -340,7 +340,7 @@
                                 <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
                             </div>
                             <div class="form-group">
-                                <label for="defaultPage">Default Page</label>
+                                <label for="timeZone">Time Zone</label>
                                 <select class="form-control" id="timeZone" name="timeZone">
 <?php
     foreach (DateTimeZone::listIdentifiers() as $tz) {
@@ -348,7 +348,9 @@
         $offSet = $currentTimeZone->getOffset($dt);
         $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
         $abbr = $transition[0]['abbr'];
-        echo '                                    <option name="timeZone" value="'.$tz.'"'.($tz == $timeZone ? print " selected" : "").'>'.$tz.' ['.$abbr.' '.formatOffset($offSet).']</option>';
+?>
+                                    <option name="timeZone" value="<?php echo $tz; ?>"<?php ($tz == $timeZone ? print " selected" : ""); ?>><?php echo $tz; ?> [<?php echo $abbr; ?> <?php echo formatOffset($offSet);?>]</option>
+<?php
     }
 ?>
                                 </select>

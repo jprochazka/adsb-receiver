@@ -36,9 +36,7 @@
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
-        if ($thisVersion > $common->getSetting("version") {
-            header ("Location: upgrade.php");
-        }
+        header ("Location: upgrade.php");
     }
 
     // BEGIN FRESH INSTALLATION
@@ -403,9 +401,9 @@ EOF;
     if (is_writable($applicationDirectory.'data'))
         $writableData = TRUE;
 
-    $writeableClass = FALSE;
-    if (is_writable($applicationDirectory.'classes/settings.class.php'))
-        $writeableClass = TRUE;
+    $writeableClasses = FALSE;
+    if (is_writable($applicationDirectory.'classes'))
+        $writeableClasses = TRUE;
 
     // Function used to format offsets of timezones.
     ///////////////////////////////////////////////////
@@ -419,7 +417,7 @@ EOF;
     // Display HTML
     //////////////////
 
-    require_once('includes/header.inc.php');
+    require_once('../admin/includes/header.inc.php');
 
     // Display the instalation wizard.
     if (!$installed) {
@@ -433,9 +431,9 @@ EOF;
         <h2>Directory Permissions</h2>
         <section>
             <div class="alert <?php echo ($writableData == TRUE ? 'alert-success' : 'alert-danger' ); ?>">The <strong>data</strong> directory is<?php echo ($writableData ? ' ' : ' not' ); ?> writable.</div>
-            <div class="alert <?php echo ($writeableClass ? 'alert-success' : 'alert-danger' ); ?>">The <strong>settings.class.php</strong> file is<?php echo ($writeableClass ? ' ' : ' not' ); ?> writable.</div>
+            <div class="alert <?php echo ($writeableClasses ? 'alert-success' : 'alert-danger' ); ?>">The <strong>settings.class.php</strong> file is<?php echo ($writeableClasses ? ' ' : ' not' ); ?> writable.</div>
             <input type="hidden" name="permissions" id="permissions" value="<?php echo $writableData; ?>">
-<?php if (!$writableData || !$writeableClass) {?>
+<?php if (!$writableData || !$writeableClasses) {?>
             <p>
                 Please fix the permissions for the following directory and/or file to make sure they are writable before proceeding.
                 Once you have made the necessary changes please <a href="#" onclick="location.reload();">reload</a> this page to allow the installer to recheck permissions.
@@ -446,7 +444,7 @@ EOF;
         <h2>Data Storage</h2>
         <section>
             <label for="driver">Database Type</label>
-            <select class="form-control" name="driver" id="driver"> name="driver">
+            <select class="form-control" name="driver" id="driver">
                 <option value="xml">XML (Lite installation only)</option>
                 <option value="mysql">MySQL (Advanced installation only)</option>
                 <option value="sqlite">SQLite (Advanced installation only)</option>
@@ -476,8 +474,8 @@ EOF;
 
         <h2>Portal Settings</h2>
         <section>
-            <div> class="form-group">
-                <label for="timeZone">Time Zone *<label>
+            <div class="form-group">
+                <label for="timeZone">Time Zone</label>
                 <select class="form-control" id="timeZone" name="timeZone">
 <?php
     foreach (DateTimeZone::listIdentifiers() as $timeZone) {
@@ -485,7 +483,7 @@ EOF;
         $offSet = $currentTimeZone->getOffset($dt);
         $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
         $abbr = $transition[0]['abbr'];
-        echo '<option value="'.$timeZone.'">'.$timeZone.' [$
+        echo '<option name="timeZone" value="'.$timeZone.'">'.$timeZone.' ['.$abbr.' '.formatOffset($offSet).']</option>';
     }
 ?>
                 </select>
@@ -529,8 +527,8 @@ EOF;
     At this time you should also ensure that the file containing the settings you specified is no longer writeable.
     Please log into your device and run the following commands to accomplish these tasks.
 </p>
-<pre>sudo rm -f <?php echo $_SERVER['DOCUMENT_ROOT']; ?>/admin/install.php</pre>
-<pre>sudo chmod -w <?php echo $_SERVER['DOCUMENT_ROOT']; ?>/classes/settings.class.php</pre>
+<pre>sudo rm -f <?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/admin/install.php</pre>
+<pre>sudo chmod -w <?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/classes/settings.class.php</pre>
 <p>Once you have done so you can log in and administrate your portal <a href="/admin/">here</a>.</p>
 <p>
     If you experienced any issues or have any questions or suggestions you would like to make regarding this project
@@ -538,5 +536,5 @@ EOF;
 </p>
 <?php
     }
-    require_once('includes/footer.inc.php');
+    require_once("../admin/includes/footer.inc.php");
 ?>
