@@ -32,55 +32,54 @@
     require_once('../classes/settings.class.php');
 
     $common = new common();
-    $settings = new setting();
+    $settings = new settings();
 
-    // Convert local times stored in the database to UNIX timestamps time.
-    if ($settings::db_driver != "xml") {
+    // The most current stable release.
+    $thisVersion = "2.0.1";
 
-        $dbh = $this->pdoOpen();
-        $sql = "SELECT id, firstSeen, lastSeen FROM ".$settings::db_prefix."positions";
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $flights = $sth->fetchAll();
-        $sth = NULL;
-        $dbh = NULL;
-
-        foreach ($flights as $flight) {
-            $utcFirstSeen = gmdate("M d Y H:i:s", strtotime($flight['firstSeen']));
-            $utcLastSeen = gmdate("M d Y H:i:s", strtotime($flight['lastSeen']));
-
-            $dbh = $this->pdoOpen();
-            $sql = "UPDATE ".$settings::db_prefix."positions SET firstSeen = :firstSeen, lastSeen = :lastSeen WHERE id = :id";
-            $sth = $dbh->prepare($sql);
-            $sth->bindParam(':firstSeen', $utcFirstSeen, PDO::PARAM_STR);
-            $sth->bindParam(':lastSeen', $utcLastSeen, PDO::PARAM_STR);
-            $sth->bindParam(':id', $flight['id'], PDO::PARAM_INT);
-            $sth->execute();
-            $sth = NULL;
-            $dbh = NULL;
-
-        }
-
-        $dbh = $this->pdoOpen();
-        $sql = "SELECT id, time FROM ".$settings::db_prefix."positions";
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $positions = $sth->fetchAll();
-        $sth = NULL;
-        $dbh = NULL;
-
-        foreach ($positions as $position) {
-            $utcTime = gmdate("M d Y H:i:s", strtotime($flight['time']));
-
-            $dbh = $this->pdoOpen();
-            $sql = "UPDATE ".$settings::db_prefix."positions SET time = :time WHERE id = :id";
-            $sth = $dbh->prepare($sql);
-            $sth->bindParam(':time', $utcTime, PDO::PARAM_STR);
-            $sth->bindParam(':id', $flight['id'], PDO::PARAM_INT);
-            $sth->execute();
-            $sth = NULL;
-            $dbh = NULL;
-        }
-
+    // Begin the upgrade process if this release is newer than what is installed.
+    if ($common->getSetting("version") == $thisVersion) {
+        header ("Location: /");
     }
+
+    // Change tables containing datetime data to datetime.
+    if ($settings::db_driver != "xml") {
+        $dbh = $common->pdoOpen();
+
+        $sql = "ALTER TABLE adsb_aircraft MODIFY firstSeen DATETIME NOT NULL"
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $sth = NULL;
+
+        $sql = "ALTER TABLE adsb_aircraft MODIFY lastSeen DATETIME NOT NULL"
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $sth = NULL;
+
+        $sql = "ALTER TABLE adsb_blogPosts MODIFY date DATETIME NOT NULL"
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $sth = NULL;
+
+        $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL"
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $sth = NULL;
+
+        $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL"
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $sth = NULL;
+
+        $sql = "ALTER TABLE adsb_positions MODIFY time DATETIME NOT NULL"
+        $sth = $dbh->prepare($sql);
+        $sth->execute();
+        $sth = NULL;
+
+        $dbh = NULL;
+    }
+
+    // update version and patch settings.
+    $common->updateSetting("version", $thisVersion);
+    $common->updateSetting("patch", "");
 ?>

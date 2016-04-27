@@ -189,12 +189,12 @@ EOF;
                         $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
-                                          firstSeen VARCHAR(100) NOT NULL,
-                                          lastSeen VARCHAR(100) NOT NULL);';
+                                          firstSeen datetime NOT NULL,
+                                          lastSeen datetime NOT NULL);';
                         $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
                                            id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                            title VARCHAR(100) NOT NULL,
-                                           date VARCHAR(20) NOT NULL,
+                                           date datetime NOT NULL,
                                            author VARCHAR(100) NOT NULL,
                                            contents VARCHAR(20000) NOT NULL);';
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
@@ -204,12 +204,12 @@ EOF;
                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
                                          flight VARCHAR(100) NOT NULL,
-                                         firstSeen VARCHAR(100) NOT NULL,
-                                         lastSeen VARCHAR(100) NOT NULL);';
+                                         firstSeen datetime NOT NULL,
+                                         lastSeen datetime NOT NULL);';
                         $positionsSql = 'CREATE TABLE adsb_positions(
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                            flight BIGINT NOT NULL,
-                                           time VARCHAR(100) NOT NULL,
+                                           time datetime NOT NULL,
                                            message INT NOT NULL,
                                            squawk INT(4) NULL,
                                            latitude DOUBLE NOT NULL,
@@ -279,12 +279,12 @@ EOF;
                         $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
                                           icao TEXT NOT NULL,
-                                          firstSeen TEXT NOT NULL,
-                                          lastSeen TEXT NOT NULL);';
+                                          firstSeen DATETIME NOT NULL,
+                                          lastSeen DATETIME NOT NULL);';
                         $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          title TEXT NOT NULL,
-                                         date TEXT NOT NULL,
+                                         date DATETIME NOT NULL,
                                          author TEXT NOT NULL,
                                          contents TEXT NOT NULL);';
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
@@ -294,12 +294,12 @@ EOF;
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          aircraft INTEGER NOT NULL,
                                          flight TEXT NOT NULL,
-                                         firstSeen TEXT NOT NULL,
-                                         lastSeen TEXT NOT NULL);';
+                                         firstSeen DATETIME NOT NULL,
+                                         lastSeen DATETIME NOT NULL);';
                         $positionsSql = 'CREATE TABLE adsb_positions(
                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
                                            flight TEXT NOT NULL,
-                                           time TEXT NOT NULL,
+                                           time DATETIME NOT NULL,
                                            message INTEGER NOT NULL,
                                            squawk INTEGER NULL,
                                            latitude INTEGER NOT NULL,
