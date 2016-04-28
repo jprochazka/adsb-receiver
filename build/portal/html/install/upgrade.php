@@ -48,40 +48,127 @@
     try {
         // Change tables containing datetime data to datetime.
         if ($settings::db_driver != "xml") {
+
+            // ALter MySQL tables.
+            if ($settings::db_driver != "mysql") {
+                $dbh = $common->pdoOpen();
+
+                $sql = "ALTER TABLE ".$settings::db_prefix."aircraft MODIFY firstSeen DATETIME NOT NULL";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sql = "ALTER TABLE adsb_aircraft MODIFY lastSeen DATETIME NOT NULL";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sql = "ALTER TABLE adsb_blogPosts MODIFY date DATETIME NOT NULL";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sql = "ALTER TABLE adsb_positions MODIFY time DATETIME NOT NULL";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+                $dbh = NULL;
+            }
+
+            // Convert times to GMT.
+
             $dbh = $common->pdoOpen();
-
-            $sql = "ALTER TABLE adsb_aircraft MODIFY firstSeen DATETIME NOT NULL";
+            $sql = "SELECT id, firstSeen, lastSeen FROM ".$settings::db_prefix."aircraft";
             $sth = $dbh->prepare($sql);
             $sth->execute();
+            $aircraft = $sth->fetchAll();
             $sth = NULL;
-
-            $sql = "ALTER TABLE adsb_aircraft MODIFY lastSeen DATETIME NOT NULL";
-            $sth = $dbh->prepare($sql);
-            $sth->execute();
-            $sth = NULL;
-
-            $sql = "ALTER TABLE adsb_blogPosts MODIFY date DATETIME NOT NULL";
-            $sth = $dbh->prepare($sql);
-            $sth->execute();
-            $sth = NULL;
-
-            $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL";
-            $sth = $dbh->prepare($sql);
-            $sth->execute();
-            $sth = NULL;
-
-            $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL";
-            $sth = $dbh->prepare($sql);
-            $sth->execute();
-            $sth = NULL;
-
-            $sql = "ALTER TABLE adsb_positions MODIFY time DATETIME NOT NULL";
-            $sth = $dbh->prepare($sql);
-            $sth->execute();
-            $sth = NULL;
-
             $dbh = NULL;
+
+            foreach ($aircraft as $airframe) {
+                $dbh = $common->pdoOpen();
+                $sql = "UPDATE ".$settings::db_prefix."aircraft SET firstSeen = :firstSeen, lastSeen = :lastSeen WHERE id = :id";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':firstSeen',  gmdate("Y-m-d H:i:s", $airframe["firstSeen"]), PDO::PARAM_STR);
+                $sth->bindParam(':lastSeen', gmdate("Y-m-d H:i:s", $airframe["lastSeen"]), PDO::PARAM_STR);
+                $sth->bindParam(':id', $airframe["id"], PDO::PARAM_INT);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
+
+            $dbh = $common->pdoOpen();
+            $sql = "SELECT id, date FROM ".$settings::db_prefix."blogPosts";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $blogPosts = $sth->fetchAll();
+            $sth = NULL;
+            $dbh = NULL;
+
+            foreach ($blogPosts as $post) {
+                $dbh = $common->pdoOpen();
+                $sql = "UPDATE ".$settings::db_prefix."blogPosts SET date = :date WHERE id = :id";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':date', gmdate("Y-m-d H:i:s", $post["date"]), PDO::PARAM_STR);
+                $sth->bindParam(':id', $post["id"], PDO::PARAM_INT);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
+
+            $dbh = $common->pdoOpen();
+            $sql = "SELECT id, firstSeen, lastSeen FROM ".$settings::db_prefix."flights";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $flights = $sth->fetchAll();
+            $sth = NULL;
+            $dbh = NULL;
+
+            foreach ($flights as $flight) {
+                $dbh = $common->pdoOpen();
+                $sql = "UPDATE ".$settings::db_prefix."flights SET firstSeen = :firstSeen, lastSeen = lastSeen WHERE id = :id";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':firstSeen', gmdate("Y-m-d H:i:s", $flight["firstSeen"]), PDO::PARAM_STR);
+                $sth->bindParam(':lastSeen', gmdate("Y-m-d H:i:s", $flight["lastSeen"]), PDO::PARAM_STR);
+                $sth->bindParam(':id', $flight["id"], PDO::PARAM_INT);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
+
+            $dbh = $common->pdoOpen();
+            $sql = "SELECT id, time FROM ".$settings::db_prefix."positions";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $positionss = $sth->fetchAll();
+            $sth = NULL;
+            $dbh = NULL;
+
+            foreach ($positions as $position) {
+                $dbh = $common->pdoOpen();
+                $sql = "UPDATE ".$settings::db_prefix."positions SET time = :time WHERE id = :id";
+                $sth = $dbh->prepare($sql);
+                $sth->bindParam(':time', gmdate("Y-m-d H:i:s", $position["time"]), PDO::PARAM_STR);
+                $sth->bindParam(':id', $position["id"], PDO::PARAM_INT);
+                $sth->execute();
+                $sth = NULL;
+                $dbh = NULL;
+            }
         }
+
+        // Add timezone setting.
+        $common->addSetting("timeZone", date_default_timezone_get());
 
         // update version and patch settings.
         $common->updateSetting("version", $thisVersion);
