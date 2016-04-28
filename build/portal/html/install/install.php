@@ -72,7 +72,7 @@
             if (isset($_POST['host']))
                 $dbHost = $_POST['host'];
 
-            $dbPrefix = "";
+            $dbPrefix = "adsb_";
             if (isset($_POST['prefix']))
                 $dbPrefix = $_POST['prefix'];
 
@@ -431,7 +431,7 @@ EOF;
         <h2>Directory Permissions</h2>
         <section>
             <div class="alert <?php echo ($writableData == TRUE ? 'alert-success' : 'alert-danger' ); ?>">The <strong>data</strong> directory is<?php echo ($writableData ? ' ' : ' not' ); ?> writable.</div>
-            <div class="alert <?php echo ($writeableClasses ? 'alert-success' : 'alert-danger' ); ?>">The <strong>settings.class.php</strong> file is<?php echo ($writeableClasses ? ' ' : ' not' ); ?> writable.</div>
+            <div class="alert <?php echo ($writeableClasses ? 'alert-success' : 'alert-danger' ); ?>">The <strong>classes</strong> directory is<?php echo ($writeableClasses ? ' ' : ' not' ); ?> writable.</div>
             <input type="hidden" name="permissions" id="permissions" value="<?php echo $writableData; ?>">
 <?php if (!$writableData || !$writeableClasses) {?>
             <p>
