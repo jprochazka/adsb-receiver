@@ -37,9 +37,9 @@
 
             // Check if the portal is installed or needs upgraded.
             if (!file_exists($_SERVER['DOCUMENT_ROOT']."/classes/settings.class.php")) {
-                header ("Location: install.php");
+                header ("Location: /install/install.php");
             } elseif ($common->getSetting("version") != "2.0.1"){
-                header ("Location: upgrade.php");
+                header ("Location: /install/upgrade.php");
             }
 
             // The Base URL of this page (needed for Plane Finder client link)

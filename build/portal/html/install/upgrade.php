@@ -42,44 +42,69 @@
         header ("Location: /");
     }
 
-    // Change tables containing datetime data to datetime.
-    if ($settings::db_driver != "xml") {
-        $dbh = $common->pdoOpen();
+    $error = FALSE;
+    #errorMessage = "No error message returned.";
 
-        $sql = "ALTER TABLE adsb_aircraft MODIFY firstSeen DATETIME NOT NULL"
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $sth = NULL;
+    try {
+        // Change tables containing datetime data to datetime.
+        if ($settings::db_driver != "xml") {
+            $dbh = $common->pdoOpen();
 
-        $sql = "ALTER TABLE adsb_aircraft MODIFY lastSeen DATETIME NOT NULL"
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $sth = NULL;
+            $sql = "ALTER TABLE adsb_aircraft MODIFY firstSeen DATETIME NOT NULL";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $sth = NULL;
 
-        $sql = "ALTER TABLE adsb_blogPosts MODIFY date DATETIME NOT NULL"
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $sth = NULL;
+            $sql = "ALTER TABLE adsb_aircraft MODIFY lastSeen DATETIME NOT NULL";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $sth = NULL;
 
-        $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL"
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $sth = NULL;
+            $sql = "ALTER TABLE adsb_blogPosts MODIFY date DATETIME NOT NULL";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $sth = NULL;
 
-        $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL"
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $sth = NULL;
+            $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $sth = NULL;
 
-        $sql = "ALTER TABLE adsb_positions MODIFY time DATETIME NOT NULL"
-        $sth = $dbh->prepare($sql);
-        $sth->execute();
-        $sth = NULL;
+            $sql = "ALTER TABLE adsb_flights MODIFY firstSeen DATETIME NOT NULL";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $sth = NULL;
 
-        $dbh = NULL;
+            $sql = "ALTER TABLE adsb_positions MODIFY time DATETIME NOT NULL";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $sth = NULL;
+
+            $dbh = NULL;
+        }
+
+        // update version and patch settings.
+        $common->updateSetting("version", $thisVersion);
+        $common->updateSetting("patch", "");
+    } catch(Exception $e) {
+        $error = TRUE;
+        $errorMessage = $e->getMessage();
     }
 
-    // update version and patch settings.
-    $common->updateSetting("version", $thisVersion);
-    $common->updateSetting("patch", "");
+    require_once('../admin/includes/header.inc.php');
+
+    // Display the instalation wizard.
+    if (!$error) {
+?>
+<h1>ADS-B Receiver Portal Updated</h1>
+<p>Your portal has been upgraded to v<?php echo $thisVersion; ?>.</p>
+<?php
+    } else {
+?>
+<h1>Error Encountered Upgrading Your ADS-B Receiver Portal</h1>
+<p>There was an error encountered when upgrading your portal to v<?php echo $thisVersion; ?>.</p>
+<?php echo $errorMessage; ?>
+<?php
+    }
+    require_once('../admin/includes/footer.inc.php');
 ?>
