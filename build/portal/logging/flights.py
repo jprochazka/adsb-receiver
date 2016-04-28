@@ -39,7 +39,7 @@ import datetime
 import json
 import time
 import os
-import urllib2
+#import urllib2
 
 while True:
 
@@ -54,11 +54,11 @@ while True:
         import sqlite3
 
     # Read dump1090-mutability's aircraft.json.
-    #with open('/run/dump1090-mutability/aircraft.json') as data_file:
-    #    data = json.load(data_file)
+    with open('/run/dump1090-mutability/aircraft.json') as data_file:
+        data = json.load(data_file)
     # For testing using a remote JSON feed.
-    response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
-    data = json.load(response)
+    #response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
+    #data = json.load(response)
 
     if config["database"]["type"] == "sqlite":
         ## Connect to a SQLite database.
