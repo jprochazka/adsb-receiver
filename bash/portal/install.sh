@@ -184,6 +184,14 @@ if [[ $INSTALLED == "n" ]]; then
                 DATABASEHOST="localhost"
             fi
             read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+
+            # Check that the supplied password is correct.
+            while ! mysql -u root -p$MYSQLROOTPASSWORD  -e ";" ; do
+                echo -e "\033[31m"
+                echo -e "Unable to connect to the MySQL server using the supplied password.\033[37m"
+                read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+            done
+
             read -p "New Database Name: " DATABASENAME
             read -p "New Database User Name: " DATABASEUSER
             read -p "New Database User Password: " DATABASEPASSWORD
