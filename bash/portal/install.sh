@@ -232,7 +232,7 @@ if [[ $INSTALLED == "n" ]]; then
                 "host":"",
                 "user":"",
                 "passwd":"",
-                "db":"${HTMLDIR}/data/portal.sqlite"}
+                "db":"${DOCUMENTROOT}/data/portal.sqlite"}
 }
 EOF
                 ;;
