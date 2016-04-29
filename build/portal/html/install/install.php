@@ -354,7 +354,7 @@ EOF;
             $common->addSetting('siteName', 'ADS-B Receiver');
             $common->addSetting('template', 'default');
             $common->addSetting('defaultPage', 'blog.php');
-            $common->addSetting('dateFormat', 'F jS, Y');
+            $common->addSetting('dateFormat', 'F jS, Y g:i A');
             $common->addSetting('enableBlog', TRUE);
             $common->addSetting('enableInfo', TRUE);
             $common->addSetting('enableGraphs', TRUE);
@@ -376,7 +376,7 @@ EOF;
             $common->addSetting('enableFlightNotifications', FALSE);
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
-            $common->addSetting('timeZone', '');
+            $common->addSetting('timeZone', $_POST['timeZone']);
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);
