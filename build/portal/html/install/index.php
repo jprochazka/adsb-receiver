@@ -73,8 +73,8 @@
                 $dbHost = $_POST['host'];
 
             $dbPrefix = "adsb_";
-            if (isset($_POST['prefix']))
-                $dbPrefix = $_POST['prefix'];
+            //if (isset($_POST['prefix']))
+            //    $dbPrefix = $_POST['prefix'];
 
             // Create or edit the settings.class.php file.
             $content  = <<<EOF
@@ -186,7 +186,7 @@ EOF;
                                                 email VARCHAR(75) NOT NULL,
                                                 login VARCHAR(25) NOT NULL,
                                                 password VARCHAR(255) NOT NULL);';
-                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft (
                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
                                           firstSeen datetime NOT NULL,
@@ -206,7 +206,7 @@ EOF;
                                          flight VARCHAR(100) NOT NULL,
                                          firstSeen datetime NOT NULL,
                                          lastSeen datetime NOT NULL);';
-                        $positionsSql = 'CREATE TABLE adsb_positions(
+                        $positionsSql = 'CREATE TABLE '.$dbPrifix.'positions (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                            flight BIGINT NOT NULL,
                                            time datetime NOT NULL,
@@ -231,7 +231,7 @@ EOF;
                                               email VARCHAR(75) NOT NULL,
                                               login VARCHAR(25) NOT NULL,
                                               password VARCHAR(255) NOT NULL);';
-                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft (
                                           id SERIAL PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
                                           firstSeen VARCHAR(100) NOT NULL,
@@ -245,13 +245,13 @@ EOF;
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
                                                    id SERIAL PRIMARY KEY,
                                                    flight VARCHAR(10) NOT NULL);';
-                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights (
                                          id SERIAL PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
                                          flight VARCHAR(100) NOT NULL,
                                          firstSeen VARCHAR(100) NOT NULL,
                                          lastSeen VARCHAR(100) NOT NULL);';
-                        $positionsSql = 'CREATE TABLE adsb_positions(
+                        $positionsSql = 'CREATE TABLE '.$dbPrifix.'positions (
                                            id SERIAL PRIMARY KEY,
                                            flight BIGINT NOT NULL,
                                            time VARCHAR(100) NOT NULL,
@@ -276,7 +276,7 @@ EOF;
                                               email TEXT NOT NULL,
                                               login TEXT NOT NULL,
                                               password TEXT NOT NULL);';
-                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft (
                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
                                           icao TEXT NOT NULL,
                                           firstSeen DATETIME NOT NULL,
@@ -290,13 +290,13 @@ EOF;
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                    flight TEXT NOT NULL);';
-                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          aircraft INTEGER NOT NULL,
                                          flight TEXT NOT NULL,
                                          firstSeen DATETIME NOT NULL,
                                          lastSeen DATETIME NOT NULL);';
-                        $positionsSql = 'CREATE TABLE adsb_positions(
+                        $positionsSql = 'CREATE TABLE '.$dbPrifix.'positions (
                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
                                            flight TEXT NOT NULL,
                                            time DATETIME NOT NULL,
