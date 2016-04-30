@@ -150,7 +150,7 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
     read -p "Use portal with advanced features? [1] " DATABASEENGINE
 
     # Check if the user is using a remote MySQL database.
-    if [[ $DATABASEENGINE == 1 ]]; then
+    if [[ $DATABASEENGINE != 2 ]]; then
         echo -e "\033[31m"
         echo "Will the database be hosted locally on this device or remotely?"
         echo -e "\033[33m"
