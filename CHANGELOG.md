@@ -2,6 +2,29 @@
 
 The following is a history of the changes made to this project.
 
+## v2.0.1 *(April 29th, 2016)*
+
+* Flight logging is now inserted properly into SQLite databases. *(advanced)*
+* Remote MySQL database servers now handled properly by install scripts. *(advanced)*
+* Separate flights now separated properly when viewing flight plots page. *(advanced)*
+* Fixed issue where having the text ";&nbsp" was causing issues when stored in XML.
+* Flights with no positions no longer display a PHP error when viewing plots. *(advanced)*
+* Flight search box hidden on non advanced installations.
+* All times are now stored as UTC time.
+* Added the ability to specify the timezone the portal uses to display data.
+* MySQL root password check added during script installation. *(advanced)*
+* Directory where install/upgrade PHP files reside has been changed.
+* Added warning not to remove the adsb-receiver directory after installation.
+
+**Previous patches included in this release...**
+
+* Added the version setting to be used to identifying the currently installed release.
+* Added the patch setting to identify the current patch installed.
+* Fixed issue with wireless bandwidth not being displayed on the system information page.
+* The Python script flights.py should now import the proper libraries. *(advanced)*
+* Wlan0 traffic now be displayed by the system gauges.
+* Fixed issues pertaining to updating settings using the administration backend.
+
 ## v2.0.0 *(April 14th, 2016)*
 
 * Versioning no longer going by date.
