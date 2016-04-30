@@ -87,7 +87,15 @@
             }
 
             // Convert times to GMT.
+            
+            // You may wish to uncomment this block of code in order to convert existing times
+            // stored in the database to UTC/GMT time. Before doing so it is recommended that
+            // you set the setting max_execution_time setting to a large amount of time in your
+            // php.ini file. Depending on the amount of flight data logged this may take quite
+            // some time for this upgrade script to complete so be patient and let it run it's
+            // course. Afterwards set the max_execution_time back to it previous setting.
 
+            /*
             $dbh = $common->pdoOpen();
             $sql = "SELECT id, firstSeen, lastSeen FROM ".$settings::db_prefix."aircraft";
             $sth = $dbh->prepare($sql);
@@ -165,6 +173,7 @@
                 $sth = NULL;
                 $dbh = NULL;
             }
+            */
         }
 
         // Add timezone setting.
