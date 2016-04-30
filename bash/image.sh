@@ -138,6 +138,8 @@ echo "You have been warned."
 echo -e "\033[37m"
 read -p "Use portal with advanced features? [y/N] " ADVANCED
 
+## ASK IF ADVANCED FEATURES ARE TO BE USED 
+
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
     echo -e "\033[31m"
     echo "Select Database Engine"
@@ -180,77 +182,75 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
     fi
 fi
 
-if [[ $INSTALLED == "n" ]]; then
+## CREATE THE DATABASE IF ADVANCED FEATURES WAS SELECTED
 
-    ## CREATE THE DATABASE IF ADVANCED FEATURES WAS SELECTED
+if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    if [[ $DATABASEENGINE != 2 ]]; then
+        echo -e "\033[31m"
+        echo "Gathering Database Information"
+        echo -e "\033[33m"
+        echo "Please supply the information pertaining to the new password when asked."
+        echo ""
+        echo "If the database will be hosted locally on this device a database will be"
+        echo "created automatically for you. If you are hosting your database remotely"
+        echo "you will need to manually create the database and user on the remote device."
+        echo -e "\033[37m"
 
-    if [[ $ADVANCED =~ ^[yY]$ ]]; then
-        if [[ $DATABASEENGINE != 2 ]]; then
+        DATABASEHOST="localhost"
+        if [[ $LOCALDATABASE == 2 ]]; then
+            # Ask for remote MySQL address if the database is hosted remotely.
+            read -p "Remote MySQL Server Address: " DATABASEHOST
+        fi
+        read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+
+        # Check that the supplied password is correct.
+        while ! mysql -u root -p$MYSQLROOTPASSWORD -h $DATABASEHOST  -e ";" ; do
             echo -e "\033[31m"
-            echo "Gathering Database Information"
-            echo -e "\033[33m"
-            echo "Please supply the information pertaining to the new password when asked."
-            echo ""
-            echo "If the database will be hosted locally on this device a database will be"
-            echo "created automatically for you. If you are hosting your database remotely"
-            echo "you will need to manually create the database and user on the remote device."
-            echo -e "\033[37m"
-
-            DATABASEHOST="localhost"
-            if [[ $LOCALDATABASE == 2 ]]; then
-                # Ask for remote MySQL address if the database is hosted remotely.
-                read -p "Remote MySQL Server Address: " DATABASEHOST
-            fi
+            echo -e "Unable to connect to the MySQL server using the supplied password.\033[37m"
             read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+        done
 
-            # Check that the supplied password is correct.
-            while ! mysql -u root -p$MYSQLROOTPASSWORD -h $DATABASEHOST  -e ";" ; do
-                echo -e "\033[31m"
-                echo -e "Unable to connect to the MySQL server using the supplied password.\033[37m"
-                read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
-            done
+        read -p "New Database Name: " DATABASENAME
+        read -p "New Database User Name: " DATABASEUSER
+        read -p "New Database User Password: " DATABASEPASSWORD
 
-            read -p "New Database Name: " DATABASENAME
-            read -p "New Database User Name: " DATABASEUSER
-            read -p "New Database User Password: " DATABASEPASSWORD
-
-            # Create the database and user as well as assign permissions.
-            if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
-                echo -e "\033[33m"
-                echo -e "Creating MySQL database and user...\033[37m"
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE DATABASE ${DATABASENAME};"
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "FLUSH PRIVILEGES;"
-            fi
-
-            echo -e "\033[31m"
-            echo "BE SURE TO WRITE THIS INFORMATION DOWN."
+        # Create the database and user as well as assign permissions.
+        if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
             echo -e "\033[33m"
-            echo "This information will be needed in order to complete the installation of the portal."
-            echo ""
-            if [[ $LOCALDATABASE == 2 ]]; then
-                echo -e "\033[31mNOTE:"
-                echo "Being you are hosting your database remotely you will need this information to create"
-                echo "both the database and database user on your remote database server."
-                echo -e "\033[33m"
-            fi
-            echo "Database Server: ${DATABASEHOST}"
-            echo "Database User: ${DATABASEUSER}"
-            echo "Database Password: ${DATABASEPASSWORD}"
-            echo "Database Name: ${DATABASENAME}"
-            echo -e "\033[37m"
-            read -p "Press enter to continue..." CONTINUE
-
+            echo -e "Creating MySQL database and user...\033[37m"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE DATABASE ${DATABASENAME};"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "FLUSH PRIVILEGES;"
         fi
 
-        ## SETUP FLIGHT LOGGING SCRIPT
-
+        echo -e "\033[31m"
+        echo "BE SURE TO WRITE THIS INFORMATION DOWN."
         echo -e "\033[33m"
-        echo -e "Creating configuration file...\033[37m"
-        case $DATABASEENGINE in
-            "2")
-                tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+        echo "This information will be needed in order to complete the installation of the portal."
+        echo ""
+        if [[ $LOCALDATABASE == 2 ]]; then
+            echo -e "\033[31mNOTE:"
+            echo "Being you are hosting your database remotely you will need this information to create"
+            echo "both the database and database user on your remote database server."
+            echo -e "\033[33m"
+        fi
+        echo "Database Server: ${DATABASEHOST}"
+        echo "Database User: ${DATABASEUSER}"
+        echo "Database Password: ${DATABASEPASSWORD}"
+        echo "Database Name: ${DATABASENAME}"
+        echo -e "\033[37m"
+        read -p "Press enter to continue..." CONTINUE
+
+    fi
+
+    ## SETUP FLIGHT LOGGING SCRIPT
+
+    echo -e "\033[33m"
+    echo -e "Creating configuration file...\033[37m"
+    case $DATABASEENGINE in
+        "2")
+            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"sqlite",
                 "host":"",
@@ -259,9 +259,9 @@ if [[ $INSTALLED == "n" ]]; then
                 "db":"${DOCUMENTROOT}/data/portal.sqlite"}
 }
 EOF
-                ;;
-            *)
-                tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
+            ;;
+        *)
+            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
                 "host":"${DATABASEHOST}",
@@ -270,12 +270,12 @@ EOF
                 "db":"${DATABASENAME}"}
 }
 EOF
-                 ;;
-        esac
+            ;;
+    esac
 
-        # Create and set permissions on the flight logging maintainance script.
-        PYTHONPATH=`which python`
-        tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
+    # Create and set permissions on the flight logging maintainance script.
+    PYTHONPATH=`which python`
+    tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
 #!/bin/sh
 while true
   do
@@ -283,21 +283,20 @@ while true
         ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
   done
 EOF
-        chmod +x $BUILDDIR/portal/logging/flights-maint.sh
+    chmod +x $BUILDDIR/portal/logging/flights-maint.sh
 
-        # Add flight logging maintainance script to rc.local.
-        if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
-            echo -e "\033[33m"
-            echo -e "Adding startup line to rc.local...\033[37m"
-            lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-            ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
-        fi
-
-        # Start flight logging.
+    # Add flight logging maintainance script to rc.local.
+    if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
         echo -e "\033[33m"
-        echo -e "Starting flight logging...\033[37m"
-        nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
+        echo -e "Adding startup line to rc.local...\033[37m"
+        lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
     fi
+
+    # Start flight logging.
+    echo -e "\033[33m"
+    echo -e "Starting flight logging...\033[37m"
+    nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
 fi
 
 ## FINISH CONFIGURATION
