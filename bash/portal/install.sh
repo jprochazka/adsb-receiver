@@ -177,16 +177,16 @@ if [[ $INSTALLED == "n" ]]; then
             echo "created automatically for you. If you are hosting your database remotely"
             echo "you will need to manually create the database and user on the remote device."
             echo -e "\033[37m"
+
+            DATABASEHOST="localhost"
             if [[ $LOCALDATABASE == 2 ]]; then
                 # Ask for remote MySQL address if the database is hosted remotely.
                 read -p "Remote MySQL Server Address: " DATABASEHOST
-            else
-                DATABASEHOST="localhost"
             fi
             read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
 
             # Check that the supplied password is correct.
-            while ! mysql -u root -p$MYSQLROOTPASSWORD  -e ";" ; do
+            while ! mysql -u root -p$MYSQLROOTPASSWORD -h $DATABASEHOST  -e ";" ; do
                 echo -e "\033[31m"
                 echo -e "Unable to connect to the MySQL server using the supplied password.\033[37m"
                 read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
@@ -196,16 +196,14 @@ if [[ $INSTALLED == "n" ]]; then
             read -p "New Database User Name: " DATABASEUSER
             read -p "New Database User Password: " DATABASEPASSWORD
 
-            # Database creation can only be handled locally.
-            if [[ $DATABASEHOST != 2 ]]; then
-                if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
-                    echo -e "\033[33m"
-                    echo -e "Creating MySQL database and user...\033[37m"
-                    mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
-                    mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-                    mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-                    mysql -uroot -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
-                fi
+            # Create the database and user as well as assign permissions.
+            if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
+                echo -e "\033[33m"
+                echo -e "Creating MySQL database and user...\033[37m"
+                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE DATABASE ${DATABASENAME};"
+                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "FLUSH PRIVILEGES;"
             fi
 
             echo -e "\033[31m"
