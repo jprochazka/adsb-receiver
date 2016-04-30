@@ -36,7 +36,7 @@
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
-        header ("Location: upgrade.php");
+        header ("Location: /install/upgrade.php");
     }
 
     // BEGIN FRESH INSTALLATION

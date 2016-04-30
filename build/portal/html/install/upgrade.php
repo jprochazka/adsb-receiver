@@ -87,7 +87,7 @@
             }
 
             // Convert times to GMT.
-            
+
             // You may wish to uncomment this block of code in order to convert existing times
             // stored in the database to UTC/GMT time. Before doing so it is recommended that
             // you set the setting max_execution_time setting to a large amount of time in your
