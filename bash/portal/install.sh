@@ -155,8 +155,8 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
        if [[ $LOCALDATABASE != 2 ]]; then
            # Install MySQL locally.
            CheckPackage mysql-server
-           CheckPackage mysql-client
        fi
+       CheckPackage mysql-client
        CheckPackage php5-mysql
        CheckPackage python-mysqldb
     fi
