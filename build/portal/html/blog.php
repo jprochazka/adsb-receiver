@@ -54,7 +54,11 @@
             $post['contents'] = substr($post['contents'], 0, strpos($post['contents'], '{more}'));
         }
         $post['author'] = $common->getAdminstratorName($post['author']);
-        $post['date'] = date_format(date_create($post['date']), $common->getSetting('dateFormat'));
+
+        // Properly format the date and convert to slected time zone.
+        $date = new DateTime($post['date'], new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+        $post['date'] = $date->format($common->getSetting('dateFormat'));
     }
 
     // Pagination.

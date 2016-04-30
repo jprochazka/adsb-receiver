@@ -69,6 +69,10 @@
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             $settings = new settings();
 
+            if ($name == "dataStorage") {
+                return $settings::db_driver;
+            }
+
             if ($settings::db_driver == 'xml') {
                 // XML
                 $theseSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");

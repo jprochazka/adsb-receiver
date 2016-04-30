@@ -23,11 +23,40 @@
         <link rel="stylesheet" href="templates/{setting:template}/assets/css/dump1090.css">
 {/area}
 {area:contents}
+            {if page:flightPathsAvailable eq FALSE}
+            <div class="modal fade in" id="no-data-modal" tabindex="-1" role="dialog" aria-labelledby="no-data-modal-label">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="no-data-modal-label">No Position Data</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>There is no position data for this flight.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+            {/if}
             <div id="iframe-wrapper">
                 <div id="map"></div>
             </div>
+            <div> id="slide-panel">
+                <a href="#" class="btn btn-danger" id="opener"><i class="glyphicon glyphicon-align-justify"></i></a>
+                Panel Content
+            </div>
 {/area}
 {area:scripts}
+    {if page:flightPathsAvailable eq FALSE}
+    <script type="text/javascript">
+        $(window).load(function(){
+            $('#no-data-modal').modal('show');
+        });
+    </script>
+    {/if}
     <script>
       var genericPlaneSvg = "M 0,0 " +
         "M 1.9565564,41.694305 C 1.7174505,40.497708 1.6419973,38.448747 " +
@@ -68,8 +97,9 @@
           mapTypeId: google.maps.MapTypeId.TERRAIN
         });
 
+        {foreach page:flightPaths as flightPath}
         var marker = new google.maps.Marker({
-          position: {lat: {page:startingLatitude}, lng: {page:startingLongitude}},
+          position: {lat: {flightPath->startingLatitude}, lng: {flightPath->startingLongitude}},
           map: map,
           icon: {
             path: genericPlaneSvg,
@@ -78,12 +108,12 @@
             fillColor: "green",
             fillOpacity: 1,
             strokeWeight: 2,
-            rotation: {page:startingDegrees}
+            rotation: {flightPath->startingTrack}
           }
         });
 
         var marker = new google.maps.Marker({
-          position: {lat: {page:finishingLatitude}, lng: {page:finishingLongitude}},
+          position: {lat: {flightPath->finishingLatitude}, lng: {flightPath->finishingLongitude}},
           map: map,
           icon: {
             path: genericPlaneSvg,
@@ -92,17 +122,18 @@
             fillColor: "red",
             fillOpacity: 1,
             strokeWeight: 2,
-            rotation: {page:finishingDegrees}
+            rotation: {flightPath->finishingTrack}
           }
         });
 
-        var flightPlanCoordinates = [
-            {foreach page:positions as position}
-            {lat: {position->latitude}, lng: {position->longitude}},
-            {/foreach}
-        ];
+        json = {flightPath->positions};
+        var thisPath = new Array();
+        for (var i = 0; i < json.length; i++) {
+            thisPath.push(new google.maps.LatLng(json[i].latitude, json[i].longitude));
+        }
+
         var flightPath = new google.maps.Polyline({
-          path: flightPlanCoordinates,
+          path: thisPath,
           geodesic: true,
           strokeColor: 'blue',
           strokeOpacity: 1.0,
@@ -110,6 +141,7 @@
         });
 
         flightPath.setMap(map);
+        {/foreach}
 
         // Retain map state.
         loadMapState();
@@ -166,6 +198,6 @@
         }
 
       }
-    </script>
+    </script>      
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAibOqEH7XseMCHOPQUdBon6LHKSlbGHj4&callback=initMap"></script>
 {/area}

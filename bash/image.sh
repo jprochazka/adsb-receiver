@@ -146,6 +146,17 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
     echo "  2) SQLLite"
     echo -e "\033[37m"
     read -p "Use portal with advanced features? [1] " DATABASEENGINE
+
+    # Check if the user is using a remote MySQL database.
+    if [[ $DATABASEENGINE == 1 ]]; then
+        echo -e "\033[31m"
+        echo "Will the database be hosted locally on this device or remotely?"
+        echo -e "\033[33m"
+        echo "  1) Locally"
+        echo "  2) Remotely"
+        echo -e "\033[37m"
+        read -p "Use portal with advanced features? [1] " LOCALDATABASE
+    fi
 fi
 
 # Check for prerequisite packages.
@@ -158,8 +169,11 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
        CheckPackage sqlite3
        CheckPackage php5-sqlite
     else
-       CheckPackage mysql-server
-       CheckPackage mysql-client
+       if [[ $LOCALDATABASE != 2 ]]; then
+           # Install MySQL locally.
+           CheckPackage mysql-server
+           CheckPackage mysql-client
+       fi
        CheckPackage php5-mysql
        CheckPackage python-mysqldb
     fi
@@ -169,37 +183,54 @@ fi
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
     if [[ $DATABASEENGINE != 2 ]]; then
         echo -e "\033[31m"
-        echo "Create Database and User"
+        echo "Gathering Database Information"
         echo -e "\033[33m"
-        echo "A database will now be created for you."
         echo "Please supply the information pertaining to the new password when asked."
+        echo ""
+        echo "If the database will be hosted locally on this device a database will be"
+        echo "created automatically for you. If you are hosting your database remotely"
+        echo "you will need to manually create the database and user on the remote device."
         echo -e "\033[37m"
+        if [[ $LOCALDATABASE == 2 ]]; then
+            # Ask for remote MySQL address if the database is hosted remotely.
+            read -p "Remote MySQL Server Address: " DATABASEHOST
+        else
+            DATABASEHOST="localhost"
+        fi
         read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
         read -p "New Database Name: " DATABASENAME
         read -p "New Database User Name: " DATABASEUSER
         read -p "New Database User Password: " DATABASEPASSWORD
 
-        if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
-        echo -e "\033[33m"
-        echo -e "Creating MySQL database and user...\033[37m"
-            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
-            mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-            mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-            mysql -uroot -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
+        # Database creation can only be handled locally.
+        if [[ $LOCALDATABASE != 2 ]]; then
+            if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
+            echo -e "\033[33m"
+            echo -e "Creating MySQL database and user...\033[37m"
+                mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
+                mysql -uroot -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+                mysql -uroot -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+                mysql -uroot -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
+            fi
         fi
 
         echo -e "\033[31m"
         echo "BE SURE TO WRITE THIS INFORMATION DOWN."
         echo -e "\033[33m"
-        echo "Ii will be needed in order to complete the installation of the portal."
+        echo "This information will be needed in order to complete the installation of the portal."
         echo ""
-        echo "Database Server: localhost"
+        if [[ $LOCALDATABASE == 2 ]]; then
+            echo -e "\033[31mNOTE:"
+            echo "Being you are hosting your database remotely you will need this information to create"
+            echo "both the database and database user on your remote database server."
+            echo -e "\033[33m"
+        fi
+        echo "Database Server: ${DATABASEHOST}"
         echo "Database User: ${DATABASEUSER}"
         echo "Database Password: ${DATABASEPASSWORD}"
         echo "Database Name: ${DATABASENAME}"
         echo -e "\033[37m"
         read -p "Press enter to continue..." CONTINUE
-
     fi
 
     # Setup the flight logging script.
@@ -221,7 +252,7 @@ EOF
             tee ~/adsb-receiver/build/portal/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
-                "host":"localhost",
+                "host":"${DATABASEHOST}",
                 "user":"${DATABASEUSER}",
                 "passwd":"${DATABASEPASSWORD}",
                 "db":"${DATABASENAME}"}

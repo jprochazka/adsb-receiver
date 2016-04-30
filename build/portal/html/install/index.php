@@ -31,16 +31,15 @@
     require_once('../classes/common.class.php');
     $common = new common();
 
-    // THE FOLLOWING COMMENTED LINES WILL BE USED IN FUTURE RELEASES
-    ///////////////////////////////////////////////////////////////////
-
     // The most current stable release.
-    //$currentRelease = "2016-02-18";
+    $thisVersion = "2.0.1";
 
     // Begin the upgrade process if this release is newer than what is installed.
-    //if ($currentRelease > $common->getRelease) {
-    //    header ("Location: upgrade.php");
-    //}
+    if (file_exists("../classes/settings.class.php")) {
+        header ("Location: upgrade.php");
+    }
+
+    // BEGIN FRESH INSTALLATION
 
     $installed = FALSE;
     //if ($common->postBack()) {
@@ -73,9 +72,9 @@
             if (isset($_POST['host']))
                 $dbHost = $_POST['host'];
 
-            $dbPrefix = "";
-            if (isset($_POST['prefix']))
-                $dbPrefix = $_POST['prefix'];
+            $dbPrefix = "adsb_";
+            //if (isset($_POST['prefix']))
+            //    $dbPrefix = $_POST['prefix'];
 
             // Create or edit the settings.class.php file.
             $content  = <<<EOF
@@ -110,7 +109,6 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     class settings {
-
         // Database Settings
         const db_driver = '$_POST[driver]';
         const db_database = '$dbDatabase';
@@ -182,36 +180,36 @@ EOF;
                 switch ($_POST['driver']) {
                     case "mysql":
                         // MySQL
-                        $administratorsSql = 'CREATE TABLE '.$dbPrifix.'administrators (
+                        $administratorsSql = 'CREATE TABLE '.$dbPrefix.'administrators (
                                                 id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                                 name VARCHAR(100) NOT NULL,
                                                 email VARCHAR(75) NOT NULL,
                                                 login VARCHAR(25) NOT NULL,
                                                 password VARCHAR(255) NOT NULL);';
-                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                        $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
-                                          firstSeen VARCHAR(100) NOT NULL,
-                                          lastSeen VARCHAR(100) NOT NULL);';
-                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                          firstSeen datetime NOT NULL,
+                                          lastSeen datetime NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrefix.'blogPosts (
                                            id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                            title VARCHAR(100) NOT NULL,
-                                           date VARCHAR(20) NOT NULL,
+                                           date datetime NOT NULL,
                                            author VARCHAR(100) NOT NULL,
                                            contents VARCHAR(20000) NOT NULL);';
-                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                      id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                                      flight VARCHAR(10) NOT NULL);';
-                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                        $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights(
                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
                                          flight VARCHAR(100) NOT NULL,
-                                         firstSeen VARCHAR(100) NOT NULL,
-                                         lastSeen VARCHAR(100) NOT NULL);';
-                        $positionsSql = 'CREATE TABLE adsb_positions(
+                                         firstSeen datetime NOT NULL,
+                                         lastSeen datetime NOT NULL);';
+                        $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                            flight BIGINT NOT NULL,
-                                           time VARCHAR(100) NOT NULL,
+                                           time datetime NOT NULL,
                                            message INT NOT NULL,
                                            squawk INT(4) NULL,
                                            latitude DOUBLE NOT NULL,
@@ -220,7 +218,7 @@ EOF;
                                            altitude INT(5) NOT NULL,
                                            verticleRate INT(4) NOT NULL,
                                            speed INT(4) NULL);';
-                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                        $settingsSql = 'CREATE TABLE '.$dbPrefix.'settings (
                                           id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                           name VARCHAR(50) NOT NULL,
                                           value VARCHAR(100) NOT NULL);';
@@ -233,27 +231,27 @@ EOF;
                                               email VARCHAR(75) NOT NULL,
                                               login VARCHAR(25) NOT NULL,
                                               password VARCHAR(255) NOT NULL);';
-                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                        $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id SERIAL PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
                                           firstSeen VARCHAR(100) NOT NULL,
                                           lastSeen VARCHAR(100) NOT NULL);';
-                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrefix.'blogPosts (
                                          id SERIAL PRIMARY KEY,
                                          title VARCHAR(100) NOT NULL,
                                          date VARCHAR(20) NOT NULL,
                                          author VARCHAR(100) NOT NULL,
                                          contents VARCHAR(20000) NOT NULL);';
-                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                    id SERIAL PRIMARY KEY,
                                                    flight VARCHAR(10) NOT NULL);';
-                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                        $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id SERIAL PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
                                          flight VARCHAR(100) NOT NULL,
                                          firstSeen VARCHAR(100) NOT NULL,
                                          lastSeen VARCHAR(100) NOT NULL);';
-                        $positionsSql = 'CREATE TABLE adsb_positions(
+                        $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id SERIAL PRIMARY KEY,
                                            flight BIGINT NOT NULL,
                                            time VARCHAR(100) NOT NULL,
@@ -265,7 +263,7 @@ EOF;
                                            altitude INT(5) NOT NULL,
                                            verticleRate INT(4) NOT NULL,
                                            speed INT(4) NULL);';
-                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                        $settingsSql = 'CREATE TABLE '.$dbPrefix.'settings (
                                         id SERIAL PRIMARY KEY,
                                         name VARCHAR(50) NOT NULL,
                                         value VARCHAR(100) NOT NULL);';
@@ -278,30 +276,30 @@ EOF;
                                               email TEXT NOT NULL,
                                               login TEXT NOT NULL,
                                               password TEXT NOT NULL);';
-                        $aircraftSql = 'CREATE TABLE '.$dbPrifix.'aircraft(
+                        $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
                                           icao TEXT NOT NULL,
-                                          firstSeen TEXT NOT NULL,
-                                          lastSeen TEXT NOT NULL);';
-                        $blogPostsSql = 'CREATE TABLE '.$dbPrifix.'blogPosts (
+                                          firstSeen DATETIME NOT NULL,
+                                          lastSeen DATETIME NOT NULL);';
+                        $blogPostsSql = 'CREATE TABLE '.$dbPrefix.'blogPosts (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          title TEXT NOT NULL,
-                                         date TEXT NOT NULL,
+                                         date DATETIME NOT NULL,
                                          author TEXT NOT NULL,
                                          contents TEXT NOT NULL);';
-                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrifix.'flightNotifications (
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                    flight TEXT NOT NULL);';
-                        $flightsSql = 'CREATE TABLE '.$dbPrifix.'flights(
+                        $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          aircraft INTEGER NOT NULL,
                                          flight TEXT NOT NULL,
-                                         firstSeen TEXT NOT NULL,
-                                         lastSeen TEXT NOT NULL);';
-                        $positionsSql = 'CREATE TABLE adsb_positions(
+                                         firstSeen DATETIME NOT NULL,
+                                         lastSeen DATETIME NOT NULL);';
+                        $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
                                            flight TEXT NOT NULL,
-                                           time TEXT NOT NULL,
+                                           time DATETIME NOT NULL,
                                            message INTEGER NOT NULL,
                                            squawk INTEGER NULL,
                                            latitude INTEGER NOT NULL,
@@ -310,7 +308,7 @@ EOF;
                                            altitude INTEGER NOT NULL,
                                            verticleRate INTEGER NOT NULL,
                                            speed INTEGER NULL);';
-                        $settingsSql = 'CREATE TABLE '.$dbPrifix.'settings (
+                        $settingsSql = 'CREATE TABLE '.$dbPrefix.'settings (
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         name TEXT NOT NULL,
                                         value TEXT NOT NULL);';
@@ -351,10 +349,12 @@ EOF;
             }
 
             // Add settings.
+            $common->addSetting('version', $thisVersion);
+            $common->addSetting('patch', '');
             $common->addSetting('siteName', 'ADS-B Receiver');
             $common->addSetting('template', 'default');
             $common->addSetting('defaultPage', 'blog.php');
-            $common->addSetting('dateFormat', 'F jS, Y');
+            $common->addSetting('dateFormat', 'F jS, Y g:i A');
             $common->addSetting('enableBlog', TRUE);
             $common->addSetting('enableInfo', TRUE);
             $common->addSetting('enableGraphs', TRUE);
@@ -376,6 +376,7 @@ EOF;
             $common->addSetting('enableFlightNotifications', FALSE);
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
+            $common->addSetting('timeZone', $_POST['timeZone']);
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);
@@ -400,30 +401,46 @@ EOF;
     if (is_writable($applicationDirectory.'data'))
         $writableData = TRUE;
 
-    $writeableClass = FALSE;
-    if (is_writable($applicationDirectory.'classes/settings.class.php'))
-        $writeableClass = TRUE;
+    $writeableClasses = FALSE;
+    if (is_writable($applicationDirectory.'classes'))
+        $writeableClasses = TRUE;
+
+    // Function used to format offsets of timezones.
+    ///////////////////////////////////////////////////
+
+    function formatOffset($offset) {
+        return sprintf('%+03d:%02u', floor($offset / 3600), floor(abs($offset) % 3600 / 60));
+    }
+    $utc = new DateTimeZone('UTC');
+    $dt = new DateTime('now', $utc);
 
     // Display HTML
     //////////////////
 
-    require_once('includes/header.inc.php');
+    require_once('../admin/includes/header.inc.php');
 
     // Display the instalation wizard.
     if (!$installed) {
 ?>
+<link rel="stylesheet" href="/admin/assets/css/jquery.steps.css">
+<link rel="stylesheet" href="/admin/assets/css/install.css">
+<script src="/admin/assets/js/jquery.steps.min.js"></script>
+<script src="/admin/assets/js/js.cookie-2.1.0.min.js"></script>
+<script src="/admin/assets/js/jquery.validate.min.js"></script>
+<script src="/admin/assets/js/install.js"></script>
+
 <h1>ADS-B Receiver Portal Setup</h1>
 <p>The following wizard will guide you through the setup process.</p>
 <div class="padding"></div>
-<form id="install-form" method="post" action="install.php">
+<form id="install-form" method="post" action="index.php">
     <div class="form-group">
 
         <h2>Directory Permissions</h2>
         <section>
             <div class="alert <?php echo ($writableData == TRUE ? 'alert-success' : 'alert-danger' ); ?>">The <strong>data</strong> directory is<?php echo ($writableData ? ' ' : ' not' ); ?> writable.</div>
-            <div class="alert <?php echo ($writeableClass ? 'alert-success' : 'alert-danger' ); ?>">The <strong>settings.class.php</strong> file is<?php echo ($writeableClass ? ' ' : ' not' ); ?> writable.</div>
+            <div class="alert <?php echo ($writeableClasses ? 'alert-success' : 'alert-danger' ); ?>">The <strong>classes</strong> directory is<?php echo ($writeableClasses ? ' ' : ' not' ); ?> writable.</div>
             <input type="hidden" name="permissions" id="permissions" value="<?php echo $writableData; ?>">
-<?php if (!$writableData || !$writeableClass) {?>
+<?php if (!$writableData || !$writeableClasses) {?>
             <p>
                 Please fix the permissions for the following directory and/or file to make sure they are writable before proceeding.
                 Once you have made the necessary changes please <a href="#" onclick="location.reload();">reload</a> this page to allow the installer to recheck permissions.
@@ -434,7 +451,7 @@ EOF;
         <h2>Data Storage</h2>
         <section>
             <label for="driver">Database Type</label>
-            <select class="form-control" name="driver" id="driver"> name="driver">
+            <select class="form-control" name="driver" id="driver">
                 <option value="xml">XML (Lite installation only)</option>
                 <option value="mysql">MySQL (Advanced installation only)</option>
                 <option value="sqlite">SQLite (Advanced installation only)</option>
@@ -460,6 +477,24 @@ EOF;
                 <input type="text" class="form-control" name="prefix" id="prefix" id="prefix" value="adsb_" readonly>
             </div>
             <p id="required-p">(*) Required</p>
+        </section>
+
+        <h2>Portal Settings</h2>
+        <section>
+            <div class="form-group">
+                <label for="timeZone">Time Zone</label>
+                <select class="form-control" id="timeZone" name="timeZone">
+<?php
+    foreach (DateTimeZone::listIdentifiers() as $timeZone) {
+        $currentTimeZone = new DateTimeZone($timeZone);
+        $offSet = $currentTimeZone->getOffset($dt);
+        $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
+        $abbr = $transition[0]['abbr'];
+        echo '<option name="timeZone" value="'.$timeZone.'">'.$timeZone.' ['.$abbr.' '.formatOffset($offSet).']</option>';
+    }
+?>
+                </select>
+            </div>
         </section>
 
         <h2>Administrator Account</h2>
@@ -499,8 +534,8 @@ EOF;
     At this time you should also ensure that the file containing the settings you specified is no longer writeable.
     Please log into your device and run the following commands to accomplish these tasks.
 </p>
-<pre>sudo rm -f <?php echo $_SERVER['DOCUMENT_ROOT']; ?>/admin/install.php</pre>
-<pre>sudo chmod -w <?php echo $_SERVER['DOCUMENT_ROOT']; ?>/classes/settings.class.php</pre>
+<pre>sudo rm -f <?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/install/</pre>
+<pre>sudo chmod -w <?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/classes/settings.class.php</pre>
 <p>Once you have done so you can log in and administrate your portal <a href="/admin/">here</a>.</p>
 <p>
     If you experienced any issues or have any questions or suggestions you would like to make regarding this project
@@ -508,5 +543,5 @@ EOF;
 </p>
 <?php
     }
-    require_once('includes/footer.inc.php');
+    require_once("../admin/includes/footer.inc.php");
 ?>

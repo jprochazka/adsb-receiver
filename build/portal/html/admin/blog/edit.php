@@ -59,6 +59,12 @@
     // Get titles and dates for all blog posts.
     $post = $blog->getPostByTitle(urldecode($_GET['title']));
 
+
+    // Properly format the date and convert to slected time zone.
+    $date = new DateTime($post['date'], new DateTimeZone('UTC'));
+    $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+    $postDate = $date->format($common->getSetting('dateFormat'));
+
     ////////////////
     // BEGIN HTML
 
@@ -80,7 +86,7 @@
             <hr />
             <h2>Edit Blog Post</h2>
             <h3><?php echo $post['title']; ?></h3>
-            <p>Posted <strong><?php echo date_format(date_create($post['date']), "F jS, Y"); ?></strong> by <strong><?php echo $common->getAdminstratorName($post['author']); ?></strong>.</p>
+            <p>Posted <strong><?php echo $postDate; ?></strong> by <strong><?php echo $common->getAdminstratorName($post['author']); ?></strong>.</p>
             <form id="edit-blog-post" method="post" action="edit.php?title=<?php echo urlencode($post['title']); ?>">
                 <div class="form-group">
                     <textarea id="contents" name="contents"><?php echo $post['contents']; ?></textarea>

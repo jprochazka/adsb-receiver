@@ -10,21 +10,9 @@
 <?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
         <link rel="stylesheet" href="/admin/assets/css/jquery.datetimepicker.css">
 <?php } ?>
-<?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
-        <link rel="stylesheet" href="/admin/assets/css/jquery.steps.css">
-<?php } ?>
         <link rel="stylesheet" href="/admin/assets/css/admin.css">
-<?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
-        <link rel="stylesheet" href="/admin/assets/css/install.css">
-<?php } ?>
         <script src="/admin/assets/js/jquery-2.2.1.min.js"></script>
         <script src="/admin/assets/js/bootstrap.min.js"></script>
-<?php if (basename($_SERVER['PHP_SELF']) == "install.php") { ?>
-        <script src="/admin/assets/js/jquery.steps.min.js"></script>
-        <script src="/admin/assets/js/js.cookie-2.1.0.min.js"></script>
-        <script src="/admin/assets/js/jquery.validate.min.js"></script>
-        <script src="/admin/assets/js/install.js"></script>
-<?php } ?>
 <?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
         <script src="/admin/assets/js/index.js"></script>
         <script src="/admin/assets/js/jquery.datetimepicker.full.min.js"></script>

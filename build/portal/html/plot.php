@@ -57,7 +57,7 @@
     $flightId = $row['id'];
 
     $dbh = $common->pdoOpen();
-    $sql = "SELECT latitude, longitude, track FROM ".$settings::db_prefix."positions WHERE flight = :flight ORDER BY message";
+    $sql = "SELECT time, message, latitude, longitude, track FROM ".$settings::db_prefix."positions WHERE flight = :flight ORDER BY time";
     $sth = $dbh->prepare($sql);
     $sth->bindParam(':flight', $flightId, PDO::PARAM_STR, 50);
     $sth->execute();
@@ -65,13 +65,65 @@
     $sth = NULL;
     $dbh = NULL;
 
-    $pageData['startingLatitude'] = array_values($positions)[0]['latitude'];
-    $pageData['startingLongitude'] = array_values($positions)[0]['longitude'];
-    $pageData['startingDegrees'] = array_values($positions)[0]['track'];
-    $pageData['finishingLatitude'] = array_values($positions)[count(array_values($positions)) - 1]['latitude'];
-    $pageData['finishingLongitude'] = array_values($positions)[count(array_values($positions)) - 1]['longitude'];
-    $pageData['finishingDegrees'] = array_values($positions)[count(array_values($positions)) - 1]['track'];
-    $pageData['positions'] = $positions;
+    $thisPath = array();
+    $flightPath = array();
+    $flightPaths = array();
+    $lastMessage = 0;
+    $firstPass = TRUE;
+    $firstPosition = TRUE;
+    $totalPositions = count($positions);
+    $counter = 0;
+    foreach ($positions as $position) {
+        $counter++;
+
+        if ($position["message"] < $lastMessage || $counter == $totalPositions) {
+            if ($firstPass == TRUE) {
+                $flightPath["startingLatitude"] = $startingLatitude;
+                $flightPath["startingLongitude"] = $startingLongitude;
+                $flightPath["startingTrack"] = $startingTrack;
+                $firstPass = FALSE;
+            } else {
+                $flightPath["startingLatitude"] = $position["latitude"];
+                $flightPath["startingLongitude"] = $position["longitude"];
+                $flightPath["startingTrack"] = $position["track"];
+            }
+            $flightPath["finishingLatitude"] = $lastLatitude;
+            $flightPath["finishingLongitude"] = $lastLongitude;
+            $flightPath["finishingTrack"] = $lastTrack;
+            $flightPath["positions"] = json_encode($thisPath);
+            $flightPaths[] = $flightPath;
+            unset($thisPath);
+            unset($flightPath);
+            $thisPath = array();
+            $flightPath = array();
+        }
+
+        if ($firstPosition == TRUE) {
+            $startingLatitude = $position["latitude"];
+            $startingLongitude = $position["longitude"];
+            $startingTrack = $position["track"];
+            $firstPosition = FALSE;
+        }
+
+        $thisPosition["time"] = $position["time"];
+        $thisPosition["latitude"] = $position["latitude"];
+        $thisPosition["longitude"] = $position["longitude"];
+        $thisPosition["track"] = $position["track"];
+        $thisPosition["message"] = $position["message"];
+        $thisPath[] = $thisPosition;
+
+        $lastMessage = $position["message"];
+        $lastLatitude = $position["latitude"];
+        $lastLongitude = $position["longitude"];
+        $lastTrack = $position["track"];
+    }
+
+    if (count($flightPaths) > 0) {
+        $pageData['flightPathsAvailable'] = "TRUE";
+        $pageData['flightPaths'] = $flightPaths;
+    } else {
+        $pageData['flightPathsAvailable'] = "FALSE";
+    }
 
     $template->display($pageData);
 ?>
