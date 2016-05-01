@@ -37,7 +37,7 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 This step pertains to both fresh installations as well as when updating and existing installation. After running the installation scripts you will need to setup the portal by visiting the following web address.
 
-    http://<IP_ADDRESS_OF_YOUR_DEVICE>/admin/install.php
+    http://<IP_ADDRESS_OF_YOUR_DEVICE>/install/
     
 Supply the infromation asked for and submit the form once done to complete the setup.
 
