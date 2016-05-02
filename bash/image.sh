@@ -36,6 +36,8 @@
 
 source bash/functions.sh
 
+BUILDDIR="$PWD/build"
+
 ## CONFIGURE DUMP1090-MUTABILITY
 
 # Set latitude and longitude in the dump1090-mutability configuration file.
