@@ -109,17 +109,15 @@ sudo chmod a+s rtlsdr-ogn
 
 # Check if kernel v4.1 or higher is being used.
 
-################################################
-# ADD A WAY TO CHECK KERNEL                    #
-# THIS WILL NOT WORK AND IS ONLY A PLACEHOLDER #
-################################################
+KERNEL=`uname -r`
+VERSION="`echo $KERNEL | cut -d \. -f 1`.`echo $KERNEL | cut -d \. -f 2`"
 
-if [[ `uname -r` == $SOMETHING ]]; then
-    # Kernel is version 4.1 or newer.
-    sudo mknod gpu_dev c 249 0
-else
+if [[ $VERSION < 4.1 ]]; then
     # Kernel is older than version 4.1.
     sudo mknod gpu_dev c 100 0
+else
+    # Kernel is version 4.1 or newer.
+    sudo mknod gpu_dev c 249 0
 fi
 
 ## CREATE THE CONFIGURATION FILE
