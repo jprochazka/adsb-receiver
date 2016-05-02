@@ -37,6 +37,10 @@
                 </div>
                 <h2>System Information</h2>
                 <ul>
+                    <li><strong>Portal Version:</strong> {page:portalVersion}</li>
+                    <li><strong>Patch Version:</strong> {page:portalPatch}</li>
+                </ul>
+                <ul>
                     <li><strong>Name:</strong> {page:osNodeName}</li>
                     <li><strong>Kernel:</strong> {page:osKernelRelease}</li>
                     <li><strong>Machine:</strong> {page:osMachine}</li>
