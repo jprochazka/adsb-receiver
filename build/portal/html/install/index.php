@@ -530,11 +530,11 @@ EOF;
 <h1>ADS-B Receiver Portal Setup</h1>
 <p>Setup of your ADS-B Receiver Web Portal is now complete.</p>
 <p>
-    For security reasons it is highly recommended that the installation file be deleted permanently from your device.
+    For security reasons it is highly recommended that the installation files be deleted permanently from your device.
     At this time you should also ensure that the file containing the settings you specified is no longer writeable.
     Please log into your device and run the following commands to accomplish these tasks.
 </p>
-<pre>sudo rm -f <?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/install/</pre>
+<pre>sudo rm -rf <?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/install/</pre>
 <pre>sudo chmod -w <?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/classes/settings.class.php</pre>
 <p>Once you have done so you can log in and administrate your portal <a href="/admin/">here</a>.</p>
 <p>
