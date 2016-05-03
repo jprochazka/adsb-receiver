@@ -523,6 +523,7 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Purge Positions</div>
                         <div class="panel-body">
+                            <p>Current Database Size: <?php echo $common->getDatabaseSize("mb"); ?>MB</p>
                             <div class="form-group">
                                 <label for="purgepositionspicker">Purge flight positions old than...</label><br />
                                 <input type="text" class="form-control" id="purgepositionspicker" name="purgepositionspicker" autocomplete="off" <?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>
