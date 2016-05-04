@@ -150,7 +150,7 @@ CheckPackage lighttpd
 # This needs optimized and made to recognize releases made after 16.04 as well.
 if [ -f /etc/lsb-release ]; then
     . /etc/lsb-release
-    if [ $DISTRIB_ID  | tr '[:upper:]' '[:lower:]' == "ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+    if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
         CheckPackage php7.0-cgi
     else
         CheckPackage php5-cgi
@@ -168,7 +168,7 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         # This needs optimized and made to recognize releases made after 16.04 as well.
         if [ -f /etc/lsb-release ]; then
             . /etc/lsb-release
-            if [ $DISTRIB_ID  | tr '[:upper:]' '[:lower:]' == "ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
                 CheckPackage php7.0-sqlite
             else
                 CheckPackage php5-sqlite
@@ -189,7 +189,7 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         # This needs optimized and made to recognize releases made after 16.04 as well.
         if [ -f /etc/lsb-release ]; then
             . /etc/lsb-release
-            if [ $DISTRIB_ID  | tr '[:upper:]' '[:lower:]' == "ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
                 CheckPackage php7.0-mysql
             else
                 CheckPackage php5-mysql
