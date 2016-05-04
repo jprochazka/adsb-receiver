@@ -88,7 +88,7 @@ if [ -f $DOCUMENTROOT/classes/settings.class.php ]; then
         DATABASEENGINE=1
     fi
 
-    if [ $HOST != "localhost" || $HOST != "127.0.0.1" ]; then
+    if [ $HOST != "localhost" ] || [ $HOST != "127.0.0.1" ]; then
         LOCALDATABASE=1
     else
         LOCALDATABASE=2
