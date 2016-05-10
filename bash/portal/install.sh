@@ -146,6 +146,7 @@ CheckPackage collectd-core
 CheckPackage rrdtool
 CheckPackage lighttpd
 CheckPackage php5-cgi
+CheckPackage postfix
 CheckPackage libpython2.7
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
     if [[ $DATABASEENGINE == 2 ]]; then
