@@ -144,11 +144,11 @@
                 $dbh = NULL;
             }
         }
-        
+
         function deleteSetting($name) {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             $settings = new settings();
-    
+
             if ($settings::db_driver == "xml") {
                 $xmlSettings = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."settings.xml");
                 foreach($xmlSettings as $xmlSetting) {
@@ -162,7 +162,7 @@
                 // PDO
                 require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
                 $common = new common();
-    
+
                 $dbh = $common->pdoOpen();
                 $sql = "DELETE FROM ".$settings::db_prefix."settings WHERE name = :name";
                 $sth = $dbh->prepare($sql);
@@ -290,6 +290,34 @@
                        'Reply-To: '.$this->getSetting("emailReplyTo")."\r\n".
                        'X-Mailer: PHP/'.phpversion();
             return mail($to, $subject, $message, $headers);
+        }
+
+        // Get the size of the database.
+        function getDatabaseSize($measurment = "") {
+            $databaseSize = 0;
+            $dbh = $this->pdoOpen();
+            $sql = "SHOW TABLE STATUS";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $databaseSize = $sth->fetch(PDO::FETCH_ASSOC)["Data_length"];
+            $sth = NULL;
+            $dbh = NULL;
+            switch ($measurment) {
+                case "kb":
+                    return round($databaseSize / 1024, 2);
+                    break;
+                case "mb":
+                    return round($databaseSize / 1024 / 1024, 2);
+                    break;
+                case "gb":
+                    return round($databaseSize / 1024 / 1024 /1024, 2);
+                    break;
+                case "tb":
+                    return round($databaseSize / 1024 /1024 /1024 /1024, 2);
+                    break;
+                default:
+                    return $databaseSize;
+            }
         }
     }
 ?>

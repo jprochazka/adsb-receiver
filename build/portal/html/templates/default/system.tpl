@@ -25,10 +25,10 @@
                 <h1>System Information</h1>
                 <h2>Aggregate Sites Statistics</h2>
                 <ul>
-                    {if setting:enableFlightAwareLink eq TRUE}<li><a href="{page:flightAwareLink}">FlightAware Stats</a></li>{/if}
-                    {if setting:enablePlaneFinderLink eq TRUE}<li><a href="{page:planeFinderLink}">Planefinder Stats</a></li>{/if}
-                    {if setting:enableFlightRadar24Link eq TRUE}<li><a href="{page:flightRadar24Link}">Flightradar24 Stats</a></li>{/if}
-                    {if setting:enableAdsbExchangeLink eq TRUE}<li><a href="{page:adsbExchangeLink}">ADS-B Exchange</a></li>{/if}
+                    {if setting:enableFlightAwareLink eq TRUE}<li><a href="{page:flightAwareLink}" target="_blank">FlightAware Stats</a></li>{/if}
+                    {if setting:enablePlaneFinderLink eq TRUE}<li><a href="{page:planeFinderLink}" target="_blank">Planefinder Stats</a></li>{/if}
+                    {if setting:enableFlightRadar24Link eq TRUE}<li><a href="{page:flightRadar24Link}" target="_blank">Flightradar24 Stats</a></li>{/if}
+                    {if setting:enableAdsbExchangeLink eq TRUE}<li><a href="{page:adsbExchangeLink}" target="_blank">ADS-B Exchange</a></li>{/if}
                 </ul>
                 <h2>System Charts</h2>
                 <div id="chart_div" style="width: 400px; height: 120px;"></div>
