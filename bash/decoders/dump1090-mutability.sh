@@ -52,16 +52,22 @@ read -p "Press enter to continue..." CONTINUE
 
 ## ASK WHICH WEB SERVER TO INSTALL
 
-echo -e "\033[31m"
-echo "Select Web Server"
-echo -e "\033[33m"
-echo "Select the web server you wish to use."
-echo "Currently Lighttpd is the recommended web server."
-echo ""
-echo "  1) Lighttpd"
-echo "  2) Nginx"
-echo -e "\033[37m"
-read -p "Which web server do you wish to use? [1] " WEBSERVER
+# Commented out temporarily until choice has been added to
+# the portal installations scipt as well.
+
+#echo -e "\033[31m"
+#echo "Select Web Server"
+#echo -e "\033[33m"
+#echo "Select the web server you wish to use."
+#echo "Currently Lighttpd is the recommended web server."
+#echo ""
+#echo "  1) Lighttpd"
+#echo "  2) Nginx"
+#echo -e "\033[37m"
+#read -p "Which web server do you wish to use? [1] " WEBSERVER
+
+# For now we will force Lighttpd as the web server chosen.
+WEBSERVER=1
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
