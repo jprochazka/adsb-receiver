@@ -144,6 +144,7 @@ echo -e "\033[37m"
 CheckPackage cron
 CheckPackage collectd-core
 CheckPackage rrdtool
+CheckPackage postfix
 CheckPackage lighttpd
 
 # Check if this is Ubuntu 16.04 LTS.
