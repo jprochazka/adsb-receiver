@@ -88,7 +88,7 @@ if [ -f $DOCUMENTROOT/classes/settings.class.php ]; then
         DATABASEENGINE=1
     fi
 
-    if [ $HOST != "localhost" || $HOST != "127.0.0.1" ]; then
+    if [ $HOST != "localhost" ] || [ $HOST != "127.0.0.1" ]; then
         LOCALDATABASE=1
     else
         LOCALDATABASE=2
@@ -183,13 +183,21 @@ if [[ $INSTALLED == "n" ]]; then
                 # Ask for remote MySQL address if the database is hosted remotely.
                 read -p "Remote MySQL Server Address: " DATABASEHOST
             fi
-            read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+            read -p "MySQL user login: [root] " MYSQLUSER
+            read -p "Password for MySQL user: " MYSQLPASSWORD
+            if [[ $LOCALDATABASE == "" ]]; then
+                MYSQLUSER="root"
+            fi
 
             # Check that the supplied password is correct.
-            while ! mysql -u root -p$MYSQLROOTPASSWORD -h $DATABASEHOST  -e ";" ; do
+            while ! mysql -u$MYSQLUSER -p$MYSQLPASSWORD -h $DATABASEHOST  -e ";" ; do
                 echo -e "\033[31m"
-                echo -e "Unable to connect to the MySQL server using the supplied password.\033[37m"
-                read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+                echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
+                read -p "MySQL user login: [root] " MYSQLUSER
+                read -p "Password for MySQL user: " MYSQLPASSWORD
+                if [[ $LOCALDATABASE == "" ]]; then
+                    MYSQLUSER="root"
+                fi
             done
 
             read -p "New Database Name: " DATABASENAME
