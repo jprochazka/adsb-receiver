@@ -144,22 +144,61 @@ echo -e "\033[37m"
 CheckPackage cron
 CheckPackage collectd-core
 CheckPackage rrdtool
-CheckPackage lighttpd
-CheckPackage php5-cgi
 CheckPackage postfix
+CheckPackage lighttpd
+
+# Check if this is Ubuntu 16.04 LTS.
+# This needs optimized and made to recognize releases made after 16.04 as well.
+if [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+        CheckPackage php7.0-cgi
+    else
+        CheckPackage php5-cgi
+    fi
+else
+    CheckPackage php5-cgi
+fi
+
 CheckPackage libpython2.7
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
     if [[ $DATABASEENGINE == 2 ]]; then
-       CheckPackage sqlite3
-       CheckPackage php5-sqlite
+        CheckPackage sqlite3
+
+        # Check if this is Ubuntu 16.04 LTS.
+        # This needs optimized and made to recognize releases made after 16.04 as well.
+        if [ -f /etc/lsb-release ]; then
+            . /etc/lsb-release
+            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+                CheckPackage php7.0-sqlite
+            else
+                CheckPackage php5-sqlite
+            fi
+        else
+            CheckPackage php5-sqlite
+        fi
+
     else
        if [[ $LOCALDATABASE != 2 ]]; then
            # Install MySQL locally.
            CheckPackage mysql-server
        fi
        CheckPackage mysql-client
-       CheckPackage php5-mysql
        CheckPackage python-mysqldb
+
+        # Check if this is Ubuntu 16.04 LTS.
+        # This needs optimized and made to recognize releases made after 16.04 as well.
+        if [ -f /etc/lsb-release ]; then
+            . /etc/lsb-release
+            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+                CheckPackage php7.0-mysql
+            else
+                CheckPackage php5-mysql
+            fi
+        else
+            CheckPackage php5-mysql
+        fi
+
     fi
 fi
 
