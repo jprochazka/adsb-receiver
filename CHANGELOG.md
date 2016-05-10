@@ -9,7 +9,7 @@ The following is a history of the changes made to this project.
 * Fixed bug where a malformed if statement was causing upgrade problems. *(advanced)*
 * Links to aggregate site stats pages now open in a new web browser windows.
 * The Postfix MTA package is now installed if not present.
-* The bas scripts now detect Ubuntu 16.04 LTS and install the proper PHP packages.
+* The bash scripts now detect Ubuntu 16.04 LTS and install the proper PHP packages.
 * The cUrrent MySQL database size is displayed on the maintainance tab. *(advanced)*
 
 ## v2.0.1 *(April 29th, 2016)*
