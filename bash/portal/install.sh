@@ -88,7 +88,7 @@ if [ -f $DOCUMENTROOT/classes/settings.class.php ]; then
         DATABASEENGINE=1
     fi
 
-    if [ $HOST != "localhost" || $HOST != "127.0.0.1" ]; then
+    if [ $HOST != "localhost" ] || [ $HOST != "127.0.0.1" ]; then
         LOCALDATABASE=1
     else
         LOCALDATABASE=2
@@ -121,7 +121,7 @@ else
         echo "  1) MySQL"
         echo "  2) SQLLite"
         echo -e "\033[37m"
-        read -p "Use portal with advanced features? [1] " DATABASEENGINE
+        read -p "Which database engine will be used? [1] " DATABASEENGINE
 
         # Check if the user is using a remote MySQL database.
         if [[ $DATABASEENGINE != 2 ]]; then
@@ -131,7 +131,7 @@ else
             echo "  1) Locally"
             echo "  2) Remotely"
             echo -e "\033[37m"
-            read -p "Use portal with advanced features? [1] " LOCALDATABASE
+            read -p "Where will the database hosted? [1] " LOCALDATABASE
         fi
     fi
 fi
@@ -144,22 +144,61 @@ echo -e "\033[37m"
 CheckPackage cron
 CheckPackage collectd-core
 CheckPackage rrdtool
-CheckPackage lighttpd
-CheckPackage php5-cgi
 CheckPackage postfix
+CheckPackage lighttpd
+
+# Check if this is Ubuntu 16.04 LTS.
+# This needs optimized and made to recognize releases made after 16.04 as well.
+if [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+        CheckPackage php7.0-cgi
+    else
+        CheckPackage php5-cgi
+    fi
+else
+    CheckPackage php5-cgi
+fi
+
 CheckPackage libpython2.7
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
     if [[ $DATABASEENGINE == 2 ]]; then
-       CheckPackage sqlite3
-       CheckPackage php5-sqlite
+        CheckPackage sqlite3
+
+        # Check if this is Ubuntu 16.04 LTS.
+        # This needs optimized and made to recognize releases made after 16.04 as well.
+        if [ -f /etc/lsb-release ]; then
+            . /etc/lsb-release
+            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+                CheckPackage php7.0-sqlite
+            else
+                CheckPackage php5-sqlite
+            fi
+        else
+            CheckPackage php5-sqlite
+        fi
+
     else
        if [[ $LOCALDATABASE != 2 ]]; then
            # Install MySQL locally.
            CheckPackage mysql-server
        fi
        CheckPackage mysql-client
-       CheckPackage php5-mysql
        CheckPackage python-mysqldb
+
+        # Check if this is Ubuntu 16.04 LTS.
+        # This needs optimized and made to recognize releases made after 16.04 as well.
+        if [ -f /etc/lsb-release ]; then
+            . /etc/lsb-release
+            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+                CheckPackage php7.0-mysql
+            else
+                CheckPackage php5-mysql
+            fi
+        else
+            CheckPackage php5-mysql
+        fi
+
     fi
 fi
 
@@ -184,13 +223,21 @@ if [[ $INSTALLED == "n" ]]; then
                 # Ask for remote MySQL address if the database is hosted remotely.
                 read -p "Remote MySQL Server Address: " DATABASEHOST
             fi
-            read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+            read -p "MySQL user login: [root] " MYSQLUSER
+            read -p "Password for MySQL user: " MYSQLPASSWORD
+            if [[ $LOCALDATABASE == "" ]]; then
+                MYSQLUSER="root"
+            fi
 
             # Check that the supplied password is correct.
-            while ! mysql -u root -p$MYSQLROOTPASSWORD -h $DATABASEHOST  -e ";" ; do
+            while ! mysql -u$MYSQLUSER -p$MYSQLPASSWORD -h $DATABASEHOST  -e ";" ; do
                 echo -e "\033[31m"
-                echo -e "Unable to connect to the MySQL server using the supplied password.\033[37m"
-                read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+                echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
+                read -p "MySQL user login: [root] " MYSQLUSER
+                read -p "Password for MySQL user: " MYSQLPASSWORD
+                if [[ $LOCALDATABASE == "" ]]; then
+                    MYSQLUSER="root"
+                fi
             done
 
             read -p "New Database Name: " DATABASENAME
@@ -201,10 +248,10 @@ if [[ $INSTALLED == "n" ]]; then
             if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
                 echo -e "\033[33m"
                 echo -e "Creating MySQL database and user...\033[37m"
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE DATABASE ${DATABASENAME};"
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-                mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "FLUSH PRIVILEGES;"
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE DATABASE ${DATABASENAME};"
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "FLUSH PRIVILEGES;"
             fi
 
             echo -e "\033[31m"
@@ -408,6 +455,8 @@ echo "Installation and configuration of the performance graphs is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
+
+clear
 
 # Display further portal setup instructions.
 echo -e "\033[31m"

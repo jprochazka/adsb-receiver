@@ -32,11 +32,17 @@
     $common = new common();
 
     // The most current stable release.
-    $thisVersion = "2.0.1";
+    $thisVersion = "2.0.2";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
-        header ("Location: /install/upgrade.php");
+        if ($common-> getSetting("version") < $thisVersion) {
+            // THis is an older version so forward the user to upgrade.php
+            header ("Location: /install/upgrade.php");
+        } else {
+            // It would appear the this is a current version so forward the user to the index page.
+            header ("Location: /");
+        }
     }
 
     // BEGIN FRESH INSTALLATION
@@ -346,6 +352,11 @@ EOF;
                 $sth = NULL;
 
                 $dbh = NULL;
+            }
+
+            // Set permissions on SQLite file.
+            if ($_POST['driver'] == "sqlite") {
+                chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
             }
 
             // Add settings.

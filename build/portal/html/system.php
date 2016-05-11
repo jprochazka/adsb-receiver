@@ -49,6 +49,10 @@
     $pageData['flightRadar24Link'] = "https://www.flightradar24.com/account/feed-stats/?id=".$common->getSetting('flightRadar24Id');
     $pageData['adsbExchangeLink'] = "http://www.adsbexchange.com";
 
+    // Get software information.
+    $pageData['portalVersion'] = $common->getSetting('version');
+    $pageData['portalPatch'] = $common->getSetting('patch');
+
     // Get the current system uptime.
     $json = file_get_contents("http://localhost/api/system.php?action=getUptimeInformation");
     $uptimeData = json_decode($json, TRUE);

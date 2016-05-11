@@ -50,6 +50,25 @@ echo "https://github.com/mutability/dump1090"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
+## ASK WHICH WEB SERVER TO INSTALL
+
+# Commented out temporarily until choice has been added to
+# the portal installations scipt as well.
+
+#echo -e "\033[31m"
+#echo "Select Web Server"
+#echo -e "\033[33m"
+#echo "Select the web server you wish to use."
+#echo "Currently Lighttpd is the recommended web server."
+#echo ""
+#echo "  1) Lighttpd"
+#echo "  2) Nginx"
+#echo -e "\033[37m"
+#read -p "Which web server do you wish to use? [1] " WEBSERVER
+
+# For now we will force Lighttpd as the web server chosen.
+WEBSERVER=1
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\033[33m"
@@ -64,7 +83,13 @@ CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage pkg-config
-CheckPackage lighttpd
+
+if [[ $WEBSERVER != "2" ]]; then
+    CheckPackage lighttpd
+else
+    CheckPackage nginx
+fi
+
 CheckPackage fakeroot
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
@@ -118,13 +143,22 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     kill -9 `ps --pid $$ -oppid=`; exit
 fi
 
-## CONFIGURE LIGHTTPD
+## CONFIGURE THE WEB SERVER
 
-echo -e "\033[33m"
-echo "Configuring lighttpd..."
-echo -e "\033[37m"
-sudo lighty-enable-mod dump1090
-sudo /etc/init.d/lighttpd force-reload
+if [[ $WEBSERVER != "2" ]]; then
+    echo -e "\033[33m"
+    echo "Configuring lighttpd..."
+    echo -e "\033[37m"
+    sudo lighty-enable-mod dump1090
+    sudo /etc/init.d/lighttpd force-reload
+else
+    echo -e "\033[33m"
+    echo "Configuring nginx..."
+    echo -e "\033[37m"
+    sudo rm /etc/nginx/sites-enabled/default
+    sudo ln -s /etc/nginx/sites-available/dump1090-mutability /etc/nginx/sites-enabled/dump1090-mutability
+    sudo /etc/init.d/nginx force-reload
+fi
 
 ## DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
 

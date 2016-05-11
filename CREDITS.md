@@ -40,10 +40,10 @@ hard work and dedication this project would not have been possible.
 * Dump978:                    https://github.com/mutability/dump978
 * FlightAware's PiAware:      http://flightaware.com
 * Plane Finder ADS-B Client:  https://planefinder.net
+* Flightradar24 Client:       https://www.flightradar24.com
 * Dump1090-Tools:             https://github.com/mutability/dump1090-tools
-
-* Bootstrap:          http://getbootstrap.com/
-* jQuery:             http://jquery.com/
-* jQuery Steps:       http://www.jquery-steps.com
-* js-cookie:          https://github.com/js-cookie/js-cookie/releases
-* jquery-validation:  https://github.com/jzaefferer/jquery-validation
+* Bootstrap:                  http://getbootstrap.com/
+* jQuery:                     http://jquery.com/
+* jQuery Steps:               http://www.jquery-steps.com
+* js-cookie:                  https://github.com/js-cookie/js-cookie/releases
+* jquery-validation:          https://github.com/jzaefferer/jquery-validation
