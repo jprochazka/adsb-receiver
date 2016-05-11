@@ -456,6 +456,8 @@ echo "Please look over the output generated to be sure no errors were encountere
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
+clear
+
 # Display further portal setup instructions.
 echo -e "\033[31m"
 echo "PORTAL SETUP IS NOT YET COMPLETE"
