@@ -288,14 +288,18 @@
 
         // Get the size of the database.
         function getDatabaseSize($measurment = "") {
-            $databaseSize = 0;
-            $dbh = $this->pdoOpen();
-            $sql = "SHOW TABLE STATUS";
-            $sth = $dbh->prepare($sql);
-            $sth->execute();
-            $databaseSize = $sth->fetch(PDO::FETCH_ASSOC)["Data_length"];
-            $sth = NULL;
-            $dbh = NULL;
+            if ($settings::db_driver == "sqlite") {
+                $databaseSize = filesize($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite");
+            } else {
+                $databaseSize = 0;
+                $dbh = $this->pdoOpen();
+                $sql = "SHOW TABLE STATUS";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $databaseSize = $sth->fetch(PDO::FETCH_ASSOC)["Data_length"];
+                $sth = NULL;
+                $dbh = NULL;
+            }
             switch ($measurment) {
                 case "kb":
                     return round($databaseSize / 1024, 2);
