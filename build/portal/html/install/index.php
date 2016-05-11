@@ -134,6 +134,11 @@
 EOF;
             file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php", $content);
 
+            // Lets sleep for a couple seconds to allow the file to be written on 
+            // slower devices to see if this fixes the problem where data is not 
+            // being saved properly during install on devices such as the RPi...
+            sleep(2);
+
             // Setup data storage.
             if ($_POST['driver'] == 'xml') {
 
