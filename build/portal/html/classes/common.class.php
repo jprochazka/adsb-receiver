@@ -288,6 +288,9 @@
 
         // Get the size of the database.
         function getDatabaseSize($measurment = "") {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+            $settings = new settings();
+            
             if ($settings::db_driver == "sqlite") {
                 $databaseSize = filesize($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite");
             } else {
