@@ -205,7 +205,7 @@
 
         // Check if page load is a post back.
         function postBack() {
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && basename($_SERVER['HTTP_REFERER']) == $_SERVER['SCRIPT_NAME']) {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return TRUE;
             }
             return FALSE;
