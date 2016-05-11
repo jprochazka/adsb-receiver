@@ -36,7 +36,7 @@
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
-        if ($common-> getSetting("version" < $thisVersion) {
+        if ($common-> getSetting("version") < $thisVersion) {
             // THis is an older version so forward the user to upgrade.php
             header ("Location: /install/upgrade.php");
         } else {
