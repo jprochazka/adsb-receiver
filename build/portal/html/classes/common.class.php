@@ -293,8 +293,7 @@
             
             if ($settings::db_driver == "sqlite") {
                 $databaseSize = filesize($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite");
-            } else {
-                $databaseSize = 0;
+            } elseif ($settings::db_driver == "mysql") {
                 $dbh = $this->pdoOpen();
                 $sql = "SHOW TABLE STATUS";
                 $sth = $dbh->prepare($sql);
@@ -302,6 +301,8 @@
                 $databaseSize = $sth->fetch(PDO::FETCH_ASSOC)["Data_length"];
                 $sth = NULL;
                 $dbh = NULL;
+            } else {
+                $databaseSize = 0;
             }
             switch ($measurment) {
                 case "kb":
