@@ -4,13 +4,15 @@ The following is a history of the changes made to this project.
 
 ## v2.0.2 *(May 10th, 2016)*
 
+* System information page now displays portal and patch versions.
+* SQLite database permissions set properly so flight data can be recorded. *(advanced)*
 * Adjusted the postback check function to possibly fix POST issues.
 * Non MySQL root users with the proper permissions can be used during install. *(advanced)*
 * Fixed bug where a malformed if statement was causing upgrade problems. *(advanced)*
 * Links to aggregate site stats pages now open in a new web browser windows.
 * The Postfix MTA package is now installed if not present.
 * The bash scripts now detect Ubuntu 16.04 LTS and install the proper PHP packages.
-* The cUrrent MySQL database size is displayed on the maintainance tab. *(advanced)*
+* The current MySQL database size is displayed on the maintainance tab. *(advanced)*
 
 ## v2.0.1 *(April 29th, 2016)*
 
