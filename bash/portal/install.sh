@@ -121,7 +121,7 @@ else
         echo "  1) MySQL"
         echo "  2) SQLLite"
         echo -e "\033[37m"
-        read -p "Use portal with advanced features? [1] " DATABASEENGINE
+        read -p "Which database engine will be used? [1] " DATABASEENGINE
 
         # Check if the user is using a remote MySQL database.
         if [[ $DATABASEENGINE != 2 ]]; then
@@ -131,7 +131,7 @@ else
             echo "  1) Locally"
             echo "  2) Remotely"
             echo -e "\033[37m"
-            read -p "Use portal with advanced features? [1] " LOCALDATABASE
+            read -p "Where will the database hosted? [1] " LOCALDATABASE
         fi
     fi
 fi
