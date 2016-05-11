@@ -199,6 +199,12 @@
 
     if ($common->getSetting("version") == "2.0.1") {
         try {
+
+            // Set proper permissions on the SQLite file.
+            if ($settings::db_driver == "sqlite") {
+                chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
+            }
+
             $common->updateSetting("version", $thisVersion);
             $common->updateSetting("patch", "");
         } catch(Exception $e) {

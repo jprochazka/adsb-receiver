@@ -354,6 +354,11 @@ EOF;
                 $dbh = NULL;
             }
 
+            // Set permissions on SQLite file.
+            if ($_POST['driver'] == "sqlite") {
+                chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
+            }
+
             // Add settings.
             $common->addSetting('version', $thisVersion);
             $common->addSetting('patch', '');
