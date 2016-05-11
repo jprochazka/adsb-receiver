@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.0.2 *(May 10th, 2016)*
+## v2.0.2 *(May 11th, 2016)*
 
 * System information page now displays portal and patch versions.
 * SQLite database permissions set properly so flight data can be recorded. *(advanced)*
