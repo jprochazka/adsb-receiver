@@ -153,6 +153,7 @@ if [ -f /etc/lsb-release ]; then
     . /etc/lsb-release
     if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
         CheckPackage php7.0-cgi
+        CheckPackage php7.0-xml
     else
         CheckPackage php5-cgi
     fi
