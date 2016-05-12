@@ -9,7 +9,6 @@ The following is a history of the changes made to this project.
 * System information page now displays portal and patch versions.
 * SQLite database permissions set properly so flight data can be recorded. *(advanced)*
 * Adjusted the postback check function to possibly fix POST issues.
-* Non MySQL root users with the proper permissions can be used during install. *(advanced)*
 * Fixed bug where a malformed if statement was causing upgrade problems. *(advanced)*
 * Links to aggregate site stats pages now open in a new web browser windows.
 * The Postfix MTA package is now installed if not present.
