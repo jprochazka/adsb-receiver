@@ -184,6 +184,11 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
     fi
 fi
 
+# Restart Lighttpd after installing the prerequisite packages.
+echo -e "\033[33m"
+echo -e "Restarting lighttpd...\033[37m"
+sudo /etc/init.d/lighttpd restart
+
 ## CREATE THE DATABASE IF ADVANCED FEATURES WAS SELECTED
 
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
