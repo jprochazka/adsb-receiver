@@ -214,45 +214,60 @@ if [[ $INSTALLED == "n" ]]; then
             echo -e "\033[33m"
             echo "Please supply the information pertaining to the new password when asked."
             echo ""
+            echo -e "\033[31mNOTE:"
             echo "If the database will be hosted locally on this device a database will be"
-            echo "created automatically for you. If you are hosting your database remotely"
-            echo "you will need to manually create the database and user on the remote device."
+            echo "created automatically for you."
+            echo ""
+            echo "If you are hosting your database remotely YOU WILL NEED TO MANUALLY CREATE"
+            echo "THE DATABASE AND USER BEFORE PROCEEDING WITH THE INSTALLATION."
             echo -e "\033[37m"
 
             DATABASEHOST="localhost"
-            if [[ $LOCALDATABASE == 2 ]]; then
-                # Ask for remote MySQL address if the database is hosted remotely.
-                read -p "Remote MySQL Server Address: " DATABASEHOST
-            fi
-            read -p "MySQL user login: [root] " MYSQLUSER
-            read -p "Password for MySQL user: " MYSQLPASSWORD
-            if [[ $LOCALDATABASE == "" ]]; then
-                MYSQLUSER="root"
-            fi
-
-            # Check that the supplied password is correct.
-            while ! mysql -u$MYSQLUSER -p$MYSQLPASSWORD -h $DATABASEHOST  -e ";" ; do
-                echo -e "\033[31m"
-                echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
+            if [[ $LOCALDATABASE == 1 ]]; then
                 read -p "MySQL user login: [root] " MYSQLUSER
                 read -p "Password for MySQL user: " MYSQLPASSWORD
                 if [[ $LOCALDATABASE == "" ]]; then
-                    MYSQLUSER="root"
+                   MYSQLUSER="root"
                 fi
-            done
 
-            read -p "New Database Name: " DATABASENAME
-            read -p "New Database User Name: " DATABASEUSER
-            read -p "New Database User Password: " DATABASEPASSWORD
+                # Check that the supplied password is correct.
+                while ! mysql -u$MYSQLUSER -p$MYSQLPASSWORD -e ";" ; do
+                    echo -e "\033[31m"
+                    echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
+                    read -p "MySQL user login: [root] " MYSQLUSER
+                    read -p "Password for MySQL user: " MYSQLPASSWORD
+                    if [[ $LOCALDATABASE == "" ]]; then
+                        MYSQLUSER="root"
+                    fi
+                done
+                DATABASEHOST="localhost"
+            fi
 
-            # Create the database and user as well as assign permissions.
-            if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
+            if [[ $LOCALDATABASE == 2 ]]; then
+                # Ask for remote MySQL address if the database is hosted remotely.
+                read -p "MySQL Server Address: " DATABASEHOST
+            fi
+            read -p "Database Name: " DATABASENAME
+            read -p "Database User Name: " DATABASEUSER
+            read -p "Database User Password: " DATABASEPASSWORD
+
+            if [[ $LOCALDATABASE == 2 ]]; then
+                # Check the connection to the remote MySQL server.
+                while ! mysql -u$MYSQLUSER -p$MYSQLPASSWORD -h $DATABASEHOST  -e ";" ; do
+                    echo -e "\033[31m"
+                    echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
+                    read -p "MySQL Server Address: " DATABASEHOST
+                    read -p "Database user Name: " MYSQLUSER
+                    read -p "Database User Password: " MYSQLPASSWORD
+                done
+            else
+                # Create the database and user if running MySQL locally.
                 echo -e "\033[33m"
                 echo -e "Creating MySQL database and user...\033[37m"
-                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE DATABASE ${DATABASENAME};"
-                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "FLUSH PRIVILEGES;"
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+                mysql -u$MYSQLUSER -p${MYSQLROOTPASSWORD} -e "FLUSH PRIVILEGES;"
             fi
 
             echo -e "\033[31m"
@@ -260,12 +275,6 @@ if [[ $INSTALLED == "n" ]]; then
             echo -e "\033[33m"
             echo "This information will be needed in order to complete the installation of the portal."
             echo ""
-            if [[ $LOCALDATABASE == 2 ]]; then
-                echo -e "\033[31mNOTE:"
-                echo "Being you are hosting your database remotely you will need this information to create"
-                echo "both the database and database user on your remote database server."
-                echo -e "\033[33m"
-            fi
             echo "Database Server: ${DATABASEHOST}"
             echo "Database User: ${DATABASEUSER}"
             echo "Database Password: ${DATABASEPASSWORD}"
@@ -371,7 +380,7 @@ if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f
             echo -e "\033[37m"
             read -p "Do you wish to add terrain limit rings to the dump1090 map? [Y/n] " ADDTERRAINRINGS
 
-            if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then 
+            if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then
                 echo -e "\033[31m"
                 echo "READ THE FOLLOWING INSTRUCTION CAREFULLY!"
                 echo -e "\033[33m"
@@ -459,13 +468,16 @@ read -p "Press enter to continue..." CONTINUE
 
 clear
 
+# This assigns the first IP address in the list to the $IPADDRESS variable.
+IPADDRESS=ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'
+
 # Display further portal setup instructions.
 echo -e "\033[31m"
 echo "PORTAL SETUP IS NOT YET COMPLETE"
 echo -e "\033[33m"
 echo "In order to complete the portal setup process visit the following URL in your favorite web browser."
 echo ""
-echo "http://<IP_ADDRESS_OF_THIS_DEVICE>/install/"
+echo "http://${IPADDRESS}/install/"
 echo ""
 echo "Enter the requested information and submit the form to complete the portal setup."
 echo "It is recomended that after setting up the portal you delete the install directory."

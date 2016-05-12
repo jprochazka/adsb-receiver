@@ -162,25 +162,29 @@ fi
 
 ## DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
 
-# Set latitude and longitude.
-echo -e "\033[31m"
-echo "SET THE LATITUDE AND LONGITUDE OF YOUR FEEDER"
-echo -e "\033[33m"
-echo "In order for some performance graphs to work properly you will need to"
-echo "set the latitude and longitude of your feeder. If you do not know the"
-echo "latitude and longitude of your feeder you can find out this information"
-echo "by using Geocode by Address tool found on my web site."
-echo ""
-echo "  https://www.swiftbyte.com/toolbox/geocode"
-echo ""
-echo "NOT SETTING LATITUDE AND LONGITUDE WILL BREAK THE RANGE PERFORMANCE GRAPH"
-echo ""
-echo -e "\033[37m"
-read -p "Feeder Latitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLAT
-read -p "Feeder Longitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLON
-echo ""
-ChangeConfig "LAT" $FEEDERLAT "/etc/default/dump1090-mutability"
-ChangeConfig "LON" $FEEDERLON "/etc/default/dump1090-mutability"
+if [ GetConfig "LAT" "/etc/default/dump1090-mutability" == "" ] || [ GetConfig "LON" "/etc/default/dump1090-mutability" == "" ]; then
+
+    # Set latitude and longitude.
+    echo -e "\033[31m"
+    echo "SET THE LATITUDE AND LONGITUDE OF YOUR FEEDER"
+    echo -e "\033[33m"
+    echo "In order for some performance graphs to work properly you will need to"
+    echo "set the latitude and longitude of your feeder. If you do not know the"
+    echo "latitude and longitude of your feeder you can find out this information"
+    echo "by using Geocode by Address tool found on my web site."
+    echo ""
+    echo "  https://www.swiftbyte.com/toolbox/geocode"
+    echo ""
+    echo "NOT SETTING LATITUDE AND LONGITUDE WILL BREAK THE RANGE PERFORMANCE GRAPH"
+    echo ""
+    echo -e "\033[37m"
+    read -p "Feeder Latitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLAT
+    read -p "Feeder Longitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLON
+    echo ""
+
+    ChangeConfig "LAT" $FEEDERLAT "/etc/default/dump1090-mutability"
+    ChangeConfig "LON" $FEEDERLON "/etc/default/dump1090-mutability"
+fi
 
 # Set dump190-mutability's BEAST_INPUT_PORT to 30104.
 echo -e "\033[33m"
