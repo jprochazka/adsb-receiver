@@ -28,14 +28,14 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    require_once('../classes/common.class.php');
-    $common = new common();
-
     // The most current stable release.
     $thisVersion = "2.0.2";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
+        require('../classes/common.class.php');
+        $common = new common();
+        
         if ($common-> getSetting("version") < $thisVersion) {
             // THis is an older version so forward the user to upgrade.php
             header ("Location: /install/upgrade.php");
@@ -134,10 +134,8 @@
 EOF;
             file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php", $content);
 
-            // Lets sleep for a couple seconds to allow the file to be written on 
-            // slower devices to see if this fixes the problem where data is not 
-            // being saved properly during install on devices such as the RPi...
-            sleep(2);
+            require('../classes/common.class.php');
+            $common = new common();
 
             // Setup data storage.
             if ($_POST['driver'] == 'xml') {
