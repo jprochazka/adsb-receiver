@@ -4,7 +4,7 @@ The following is a history of the changes made to this project.
 
 ## v2.0.2 *(May 12th, 2016)*
 
-* When installing dump1090-mutability the user is no longer asked for LAT and LON.
+* When reinstalling dump1090-mutability the user is no longer asked for LAT and LON.
 * When using a remote MySQL database the database must already exist. *(advanced)* 
 * System information page now displays portal and patch versions.
 * SQLite database permissions set properly so flight data can be recorded. *(advanced)*
