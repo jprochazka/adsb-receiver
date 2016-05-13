@@ -38,6 +38,10 @@ source bash/functions.sh
 
 BUILDDIR="$PWD/build"
 
+# Assign the Lighthttpd document root directory to a variable.
+RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
+DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+
 ## CONFIGURE DUMP1090-MUTABILITY
 
 # Set latitude and longitude in the dump1090-mutability configuration file.
