@@ -57,7 +57,7 @@
     $flightId = $row['id'];
 
     $dbh = $common->pdoOpen();
-    $sql = "SELECT time, message, latitude, longitude, track FROM ".$settings::db_prefix."positions WHERE flight = :flight ORDER BY time";
+    $sql = "SELECT * FROM ".$settings::db_prefix."positions WHERE flight = :flight ORDER BY time";
     $sth = $dbh->prepare($sql);
     $sth->bindParam(':flight', $flightId, PDO::PARAM_STR, 50);
     $sth->execute();
@@ -73,35 +73,42 @@
     $firstPosition = TRUE;
     $totalPositions = count($positions);
     $counter = 0;
+    $id = 1;
+    $pathsSeen = 0;
     foreach ($positions as $position) {
         $counter++;
 
         if ($position["message"] < $lastMessage || $counter == $totalPositions) {
-            if ($firstPass == TRUE) {
-                $flightPath["startingLatitude"] = $startingLatitude;
-                $flightPath["startingLongitude"] = $startingLongitude;
-                $flightPath["startingTrack"] = $startingTrack;
-                $firstPass = FALSE;
-            } else {
-                $flightPath["startingLatitude"] = $position["latitude"];
-                $flightPath["startingLongitude"] = $position["longitude"];
-                $flightPath["startingTrack"] = $position["track"];
-            }
+            $flightPath["finishingTime"] = $lastTime;
+            $flightPath["finishingSquawk"] = $lastSquawk;
             $flightPath["finishingLatitude"] = $lastLatitude;
             $flightPath["finishingLongitude"] = $lastLongitude;
             $flightPath["finishingTrack"] = $lastTrack;
+            $flightPath["finishingAltitude"] = $lastAltitude;
+            $flightPath["finishingVerticleRate"] = $lastVerticleRate;
+            $flightPath["finishingSpeed"] = $lastSpeed;
             $flightPath["positions"] = json_encode($thisPath);
             $flightPaths[] = $flightPath;
+
             unset($thisPath);
             unset($flightPath);
             $thisPath = array();
             $flightPath = array();
+
+            $pathsSeen++;
+            $firstPosition = TRUE;
         }
 
         if ($firstPosition == TRUE) {
-            $startingLatitude = $position["latitude"];
-            $startingLongitude = $position["longitude"];
-            $startingTrack = $position["track"];
+            $flightPath["id"] = $id++;
+            $flightPath["startingTime"] = $position["time"];
+            $flightPath["startingSquawk"] = $position["squawk"];
+            $flightPath["startingLatitude"] = $position["latitude"];
+            $flightPath["startingLongitude"] = $position["longitude"];
+            $flightPath["startingTrack"] = $position["track"];
+            $flightPath["startingAltitude"] = $position["altitude"];
+            $flightPath["startingVerticleRate"] = $position["verticleRate"];
+            $flightPath["startingSpeed"] = $position["speed"];
             $firstPosition = FALSE;
         }
 
@@ -113,10 +120,19 @@
         $thisPath[] = $thisPosition;
 
         $lastMessage = $position["message"];
+        $lastTime = $position["time"];
+        $lastSquawk = $position["squawk"];
         $lastLatitude = $position["latitude"];
         $lastLongitude = $position["longitude"];
         $lastTrack = $position["track"];
+        $lastAltitude = $position["altitude"];
+        $lastVerticleRate = $position["verticleRate"];
+        $lastSpeed = $position["speed"];
     }
+
+    // Pass the number of seen paths which is equal to the last flight ID.
+    $pageData['pathsSeen'] = $pathsSeen;
+    echo $pathsSeen;
 
     if (count($flightPaths) > 0) {
         $pageData['flightPathsAvailable'] = "TRUE";

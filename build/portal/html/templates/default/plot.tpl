@@ -44,10 +44,6 @@
             <div id="iframe-wrapper">
                 <div id="map"></div>
             </div>
-            <div> id="slide-panel">
-                <a href="#" class="btn btn-danger" id="opener"><i class="glyphicon glyphicon-align-justify"></i></a>
-                Panel Content
-            </div>
 {/area}
 {area:scripts}
     {if page:flightPathsAvailable eq FALSE}
@@ -57,6 +53,7 @@
         });
     </script>
     {/if}
+    <script src="/templates/{setting:template}/assets/js/date.format.js"></script>
     <script>
       var genericPlaneSvg = "M 0,0 " +
         "M 1.9565564,41.694305 C 1.7174505,40.497708 1.6419973,38.448747 " +
@@ -97,8 +94,24 @@
           mapTypeId: google.maps.MapTypeId.TERRAIN
         });
 
+        var pathsSeen = {page:pathsSeen};
+
         {foreach page:flightPaths as flightPath}
-        var marker = new google.maps.Marker({
+        var startTime{flightPath->id} = dateFormat("{flightPath->startingTime}", "mmmm dd, yyyy 'at' h:MM TT");
+
+        var contentStringStart{flightPath->id} = '' +
+            '<h4>Sighting Number {flightPath->id}</h4>' +
+            '<p><strong>First Sighting</strong></p>' +
+            '<div>Seen on ' + startTime{flightPath->id} + '.</div>' +
+            '<div>At an altitude of {flightPath->startingAltitude} feet bearing {flightPath->startingTrack}&deg;.</div>' +
+            '<div>Traveling at a speed of {flightPath->startingSpeed} knots.</div>' +
+            '<div>With a vertical rate of {flightPath->startingVerticleRate} feet.</div>';
+
+        var infowindowStart{flightPath->id} = new google.maps.InfoWindow({
+            content: contentStringStart{flightPath->id}
+        });
+
+        var markerStart{flightPath->id} = new google.maps.Marker({
           position: {lat: {flightPath->startingLatitude}, lng: {flightPath->startingLongitude}},
           map: map,
           icon: {
@@ -107,12 +120,30 @@
             anchor : new google.maps.Point(32, 32),
             fillColor: "green",
             fillOpacity: 1,
-            strokeWeight: 2,
+            strokeWeight: ((pathsSeen == {flightPath->id}) ? 2 : 1),
             rotation: {flightPath->startingTrack}
           }
         });
 
-        var marker = new google.maps.Marker({
+        markerStart{flightPath->id}.addListener('click', function() {
+            infowindowStart{flightPath->id}.open(map, markerStart{flightPath->id});
+        });
+
+        var finishTime{flightPath->id} = dateFormat("{flightPath->finishingTime}", "mmmm dd, yyyy 'at' h:MM TT");
+
+        var contentStringFinish{flightPath->id} = '' +
+            '<h4>Sighting Number {flightPath->id}</h4>' +
+            '<p><strong>Last Sighting</strong></p>' +
+            '<div>Seen on ' + finishTime{flightPath->id} + '.</div>' +
+            '<div>At an altitude of {flightPath->finishingAltitude} feet bearing {flightPath->finishingTrack}&deg;.</div>' +
+            '<div>Traveling at a speed of {flightPath->finishingSpeed} knots.</div>' +
+            '<div>With a vertical rate of {flightPath->finishingVerticleRate} feet.</div>';
+
+        var infowindowFinish{flightPath->id} = new google.maps.InfoWindow({
+            content: contentStringFinish{flightPath->id}
+        });
+
+        var markerFinish{flightPath->id} = new google.maps.Marker({
           position: {lat: {flightPath->finishingLatitude}, lng: {flightPath->finishingLongitude}},
           map: map,
           icon: {
@@ -121,9 +152,13 @@
             anchor : new google.maps.Point(32, 32),
             fillColor: "red",
             fillOpacity: 1,
-            strokeWeight: 2,
+            strokeWeight: ((pathsSeen == {flightPath->id}) ? 2 : 1),
             rotation: {flightPath->finishingTrack}
           }
+        });
+
+        markerFinish{flightPath->id}.addListener('click', function() {
+            infowindowFinish{flightPath->id}.open(map, markerFinish{flightPath->id});
         });
 
         json = {flightPath->positions};
@@ -132,15 +167,17 @@
             thisPath.push(new google.maps.LatLng(json[i].latitude, json[i].longitude));
         }
 
-        var flightPath = new google.maps.Polyline({
+        var flightPath{flightPath->id} = new google.maps.Polyline({
           path: thisPath,
           geodesic: true,
           strokeColor: 'blue',
-          strokeOpacity: 1.0,
-          strokeWeight: 2
+          strokeOpacity: ((pathsSeen == {flightPath->id}) ? 1 : 0.3),
+          strokeWeight: ((pathsSeen == {flightPath->id}) ? 2 : 1)
         });
 
-        flightPath.setMap(map);
+        flightPath{flightPath->id}.setMap(map);
+
+
         {/foreach}
 
         // Retain map state.
