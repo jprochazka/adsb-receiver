@@ -252,7 +252,12 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         echo "Database Name: ${DATABASENAME}"
         echo -e "\033[37m"
         read -p "Press enter to continue..." CONTINUE
-
+    fi
+    
+    if [[ $DATABASEENGINE == 2 ]]; then
+        # Create and empty SQLite databse and set the proper permissions on it.
+        sudo sqlite3 ${DOCUMENTROOT}/data/portal.sqlite ""
+        sudo chmod 666 ${DOCUMENTROOT}/data/portal.sqlite
     fi
 
     ## SETUP FLIGHT LOGGING SCRIPT
