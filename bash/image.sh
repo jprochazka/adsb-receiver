@@ -333,13 +333,16 @@ fi
 
 ## FINISH CONFIGURATION
 
+# This assigns the first IP address in the list to the $IPADDRESS variable.
+IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
+
 # Display further portal setup instructions.
 echo -e "\033[33m"
 echo "PORTAL SETUP IS NOT YET COMPLETE"
 echo -e "\033[33m"
 echo "In order to complete the portal setup process visit the following URL in your favorite web browser."
 echo ""
-echo "http://<IP_ADDRESS_OF_THIS_DEVICE>/install/"
+echo "http://${IPADDRESS}/install/"
 echo ""
 echo "Enter the requested information and submit the form to complete the portal setup."
 echo "It is recomended that after setting up the portal you delete the install.php file."
