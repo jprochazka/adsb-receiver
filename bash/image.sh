@@ -202,37 +202,59 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         echo -e "\033[33m"
         echo "Please supply the information pertaining to the new password when asked."
         echo ""
+        echo -e "\033[31mNOTE:"
         echo "If the database will be hosted locally on this device a database will be"
-        echo "created automatically for you. If you are hosting your database remotely"
-        echo "you will need to manually create the database and user on the remote device."
+        echo "created automatically for you."
+        echo ""
+        echo "If you are hosting your database remotely YOU WILL NEED TO MANUALLY CREATE"
+        echo "THE DATABASE AND USER BEFORE PROCEEDING WITH THE INSTALLATION."
         echo -e "\033[37m"
 
         DATABASEHOST="localhost"
+        if [[ $LOCALDATABASE == 1 ]]; then
+            read -p "MySQL user login: [root] " DATABASEUSER
+            read -p "Password for MySQL user: " DATABASEPASSWORD
+            if [[ $LOCALDATABASE == "" ]]; then
+               DATABASEUSER="root"
+            fi
+
+            # Check that the supplied password is correct.
+            while ! mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e ";" ; do
+                echo -e "\033[31m"
+                echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
+                read -p "MySQL user login: [root] " DATABASEUSER
+                read -p "Password for MySQL user: " DATABASEPASSWORD
+                if [[ $LOCALDATABASE == "" ]]; then
+                    DATABASEUSER="root"
+                fi
+            done
+        fi
+
         if [[ $LOCALDATABASE == 2 ]]; then
             # Ask for remote MySQL address if the database is hosted remotely.
-            read -p "Remote MySQL Server Address: " DATABASEHOST
+            read -p "MySQL Server Address: " DATABASEHOST
         fi
-        read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
+        read -p "Database Name: " DATABASENAME
+        read -p "Database User Name: " DATABASEUSER
+        read -p "Database User Password: " DATABASEPASSWORD
 
-        # Check that the supplied password is correct.
-        while ! mysql -u root -p$MYSQLROOTPASSWORD -h $DATABASEHOST  -e ";" ; do
-            echo -e "\033[31m"
-            echo -e "Unable to connect to the MySQL server using the supplied password.\033[37m"
-            read -p "Password for MySQL root user: " MYSQLROOTPASSWORD
-        done
-
-        read -p "New Database Name: " DATABASENAME
-        read -p "New Database User Name: " DATABASEUSER
-        read -p "New Database User Password: " DATABASEPASSWORD
-
-        # Create the database and user as well as assign permissions.
-        if [[ $DATABASEENGINE == 1 ]] || [[ $DATABASEENGINE == "" ]]; then
+        if [[ $LOCALDATABASE == 2 ]]; then
+            # Check the connection to the remote MySQL server.
+            while ! mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -h ${DATABASEHOST}  -e ";" ; do
+                echo -e "\033[31m"
+                echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
+                read -p "MySQL Server Address: " DATABASEHOST
+                read -p "Database user Name: " DATABASEUSER
+                read -p "Database User Password: " DATABASEPASSWORD
+            done
+        else
+            # Create the database and user if running MySQL locally.
             echo -e "\033[33m"
             echo -e "Creating MySQL database and user...\033[37m"
-            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE DATABASE ${DATABASENAME};"
-            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-            mysql -uroot -p${MYSQLROOTPASSWORD} -h $DATABASEHOST -e "FLUSH PRIVILEGES;"
+            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
+            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "FLUSH PRIVILEGES;"
         fi
 
         echo -e "\033[31m"
@@ -240,12 +262,6 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         echo -e "\033[33m"
         echo "This information will be needed in order to complete the installation of the portal."
         echo ""
-        if [[ $LOCALDATABASE == 2 ]]; then
-            echo -e "\033[31mNOTE:"
-            echo "Being you are hosting your database remotely you will need this information to create"
-            echo "both the database and database user on your remote database server."
-            echo -e "\033[33m"
-        fi
         echo "Database Server: ${DATABASEHOST}"
         echo "Database User: ${DATABASEUSER}"
         echo "Database Password: ${DATABASEPASSWORD}"
