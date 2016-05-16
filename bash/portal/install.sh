@@ -473,7 +473,7 @@ read -p "Press enter to continue..." CONTINUE
 clear
 
 # This assigns the first IP address in the list to the $IPADDRESS variable.
-IPADDRESS=ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'
+IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
 # Display further portal setup instructions.
 echo -e "\033[31m"
