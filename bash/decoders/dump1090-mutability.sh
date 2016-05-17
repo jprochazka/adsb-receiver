@@ -162,7 +162,7 @@ fi
 
 ## DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
 
-if [ GetConfig "LAT" "/etc/default/dump1090-mutability" == "" ] || [ GetConfig "LON" "/etc/default/dump1090-mutability" == "" ]; then
+if [[ `GetConfig "LAT" "/etc/default/dump1090-mutability"` == "" ]] || [[ `GetConfig "LON" "/etc/default/dump1090-mutability"` == "" ]]; then
 
     # Set latitude and longitude.
     echo -e "\033[31m"
@@ -176,7 +176,6 @@ if [ GetConfig "LAT" "/etc/default/dump1090-mutability" == "" ] || [ GetConfig "
     echo "  https://www.swiftbyte.com/toolbox/geocode"
     echo ""
     echo "NOT SETTING LATITUDE AND LONGITUDE WILL BREAK THE RANGE PERFORMANCE GRAPH"
-    echo ""
     echo -e "\033[37m"
     read -p "Feeder Latitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLAT
     read -p "Feeder Longitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLON
@@ -205,6 +204,7 @@ echo -e "\033[37m"
 read -p "Would you like dump1090-mutability to bind to all available IP addresses? [y/N] " BINDTOALLIPS
 
 if [[ $BINDTOALLIPS =~ ^[yY]$ ]]; then
+    echo ""
     ChangeConfig "NET_BIND_ADDRESS" "0.0.0.0" "/etc/default/dump1090-mutability"
 fi
 
