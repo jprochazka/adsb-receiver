@@ -35,8 +35,7 @@
                 position: fixed;
                 color: white;
                 padding: 30px;
-                font-size: 2em;
-                text-align: center;
+                font-size: 1em;
             }
         </style>
 {/area}
@@ -61,7 +60,19 @@
             {/if}
 
             <div class="sidebar left">
-                Flight Data
+                <h3>Flight Data</h3>
+                <p>
+                    <div><strong>ICAO: <span id="icao"></span></strong></div>
+                    <div><strong>Flight Number: <span id="flight"></span></strong></div>
+                </p>
+                <p>
+                    <div>Aircraft First Seen: <span id="afs"></span></div>
+                    <div>Aircraft Last Seen: <span id="als"></span></div>
+                </p>
+                <p>
+                    <div>Flight First Seen: <span id="ffs"></span></div>
+                    <div>Flight Last Seen: <span id="fls"></span></div>
+                </p>
             </div>
 
             <div id="iframe-wrapper">
@@ -79,12 +90,18 @@
 
     <script src="/templates/{setting:template}/assets/js/jquery.sidebar.js"></script>
     <script>
+        var position;
+
+        function setPosition(thisPosition) {
+            position = thisPosition;
+        }
+
         $(document).ready(function () {
             $(".sidebar.left").sidebar({side: "left"});
 
             $(".sidebar.left").on("sidebar:opened", function () {
                 // Gather data for this particular sighting from the database.
-                
+                alert(position);
             });
         });
     </script>
@@ -144,7 +161,7 @@
             '    <div>Traveling at a speed of {flightPath->startingSpeed} knots.</div>' +
             '    <div>With a vertical rate of {flightPath->startingVerticleRate} feet.</div>' +
             '</p>' +
-            '<p><a href="#" onclick="$(\'.sidebar.left\').trigger(\'sidebar:toggle\');">Toggle detailed flight data</a></p>';
+            '<p><a href="#" onclick="setPosition({flightPath->startingId}); $(\'.sidebar.left\').trigger(\'sidebar:toggle\');">Toggle detailed flight data</a></p>';
         var infowindowStart{flightPath->id} = new google.maps.InfoWindow({
             content: contentStringStart{flightPath->id}
         });
@@ -172,10 +189,13 @@
         var contentStringFinish{flightPath->id} = '' +
             '<h4>Sighting Number {flightPath->id}</h4>' +
             '<p><strong>Last Sighting</strong></p>' +
-            '<div>Seen on ' + finishTime{flightPath->id} + '.</div>' +
-            '<div>At an altitude of {flightPath->finishingAltitude} feet bearing {flightPath->finishingTrack}&deg;.</div>' +
-            '<div>Traveling at a speed of {flightPath->finishingSpeed} knots.</div>' +
-            '<div>With a vertical rate of {flightPath->finishingVerticleRate} feet.</div>';
+            '<p>' +
+            '    <div>Seen on ' + finishTime{flightPath->id} + '.</div>' +
+            '    <div>At an altitude of {flightPath->finishingAltitude} feet bearing {flightPath->finishingTrack}&deg;.</div>' +
+            '    <div>Traveling at a speed of {flightPath->finishingSpeed} knots.</div>' +
+            '    <div>With a vertical rate of {flightPath->finishingVerticleRate} feet.</div>' +
+            '</p>' +
+            '<p><a href="#" onclick="$(\'.sidebar.left\').trigger(\'sidebar:toggle\');">Toggle detailed flight data</a></p>';
 
         var infowindowFinish{flightPath->id} = new google.maps.InfoWindow({
             content: contentStringFinish{flightPath->id}

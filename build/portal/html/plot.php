@@ -79,6 +79,7 @@
         $counter++;
 
         if ($position["message"] < $lastMessage || $counter == $totalPositions) {
+            $flightPath["finishingId"] = $lastId;
             $flightPath["finishingTime"] = $lastTime;
             $flightPath["finishingSquawk"] = $lastSquawk;
             $flightPath["finishingLatitude"] = $lastLatitude;
@@ -101,6 +102,7 @@
 
         if ($firstPosition == TRUE) {
             $flightPath["id"] = $id++;
+            $flightPath["startingId"] = $position["id"];
             $flightPath["startingTime"] = $position["time"];
             $flightPath["startingSquawk"] = $position["squawk"];
             $flightPath["startingLatitude"] = $position["latitude"];
@@ -112,6 +114,7 @@
             $firstPosition = FALSE;
         }
 
+        $thisPosition["id"] = $position["id"];
         $thisPosition["time"] = $position["time"];
         $thisPosition["latitude"] = $position["latitude"];
         $thisPosition["longitude"] = $position["longitude"];
@@ -119,6 +122,7 @@
         $thisPosition["message"] = $position["message"];
         $thisPath[] = $thisPosition;
 
+        $lastId = $position["id"];
         $lastMessage = $position["message"];
         $lastTime = $position["time"];
         $lastSquawk = $position["squawk"];
@@ -132,7 +136,6 @@
 
     // Pass the number of seen paths which is equal to the last flight ID.
     $pageData['pathsSeen'] = $pathsSeen;
-    echo $pathsSeen;
 
     if (count($flightPaths) > 0) {
         $pageData['flightPathsAvailable'] = "TRUE";
