@@ -29,13 +29,13 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.0.2";
+    $thisVersion = "2.1.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
         require('../classes/common.class.php');
         $common = new common();
-        
+
         if ($common-> getSetting("version") < $thisVersion) {
             // THis is an older version so forward the user to upgrade.php
             header ("Location: /install/upgrade.php");
@@ -218,6 +218,7 @@ EOF;
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                            flight BIGINT NOT NULL,
+                                           aircraft BIGINT NOT NULL,
                                            time datetime NOT NULL,
                                            message INT NOT NULL,
                                            squawk INT(4) NULL,
@@ -263,6 +264,7 @@ EOF;
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id SERIAL PRIMARY KEY,
                                            flight BIGINT NOT NULL,
+                                           aircraft BIGINT NOT NULL,
                                            time VARCHAR(100) NOT NULL,
                                            message INT NOT NULL,
                                            squawk INT(4) NULL,
@@ -307,7 +309,8 @@ EOF;
                                          lastSeen DATETIME NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                           flight TEXT NOT NULL,
+                                           flight INTEGER NOT NULL,
+                                           aircraft INTEGER NOT NULL,
                                            time DATETIME NOT NULL,
                                            message INTEGER NOT NULL,
                                            squawk INTEGER NULL,

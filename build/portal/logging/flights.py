@@ -128,12 +128,22 @@ while True:
                     cursor.execute("UPDATE adsb_flights SET aircraft = ?, lastSeen = ? WHERE flight = ?", params)
                 else:
                     cursor.execute("UPDATE adsb_flights SET aircraft = %s, lastSeen = %s WHERE flight = %s", (aircraft_id, time_now, aircraft["flight"].strip()))
+
             # Get the ID of this flight.
             if config["database"]["type"] == "sqlite":
                 params = (aircraft["flight"].strip(),)
                 cursor.execute("SELECT id FROM adsb_flights WHERE flight = ?", params)
             else:
                 cursor.execute("SELECT id FROM adsb_flights WHERE flight = %s", aircraft["flight"].strip())
+            rows = cursor.fetchall()
+            for row in rows:
+                flight_id = row[0]
+            # Get the ID of this aircraft.
+            if config["database"]["type"] == "sqlite":
+                params = (aircraft["hex"].strip(),)
+                cursor.execute("SELECT id FROM adsb_aircraft WHERE icao = ?", params)
+            else:
+                cursor.execute("SELECT id FROM adsb_aircraft WHERE icao = %s", aircraft["hex"].strip())
             rows = cursor.fetchall()
             for row in rows:
                 flight_id = row[0]
@@ -155,16 +165,16 @@ while True:
                     # Add this position to the database.
                     if aircraft.has_key('squawk'):
                         if config["database"]["type"] == "sqlite":
-                            params = (flight_id, time_now, aircraft["messages"], aircraft["squawk"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
+                            params = (flight_id, aircraft_id, time_now, aircraft["messages"], aircraft["squawk"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
+                            cursor.execute("INSERT INTO adsb_positions (flight, aircraft, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
                         else:
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (flight_id, time_now, aircraft["messages"], aircraft["squawk"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"]))
+                            cursor.execute("INSERT INTO adsb_positions (flight, aircraft,  time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (flight_id, aircraft_id, time_now, aircraft["messages"], aircraft["squawk"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"]))
                     else:
                         if config["database"]["type"] == "sqlite":
-                            params = (flight_id, time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
+                            params = (flight_id, aircraft_id, time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
+                            cursor.execute("INSERT INTO adsb_positions (flight, aircraft, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
                         else:
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (flight_id, time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"]))
+                            cursor.execute("INSERT INTO adsb_positions (flight, aircraft, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (flight_id, aircraft_id, time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"]))
 
     # Close the database connection.
     db.commit()

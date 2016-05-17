@@ -35,7 +35,7 @@
     $settings = new settings();
 
     // The most current stable release.
-    $thisVersion = "2.0.2";
+    $thisVersion = "2.1.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if ($common->getSetting("version") == $thisVersion) {
@@ -194,7 +194,7 @@
     }
 
     ///////////////////////
-    // UPGRADE RO V2.0.2
+    // UPGRADE TO V2.0.2
     ///////////////////////
 
     if ($common->getSetting("version") == "2.0.1") {
@@ -212,6 +212,48 @@
             $errorMessage = $e->getMessage();
         }
     }
+
+    ///////////////////////
+    // UPGRADE TO V2.1.0
+    ///////////////////////
+
+    if ($common->getSetting("version") == "2.0.2") {
+        try {
+
+            // Add the positions.aircraft column if using "SQL" storeage.
+            if ($settings::db_driver != "xml") {
+
+                if ($settings::db_driver == "sqlite") {
+                    // In SQLite aircraft.flight should have been an INTEGER not TEXT column.
+                    // Since SQLite does not fully support ALTER TABEL allowing the change to be done easily this change will be skipped.
+                    // This change will be addressed in the future if a problem arises with this column not being specifed as an INTEGER.
+
+                    // Add the column positions.aircraft.
+                    $dbh = $common->pdoOpen();
+                    $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft INTEGER";
+                    $sth = $dbh->prepare($sql);
+                    $sth->execute();
+                    $sth = NULL;
+                    $dbh = NULL;
+                }
+
+                if ($settings::db_driver == "mysql") {
+                    $dbh = $common->pdoOpen();
+                    $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft BIGINT";
+                    $sth = $dbh->prepare($sql);
+                    $sth->execute();
+                    $sth = NULL;
+                    $dbh = NULL;
+                }
+            }
+            $common->updateSetting("version", $thisVersion);
+            $common->updateSetting("patch", "");
+        } catch(Exception $e) {
+            $error = TRUE;
+            $errorMessage = $e->getMessage();
+        }
+    }
+
 
     require_once('../admin/includes/header.inc.php');
 
