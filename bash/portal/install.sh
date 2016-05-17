@@ -88,7 +88,7 @@ if [ -f $DOCUMENTROOT/classes/settings.class.php ]; then
         DATABASEENGINE=1
     fi
 
-    if [ $HOST != "localhost" ] || [ $HOST != "127.0.0.1" ]; then
+    if [ $HOST == "localhost" ] || [ $HOST == "127.0.0.1" ]; then
         LOCALDATABASE=1
     else
         LOCALDATABASE=2
@@ -202,6 +202,11 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
 
     fi
 fi
+
+# Restart Lighttpd after installing the prerequisite packages. 
+echo -e "\033[33m" 
+echo -e "Restarting lighttpd...\033[37m" 
+sudo /etc/init.d/lighttpd restart 
 
 if [[ $INSTALLED == "n" ]]; then
 
@@ -468,7 +473,7 @@ read -p "Press enter to continue..." CONTINUE
 clear
 
 # This assigns the first IP address in the list to the $IPADDRESS variable.
-IPADDRESS=ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'
+IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
 # Display further portal setup instructions.
 echo -e "\033[31m"
