@@ -21,6 +21,24 @@
 *}
 {area:head}
         <link rel="stylesheet" href="templates/{setting:template}/assets/css/dump1090.css">
+        <style>
+            .sidebar.left {
+                position: fixed;
+                top: 49px;
+                left: 0;
+                bottom: 60px;
+                width: 270px;
+                background: #448AFF;
+                z-index: 10000;
+            }
+            .sidebar {
+                position: fixed;
+                color: white;
+                padding: 30px;
+                font-size: 2em;
+                text-align: center;
+            }
+        </style>
 {/area}
 {area:contents}
             {if page:flightPathsAvailable eq FALSE}
@@ -41,6 +59,11 @@
                  </div>
             </div>
             {/if}
+
+            <div class="sidebar left">
+                Flight Data
+            </div>
+
             <div id="iframe-wrapper">
                 <div id="map"></div>
             </div>
@@ -53,6 +76,19 @@
         });
     </script>
     {/if}
+
+    <script src="/templates/{setting:template}/assets/js/jquery.sidebar.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".sidebar.left").sidebar({side: "left"});
+
+            $(".sidebar.left").on("sidebar:opened", function () {
+                // Gather data for this particular sighting from the database.
+                
+            });
+        });
+    </script>
+
     <script src="/templates/{setting:template}/assets/js/date.format.js"></script>
     <script>
       var genericPlaneSvg = "M 0,0 " +
@@ -102,11 +138,13 @@
         var contentStringStart{flightPath->id} = '' +
             '<h4>Sighting Number {flightPath->id}</h4>' +
             '<p><strong>First Sighting</strong></p>' +
-            '<div>Seen on ' + startTime{flightPath->id} + '.</div>' +
-            '<div>At an altitude of {flightPath->startingAltitude} feet bearing {flightPath->startingTrack}&deg;.</div>' +
-            '<div>Traveling at a speed of {flightPath->startingSpeed} knots.</div>' +
-            '<div>With a vertical rate of {flightPath->startingVerticleRate} feet.</div>';
-
+            '<p>' +
+            '    <div>Seen on ' + startTime{flightPath->id} + '.</div>' +
+            '    <div>At an altitude of {flightPath->startingAltitude} feet bearing {flightPath->startingTrack}&deg;.</div>' +
+            '    <div>Traveling at a speed of {flightPath->startingSpeed} knots.</div>' +
+            '    <div>With a vertical rate of {flightPath->startingVerticleRate} feet.</div>' +
+            '</p>' +
+            '<p><a href="#" onclick="$(\'.sidebar.left\').trigger(\'sidebar:toggle\');">Toggle detailed flight data</a></p>';
         var infowindowStart{flightPath->id} = new google.maps.InfoWindow({
             content: contentStringStart{flightPath->id}
         });
