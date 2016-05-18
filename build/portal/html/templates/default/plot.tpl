@@ -35,7 +35,7 @@
                 position: fixed;
                 color: white;
                 padding: 30px;
-                font-size: 1em;
+                font-size: 0.7em;
             }
         </style>
 {/area}
@@ -90,10 +90,10 @@
 
     <script src="/templates/{setting:template}/assets/js/jquery.sidebar.js"></script>
     <script>
-        var position;
+        var thisPosition;
 
-        function setPosition(thisPosition) {
-            position = thisPosition;
+        function setPosition(position) {
+            thisPosition = position;
         }
 
         $(document).ready(function () {
@@ -101,7 +101,28 @@
 
             $(".sidebar.left").on("sidebar:opened", function () {
                 // Gather data for this particular sighting from the database.
-                alert(position);
+                $.ajax({
+                    url: '/api/flight.php',
+                    type: 'GET',
+                    cache: false,
+                    datatype: 'json',
+                    data: {
+                        type: 'byPosition',
+                        position: thisPosition
+                    },
+                    success: function(json) {
+                        var data = $.parseJSON(json);
+                        $('#icao').text(data['icao']);
+                        $('#flight').text(data['flight']);
+                        $('#afs').text(data['afs']);
+                        $('#als').text(data['als']);
+                        $('#ffs').text(data['ffs']);
+                        $('#fls').text(data['fls']);
+                    },
+                    error: function(response) {
+                        console.log(response);
+                    }
+                });
             });
         });
     </script>
@@ -195,7 +216,7 @@
             '    <div>Traveling at a speed of {flightPath->finishingSpeed} knots.</div>' +
             '    <div>With a vertical rate of {flightPath->finishingVerticleRate} feet.</div>' +
             '</p>' +
-            '<p><a href="#" onclick="$(\'.sidebar.left\').trigger(\'sidebar:toggle\');">Toggle detailed flight data</a></p>';
+            '<p><a href="#" onclick="setPosition({flightPath->finishingId}); $(\'.sidebar.left\').trigger(\'sidebar:toggle\');">Toggle detailed flight data</a></p>';
 
         var infowindowFinish{flightPath->id} = new google.maps.InfoWindow({
             content: contentStringFinish{flightPath->id}

@@ -81,10 +81,22 @@
 
         $flightData['icao'] = $aircraft['icao'];
         $flightData['flight'] = $flight['flight'];
-        $flightData['afs'] = $aircraft['firstSeen'];
-        $flightData['als'] = $aircraft['lastSeen'];
-        $flightData['ffs'] = $flight['firstSeen'];
-        $flightData['fls'] = $flight['lastSeen'];
+
+        $date = new DateTime($aircraft['firstSeen'], new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+        $flightData['afs'] = $date->format($common->getSetting('dateFormat'));
+
+        $date = new DateTime($aircraft['lastSeen'], new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+        $flightData['als'] = $date->format($common->getSetting('dateFormat'));
+
+        $date = new DateTime($flight['firstSeen'], new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+        $flightData['ffs'] = $date->format($common->getSetting('dateFormat'));
+
+        $date = new DateTime($flight['lastSeen'], new DateTimeZone('UTC'));
+        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
+        $flightData['fls'] = $date->format($common->getSetting('dateFormat'));
 
         return $flightData;
     }
