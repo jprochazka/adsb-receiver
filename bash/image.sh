@@ -144,7 +144,7 @@ echo "You have been warned."
 echo -e "\033[37m"
 read -p "Use portal with advanced features? [y/N] " ADVANCED
 
-## ASK IF ADVANCED FEATURES ARE TO BE USED 
+## ASK IF ADVANCED FEATURES ARE TO BE USED
 
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
     echo -e "\033[31m"
@@ -211,24 +211,26 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         echo -e "\033[37m"
 
         DATABASEHOST="localhost"
-        if [[ $LOCALDATABASE == 1 ]]; then
-            read -p "MySQL user login: [root] " DATABASEUSER
-            read -p "Password for MySQL user: " DATABASEPASSWORD
+        if [[ $LOCALDATABASE != 2 ]]; then
+            read -p "MySQL user login: [root] " DATABASEADMINUSER
+            read -p "Password for MySQL user: " DATABASEADMINPASSWORD
             if [[ $LOCALDATABASE == "" ]]; then
-               DATABASEUSER="root"
+               DATABASEADMINUSER="root"
             fi
 
             # Check that the supplied password is correct.
-            while ! mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e ";" ; do
+            while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e ";" ; do
+                echo ""
                 echo -e "\033[31m"
                 echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
-                read -p "MySQL user login: [root] " DATABASEUSER
-                read -p "Password for MySQL user: " DATABASEPASSWORD
+                read -p "MySQL user login: [root] " DATABASEADMINUSER
+                read -p "Password for MySQL user: " DATABASEADMINPASSWORD
                 if [[ $LOCALDATABASE == "" ]]; then
-                    DATABASEUSER="root"
+                    DATABASEADMINUSER="root"
                 fi
             done
         fi
+        echo ""
 
         if [[ $LOCALDATABASE == 2 ]]; then
             # Ask for remote MySQL address if the database is hosted remotely.
@@ -237,6 +239,13 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         read -p "Database Name: " DATABASENAME
         read -p "Database User Name: " DATABASEUSER
         read -p "Database User Password: " DATABASEPASSWORD
+        read -p "Confirm Database User Password: " CONFIRMDATABASEPASSWORD
+        while [ $DATABASEPASSWORD != $CONFIRMDATABASEPASSWORD ]; do
+            echo -e "\033[31m"
+            echo -e "The supplied database user passwords did not match.\033[37m"
+            read -p "Database User Password: " DATABASEPASSWORD
+            read -p "Confirm Database User Password: " CONFIRMDATABASEPASSWORD
+        done
 
         if [[ $LOCALDATABASE == 2 ]]; then
             # Check the connection to the remote MySQL server.
@@ -251,10 +260,10 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
             # Create the database and user if running MySQL locally.
             echo -e "\033[33m"
             echo -e "Creating MySQL database and user...\033[37m"
-            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
-            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-            mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -e "FLUSH PRIVILEGES;"
+            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
+            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
+            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "FLUSH PRIVILEGES;"
         fi
 
         echo -e "\033[31m"
@@ -269,7 +278,7 @@ if [[ $ADVANCED =~ ^[yY]$ ]]; then
         echo -e "\033[37m"
         read -p "Press enter to continue..." CONTINUE
     fi
-    
+
     if [[ $DATABASEENGINE == 2 ]]; then
         # Create and empty SQLite databse and set the proper permissions on it.
         sudo sqlite3 ${DOCUMENTROOT}/data/portal.sqlite ""
