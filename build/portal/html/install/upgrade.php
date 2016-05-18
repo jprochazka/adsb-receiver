@@ -35,7 +35,7 @@
     $settings = new settings();
 
     // The most current stable release.
-    $thisVersion = "2.0.2";
+    $thisVersion = "2.0.3";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if ($common->getSetting("version") == $thisVersion) {
@@ -205,6 +205,20 @@
                 chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
             }
 
+            $common->updateSetting("version", "2.0.2");
+            $common->updateSetting("patch", "");
+        } catch(Exception $e) {
+            $error = TRUE;
+            $errorMessage = $e->getMessage();
+        }
+    }
+
+    ///////////////////////
+    // UPGRADE RO V2.0.3
+    ///////////////////////
+
+    if ($common->getSetting("version") == "2.0.2") {
+        try {
             $common->updateSetting("version", $thisVersion);
             $common->updateSetting("patch", "");
         } catch(Exception $e) {
@@ -212,6 +226,7 @@
             $errorMessage = $e->getMessage();
         }
     }
+
 
     require_once('../admin/includes/header.inc.php');
 

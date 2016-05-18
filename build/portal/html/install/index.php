@@ -29,13 +29,13 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.0.2";
+    $thisVersion = "2.0.3";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
         require('../classes/common.class.php');
         $common = new common();
-        
+
         if ($common-> getSetting("version") < $thisVersion) {
             // THis is an older version so forward the user to upgrade.php
             header ("Location: /install/upgrade.php");
