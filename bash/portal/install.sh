@@ -228,7 +228,7 @@ if [[ $INSTALLED == "n" ]]; then
             echo -e "\033[37m"
 
             DATABASEHOST="localhost"
-            if [[ $LOCALDATABASE == 1 ]]; then
+            if [[ $LOCALDATABASE != 2 ]]; then
                 read -p "MySQL user login: [root] " DATABASEADMINUSER
                 read -p "Password for MySQL user: " DATABASEADMINPASSWORD
                 if [[ $LOCALDATABASE == "" ]]; then
@@ -237,6 +237,7 @@ if [[ $INSTALLED == "n" ]]; then
 
                 # Check that the supplied password is correct.
                 while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e ";" ; do
+                    echo ""
                     echo -e "\033[31m"
                     echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
                     read -p "MySQL user login: [root] " DATABASEADMINUSER
@@ -246,6 +247,7 @@ if [[ $INSTALLED == "n" ]]; then
                     fi
                 done
             fi
+            echo ""
 
             if [[ $LOCALDATABASE == 2 ]]; then
                 # Ask for remote MySQL address if the database is hosted remotely.
@@ -255,7 +257,7 @@ if [[ $INSTALLED == "n" ]]; then
             read -p "Database User Name: " DATABASEUSER
             read -p "Database User Password: " DATABASEPASSWORD
             read -p "Confirm Database User Password: " CONFIRMDATABASEPASSWORD
-            while ! [[ DATABASEPASSWORD == CONFIRMDATABASEPASSWORD ]]; do
+            while [ $DATABASEPASSWORD != $CONFIRMDATABASEPASSWORD ]; do
                 echo -e "\033[31m"
                 echo -e "The supplied database user passwords did not match.\033[37m"
                 read -p "Database User Password: " DATABASEPASSWORD
