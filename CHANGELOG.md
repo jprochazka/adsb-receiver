@@ -2,6 +2,14 @@
 
 The following is a history of the changes made to this project.
 
+## v2.0.2 *(May 18th, 2016)*
+
+* Added password confirmation for MySQL database user to bash script. *(advanced)*
+* Changes applied to image configuration script including fixes for bugs and wording.
+* The device's IP address is now properly displayed at end of the bash setup process.
+* MySQL upgrades failed to detect local or remote installs properly. *(advanced)*
+* Changes to resolve PHP errors after running the PHP portal installer. *(advanced)*
+
 ## v2.0.2 *(May 12th, 2016)*
 
 * When reinstalling dump1090-mutability the user is no longer asked for LAT and LON.
