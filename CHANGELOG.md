@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.0.2 *(May 18th, 2016)*
+## v2.0.3 *(May 19th, 2016)*
 
 * Added password confirmation for MySQL database user to bash script. *(advanced)*
 * Changes applied to image configuration script including fixes for bugs and wording.
