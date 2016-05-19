@@ -394,6 +394,11 @@ EOF;
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
             $common->addSetting('timeZone', $_POST['timeZone']);
+            $common->addSetting('purgeAircraft', FALSE);
+            $common->addSetting('purgeFlights', FALSE);
+            $common->addSetting('purgePositions', FALSE);
+            $common->addSetting('purgeDaysOld', 365);
+
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);

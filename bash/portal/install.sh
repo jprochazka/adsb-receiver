@@ -317,7 +317,7 @@ EOF
                  ;;
         esac
 
-        # Create and set permissions on the flight logging maintainance script.
+        # Create and set permissions on the flight logging and maintainance maintenance scripts.
         PYTHONPATH=`which python`
         tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
 #!/bin/sh
@@ -327,17 +327,39 @@ while true
         ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
   done
 EOF
+        tee $BUILDDIR/portal/logging/maintenance-maint.sh > /dev/null <<EOF
+#!/bin/sh
+while true
+  do
+    sleep 30
+        ${PYTHONPATH} ${BUILDDIR}/portal/logging/maintenance.py
+  done
+EOF
         chmod +x $BUILDDIR/portal/logging/flights-maint.sh
+        chmod +x $BUILDDIR/portal/logging/maintenance-maint.sh
 
-        # Add flight logging maintainance script to rc.local.
+        # Add flight logging maintenance script to rc.local.
         if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
             echo -e "\033[33m"
-            echo -e "Adding startup line to rc.local...\033[37m"
+            echo -e "Adding flights-maint.sh startup line to rc.local...\033[37m"
             lnum=($(sed -n '/exit 0/=' /etc/rc.local))
             ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
         fi
 
+        # Add maintenance maintenance script to rc.local.
+        if ! grep -Fxq "${BUILDDIR}/portal/logging/maintenance-maint.sh &" /etc/rc.local; then
+            echo -e "\033[33m"
+            echo -e "Adding maintenance-maint.sh startup line to rc.local...\033[37m"
+            lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+            ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/maintenance-maint.sh &\n" /etc/rc.local
+        fi
+
         # Start flight logging.
+        echo -e "\033[33m"
+        echo -e "Starting flight logging...\033[37m"
+        nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
+
+        # Start maintenance..
         echo -e "\033[33m"
         echo -e "Starting flight logging...\033[37m"
         nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &

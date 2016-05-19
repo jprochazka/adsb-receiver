@@ -246,6 +246,14 @@
                     $dbh = NULL;
                 }
             }
+
+            // Add new settings.
+            $common->addSetting('purgeAircraft', FALSE);
+            $common->addSetting('purgeFlights', FALSE);
+            $common->addSetting('purgePositions', FALSE);
+            $common->addSetting('purgeDaysOld', 365);
+
+            // Update the version and patch version.
             $common->updateSetting("version", $thisVersion);
             $common->updateSetting("patch", "");
         } catch(Exception $e) {

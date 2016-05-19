@@ -146,6 +146,18 @@
         if (isset($_POST['enableAdsbExchangeLink']) && $_POST['enableAdsbExchangeLink'] == "TRUE")
             $enableAdsbExchangeLink = TRUE;
 
+        $purgeAircraft = FALSE;
+        if (isset($_POST['purgeAircraft']) && $_POST['purgeAircraft'] == "TRUE")
+            $purgeAircraft = TRUE;
+
+        $purgeFlights = FALSE;
+        if (isset($_POST['purgeFlights']) && $_POST['purgeFlights'] == "TRUE")
+            $purgeFlights = TRUE;
+
+        $purgePositions = FALSE;
+        if (isset($_POST['purgePositions']) && $_POST['purgePositions'] == "TRUE")
+            $purgePositions = TRUE;
+
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
@@ -172,6 +184,10 @@
         $common->updateSetting("measurementBandwidth", $_POST['measurementBandwidth']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
         $common->updateSetting("timeZone", $_POST['timeZone']);
+        $common->updateSetting("purgeAircraft", $purgeAircraft);
+        $common->updateSetting("purgeFlights", $purgeFlights);
+        $common->updateSetting("purgePositions", $purgePositions);
+        $common->updateSetting("purgeDaysOld", $_POST['purgeDaysOld']);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -213,14 +229,14 @@
 
     $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
 
-    // Get general settings from settings.xml.
+    // Get general settings.
     $siteName = $common->getSetting("siteName");
     $currentTemplate = $common->getSetting("template");
     $defaultPage = $common->getSetting("defaultPage");
     $dateFormat = $common->getSetting("dateFormat");
     $timeZone = $common->getSetting("timeZone");
 
-    // Get navigation settings from settings.xml.
+    // Get navigation settings.
     $enableFlights = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
@@ -229,7 +245,7 @@
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
 
-    // Get aggregate site settings from settings.xml.
+    // Get aggregate site settings.
     $enableFlightAwareLink = $common->getSetting("enableFlightAwareLink");
     $flightAwareLogin = $common->getSetting("flightAwareLogin");
     $flightAwareSite = $common->getSetting("flightAwareSite");
@@ -239,13 +255,19 @@
     $flightRadar24Id = $common->getSetting("flightRadar24Id");
     $enableAdsbExchangeLink = $common->getSetting("enableAdsbExchangeLink");
 
-    // Get units of measurement setting from settings.xml.
+    // Get units of measurement setting.
     $measurementRange = $common->getSetting("measurementRange");
     $measurementTemperature = $common->getSetting("measurementTemperature");
     $measurementBandwidth = $common->getSetting("measurementBandwidth");
 
-    // Get the network interface from settings.xml.
+    // Get the network interface.
     $networkInterface = $common->getSetting("networkInterface");
+
+    // Get dtatabase maintenance information.
+    $purgeAircraft = $common->getSetting("purgeAircraft");
+    $purgeFlights = $common->getSetting("purgeFlights");
+    $purgePositions = $common->getSetting("purgePositions");
+    $purgeDaysOld = $common->getSetting("purgeDaysOld");
 
     // Create an array of all directories in the template folder.
     $templates = array();
@@ -521,6 +543,36 @@
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="maintenance">
                     <div class="panel panel-default">
+                        <div class="panel-heading">Database Maintenance Settings</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="purgeAircraft" value="TRUE"<?php ($purgeAircraft == 1 ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>> Allow aircraft data to be purged
+                                    </label>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="purgeFlights" value="TRUE"<?php ($purgeFlights == 1 ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>> Allow flight data to be purged
+                                    </label>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="purgePositions" value="TRUE"<?php ($purgePositions == 1 ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>> Allow position data to be purged.
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="purgeDaysOld">Purge data older than</label>
+                                <input type="text" class="form-control" id="purgeDaysOld" name="purgeDaysOld" value="<?php echo $purgeDaysOld; ?>"<?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>
+                            </div>
+                        </div>
                         <div class="panel-heading">Purge Positions</div>
                         <div class="panel-body">
                             <p>Current Database Size: <?php echo $common->getDatabaseSize("mb"); ?>MB</p>
@@ -536,6 +588,26 @@
                             <script type="text/javascript">
                                 jQuery('#purgepositionspicker').datetimepicker({
                                     inline:true
+                                });
+
+                                // Disable/enable purge options depending on what is selected.
+                                $("#purgeAircraft").change(function() {
+                                    if ($("#purgeAircraft").is(":checked")) {
+                                        $("#purgeFlights").prop("checked", true);
+                                        $("#purgePositions").prop("checked", true);
+                                        $("#purgeFlights").prop("disabled", true);
+                                        $("#purgePositions").prop("disabled", true);
+                                    } else {
+                                        $("#purgeFlights").prop("disabled", false);
+                                        $("#purgePositions").prop("disabled", false);
+                                });
+                                $("#purgeFlights").change(function() {
+                                    if ($("#purgeFlights").is(":checked")) {
+                                        $("#purgePositions").prop("checked", true);
+                                        $("#purgePositions").prop("disabled", true);
+                                    } else {
+                                        $("#purgePositions").prop("disabled", false);
+                                    }
                                 });
                             </script>
                         </div>
