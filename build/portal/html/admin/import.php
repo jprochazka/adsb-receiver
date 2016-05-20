@@ -36,7 +36,14 @@
     $common = new common();
 
     $master = fopen('../import/MASTER.txt', 'r');
-    $heading = fgetcsv($master, 0, ',');
+    $headings = fgetcsv($master, 675, ',');
+
+    // Remove the special character in front of N-NUMBER.
+    foreach ($headings as &$heading) {
+        if (strpos($heading, 'N-NUMBER') !== false) {
+            $heading = "N-NUMBER";
+        }
+    }
 
     $recordsUpdated = 0;
     $recordsInserted = 0;
@@ -44,9 +51,9 @@
     $dbh = $common->pdoOpen();
 
     // Update existing or insert new records from the FAA MASTER DATABASE.
-    while($column = fgetcsv($master, 0, ','))
-    {
-        $column = array_combine($heading, $column);
+    while($column = fgetcsv($master, 675, ',')) {
+
+        $column = array_combine($headings, $column);
 
         if (!is_null($column['N-NUMBER'])) {
             // Check if the N-NUMBER already exists in the database.
