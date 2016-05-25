@@ -273,6 +273,33 @@
                                        kitMfr VARCHAR(30) NULL,
                                        kitModel VARCHAR(20) NULL,
                                        modeSCodeHex VARCHAR(10) NULL);';
+
+                    $faaAcftrefSql = 'CREATE TABLE '.$dbPrefix.'faa_acftref (
+                                        code VARCHAR(7) NOT NULL,
+                                        mfr VARCHAR(30) NULL,
+                                        model VARCHAR(20) NULL,
+                                        typeAcft VARCHAR(1) NULL,
+                                        typeEng VARCHAR(2) NULL,
+                                        acCat VARCHAR(1) NULL,
+                                        buildCertInd VARCHAR(1) NULL,
+                                        noEng VARCHAR(2) NULL,
+                                        noSeats VARCHAR(3) NULL,
+                                        acWeight VARCHAR(7) NULL,
+                                        speed VARCHAR(4) NULL);';
+
+                    $faaEngineSql = 'CREATE TABLE '.$dbPrefix.'faa_engine (
+                                       code VARCHAR(7) NOT NULL,
+                                       mfr VARCHAR(30) NULL,
+                                       model VARCHAR(20) NULL,
+                                       typeAcft VARCHAR(1) NULL,
+                                       typeEng VARCHAR(2) NULL,
+                                       acCat VARCHAR(1) NULL,
+                                       buildCertInd VARCHAR(1) NULL,
+                                       noEng VARCHAR(2) NULL,
+                                       noSeats VARCHAR(3) NULL,
+                                       acWeight VARCHAR(7) NULL,
+                                       speed VARCHAR(4) NULL);';
+
                     $sth = $dbh->prepare($faaMasterSql);
                     $sth->execute();
                     $sth = NULL;
