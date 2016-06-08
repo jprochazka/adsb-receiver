@@ -156,9 +156,11 @@ if [ -f /etc/lsb-release ]; then
         CheckPackage php7.0-xml
     else
         CheckPackage php5-cgi
+        CheckPackage php5-json
     fi
 else
     CheckPackage php5-cgi
+    CheckPackage php5-json
 fi
 
 CheckPackage libpython2.7
