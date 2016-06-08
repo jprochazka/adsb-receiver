@@ -41,134 +41,154 @@ import time
 import os
 #import urllib2
 
-while True:
+def log(string):
+    #print(string) # uncomment to enable debug logging
+    return
 
-    # Read the configuration file.
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
-        config = json.load(config_file)
+# Read the configuration file.
+with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
+    config = json.load(config_file)
 
-    # Import the needed database library.
-    if config["database"]["type"] == "mysql":
-        import MySQLdb
-    if config["database"]["type"] == "sqlite":
-        import sqlite3
+# Import the needed database library.
+if config["database"]["type"] == "mysql":
+    import MySQLdb
+else:
+    import sqlite3
 
-    # Read dump1090-mutability's aircraft.json.
-    with open('/run/dump1090-mutability/aircraft.json') as data_file:
-        data = json.load(data_file)
-    # For testing using a remote JSON feed.
-    #response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
-    #data = json.load(response)
+class FlightsProcessor(object):
+    def __init__(self, config):
+        self.config = config
+        self.dbType = config["database"]["type"]
+        # List of required keys for position data entries
+        self.position_keys = ('lat', 'lon', 'altitude', 'speed', 'track', 'vert_rate')
 
-    if config["database"]["type"] == "sqlite":
-        ## Connect to a SQLite database.
-        db = sqlite3.connect(config["database"]["db"])
-    else:
-        ## Connect to a MySQL database.
-        db = MySQLdb.connect(host=config["database"]["host"], user=config["database"]["user"], passwd=config["database"]["passwd"], db=config["database"]["db"])
+    def setupDBStatements(self, formatSymbol):
+        if hasattr(self, 'STMTS'):
+            return
+        mapping = { "s": formatSymbol }
+        self.STMTS = {
+            'select_aircraft_count':"SELECT COUNT(*) FROM adsb_aircraft WHERE icao = %(s)s" % mapping,
+            'select_aircraft_id':   "SELECT id FROM adsb_aircraft WHERE icao = %(s)s" % mapping,
+            'select_flight_count':  "SELECT COUNT(*) FROM adsb_flights WHERE flight = %(s)s" % mapping,
+            'select_flight_id':     "SELECT id FROM adsb_flights WHERE flight = %(s)s" % mapping,
+            'select_position':      "SELECT message FROM adsb_positions WHERE flight = %(s)s AND message = %(s)s ORDER BY time DESC LIMIT 1" % mapping,
+            'insert_aircraft':      "INSERT INTO adsb_aircraft (icao, firstSeen, lastSeen) VALUES (%(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_flight':        "INSERT INTO adsb_flights (aircraft, flight, firstSeen, lastSeen) VALUES (%(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_position_sqwk': "INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_position':      "INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'update_aircraft_seen': "UPDATE adsb_aircraft SET lastSeen = %(s)s WHERE icao = %(s)s" % mapping,
+            'update_flight_seen':   "UPDATE adsb_flights SET aircraft = %(s)s, lastSeen = %(s)s WHERE flight = %(s)s" % mapping
+        }
 
-    # Assign the time to a variable.
-    time_now = datetime.datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+    def connectDB(self):
+        if self.dbType == "sqlite": ## Connect to a SQLite database.
+            self.setupDBStatements("?")
+            return sqlite3.connect(self.config["database"]["db"])
+        else: ## Connect to a MySQL database.
+            self.setupDBStatements("%s")
+            return MySQLdb.connect(host=self.config["database"]["host"],
+                user=self.config["database"]["user"],
+                passwd=self.config["database"]["passwd"],
+                db=self.config["database"]["db"])
 
-    cursor = db.cursor()
-    for aircraft in data["aircraft"]:
+    def processAircraftList(self, aircraftList):
+        db = self.connectDB()
+        # Get Database cursor handle
+        self.cursor = db.cursor()
+        # Assign the time to a variable.
+        self.time_now = datetime.datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+
+        for aircraft in aircraftList:
+            self.processAircraft(aircraft) 
+
+        # Close the database connection.
+        db.commit()
+        db.close()
+
+    def processAircraft(self, aircraft):
+        hexcode = aircraft["hex"]
         # Check if this aircraft was already seen.
-        if config["database"]["type"] == "sqlite":
-            params = (aircraft["hex"],)
-            cursor.execute("SELECT COUNT(*) FROM adsb_aircraft WHERE icao = ?", params)
-        else:
-            cursor.execute("SELECT COUNT(*) FROM adsb_aircraft WHERE icao = %s", aircraft["hex"])
-        row_count = cursor.fetchone()
+        self.cursor.execute(self.STMTS['select_aircraft_count'], (hexcode,))
+        row_count = self.cursor.fetchone()
         if row_count[0] == 0:
             # Insert the new aircraft.
-            #print("Added Aircraft: " + aircraft["hex"])
-            if config["database"]["type"] == "sqlite":
-                params = (aircraft["hex"], time_now, time_now,)
-                cursor.execute("INSERT INTO adsb_aircraft (icao, firstSeen, lastSeen) VALUES (?, ?, ?)", params)
-            else:
-                cursor.execute("INSERT INTO adsb_aircraft (icao, firstSeen, lastSeen) VALUES (%s, %s, %s)", (aircraft["hex"], time_now, time_now))
+            log("Added Aircraft: " + hexcode)
+            self.cursor.execute(self.STMTS['insert_aircraft'], (hexcode, self.time_now, self.time_now,))
         else:
             # Update the existing aircraft.
-            if config["database"]["type"] == "sqlite":
-                params = (time_now, aircraft["hex"],)
-                cursor.execute("UPDATE adsb_aircraft SET lastSeen = ? WHERE icao = ?", params)
-            else:
-                cursor.execute("UPDATE adsb_aircraft SET lastSeen = %s WHERE icao = %s", (time_now, aircraft["hex"]))
+            self.cursor.execute(self.STMTS['update_aircraft_seen'], (self.time_now, hexcode,))
+            log("Updating Aircraft: " + hexcode)
         # Get the ID of this aircraft.
-        if config["database"]["type"] == "sqlite":
-            params = (aircraft["hex"],)
-            cursor.execute("SELECT id FROM adsb_aircraft WHERE icao = ?", params)
-        else:
-            cursor.execute("SELECT id FROM adsb_aircraft WHERE icao = %s", aircraft["hex"])
-        rows = cursor.fetchall()
-        for row in rows:
-            aircraft_id = row[0]
+        self.cursor.execute(self.STMTS['select_aircraft_id'], (hexcode,))
+        row = self.cursor.fetchone()
+        aircraft_id = row[0]
+        log("\tFound Aircraft ID: " + str(aircraft_id))
 
         # Check that a flight is tied to this track.
         if aircraft.has_key('flight'):
-            # Check to see if the flight already exists in the database.
-            if config["database"]["type"] == "sqlite":
-                params = (aircraft["flight"].strip(),)
-                cursor.execute("SELECT COUNT(*) FROM adsb_flights WHERE flight = ?", params)
-            else:
-                cursor.execute("SELECT COUNT(*) FROM adsb_flights WHERE flight = %s", aircraft["flight"].strip())
-            row_count = cursor.fetchone()
-            if row_count[0] == 0:
-                # If the flight does not exist in the database add it.
-                if config["database"]["type"] == "sqlite":
-                    params = (aircraft_id, aircraft["flight"].strip(), time_now, time_now,)
-                    cursor.execute("INSERT INTO adsb_flights (aircraft, flight, firstSeen, lastSeen) VALUES (?, ?, ?, ?)", params)
-                else:
-                    cursor.execute("INSERT INTO adsb_flights (aircraft, flight, firstSeen, lastSeen) VALUES (%s, %s, %s, %s)", (aircraft_id, aircraft["flight"].strip(), time_now, time_now))
-                #print("Added Flight: " + aircraft["flight"].strip())
-            else:
-                # If it already exists pdate the time it was last seen.
-                if config["database"]["type"] == "sqlite":
-                    params =(aircraft_id, time_now, aircraft["flight"].strip(),)
-                    cursor.execute("UPDATE adsb_flights SET aircraft = ?, lastSeen = ? WHERE flight = ?", params)
-                else:
-                    cursor.execute("UPDATE adsb_flights SET aircraft = %s, lastSeen = %s WHERE flight = %s", (aircraft_id, time_now, aircraft["flight"].strip()))
-            # Get the ID of this flight.
-            if config["database"]["type"] == "sqlite":
-                params = (aircraft["flight"].strip(),)
-                cursor.execute("SELECT id FROM adsb_flights WHERE flight = ?", params)
-            else:
-                cursor.execute("SELECT id FROM adsb_flights WHERE flight = %s", aircraft["flight"].strip())
-            rows = cursor.fetchall()
-            for row in rows:
-                flight_id = row[0]
+            self.processFlight(aircraft_id, aircraft)
 
-            # Check if position data is available.
-            if aircraft.has_key('lat') and aircraft.has_key('lon') and aircraft.has_key('altitude') and aircraft.has_key('speed') and aircraft.has_key('track') and aircraft.has_key('vert_rate') and aircraft["altitude"] != "ground":
-                # Check that this message has not already been added to the database.
-                if config["database"]["type"] == "sqlite":
-                    params = (flight_id, aircraft["messages"],)
-                    cursor.execute("SELECT message FROM adsb_positions WHERE flight = ? AND message = ? ORDER BY time DESC", params)
-                else:
-                    cursor.execute("SELECT message FROM adsb_positions WHERE flight = %s AND message = %s ORDER BY time DESC", (flight_id, aircraft["messages"]))
-                rows = cursor.fetchall()
-                row_count = cursor.rowcount
-                last_message = 0
-                for row in rows:
-                    last_message = row[0]
-                if row_count == 0 or last_message != aircraft["messages"]:
-                    # Add this position to the database.
-                    if aircraft.has_key('squawk'):
-                        if config["database"]["type"] == "sqlite":
-                            params = (flight_id, time_now, aircraft["messages"], aircraft["squawk"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
-                        else:
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (flight_id, time_now, aircraft["messages"], aircraft["squawk"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"]))
-                    else:
-                        if config["database"]["type"] == "sqlite":
-                            params = (flight_id, time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
-                        else:
-                            cursor.execute("INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (flight_id, time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"], aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"]))
+    def processFlight(self, aircraft_id, aircraft):
+        flight = aircraft["flight"].strip()
+        # Check to see if the flight already exists in the database.
+        self.cursor.execute(self.STMTS['select_flight_count'], (flight,))
+        row_count = self.cursor.fetchone()
+        if row_count[0] == 0:
+            # If the flight does not exist in the database add it.
+            params = (aircraft_id, flight, self.time_now, self.time_now,)
+            self.cursor.execute(self.STMTS['insert_flight'], params)
+            log("\t\tAdded Flight: " + flight)
+        else:
+            # If it already exists pdate the time it was last seen.
+            params = (aircraft_id, self.time_now, flight,)
+            self.cursor.execute(self.STMTS['update_flight_seen'], params)
+            log("\t\tUpdated Flight: " + flight)
+        # Get the ID of this flight.
+        self.cursor.execute(self.STMTS['select_flight_id'], (flight,))
+        row = self.cursor.fetchone()
+        flight_id = row[0]
 
-    # Close the database connection.
-    db.commit()
-    db.close()
+        # Check if position data is available.
+        if (all (k in aircraft for k in self.position_keys) and aircraft["altitude"] != "ground"):
+            self.processPositions(flight_id, aircraft)
 
-    #print("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
-    time.sleep(15)
+    def processPositions(self, flight_id, aircraft):
+        # Check that this message has not already been added to the database.
+        params = (flight_id, aircraft["messages"],)
+        self.cursor.execute(self.STMTS['select_position'], params)
+        row = self.cursor.fetchone()
+
+        if row == None or row[0] != aircraft["messages"]:
+            # Add this position to the database.
+            if aircraft.has_key('squawk'):
+                params = (flight_id, self.time_now, aircraft["messages"], aircraft["squawk"],
+                            aircraft["lat"], aircraft["lon"], aircraft["track"],
+                            aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
+                self.cursor.execute(self.STMTS['insert_position_sqwk'], params)
+                log("\t\t\tInserted position w/ Squawk " + repr(params))
+            else:
+                params = (flight_id, self.time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"],
+                            aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
+                self.cursor.execute(self.STMTS['insert_position'], params)
+                log("\t\t\tInserted position w/o Squawk " + repr(params))
+        else:
+            log("\t\t\tMessage is the same")
+
+
+if __name__ == "__main__":
+    processor = FlightsProcessor(config)
+
+    # Main run loop
+    while True:
+        # Read dump1090-mutability's aircraft.json.
+        with open('/run/dump1090-mutability/aircraft.json') as data_file:
+            data = json.load(data_file)
+        # For testing using a remote JSON feed.
+        #response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
+        #data = json.load(response)
+
+        processor.processAircraftList(data["aircraft"])
+
+        log("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
+        time.sleep(15)
+
