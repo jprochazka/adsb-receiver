@@ -37,6 +37,7 @@
 
 import datetime
 import inotify.adapters
+from  inotify.constants import IN_MOVED_TO
 import json
 import re
 import time
@@ -182,7 +183,7 @@ if __name__ == "__main__":
 
     mutability_dir = '/run/dump1090-mutability/'
     i = inotify.adapters.Inotify()
-    i.add_watch(mutability_dir)
+    i.add_watch(mutability_dir, IN_MOVED_TO)
 
     # Main run loop
     for event in i.event_gen():
