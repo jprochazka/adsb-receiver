@@ -227,6 +227,63 @@
         }
     }
 
+    ///////////////////////
+    // UPGRADE TO V2.0.4
+    ///////////////////////
+
+    if ($common->getSetting("version") == "2.0.3") {
+        try {
+            // Change tables containing datetime data to datetime.
+            if ($settings::db_driver != "xml") {
+
+                // Add indexes to MySQL tables
+                if ($settings::db_driver == "mysql") {
+                    $stmts = array('CREATE INDEX adsb_positions_message_flight_idx
+                                    ON adsb_positions (flight, message DESC);',
+
+                                   'CREATE UNIQUE INDEX adsb_flights_flight_key
+                                    ON adsb_flights (flight);',
+
+                                   'CREATE UNIQUE INDEX adsb_aircraft_icao_key
+                                    ON adsb_aircraft (icao);')
+                }
+                elseif ($settings::db_driver == "sqlite") {
+                    $stmts = array('CREATE INDEX IF NOT EXISTS adsb_positions_message_flight_idx
+                                    ON adsb_positions (flight, message DESC);',
+
+                                   'CREATE UNIQUE INDEX IF NOT EXISTS adsb_flights_flight_key
+                                    ON adsb_flights (flight);',
+
+                                   'CREATE UNIQUE INDEX IF NOT EXISTS adsb_aircraft_icao_key
+                                    ON adsb_aircraft (icao);')
+                }
+                elseif ($settings::db_driver == "pgsql") {
+                    $stmts = array('CREATE INDEX CONCURRENTLY adsb_positions_message_flight_idx
+                                    ON adsb_positions (flight, message DESC);',
+
+                                   'CREATE UNIQUE INDEX CONCURRENTLY adsb_flights_flight_key
+                                    ON adsb_flights (flight);',
+
+                                   'CREATE UNIQUE INDEX CONCURRENTLY adsb_aircraft_icao_key
+                                    ON adsb_aircraft (icao);')
+                }
+
+                $dbh = $common->pdoOpen();
+                foreach ($stmts as $stmt) {
+                  $sth = $dbh->prepare($stmt);
+                  $sth->execute();
+                  $sth = NULL;
+                }
+                $dbh = NULL;
+            }
+
+            $common->updateSetting("version", $thisVersion);
+            $common->updateSetting("patch", "");
+        } catch(Exception $e) {
+            $error = TRUE;
+            $errorMessage = $e->getMessage();
+        }
+    }
 
     require_once('../admin/includes/header.inc.php');
 

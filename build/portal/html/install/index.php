@@ -324,6 +324,14 @@ EOF;
                     break;
                 }
 
+                // Indexes (common syntax)
+                $indexPositionsSql = 'CREATE INDEX '.$dbPrefix.'positions_message_flight_idx
+                                      ON '.$dbPrefix.'positions (flight, message DESC);';
+                $indexFlightsSql = 'CREATE UNIQUE INDEX '.$dbPrefix.'flights_flight_key
+                                    ON '.$dbPrefix.'flights (flight);';
+                $indexAircratSql = 'CREATE UNIQUE INDEX '.$dbPrefix.'aircraft_icao_key
+                                    ON '.$dbPrefix.'aircraft (icao);';
+
                 $dbh = $common->pdoOpen();
 
                 $sth = $dbh->prepare($administratorsSql);
@@ -351,6 +359,18 @@ EOF;
                 $sth = NULL;
 
                 $sth = $dbh->prepare($settingsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($indexPositionsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($indexFlightsSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($indexAircratSql);
                 $sth->execute();
                 $sth = NULL;
 
