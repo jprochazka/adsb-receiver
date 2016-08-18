@@ -103,6 +103,7 @@ else
     echo -e "\033[31m"
     echo "Do you wish to enable advanced features?"
     echo -e "\033[33m"
+    echo "ADVANCED FEATURES ARE ONLY MEANT TO BE ENABLED BY THOSE HELPING TO DEVELOP THEM AND NOT FULLY SUPPORTED"
     echo "ENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY"
     echo ""
     echo "By enabling advanced features the portal will log all flights seen as well as the path of the flight."
