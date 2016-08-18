@@ -2,6 +2,11 @@
 
 The following is a history of the changes made to this project.
 
+## v2.1.0 *(August 18th, 2016)*
+
+Added flight information side bar to plot map. *(advanced)*
+Added flight data API to web site. *(advanced)*
+
 ## v2.0.3 *(May 19th, 2016)*
 
 * Added password confirmation for MySQL database user to bash script. *(advanced)*
