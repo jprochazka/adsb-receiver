@@ -329,6 +329,11 @@ EOF
                  ;;
         esac
 
+        # Add Python requirements
+        sudo apt-get -y update
+        sudo apt-get -y install python-pip
+        sudo pip install inotify
+
         # Create and set permissions on the flight logging maintainance script.
         PYTHONPATH=`which python`
         tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF

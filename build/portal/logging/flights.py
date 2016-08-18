@@ -36,7 +36,10 @@
 # 3) Update the last time the flight was seen.
 
 import datetime
+import inotify.adapters
+from  inotify.constants import IN_MOVED_TO
 import json
+import re
 import time
 import os
 #import urllib2
@@ -178,17 +181,25 @@ class FlightsProcessor(object):
 if __name__ == "__main__":
     processor = FlightsProcessor(config)
 
+    mutability_dir = '/run/dump1090-mutability/'
+    i = inotify.adapters.Inotify()
+    i.add_watch(mutability_dir, IN_MOVED_TO)
+
     # Main run loop
-    while True:
-        # Read dump1090-mutability's aircraft.json.
-        with open('/run/dump1090-mutability/aircraft.json') as data_file:
-            data = json.load(data_file)
-        # For testing using a remote JSON feed.
-        #response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
-        #data = json.load(response)
+    for event in i.event_gen():
+        if event is not None:
+            (header, type_names, watch_path, filename) = event
+            if 'IN_MOVED_TO' in type_names and re.match('^history_\d+\.json$', filename):
 
-        processor.processAircraftList(data["aircraft"])
+                # Read dump1090-mutability's aircraft.json.
+                #with open('/run/dump1090-mutability/aircraft.json') as data_file:
+                with open(mutability_dir + filename) as data_file:
+                    data = json.load(data_file)
+                # For testing using a remote JSON feed.
+                #response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
+                #data = json.load(response)
 
-        log("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
-        time.sleep(15)
+                processor.processAircraftList(data["aircraft"])
+
+                log("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")) 
 
