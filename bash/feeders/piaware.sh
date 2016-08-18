@@ -109,7 +109,7 @@ fi
 echo -e "\033[33m"
 echo "Building the PiAware package..."
 echo -e "\033[37m"
-./sensible-build.sh
+./sensible-build.sh jessie
 cd $PIAWAREDIR/package
 dpkg-buildpackage -b
 
