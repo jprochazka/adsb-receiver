@@ -165,6 +165,7 @@ fi
 
 CheckPackage libpython2.7
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    CheckPackage python-pyinotify
     if [[ $DATABASEENGINE == 2 ]]; then
         CheckPackage sqlite3
 
