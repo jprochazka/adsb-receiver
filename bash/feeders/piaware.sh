@@ -149,21 +149,22 @@ echo "If you decide not to supply a login and password you should still be able 
 echo "feeder by visting the page http://flightaware.com/adsb/piaware/claim."
 echo -e "\033[37m"
 read -p "Your FlightAware Login: " FALOGIN
-sudo piaware-config -user $FALOGIN -password
+read -p "Your FlightAware Password: " FAPASSWD1
+read -p "Repeat Your FlightAware Password: " FAPASSWD2
 
-echo -e "\033[33m"
-printf "Setting PiAware to send MLAT results on port 30104..."
-ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
-MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
-CLEANFORMAT=`sed 's/beast,connect,localhost:30104//g' <<< $MLATRESULTS`
-FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30104" | sed -e 's/^[ \t]*//'
-# Make sure that the mlatResultsFormat setting is not left blank if no other settings exist..
-if [ -n "$FINALFORMAT" ]; then
-    sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
-else
-    sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30104"
-fi
-echo -e "\033[32m [OK]"
+# Check that the supplied passwords match.
+while [ $FAPASSWD1 != $FAPASSWD2 ]; do
+    echo -e "\033[33m"
+    echo "The supplied passwords did not match."
+    echo -e "\033[37m"
+    read -p "Your FlightAware Password: " FAPASSWD1
+    read -p "Repeat Your FlightAware Password: " FAPASSWD2
+done
+echo ""
+
+# Set the supplied user name and password in the configuration.
+sudo piaware-config flightaware-user $FALOGIN
+sudo piaware-config flightaware-password $FAPASSWD1
 
 echo -e "\e[33m"
 echo "Restarting PiAware to ensure all changes are applied..."

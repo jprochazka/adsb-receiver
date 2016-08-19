@@ -34,7 +34,7 @@
 ## SOFTWARE VERSIONS
 
 # FlightAware PiAware
-PIAWAREVERSION="3.0.3"
+PIAWAREVERSION="3.0.4"
 PIAWAREBRANCH="master"
 
 # PlaneFinder ADS-B Client

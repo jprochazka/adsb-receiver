@@ -70,10 +70,11 @@ printf "Configuring PiAware if it is installed..."
 if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") != 0 ]; then
     echo -e "\033[33m"
     echo "Adding the ADS-B Exchange feed to PiAware's configuration..."
-    ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
-    MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
+
+    ORIGINALFORMAT=`sudo piaware-config -show mlat-results-format`
     CLEANFORMAT=`sed 's/ beast,connect,feed.adsbexchange.com:30005//g' <<< $MLATRESULTS`
-    sudo piaware-config -mlatResultsFormat "${CLEANFORMAT} beast,connect,feed.adsbexchange.com:30005"
+    FINALFORMAT="${CLEANFORMAT} beast,connect,feed.adsbexchange.com:30005" | sed -e 's/^[ \t]*//'
+    sudo piaware-config  mlat-results-format "${FINALFORMAT}"
     echo "Restarting PiAware so new configuration takes effect..."
     echo -e "\033[37m"
     sudo piaware-config -restart
