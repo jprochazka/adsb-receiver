@@ -231,7 +231,7 @@
     // UPGRADE TO V2.1.0
     ///////////////////////
 
-    if ($common->getSetting("version") == "2.0.2") {
+    if ($common->getSetting("version") == "2.0.3") {
         try {
 
             // Add the positions.aircraft column if using "SQL" storeage.
