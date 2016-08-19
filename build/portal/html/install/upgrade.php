@@ -227,7 +227,6 @@
         }
     }
 
-<<<<<<< HEAD
     ///////////////////////
     // UPGRADE TO V2.1.0
     ///////////////////////
@@ -338,9 +337,6 @@
             $errorMessage = $e->getMessage();
         }
     }
-
-=======
->>>>>>> refs/remotes/origin/master
 
     require_once('../admin/includes/header.inc.php');
 
