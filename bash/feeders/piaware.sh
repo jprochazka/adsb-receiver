@@ -68,11 +68,12 @@ echo -e "\033[37m"
 CheckPackage git
 CheckPackage build-essential
 CheckPackage debhelper
-CheckPackage tcl8.5-dev
+CheckPackage tcl8.6-dev
 CheckPackage autoconf
 CheckPackage python3-dev
-CheckPackage python-virtualenv
+CheckPackage python3-venv
 CheckPackage virtualenv
+CheckPackage dh-systemd
 
 # libz-dev appears to have been replaced by zlib1g-dev at least in Ubuntu Vivid Vervet...
 # Will need to check if this is the case with Raspbian and Debian as well.
