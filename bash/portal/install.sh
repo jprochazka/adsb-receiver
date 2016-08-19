@@ -386,7 +386,7 @@ fi
 
 
 
-if [ $INSTALLED == "y" && $DRIVER == "xml" ]; then
+if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
     echo -e "\033[33m"
     echo -e "Backing up XML settings file...\033[37m"
     sudo mv ${HTMLDIR}/data/settings.xml ${HTMLDIR}/data/settings.backup.xml
@@ -400,7 +400,7 @@ sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
 
 
 
-if [ $INSTALLED == "y" && $DRIVER == "xml" ]; then
+if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
     echo -e "\033[33m"
     echo -e "Restoring XML settings file...\033[37m"
     sudo rm -f ${HTMLDIR}/data/settings.xml
