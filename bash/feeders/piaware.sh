@@ -110,7 +110,7 @@ echo -e "\033[33m"
 echo "Building the PiAware package..."
 echo -e "\033[37m"
 ./sensible-build.sh jessie
-cd $PIAWAREDIR/package
+cd $PIAWAREDIR/package-jessie
 dpkg-buildpackage -b
 
 ## INSTALL THE PIAWARE PACKAGE
