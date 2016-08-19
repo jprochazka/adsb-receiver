@@ -39,6 +39,9 @@ HTMLDIR=$BUILDDIR/portal/html
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
+INSTALLED="n"
+DRIVER="null"
+
 source ../bash/functions.sh
 
 clear
@@ -70,7 +73,7 @@ if [ -f $DOCUMENTROOT/classes/settings.class.php ]; then
     echo -e "\033[37m"
     read -p "Press enter to continue..." CONTINUE
 
-    # Set dome needed variables to be used shortly.
+    # Set some needed variables to be used shortly.
     INSTALLED="y"
 
     DRIVER=`grep 'db_driver' $DOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
@@ -381,9 +384,30 @@ fi
 
 ## SETUP THE PORTAL WEBSITE
 
+
+
+if [ $INSTALLED == "y" && $DRIVER == "xml" ]; then
+    echo -e "\033[33m"
+    echo -e "Backing up XML settings file...\033[37m"
+    sudo mv ${HTMLDIR}/data/settings.xml ${HTMLDIR}/data/settings.backup.xml
+fi
+
+
+
 echo -e "\033[33m"
 echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
 sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
+
+
+
+if [ $INSTALLED == "y" && $DRIVER == "xml" ]; then
+    echo -e "\033[33m"
+    echo -e "Restoring XML settings file...\033[37m"
+    sudo rm -f ${HTMLDIR}/data/settings.xml
+    sudo mv ${HTMLDIR}/data/settings.backup.xml ${HTMLDIR}/data/settings.xml
+fi
+
+
 
 echo -e "\033[33m"
 echo "Setting permissions on portal folders...\033[37m"
