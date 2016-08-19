@@ -4,8 +4,11 @@ The following is a history of the changes made to this project.
 
 ## v2.1.0 *(August 18th, 2016)*
 
-Added flight information side bar to plot map. *(advanced)*
-Added flight data API to web site. *(advanced)*
+* Added flight information side bar to plot map. *(advanced)*
+* Added flight data API to web site. *(advanced)*
+* Fixed an issue where settings were not being saved properly during upgrades.
+* The PiAware script has been modified to support the installation of PiAware 3.
+* The ADSB Exchange setup script has been modified to work with PiAware 3.
 
 ## v2.0.3 *(May 19th, 2016)*
 
