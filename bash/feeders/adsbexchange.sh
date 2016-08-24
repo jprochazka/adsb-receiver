@@ -44,42 +44,20 @@ clear
 
 echo -e "\033[31m"
 echo "-----------------------------------------------------"
-echo " Now ready to set up ADS-B Exchange feed."
+echo " Now ready to set up a feed to ADS-B Exchange."
 echo "-----------------------------------------------------"
 echo -e "\033[33mADSBexchange.com is a co-op of ADS-B/Mode S/MLAT feeders from around the world."
-echo "PiAware is required to be installed in order to feed this site. If PiAware is not"
-echo "currently installed this script will execute the PiAware installation script after"
-echo "which this script will continue with the ADS-B Exchange feed setup."
 echo ""
 echo "http://www.adsbexchange.com/how-to-feed/"
-echo "https://github.com/flightaware/piaware"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\033[33m"
-echo "Installing packages needed to build and fulfill dependencies..."
+echo "Installing packages needed to fulfill dependencies..."
 echo -e "\033[37m"
 CheckPackage netcat
-
-## CONFIGURE PIAWARE TO FEED ADS-B EXCHANGE IF PIAWARE IS INSTALLED
-
-echo -e "\e[33m"
-printf "Configuring PiAware if it is installed..."
-if [ $(dpkg-query -W -f='${Status}' piaware 2>/dev/null | grep -c "ok installed") != 0 ]; then
-    echo -e "\033[33m"
-    echo "Adding the ADS-B Exchange feed to PiAware's configuration..."
-
-    ORIGINALFORMAT="`sudo piaware-config -show mlat-results-format`"
-    CLEANFORMAT=`sed 's/ beast,connect,feed.adsbexchange.com:30005//g' <<< $ORIGINALFORMAT`
-    FINALFORMAT="${CLEANFORMAT} beast,connect,feed.adsbexchange.com:30005"
-    sudo piaware-config  mlat-results-format "${FINALFORMAT}"
-    echo "Restarting PiAware so new configuration takes effect..."
-    echo -e "\033[37m"
-    sudo piaware-config -restart
-    echo ""
-fi
 
 ## CONFIGURE SCRIPT TO EXECUTE NETCAT TO FEED ADS-B EXCHANGE
 
