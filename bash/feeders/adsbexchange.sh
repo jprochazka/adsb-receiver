@@ -31,11 +31,26 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
+##########################################################################################
+# TODO                                                                                   #
+#----------------------------------------------------------------------------------------#
+#                                                                                        #
+# Get receiver latitude and longitude from the dump1090-mutability config file.          #
+# Figure out the altitude using latitude and longitude.                                  #
+# Ask the user for their ADS-B Exchange user name to be used in the mlat-client command. #
+# Remove line pertaining to adsbexchange-maint.sh from the file /etc/rc.local.           #
+#                                                                                        #
+##########################################################################################
+
+
 ## VARIABLES
 
 BUILDDIR=$PWD
+MLATCLIENTDIR="$BUILDDIR/mlat-client"
 ADSBEXCHANGEDIR="$BUILDDIR/adsbexchange"
 
+source ../bash/variables.sh
 source ../bash/functions.sh
 
 ## INFORMATIVE MESSAAGE ABOUT THIS SOFTWARE
@@ -58,23 +73,99 @@ echo -e "\033[33m"
 echo "Installing packages needed to fulfill dependencies..."
 echo -e "\033[37m"
 CheckPackage netcat
+CheckPackage build-essential
+CheckPackage debhelper
+CheckPackage python3-dev
 
-## CONFIGURE SCRIPT TO EXECUTE NETCAT TO FEED ADS-B EXCHANGE
+## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
-echo -e "\033[33mSetting permissions on adsbexchange-maint.sh..."
+# Check if the git repository already exists locally.
+if [ -d $MLATCLIENTDIR ] && [ -d $MLATCLIENTDIR/.git ]; then
+    # A directory with a git repository containing the source code exists.
+    echo -e "\033[33m"
+    echo "Updating the local mlat-client git repository..."
+    echo -e "\033[37m"
+    cd $MLATCLIENTDIR
+    git pull
+    git checkout tags/${MLATCLIENTTAG}
+else
+    # A directory containing the source code does not exist in the build directory.
+    echo -e "\033[33m"
+    echo "Cloning the mlat-client git repository locally..."
+    echo -e "\033[37m"
+    git clone https://github.com/mutability/mlat-client.git
+    cd $MLATCLIENTDIR
+    git checkout tags/${MLATCLIENTTAG}
+fi
+
+## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
+
+echo -e "\033[33m"
+echo "Building the mlat-client package..."
 echo -e "\033[37m"
-sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-maint.sh
+dpkg-buildpackage -b -uc
 
-echo -e "\033[33mAdding startup line to rc.local..."
+echo -e "\033[33m"
+echo "Installing the mlat-client package..."
+echo -e "\033[37m"
+sudo dpkg -i ${BUILDDIR}/mlat-client_${MLATCLIENTVERSION}*.deb
+
+## CONFIGURE SCRIPT TO EXECUTE AND MAINTAIN MLAT-CLIENT AND NETCAT TO FEED ADS-B EXCHANGE
+
+# Create the adsbexchange directory in the build directory if it does not exist.
+if [ ! -d "$ADSBEXCHANGEDIR" ]; then
+    mkdir $ADSBEXCHANGEDIR
+fi
+
+echo -e "\033[33mCreating the file adsbexchange-netcat_maint.sh..."
+echo -e "\033[37m"
+tee -a $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh > /dev/null <<EOF
+#! /bin/sh
+while true
+  do
+    sleep 30
+    /bin/nc 127.0.0.1 30005 | /bin/nc feed.adsbexchange.com 30005
+  done
+EOF
+
+echo -e "\033[33mCreating the file adsbexchange-mlat_maint.sh..."
+echo -e "\033[37m"
+tee -a $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh > /dev/null <<EOF
+#! /bin/sh
+while true
+  do
+    sleep 30
+    /usr/bin/mlat-client --input-type beast --input-connect localhost:300 --lat - $RECEIVERLAT --lon $RECEIVERLON --alt $RECEIVERALT --user $ADSBECHANGEUSER --server feed.adsbexchange.com:31090 --no-udp
+  done
+EOF
+
+echo -e "\033[33mSetting permissions on adsbexchange-netcat_maint.sh..."
+echo -e "\033[37m"
+sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh
+
+echo -e "\033[33mSetting permissions on adsbexchange-mlat_maint.sh..."
+echo -e "\033[37m"
+sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh
+
+echo -e "\033[33mAdding netcat startup line to rc.local..."
 echo -e "\033[37m"
 lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-maint.sh &\n" /etc/rc.local
+((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
 
-## START NETCAT ADS-B EXCHANGE FEED
-
-echo -e "\033[33mExecuting adsbexchange-maint.sh..."
+echo -e "\033[33mAdding mlat-client startup line to rc.local..."
 echo -e "\033[37m"
-sudo $ADSBEXCHANGEDIR/adsbexchange-maint.sh &
+lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
+
+## START THE MLAT-CLIENT AND NETCAT FEED
+
+echo -e "\033[33mExecuting adsbexchange-netcat_maint.sh..."
+echo -e "\033[37m"
+sudo $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh &
+
+echo -e "\033[33mExecuting adsbexchange-mlat_maint.sh..."
+echo -e "\033[37m"
+sudo $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh &
 
 echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
