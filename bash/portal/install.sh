@@ -388,26 +388,30 @@ fi
 
 if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
     echo -e "\033[33m"
-    echo -e "Backing up XML settings file...\033[37m"
-    sudo mv ${HTMLDIR}/data/settings.xml ${HTMLDIR}/data/settings.backup.xml
+    echo -e "Backing up XML data files...\033[37m"
+    sudo mv ${DOCUMENTROOT}/data/administrators.xml ${DOCUMENTROOT}/data/administrators.backup.xml
+    sudo mv ${DOCUMENTROOT}/data/blogPosts.xml ${DOCUMENTROOT}/data/blogPosts.backup.xml
+    sudo mv ${DOCUMENTROOT}/data/flightNotifications.xml ${DOCUMENTROOT}/data/flightNotifications.backup.xml
+    sudo mv ${DOCUMENTROOT}/data/settings.xml ${DOCUMENTROOT}/data/settings.backup.xml
 fi
-
-
 
 echo -e "\033[33m"
 echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
 sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
 
-
-
 if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
     echo -e "\033[33m"
-    echo -e "Restoring XML settings file...\033[37m"
-    sudo rm -f ${HTMLDIR}/data/settings.xml
-    sudo mv ${HTMLDIR}/data/settings.backup.xml ${HTMLDIR}/data/settings.xml
+    echo -e "Restoring XML data files...\033[37m"
+    sudo rm -f ${DOCUMENTROOT}/data/administrators.xml
+    sudo rm -f ${DOCUMENTROOT}/data/blogPosts.xml
+    sudo rm -f ${DOCUMENTROOT}/data/flightNotifications.xml
+    sudo rm -f ${DOCUMENTROOT}/data/settings.xml
+    
+    sudo mv ${DOCUMENTROOT}/data/administrators.backup.xml ${DOCUMENTROOT}/data/administrators.xml
+    sudo mv ${DOCUMENTROOT}/data/blogPosts.backup.xml ${DOCUMENTROOT}/data/blogPosts.xml
+    sudo mv ${DOCUMENTROOT}/data/flightNotifications.backup.xml ${DOCUMENTROOT}/data/flightNotifications.xml
+    sudo mv ${DOCUMENTROOT}/data/settings.backup.xml ${DOCUMENTROOT}/data/settings.xml
 fi
-
-
 
 echo -e "\033[33m"
 echo "Setting permissions on portal folders...\033[37m"
