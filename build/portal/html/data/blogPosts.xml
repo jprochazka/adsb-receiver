@@ -1,9 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<blogPosts>
-    <blogPost>
-        <title>Welcome</title>
-        <date>2016-01-27 10:00:00</date>
-        <author>admin</author>
-        <contents>&lt;p&gt;Welcome to my ADS-B feeder!&lt;/p&gt;</contents>
-    </blogPost>
-</blogPosts>
+<blogPosts/>
