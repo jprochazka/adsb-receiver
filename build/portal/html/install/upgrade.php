@@ -351,6 +351,10 @@
 
     if ($common->getSetting("version") == "2.1.0") {
         try {
+
+            // Add new setting to allow displaying either the dump1090-mutability map and dump1090-fa map.
+            $common->addSetting('useDump1090FaMap', FALSE);
+
             $common->updateSetting("version", "2.2.0");
             $common->updateSetting("patch", "");
         } catch(Exception $e) {

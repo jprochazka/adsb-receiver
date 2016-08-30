@@ -146,6 +146,10 @@
         if (isset($_POST['enableAdsbExchangeLink']) && $_POST['enableAdsbExchangeLink'] == "TRUE")
             $enableAdsbExchangeLink = TRUE;
 
+        $useDump1090FaMap = FALSE;
+        if (isset($_POST['useDump1090FaMap']) && $_POST['useDump1090FaMap'] == "TRUE")
+            $useDump1090FaMap = TRUE;
+
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
@@ -172,6 +176,7 @@
         $common->updateSetting("measurementBandwidth", $_POST['measurementBandwidth']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
         $common->updateSetting("timeZone", $_POST['timeZone']);
+        $common->updateSetting("useDump1090FaMap", $useDump1090FaMap);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -228,6 +233,7 @@
     $enableDump1090 = $common->getSetting("enableDump1090");
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
+    $useDump1090FaMap = $common->getSetting("useDump1090FaMap");
 
     // Get aggregate site settings from settings.xml.
     $enableFlightAwareLink = $common->getSetting("enableFlightAwareLink");
@@ -411,6 +417,16 @@
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enablePfclient" value="TRUE"<?php ($enablePfclient == 1 ? print ' checked' : ''); ?>> Enable Planefinder ADS-B Client link.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Dump1090 Map Settings</div>
+                        <div class="panel-body">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="useDump1090FaMap" value="TRUE"<?php ($useDump1090FaMap == 1 ? print ' checked' : ''); ?> Use dump1090-fa map instead of the dump1090-mutability map.
                                 </label>
                             </div>
                         </div>
