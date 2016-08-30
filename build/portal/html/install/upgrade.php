@@ -322,12 +322,19 @@
                 }
 
                 if ($settings::db_driver == "mysql") {
+
+                    // Added check to see if column already exists.
                     $dbh = $common->pdoOpen();
-                    $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft BIGINT";
-                    $sth = $dbh->prepare($sql);
-                    $sth->execute();
-                    $sth = NULL;
+                    if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."positions` LIKE 'aircraft'")->fetchAll())) {
+                        //$dbh = $common->pdoOpen();
+                        $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft BIGINT";
+                        $sth = $dbh->prepare($sql);
+                        $sth->execute();
+                        $sth = NULL;
+                        //$dbh = NULL;
+                    }
                     $dbh = NULL;
+
                 }
             }
             $common->updateSetting("version", $thisVersion);
