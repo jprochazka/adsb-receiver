@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.1.0 *(August 24th, 2016)*
+## v2.1.0 *(August 30th, 2016)*
 
 * Added flight information side bar to plot map. *(advanced)*
 * Added flight data API to web site. *(advanced)*
