@@ -316,7 +316,7 @@ if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f
     fi
 else
     # Dump978 does not appear to have been built yet.
-    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --yesno "$DUMP978NOTINSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --defaultno --yesno "$DUMP978NOTINSTALLED" 10 65
     DUMP978CHOICE=$?
 fi
 
@@ -365,7 +365,7 @@ else
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local; then
+if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi

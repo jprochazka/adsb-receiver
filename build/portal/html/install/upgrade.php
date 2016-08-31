@@ -35,7 +35,7 @@
     $settings = new settings();
 
     // The most current stable release.
-    $thisVersion = "2.1.0";
+    $thisVersion = "2.2.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if ($common->getSetting("version") == $thisVersion) {
@@ -219,7 +219,7 @@
 
     if ($common->getSetting("version") == "2.0.2") {
         try {
-            $common->updateSetting("version", $thisVersion);
+            $common->updateSetting("version", "2.0.3");
             $common->updateSetting("patch", "");
         } catch(Exception $e) {
             $error = TRUE;
@@ -337,7 +337,25 @@
 
                 }
             }
-            $common->updateSetting("version", $thisVersion);
+            $common->updateSetting("version", "2.1.0");
+            $common->updateSetting("patch", "");
+        } catch(Exception $e) {
+            $error = TRUE;
+            $errorMessage = $e->getMessage();
+        }
+    }
+
+    ///////////////////////
+    // UPGRADE TO V2.2.0
+    ///////////////////////
+
+    if ($common->getSetting("version") == "2.1.0") {
+        try {
+
+            // Add new setting to allow displaying either the dump1090-mutability map and dump1090-fa map.
+            $common->addSetting('useDump1090FaMap', FALSE);
+
+            $common->updateSetting("version", "2.2.0");
             $common->updateSetting("patch", "");
         } catch(Exception $e) {
             $error = TRUE;
