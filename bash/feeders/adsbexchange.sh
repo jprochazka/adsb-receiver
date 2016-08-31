@@ -147,7 +147,7 @@ tee $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh > /dev/null <<EOF
 while true
   do
     sleep 30
-    /usr/bin/mlat-client --input-type beast --input-connect localhost:300 --lat - $RECEIVERLAT --lon $RECEIVERLON --alt $RECEIVERALT --user $ADSBEXCHANGEUSER --server feed.adsbexchange.com:31090 --no-udp
+    /usr/bin/mlat-client --input-type dump1090 --input-connect localhost:3005 --lat $RECEIVERLAT --lon $RECEIVERLON --alt $RECEIVERALT --user $ADSBEXCHANGEUSER --server feed.adsbexchange.com:31090 --no-udp --results beast,connect,localhost:30104
   done
 EOF
 
@@ -161,13 +161,13 @@ sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh
 
 echo -e "\033[33mAdding netcat startup line to rc.local..."
 echo -e "\033[37m"
-if ! grep -Fxq "$PWD/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
 fi
 echo -e "\033[33mAdding mlat-client startup line to rc.local..."
 echo -e "\033[37m"
-if ! grep -Fxq "$PWD/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
 fi
@@ -177,24 +177,24 @@ fi
 # Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
 PIDS=`ps -efww | grep -w "adsbexchange-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [ ! -z "$PIDS" ]; then
-    sudo kill $PIDS >> $LOGFILE
-    sudo kill -9 $PIDS >> $LOGFILE
+    sudo kill $PIDS
+    sudo kill -9 $PIDS
 fi
 
 # Kill any currently running instances of the adsbexchange-mlat_maint.sh script.
 PIDS=`ps -efww | grep -w "adsbexchange-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [ ! -z "$PIDS" ]; then
-    sudo kill $PIDS >> $LOGFILE
-    sudo kill -9 $PIDS >> $LOGFILE
+    sudo kill $PIDS
+    sudo kill -9 $PIDS
 fi
 
 echo -e "\033[33mExecuting adsbexchange-netcat_maint.sh..."
 echo -e "\033[37m"
-sudo $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh &
+sudo $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh > /dev/null &
 
 echo -e "\033[33mExecuting adsbexchange-mlat_maint.sh..."
 echo -e "\033[37m"
-sudo $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh &
+sudo $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh > /dev/null &
 
 echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."

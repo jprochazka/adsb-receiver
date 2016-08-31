@@ -365,7 +365,7 @@ else
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local; then
+if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
