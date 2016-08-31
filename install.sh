@@ -316,7 +316,7 @@ if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f
     fi
 else
     # Dump978 does not appear to have been built yet.
-    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --yesno "$DUMP978NOTINSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --defaultno --yesno "$DUMP978NOTINSTALLED" 10 65
     DUMP978CHOICE=$?
 fi
 
