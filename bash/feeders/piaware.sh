@@ -102,7 +102,6 @@ else
     echo -e "\033[37m"
     git clone https://github.com/flightaware/piaware_builder.git
     cd $PIAWAREDIR
-    git checkout ${PIAWAREBRANCH}
 fi
 
 ## BUILD THE PIAWARE PACKAGE
@@ -119,7 +118,14 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-sudo dpkg -i $PIAWAREDIR/piaware_${PIAWAREVERSION}_*.deb
+sudo dpkg -i $PIAWAREDIR/piaware_*.deb
+
+# Move the .deb package into another directory simply to keep it for historical reasons.
+if [ ! -d $PIAWAREDIR/packages ]; then
+    mkdir $PIAWAREDIR/packages
+fi
+mv $PIAWAREDIR/piaware_*.deb $PIAWAREDIR/packages/
+mv $PIAWAREDIR/piaware_*.changes $PIAWAREDIR/packages/
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
