@@ -2,10 +2,11 @@
 
 The following is a history of the changes made to this project.
 
-## v2.2.0 *(August 30th, 2016)*
+## v2.2.0 *(August 31st, 2016)*
 
 * ADS-B Exchange script now sets up mlat-client to connect to their mlat-server.
 * Added the ability to disply either the dump1090-fa or dump1090-mutability map.
+* Changed the bash function which retrieves config file variables so it works properly.
 
 ## v2.1.0 *(August 30th, 2016)*
 
