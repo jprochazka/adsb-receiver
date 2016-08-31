@@ -44,7 +44,7 @@
     $pageData['title'] = "Live Dump1090 Map";
 
     // Decide which dump1090 map to display.
-    if ($common->getSetting('useDump1090FaMap')) {
+    if ($common->getSetting('useDump1090FaMap') == 1) {
         $pageData['dump1090Map'] = "/dump1090-fa/";
     } else {
         $pageData['dump1090Map'] = "/dump1090/gmap.html";

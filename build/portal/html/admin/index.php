@@ -426,7 +426,7 @@
                         <div class="panel-body">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="useDump1090FaMap" value="TRUE"<?php ($useDump1090FaMap == 1 ? print ' checked' : ''); ?> Use dump1090-fa map instead of the dump1090-mutability map.
+                                    <input type="checkbox" name="useDump1090FaMap" value="TRUE"<?php ($useDump1090FaMap == 1 ? print ' checked' : ''); ?>> Use dump1090-fa map instead of the dump1090-mutability map. <em>(dump1090-fa must be installed in order for the map to display)</em>
                                 </label>
                             </div>
                         </div>
