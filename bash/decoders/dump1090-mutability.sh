@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,49 +31,39 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=$PWD
-DUMP1090DIR="$BUILDDIR/dump1090"
+### VARIABLES
 
-source ../bash/functions.sh
+PROJECTROOTDIRECTORY="$PWD"
+BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+DUMP1090BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/dump1090"
+
+### INCLUDE EXTERNAL SCRIPTS
+
+source $BASHDIRECTORY/variables.sh
+source $BASHDIRECTORY/functions.sh
+
+## BEGIN SETUP
 
 clear
-
-echo -e "\033[31m"
-echo "-------------------------------------------"
-echo " Now ready to install dump1090-mutability."
-echo "-------------------------------------------"
-echo -e "\033[33mDump 1090 is a Mode S decoder specifically designed for RTLSDR devices."
-echo "Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new"
-echo "functionality and is designed to be built as a Debian/Raspbian package."
+echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
 echo ""
-echo "https://github.com/mutability/dump1090"
-echo -e "\033[37m"
+echo -e "\e[92m  Setting up dump1090-mutability..."
+echo -e "\e[93m------------------------------------------------------------------------------\e[96m"
+echo ""
+echo " Dump 1090 is a Mode S decoder specifically designed for RTLSDR devices."
+echo " Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds"
+echo " new functionality and is designed to be built as a Debian/Raspbian package."
+echo ""
+echo " https://github.com/mutability/dump1090"
+echo -e "\e[39m"
 read -p "Press enter to continue..." CONTINUE
-
-## ASK WHICH WEB SERVER TO INSTALL
-
-# Commented out temporarily until choice has been added to
-# the portal installations scipt as well.
-
-#echo -e "\033[31m"
-#echo "Select Web Server"
-#echo -e "\033[33m"
-#echo "Select the web server you wish to use."
-#echo "Currently Lighttpd is the recommended web server."
-#echo ""
-#echo "  1) Lighttpd"
-#echo "  2) Nginx"
-#echo -e "\033[37m"
-#read -p "Which web server do you wish to use? [1] " WEBSERVER
-
-# For now we will force Lighttpd as the web server chosen.
-WEBSERVER=1
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\033[33m"
-echo "Installing packages needed to build and fulfill dependencies..."
-echo -e "\033[37m"
+echo ""
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
+echo ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
@@ -83,48 +73,66 @@ CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage pkg-config
-
-if [[ $WEBSERVER != "2" ]]; then
-    CheckPackage lighttpd
-else
-    CheckPackage nginx
-fi
-
+CheckPackage lighttpd
 CheckPackage fakeroot
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
-# Check if the git repository already exists locally.
-if [ -d $DUMP1090DIR ] && [ -d $DUMP1090DIR/.git ]; then
-    # A directory with a git repository containing the source code exists.
-    echo -e "\033[33m"
-    echo "Updating the local dump1090-mutability git repository..."
-    echo -e "\033[37m"
-    cd $DUMP1090DIR
-    git pull origin master
+echo ""
+echo -e "\e[95m  Prepare the dump1090-mutability Git repository...\e[97m"
+echo ""
+if [ -d $DUMP1090BUILDDIRECTORY ] && [ -d $DUMP1090BUILDDIRECTORY/.git ]; then
+    # A directory with a git repository containing the source code already exists.
+    echo -e "\e[94m  Entering the dump1090-mutability git repository directory...\e[97m"
+    cd $DUMP1090BUILDDIRECTORY
+    echo -e "\e[94m  Updating the local dump1090-mutability git repository...\e[97m"
+    echo ""
+    git pull
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\033[33m"
-    echo "Cloning the dump1090-mutability git repository locally..."
-    echo -e "\033[37m"
+    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+    cd $BUILDDIRECTORY
+    echo -e "\e[94m  Cloning the dump1090-mutability git repository locally...\e[97m"
+    echo ""
     git clone https://github.com/mutability/dump1090.git
+    echo ""
 fi
 
 ## BUILD THE DUMP1090-MUTABILITY PACKAGE
 
-echo -e "\033[33m"
-echo "Building the dump1090-mutability package..."
-echo -e "\033[37m"
-cd $DUMP1090DIR
+echo ""
+echo -e "\e[95m  Building the dump1090-mutability package...\e[97m"
+echo ""
+if [ ! $PWD = $DUMP1090BUILDDIRECTORY ]; then
+    echo -e "\e[94m  Entering the dump1090-mutability git repository directory...\e[97m"
+    cd $DUMP1090BUILDDIRECTORY
+fi
+echo -e "\e[94m  Building the dump1090-mutability package...\e[97m"
+echo ""
 dpkg-buildpackage -b
 
 ## INSTALL THE DUMP1090-MUTABILITY PACKAGE
 
-echo -e "\033[33m"
-echo "Installing the dump1090-mutability package..."
-echo -e "\033[37m"
-cd $BUILDDIR
+echo ""
+echo -e "\e[95m  Installing the dump1090-mutability package...\e[97m"
+echo ""
+echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+cd $BUILDDIRECTORY
+echo -e "\e[94m  Installing the dump1090-mutability package......\e[97m"
+echo ""
 sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
+
+#########################
+
+echo ""
+echo -e "\e[93m------------------------------------------------------------------------------"
+echo -e "\e[92m  Dump1090-mutability setup is complete.\e[39m"
+
+echo -e "\e[97m"
+cd $PROJECTROOTDIRECTORY
+exit 0
+
+#########################
 
 ## CHECK THAT THE PACKAGE INSTALLED
 

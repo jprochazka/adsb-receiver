@@ -12,7 +12,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -36,64 +36,61 @@
 
 ## VARIABLES
 
-BASEDIR=$PWD
-BASHDIR="$BASEDIR/bash"
-BUILDDIR="$BASEDIR/build"
+PROJECTROOTDIRECTORY="$PWD"
+BASHDIRECTORY="$PWD/bash"
+BUILDDIRECTORY="$PWD/build"
 
-source $BASHDIR/variables.sh
-source $BASHDIR/functions.sh
+source $BASHDIRECTORY/variables.sh
+source $BASHDIRECTORY/functions.sh
 
-## CHECK IF FIRST RUN USING IMAGE
+## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
-if [ -f $BASEDIR/image ]; then
-    # Execute image setup script.
-    chmod +x $BASHDIR/image.sh
-    $BASHDIR/image.sh
-
-    # Exit scripts once the the image setup script has completed.
-    echo -e "\033[32m"
-    echo "Image setup complete."
-    echo -e "\033[33m"
-    echo "At any time you can execute install.sh to add additional features"
-    echo "or update existing packages installed on this device."
-    echo -e "\033[37m"
-
+if [ -f $PROJECTROOTDIRECTORY/image ]; then
+    # Execute image setup script..
+    chmod +x $BASHDIRECTORY/image.sh
+    $BASHDIRECTORY/image.sh
     exit 0
 fi
 
 ## FUNCTIONS
 
-# Download the latest package lists for enabled repositories and PPAs.
+# UPDATE REPOSITORY PACKAGE LISTS.
 function AptUpdate() {
     clear
-    echo -e "\033[33m"
-    echo "Downloading latest package lists for enabled repositories and PPAs..."
-    echo -e "\033[37m"
+    echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+    echo ""
+    echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
+    echo -e "\e[93m------------------------------------------------------------------------------------\e[97m"
+    echo ""
     sudo apt-get update
-}
-
-# Update the operating system.
-function UpdateOperatingSystem() {
-    clear
-    echo -e "\033[33m"
-    echo "Downloading and installing the latest updates for your operating system..."
-    echo -e "\033[37m"
-    sudo apt-get -y upgrade
-    echo -e "\033[33m"
-    echo "Your system should now be up to date."
-    echo -e "\033[37m"
+    echo ""
+    echo -e "\e[93m------------------------------------------------------------------------------------"
+    echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
+    echo ""
     read -p "Press enter to continue..." CONTINUE
 }
 
-# Download, build and then install the dump1090-mutability package.
-function InstallDump1090() {
+# UPDATE THE OPERATING SYSTEM.
+function UpdateOperatingSystem() {
     clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the dump1090-mutability installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/decoders/dump1090-mutability.sh
-    $BASHDIR/decoders/dump1090-mutability.sh
-    cd $BASEDIR
+    echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+    echo ""
+    echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
+    echo -e "\e[93m---------------------------------------------------------------------------------\e[97m"
+    echo ""
+    sudo apt-get -y upgrade
+    echo ""
+    echo -e "\e[93m---------------------------------------------------------------------------------"
+    echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+}
+
+#  DUMP1090-MUTABILITY
+function InstallDump1090() {
+    # Execute the dump1090-mutability setup script.
+    chmod +x $BASHDIRECTORY/decoders/dump1090-mutability.sh
+    $BASHDIRECTORY/decoders/dump1090-mutability.sh
 }
 
 # Download and build dump978.
