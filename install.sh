@@ -60,11 +60,11 @@ function AptUpdate() {
     echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
     echo ""
     echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
-    echo -e "\e[93m------------------------------------------------------------------------------------\e[97m"
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
     sudo apt-get update
     echo ""
-    echo -e "\e[93m------------------------------------------------------------------------------------"
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
@@ -76,11 +76,11 @@ function UpdateOperatingSystem() {
     echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
     echo ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
-    echo -e "\e[93m---------------------------------------------------------------------------------\e[97m"
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
     sudo apt-get -y upgrade
     echo ""
-    echo -e "\e[93m---------------------------------------------------------------------------------"
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
@@ -91,17 +91,25 @@ function InstallDump1090() {
     # Execute the dump1090-mutability setup script.
     chmod +x $BASHDIRECTORY/decoders/dump1090-mutability.sh
     $BASHDIRECTORY/decoders/dump1090-mutability.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo ""
+        exit 1
+    fi
 }
 
 # Download and build dump978.
 function InstallDump978() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the dump978 installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/decoders/dump978.sh
-    $BASHDIR/decoders/dump978.sh
-    cd $BASEDIR
+    # Execute the dump978 setup script.
+    chmod +x $BASHDIRECTORY/decoders/dump978.sh
+    $BASHDIRECTORY/decoders/dump978.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo ""
+        exit 1
+    fi
 }
 
 # Download, build and then install the PiAware package.

@@ -88,7 +88,6 @@ function CheckPackage {
 function ChangeConfig {
     # Use sed to locate the "KEY" then replace the "VALUE", the portion after the equals sign, in the specified "FILE".
     # This function should work with any configuration file with settings formated as KEY="VALUE".
-    echo -e "\033[33mChanging the value for $1 to $2 in the file $3...\033[37m"
     sudo sed -i "s/\($1 *= *\).*/\1\"$2\"/" $3
 }
 

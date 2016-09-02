@@ -36,7 +36,7 @@
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-DUMP1090BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/dump1090"
+DUMP1090BUILDDIRECTORY="$BUILDDIRECTORY/dump1090"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -49,7 +49,7 @@ clear
 echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
 echo ""
 echo -e "\e[92m  Setting up dump1090-mutability..."
-echo -e "\e[93m------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
 whiptail --title "Dump1090-mutability Setup" --yesno "Dump 1090 is a Mode S decoder specifically designed for RTLSDR devices. Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  https://github.com/mutability/dump1090\n\nContinue setup by installing dump1090-mutability?" 14 78
 CONTINUESETUP=$?
@@ -58,7 +58,7 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo ""
-    echo -e "\e[93m------------------------------------------------------------------------------"
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
@@ -122,8 +122,9 @@ echo -e "\e[94m  Installing the dump1090-mutability package...\e[97m"
 echo ""
 sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 
-## CHECK THAT THE PACKAGE INSTALLED
-
+# Check that the package was installed.
+echo ""
+echo -e "\e[94m  Checking that the dump1090-mutability package was installed properly...\e[97m"
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # If the dump1090-mutability package could not be installed halt setup.
     echo ""
@@ -133,11 +134,10 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     echo ""
     echo -e "\e[93mThe package \"dump1090-mutability\" could not be installed.\e[39m"
     echo ""
-    echo -e "\e[93m------------------------------------------------------------------------------"
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
-    #kill -9 `ps --pid $$ -oppid=`; exit
     exit 1
 fi
 
@@ -151,12 +151,12 @@ if [[ `GetConfig "LAT" "/etc/default/dump1090-mutability"` == "" ]] || [[ `GetCo
     whiptail --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and loingitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     RECEIVERLATITUDE_TITLE="Receiver Latitude"
     while [[ -z $RECEIVERLATITUDE ]]; do
-        RECEIVERLATITUDE=$(whiptail --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude." 8 78 3>&1 1>&2 2>&3)
+        RECEIVERLATITUDE=$(whiptail --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
         RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
     RECEIVERLONGITUDE_TITLE="Receiver Longitude"
     while [[ -z $RECEIVERLONGITUDE ]]; do
-        RECEIVERLONGITUDE=$(whiptail --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude." 8 78 3>&1 1>&2 2>&3)
+        RECEIVERLONGITUDE=$(whiptail --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
         RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
     echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
@@ -209,7 +209,7 @@ echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd $PROJECTROOTDIRECTORY
 
 echo ""
-echo -e "\e[93m------------------------------------------------------------------------------"
+echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090-mutability setup is complete.\e[39m"
 echo ""
 read -p "Press enter to continue..." CONTINUE
