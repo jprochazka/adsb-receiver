@@ -51,17 +51,22 @@ echo ""
 echo -e "\e[92m  Setting up dump1090-mutability..."
 echo -e "\e[93m------------------------------------------------------------------------------\e[96m"
 echo ""
-echo " Dump 1090 is a Mode S decoder specifically designed for RTLSDR devices."
-echo " Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds"
-echo " new functionality and is designed to be built as a Debian/Raspbian package."
-echo ""
-echo " https://github.com/mutability/dump1090"
-echo -e "\e[39m"
-read -p "Press enter to continue..." CONTINUE
+whiptail --title "Dump1090-mutability Setup" --yesno "Dump 1090 is a Mode S decoder specifically designed for RTLSDR devices. Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  https://github.com/mutability/dump1090\n\nContinue setup by installing dump1090-mutability?" 14 78
+CONTINUESETUP=$?
+if [ $CONTINUESETUP = 1 ]; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
+    echo ""
+    echo -e "\e[93m------------------------------------------------------------------------------"
+    echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
+fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
 CheckPackage git
@@ -98,10 +103,10 @@ else
     echo ""
 fi
 
-## BUILD THE DUMP1090-MUTABILITY PACKAGE
+## BUILD AND INSTALL THE DUMP1090-MUTABILITY PACKAGE
 
 echo ""
-echo -e "\e[95m  Building the dump1090-mutability package...\e[97m"
+echo -e "\e[95m  Building and installing the dump1090-mutability package...\e[97m"
 echo ""
 if [ ! $PWD = $DUMP1090BUILDDIRECTORY ]; then
     echo -e "\e[94m  Entering the dump1090-mutability git repository directory...\e[97m"
@@ -110,11 +115,6 @@ fi
 echo -e "\e[94m  Building the dump1090-mutability package...\e[97m"
 echo ""
 dpkg-buildpackage -b
-
-## INSTALL THE DUMP1090-MUTABILITY PACKAGE
-
-echo ""
-echo -e "\e[95m  Installing the dump1090-mutability package...\e[97m"
 echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd $BUILDDIRECTORY
@@ -127,12 +127,16 @@ sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # If the dump1090-mutability package could not be installed halt setup.
     echo ""
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
     echo -e "  SETUP HAS BEEN TERMINATED!"
     echo ""
     echo -e "\e[93mThe package \"dump1090-mutability\" could not be installed.\e[39m"
     echo ""
+    echo -e "\e[93m------------------------------------------------------------------------------"
+    echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
     #kill -9 `ps --pid $$ -oppid=`; exit
     exit 1
 fi
@@ -144,9 +148,17 @@ echo ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
 echo ""
 if [[ `GetConfig "LAT" "/etc/default/dump1090-mutability"` == "" ]] || [[ `GetConfig "LON" "/etc/default/dump1090-mutability"` == "" ]]; then
-    whiptail --title "Receiver Latitude and Longitude" --msgbox "" 8 78
-    RECEIVERLATITUDE=$(whiptail --title "Receiver Latitude" --nocancel --inputbox "Enter your receiver's latitude." 8 78 3>&1 1>&2 2>&3)
-    RECEIVERLONGITUDE=$(whiptail --title "Receiver Longitude" --nocancel --inputbox "Enter your receeiver's longitude." 8 78 3>&1 1>&2 2>&3)
+    whiptail --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and loingitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    RECEIVERLATITUDE_TITLE="Receiver Latitude"
+    while [[ -z $RECEIVERLATITUDE ]]; do
+        RECEIVERLATITUDE=$(whiptail --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude." 8 78 3>&1 1>&2 2>&3)
+        RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+    done
+    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z $RECEIVERLONGITUDE ]]; do
+        RECEIVERLONGITUDE=$(whiptail --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude." 8 78 3>&1 1>&2 2>&3)
+        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    done
     echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
     ChangeConfig "LAT" $RECEIVERLATITUDE "/etc/default/dump1090-mutability"
     echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
@@ -154,26 +166,45 @@ if [[ `GetConfig "LAT" "/etc/default/dump1090-mutability"` == "" ]] || [[ `GetCo
 fi
 
 # Ask if dump1090-mutability should bind on all IP addresses.
-if (whiptail --title "Bind To All IP Addresses" --yesno "" 8 78) then
+if (whiptail --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
+    echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
     ChangeConfig "NET_BIND_ADDRESS" "0.0.0.0" "/etc/default/dump1090-mutability"
+else
+    echo -e "\e[94m  Binding dump1090-mutability to the localhost IP addresses...\e[97m"
+    ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
 fi
 
 # Download Heywhatsthat.com maximum range rings.
-if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] && (whiptail --title "Heywhaststhat.com Maimum Range Rings" --yesno "" 8 78); then
-    HEYWHATSTHATID=$(whiptail --title "Heywhatsthat.com Panarama ID" --nocancel --inputbox "Enter your Heywhatsthat.com panarama ID." 8 78 3>&1 1>&2 2>&3)
-    HEYWHATSTHATRINGONE=$(whiptail --title "Heywhatsthat.com Panarama ID" --nocancel --inputbox "Enter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
-    HEYWHATSTHATRINGTWO=$(whiptail --title "Heywhatsthat.com Panarama ID" --nocancel --inputbox "Enter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
-    echo "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
+if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] && (whiptail --title "Heywhaststhat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-mutability usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-mutability map you will first need to visit http://www.heywhatsthat.com and generate a new panarama centered on the location of your receiver. Once your panarama has been generated a link to the panarama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
+    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
+    while [[ -z $HEYWHATSTHATID ]]; do
+        HEYWHATSTHATID=$(whiptail --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panarama ID." 8 78 3>&1 1>&2 2>&3)
+        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+    done
+    HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude"
+    while [[ -z $HEYWHATSTHATRINGONE ]]; do
+        HEYWHATSTHATRINGONE=$(whiptail --title "$HEYWHATSTHATRINGONE_TITLE" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
+        HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
+    done
+    HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude"
+    while [[ -z $HEYWHATSTHATRINGTWO ]]; do
+        HEYWHATSTHATRINGTWO=$(whiptail --title "$HEYWHATSTHATRINGTWO_TITLE" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
+        HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
+    done
+    echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
+    echo ""
     sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
 fi
 
 # Reload dump1090-mutability to ensure all changes take effect.
-echo "\e[94m  Reloading dump1090-mutability...\e[97m"
+echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
+echo ""
 sudo /etc/init.d/dump1090-mutability force-reload
 
 ## DUMP1090-MUTABILITY SETUP COMPLETE
 
 # Enter into the project root directory.
+echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd $PROJECTROOTDIRECTORY
 
