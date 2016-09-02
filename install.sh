@@ -54,7 +54,7 @@ fi
 
 ## FUNCTIONS
 
-# UPDATE REPOSITORY PACKAGE LISTS.
+# UPDATE REPOSITORY PACKAGE LISTS
 function AptUpdate() {
     clear
     echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
@@ -70,7 +70,7 @@ function AptUpdate() {
     read -p "Press enter to continue..." CONTINUE
 }
 
-# UPDATE THE OPERATING SYSTEM.
+# UPDATE THE OPERATING SYSTEM
 function UpdateOperatingSystem() {
     clear
     echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
@@ -86,9 +86,8 @@ function UpdateOperatingSystem() {
     read -p "Press enter to continue..." CONTINUE
 }
 
-#  DUMP1090-MUTABILITY
+# EXECUTE THE DUMP1090-MUTABILITY SETUP SCRIPT
 function InstallDump1090() {
-    # Execute the dump1090-mutability setup script.
     chmod +x $BASHDIRECTORY/decoders/dump1090-mutability.sh
     $BASHDIRECTORY/decoders/dump1090-mutability.sh
     if [ $? -ne 0 ]; then
@@ -99,9 +98,8 @@ function InstallDump1090() {
     fi
 }
 
-# Download and build dump978.
+# EXECUTE THE DUMP978 SETUP SCRIPT
 function InstallDump978() {
-    # Execute the dump978 setup script.
     chmod +x $BASHDIRECTORY/decoders/dump978.sh
     $BASHDIRECTORY/decoders/dump978.sh
     if [ $? -ne 0 ]; then
@@ -112,15 +110,16 @@ function InstallDump978() {
     fi
 }
 
-# Download, build and then install the PiAware package.
+# EXECUTE THE PIAWARE SETUP SCRIPT
 function InstallPiAware() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the PiAware installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/feeders/piaware.sh
-    $BASHDIR/feeders/piaware.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/feeders/piaware.sh
+    $BASHDIRECTORY/feeders/piaware.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo ""
+        exit 1
+    fi
 }
 
 # Download and install the Plane Finder ADS-B Client package.

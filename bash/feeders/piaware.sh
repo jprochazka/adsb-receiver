@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -33,38 +33,42 @@
 
 ## VAARIABLES
 
-BUILDDIR=$PWD
-PIAWAREDIR="$PWD/piaware_builder"
+PROJECTROOTDIRECTORY="$PWD"
+BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PIAWAREBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/dump1090"
 
-source ../bash/variables.sh
-source ../bash/functions.sh
+### INCLUDE EXTERNAL SCRIPTS
 
-## INFORMATIVE MESSAGE ABOUT THIS SOFTWARE
+source $BASHDIRECTORY/variables.sh
+source $BASHDIRECTORY/functions.sh
+
+## BEGIN SETUP
 
 clear
-
-echo -e "\033[31m"
-echo "-------------------------------"
-echo " Now ready to install PiAware."
-echo "-------------------------------"
-echo -e "\033[33mPiAware is a package used to forward data read from an ADS-B receiver to FlightAware."
-echo "It does this using a program, piaware, aided by some support programs."
+echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
 echo ""
-echo "piaware        - establishes an encrypted session to FlightAware and forwards data"
-echo "piaware-config - used to configure piaware like with a FlightAware username and password"
-echo "piaware-status - used to check the status of piaware"
-echo "faup1090       - run by piaware to connect to dump1090 or some other program producing beast-style ADS-B data and translate between its format and FlightAware's"
-echo "fa-mlat-client - run by piaware to gather data for multilateration"
+echo -e "\e[92m  Setting up FLightAware's PiAware..."
+echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-echo "https://github.com/flightaware/piaware"
-echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE
+whiptail --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 14 78
+CONTINUESETUP=$?
+if [ $CONTINUESETUP = 1 ]; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
+fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\033[33m"
-echo "Installing packages needed to build and fulfill dependencies..."
-echo -e "\033[37m"
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
+echo ""
 CheckPackage git
 CheckPackage build-essential
 CheckPackage debhelper
@@ -74,12 +78,7 @@ CheckPackage python3-dev
 CheckPackage python3-venv
 CheckPackage virtualenv
 CheckPackage dh-systemd
-
-# libz-dev appears to have been replaced by zlib1g-dev at least in Ubuntu Vivid Vervet...
-# Will need to check if this is the case with Raspbian and Debian as well.
-#CheckPackage libz-dev
 CheckPackage zlib1g-dev
-
 CheckPackage tclx8.4
 CheckPackage tcllib
 CheckPackage tcl-tls
@@ -87,22 +86,28 @@ CheckPackage itcl3
 
 ## DOWNLOAD OR UPDATE THE PIAWARE_BUILDER SOURCE
 
-# Check if the git repository already exists locally.
-if [ -d $PIAWAREDIR ] && [ -d $PIAWAREDIR/.git ]; then
-    # A directory with a git repository containing the source code exists.
-    echo -e "\033[33m"
-    echo "Updating the local piaware_builder git repository..."
-    echo -e "\033[37m"
-    cd $PIAWAREDIR
-    git pull origin master
+echo ""
+echo -e "\e[95m  Preparing the piaware_builder Git repository...\e[97m"
+echo ""
+if [ -d $PIAWAREBUILDDIRECTORY ] && [ -d $PIAWAREBUILDDIRECTORY/.git ]; then
+    # A directory with a git repository containing the source code already exists.
+    echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
+    cd $PIAWAREBUILDDIRECTORY
+    echo -e "\e[94m  Updating the local piaware_builder git repository...\e[97m"
+    echo ""
+    git pull
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\033[33m"
-    echo "Cloning the piaware_builder git repository locally..."
-    echo -e "\033[37m"
+    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+    cd $BUILDDIRECTORY
+    echo -e "\e[94m  Cloning the piaware_builder git repository locally...\e[97m"
+    echo ""
     git clone https://github.com/flightaware/piaware_builder.git
-    cd $PIAWAREDIR
+    echo ""
 fi
+
+exit 0
+
 
 ## BUILD THE PIAWARE PACKAGE
 

@@ -87,14 +87,14 @@ echo ""
 # Remove the existing dumpp978 build directory if it exists.
 if [ -d $DUMP978BUILDDIRECTORY ]; then
     # Delete the current dump978 build directory if it already exists.
-    echo -e "\e[94m  Deleting the existing dump978 git repository directory...\e[97m"
+    echo -e "\e[94m  Deleting the existing dump978 Git repository directory...\e[97m"
     rm -rf $DUMP978BUILDDIRECTORY
 fi
 
 # Clone the dump978 Git repository.
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd $BUILDDIRECTORY
-echo -e "\e[94m  Cloning the dump1090-mutability git repository locally...\e[97m"
+echo -e "\e[94m  Cloning the dump978 Git repository locally...\e[97m"
 echo ""
 git clone https://github.com/mutability/dump978.git
 
@@ -104,10 +104,10 @@ echo ""
 echo -e "\e[95m  Building the dump978 binaries...\e[97m"
 echo ""
 if [ ! $PWD = $DUMP978BUILDDIRECTORY ]; then
-    echo -e "\e[94m  Entering the dump1090-mutability git repository directory...\e[97m"
+    echo -e "\e[94m  Entering the dump978 Git repository directory...\e[97m"
     cd $DUMP978BUILDDIRECTORY
 fi
-echo -e "\e[94m  Building the dump1090-mutability package...\e[97m"
+echo -e "\e[94m  Building the dump978 binaries...\e[97m"
 echo ""
 make all
 echo ""

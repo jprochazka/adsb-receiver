@@ -115,14 +115,14 @@ fi
 ## CONFIGURE SCRIPT TO EXECUTE AND MAINTAIN MLAT-CLIENT AND NETCAT TO FEED ADS-B EXCHANGE
 
 # Ask the user for the user name for this receiver.
-ADSBEXCHANGEUSER=$(whiptail --backtitle "$BACKTITLETEXT" --title "ADS-B Exchange User Name" --nocancel --inputbox "\nPlease enter your ADS-B Exchange user name.\n\nIf you have more than one receiver, this username should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
+ADSBEXCHANGEUSER=$(whiptail --backtitle "$BACKTITLETEXT" --title "ADS-B Exchange User Name" --nocancel --inputbox "\nPlease enter your ADS-B Exchange user name. (NOT REQUIRED)\n\nIf you have more than one receiver, this username should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability.
 RECEIVERLAT=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
 RECEIVERLON=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
-RECEIVERALT=$(whiptail --backtitle "$BACKTITLETEXT" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your recivers atitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLAT,$RECEIVERLON | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
+RECEIVERALT=$(whiptail --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLAT,$RECEIVERLON | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
 
 # Create the adsbexchange directory in the build directory if it does not exist.
 if [ ! -d "$ADSBEXCHANGEDIR" ]; then
@@ -190,11 +190,11 @@ fi
 
 echo -e "\033[33mExecuting adsbexchange-netcat_maint.sh..."
 echo -e "\033[37m"
-sudo $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh > /dev/null &
+sudo nohup $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh > /dev/null &
 
 echo -e "\033[33mExecuting adsbexchange-mlat_maint.sh..."
 echo -e "\033[37m"
-sudo $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh > /dev/null &
+sudo nohup $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh > /dev/null &
 
 echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
 echo "Please look over the output generated to be sure no errors were encountered."
