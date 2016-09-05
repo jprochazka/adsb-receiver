@@ -1,3 +1,5 @@
+<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_logo.png" width="468" height="110" />
+
 # The ADS-B Receiver Project :airplane:
 
 This repository contains a set of scripts and files which can be used to setup an ADS-B receiver on a clean installation of a Debian derived operating system. The scripts are executed in order by the main install script depending on the installation options chosen by the user.
@@ -80,3 +82,13 @@ At this time the following software can be installed using these scripts.
 The scripts and packages have been tested on most Debian Jessie based operating systems.
 
 The scripts are NOT supported on existing PiAware *image based* installations. The PiAware image is still based on Raspbian Wheezey version which is missing some required libraries for dump1090-mutability installation.
+
+### Useful Links
+
+- Website - https://www.adsbreceiver.net/
+
+- Forum - https://www.adsbreceiver.net/forums/
+
+- Wiki - https://github.com/jprochazka/adsb-receiver/wiki
+
+- Changelog - https://github.com/jprochazka/adsb-receiver/blob/master/CHANGELOG.md
