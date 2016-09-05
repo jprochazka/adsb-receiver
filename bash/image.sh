@@ -8,7 +8,7 @@
 #  needed to setup a Mode S decoder as well as feeders which are capable of         #
 #  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
 #                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-feeder              #
+#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-receiver              #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
@@ -88,7 +88,7 @@ echo "panorama set to your location."
 echo -e "\033[37m"
 read -p "Do you wish to add terrain limit rings to the dump1090 map? [Y/n] " ADDTERRAINRINGS
 
-if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then 
+if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then
     echo -e "\033[31m"
     echo "READ THE FOLLOWING INSTRUCTION CAREFULLY!"
     echo -e "\033[33m"

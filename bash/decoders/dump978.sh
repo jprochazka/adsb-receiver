@@ -51,7 +51,7 @@ echo "It is recommended before continuing with the dump978 setup you read the wi
 echo "related to the installation of dump978. Doing so will help you through configuring"
 echo "dump978 properly using this script."
 echo ""
-echo "https://github.com/jprochazka/adsb-feeder/wiki/dump978"
+echo "https://github.com/jprochazka/adsb-receiver/wiki/dump978"
 echo -e "\033[37m"
 read -p "Press enter to continue..." CONTINUE
 
