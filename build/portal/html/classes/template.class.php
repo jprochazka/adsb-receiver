@@ -36,9 +36,12 @@
             $common = new common($this);
 
             // Check if the portal is installed or needs upgraded.
+
+            $thisVersion = "2.2.0";
+
             if (!file_exists($_SERVER['DOCUMENT_ROOT']."/classes/settings.class.php")) {
                 header ("Location: /install/install.php");
-            } elseif ($common->getSetting("version") != "2.0.3"){
+            } elseif ($common->getSetting("version") != $thisVersion){
                 header ("Location: /install/upgrade.php");
             }
 

@@ -1,10 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<administrators>
-    <administrator>
-        <name>Administrator</name>
-        <email>noreply@adsbreceiver.net</email>
-        <login>admin</login>
-        <password>$2y$10$ZII5KKsaL0vz.18kO7O1p.LO4fHnxqs40sbQqtJuIkOEHTDXx6ovC</password>
-        <token></token>
-    </administrator>
-</administrators>
+<administrators/>

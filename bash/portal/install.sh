@@ -39,6 +39,9 @@ HTMLDIR=$BUILDDIR/portal/html
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
+INSTALLED="n"
+DRIVER="null"
+
 source ../bash/functions.sh
 
 clear
@@ -70,7 +73,7 @@ if [ -f $DOCUMENTROOT/classes/settings.class.php ]; then
     echo -e "\033[37m"
     read -p "Press enter to continue..." CONTINUE
 
-    # Set dome needed variables to be used shortly.
+    # Set some needed variables to be used shortly.
     INSTALLED="y"
 
     DRIVER=`grep 'db_driver' $DOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
@@ -103,6 +106,7 @@ else
     echo -e "\033[31m"
     echo "Do you wish to enable advanced features?"
     echo -e "\033[33m"
+    echo "ADVANCED FEATURES ARE ONLY MEANT TO BE ENABLED BY THOSE HELPING TO DEVELOP THEM AND NOT FULLY SUPPORTED"
     echo "ENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY"
     echo ""
     echo "By enabling advanced features the portal will log all flights seen as well as the path of the flight."
@@ -165,6 +169,7 @@ fi
 
 CheckPackage libpython2.7
 if [[ $ADVANCED =~ ^[yY]$ ]]; then
+    CheckPackage python-pyinotify
     if [[ $DATABASEENGINE == 2 ]]; then
         CheckPackage sqlite3
 
@@ -328,7 +333,7 @@ EOF
                  ;;
         esac
 
-        # Create and set permissions on the flight logging maintainance script.
+        # Create and set permissions on the flight logging and maintainance maintenance scripts.
         PYTHONPATH=`which python`
         tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
 #!/bin/sh
@@ -338,17 +343,39 @@ while true
         ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
   done
 EOF
+        tee $BUILDDIR/portal/logging/maintenance-maint.sh > /dev/null <<EOF
+#!/bin/sh
+while true
+  do
+    sleep 30
+        ${PYTHONPATH} ${BUILDDIR}/portal/logging/maintenance.py
+  done
+EOF
         chmod +x $BUILDDIR/portal/logging/flights-maint.sh
+        chmod +x $BUILDDIR/portal/logging/maintenance-maint.sh
 
-        # Add flight logging maintainance script to rc.local.
+        # Add flight logging maintenance script to rc.local.
         if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
             echo -e "\033[33m"
-            echo -e "Adding startup line to rc.local...\033[37m"
+            echo -e "Adding flights-maint.sh startup line to rc.local...\033[37m"
             lnum=($(sed -n '/exit 0/=' /etc/rc.local))
             ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
         fi
 
+        # Add maintenance maintenance script to rc.local.
+        if ! grep -Fxq "${BUILDDIR}/portal/logging/maintenance-maint.sh &" /etc/rc.local; then
+            echo -e "\033[33m"
+            echo -e "Adding maintenance-maint.sh startup line to rc.local...\033[37m"
+            lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+            ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/maintenance-maint.sh &\n" /etc/rc.local
+        fi
+
         # Start flight logging.
+        echo -e "\033[33m"
+        echo -e "Starting flight logging...\033[37m"
+        nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
+
+        # Start maintenance..
         echo -e "\033[33m"
         echo -e "Starting flight logging...\033[37m"
         nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
@@ -357,9 +384,34 @@ fi
 
 ## SETUP THE PORTAL WEBSITE
 
+
+
+if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
+    echo -e "\033[33m"
+    echo -e "Backing up XML data files...\033[37m"
+    sudo mv ${DOCUMENTROOT}/data/administrators.xml ${DOCUMENTROOT}/data/administrators.backup.xml
+    sudo mv ${DOCUMENTROOT}/data/blogPosts.xml ${DOCUMENTROOT}/data/blogPosts.backup.xml
+    sudo mv ${DOCUMENTROOT}/data/flightNotifications.xml ${DOCUMENTROOT}/data/flightNotifications.backup.xml
+    sudo mv ${DOCUMENTROOT}/data/settings.xml ${DOCUMENTROOT}/data/settings.backup.xml
+fi
+
 echo -e "\033[33m"
 echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
 sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
+
+if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
+    echo -e "\033[33m"
+    echo -e "Restoring XML data files...\033[37m"
+    sudo rm -f ${DOCUMENTROOT}/data/administrators.xml
+    sudo rm -f ${DOCUMENTROOT}/data/blogPosts.xml
+    sudo rm -f ${DOCUMENTROOT}/data/flightNotifications.xml
+    sudo rm -f ${DOCUMENTROOT}/data/settings.xml
+    
+    sudo mv ${DOCUMENTROOT}/data/administrators.backup.xml ${DOCUMENTROOT}/data/administrators.xml
+    sudo mv ${DOCUMENTROOT}/data/blogPosts.backup.xml ${DOCUMENTROOT}/data/blogPosts.xml
+    sudo mv ${DOCUMENTROOT}/data/flightNotifications.backup.xml ${DOCUMENTROOT}/data/flightNotifications.xml
+    sudo mv ${DOCUMENTROOT}/data/settings.backup.xml ${DOCUMENTROOT}/data/settings.xml
+fi
 
 echo -e "\033[33m"
 echo "Setting permissions on portal folders...\033[37m"

@@ -68,11 +68,12 @@ echo -e "\033[37m"
 CheckPackage git
 CheckPackage build-essential
 CheckPackage debhelper
-CheckPackage tcl8.5-dev
+CheckPackage tcl8.6-dev
 CheckPackage autoconf
 CheckPackage python3-dev
-CheckPackage python-virtualenv
+CheckPackage python3-venv
 CheckPackage virtualenv
+CheckPackage dh-systemd
 
 # libz-dev appears to have been replaced by zlib1g-dev at least in Ubuntu Vivid Vervet...
 # Will need to check if this is the case with Raspbian and Debian as well.
@@ -101,7 +102,6 @@ else
     echo -e "\033[37m"
     git clone https://github.com/flightaware/piaware_builder.git
     cd $PIAWAREDIR
-    git checkout ${PIAWAREBRANCH}
 fi
 
 ## BUILD THE PIAWARE PACKAGE
@@ -109,8 +109,8 @@ fi
 echo -e "\033[33m"
 echo "Building the PiAware package..."
 echo -e "\033[37m"
-./sensible-build.sh
-cd $PIAWAREDIR/package
+./sensible-build.sh jessie
+cd $PIAWAREDIR/package-jessie
 dpkg-buildpackage -b
 
 ## INSTALL THE PIAWARE PACKAGE
@@ -118,7 +118,14 @@ dpkg-buildpackage -b
 echo -e "\033[33m"
 echo "Installing the PiAware package..."
 echo -e "\033[37m"
-sudo dpkg -i $PIAWAREDIR/piaware_${PIAWAREVERSION}_*.deb
+sudo dpkg -i $PIAWAREDIR/piaware_*.deb
+
+# Move the .deb package into another directory simply to keep it for historical reasons.
+if [ ! -d $PIAWAREDIR/packages ]; then
+    mkdir $PIAWAREDIR/packages
+fi
+mv $PIAWAREDIR/piaware_*.deb $PIAWAREDIR/packages/
+mv $PIAWAREDIR/piaware_*.changes $PIAWAREDIR/packages/
 
 ## CHECK THAT THE PACKAGE INSTALLED
 
@@ -148,21 +155,22 @@ echo "If you decide not to supply a login and password you should still be able 
 echo "feeder by visting the page http://flightaware.com/adsb/piaware/claim."
 echo -e "\033[37m"
 read -p "Your FlightAware Login: " FALOGIN
-sudo piaware-config -user $FALOGIN -password
+read -p "Your FlightAware Password: " FAPASSWD1
+read -p "Repeat Your FlightAware Password: " FAPASSWD2
 
-echo -e "\033[33m"
-printf "Setting PiAware to send MLAT results on port 30104..."
-ORIGINALFORMAT=`sudo piaware-config -show | grep mlatResultsFormat | sed 's/mlatResultsFormat //g'`
-MLATRESULTS=`sed 's/[{}]//g' <<< $ORIGINALFORMAT`
-CLEANFORMAT=`sed 's/beast,connect,localhost:30104//g' <<< $MLATRESULTS`
-FINALFORMAT="${CLEANFORMAT} beast,connect,localhost:30104" | sed -e 's/^[ \t]*//'
-# Make sure that the mlatResultsFormat setting is not left blank if no other settings exist..
-if [ -n "$FINALFORMAT" ]; then
-    sudo piaware-config -mlatResultsFormat "${FINALFORMAT}"
-else
-    sudo piaware-config -mlatResultsFormat "beast,connect,localhost:30104"
-fi
-echo -e "\033[32m [OK]"
+# Check that the supplied passwords match.
+while [ $FAPASSWD1 != $FAPASSWD2 ]; do
+    echo -e "\033[33m"
+    echo "The supplied passwords did not match."
+    echo -e "\033[37m"
+    read -p "Your FlightAware Password: " FAPASSWD1
+    read -p "Repeat Your FlightAware Password: " FAPASSWD2
+done
+echo ""
+
+# Set the supplied user name and password in the configuration.
+sudo piaware-config flightaware-user $FALOGIN
+sudo piaware-config flightaware-password $FAPASSWD1
 
 echo -e "\e[33m"
 echo "Restarting PiAware to ensure all changes are applied..."
