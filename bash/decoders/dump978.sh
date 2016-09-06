@@ -222,7 +222,6 @@ echo ""
 echo -e "\e[94m  Starting dump978 by executing the dump978 maintenance script...\e[97m"
 sudo $DUMP978BUILDDIRECTORY/dump978-maint.sh > /dev/null &
 
-
 ## DUMP978 SETUP COMPLETE
 
 # Enter into the project root directory.

@@ -36,7 +36,7 @@
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-PIAWAREBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/dump1090"
+PIAWAREBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/piaware_builder"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -106,84 +106,116 @@ else
     echo ""
 fi
 
-exit 0
+## BUILD AND INSTALL THE PIAWARE PACKAGE
 
-
-## BUILD THE PIAWARE PACKAGE
-
-echo -e "\033[33m"
-echo "Building the PiAware package..."
-echo -e "\033[37m"
+echo ""
+echo -e "\e[95m  Building and installing the PiAware package...\e[97m"
+echo ""
+if [ ! $PWD = $PIAWAREBUILDDIRECTORY ]; then
+    echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
+    cd $PIAWAREBUILDDIRECTORY
+fi
+echo -e "\e[94m  Executing the PiAware build script...\e[97m"
+echo ""
 ./sensible-build.sh jessie
-cd $PIAWAREDIR/package-jessie
+echo ""
+echo -e "\e[94m  Entering the PiAware build directory...\e[97m"
+cd $PIAWAREBUILDDIRECTORY/package-jessie
+echo -e "\e[94m  Building the PiAware package...\e[97m"
+echo ""
 dpkg-buildpackage -b
+echo ""
+echo -e "\e[94m  Installing the PiAware package...\e[97m"
+echo ""
+sudo dpkg -i $PIAWAREBUILDDIRECTORY/piaware_*.deb
 
-## INSTALL THE PIAWARE PACKAGE
-
-echo -e "\033[33m"
-echo "Installing the PiAware package..."
-echo -e "\033[37m"
-sudo dpkg -i $PIAWAREDIR/piaware_*.deb
+# Check that the PiAware package was installed successfully.
+echo ""
+echo -e "\e[94m  Checking that the piaware package was installed properly...\e[97m"
+if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    # If the piaware package could not be installed halt setup.
+    echo ""
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
+    echo -e "  SETUP HAS BEEN TERMINATED!"
+    echo ""
+    echo -e "\e[93mThe package \"piaware\" could not be installed.\e[39m"
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  PiAware setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
+fi
 
 # Move the .deb package into another directory simply to keep it for historical reasons.
-if [ ! -d $PIAWAREDIR/packages ]; then
-    mkdir $PIAWAREDIR/packages
+if [ ! -d $PIAWAREBUILDDIRECTORY/packages ]; then
+    echo -e "\e[94m  Making the PiAware package archive directory...\e[97m"
+    mkdir $PIAWAREBUILDDIRECTORY/packages
 fi
-mv $PIAWAREDIR/piaware_*.deb $PIAWAREDIR/packages/
-mv $PIAWAREDIR/piaware_*.changes $PIAWAREDIR/packages/
-
-## CHECK THAT THE PACKAGE INSTALLED
-
-if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    echo "\033[31m"
-    echo "#########################################"
-    echo "# INSTALLATION HALTED!                  #"
-    echo "# UNABLE TO INSTALL A REQUIRED PACKAGE. #"
-    echo "#########################################"
-    echo ""
-    echo "The piaware package did not install properly!"
-    echo -e "\033[33m"
-    echo "This script has exited due to the error encountered."
-    echo "Please read over the above output in order to determine what went wrong."
-    echo ""
-    kill -9 `ps --pid $$ -oppid=`; exit
-fi
+echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
+mv $PIAWAREBUILDDIRECTORY/piaware_*.deb $PIAWAREBUILDDIRECTORY/packages/
+echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
+mv $PIAWAREBUILDDIRECTORY/piaware_*.changes $PIAWAREBUILDDIRECTORY/packages/
 
 ## CONFIGURE FLIGHTAWARE
 
-echo -e "\033[31m"
-echo "CLAIM YOUR PIAWARE DEVICE"
-echo -e "\033[33m"
-echo "Please supply your FlightAware login in order to claim this device."
-echo "After supplying your login PiAware will ask you to enter your password for verification."
-echo "If you decide not to supply a login and password you should still be able to claim your"
-echo "feeder by visting the page http://flightaware.com/adsb/piaware/claim."
-echo -e "\033[37m"
-read -p "Your FlightAware Login: " FALOGIN
-read -p "Your FlightAware Password: " FAPASSWD1
-read -p "Repeat Your FlightAware Password: " FAPASSWD2
+whiptail --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
+# Ask for the users FlightAware login.
+FLIGHTAWARELOGIN=$(whiptail --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
+if [ ! $FLIGHTAWARELOGIN = "" ]; then
+    # If the user supplied their FlightAware login continue with the device claiming process.
+    FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
+    while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
+        FLIGHTAWAREPASSWORD1=$(whiptail --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+    done
+    FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password"
+    while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
+        FLIGHTAWAREPASSWORD2=$(whiptail --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+    done
+    while [ ! $FLIGHTAWAREPASSWORD1 = $FLIGHTAWAREPASSWORD2 ]; do
+        FLIGHTAWAREPASSWORD1=""
+        FLIGHTAWAREPASSWORD2=""
+        # Display an error message if the passwords did not match.
+        whiptail --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+        FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password (REQUIRED)"
+        while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
+            FLIGHTAWAREPASSWORD1=$(whiptail --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        done
+        FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password (REQUIRED)"
+        while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
+            FLIGHTAWAREPASSWORD2=$(whiptail --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        done
+    done
 
-# Check that the supplied passwords match.
-while [ $FAPASSWD1 != $FAPASSWD2 ]; do
-    echo -e "\033[33m"
-    echo "The supplied passwords did not match."
-    echo -e "\033[37m"
-    read -p "Your FlightAware Password: " FAPASSWD1
-    read -p "Repeat Your FlightAware Password: " FAPASSWD2
-done
+    # Set the supplied user name and password in the configuration.
+    echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
+    echo ""
+    sudo piaware-config flightaware-user $FLIGHTAWARELOGIN
+    echo ""
+    echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
+    echo ""
+    sudo piaware-config flightaware-password $FLIGHTAWAREPASSWORD1
+    echo ""
+    echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
+    echo ""
+    sudo /etc/init.d/piaware restart
+    echo ""
+else
+    # Display a message to the user stating they need to manually claim their device.
+    whiptail --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
+fi
+
+## PIAWARE SETUP COMPLETE
+
+# Enter into the project root directory.
+echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+cd $PROJECTROOTDIRECTORY
+
 echo ""
-
-# Set the supplied user name and password in the configuration.
-sudo piaware-config flightaware-user $FALOGIN
-sudo piaware-config flightaware-password $FAPASSWD1
-
-echo -e "\e[33m"
-echo "Restarting PiAware to ensure all changes are applied..."
-echo -e "\033[37m"
-sudo /etc/init.d/piaware restart
-
-echo -e "\033[33m"
-echo "Installation and configuration of PiAware is now complete."
-echo "Please look over the output generated to be sure no errors were encountered."
-echo -e "\033[37m"
+echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  PiAware setup is complete.\e[39m"
+echo ""
 read -p "Press enter to continue..." CONTINUE
+
+exit 0
