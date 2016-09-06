@@ -48,7 +48,7 @@ source $BASHDIRECTORY/functions.sh
 clear
 echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
 echo ""
-echo -e "\e[92m  Setting up FLightAware's PiAware..."
+echo -e "\e[92m  Setting up FlightAware's PiAware..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
 whiptail --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 14 78
