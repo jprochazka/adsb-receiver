@@ -136,13 +136,14 @@ function InstallPlaneFinder() {
 
 # Download and install the Flightradar24 client package.
 function InstallFlightradar24() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the Flightradar24 client installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/feeders/flightradar24.sh
-    $BASHDIR/feeders/flightradar24.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/feeders/flightradar24.sh
+    $BASHDIRECTORY/feeders/flightradar24.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo ""
+        exit 1
+    fi
 }
 
 # Setup the ADS-B Exchange feed.

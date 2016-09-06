@@ -90,7 +90,7 @@ CheckPackage wget
 echo ""
 echo -e "\e[95m  Downloading the Plane Finder ADS-B Client package...\e[97m"
 echo ""
-# Create the plane finder build directory if it does not exist.
+# Create the planefinder build directory if it does not exist.
 if [ ! -d $PLANEFINDERBUILDDIRECTORY ]; then
     echo -e "\e[94m  Creating the Plane Finder ADS-B Client build directory...\e[97m"
     mkdir $PLANEFINDERBUILDDIRECTORY
@@ -126,6 +126,7 @@ else
         echo ""
         sudo dpkg -i --force-architecture $PLANEFINDERBUILDDIRECTORY/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     else
+        echo ""
         sudo dpkg -i $PLANEFINDERBUILDDIRECTORY/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     fi
 fi
