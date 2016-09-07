@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,125 +31,150 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=$PWD
-BASHDIR=$BUILDDIR/../bash
-HTMLDIR=$BUILDDIR/portal/html
+## VARIABLES
+
+PROJECTROOTDIRECTORY="$PWD"
+BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+
+## INCLUDE EXTERNAL SCRIPTS
+
+source $BASHDIRECTORY/variables.sh
+source $BASHDIRECTORY/functions.sh
+
+## BEGIN SETUP
+
+clear
+echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+echo ""
+echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
+echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo ""
+whiptail --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "" 12 78
+CONTINUESETUP=$?
+if [ $CONTINUESETUP = 1 ]; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  ADS-B Receiver Project Portal setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
+fi
+
+## GATHER NEEDED INFORMATION FROM THE USER
+
+# We will need to make sure Lighttpd is installed first before we go any further.
+echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
+echo ""
+CheckPackage lighttpd
 
 # Assign the Lighthttpd document root directory to a variable.
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
-INSTALLED="n"
-DRIVER="null"
+# Check if there is already an existing portal installation.
+PORTALINSTALLED=`-f $LIGHTTPDDOCUMENTROOT/classes/settings.class.php`
 
-source ../bash/functions.sh
+if [ $PORTALINSTALLED = TRUE ]; then
 
-clear
-
-echo -e "\033[31m"
-echo "-------------------------------------------"
-echo " Now ready to install ADS-B Portal."
-echo "-------------------------------------------"
-echo -e "\033[33mThe goal of the ADS-B Portal project is to create a very"
-echo "light weight easy to manage web interface for dump-1090 installations."
-echo "This project is at the moment very young with only a few of the planned"
-echo "features currently available at this time."
-echo ""
-echo "https://github.com/jprochazka/adsb-receiver"
-echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE
-
-clear
-
-## CHECK IF THE PORTAL HAS BEEN INSTALLED ALREADY
-
-if [ -f $DOCUMENTROOT/classes/settings.class.php ]; then
-    echo -e "\033[31m"
-    echo "It appears a previous verison of the portal has been installled."
-    echo -e "\033[33m"
-    echo "The files and packages making up your portal installation will"
-    echo "be updated. However you will still need to execute the PHP update"
-    echo "script to complete the upgrade process by simply visiting the portal"
-    echo -e "\033[37m"
-    read -p "Press enter to continue..." CONTINUE
-
-    # Set some needed variables to be used shortly.
-    INSTALLED="y"
-
-    DRIVER=`grep 'db_driver' $DOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-    HOST=`grep 'db_host' $DOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-
-    if [ $DRIVER != "xml" ]; then
-        ADVANCED="y"
-    else
-        ADVANCED="n"
-    fi
-
-    if [ $DRIVER == "sqlite" ]; then
-        DATABASEENGINE=2
-    else
-        DATABASEENGINE=1
-    fi
-
-    if [[ $HOST == "localhost" ]] || [[ $HOST == "127.0.0.1" ]]; then
-        LOCALDATABASE=1
-    else
-        LOCALDATABASE=2
-    fi
+    # ASSIGN USING EXISTING CONFIGURATION DATA
+    ADVANCED=""
+    DATABASEENGINE=""
 
 else
+    # Ask if advanced features should be enabled.
+    whiptail --title "ADS-B Receiver Portal Selection" --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 14 78
+    RESPONSE=$?
+    case $RESPONSE in
+        0) ADVANCED=TRUE;;
+        1) ADVANCED=FALSE;;
+    esac
 
-    ## ASK IF ADVANCED FEATURES ARE TO BE USED
+    if [ $ADVANCED = 1 ]; then
+        # Ask which type of database to use.
+        DATABASEENGINE=$(whiptail --title "Choose Database Type" --nocancel --menu "Choose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
+        if [ $DATABASEENGINE == "MySQL" ]; then
+            # Ask if the database server will be installed locally.
+            whiptail --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
+            RESPONSE=$?
+            case $RESPONSE in
+                0) LOCALMYSQLSERVER=TRUE;;
+                1) LOCALMYSQLSERVER=FALSE;;
+            esac
+            if [ $LOCALDATABASE = FALSE ]; then
+                # Ask for the remote MySQL servers hostname.
+                DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname"
+                while [[ -z $DATABASEHOSTNAME ]]; do
+                    DATABASEHOSTNAME=$(whiptail --title "$DATABASEHOSTNAME_TITLE" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
+                    DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname (REQUIRED)"
+                done
 
-    INSTALLED="n"
+                # Ask if the remote MySQL database already exists.
+                whiptail --title "Does MySQL Database Exist" --yesno "Has the database already been created?" 7 80
+                RESPONSE=$?
+                case $RESPONSE in
+                    0) DATABASEEXISTS=TRUE;;
+                    1) DATABASEEXISTS=FALSE;;
+                esac
 
-    echo -e "\033[31m"
-    echo "Do you wish to enable advanced features?"
-    echo -e "\033[33m"
-    echo "ADVANCED FEATURES ARE ONLY MEANT TO BE ENABLED BY THOSE HELPING TO DEVELOP THEM AND NOT FULLY SUPPORTED"
-    echo "ENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY"
-    echo ""
-    echo "By enabling advanced features the portal will log all flights seen as well as the path of the flight."
-    echo "This data is stored in either a MySQL or SQLite database. This will result in a lot more data being"
-    echo "stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before"
-    echo "selecting to enable these features."
-    echo -e "\033[31m"
-    echo "You have been warned."
-    echo -e "\033[37m"
-    read -p "Use portal with advanced features? [y/N] " ADVANCED
-
-    if [[ $ADVANCED =~ ^[yY]$ ]]; then
-        echo -e "\033[31m"
-        echo "Select Database Engine"
-        echo -e "\033[33m"
-        echo "  1) MySQL"
-        echo "  2) SQLLite"
-        echo -e "\033[37m"
-        read -p "Which database engine will be used? [1] " DATABASEENGINE
-
-        # Check if the user is using a remote MySQL database.
-        if [[ $DATABASEENGINE != 2 ]]; then
-            echo -e "\033[31m"
-            echo "Will the database be hosted locally on this device or remotely?"
-            echo -e "\033[33m"
-            echo "  1) Locally"
-            echo "  2) Remotely"
-            echo -e "\033[37m"
-            read -p "Where will the database hosted? [1] " LOCALDATABASE
+                # If the remote MySQL database does not exist ask for the MySQL administrator credentials.
+                if [ $DATABASEEXISTS = FALSE ]; then
+                    whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\n\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the remote MySQL server." 9 78
+                    DATABASEADMINUSER_TITLE="Remote MySQL Administrator User"
+                    while [[ -z $DATABASEADMINUSER ]]; do
+                        DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the remote MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
+                        DATABASEADMINUSER_TITLE="Remote MySQL Administrator User (REQUIRED)"
+                    done
+                    DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password"
+                    while [[ -z $DATABASEADMINPASSWORD1 ]]; do
+                        DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter the password for the remote MySQL adminitrator user." 8 78 3>&1 1>&2 2>&3)
+                        DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password (REQUIRED)"
+                    done
+                    DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password"
+                    while [[ -z $DATABASEADMINPASSWORD2 ]]; do
+                        DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm the password for the remote MySQL adminitrator user." 8 78 3>&1 1>&2 2>&3)
+                        DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password (REQUIRED)"
+                    done
+                    while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
+                        DATABASEADMINPASSWORD1=""
+                        DATABASEADMINPASSWORD2=""
+                        whiptail --title "" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                        DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password"
+                        while [[ -z $DATABASEADMINPASSWORD1 ]]; do
+                            DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter the password for the remote MySQL adminitrator user.." 8 78 3>&1 1>&2 2>&3)
+                            DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password (REQUIRED)"
+                        done
+                        DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password"
+                        while [[ -z $DATABASEADMINPASSWORD2 ]]; do
+                            DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm the password for the remote MySQL adminitrator user.." 8 78 3>&1 1>&2 2>&3)
+                             DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password (REQUIRED)"
+                        done
+                    done
+                fi
+            else
+                DATABASEHOSTNAME="localhost"
+            fi
+            DATABASENAME=$(whiptail --title "ADS-B Receiver Portal Database Name" --nocancel --inputbox "" 8 78 3>&1 1>&2 2>&3)
+            DATABASEUSER=$(whiptail --title "ADS-B Receiver Portal Database User" --nocancel --inputbox "" 8 78 3>&1 1>&2 2>&3)
+            DATABASEPASSWORD1=$(whiptail --title "ADS-B Receiver Portal Password" --nocancel --passwordbox "" 8 78 3>&1 1>&2 2>&3)
+            DATABASEPASSWORD2=$(whiptail --title "Confirm The ADS-B Receiver Portal Password" --nocancel --passwordbox "" 8 78 3>&1 1>&2 2>&3)
         fi
     fi
 fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\033[33m"
-echo "Installing packages needed to build and fulfill dependencies..."
-echo -e "\033[37m"
-CheckPackage cron
+# Performance graph dependencies.
 CheckPackage collectd-core
 CheckPackage rrdtool
-CheckPackage postfix
-CheckPackage lighttpd
+
+# Portal dependencies.
+CheckPackage libpython2.7
+CheckPackage python-pyinotify
 
 # Check if this is Ubuntu 16.04 LTS.
 # This needs optimized and made to recognize releases made after 16.04 as well.
@@ -167,336 +192,115 @@ else
     CheckPackage php5-json
 fi
 
-CheckPackage libpython2.7
-if [[ $ADVANCED =~ ^[yY]$ ]]; then
-    CheckPackage python-pyinotify
-    if [[ $DATABASEENGINE == 2 ]]; then
-        CheckPackage sqlite3
-
-        # Check if this is Ubuntu 16.04 LTS.
-        # This needs optimized and made to recognize releases made after 16.04 as well.
-        if [ -f /etc/lsb-release ]; then
-            . /etc/lsb-release
-            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
-                CheckPackage php7.0-sqlite
-            else
-                CheckPackage php5-sqlite
+# Install packages needed for advanced portal setups.
+if [ $ADVANCED = TRUE ]; then
+    case $DATABASEENGINE in
+        "MySQL")
+            if [ $LOCALMYSQLSERVER = TRUE ]; then
+                # Install MySQL locally.
+                CheckPackage mysql-server
             fi
-        else
-            CheckPackage php5-sqlite
-        fi
+            CheckPackage mysql-client
+            CheckPackage python-mysqldb
 
-    else
-       if [[ $LOCALDATABASE != 2 ]]; then
-           # Install MySQL locally.
-           CheckPackage mysql-server
-       fi
-       CheckPackage mysql-client
-       CheckPackage python-mysqldb
-
-        # Check if this is Ubuntu 16.04 LTS.
-        # This needs optimized and made to recognize releases made after 16.04 as well.
-        if [ -f /etc/lsb-release ]; then
-            . /etc/lsb-release
-            if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
-                CheckPackage php7.0-mysql
+            # Check if this is Ubuntu 16.04 LTS.
+            # This needs optimized and made to recognize releases made after 16.04 as well.
+            if [ -f /etc/lsb-release ]; then
+                . /etc/lsb-release
+                if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+                    CheckPackage php7.0-mysql
+                else
+                    CheckPackage php5-mysql
+                fi
             else
                 CheckPackage php5-mysql
             fi
-        else
-            CheckPackage php5-mysql
-        fi
+            ;;
+        "SQLite")
+            CheckPackage sqlite3
 
-    fi
-fi
-
-# Restart Lighttpd after installing the prerequisite packages. 
-echo -e "\033[33m" 
-echo -e "Restarting lighttpd...\033[37m" 
-sudo /etc/init.d/lighttpd restart 
-
-if [[ $INSTALLED == "n" ]]; then
-
-    ## CREATE THE DATABASE IF ADVANCED FEATURES WAS SELECTED
-
-    if [[ $ADVANCED =~ ^[yY]$ ]]; then
-        if [[ $DATABASEENGINE != 2 ]]; then
-            echo -e "\033[31m"
-            echo "Gathering Database Information"
-            echo -e "\033[33m"
-            echo "Please supply the information pertaining to the new password when asked."
-            echo ""
-            echo -e "\033[31mNOTE:"
-            echo "If the database will be hosted locally on this device a database will be"
-            echo "created automatically for you."
-            echo ""
-            echo "If you are hosting your database remotely YOU WILL NEED TO MANUALLY CREATE"
-            echo "THE DATABASE AND USER BEFORE PROCEEDING WITH THE INSTALLATION."
-            echo -e "\033[37m"
-
-            DATABASEHOST="localhost"
-            if [[ $LOCALDATABASE != 2 ]]; then
-                read -p "MySQL user login: [root] " DATABASEADMINUSER
-                read -p "Password for MySQL user: " DATABASEADMINPASSWORD
-                if [[ $LOCALDATABASE == "" ]]; then
-                   DATABASEADMINUSER="root"
+            # Check if this is Ubuntu 16.04 LTS.
+            # This needs optimized and made to recognize releases made after 16.04 as well.
+            if [ -f /etc/lsb-release ]; then
+                . /etc/lsb-release
+                if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+                    CheckPackage php7.0-sqlite
+                else
+                    CheckPackage php5-sqlite
                 fi
-
-                # Check that the supplied password is correct.
-                while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e ";" ; do
-                    echo ""
-                    echo -e "\033[31m"
-                    echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
-                    read -p "MySQL user login: [root] " DATABASEADMINUSER
-                    read -p "Password for MySQL user: " DATABASEADMINPASSWORD
-                    if [[ $LOCALDATABASE == "" ]]; then
-                        DATABASEADMINUSER="root"
-                    fi
-                done
-            fi
-            echo ""
-
-            if [[ $LOCALDATABASE == 2 ]]; then
-                # Ask for remote MySQL address if the database is hosted remotely.
-                read -p "MySQL Server Address: " DATABASEHOST
-            fi
-            read -p "Database Name: " DATABASENAME
-            read -p "Database User Name: " DATABASEUSER
-            read -p "Database User Password: " DATABASEPASSWORD
-            read -p "Confirm Database User Password: " CONFIRMDATABASEPASSWORD
-            while [ $DATABASEPASSWORD != $CONFIRMDATABASEPASSWORD ]; do
-                echo -e "\033[31m"
-                echo -e "The supplied database user passwords did not match.\033[37m"
-                read -p "Database User Password: " DATABASEPASSWORD
-                read -p "Confirm Database User Password: " CONFIRMDATABASEPASSWORD
-            done
-
-            if [[ $LOCALDATABASE == 2 ]]; then
-                # Check the connection to the remote MySQL server.
-                while ! mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -h ${DATABASEHOST}  -e ";" ; do
-                    echo -e "\033[31m"
-                    echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
-                    read -p "MySQL Server Address: " DATABASEHOST
-                    read -p "Database User Name: " DATABASEUSER
-                    read -p "Database User Password: " DATABASEPASSWORD
-                done
             else
-                # Create the database and user if running MySQL locally.
-                echo -e "\033[33m"
-                echo -e "Creating MySQL database and user...\033[37m"
-                mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
-                mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-                mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-                mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "FLUSH PRIVILEGES;"
+                CheckPackage php5-sqlite
             fi
-
-            echo -e "\033[31m"
-            echo "BE SURE TO WRITE THIS INFORMATION DOWN."
-            echo -e "\033[33m"
-            echo "This information will be needed in order to complete the installation of the portal."
-            echo ""
-            echo "Database Server: ${DATABASEHOST}"
-            echo "Database User: ${DATABASEUSER}"
-            echo "Database Password: ${DATABASEPASSWORD}"
-            echo "Database Name: ${DATABASENAME}"
-            echo -e "\033[37m"
-            read -p "Press enter to continue..." CONTINUE
-
-        fi
-
-        ## SETUP FLIGHT LOGGING SCRIPT
-
-        echo -e "\033[33m"
-        echo -e "Creating configuration file...\033[37m"
-        case $DATABASEENGINE in
-            "2")
-                tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
-{
-    "database":{"type":"sqlite",
-                "host":"",
-                "user":"",
-                "passwd":"",
-                "db":"${DOCUMENTROOT}/data/portal.sqlite"}
-}
-EOF
-                ;;
-            *)
-                tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
-{
-    "database":{"type":"mysql",
-                "host":"${DATABASEHOST}",
-                "user":"${DATABASEUSER}",
-                "passwd":"${DATABASEPASSWORD}",
-                "db":"${DATABASENAME}"}
-}
-EOF
-                 ;;
-        esac
-
-        # Create and set permissions on the flight logging and maintainance maintenance scripts.
-        PYTHONPATH=`which python`
-        tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
-#!/bin/sh
-while true
-  do
-    sleep 30
-        ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
-  done
-EOF
-        tee $BUILDDIR/portal/logging/maintenance-maint.sh > /dev/null <<EOF
-#!/bin/sh
-while true
-  do
-    sleep 30
-        ${PYTHONPATH} ${BUILDDIR}/portal/logging/maintenance.py
-  done
-EOF
-        chmod +x $BUILDDIR/portal/logging/flights-maint.sh
-        chmod +x $BUILDDIR/portal/logging/maintenance-maint.sh
-
-        # Add flight logging maintenance script to rc.local.
-        if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
-            echo -e "\033[33m"
-            echo -e "Adding flights-maint.sh startup line to rc.local...\033[37m"
-            lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-            ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
-        fi
-
-        # Add maintenance maintenance script to rc.local.
-        if ! grep -Fxq "${BUILDDIR}/portal/logging/maintenance-maint.sh &" /etc/rc.local; then
-            echo -e "\033[33m"
-            echo -e "Adding maintenance-maint.sh startup line to rc.local...\033[37m"
-            lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-            ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/maintenance-maint.sh &\n" /etc/rc.local
-        fi
-
-        # Start flight logging.
-        echo -e "\033[33m"
-        echo -e "Starting flight logging...\033[37m"
-        nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
-
-        # Start maintenance..
-        echo -e "\033[33m"
-        echo -e "Starting flight logging...\033[37m"
-        nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
-    fi
+            ;;
+    esac
 fi
+
+# Restart Lighttpd after installing the prerequisite packages.
+echo -e "\e[94m  Restarting Lighttpd...\e[97m"
+sudo /etc/init.d/lighttpd restart
+echo ""
 
 ## SETUP THE PORTAL WEBSITE
 
+echo ""
+echo -e "\e[95m  Setting up the web portal...\e[97m"
+echo ""
 
-
-if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
-    echo -e "\033[33m"
-    echo -e "Backing up XML data files...\033[37m"
-    sudo mv ${DOCUMENTROOT}/data/administrators.xml ${DOCUMENTROOT}/data/administrators.backup.xml
-    sudo mv ${DOCUMENTROOT}/data/blogPosts.xml ${DOCUMENTROOT}/data/blogPosts.backup.xml
-    sudo mv ${DOCUMENTROOT}/data/flightNotifications.xml ${DOCUMENTROOT}/data/flightNotifications.backup.xml
-    sudo mv ${DOCUMENTROOT}/data/settings.xml ${DOCUMENTROOT}/data/settings.backup.xml
+# If this is an existing Lite installation being upgraded backup the XML data files.
+if [ $PORTALINSTALLED = TRUE ] && [ $ADVANCED = FALSE ]; then
+    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/administrators.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/administrators.xml $LIGHTTPDDOCUMENTROOT/data/administrators.backup.xml
+    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml $LIGHTTPDDOCUMENTROOT/data/blogPosts.backup.xml
+    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml $LIGHTTPDDOCUMENTROOT/data/flightNotifications.backup.xml
+    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/settings.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/settings.xml $LIGHTTPDDOCUMENTROOT/data/settings.backup.xml
 fi
 
-echo -e "\033[33m"
-echo -e "Placing portal files in Lighttpd's root directory...\033[37m"
-sudo cp -R ${HTMLDIR}/* ${DOCUMENTROOT}
+echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"
+sudo cp -R $PORTALBUILDDIRECTORY/* $LIGHTTPDDOCUMENTROOT
 
-if [ $INSTALLED == "y" ] && [ $DRIVER == "xml" ]; then
-    echo -e "\033[33m"
-    echo -e "Restoring XML data files...\033[37m"
-    sudo rm -f ${DOCUMENTROOT}/data/administrators.xml
-    sudo rm -f ${DOCUMENTROOT}/data/blogPosts.xml
-    sudo rm -f ${DOCUMENTROOT}/data/flightNotifications.xml
-    sudo rm -f ${DOCUMENTROOT}/data/settings.xml
-    
-    sudo mv ${DOCUMENTROOT}/data/administrators.backup.xml ${DOCUMENTROOT}/data/administrators.xml
-    sudo mv ${DOCUMENTROOT}/data/blogPosts.backup.xml ${DOCUMENTROOT}/data/blogPosts.xml
-    sudo mv ${DOCUMENTROOT}/data/flightNotifications.backup.xml ${DOCUMENTROOT}/data/flightNotifications.xml
-    sudo mv ${DOCUMENTROOT}/data/settings.backup.xml ${DOCUMENTROOT}/data/settings.xml
+# If this is an existing installation being upgraded restore the original XML data files.
+if [ $PORTALINSTALLED = TRUE ] && [ $ADVANCED = FALSE ]; then
+    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/administrators.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/administrators.backup.xml $LIGHTTPDDOCUMENTROOT/data/administrators.xml
+    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/blogPosts.backup.xml $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml
+    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/flightNotifications.backup.xml $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml
+    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/settings.xml...\e[97m"
+    sudo mv $LIGHTTPDDOCUMENTROOT/data/settings.backup.xml $LIGHTTPDDOCUMENTROOT/data/settings.xml
 fi
 
-echo -e "\033[33m"
-echo "Setting permissions on portal folders...\033[37m"
-sudo chmod 777 ${DOCUMENTROOT}/graphs/
-sudo chmod 777 ${DOCUMENTROOT}/classes/
-sudo chmod 777 ${DOCUMENTROOT}/data/
-sudo chmod 666 ${DOCUMENTROOT}/data/*
+# Set the proper permissions on certain portal directories.
+echo -e "\e[94m  Making the directory $LIGHTTPDDOCUMENTROOT/graphs/ writable...\e[97m"
+sudo chmod 777 $LIGHTTPDDOCUMENTROOT/graphs/
+echo -e "\e[94m  Making the directory $LIGHTTPDDOCUMENTROOT/classes/ writable...\e[97m"
+sudo chmod 777 $LIGHTTPDDOCUMENTROOT/classes/
+echo -e "\e[94m  Making the directory $LIGHTTPDDOCUMENTROOT/data/ writable...\e[97m"
+sudo chmod 777 $LIGHTTPDDOCUMENTROOT/data/
+echo -e "\e[94m  Making the files contained within the directory $LIGHTTPDDOCUMENTROOT/data/ writable...\e[97m"
+sudo chmod 666 $LIGHTTPDDOCUMENTROOT/data/*
 
-echo -e "\033[33m"
-echo "Setting up performance graphs..."
-echo -e "\033[37m"
-chmod +x $BASHDIR/portal/graphs.sh
-$BASHDIR/portal/graphs.sh
-
-## CHECK IF DUMP978 HAS BEEN BUILT
-
-if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f $BUILDDIR/dump978/uat2esnt ] && [ -f $BUILDDIR/dump978/uat2json ]; then
-    echo -e "\033[33m"
-    echo -e "Configuring dump978 map...\033[37m"
-    # Check if the heywhatsthis.com range position file has already been downloaded.
-    if [ ! -f ${HTMLDIR}/dump978/upintheair.json ]; then
-        # Check if a heywhatsthat.com range file exists in the dump1090 HTML folder.
-        if [ -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
-            echo -e "\033[33m"
-            echo -e "Copying heywhatsthat.com range file from dump1090 installation...\033[37m"
-            sudo cp /usr/share/dump1090-mutability/html/upintheair.json ${HTMLDIR}/dump978/
-        else
-            echo -e "\033[33m"
-            echo "The dump978 map is able to display terrain limit rings using data obtained"
-            echo "from the website http://www.heywhatsthat.com. Some work will be required on your"
-            echo "part including visiting http://www.heywhatsthat.com and generating a new"
-            echo "panorama set to your location."
-            echo -e "\033[37m"
-            read -p "Do you wish to add terrain limit rings to the dump1090 map? [Y/n] " ADDTERRAINRINGS
-
-            if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then
-                echo -e "\033[31m"
-                echo "READ THE FOLLOWING INSTRUCTION CAREFULLY!"
-                echo -e "\033[33m"
-                echo "To set up terrain limit rings you will need to first generate a panorama on the website"
-                echo "heywhatsthat.com. To do so visit the following URL:"
-                echo ""
-                echo "  http://www.heywhatsthat.com"
-                echo ""
-                echo "Once the webpage has loaded click on the tab titled New panorama. Fill out the required"
-                echo "information in the form to the left of the map."
-                echo ""
-                echo "After submitting the form your request will be put into a queue to be generated shortly."
-                echo "You will be informed when the generation of your panorama has been completed."
-                echo ""
-                echo "Once generated visit your newly created panorama. Near the top left of the page you will"
-                echo "see a URL displayed which will point you to your newly created panorama. Within this URL's"
-                echo "query string you will see ?view=XXXXXXXX where XXXXXXXX is the identifier for this panorama."
-                echo "Enter below the letters and numbers making up the view identifier displayed there."
-                echo ""
-                echo "Positions for terrain rings for both 10,000 and 40,000 feet will be downloaded by this"
-                echo "script once the panorama has been generated and you are ready to continue."
-                echo -e "\033[37m"
-                read -p "Your heywhatsthat.com view identifier: " HEYWHATSTHATVIEWID
-                read -e -p "First ring altitude in meters (default 3048 meters or 10000 feet): " -i "3048" HEYWHATSTHATRINGONE
-                read -e -p "Second ring altitude in meters (default 12192 meters or 40000 feet): " -i "12192" HEYWHATSTHATRINGTWO
-
-                # Download the generated panoramas JSON data.
-                echo -e "\033[33m"
-                echo "Downloading JSON data pertaining to the panorama ID you supplied..."
-                echo -e "\033[37m"
-                sudo wget -O ${HTMLDIR}/dump978/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
-            fi
-        fi
+# Check if dump978 was setup.
+echo -e "\e[94m  Checking if dump978 was set up...\e[97m"
+if ! grep -q "$BUILDDIRECTORY/dump978/dump978-maint.sh &" /etc/rc.local; then
+    # Check if a heywhatsthat.com range file exists in the dump1090 HTML folder.
+    echo -e "\e[94m  Checking for the file upintheair.json in the dump1090 HTML folder...\e[97m"
+    if [ -f /usr/share/dump1090-mutability/html/upintheair.json ]; then
+        echo -e "\e[94m  Copying the file upintheair.json from the dump1090 HTML folder to the dump978 HTML folder...\e[97m"
+        sudo cp /usr/share/dump1090-mutability/html/upintheair.json $LIGHTTPDDOCUMENTROOT/dump978/
     fi
 fi
 
-echo -e "\033[33m"
-echo -e "Setting permissions on data files...\033[37m"
-sudo chmod 777 ${DOCUMENTROOT}/data/*.xml
-
-echo -e "\033[33m"
-echo -e "Removing conflicting redirect from the Lighttpd dump1090.conf file...\033[37m"
+echo -e "\e[94m  Removing conflicting redirects from the Lighttpd dump1090.conf file...\e[97m"
 # Remove this line completely.
 sudo sed -i "/$(echo '  "^/dump1090$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/d" /etc/lighttpd/conf-available/89-dump1090.conf
 # Remove the trailing coma from this line.
 sudo sed -i "s/$(echo '"^/dump1090/$" => "/dump1090/gmap.html",' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/$(echo '"^/dump1090/$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/g"  /etc/lighttpd/conf-available/89-dump1090.conf
 
-echo -e "\033[33m"
-echo -e "Configuring Lighttpd...\033[37m"
+echo -e "\e[94m  Adding the Lighttpd portal configuration file...\e[97m"
 sudo tee /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 # Block all access to the data directory accept for local requests.
 \$HTTP["remoteip"] !~ "127.0.0.1" {
@@ -506,47 +310,71 @@ sudo tee /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 }
 EOF
 
-echo -e "\033[33m"
-echo -e "Enabling Lighttpd portal configuration...\033[37m"
-sudo ln -s /etc/lighttpd/conf-available/89-adsb-portal.conf /etc/lighttpd/conf-enabled/89-adsb-portal.conf
-
-echo -e "\033[33m"
-echo -e "Enabling the Lighttpd fastcgi-php module...\033[37m"
-sudo lighty-enable-mod fastcgi-php
-
-echo -e "\033[33m"
-if pgrep "lighttpd" > /dev/null; then
-    echo "Reloading Lighttpd..."
-    echo -e "\033[37m"
-    sudo /etc/init.d/lighttpd force-reload
-else
-    echo "Starting Lighttpd..."
-    echo -e "\033[37m"
-    sudo /etc/init.d/lighttpd start
+if ! [ -L /etc/lighttpd/conf-enabled/89-adsb-portal.conf ]; then
+    echo -e "\e[94m  Enabling the Lighttpd portal configuration file...\e[97m"
+    sudo ln -s /etc/lighttpd/conf-available/89-adsb-portal.conf /etc/lighttpd/conf-enabled/89-adsb-portal.conf
 fi
 
-## SETUP COMPLETE
+if [ $PORTALINSTALLED = FALSE ]; then
+    echo -e "\e[94m  Enabling the Lighttpd fastcgi-php module...\e[97m"
+    sudo lighty-enable-mod fastcgi-php
+fi
 
-echo -e "\033[33m"
-echo "Installation and configuration of the performance graphs is now complete."
-echo "Please look over the output generated to be sure no errors were encountered."
-echo -e "\033[37m"
+# Reload or start Lighttpd.
+if pgrep "lighttpd" > /dev/null; then
+    echo -e "\e[94m  Reloading Lighttpd...\e[97m"
+    echo ""
+    sudo /etc/init.d/lighttpd force-reload
+else
+    echo -e "\e[94m  Starting Lighttpd...\e[97m"
+    echo ""
+    sudo /etc/init.d/lighttpd start
+fi
+echo ""
+
+## SEUP THE MYSQL DATABASE
+
+if [ $PORTALINSTALLED = FALSE ] && [ $ADVANCED = TRUE ] && [ $DATABASEENGINE = "MySQL" ] && [ $DATABASEEXISTS = FALSE ]; then
+    echo -e "\e[94m  Creating the MySQL database \"$DATABASENAME\"...\e[97m"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "CREATE DATABASE $DATABASENAME;"
+    echo -e "\e[94m  Creating the MySQL user \"$DATABASEUSER\"...\e[97m"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "CREATE USER '$DATABASEUSER'@'localhost' IDENTIFIED BY \"$DATABASEPASSWORD1\";"
+    echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"$DATABASEUSER\"...\e[97m"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "GRANT ALL PRIVILEGES ON $DATABASENAME.* TO '$DATABASEUSER'@'localhost';"
+    echo -e "\e[94m  Flushing priviledges on the MySQL database server...\e[97m"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "FLUSH PRIVILEGES;"
+fi
+
+## SETUP THE PERFORMANCE GRAPHS USING THE SCRIPT GRAPHS.SH
+
+chmod +x $BASHDIRECTORY/portal/graphs.sh
+$BASHDIRECTORY/portal/graphs.sh
+if [ $? -ne 0 ]; then
+    echo ""
+    echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AND ERROR"
+    echo ""
+    exit 1
+fi
+
+## SETUP FLIGHT LOGGING USING THE SCRIPT LOGGING.SH
+
+if [ $ADVANCED = TRUE ]; then
+    chmod +x $BASHDIRECTORY/portal/logging.sh
+    $BASHDIRECTORY/portal/logging.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "\e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AND ERROR"
+        echo ""
+        exit 1
+    fi
+fi
+
+## ADS-B RECEIVER PROJECT PORTAL SETUP COMPLETE
+
+echo ""
+echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  ADS-B Receiver Project Portal setup is complete.\e[39m"
+echo ""
 read -p "Press enter to continue..." CONTINUE
 
-clear
-
-# This assigns the first IP address in the list to the $IPADDRESS variable.
-IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
-
-# Display further portal setup instructions.
-echo -e "\033[31m"
-echo "PORTAL SETUP IS NOT YET COMPLETE"
-echo -e "\033[33m"
-echo "In order to complete the portal setup process visit the following URL in your favorite web browser."
-echo ""
-echo "http://${IPADDRESS}/install/"
-echo ""
-echo "Enter the requested information and submit the form to complete the portal setup."
-echo "It is recomended that after setting up the portal you delete the install directory."
-echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE
+exit 0
