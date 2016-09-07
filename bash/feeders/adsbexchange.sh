@@ -206,17 +206,17 @@ echo -e "\e[94m  Setting file permissions for adsbexchange-mlat_maint.sh...\e[97
 sudo chmod +x $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh
 
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "$ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
 fi
 
 echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "$ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
 fi
 
 ## START THE MLAT-CLIENT AND NETCAT FEED
