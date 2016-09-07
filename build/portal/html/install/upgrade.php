@@ -234,7 +234,7 @@
     if ($common->getSetting("version") == "2.0.3") {
         try {
 
-            // Add the positions.aircraft column if using "SQL" storeage.
+            // Add the positions.aircraft column if using "SQL" storage.
             if ($settings::db_driver != "xml") {
 
                 if ($settings::db_driver == "sqlite") {
@@ -245,11 +245,13 @@
                     // Add the column positions.aircraft.
                     $dbh = $common->pdoOpen();
 
-                    $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft INTEGER";
-                    $sth = $dbh->prepare($sql);
-                    $sth->execute();
-                    $sth = NULL;
-                    $dbh = NULL;
+                    if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."positions` LIKE 'aircraft'")->fetchAll())) {
+                        $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft INTEGER";
+                        $sth = $dbh->prepare($sql);
+                        $sth->execute();
+                        $sth = NULL;
+                        $dbh = NULL;
+                    }
 
                     // Add FAA database tables.
                     $faaMasterSql = 'CREATE TABLE '.$dbPrefix.'faa_master (
@@ -323,18 +325,13 @@
 
                 if ($settings::db_driver == "mysql") {
 
-                    // Added check to see if column already exists.
+                    // set positions.aircraft to BIGINT.
                     $dbh = $common->pdoOpen();
-                    if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."positions` LIKE 'aircraft'")->fetchAll())) {
-                        //$dbh = $common->pdoOpen();
-                        $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft BIGINT";
-                        $sth = $dbh->prepare($sql);
-                        $sth->execute();
-                        $sth = NULL;
-                        //$dbh = NULL;
-                    }
+                    $sql = "ALTER TABLE ".$settings::db_prefix."positions MODIFY aircraft BIGINT";
+                    $sth = $dbh->prepare($sql);
+                    $sth->execute();
+                    $sth = NULL;
                     $dbh = NULL;
-
                 }
             }
             $common->updateSetting("version", "2.1.0");
