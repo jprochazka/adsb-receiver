@@ -39,7 +39,7 @@ BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 PLANEFINDERBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/planefinder"
 DEVICEIPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
-### INCLUDE EXTERNAL SCRIPTS
+## INCLUDE EXTERNAL SCRIPTS
 
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
