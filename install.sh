@@ -37,8 +37,8 @@
 ## VARIABLES
 
 PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PWD/bash"
-BUILDDIRECTORY="$PWD/build"
+BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -56,10 +56,13 @@ fi
 
 ## FUNCTIONS
 
+PROJECTTITLE="\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+TERMINATEDMESSAGE="\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+
 # UPDATE REPOSITORY PACKAGE LISTS
 function AptUpdate() {
     clear
-    echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+    echo -e $PROJECTTITLE
     echo ""
     echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
@@ -75,7 +78,7 @@ function AptUpdate() {
 # UPDATE THE OPERATING SYSTEM
 function UpdateOperatingSystem() {
     clear
-    echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+    echo -e $PROJECTTITLE
     echo ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
@@ -94,7 +97,7 @@ function InstallDump1090() {
     $BASHDIRECTORY/decoders/dump1090-mutability.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo -e $TERMINATEDMESSAGE
         echo ""
         exit 1
     fi
@@ -106,7 +109,7 @@ function InstallDump978() {
     $BASHDIRECTORY/decoders/dump978.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo -e $TERMINATEDMESSAGE
         echo ""
         exit 1
     fi
@@ -118,7 +121,7 @@ function InstallPiAware() {
     $BASHDIRECTORY/feeders/piaware.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo -e $TERMINATEDMESSAGE
         echo ""
         exit 1
     fi
@@ -130,7 +133,7 @@ function InstallPlaneFinder() {
     $BASHDIRECTORY/feeders/planefinder.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo -e $TERMINATEDMESSAGE
         echo ""
         exit 1
     fi
@@ -142,7 +145,7 @@ function InstallFlightradar24() {
     $BASHDIRECTORY/feeders/flightradar24.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo -e $TERMINATEDMESSAGE
         echo ""
         exit 1
     fi
@@ -154,7 +157,7 @@ function InstallAdsbExchange() {
     $BASHDIRECTORY/feeders/adsbexchange.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo -e $TERMINATEDMESSAGE
         echo ""
         exit 1
     fi
@@ -162,21 +165,26 @@ function InstallAdsbExchange() {
 
 # Setup and execute the web portal installation scripts.
 function InstallWebPortal() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the web portal installation scripts..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/portal/install.sh
-    $BASHDIR/portal/install.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/portal/install.sh
+    $BASHDIRECTORY/portal/install.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
+
+
+AptUpdate
+
+# Check that whiptail is installed.
+clear
+CheckPackage whiptail
 
 
 #############
 ## WHIPTAIL
-
-# Check that whiptail is installed.
-CheckPackage whiptail
 
 ##
 ## MESSAGES
@@ -374,7 +382,7 @@ else
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
+if ! grep -q "$BUILDDIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
     # The ADS-B Exchange maintainance script does not appear to be executed on start up.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
@@ -504,8 +512,6 @@ fi
 ## BEGIN SETUP
 
 ## System updates.
-
-AptUpdate
 
 if [ $UPDATEOS = 0 ]; then
     UpdateOperatingSystem
