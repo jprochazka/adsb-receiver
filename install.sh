@@ -40,6 +40,8 @@ PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PWD/bash"
 BUILDDIRECTORY="$PWD/build"
 
+## INCLUDE EXTERNAL SCRIPTS
+
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
@@ -148,13 +150,14 @@ function InstallFlightradar24() {
 
 # Setup the ADS-B Exchange feed.
 function InstallAdsbExchange() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/feeders/adsbexchange.sh
-    $BASHDIR/feeders/adsbexchange.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/feeders/adsbexchange.sh
+    $BASHDIRECTORY/feeders/adsbexchange.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+        echo ""
+        exit 1
+    fi
 }
 
 # Setup and execute the web portal installation scripts.
