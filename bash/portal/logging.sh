@@ -36,6 +36,7 @@
 PROJECTROOTDIRECTORY="$PWD"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+DATABASEENGINE=`grep 'db_driver' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
 PYTHONPATH=`which python`
 
 ## SETUP FLIGHT LOGGING
@@ -45,7 +46,7 @@ echo -e "\e[95m  Setting up flight logging...\e[97m"
 echo ""
 
 case $DATABASEENGINE in
-    "MySQL")
+    "mysql")
         echo -e "\e[94m  Creating the flight logging configuration file for MySQL...\e[97m"
         tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
 {
@@ -57,7 +58,7 @@ case $DATABASEENGINE in
 }
 EOF
             ;;
-    "SQLite")
+    "sqlite")
         echo -e "\e[94m  Creating the flight logging configuration file for SQLite...\e[97m"
         tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
 {
@@ -131,3 +132,5 @@ nohup $PORTALBUILDDIRECTORY/logging/flights-maint.sh > /dev/null 2>&1 &
 # Start maintenance..
 echo -e "\e[94m  Executing the maintenance maintenance script...\e[97m"
 nohup $PORTALBUILDDIRECTORY/portal/logging/flights-maint.sh > /dev/null 2>&1 &
+
+exit 0
