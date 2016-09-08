@@ -51,7 +51,7 @@ echo ""
 echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-whiptail --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "" 12 78
+whiptail --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
 CONTINUESETUP=$?
 if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
@@ -77,27 +77,33 @@ RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep ser
 LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
 # Check if there is already an existing portal installation.
-PORTALINSTALLED=`-f $LIGHTTPDDOCUMENTROOT/classes/settings.class.php`
+if [ -f $LIGHTTPDDOCUMENTROOT/classes/settings.class.php ]; then
+    PORTALINSTALLED=TRUE
+else
+    PORTALINSTALLED=FALSE
+fi
 
 if [ $PORTALINSTALLED = TRUE ]; then
-
-    # ASSIGN USING EXISTING CONFIGURATION DATA
-    ADVANCED=""
-    DATABASEENGINE=""
-
+    # Assign needed variables using the driver setting in settings.class.php.
+    DATABASEENGINE=`grep 'db_driver' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+    if [ $DATABASEENGINE = "xml" ]; then
+        ADVANCED=FALSE
+    else
+        ADVANCED=TRUE
+    fi
 else
     # Ask if advanced features should be enabled.
-    whiptail --title "ADS-B Receiver Portal Selection" --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 14 78
+    whiptail --title "ADS-B Receiver Portal Selection" --defaultno --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 19 78
     RESPONSE=$?
     case $RESPONSE in
         0) ADVANCED=TRUE;;
         1) ADVANCED=FALSE;;
     esac
 
-    if [ $ADVANCED = 1 ]; then
+    if [ $ADVANCED = TRUE ]; then
         # Ask which type of database to use.
-        DATABASEENGINE=$(whiptail --title "Choose Database Type" --nocancel --menu "Choose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
-        if [ $DATABASEENGINE == "MySQL" ]; then
+        DATABASEENGINE=$(whiptail --title "Choose Database Type" --nocancel --menu "\nChoose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
+        if [ $DATABASEENGINE = "MySQL" ]; then
             # Ask if the database server will be installed locally.
             whiptail --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
             RESPONSE=$?
@@ -105,7 +111,7 @@ else
                 0) LOCALMYSQLSERVER=TRUE;;
                 1) LOCALMYSQLSERVER=FALSE;;
             esac
-            if [ $LOCALDATABASE = FALSE ]; then
+            if [ $LOCALMYSQLSERVER = FALSE ]; then
                 # Ask for the remote MySQL servers hostname.
                 DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname"
                 while [[ -z $DATABASEHOSTNAME ]]; do
@@ -120,48 +126,85 @@ else
                     0) DATABASEEXISTS=TRUE;;
                     1) DATABASEEXISTS=FALSE;;
                 esac
-
                 # If the remote MySQL database does not exist ask for the MySQL administrator credentials.
                 if [ $DATABASEEXISTS = FALSE ]; then
-                    whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\n\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the remote MySQL server." 9 78
+                    whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the remote MySQL server." 8 78
                     DATABASEADMINUSER_TITLE="Remote MySQL Administrator User"
-                    while [[ -z $DATABASEADMINUSER ]]; do
+                    while [ -z "$DATABASEADMINUSER" ]; do
                         DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the remote MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
                         DATABASEADMINUSER_TITLE="Remote MySQL Administrator User (REQUIRED)"
                     done
                     DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password"
-                    while [[ -z $DATABASEADMINPASSWORD1 ]]; do
-                        DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter the password for the remote MySQL adminitrator user." 8 78 3>&1 1>&2 2>&3)
+                    DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the remote MySQL adminitrator user."
+                    while [ -z "$DATABASEADMINPASSWORD1" ]; do
+                        DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password (REQUIRED)"
                     done
                     DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password"
-                    while [[ -z $DATABASEADMINPASSWORD2 ]]; do
-                        DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm the password for the remote MySQL adminitrator user." 8 78 3>&1 1>&2 2>&3)
+                    DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the remote MySQL adminitrator user."
+                    while [ -z "$DATABASEADMINPASSWORD2" ]; do
+                        DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password (REQUIRED)"
                     done
                     while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
                         DATABASEADMINPASSWORD1=""
                         DATABASEADMINPASSWORD2=""
-                        whiptail --title "" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                        whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
                         DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password"
-                        while [[ -z $DATABASEADMINPASSWORD1 ]]; do
-                            DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter the password for the remote MySQL adminitrator user.." 8 78 3>&1 1>&2 2>&3)
+                        while [ -z "$DATABASEADMINPASSWORD1" ]; do
+                            DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                             DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password (REQUIRED)"
                         done
                         DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password"
-                        while [[ -z $DATABASEADMINPASSWORD2 ]]; do
-                            DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm the password for the remote MySQL adminitrator user.." 8 78 3>&1 1>&2 2>&3)
-                             DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password (REQUIRED)"
+                        while [ -z "$DATABASEADMINPASSWORD2" ]; do
+                            DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                            DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password (REQUIRED)"
                         done
                     done
                 fi
             else
+                # Since the MySQL database server will run locally assign localhost as it's hostname.
                 DATABASEHOSTNAME="localhost"
             fi
-            DATABASENAME=$(whiptail --title "ADS-B Receiver Portal Database Name" --nocancel --inputbox "" 8 78 3>&1 1>&2 2>&3)
-            DATABASEUSER=$(whiptail --title "ADS-B Receiver Portal Database User" --nocancel --inputbox "" 8 78 3>&1 1>&2 2>&3)
-            DATABASEPASSWORD1=$(whiptail --title "ADS-B Receiver Portal Password" --nocancel --passwordbox "" 8 78 3>&1 1>&2 2>&3)
-            DATABASEPASSWORD2=$(whiptail --title "Confirm The ADS-B Receiver Portal Password" --nocancel --passwordbox "" 8 78 3>&1 1>&2 2>&3)
+
+            # Get the login information pertaining to the MySQL database itself.
+            DATABASENAME_TITLE="ADS-B Receiver Portal Database Name"
+            while [ -z "$DATABASENAME" ]; do
+                DATABASENAME=$(whiptail --title "$DATABASENAME_TITLE" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
+                DATABASENAME_TITLE="ADS-B Receiver Portal Database Name (REQUIRED)"
+            done
+            DATABASEUSER_TITLE="ADS-B Receiver Portal Database User"
+            while [ -z "$DATABASEUSER" ]; do
+                DATABASEUSER=$(whiptail --title "$DATABASEUSER_TITLE" --nocancel --inputbox "\nEnter the user for the ADS-B Receiver Portal database." 8 78 3>&1 1>&2 2>&3)
+                DATABASEUSER_TITLE="ADS-B Receiver Portal Database User (REQUIRED)"
+            done
+            DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
+            DATABASEPASSWORD1_MESSAGE="\nEnter your ADS-B Receiver Portal database password."
+            while [ -z "$DATABASEPASSWORD1" ]; do
+                DATABASEPASSWORD1=$(whiptail --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
+            done
+            DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
+            DATABASEPASSWORD2_MESSAGE="\nConfirm your ADS-B Receiver Portal database password."
+            while [ -z "$DATABASEPASSWORD2" ]; do
+                DATABASEPASSWORD2=$(whiptail --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
+            done
+            while [ ! $DATABASEPASSWORD1 = $DATABASEPASSWORD2 ]; do
+                DATABASEPASSWORD1=""
+                DATABASEPASSWORD2=""
+                whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
+                while [ -z "$DATABASEPASSWORD1" ]; do
+                    DATABASEPASSWORD1=$(whiptail --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
+                done
+                DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
+                while [ -z "$DATABASEPASSWORD2" ]; do
+                    DATABASEPASSWORD2=$(whiptail --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
+                done
+            done
         fi
     fi
 fi
@@ -180,7 +223,7 @@ CheckPackage python-pyinotify
 # This needs optimized and made to recognize releases made after 16.04 as well.
 if [ -f /etc/lsb-release ]; then
     . /etc/lsb-release
-    if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+    if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04" ]; then
         CheckPackage php7.0-cgi
         CheckPackage php7.0-xml
     else
@@ -235,10 +278,10 @@ if [ $ADVANCED = TRUE ]; then
     esac
 fi
 
-# Restart Lighttpd after installing the prerequisite packages.
-echo -e "\e[94m  Restarting Lighttpd...\e[97m"
-sudo /etc/init.d/lighttpd restart
+# Reload Lighttpd after installing the prerequisite packages.
+echo -e "\e[94m  Reloading Lighttpd...\e[97m"
 echo ""
+sudo /etc/init.d/lighttpd force-reload
 
 ## SETUP THE PORTAL WEBSITE
 
@@ -259,7 +302,7 @@ if [ $PORTALINSTALLED = TRUE ] && [ $ADVANCED = FALSE ]; then
 fi
 
 echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"
-sudo cp -R $PORTALBUILDDIRECTORY/* $LIGHTTPDDOCUMENTROOT
+sudo cp -R $PORTALBUILDDIRECTORY/html/* $LIGHTTPDDOCUMENTROOT
 
 # If this is an existing installation being upgraded restore the original XML data files.
 if [ $PORTALINSTALLED = TRUE ] && [ $ADVANCED = FALSE ]; then
@@ -317,7 +360,9 @@ fi
 
 if [ $PORTALINSTALLED = FALSE ]; then
     echo -e "\e[94m  Enabling the Lighttpd fastcgi-php module...\e[97m"
+    echo ""
     sudo lighty-enable-mod fastcgi-php
+    echo ""
 fi
 
 # Reload or start Lighttpd.
@@ -330,7 +375,6 @@ else
     echo ""
     sudo /etc/init.d/lighttpd start
 fi
-echo ""
 
 ## SEUP THE MYSQL DATABASE
 
@@ -370,6 +414,9 @@ if [ $ADVANCED = TRUE ]; then
 fi
 
 ## ADS-B RECEIVER PROJECT PORTAL SETUP COMPLETE
+
+# Display final portal setup instructions to the user.
+
 
 echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"

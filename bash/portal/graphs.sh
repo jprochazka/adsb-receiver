@@ -47,9 +47,11 @@ echo ""
 
 echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurments...\e[97m"
 sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
-echo -e "\e[94m  Restarting dump1090-mutability...\e[97m"
+echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
+sudo systemctl daemon-reload
+echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
 echo ""
-sudo /etc/init.d/dump1090-mutability restart
+sudo /etc/init.d/dump1090-mutability force-reload
 echo ""
 
 ## BACKUP AND REPLACE COLLECTD.CONF
@@ -192,7 +194,9 @@ EOF
 ## RELOAD COLLECTD
 
 echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
+echo ""
 sudo /etc/init.d/collectd force-reload
+echo ""
 
 ## EDIT CRONTAB
 
