@@ -39,21 +39,6 @@ SiteLat     = 45.0;            // position of the marker
 SiteLon     = 9.0;
 SiteName    = "My Radar Site"; // tooltip of the marker
 
-
-// Extra map types to include. These work for maps with 256x256 tiles where a
-// URL can be constructed by simple substition of x/y tile number and zoom level
-var ExtraMapTypes = {
-        'OpenStreetMap'    : 'http://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        // NB: the following generally only cover the US
-        'Sectional Charts' : 'http://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png?origin=nw',
-        'Terminal Charts'  : 'http://wms.chartbundle.com/tms/1.0.0/tac/{z}/{x}/{y}.png?origin=nw',
-        'World Charts'     : 'http://wms.chartbundle.com/tms/1.0.0/wac/{z}/{x}/{y}.png?origin=nw',
-        'IFR Low Charts'   : 'http://wms.chartbundle.com/tms/1.0.0/enrl/{z}/{x}/{y}.png?origin=nw',
-        'IFR Area Charts'  : 'http://wms.chartbundle.com/tms/1.0.0/enra/{z}/{x}/{y}.png?origin=nw',
-        'IFR High Charts'  : 'http://wms.chartbundle.com/tms/1.0.0/enrh/{z}/{x}/{y}.png?origin=nw'
-};
-
-
 // -- Marker settings -------------------------------------
 
 // These settings control the coloring of aircraft by altitude.
@@ -127,3 +112,24 @@ ShowFlags = true;
 
 // Path to country flags (can be a relative or absolute URL; include a trailing /)
 FlagPath = "flags-tiny/";
+
+// Set to true to enable the ChartBundle base layers (US coverage only)
+ChartBundleLayers = true;
+
+// Provide a Bing Maps API key here to enable the Bing imagery layer.
+// You can obtain a free key (with usage limits) at
+// https://www.bingmapsportal.com/ (you need a "basic key")
+//
+// Be sure to quote your key:
+//   BingMapsAPIKey = "your key here";
+//
+BingMapsAPIKey = null;
+
+// Provide a Mapzen API key here to enable the Mapzen vector tile layer.
+// You can obtain a free key at https://mapzen.com/developers/
+// (you need a "vector tiles" key)
+//
+// Be sure to quote your key:
+//   MapzenAPIKey = "your key here";
+//
+MapzenAPIKey = null;
