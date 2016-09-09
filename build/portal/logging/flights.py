@@ -36,9 +36,7 @@
 # 3) Update the last time the flight was seen.
 
 import datetime
-import inotify.adapters
 import json
-import re
 import time
 import os
 #import urllib2
@@ -62,7 +60,7 @@ class FlightsProcessor(object):
         self.config = config
         self.dbType = config["database"]["type"]
         # List of required keys for position data entries
-        self.position_keys = ('lat', 'lon', 'altitude', 'speed', 'track', 'vert_rate')
+        self.position_keys = ('lat', 'lon', 'altitude', 'speed', 'track', 'vert_rate', 'hex')
 
     def setupDBStatements(self, formatSymbol):
         if hasattr(self, 'STMTS'):
@@ -76,8 +74,8 @@ class FlightsProcessor(object):
             'select_position':      "SELECT message FROM adsb_positions WHERE flight = %(s)s AND message = %(s)s ORDER BY time DESC LIMIT 1" % mapping,
             'insert_aircraft':      "INSERT INTO adsb_aircraft (icao, firstSeen, lastSeen) VALUES (%(s)s, %(s)s, %(s)s)" % mapping,
             'insert_flight':        "INSERT INTO adsb_flights (aircraft, flight, firstSeen, lastSeen) VALUES (%(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
-            'insert_position_sqwk': "INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
-            'insert_position':      "INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_position_sqwk': "INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_position':      "INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
             'update_aircraft_seen': "UPDATE adsb_aircraft SET lastSeen = %(s)s WHERE icao = %(s)s" % mapping,
             'update_flight_seen':   "UPDATE adsb_flights SET aircraft = %(s)s, lastSeen = %(s)s WHERE flight = %(s)s" % mapping
         }
@@ -155,6 +153,12 @@ class FlightsProcessor(object):
             self.processPositions(flight_id, aircraft)
 
     def processPositions(self, flight_id, aircraft):
+        # Get the ID of this aircraft.
+        hexcode = aircraft["hex"]
+        self.cursor.execute(self.STMTS['select_aircraft_id'], (hexcode,))
+        row = self.cursor.fetchone()
+        aircraft_id = row[0]
+
         # Check that this message has not already been added to the database.
         params = (flight_id, aircraft["messages"],)
         self.cursor.execute(self.STMTS['select_position'], params)
@@ -165,12 +169,12 @@ class FlightsProcessor(object):
             if aircraft.has_key('squawk'):
                 params = (flight_id, self.time_now, aircraft["messages"], aircraft["squawk"],
                             aircraft["lat"], aircraft["lon"], aircraft["track"],
-                            aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
+                            aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"], aircraft_id,)
                 self.cursor.execute(self.STMTS['insert_position_sqwk'], params)
                 log("\t\t\tInserted position w/ Squawk " + repr(params))
             else:
                 params = (flight_id, self.time_now, aircraft["messages"], aircraft["lat"], aircraft["lon"],
-                            aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"],)
+                            aircraft["track"], aircraft["altitude"], aircraft["vert_rate"], aircraft["speed"], aircraft_id,)
                 self.cursor.execute(self.STMTS['insert_position'], params)
                 log("\t\t\tInserted position w/o Squawk " + repr(params))
         else:
@@ -180,25 +184,17 @@ class FlightsProcessor(object):
 if __name__ == "__main__":
     processor = FlightsProcessor(config)
 
-    mutability_dir = '/run/dump1090-mutability/'
-    i = inotify.adapters.Inotify()
-    i.add_watch(mutability_dir)
-
     # Main run loop
-    for event in i.event_gen():
-        if event is not None:
-            (header, type_names, watch_path, filename) = event
-            if 'IN_MOVED_TO' in type_names and re.match('^history_\d+\.json$', filename):
+    while True:
+        # Read dump1090-mutability's aircraft.json.
+        with open('/run/dump1090-mutability/aircraft.json') as data_file:
+            data = json.load(data_file)
+        # For testing using a remote JSON feed.
+        #response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
+        #data = json.load(response)
 
-                # Read dump1090-mutability's aircraft.json.
-                #with open('/run/dump1090-mutability/aircraft.json') as data_file:
-                with open(mutability_dir + filename) as data_file:
-                    data = json.load(data_file)
-                # For testing using a remote JSON feed.
-                #response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
-                #data = json.load(response)
+        processor.processAircraftList(data["aircraft"])
 
-                processor.processAircraftList(data["aircraft"])
-
-                log("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S"))
+        log("Last Run: " + datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S"))
+        time.sleep(15)
 
