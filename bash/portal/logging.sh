@@ -39,6 +39,16 @@ PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
 DATABASEENGINE=`grep 'db_driver' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
 PYTHONPATH=`which python`
 
+## SETUP PYTHON
+
+# Install the Python inotify module using pip.
+echo ""
+echo -e "\e[95m  Setting up Python...\e[97m"
+echo ""
+echo -e "\e[94m  Installing the Python inotify module...\e[97m"
+echo ""
+sudo pip install inotify
+
 ## SETUP FLIGHT LOGGING
 
 echo ""

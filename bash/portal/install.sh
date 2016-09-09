@@ -276,6 +276,9 @@ if [ $ADVANCED = TRUE ]; then
             fi
             ;;
     esac
+
+    # Flight logging prerequisites.
+    CheckPackage python-pip
 fi
 
 # Reload Lighttpd after installing the prerequisite packages.
