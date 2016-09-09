@@ -131,13 +131,20 @@ else
                     1) DATABASEEXISTS=FALSE;;
                 esac
             else
+                # Install the MySQL serer now if it does not already exist.
+                whiptail --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time." 8 78
+                CheckPackage mysql-server
+
+                # Since this is a local installation assume the MySQL database does not already exist.
+                DATABASEEXISTS=FALSE
+
                 # Since the MySQL database server will run locally assign localhost as it's hostname.
                 DATABASEHOSTNAME="localhost"
             fi
 
             # Ask for the MySQL administrator credentials if the database does not already exist.
-            if [ $DATABASEEXISTS = FALSE ]; then
-                whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 8 78
+            if [ $LOCALMYSQLSERVER = TRUE ] || [ $DATABASEEXISTS = FALSE ]; then
+                whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 9 78
                 DATABASEADMINUSER_TITLE="MySQL Administrator User"
                 while [ -z "$DATABASEADMINUSER" ]; do
                     DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
@@ -173,6 +180,8 @@ else
             fi
 
             # Get the login information pertaining to the MySQL database itself.
+            whiptail --title "Create Remote MySQL Database" --msgbox "You will now be asked to supply the name of the database which will store the portal data as well as the login credentials for the MySQL user that has access to this database." 9 78
+
             DATABASENAME_TITLE="ADS-B Receiver Portal Database Name"
             while [ -z "$DATABASENAME" ]; do
                 DATABASENAME=$(whiptail --title "$DATABASENAME_TITLE" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
@@ -244,10 +253,6 @@ fi
 if [ $ADVANCED = TRUE ]; then
     case $DATABASEENGINE in
         "MySQL")
-            if [ $LOCALMYSQLSERVER = TRUE ]; then
-                # Install MySQL locally.
-                CheckPackage mysql-server
-            fi
             CheckPackage mysql-client
             CheckPackage python-mysqldb
 
@@ -381,17 +386,61 @@ else
     sudo /etc/init.d/lighttpd start
 fi
 
-## SEUP THE MYSQL DATABASE
+## SETUP THE MYSQL DATABASE
 
 if [ $PORTALINSTALLED = FALSE ] && [ $ADVANCED = TRUE ] && [ $DATABASEENGINE = "MySQL" ] && [ $DATABASEEXISTS = FALSE ]; then
+
+    # Attempt to login with the supplied MySQL administrator credentials.
+    echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
+    while ! mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME  -e ";" ; do
+        echo -e "\e[94m  Unable to log into the MySQL server using the supplied administrator credentials...\e[97m"
+        whiptail --title "Create Remote MySQL Database" --msgbox "The script was not able to log into the MySQL server using the administrator credentials you supplied. You will now be asked to reenter the MySQL server administrator credentials." 9 78
+        DATABASEADMINPASSWORD1=""
+        DATABASEADMINPASSWORD2=""
+        DATABASEADMINUSER_TITLE="MySQL Administrator User"
+        while [ -z "$DATABASEADMINUSER" ]; do
+            DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "$DATABASEADMINUSER" 3>&1 1>&2 2>&3)
+            DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
+        done
+        DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
+        DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
+        while [ -z "$DATABASEADMINPASSWORD1" ]; do
+            DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
+        done
+        DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
+        DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
+        while [ -z "$DATABASEADMINPASSWORD2" ]; do
+            DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
+        done
+        while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
+            DATABASEADMINPASSWORD1=""
+            DATABASEADMINPASSWORD2=""
+            whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+            DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
+            while [ -z "$DATABASEADMINPASSWORD1" ]; do
+                DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
+            done
+            DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
+            while [ -z "$DATABASEADMINPASSWORD2" ]; do
+                DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
+            done
+        done
+        echo -e "\e[94m  Attempting to log into the MySQL server using the new administrator credentials...\e[97m"
+    done
+
+    # Create the database use and database using the information supplied by the user.
     echo -e "\e[94m  Creating the MySQL database \"$DATABASENAME\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "CREATE DATABASE $DATABASENAME;"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "CREATE DATABASE $DATABASENAME;"
     echo -e "\e[94m  Creating the MySQL user \"$DATABASEUSER\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "CREATE USER '$DATABASEUSER'@'localhost' IDENTIFIED BY \"$DATABASEPASSWORD1\";"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "CREATE USER '$DATABASEUSER'@'localhost' IDENTIFIED BY \"$DATABASEPASSWORD1\";"
     echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"$DATABASEUSER\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "GRANT ALL PRIVILEGES ON $DATABASENAME.* TO '$DATABASEUSER'@'localhost';"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "GRANT ALL PRIVILEGES ON $DATABASENAME.* TO '$DATABASEUSER'@'localhost';"
     echo -e "\e[94m  Flushing priviledges on the MySQL database server...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD -h $DATABASEHOSTNAME -e "FLUSH PRIVILEGES;"
+    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "FLUSH PRIVILEGES;"
 fi
 
 ## SETUP THE PERFORMANCE GRAPHS USING THE SCRIPT GRAPHS.SH

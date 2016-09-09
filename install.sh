@@ -282,7 +282,7 @@ EOF
 ##
 
 # Display the welcome message.
-whiptail --backtitle "$BACKTITLE" --title "The ADS-B Receiver Project" --yesno "$WELCOME" 16 65
+whiptail --backtitle "$BACKTITLE" --title "The ADS-B Receiver Project" --yesno "$WELCOME" 14 65
 BEGININSTALLATION=$?
 
 if [ $BEGININSTALLATION = 1 ]; then
@@ -294,7 +294,7 @@ if [ $BEGININSTALLATION = 1 ]; then
 fi
 
 # Ask to update the operating system.
-whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 10 65
+whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 9 65
 UPDATEOS=$?
 
 ## DUMP1090-MUTABILITY CHECK
