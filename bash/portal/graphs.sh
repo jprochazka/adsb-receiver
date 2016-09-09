@@ -56,8 +56,11 @@ echo ""
 
 ## BACKUP AND REPLACE COLLECTD.CONF
 
-echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back
+# Check if the file /etc/collectd/collectd.conf exists and if so back it up.
+if [ -f /etc/collectd/collectd.conf ]; then
+    echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
+    sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back
+fi
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
 sudo tee -a /etc/collectd/collectd.conf > /dev/null <<EOF
 # Config file for collectd(1).

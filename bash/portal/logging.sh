@@ -36,18 +36,15 @@
 PROJECTROOTDIRECTORY="$PWD"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
-DATABASEENGINE=`grep 'db_driver' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+
+# Assign the Lighthttpd document root directory to a variable.
+RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
+LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+
+# This will not work for first time installs...
+DATABASEENGINE=$ADSB_DATABASEENGINE
+
 PYTHONPATH=`which python`
-
-## SETUP PYTHON
-
-# Install the Python inotify module using pip.
-echo ""
-echo -e "\e[95m  Setting up Python...\e[97m"
-echo ""
-echo -e "\e[94m  Installing the Python inotify module...\e[97m"
-echo ""
-sudo pip install inotify
 
 ## SETUP FLIGHT LOGGING
 
@@ -56,7 +53,7 @@ echo -e "\e[95m  Setting up flight logging...\e[97m"
 echo ""
 
 case $DATABASEENGINE in
-    "mysql")
+    "MySQL")
         echo -e "\e[94m  Creating the flight logging configuration file for MySQL...\e[97m"
         tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
 {
@@ -68,7 +65,7 @@ case $DATABASEENGINE in
 }
 EOF
             ;;
-    "sqlite")
+    "SQLite")
         echo -e "\e[94m  Creating the flight logging configuration file for SQLite...\e[97m"
         tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
 {
@@ -135,12 +132,27 @@ if ! grep -Fxq "$PORTALBUILDDIRECTORY/logging/maintenance-maint.sh &" /etc/rc.lo
     ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALBUILDDIRECTORY/logging/maintenance-maint.sh &\n" /etc/rc.local
 fi
 
+# Kill any previously running maintenance scripts.
+echo -e "\e[94m  Checking for any running flights-maint.sh processes...\e[97m"
+PIDS=`ps -efww | grep -w "flights-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
+if [ ! -z "$PIDS" ]; then
+    echo -e "\e[94m  Killing any running flights-maint.sh processes...\e[97m"
+    sudo kill $PIDS
+    sudo kill -9 $PIDS
+fi
+PIDS=`ps -efww | grep -w "maintenance-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
+if [ ! -z "$PIDS" ]; then
+    echo -e "\e[94m  Killing any running maintenance-maint.sh processes...\e[97m"
+    sudo kill $PIDS
+    sudo kill -9 $PIDS
+fi
+
 # Start flight logging.
 echo -e "\e[94m  Executing the flight logging maintenance script...\e[97m"
 nohup $PORTALBUILDDIRECTORY/logging/flights-maint.sh > /dev/null 2>&1 &
 
-# Start maintenance..
+# Start maintenance.
 echo -e "\e[94m  Executing the maintenance maintenance script...\e[97m"
-nohup $PORTALBUILDDIRECTORY/portal/logging/flights-maint.sh > /dev/null 2>&1 &
+nohup $PORTALBUILDDIRECTORY/logging/maintenance-maint.sh > /dev/null 2>&1 &
 
 exit 0

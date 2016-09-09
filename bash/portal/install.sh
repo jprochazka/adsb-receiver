@@ -103,6 +103,10 @@ else
     if [ $ADVANCED = TRUE ]; then
         # Ask which type of database to use.
         DATABASEENGINE=$(whiptail --title "Choose Database Type" --nocancel --menu "\nChoose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
+
+        # Export this variable.
+        export ADSB_DATABASEENGINE=$DATABASEENGINE
+
         if [ $DATABASEENGINE = "MySQL" ]; then
             # Ask if the database server will be installed locally.
             whiptail --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
@@ -126,45 +130,46 @@ else
                     0) DATABASEEXISTS=TRUE;;
                     1) DATABASEEXISTS=FALSE;;
                 esac
-                # If the remote MySQL database does not exist ask for the MySQL administrator credentials.
-                if [ $DATABASEEXISTS = FALSE ]; then
-                    whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the remote MySQL server." 8 78
-                    DATABASEADMINUSER_TITLE="Remote MySQL Administrator User"
-                    while [ -z "$DATABASEADMINUSER" ]; do
-                        DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the remote MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
-                        DATABASEADMINUSER_TITLE="Remote MySQL Administrator User (REQUIRED)"
-                    done
-                    DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password"
-                    DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the remote MySQL adminitrator user."
-                    while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                        DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
-                        DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password (REQUIRED)"
-                    done
-                    DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password"
-                    DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the remote MySQL adminitrator user."
-                    while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                        DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
-                        DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password (REQUIRED)"
-                    done
-                    while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
-                        DATABASEADMINPASSWORD1=""
-                        DATABASEADMINPASSWORD2=""
-                        whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
-                        DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password"
-                        while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                            DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
-                            DATABASEADMINPASSWORD1_TITLE="Remote MySQL Administrator Password (REQUIRED)"
-                        done
-                        DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password"
-                        while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                            DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
-                            DATABASEADMINPASSWORD2_TITLE="Confirm The Remote MySQL Administrator Password (REQUIRED)"
-                        done
-                    done
-                fi
             else
                 # Since the MySQL database server will run locally assign localhost as it's hostname.
                 DATABASEHOSTNAME="localhost"
+            fi
+
+            # Ask for the MySQL administrator credentials if the database does not already exist.
+            if [ $DATABASEEXISTS = FALSE ]; then
+                whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 8 78
+                DATABASEADMINUSER_TITLE="MySQL Administrator User"
+                while [ -z "$DATABASEADMINUSER" ]; do
+                    DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
+                    DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
+                done
+                DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
+                DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
+                while [ -z "$DATABASEADMINPASSWORD1" ]; do
+                    DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
+                done
+                DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
+                DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
+                while [ -z "$DATABASEADMINPASSWORD2" ]; do
+                    DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
+                done
+                while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
+                    DATABASEADMINPASSWORD1=""
+                    DATABASEADMINPASSWORD2=""
+                    whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                    DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
+                    while [ -z "$DATABASEADMINPASSWORD1" ]; do
+                        DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                        DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
+                    done
+                    DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
+                    while [ -z "$DATABASEADMINPASSWORD2" ]; do
+                        DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                        DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
+                    done
+                done
             fi
 
             # Get the login information pertaining to the MySQL database itself.
@@ -276,9 +281,6 @@ if [ $ADVANCED = TRUE ]; then
             fi
             ;;
     esac
-
-    # Flight logging prerequisites.
-    CheckPackage python-pip
 fi
 
 # Reload Lighttpd after installing the prerequisite packages.
