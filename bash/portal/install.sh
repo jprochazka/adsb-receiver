@@ -91,6 +91,18 @@ if [ $PORTALINSTALLED = TRUE ]; then
     else
         ADVANCED=TRUE
     fi
+    if [ $ADVANCED = TRUE ]; then
+        case $DATABASEENGINE in
+            "mysql") DATABASEENGINE="MySQL";;
+            "sqlite") DATABASEENGINE="SQLite";;
+        esac
+        DATABASEHOSTNAME=`grep 'db_host' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEUSER=`grep 'db_username' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEPASSWORD1=`grep 'db_password' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASENAME=`grep 'db_database' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+    fi
+
+
 else
     # Ask if advanced features should be enabled.
     whiptail --title "ADS-B Receiver Portal Selection" --defaultno --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 19 78
@@ -454,10 +466,14 @@ fi
 ## SETUP FLIGHT LOGGING USING THE SCRIPT LOGGING.SH
 
 if [ $ADVANCED = TRUE ]; then
+    # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
+    if [ $DATABASEENGINE = "SQLite" ] && [ -z "$DATABASENAME" ]; then
+        $DATABASENAME="$LIGHTTPDDOCUMENTROOT/data/portal.sqlite"
+    fi
 
     # Export variables needed by logging.sh.
     export ADSB_DATABASEENGINE=$DATABASEENGINE
-    export ADSB_DATABASEHOST=$DATABASEHOST
+    export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
     export ADSB_DATABASEUSER=$DATABASEUSER
     export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
     export ADSB_DATABASENAME=$DATABASENAME

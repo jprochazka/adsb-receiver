@@ -42,13 +42,13 @@ RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep ser
 LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
 DATABASEENGINE=$ADSB_DATABASEENGINE
-DATABASEHOST=$ADSB_DATABASEHOST
+DATABASEHOSTNAME=$ADSB_DATABASEHOSTNAME
 DATABASEUSER=$ADSB_DATABASEUSER
 DATABASEPASSWORD1=$ADSB_DATABASEPASSWORD1
 DATABASENAME=$ADSB_DATABASENAME
 
 unset ADSB_DATABASEENGINE
-unset ADSB_DATABASEHOST
+unset ADSB_DATABASEHOSTNAME
 unset ADSB_DATABASEUSER
 unset ADSB_DATABASEPASSWORD1
 unset ADSB_DATABASENAME
@@ -67,7 +67,7 @@ case $DATABASEENGINE in
         tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
-                "host":"$DATABASEHOST",
+                "host":"$DATABASEHOSTNAME",
                 "user":"$DATABASEUSER",
                 "passwd":"$DATABASEPASSWORD1",
                 "db":"$DATABASENAME"}
@@ -79,10 +79,10 @@ EOF
         tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
 {
     "database":{"type":"sqlite",
-                "host":"",
-                "user":"",
-                "passwd":"",
-                "db":"$LIGHTTPDDOCUMENTROOT/data/portal.sqlite"}
+                "host":"$DATABASEHOSTNAME",
+                "user":"$DATABASEUSER",
+                "passwd":"$DATABASEPASSWORD1",
+                "db":"$DATABASENAME"}
 }
 EOF
         ;;
