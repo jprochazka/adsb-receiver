@@ -104,9 +104,6 @@ else
         # Ask which type of database to use.
         DATABASEENGINE=$(whiptail --title "Choose Database Type" --nocancel --menu "\nChoose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
 
-        # Export this variable.
-        export ADSB_DATABASEENGINE=$DATABASEENGINE
-
         if [ $DATABASEENGINE = "MySQL" ]; then
             # Ask if the database server will be installed locally.
             whiptail --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
@@ -457,6 +454,14 @@ fi
 ## SETUP FLIGHT LOGGING USING THE SCRIPT LOGGING.SH
 
 if [ $ADVANCED = TRUE ]; then
+
+    # Export variables needed by logging.sh.
+    export ADSB_DATABASEENGINE=$DATABASEENGINE
+    export ADSB_DATABASEHOST=$DATABASEHOST
+    export ADSB_DATABASEUSER=$DATABASEUSER
+    export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
+    export ADSB_DATABASENAME=$DATABASENAME
+
     chmod +x $BASHDIRECTORY/portal/logging.sh
     $BASHDIRECTORY/portal/logging.sh
     if [ $? -ne 0 ]; then
