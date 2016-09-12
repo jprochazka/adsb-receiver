@@ -45,7 +45,7 @@ echo ""
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
-echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurments...\e[97m"
+echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
 sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
 echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
 sudo systemctl daemon-reload

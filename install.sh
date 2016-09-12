@@ -212,9 +212,9 @@ EOF
 
 # Message displayed if dump1090-mutability is installed.
 read -d '' DUMP1090INSTALLED <<"EOF"
-The dump1090-mutability package appears to be installed on your device However...
+The dump1090-mutability package appears to be installed on your device, however...
 
-The dump1090-mutability v1.15~dev source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of
+The dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering. To ensure you are running the latest version of
 dump1090-mutability you may opt to rebuild and reinstall this package.
 
 Download, build, and reinstall this package?
@@ -222,7 +222,7 @@ EOF
 
 # Message displayed if dump1090-mutability is not installed.
 read -d '' DUMP1090NOTINSTALLED <<"EOF"
-The dump1090-mutability package does not appear to be installed on your system. In order to continue setup dump1090-mutability will be downloaded, compiled and installed on this system.
+The dump1090-mutability package does not appear to be installed on your system. To continue setup dump1090-mutability will be downloaded, compiled and installed on this system.
 
 Do you wish to continue setup?
 Answering no will exit this script with no actions taken.
@@ -230,21 +230,21 @@ EOF
 
 # Message displayed if dump978 is installed.
 read -d '' DUMP978INSTALLED <<"EOF"
-Dump978 appears to be installed on your device However...
+Dump978 appears to be installed on your device, however...
 
-The dump978 source code may have been updated since it was built last. In order to insure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.
+The dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.
 
 Download and rebuild the dump978 binaries?
 EOF
 
 # Message displayed if dump978 is not installed.
 read -d '' DUMP978NOTINSTALLED <<"EOF"
-Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts are able to setup dump978 for you. However keep in mind a second RTL-SDR device will be required in order to feed data to it.
+Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.
 
 Do you wish to install dump978?
 EOF
 
-# Message displayed above feeder selection check list.
+# Message displayed above feeder selection checklist.
 FEEDERSAVAILABLE="The following feeders are available for installation. Choose the feeders you wish to install. (Hint: Use spacebar to select/deselect.)"
 
 # Message displayed if all available feeders have already been installed.
@@ -252,7 +252,7 @@ ALLFEEDERSINSTALLED="It appears that all the feeders available for installation 
 
 # Message displayed asking if the user wishes to install the web portal.
 read -d '' INSTALLWEBPORTAL <<"EOF"
-The ADS-B Receiver Project Web Portal is a light weight web interface for dump-1090-mutability installations.
+The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.
 
 Current features include the following:
   Unified navigation between all web pages.
@@ -272,7 +272,7 @@ DO NOT DELETE THIS DIRECTORY!
 
 Files needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.
 
-It is hoped these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you ran into any problems or wish to submit feed back feel free to do so on the project's GitHub site.
+Hopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.
 
 https://github.com/jprochazka/adsb-receiver
 EOF
@@ -288,7 +288,7 @@ BEGININSTALLATION=$?
 if [ $BEGININSTALLATION = 1 ]; then
     # Exit the script if the user wishes not to continue.
     echo -e "\033[31m"
-    echo "Installation cancelled by user."
+    echo "Installation canceled by user."
     echo -e "\033[37m"
     exit 0
 fi
@@ -315,7 +315,7 @@ else
     if [ $DUMP1090CHOICE = 1 ]; then
         # If the user decided not to install dump1090-mutability exit setup.
         echo -e "\033[31m"
-        echo "Installation cancelled by user."
+        echo "Installation canceled by user."
         echo -e "\033[37m"
         exit 0
     fi
@@ -343,7 +343,7 @@ declare array FEEDERLIST
 
 # Check if the PiAware package is installed or if it needs upgraded.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The PiAware package appear to be installed.
+    # The PiAware package appears to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
 else
     # Check if a newer version can be installed.
@@ -354,7 +354,7 @@ fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The Plane Finder ADS-B Client package appear to be installed.
+    # The Plane Finder ADS-B Client package appears to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 else
     # Set version depending on the device architecture.
@@ -371,7 +371,7 @@ fi
 
 # Check if the Flightradar24 client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The Flightradar24 client package appear to be installed.
+    # The Flightradar24 client package appears to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24 Client' '' OFF)
 else
     if [[ `uname -m` != "armv7l" ]]; then
@@ -383,7 +383,7 @@ fi
 
 # Check if ADS-B Exchange sharing has been set up.
 if ! grep -q "$BUILDDIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
-    # The ADS-B Exchange maintainance script does not appear to be executed on start up.
+    # The ADS-B Exchange maintenance script does not appear to be executed on startup.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
 
@@ -391,7 +391,7 @@ declare FEEDERCHOICES
 
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
-    # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
+    # This command is creating a file named FEEDERCHOICES but can not figure out how to make it only a variable without the file being created at this time.
     whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
@@ -498,7 +498,7 @@ CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
     echo -e "\033[31m"
-    echo "Installation cancelled by user."
+    echo "Installation canceled by user."
     echo -e "\033[37m"
 
     # Dirty hack but cannot make the whiptail checkbox not create this file and still work...
