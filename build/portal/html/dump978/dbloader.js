@@ -1,6 +1,6 @@
 // -*- mode: javascript; indent-tabs-mode: nil; c-basic-offset: 8 -*-
 
-// Part of dump1090, a Mode S message decoder for RTLSDR devices.
+// Part of dump1090, a Mode-S message decoder for RTL-SDR devices.
 //
 // dbloader.js: load aircraft metadata from static json files
 //

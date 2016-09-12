@@ -51,7 +51,7 @@ echo ""
 echo -e "\e[92m  Setting up dump1090-mutability..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-whiptail --title "Dump1090-mutability Setup" --yesno "Dump 1090 is a Mode S decoder specifically designed for RTLSDR devices. Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  https://github.com/mutability/dump1090\n\nContinue setup by installing dump1090-mutability?" 14 78
+whiptail --title "Dump1090-mutability Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  https://github.com/mutability/dump1090\n\nContinue setup by installing dump1090-mutability?" 14 78
 CONTINUESETUP=$?
 if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
