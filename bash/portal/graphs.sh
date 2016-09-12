@@ -231,12 +231,12 @@ sudo tee -a /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 1h >/dev/null
-*/10 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 6h >/dev/null
-2,12,22,32,42,52 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 24h >/dev/null
-4,24,44 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 7d >/dev/null
-6 * * *	* root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 30d >/dev/null
-8 */12 * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 365d >/dev/null
+*/5 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
+*/10 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
+2,12,22,32,42,52 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
+4,24,44 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
+6 * * *	* root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
+8 */12 * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
 
 exit 0
