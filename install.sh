@@ -324,9 +324,9 @@ fi
 DUMP978CHOICE=1
 DUMP978REBUILD=1
 # Check if the dump978 has been built.
-if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f $BUILDDIR/dump978/uat2esnt ] && [ -f $BUILDDIR/dump978/uat2json ]; then
+if [ -f $BUILDDIRECTORY/dump978/dump978 ] && [ -f $BUILDDIRECTORY/dump978/uat2text ] && [ -f $BUILDDIRECTORY/dump978/uat2esnt ] && [ -f $BUILDDIRECTORY/dump978/uat2json ]; then
     # Dump978 appears to have been built already.
-    whiptail --backtitle "$BACKTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 16 65
+    whiptail --backtitle "$BACKTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 14 65
     DUMP978REBUILD=$?
     if [ $DUMP978REBUILD = 0 ]; then
         DUMP978CHOICE=0
@@ -395,7 +395,7 @@ if [[ -n "$FEEDERLIST" ]]; then
     whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
-    whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 10 65
+    whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 8 65
 fi
 
 ## WEB PORTAL
@@ -583,7 +583,7 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 19 65
+whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 18 65
 
 # Once again cannot make the whiptail checkbox not create this file and still work...
 # Will work on figuring this out at a later date but until then we will delete the file created.
