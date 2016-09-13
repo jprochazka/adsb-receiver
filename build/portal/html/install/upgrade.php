@@ -241,6 +241,8 @@
             }
             $common->updateSetting("version", "2.1.0");
             $common->updateSetting("patch", "");
+            // Add ADS-B Logs settings
+            $common->addSetting('enableLogs', FALSE);
         } catch(Exception $e) {
             $error = TRUE;
             $errorMessage = $e->getMessage();

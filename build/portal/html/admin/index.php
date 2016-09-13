@@ -114,6 +114,10 @@
         if (isset($_POST['enableInfo']) && $_POST['enableInfo'] == "TRUE")
             $enableInfo = TRUE;
 
+        $enableLogs = FALSE;
+        if (isset($_POST['enableLogs']) && $_POST['enableLogs'] == "TRUE")
+            $enableLogs = TRUE;
+
         $enableGraphs = FALSE;
         if (isset($_POST['enableGraphs']) && $_POST['enableGraphs'] == "TRUE")
             $enableGraphs = TRUE;
@@ -159,6 +163,7 @@
         $common->updateSetting("enableFlights", $enableFlights);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
+        $common->updateSetting("enableLogs", $enableLogs);
         $common->updateSetting("enableGraphs", $enableGraphs);
         $common->updateSetting("enableDump1090", $enableDump1090);
         $common->updateSetting("enableDump978", $enableDump978);
@@ -229,6 +234,7 @@
     $enableFlights = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
+    $enableLogs = $common->getSetting("enableLogs");
     $enableGraphs = $common->getSetting("enableGraphs");
     $enableDump1090 = $common->getSetting("enableDump1090");
     $enableDump978 = $common->getSetting("enableDump978");
@@ -324,6 +330,7 @@
                                 <select class="form-control" id="defaultPage" name="defaultPage">
                                     <option value="blog.php"<?php ($defaultPage == "blog.php" ? print ' selected' : ''); ?>>Blog</option>
                                     <option value="system.php"<?php ($defaultPage == "system.php" ? print ' selected' : ''); ?>>System Information</option>
+                                    <option value="logs.php"<?php ($defaultPage == "logs.php" ? print ' selected' : ''); ?>>ADS-B Logs</option>
                                     <option value="graphs.php"<?php ($defaultPage == "graphs.php" ? print ' selected' : ''); ?>>Performance Graphs</option>
                                     <option value="dump1090.php"<?php ($defaultPage == "dump1090.php" ? print ' selected' : ''); ?>>Live Dump1090 Map</option>
                                     <option value="dump978.php"<?php ($defaultPage == "dump978.php" ? print ' selected' : ''); ?>>Live Dump978 Map</option>
@@ -397,6 +404,11 @@
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enableInfo" value="TRUE"<?php ($enableInfo == 1? print ' checked' : ''); ?>> Enable system information link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableLogs" value="TRUE"<?php ($enableLogs == 1? print ' checked' : ''); ?>> Enable tailing of ADS-B log files.
                                 </label>
                             </div>
                             <div class="checkbox">

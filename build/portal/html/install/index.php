@@ -410,6 +410,7 @@ EOF;
             $common->addSetting('dateFormat', 'F jS, Y g:i A');
             $common->addSetting('enableBlog', TRUE);
             $common->addSetting('enableInfo', TRUE);
+            $common->addSetting('enableLogs', FALSE);
             $common->addSetting('enableGraphs', TRUE);
             $common->addSetting('enableDump1090', TRUE);
             $common->addSetting('enableDump978', FALSE);
