@@ -46,7 +46,7 @@ source $BASHDIRECTORY/functions.sh
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  $ADSB_PROJECTTITLE""
+echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
 echo ""
 echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
