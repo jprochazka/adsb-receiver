@@ -2,10 +2,11 @@
 
 The following is a history of the changes made to this project.
 
-## v2.3.0 *(September 9th, 2016)*
+## v2.3.0 *(September 12th, 2016)*
 
 * Massive clean up and in some cases an overhaul of the installation bash scripts.
 * Updated the dump978 map by modifying newer dump1090-mutability map.
+* Crontab errors pertaining to clooectd no longer emailed to the root user.
 * Moved the logging portion of the portal install script into it's own file. *(advanced)*
 * Flights.py has been optimized even further. *(advanced)*
 * Flights.py now logs the aircraft ID when logging positions. *(advanced)*
