@@ -583,7 +583,7 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 18 65
+whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 20 65
 
 # Once again cannot make the whiptail checkbox not create this file and still work...
 # Will work on figuring this out at a later date but until then we will delete the file created.
