@@ -56,13 +56,13 @@ fi
 
 ## FUNCTIONS
 
-PROJECTTITLE="\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+export ADSB_PROJECTTITLE="The ADS-B Receiver Project v$PROJECTVERSION"
 TERMINATEDMESSAGE="\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
 
 # UPDATE REPOSITORY PACKAGE LISTS
 function AptUpdate() {
     clear
-    echo -e $PROJECTTITLE
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
     echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
@@ -78,7 +78,7 @@ function AptUpdate() {
 # UPDATE THE OPERATING SYSTEM
 function UpdateOperatingSystem() {
     clear
-    echo -e $PROJECTTITLE
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
@@ -190,9 +190,6 @@ CheckPackage whiptail
 ## MESSAGES
 ##
 
-# The title of the installer.
-BACKTITLE="The ADS-B Receiver Project"
-
 # The welcome message displayed when this scrip[t it first executed.
 read -d '' WELCOME <<"EOF"
 The ADS-B Project is a series of bash scripts and files which can be used to setup an ADS-B receiver on certain Debian derived operating system.
@@ -282,7 +279,7 @@ EOF
 ##
 
 # Display the welcome message.
-whiptail --backtitle "$BACKTITLE" --title "The ADS-B Receiver Project" --yesno "$WELCOME" 14 65
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "The ADS-B Receiver Project" --yesno "$WELCOME" 14 65
 BEGININSTALLATION=$?
 
 if [ $BEGININSTALLATION = 1 ]; then
@@ -294,7 +291,7 @@ if [ $BEGININSTALLATION = 1 ]; then
 fi
 
 # Ask to update the operating system.
-whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 9 65
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 9 65
 UPDATEOS=$?
 
 ## DUMP1090-MUTABILITY CHECK
@@ -304,13 +301,13 @@ DUMP1090REINSTALL=1
 # Check if the dump1090-mutability package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
-    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 16 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 16 65
     DUMP1090REINSTALL=$?
     if [ $DUMP1090REINSTALL = 0 ]; then
         DUMP1090CHOICE=0
     fi
 else
-    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Not Installed" --yesno "$DUMP1090NOTINSTALLED" 10 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-mutability Not Installed" --yesno "$DUMP1090NOTINSTALLED" 10 65
     DUMP1090CHOICE=$?
     if [ $DUMP1090CHOICE = 1 ]; then
         # If the user decided not to install dump1090-mutability exit setup.
@@ -326,14 +323,14 @@ DUMP978REBUILD=1
 # Check if the dump978 has been built.
 if [ -f $BUILDDIRECTORY/dump978/dump978 ] && [ -f $BUILDDIRECTORY/dump978/uat2text ] && [ -f $BUILDDIRECTORY/dump978/uat2esnt ] && [ -f $BUILDDIRECTORY/dump978/uat2json ]; then
     # Dump978 appears to have been built already.
-    whiptail --backtitle "$BACKTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 14 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 14 65
     DUMP978REBUILD=$?
     if [ $DUMP978REBUILD = 0 ]; then
         DUMP978CHOICE=0
     fi
 else
     # Dump978 does not appear to have been built yet.
-    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --defaultno --yesno "$DUMP978NOTINSTALLED" 10 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump978 Not Installed" --defaultno --yesno "$DUMP978NOTINSTALLED" 10 65
     DUMP978CHOICE=$?
 fi
 
@@ -392,23 +389,23 @@ declare FEEDERCHOICES
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
     # This command is creating a file named FEEDERCHOICES but can not figure out how to make it only a variable without the file being created at this time.
-    whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
-    whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 8 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 8 65
 fi
 
 ## WEB PORTAL
 
 # Ask if the web portal should be installed.
-whiptail --backtitle "$BACKTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
 DOINSTALLWEBPORTAL=$?
 
 ## CONFIRMATION
 
 # Check if anything is to be done before moving on.
 if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DUMP978CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
-    whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
     echo -e "\033[31m"
     echo "Nothing was selected to do or be installed."
@@ -493,7 +490,7 @@ fi
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}\nDo you wish to continue?"
 
-whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
@@ -583,7 +580,10 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 20 65
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 20 65
+
+# Unset any exported variables.
+unset ADSB_PROJECTTITLE
 
 # Once again cannot make the whiptail checkbox not create this file and still work...
 # Will work on figuring this out at a later date but until then we will delete the file created.

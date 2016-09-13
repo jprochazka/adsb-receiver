@@ -46,12 +46,12 @@ source $BASHDIRECTORY/functions.sh
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+echo -e "\n\e[91m  $ADSB_PROJECTTITLE""
 echo ""
 echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-whiptail --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
 CONTINUESETUP=$?
 if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
@@ -105,7 +105,7 @@ if [ $PORTALINSTALLED = TRUE ]; then
 
 else
     # Ask if advanced features should be enabled.
-    whiptail --title "ADS-B Receiver Portal Selection" --defaultno --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 19 78
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Portal Selection" --defaultno --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 19 78
     RESPONSE=$?
     case $RESPONSE in
         0) ADVANCED=TRUE;;
@@ -114,11 +114,11 @@ else
 
     if [ $ADVANCED = TRUE ]; then
         # Ask which type of database to use.
-        DATABASEENGINE=$(whiptail --title "Choose Database Type" --nocancel --menu "\nChoose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
+        DATABASEENGINE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Choose Database Type" --nocancel --menu "\nChoose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
 
         if [ $DATABASEENGINE = "MySQL" ]; then
             # Ask if the database server will be installed locally.
-            whiptail --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
+            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
             RESPONSE=$?
             case $RESPONSE in
                 0) LOCALMYSQLSERVER=TRUE;;
@@ -128,12 +128,12 @@ else
                 # Ask for the remote MySQL servers hostname.
                 DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname"
                 while [[ -z $DATABASEHOSTNAME ]]; do
-                    DATABASEHOSTNAME=$(whiptail --title "$DATABASEHOSTNAME_TITLE" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
+                    DATABASEHOSTNAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEHOSTNAME_TITLE" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
                     DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname (REQUIRED)"
                 done
 
                 # Ask if the remote MySQL database already exists.
-                whiptail --title "Does MySQL Database Exist" --yesno "Has the database already been created?" 7 80
+                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Does MySQL Database Exist" --yesno "Has the database already been created?" 7 80
                 RESPONSE=$?
                 case $RESPONSE in
                     0) DATABASEEXISTS=TRUE;;
@@ -141,7 +141,7 @@ else
                 esac
             else
                 # Install the MySQL serer now if it does not already exist.
-                whiptail --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time." 8 78
+                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time." 8 78
                 CheckPackage mysql-server
 
                 # Since this is a local installation assume the MySQL database does not already exist.
@@ -153,78 +153,78 @@ else
 
             # Ask for the MySQL administrator credentials if the database does not already exist.
             if [ $LOCALMYSQLSERVER = TRUE ] || [ $DATABASEEXISTS = FALSE ]; then
-                whiptail --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 9 78
+                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 9 78
                 DATABASEADMINUSER_TITLE="MySQL Administrator User"
                 while [ -z "$DATABASEADMINUSER" ]; do
-                    DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
+                    DATABASEADMINUSER=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
                     DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
                 done
                 DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
                 DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
                 while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                    DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                     DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
                 done
                 DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
                 DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
                 while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                    DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                     DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
                 done
                 while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
                     DATABASEADMINPASSWORD1=""
                     DATABASEADMINPASSWORD2=""
-                    whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
                     DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
                     while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                        DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                        DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
                     done
                     DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
                     while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                        DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                        DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
                     done
                 done
             fi
 
             # Get the login information pertaining to the MySQL database itself.
-            whiptail --title "Create Remote MySQL Database" --msgbox "You will now be asked to supply the name of the database which will store the portal data as well as the login credentials for the MySQL user that has access to this database." 9 78
+            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Create Remote MySQL Database" --msgbox "You will now be asked to supply the name of the database which will store the portal data as well as the login credentials for the MySQL user that has access to this database." 9 78
 
             DATABASENAME_TITLE="ADS-B Receiver Portal Database Name"
             while [ -z "$DATABASENAME" ]; do
-                DATABASENAME=$(whiptail --title "$DATABASENAME_TITLE" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
+                DATABASENAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASENAME_TITLE" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
                 DATABASENAME_TITLE="ADS-B Receiver Portal Database Name (REQUIRED)"
             done
             DATABASEUSER_TITLE="ADS-B Receiver Portal Database User"
             while [ -z "$DATABASEUSER" ]; do
-                DATABASEUSER=$(whiptail --title "$DATABASEUSER_TITLE" --nocancel --inputbox "\nEnter the user for the ADS-B Receiver Portal database." 8 78 3>&1 1>&2 2>&3)
+                DATABASEUSER=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEUSER_TITLE" --nocancel --inputbox "\nEnter the user for the ADS-B Receiver Portal database." 8 78 3>&1 1>&2 2>&3)
                 DATABASEUSER_TITLE="ADS-B Receiver Portal Database User (REQUIRED)"
             done
             DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
             DATABASEPASSWORD1_MESSAGE="\nEnter your ADS-B Receiver Portal database password."
             while [ -z "$DATABASEPASSWORD1" ]; do
-                DATABASEPASSWORD1=$(whiptail --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
             done
             DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
             DATABASEPASSWORD2_MESSAGE="\nConfirm your ADS-B Receiver Portal database password."
             while [ -z "$DATABASEPASSWORD2" ]; do
-                DATABASEPASSWORD2=$(whiptail --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
             done
             while [ ! $DATABASEPASSWORD1 = $DATABASEPASSWORD2 ]; do
                 DATABASEPASSWORD1=""
                 DATABASEPASSWORD2=""
-                whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
                 DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
                 while [ -z "$DATABASEPASSWORD1" ]; do
-                    DATABASEPASSWORD1=$(whiptail --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                     DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
                 done
                 DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
                 while [ -z "$DATABASEPASSWORD2" ]; do
-                    DATABASEPASSWORD2=$(whiptail --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    DATABASEPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                     DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
                 done
             done
@@ -403,38 +403,38 @@ if [ $PORTALINSTALLED = FALSE ] && [ $ADVANCED = TRUE ] && [ $DATABASEENGINE = "
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
     while ! mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME  -e ";" ; do
         echo -e "\e[94m  Unable to log into the MySQL server using the supplied administrator credentials...\e[97m"
-        whiptail --title "Create Remote MySQL Database" --msgbox "The script was not able to log into the MySQL server using the administrator credentials you supplied. You will now be asked to reenter the MySQL server administrator credentials." 9 78
+        whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Create Remote MySQL Database" --msgbox "The script was not able to log into the MySQL server using the administrator credentials you supplied. You will now be asked to reenter the MySQL server administrator credentials." 9 78
         DATABASEADMINPASSWORD1=""
         DATABASEADMINPASSWORD2=""
         DATABASEADMINUSER_TITLE="MySQL Administrator User"
         while [ -z "$DATABASEADMINUSER" ]; do
-            DATABASEADMINUSER=$(whiptail --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "$DATABASEADMINUSER" 3>&1 1>&2 2>&3)
+            DATABASEADMINUSER=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "$DATABASEADMINUSER" 3>&1 1>&2 2>&3)
             DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
         done
         DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
         DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
         while [ -z "$DATABASEADMINPASSWORD1" ]; do
-            DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
             DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
         done
         DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
         DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
         while [ -z "$DATABASEADMINPASSWORD2" ]; do
-            DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
             DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
         done
         while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
             DATABASEADMINPASSWORD1=""
             DATABASEADMINPASSWORD2=""
-            whiptail --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
             DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
             while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                DATABASEADMINPASSWORD1=$(whiptail --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
             done
             DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
             while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                DATABASEADMINPASSWORD2=$(whiptail --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
             done
         done
