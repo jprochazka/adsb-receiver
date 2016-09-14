@@ -408,7 +408,7 @@
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableLogs" value="TRUE"<?php ($enableLogs == 1? print ' checked' : ''); ?>> Enable tailing of ADS-B log files.
+                                    <input type="checkbox" name="enableLogs" value="TRUE"<?php ($enableLogs == 1? print ' checked' : ''); ?>> Enable log streaming in user portal.
                                 </label>
                             </div>
                             <div class="checkbox">

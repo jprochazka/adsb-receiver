@@ -13,6 +13,10 @@
         <link rel="stylesheet" href="/admin/assets/css/admin.css">
         <script src="/admin/assets/js/jquery-2.2.1.min.js"></script>
         <script src="/admin/assets/js/bootstrap.min.js"></script>
+        <script>
+          function setHref() {
+            document.getElementById('adsblogs').href = window.location.protocol + "//" + window.location.hostname + ":9001";
+      } </script>
 <?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
         <script src="/admin/assets/js/index.js"></script>
         <script src="/admin/assets/js/jquery.datetimepicker.full.min.js"></script>
@@ -22,7 +26,7 @@
         <script src="/admin/assets/js/account.js"></script>
 <?php } ?>
     </head>
-        <body>
+      <body onload="setHref()">
         <div id="wrapper">
             <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
                 <div class="container">
@@ -39,6 +43,7 @@
                         <ul class="nav navbar-nav">
                             <li id="logout-link"><a href="/admin">Settings</a></li>
                             <li id="logout-link"><a href="/admin/blog">Blog</a></li>
+                            <li id="logout-link"><a href="/admin/logs.php" id="adsblogs">ADS-B Log Streaming</a>
                             <li id="logout-link"><a href="/admin/account.php">Account</a></li>
                             <li id="logout-link"><a href="/admin/logout.php">Logout</a></li>
                             <li id="logout-link"><a href="/" target="_blank">Portal Home</a></li>
