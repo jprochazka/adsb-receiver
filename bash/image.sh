@@ -48,6 +48,27 @@ source $BASHDIRECTORY/functions.sh
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
+## WELCOME MESSAGE
+
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --msgbox "Thank you for choosing to use the ADS-B Receiver Project image.\n\nDuring this setup process the preinstalled dump1090-mutability installation will be configured and the ADS-B Project Web Portal will be installed. If you would like to add additional features to your receiver simply execute ./install.sh again after this initial setup process has been completed." 13 78
+
+## ASK TO UPDATE THE OPERATING SYSTEM
+
+if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --yesno "The image comes with the latest updates to Raspbian as of it's release. However updates may have been released for the operating system since the image was released. This being said it is highly recommended you allow the script to check for additional updates now in order to ensure you are in fact running the latest software available.\n\nWould you like the script to check for and install updates now?" 13 78) then
+    clear
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+    echo ""
+    echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo ""
+    sudo apt-get -y dist-upgrade
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+fi
+
 ## CONFIGURE DUMP1090-MUTABILITY
 
 clear
@@ -59,7 +80,7 @@ echo ""
 
 # Set the receivers latitude and longitude.
 
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and loingitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
 RECEIVERLATITUDE_TITLE="Receiver Latitude"
 while [[ -z $RECEIVERLATITUDE ]]; do
     RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
@@ -79,7 +100,7 @@ ChangeConfig "LON" $RECEIVERLONGITUDE "/etc/default/dump1090-mutability"
 
 if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
     echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
-    CommentConfig "NET_BIND_ADDRESS" "0.0.0.0" "/etc/default/dump1090-mutability"
+    CommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
 else
     echo -e "\e[94m  Binding dump1090-mutability to the localhost IP addresses...\e[97m"
     ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
@@ -109,7 +130,6 @@ if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] && (whiptail --b
 fi
 
 # Reload dump1090-mutability to ensure all changes take effect.
-
 echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
 echo ""
 sudo /etc/init.d/dump1090-mutability force-reload
@@ -124,20 +144,17 @@ read -p "Press enter to continue..." CONTINUE
 
 ## SETUP THE ADS-B RECIEVER PROJECT WEB PORTAL
 
-function InstallWebPortal() {
-    chmod +x $BASHDIRECTORY/portal/install.sh
-    $BASHDIRECTORY/portal/install.sh
-    if [ $? -ne 0 ]; then
-        echo ""
-        echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
-        echo ""
-        exit 1
-    fi
-}
+chmod +x $BASHDIRECTORY/portal/install.sh
+$BASHDIRECTORY/portal/install.sh
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 ## FINALIZE IMAGE SETUP
 
 # remove the "image" file.
 rm -f image
+
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --msgbox "Image setup is now complete. If you have any questions or comments on the project let us know on our website.\n\n  https://www.adsbreceiver.net\n\nRemember to install additional features simply run ./install.sh again." 12 78
 
 exit 0

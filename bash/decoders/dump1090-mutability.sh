@@ -148,7 +148,7 @@ echo ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
 echo ""
 if [[ `GetConfig "LAT" "/etc/default/dump1090-mutability"` == "" ]] || [[ `GetConfig "LON" "/etc/default/dump1090-mutability"` == "" ]]; then
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and loingitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     RECEIVERLATITUDE_TITLE="Receiver Latitude"
     while [[ -z $RECEIVERLATITUDE ]]; do
         RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)

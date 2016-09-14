@@ -240,7 +240,6 @@ CheckPackage rrdtool
 
 # Portal dependencies.
 CheckPackage libpython2.7
-CheckPackage python-pyinotify
 
 # Check if this is Ubuntu 16.04 LTS.
 # This needs optimized and made to recognize releases made after 16.04 as well.
@@ -260,6 +259,7 @@ fi
 
 # Install packages needed for advanced portal setups.
 if [ $ADVANCED = TRUE ]; then
+    CheckPackage python-pyinotify
     case $DATABASEENGINE in
         "MySQL")
             CheckPackage mysql-client
@@ -494,7 +494,7 @@ fi
 IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
 # Display final portal setup instructions to the user.
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Portal Setup" --msgbox "PORTAL SETUP IS NOT YET COMPLETE\n\nIn order to complete the portal setup process visit the following URL in your favorite web browser.\n\nhttp://${IPADDRESS}/install/\n\nFollow the instructions and enter the requested information to complete the ADS-B Receiver Project Portal setup." 13 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Portal Setup" --msgbox "NOTE THAT PORTAL SETUP IS NOT YET COMPLETE!\n\nIn order to complete the portal setup process visit the following URL in your favorite web browser.\n\nhttp://${IPADDRESS}/install/\n\nFollow the instructions and enter the requested information to complete the ADS-B Receiver Project Portal setup." 12 78
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"

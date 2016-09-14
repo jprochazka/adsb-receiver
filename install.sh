@@ -45,15 +45,6 @@ BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
-## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
-
-if [ -f $PROJECTROOTDIRECTORY/image ]; then
-    # Execute image setup script..
-    chmod +x $BASHDIRECTORY/image.sh
-    $BASHDIRECTORY/image.sh
-    exit 0
-fi
-
 ## FUNCTIONS
 
 export ADSB_PROJECTTITLE="The ADS-B Receiver Project v$PROJECTVERSION"
@@ -83,7 +74,7 @@ function UpdateOperatingSystem() {
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
-    sudo apt-get -y upgrade
+    sudo apt-get -y dist-upgrade
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
@@ -175,8 +166,24 @@ function InstallWebPortal() {
     fi
 }
 
+## UPDATE THE APT REPOSITORIES
 
 AptUpdate
+
+## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
+
+if [ -f $PROJECTROOTDIRECTORY/image ]; then
+    # Execute image setup script..
+    chmod +x $BASHDIRECTORY/image.sh
+    $BASHDIRECTORY/image.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
+    exit 0
+fi
 
 # Check that whiptail is installed.
 clear
