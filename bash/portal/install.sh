@@ -490,8 +490,15 @@ fi
 
 ## ADS-B RECEIVER PROJECT PORTAL SETUP COMPLETE
 
-# Display final portal setup instructions to the user.
+# This assigns the first IP address in the list to the $IPADDRESS variable.
+IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
+# Display final portal setup instructions to the user.
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Portal Setup" --msgbox "PORTAL SETUP IS NOT YET COMPLETE\n\nIn order to complete the portal setup process visit the following URL in your favorite web browser.\n\nhttp://${IPADDRESS}/install/\n\nFollow the instructions and enter the requested information to complete the ADS-B Receiver Project Portal setup." 13 78
+
+# Enter into the project root directory.
+echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+cd $PROJECTROOTDIRECTORY
 
 echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
