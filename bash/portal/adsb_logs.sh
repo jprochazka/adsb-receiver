@@ -210,9 +210,11 @@ fi
 fi
 
 # Add frontail logging script to rc.local.
-echo -e "Adding startup line to rc.local...\033[37m"
-lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs/*.log &\n" /etc/rc.local
+if ! grep -Fxq "frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs/*.log &" /etc/rc.local; then
+    echo -e "\e[94m  Adding the frontail daemon to /etc/rc.local...\e[97m"
+    LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
+    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs/*.log &\n" /etc/rc.local
+fi
 
 # Start frontail.
 echo -e "\033[33m"
