@@ -40,32 +40,61 @@ PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+NODE_VERSION=v4.5.0
+NPM_VERSION=2.15.9
 
-# Fronttail Logging Installation
+# Check if Node is installed and at the right version
 
-# echo -e "\033[33m"
-# echo -e "Installing logging software...\033[37m"
-# echo -e "Node and essential build tools installed..."
-# echo -e "Installing frontail...\033[37m"
-# sudo curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-# sudo apt-get install -y nodejs
-# sudo apt-get install -y build-essential
-# sudo npm install frontail -g
-# echo -e "Successfully installed node and frontail..."
+echo "Checking for Node version ${NODE_VERSION}"
+node --version | grep ${NODE_VERSION}
+if [[ $? != 0 ]] ; then
+    # Install Node
+    echo "It looks like Node isn't installed, lets install it."
+    sudo curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+    sudo apt-get install -y build-essential
+  else
+    echo -e "Great! You already have ${NODE_VERSION}. Continuing on..."
+fi
+
+cd /tmp
+
+#
+# Check if Node Package Manager is installed and at the right version
+#
+echo "Checking for NPM version ${NPM_VERION}"
+npm --version | grep ${NPM_VERSION}
+if [[ $? != 0 ]] ; then
+    echo "Downloading npm"
+    git clone git://github.com/isaacs/npm.git && cd npm
+    git checkout v${NPM_VERSION}
+    make install
+fi
+
+echo "Checking for previous installation of frontail..."
+npm -g ls|grep frontail
+if [[ $? != 0 ]] ; then
+  echo "It looks like you don't have frontail installed, lets install it."
+  sudo npm install frontail -g
+  echo -e "Successfully installed frontail, continuing on..."
+else
+  echo -e "Great! You already have frontail installed. Continuing on..."
+fi
 
 # EXECUTE THE LOGGING SCRIPTS
-function AddPiAware() {
-  echo -e "\e[94m  Adding PiAware logs...\e[97m"
-  if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
-fi
-  sudo ln -s /var/log/piaware.log $PROJECTROOTDIRECTORY/logs/piaware.log
-}
 
 function AddPlaneFinder() {
   echo -e "\e[94m  Adding PlaneFinder logs...\e[97m"
   if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
 fi
-  sudo ln -s /var/log/pfclient/*.log $PROJECTROOTDIRECTORY/logs/*.log
+  sudo ln -s /var/log/pfclient/ $PROJECTROOTDIRECTORY/logs/
+}
+
+function AddPiAware() {
+  echo -e "\e[94m  Adding PiAware logs...\e[97m"
+  if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
+fi
+  sudo ln -s /var/log/piaware.log $PROJECTROOTDIRECTORY/logs/piaware.log
 }
 
 function AddFR24() {
