@@ -175,6 +175,17 @@ function InstallWebPortal() {
     fi
 }
 
+# Setup and execute the web portal installation scripts.
+function InstallLogs() {
+    chmod +x $BASHDIRECTORY/portal/adsb_logs.sh
+    $BASHDIRECTORY/portal/adsb_logs.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
+}
 
 AptUpdate
 
@@ -259,6 +270,11 @@ Current features include the following:
   System and dump1090 performance graphs.
 
 Would you like to install the ADS-B Receiver Project web portal on this device?
+EOF
+
+# Message displayed asking if the user wishes to install the web portal.
+read -d '' INSTALLLOGS <<"EOF"
+Would you like to install frontail to view ADS-B logs from within the ADS-B Receiver Project web portal?
 EOF
 
 # Message to display if there is nothing to install or do.
@@ -403,6 +419,10 @@ fi
 # Ask if the web portal should be installed.
 whiptail --backtitle "$BACKTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
 DOINSTALLWEBPORTAL=$?
+
+# Ask if frontail should be installed
+whiptail --backtitle "$BACKTITLE" --title "Install Frontail for viewing ADS-B Logs from the ADS-B Receiver Portal" --yesno "$INSTALLLOGS" 8 78
+DOINSTALLLOGS=$?
 
 ## CONFIRMATION
 
@@ -576,6 +596,12 @@ fi
 
 if [ $DOINSTALLWEBPORTAL = 0 ]; then
     InstallWebPortal
+fi
+
+## Frontail Log.
+
+if [ $DOINSTALLLOGS = 0 ]; then
+    InstallLogs
 fi
 
 
