@@ -272,7 +272,7 @@ Current features include the following:
 Would you like to install the ADS-B Receiver Project web portal on this device?
 EOF
 
-# Message displayed asking if the user wishes to install the web portal.
+# Message displayed asking if the user wishes to install frontail for viewing ADS-B Logs.
 read -d '' INSTALLLOGS <<"EOF"
 Would you like to install frontail to view ADS-B logs from within the ADS-B Receiver Project web portal?
 EOF
