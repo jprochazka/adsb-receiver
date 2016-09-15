@@ -38,6 +38,13 @@
           ################################################################
           ##  THIS SCRIPT IS ONLY MEANT FOR RASPBIAN IMAGE PREPERATION  ##
           ################################################################
+          #                                                              #
+          # This script must be ran from the projects root directory.    #
+          # This script must be ran using sudo.                          #
+          #                                                              #
+          # pi@darkstar: sudo ./bash/tools/image_setup.sh                #
+          #                                                              #
+          ################################################################
 
 
 ## CHECK IF SCRIPT WAS RAN USING SUDO
