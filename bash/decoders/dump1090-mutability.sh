@@ -168,9 +168,10 @@ fi
 # Ask if dump1090-mutability should bind on all IP addresses.
 if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
     echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
-    CommentConfig "NET_BIND_ADDRESS" "0.0.0.0" "/etc/default/dump1090-mutability"
+    CommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
 else
     echo -e "\e[94m  Binding dump1090-mutability to the localhost IP addresses...\e[97m"
+    UncommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
     ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
 fi
 
