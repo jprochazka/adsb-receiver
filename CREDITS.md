@@ -11,8 +11,10 @@ directly. Their time and effort is greatly appreciated.
 
 **Contributors**
 
-* @dschaper
+* @jdwall
+* @adamkaplan
 * @leearmstrong
+* @dschaper
 
 I would like to thank the members and contributors to the following forums for all the time and effort
 they have put in in order to create a useful and informative place to discuss aircraft tracking.
@@ -47,3 +49,4 @@ hard work and dedication this project would not have been possible.
 * jQuery Steps:               http://www.jquery-steps.com
 * js-cookie:                  https://github.com/js-cookie/js-cookie/releases
 * jquery-validation:          https://github.com/jzaefferer/jquery-validation
+* Google Charts:              https://developers.google.com/chart
