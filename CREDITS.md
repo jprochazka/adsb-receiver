@@ -2,7 +2,7 @@
 
 ## People and Places
 
-First off I would like to thank the colaborators and contributors who have contributed to the project
+First off I would like to thank the collaborators and contributors who have contributed to the project
 directly. Their time and effort is greatly appreciated.
 
 **Collaborators**

@@ -12,7 +12,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -36,145 +36,166 @@
 
 ## VARIABLES
 
-BASEDIR=$PWD
-BASHDIR="$BASEDIR/bash"
-BUILDDIR="$BASEDIR/build"
+PROJECTROOTDIRECTORY="$PWD"
+BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 
-source $BASHDIR/variables.sh
-source $BASHDIR/functions.sh
+## INCLUDE EXTERNAL SCRIPTS
 
-## CHECK IF FIRST RUN USING IMAGE
-
-if [ -f $BASEDIR/image ]; then
-    # Execute image setup script.
-    chmod +x $BASHDIR/image.sh
-    $BASHDIR/image.sh
-
-    # Exit scripts once the the image setup script has completed.
-    echo -e "\033[32m"
-    echo "Image setup complete."
-    echo -e "\033[33m"
-    echo "At any time you can execute install.sh to add additional features"
-    echo "or update existing packages installed on this device."
-    echo -e "\033[37m"
-
-    exit 0
-fi
+source $BASHDIRECTORY/variables.sh
+source $BASHDIRECTORY/functions.sh
 
 ## FUNCTIONS
 
-# Download the latest package lists for enabled repositories and PPAs.
+export ADSB_PROJECTTITLE="The ADS-B Receiver Project v$PROJECTVERSION"
+TERMINATEDMESSAGE="\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+
+# UPDATE REPOSITORY PACKAGE LISTS
 function AptUpdate() {
     clear
-    echo -e "\033[33m"
-    echo "Downloading latest package lists for enabled repositories and PPAs..."
-    echo -e "\033[37m"
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+    echo ""
+    echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo ""
     sudo apt-get update
-}
-
-# Update the operating system.
-function UpdateOperatingSystem() {
-    clear
-    echo -e "\033[33m"
-    echo "Downloading and installing the latest updates for your operating system..."
-    echo -e "\033[37m"
-    sudo apt-get -y upgrade
-    echo -e "\033[33m"
-    echo "Your system should now be up to date."
-    echo -e "\033[37m"
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
+    echo ""
     read -p "Press enter to continue..." CONTINUE
 }
 
-# Download, build and then install the dump1090-mutability package.
+# UPDATE THE OPERATING SYSTEM
+function UpdateOperatingSystem() {
+    clear
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+    echo ""
+    echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo ""
+    sudo apt-get -y dist-upgrade
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+}
+
+# EXECUTE THE DUMP1090-MUTABILITY SETUP SCRIPT
 function InstallDump1090() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the dump1090-mutability installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/decoders/dump1090-mutability.sh
-    $BASHDIR/decoders/dump1090-mutability.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/decoders/dump1090-mutability.sh
+    $BASHDIRECTORY/decoders/dump1090-mutability.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
 
-# Download and build dump978.
+# EXECUTE THE DUMP978 SETUP SCRIPT
 function InstallDump978() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the dump978 installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/decoders/dump978.sh
-    $BASHDIR/decoders/dump978.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/decoders/dump978.sh
+    $BASHDIRECTORY/decoders/dump978.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
 
-# Download, build and then install the PiAware package.
+# EXECUTE THE PIAWARE SETUP SCRIPT
 function InstallPiAware() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the PiAware installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/feeders/piaware.sh
-    $BASHDIR/feeders/piaware.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/feeders/piaware.sh
+    $BASHDIRECTORY/feeders/piaware.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
 
 # Download and install the Plane Finder ADS-B Client package.
 function InstallPlaneFinder() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the Plane Finder ADS-B Client installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/feeders/planefinder.sh
-    $BASHDIR/feeders/planefinder.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/feeders/planefinder.sh
+    $BASHDIRECTORY/feeders/planefinder.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
 
 # Download and install the Flightradar24 client package.
 function InstallFlightradar24() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the Flightradar24 client installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/feeders/flightradar24.sh
-    $BASHDIR/feeders/flightradar24.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/feeders/flightradar24.sh
+    $BASHDIRECTORY/feeders/flightradar24.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
 
 # Setup the ADS-B Exchange feed.
 function InstallAdsbExchange() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the ADS-B Exchange installation script..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/feeders/adsbexchange.sh
-    $BASHDIR/feeders/adsbexchange.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/feeders/adsbexchange.sh
+    $BASHDIRECTORY/feeders/adsbexchange.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
 
 # Setup and execute the web portal installation scripts.
 function InstallWebPortal() {
-    clear
-    cd $BUILDDIR
-    echo -e "\033[33mExecuting the web portal installation scripts..."
-    echo -e "\033[37m"
-    chmod +x $BASHDIR/portal/install.sh
-    $BASHDIR/portal/install.sh
-    cd $BASEDIR
+    chmod +x $BASHDIRECTORY/portal/install.sh
+    $BASHDIRECTORY/portal/install.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
 }
+
+## UPDATE THE APT REPOSITORIES
+
+AptUpdate
+
+## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
+
+if [ -f $PROJECTROOTDIRECTORY/image ]; then
+    # Execute image setup script..
+    chmod +x $BASHDIRECTORY/image.sh
+    $BASHDIRECTORY/image.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e $TERMINATEDMESSAGE
+        echo ""
+        exit 1
+    fi
+    exit 0
+fi
+
+# Check that whiptail is installed.
+clear
+CheckPackage whiptail
 
 
 #############
 ## WHIPTAIL
 
-# Check that whiptail is installed.
-CheckPackage whiptail
-
 ##
 ## MESSAGES
 ##
-
-# The title of the installer.
-BACKTITLE="The ADS-B Receiver Project"
 
 # The welcome message displayed when this scrip[t it first executed.
 read -d '' WELCOME <<"EOF"
@@ -195,9 +216,9 @@ EOF
 
 # Message displayed if dump1090-mutability is installed.
 read -d '' DUMP1090INSTALLED <<"EOF"
-The dump1090-mutability package appears to be installed on your device However...
+The dump1090-mutability package appears to be installed on your device, however...
 
-The dump1090-mutability v1.15~dev source code is updated regularly without a change made to the version numbering. In order to insure you are running the latest version of
+The dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering. To ensure you are running the latest version of
 dump1090-mutability you may opt to rebuild and reinstall this package.
 
 Download, build, and reinstall this package?
@@ -205,7 +226,7 @@ EOF
 
 # Message displayed if dump1090-mutability is not installed.
 read -d '' DUMP1090NOTINSTALLED <<"EOF"
-The dump1090-mutability package does not appear to be installed on your system. In order to continue setup dump1090-mutability will be downloaded, compiled and installed on this system.
+The dump1090-mutability package does not appear to be installed on your system. To continue setup dump1090-mutability will be downloaded, compiled and installed on this system.
 
 Do you wish to continue setup?
 Answering no will exit this script with no actions taken.
@@ -213,21 +234,21 @@ EOF
 
 # Message displayed if dump978 is installed.
 read -d '' DUMP978INSTALLED <<"EOF"
-Dump978 appears to be installed on your device However...
+Dump978 appears to be installed on your device, however...
 
-The dump978 source code may have been updated since it was built last. In order to insure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.
+The dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.
 
 Download and rebuild the dump978 binaries?
 EOF
 
 # Message displayed if dump978 is not installed.
 read -d '' DUMP978NOTINSTALLED <<"EOF"
-Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts are able to setup dump978 for you. However keep in mind a second RTL-SDR device will be required in order to feed data to it.
+Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.
 
 Do you wish to install dump978?
 EOF
 
-# Message displayed above feeder selection check list.
+# Message displayed above feeder selection checklist.
 FEEDERSAVAILABLE="The following feeders are available for installation. Choose the feeders you wish to install. (Hint: Use spacebar to select/deselect.)"
 
 # Message displayed if all available feeders have already been installed.
@@ -235,7 +256,7 @@ ALLFEEDERSINSTALLED="It appears that all the feeders available for installation 
 
 # Message displayed asking if the user wishes to install the web portal.
 read -d '' INSTALLWEBPORTAL <<"EOF"
-The ADS-B Receiver Project Web Portal is a light weight web interface for dump-1090-mutability installations.
+The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.
 
 Current features include the following:
   Unified navigation between all web pages.
@@ -255,7 +276,7 @@ DO NOT DELETE THIS DIRECTORY!
 
 Files needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.
 
-It is hoped these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you ran into any problems or wish to submit feed back feel free to do so on the project's GitHub site.
+Hopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.
 
 https://github.com/jprochazka/adsb-receiver
 EOF
@@ -265,19 +286,19 @@ EOF
 ##
 
 # Display the welcome message.
-whiptail --backtitle "$BACKTITLE" --title "The ADS-B Receiver Project" --yesno "$WELCOME" 16 65
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "The ADS-B Receiver Project" --yesno "$WELCOME" 14 65
 BEGININSTALLATION=$?
 
 if [ $BEGININSTALLATION = 1 ]; then
     # Exit the script if the user wishes not to continue.
     echo -e "\033[31m"
-    echo "Installation cancelled by user."
+    echo "Installation canceled by user."
     echo -e "\033[37m"
     exit 0
 fi
 
 # Ask to update the operating system.
-whiptail --backtitle "$BACKTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 10 65
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Install Operating System Updates" --yesno "$UPDATEFIRST" 9 65
 UPDATEOS=$?
 
 ## DUMP1090-MUTABILITY CHECK
@@ -287,18 +308,18 @@ DUMP1090REINSTALL=1
 # Check if the dump1090-mutability package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
-    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 16 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-mutability Installed" --yesno "$DUMP1090INSTALLED" 16 65
     DUMP1090REINSTALL=$?
     if [ $DUMP1090REINSTALL = 0 ]; then
         DUMP1090CHOICE=0
     fi
 else
-    whiptail --backtitle "$BACKTITLE" --title "Dump1090-mutability Not Installed" --yesno "$DUMP1090NOTINSTALLED" 10 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-mutability Not Installed" --yesno "$DUMP1090NOTINSTALLED" 10 65
     DUMP1090CHOICE=$?
     if [ $DUMP1090CHOICE = 1 ]; then
         # If the user decided not to install dump1090-mutability exit setup.
         echo -e "\033[31m"
-        echo "Installation cancelled by user."
+        echo "Installation canceled by user."
         echo -e "\033[37m"
         exit 0
     fi
@@ -307,16 +328,16 @@ fi
 DUMP978CHOICE=1
 DUMP978REBUILD=1
 # Check if the dump978 has been built.
-if [ -f $BUILDDIR/dump978/dump978 ] && [ -f $BUILDDIR/dump978/uat2text ] && [ -f $BUILDDIR/dump978/uat2esnt ] && [ -f $BUILDDIR/dump978/uat2json ]; then
+if [ -f $BUILDDIRECTORY/dump978/dump978 ] && [ -f $BUILDDIRECTORY/dump978/uat2text ] && [ -f $BUILDDIRECTORY/dump978/uat2esnt ] && [ -f $BUILDDIRECTORY/dump978/uat2json ]; then
     # Dump978 appears to have been built already.
-    whiptail --backtitle "$BACKTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 16 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump978 Installed" --yesno "$DUMP978INSTALLED" 14 65
     DUMP978REBUILD=$?
     if [ $DUMP978REBUILD = 0 ]; then
         DUMP978CHOICE=0
     fi
 else
     # Dump978 does not appear to have been built yet.
-    whiptail --backtitle "$BACKTITLE" --title "Dump978 Not Installed" --defaultno --yesno "$DUMP978NOTINSTALLED" 10 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump978 Not Installed" --defaultno --yesno "$DUMP978NOTINSTALLED" 10 65
     DUMP978CHOICE=$?
 fi
 
@@ -326,7 +347,7 @@ declare array FEEDERLIST
 
 # Check if the PiAware package is installed or if it needs upgraded.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The PiAware package appear to be installed.
+    # The PiAware package appears to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
 else
     # Check if a newer version can be installed.
@@ -337,7 +358,7 @@ fi
 
 # Check if the Plane Finder ADS-B Client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The Plane Finder ADS-B Client package appear to be installed.
+    # The Plane Finder ADS-B Client package appears to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 else
     # Set version depending on the device architecture.
@@ -354,7 +375,7 @@ fi
 
 # Check if the Flightradar24 client package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The Flightradar24 client package appear to be installed.
+    # The Flightradar24 client package appears to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24 Client' '' OFF)
 else
     if [[ `uname -m` != "armv7l" ]]; then
@@ -365,8 +386,8 @@ else
 fi
 
 # Check if ADS-B Exchange sharing has been set up.
-if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
-    # The ADS-B Exchange maintainance script does not appear to be executed on start up.
+if ! grep -q "$BUILDDIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
+    # The ADS-B Exchange maintenance script does not appear to be executed on startup.
     FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
 
@@ -374,24 +395,24 @@ declare FEEDERCHOICES
 
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
-    # This command is creating a file named FEEDERCHOICES but can not fiogure out how to make it only a variable without the file being created at this time.
-    whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    # This command is creating a file named FEEDERCHOICES but can not figure out how to make it only a variable without the file being created at this time.
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$FEEDERSAVAILABLE" 13 52 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
-    whiptail --backtitle "$BACKTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 10 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "All Feeders Installed" --msgbox "$ALLFEEDERSINSTALLED" 8 65
 fi
 
 ## WEB PORTAL
 
 # Ask if the web portal should be installed.
-whiptail --backtitle "$BACKTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "$INSTALLWEBPORTAL" 8 78
 DOINSTALLWEBPORTAL=$?
 
 ## CONFIRMATION
 
 # Check if anything is to be done before moving on.
 if [ $UPDATEOS = 1 ] && [ $DUMP1090CHOICE = 1 ] && [ $DUMP978CHOICE = 1 ] && [ $DOINSTALLWEBPORTAL = 1 ] && [ ! -s FEEDERCHOICES ]; then
-    whiptail --backtitle "$BACKTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Nothing to be done" --msgbox "$NOTHINGTODO" 10 65
 
     echo -e "\033[31m"
     echo "Nothing was selected to do or be installed."
@@ -476,12 +497,12 @@ fi
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}\nDo you wish to continue?"
 
-whiptail --backtitle "$BACKTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78
 CONFIRMATION=$?
 
 if [ $CONFIRMATION = 1 ]; then
     echo -e "\033[31m"
-    echo "Installation cancelled by user."
+    echo "Installation canceled by user."
     echo -e "\033[37m"
 
     # Dirty hack but cannot make the whiptail checkbox not create this file and still work...
@@ -495,8 +516,6 @@ fi
 ## BEGIN SETUP
 
 ## System updates.
-
-AptUpdate
 
 if [ $UPDATEOS = 0 ]; then
     UpdateOperatingSystem
@@ -568,7 +587,10 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --backtitle "$BACKTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 19 65
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complete" --msgbox "$INSTALLATIONCOMPLETE" 20 65
+
+# Unset any exported variables.
+unset ADSB_PROJECTTITLE
 
 # Once again cannot make the whiptail checkbox not create this file and still work...
 # Will work on figuring this out at a later date but until then we will delete the file created.
