@@ -40,10 +40,20 @@
           ################################################################
 
 
+## CHECK IF SCRIPT WAS RAN USING SUDO
+
+if [ "$(id -u)" != "0" ]; then
+    echo -e "\033[33m"
+    echo "This script must be ran using sudo or as root."
+    echo -e "\033[37m"
+    exit 1
+fi
+
 ## VARIABLES
 
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -51,11 +61,43 @@ source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
 echo ""
-echo -e "\e[91m  The ADS-B Receiver Project Image Preparation Script"
+echo -e "\e[91m  The ADS-B Receiver Project Image Preparation Script\e[97m"
 echo ""
+
+## UPDATE REPOSITORY LISTS AND OPERATING SYSTEM
+
+echo -e "\e[95m  Updating repository lists and operating system...\e[97m"
+echo ""
+sudo apt-get update
+sudo apt-get -y dist-upgrade
+
+## INSTALL DUMP1090-MUTABILITY
+
+echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
+echo ""
+CheckPackage git
+CheckPackage curl
+CheckPackage build-essential
+CheckPackage debhelper
+CheckPackage cron
+CheckPackage rtl-sdr
+CheckPackage librtlsdr-dev
+CheckPackage libusb-1.0-0-dev
+CheckPackage pkg-config
+CheckPackage lighttpd
+CheckPackage fakeroot
+echo ""
+
+cd $BUILDDIRECTORY
+git clone https://github.com/mutability/dump1090.git
+cd $BUILDDIRECTORY/dump1090
+dpkg-buildpackage -b
+cd $BUILDDIRECTORY
+sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 
 ## INSTALL THE BASE PORTAL PREREQUISITES PACKAGES
 
+echo ""
 echo -e "\e[95m  Installing packages needed by the ADS-B Receiver Project Web Portal...\e[97m"
 echo ""
 CheckPackage lighttpd
@@ -125,6 +167,10 @@ ZONE="New_York"
 ZONEINFO_FILE='/usr/share/zoneinfo/'"${AREA}"'/'"${ZONE}"
 sudo ln --force --symbolic "${ZONEINFO_FILE}" '/etc/localtime'
 sudo dpkg-reconfigure --frontend=noninteractive tzdata
+
+## CHANGE THE PASSWORD FOR THE USER PI
+
+echo "pi:adsbreceiver" | sudo chpasswd
 
 ## TOUCH THE IMAGE FILE
 
