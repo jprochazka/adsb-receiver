@@ -28,7 +28,7 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    $possibleActions = array("getOsInformation", "getCpuInformation", "getMemoryInformation", "getHddInformation", "getNetworkInformation", "getUptimeInformation");
+    $possibleActions = array("getOsInformation", "getCpuInformation", "getMemoryInformation", "getHddInformation", "getNetworkInformation", "getUptimeInformation", "getProcessorTemp");
 
     if (isset($_GET['action']) && in_array($_GET["action"], $possibleActions)) {
         switch ($_GET["action"]) {
@@ -49,6 +49,9 @@
                 break;
             case "getUptimeInformation":
                 $informationArray = getUptimeInformation();
+                break;
+            case "getProcessorTemp":
+                $informationArray = getProcessorTemp();
                 break;
         }
         exit(json_encode($informationArray));
@@ -139,10 +142,21 @@
         $uptime['minutes'] = floor(($uptime['inSeconds'] - ($uptime['hours'] * 3600)) / 60);
         $uptime['seconds'] = floor($uptime['inSeconds'] % 60);
         return $uptime;
+}
 
-        //$idle['inSeconds'] = trim($uptimeArray[1]);
-        //$idle['hours'] = floor($idle['inSeconds'] / 3600);
-        //$idle['minutes'] = floor(($idle['inSeconds'] - ($idle['hours'] * 3600)) / 60);
-        //$idle['seconds'] = floor($idle['inSeconds'] % 60);
+    function getProcessorTemp() {
+        	$temp = exec('cat /sys/class/thermal/thermal_zone0/temp');
+        	$newtemp = floatval($temp); // Convert to float. You can't just combined floatval(exec('cat...')), not sure why it doesn't like that.
+        	$processorTemp = floatval($temp) / 1000; // Again, PHP was giving me issues... and so I had to divide by 1000 here, and then round after.
+        	$processorTemp1["temperature"] = round($processorTemp, 1); // Let's round it to 1 decimal place, instead of the three it was prior.
+        	return $processorTemp1; // Return the only relevant value.
     }
+
+/** This is another way to accomplish getProcessorTemp(), up to you which you think is best **/
+
+#    function getProcessorTemp () {
+#        $processorTemp["temperature"] = floatval(exec('cat /sys/class/thermal/thermal_zone0/temp | cut -c1-2'));
+#        return $processorTemp;
+#    }
+
 ?>
