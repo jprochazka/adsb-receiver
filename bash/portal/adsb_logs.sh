@@ -62,13 +62,15 @@ cd /tmp
 #
 # Check if Node Package Manager is installed and at the right version
 #
-echo "Checking for NPM version ${NPM_VERION}"
+echo "Checking for NPM version ${NPM_VERSION}"
 npm --version | grep ${NPM_VERSION}
 if [[ $? != 0 ]] ; then
     echo "Downloading npm"
     git clone git://github.com/isaacs/npm.git && cd npm
     git checkout v${NPM_VERSION}
     make install
+  else
+    echo -e "Great! You already have ${NPM_VERSION}. Continuing on..."
 fi
 
 echo "Checking for previous installation of frontail..."
@@ -151,12 +153,12 @@ fi
     LOGFILEOPTIONS=("${LOGFILEOPTIONS[@]}" '/var/log/dump978.log' '' OFF)
 fi
 
-LOGFILESAVAILABLE="The following feeders are installed and can be tailed for log analysis. Choose the feeders you wish to tail the log files for. (Hint: Use spacebar to select/deselect.)"
+LOGFILESAVAILABLE="The following logs are available for analysis. Choose the respective feeder log file you wish to monitor."
 
   if [[ -n "$LOGFILEOPTIONS" ]]; then
-      # Display a checklist containing feeders that are not installed if any.
+      # Display a checklist of applicable log files that can be tailed based on the feeders that have been installed.
       # This command is creating a file named LOGCHOICES but can not figure out how to make it only a variable without the file being created at this time.
-      whiptail --backtitle "$BACKTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "$LOGFILESAVAILABLE" 13 52 4 "${LOGFILEOPTIONS[@]}" 2>LOGCHOICES
+      whiptail --backtitle "$BACKTITLE" --title "Log File Options" --checklist --nocancel --separate-output "$LOGFILESAVAILABLE" 13 52 4 "${LOGFILEOPTIONS[@]}" 2>LOGCHOICES
 fi
 
 LOGDUMP1090=1
@@ -217,7 +219,6 @@ if ! grep -Fxq "frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs
 fi
 
 # Start frontail.
-echo -e "\033[33m"
 echo -e "Starting frontail logging...\033[37m"
 nohup frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs/*.log > /dev/null 2>&1 &
 
