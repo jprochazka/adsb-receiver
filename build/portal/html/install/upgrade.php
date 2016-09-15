@@ -145,7 +145,7 @@
     if ($common->getSetting("version") == "2.0.3") {
         try {
 
-            // Add the positions.aircraft column if using "SQL" storeage.
+            // Add the positions.aircraft column if using "SQL" storage.
             if ($settings::db_driver != "xml") {
 
                 if ($settings::db_driver == "sqlite") {
