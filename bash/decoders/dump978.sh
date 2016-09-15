@@ -46,12 +46,12 @@ source $BASHDIRECTORY/functions.sh
 ### BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
 echo ""
 echo -e "\e[92m  Setting up dump978..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-whiptail --title "Dump1090-mutability Setup" --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  https://github.com/mutability/dump978\n\nWould you like to continue setup by installing dump978?" 9 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-mutability Setup" --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  https://github.com/mutability/dump978\n\nWould you like to continue setup by installing dump978?" 9 78
 CONTINUESETUP=$?
 if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
@@ -154,15 +154,15 @@ echo ""
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
-    whiptail --title "RTL-SDR Dongle Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run dump978 in tandem with dump1090-mutability you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "RTL-SDR Dongle Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run dump978 in tandem with dump1090-mutability you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
     DUMP1090DEVICE_TITLE="Dump1090 RTL-SDR Dongle"
     while [[ -z $DUMP1090DEVICE ]]; do
-        DUMP1090DEVICE=$(whiptail --title "$DUMP1090DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        DUMP1090DEVICE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DUMP1090DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         DUMP1090DEVICE_TITLE="Dump1090 RTL-SDR Dongle (REQUIRED)"
     done
     DUMP978DEVICE_TITLE="Dump978 RTL-SDR Dongle"
     while [[ -z $DUMP978DEVICE ]]; do
-        DUMP978DEVICE=$(whiptail --title "$DUMP978DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        DUMP978DEVICE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DUMP978DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         DUMP978DEVICE_TITLE="Dump978 RTL-SDR Dongle (REQUIRED)"
     done
 

@@ -2,16 +2,18 @@
 
 The following is a history of the changes made to this project.
 
-## v2.3.0 *(September 9th, 2016)*
+## v2.3.0 *(September 12th, 2016)*
 
 * Massive clean up and in some cases an overhaul of the installation bash scripts.
 * Updated the dump978 map by modifying newer dump1090-mutability map.
+* Crontab errors pertaining to collectd no longer emailed to the root user.
+* The image setup script now executes the portal install scripts to setup the portal.
+* Script now comments out NET_BIND_ADDRESS to bind dump1090-mutability to all IPs.
 * Moved the logging portion of the portal install script into it's own file. *(advanced)*
 * Flights.py has been optimized even further. *(advanced)*
 * Flights.py now logs the aircraft ID when logging positions. *(advanced)*
 * Many bug fixes pertainng to the advanced portal features setup process. *(advanced)*
 * Fix aircraft column issue not allowing SQLite installs to upgrade properly. *(advanced)*
-* Upgrading SQLite installs where the database has been moved is possible. *(advanced)*
 
 ## v2.2.0 *(August 31st, 2016)*
 
