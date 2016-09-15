@@ -97,3 +97,13 @@ function GetConfig {
     sudo sed -n '/^$1=\(.*\)$/s//\1/p' $2
     echo `sed -n "/^$1=\"\(.*\)\"$/s//\1/p" $2`
 }
+
+function CommentConfig {
+    # Use sed to locate the "KEY" then comment out the line containing it in the specified "FILE".
+    sudo sed -i -e "/$1/s/^#*/#/" $2
+}
+
+function UncommentConfig {
+    # Use sed to locate the "KEY" then uncomment the line containing it in the specified "FILE".
+    sudo sed -i -e "/$1/s/^#//" $2
+}

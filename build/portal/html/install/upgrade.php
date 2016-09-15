@@ -35,7 +35,7 @@
     $settings = new settings();
 
     // The most current stable release.
-    $thisVersion = "2.2.0";
+    $thisVersion = "2.3.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if ($common->getSetting("version") == $thisVersion) {
@@ -266,6 +266,21 @@
             $errorMessage = $e->getMessage();
         }
     }
+
+    ///////////////////////
+    // UPGRADE TO V2.3.0
+    ///////////////////////
+
+    if ($common->getSetting("version") == "2.2.0") {
+        try {
+            $common->updateSetting("version", "2.3.0");
+            $common->updateSetting("patch", "");
+        } catch(Exception $e) {
+            $error = TRUE;
+            $errorMessage = $e->getMessage();
+        }
+    }
+
 
     require_once('../admin/includes/header.inc.php');
 

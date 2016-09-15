@@ -47,12 +47,12 @@ source $BASHDIRECTORY/functions.sh
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  THE ADS-B RECIEVER PROJECT VERSION $PROJECTVERSION"
+echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
 echo ""
 echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-whiptail --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
 CONTINUESETUP=$?
 if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
@@ -163,14 +163,14 @@ echo -e "\e[95m  Creating maintenance for both the mlat-client and netcat feeds.
 echo ""
 
 # Ask the user for the user name for this receiver.
-RECEIVERNAME=$(whiptail --backtitle "$BACKTITLETEXT" --title "Receiver Name" --nocancel --inputbox "\nPlease enter a name for this receiver. (NOT REQUIRED)\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
+RECEIVERNAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Name" --nocancel --inputbox "\nPlease enter a name for this receiver. (NOT REQUIRED)\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability.
 RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
 RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
-RECEIVERALTITUDE=$(whiptail --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLATITUDE,$RECEIVERLONGITUDE | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
+RECEIVERALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLATITUDE,$RECEIVERLONGITUDE | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
 
 # Create the adsbexchange directory in the build directory if it does not exist.
 echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"
