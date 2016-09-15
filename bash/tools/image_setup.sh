@@ -40,21 +40,13 @@
           ################################################################
           #                                                              #
           # This script must be ran from the projects root directory.    #
-          # This script must be ran using sudo.                          #
           #                                                              #
-          # pi@darkstar: sudo ./bash/tools/image_setup.sh                #
+          # pi@darkstar: ./bash/tools/image_setup.sh                     #
           #                                                              #
           ################################################################
 
 
-## CHECK IF SCRIPT WAS RAN USING SUDO
-
-if [ "$(id -u)" != "0" ]; then
-    echo -e "\033[33m"
-    echo "This script must be ran using sudo or as root."
-    echo -e "\033[37m"
-    exit 1
-fi
+clear
 
 ## VARIABLES
 
@@ -119,7 +111,7 @@ CheckPackage php5-json
 echo ""
 echo -e "\e[95m  Setting the locale to en_US.UTF-8...\e[97m"
 echo ""
-sudo sed --regexp-extended --expression='
+sudo su -c "sed --regexp-extended --expression='
 
    1  {
          i\
@@ -134,21 +126,21 @@ sudo sed --regexp-extended --expression='
 
    /^(en_US+)?(\.UTF-8)?(@[^[:space:]]+)?[[:space:]]+UTF-8$/!   s/^/# /
 
-' /usr/share/i18n/SUPPORTED >  /etc/locale.gen
+' /usr/share/i18n/SUPPORTED > /etc/locale.gen"
 
 sudo debconf-set-selections <<< 'locales locales/default_environment_locale select en_US.UTF-8'
 sudo rm -f /etc/default/locale
 sudo dpkg-reconfigure --frontend=noninteractive locales
 
-update-locale LC_NUMERIC='en_US.UTF-8'
-update-locale LC_TIME='en_US.UTF-8'
-update-locale LC_MONETARY='en_US.UTF-8'
-update-locale LC_PAPER='en_US.UTF-8'
-update-locale LC_NAME='en_US.UTF-8'
-update-locale LC_ADDRESS='en_US.UTF-8'
-update-locale LC_TELEPHONE='en_US.UTF-8'
-update-locale LC_MEASUREMENT='en_US.UTF-8'
-update-locale LC_IDENTIFICATION='en_US.UTF-8'
+sudo update-locale LC_NUMERIC='en_US.UTF-8'
+sudo update-locale LC_TIME='en_US.UTF-8'
+sudo update-locale LC_MONETARY='en_US.UTF-8'
+sudo update-locale LC_PAPER='en_US.UTF-8'
+sudo update-locale LC_NAME='en_US.UTF-8'
+sudo update-locale LC_ADDRESS='en_US.UTF-8'
+sudo update-locale LC_TELEPHONE='en_US.UTF-8'
+sudo update-locale LC_MEASUREMENT='en_US.UTF-8'
+sudo update-locale LC_IDENTIFICATION='en_US.UTF-8'
 
 #sudo update-locale LANGUAGE='en_US'
 #sudo locale-gen en_US.UTF-8
