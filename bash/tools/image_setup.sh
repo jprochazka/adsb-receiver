@@ -175,6 +175,7 @@ echo "pi:adsbreceiver" | sudo chpasswd
 ## TOUCH THE IMAGE FILE
 
 echo -e "\e[95m  Touching the \"image\" file...\e[97m"
+cd $PROJECTROOTDIRECTORY
 touch image
 
 ## DONE
