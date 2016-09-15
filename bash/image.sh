@@ -8,7 +8,7 @@
 #  needed to setup a Mode S decoder as well as feeders which are capable of         #
 #  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
 #                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-feeder              #
+#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-receiver              #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
