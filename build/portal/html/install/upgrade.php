@@ -145,96 +145,23 @@
     if ($common->getSetting("version") == "2.0.3") {
         try {
 
-            // Add the positions.aircraft column if using "SQL" storeage.
+            // Add the positions.aircraft column if using "SQL" storage.
             if ($settings::db_driver != "xml") {
 
                 if ($settings::db_driver == "sqlite") {
                     // In SQLite aircraft.flight should have been an INTEGER not TEXT column.
                     // Since SQLite does not fully support ALTER TABLE allowing the change to be done easily this change will be skipped.
                     // This change will be addressed in the future if a problem arises with this column not being specifed as an INTEGER.
-
-                    // Add FAA database tables.
-                    // The FAA database will not be used.
-                    // These tables will be remove in the future once it is known it will not effect the portal once removed.
-                    $faaMasterSql = 'CREATE TABLE '.$dbPrefix.'faa_master (
-                                       nNumber VARCHAR(5) NOT NULL,
-                                       serialNumber VARCHAR(30) NULL,
-                                       mfrMdlCode VARCHAR(7) NULL,
-                                       engMfrMdl VARCHAR(5) NULL,
-                                       yearMfr VARCHAR(4) NULL,
-                                       typeRegistrant VARCHAR(50) NULL,
-                                       name VARCHAR(33) NULL,
-                                       street VARCHAR(33) NULL,
-                                       street2 VARCHAR(18) NULL,
-                                       city VARCHAR(2) NULL,
-                                       state VARCHAR(10) NULL,
-                                       zipCode VARCHAR(1) NULL,
-                                       region VARCHAR(3) NULL,
-                                       county VARCHAR(2) NULL,
-                                       country VARCHAR(8) NULL,
-                                       lastActionDate VARCHAR(8) NULL,
-                                       certIssueDate VARCHAR(10) NULL,
-                                       certification VARCHAR(1) NULL,
-                                       typeAircraft VARCHAR(2) NULL,
-                                       typeEngine VARCHAR(2) NULL,
-                                       statusCode VARCHAR(8) NULL,
-                                       modeSCode VARCHAR(1) NULL,
-                                       fractOwner VARCHAR(8) NULL,
-                                       airWorthDate VARCHAR(50) NULL,
-                                       otherNames1 VARCHAR(50) NULL,
-                                       otherNames2 VARCHAR(50) NULL,
-                                       otherNames3 VARCHAR(50) NULL,
-                                       otherNames4 VARCHAR(50) NULL,
-                                       otherNames5 VARCHAR(50) NULL,
-                                       experiationDate VARCHAR(8) NULL,
-                                       uniqueId VARCHAR(8) NULL,
-                                       kitMfr VARCHAR(30) NULL,
-                                       kitModel VARCHAR(20) NULL,
-                                       modeSCodeHex VARCHAR(10) NULL);';
-
-                    $faaAcftrefSql = 'CREATE TABLE '.$dbPrefix.'faa_acftref (
-                                        code VARCHAR(7) NOT NULL,
-                                        mfr VARCHAR(30) NULL,
-                                        model VARCHAR(20) NULL,
-                                        typeAcft VARCHAR(1) NULL,
-                                        typeEng VARCHAR(2) NULL,
-                                        acCat VARCHAR(1) NULL,
-                                        buildCertInd VARCHAR(1) NULL,
-                                        noEng VARCHAR(2) NULL,
-                                        noSeats VARCHAR(3) NULL,
-                                        acWeight VARCHAR(7) NULL,
-                                        speed VARCHAR(4) NULL);';
-
-                    $faaEngineSql = 'CREATE TABLE '.$dbPrefix.'faa_engine (
-                                       code VARCHAR(7) NOT NULL,
-                                       mfr VARCHAR(30) NULL,
-                                       model VARCHAR(20) NULL,
-                                       typeAcft VARCHAR(1) NULL,
-                                       typeEng VARCHAR(2) NULL,
-                                       acCat VARCHAR(1) NULL,
-                                       buildCertInd VARCHAR(1) NULL,
-                                       noEng VARCHAR(2) NULL,
-                                       noSeats VARCHAR(3) NULL,
-                                       acWeight VARCHAR(7) NULL,
-                                       speed VARCHAR(4) NULL);';
-
-                    $sth = $dbh->prepare($faaMasterSql);
-                    $sth->execute();
-                    $sth = NULL;
-
-                    $dbh = NULL;
                 }
 
                 if ($settings::db_driver == "mysql") {
                     // Added check to see if column already exists.
                     $dbh = $common->pdoOpen();
-                    if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."positions` LIKE 'aircraft'")->fetchAll())) {
-                        //$dbh = $common->pdoOpen();
+                    if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."positions` LIKE 'aircraft'")->fetchAll()) == 0) {
                         $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft BIGINT";
                         $sth = $dbh->prepare($sql);
                         $sth->execute();
                         $sth = NULL;
-                        //$dbh = NULL;
                     }
                     $dbh = NULL;
                 }

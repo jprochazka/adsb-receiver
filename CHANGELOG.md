@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.3.0 *(September 12th, 2016)*
+## v2.3.0 *(September 15th, 2016)*
 
 * Massive clean up and in some cases an overhaul of the installation bash scripts.
 * Updated the dump978 map by modifying newer dump1090-mutability map.
