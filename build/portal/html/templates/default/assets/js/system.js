@@ -62,7 +62,7 @@ $(document).ready(function () {
         }, 7000);
         setInterval(function () {
             $timestamp = new Date().getTime() / 1000;
-            $.getJSON("/api/system.php?action=getProcessorTemp&time=" + $timestamp, function (json) {
+            $.getJSON("/api/system.php?action=getCpuInformation&time=" + $timestamp, function (json) {
                 data.setValue(4, 1, Math.round(json.temperature));
                 chart.draw(data, options);
             });
