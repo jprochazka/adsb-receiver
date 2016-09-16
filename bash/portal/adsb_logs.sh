@@ -45,76 +45,77 @@ NPM_VERSION=2.15.9
 
 # Check if Node is installed and at the right version
 
-echo "Checking for Node version ${NODE_VERSION}"
+echo -e "\e[0;36m Checking for Node version ${NODE_VERSION} \e[0m"
 node --version | grep ${NODE_VERSION}
 if [[ $? != 0 ]] ; then
     # Install Node
-    echo "It looks like Node isn't installed, lets install it."
+    echo -e "It looks like Node isn't installed, lets install it."
     sudo curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
     sudo apt-get install -y nodejs
     sudo apt-get install -y build-essential
   else
-    echo -e "Great! You already have ${NODE_VERSION}. Continuing on..."
+    echo -e "\e[0;32m Great! You already have ${NODE_VERSION}. Continuing on... \e[0m"
 fi
-
-cd /tmp
 
 #
 # Check if Node Package Manager is installed and at the right version
 #
-echo "Checking for NPM version ${NPM_VERSION}"
+echo -e "\e[0;36m Checking for NPM version ${NPM_VERSION} \e[0m"
 npm --version | grep ${NPM_VERSION}
 if [[ $? != 0 ]] ; then
-    echo "Downloading npm"
+    echo -e " Downloading npm..."
     git clone git://github.com/isaacs/npm.git && cd npm
     git checkout v${NPM_VERSION}
     make install
+    cd $PROJECTROOTDIRECTORY
+    echo -e " Cleaning up space and deleting git repository."
+    rm -rf $PROJECTROOTDIRECTORY/npm
   else
-    echo -e "Great! You already have ${NPM_VERSION}. Continuing on..."
+    echo -e "\e[0;32m Great! You already have ${NPM_VERSION}. Continuing on... \e[0m"
 fi
 
-echo "Checking for previous installation of frontail..."
+echo "\e[0:37m Checking for previous installation of frontail... \e[0;37m"
 npm -g ls|grep frontail
 if [[ $? != 0 ]] ; then
-  echo "It looks like you don't have frontail installed, lets install it."
+  echo -e " It looks like you don't have frontail installed, lets install it."
   sudo npm install frontail -g
-  echo -e "Successfully installed frontail, continuing on..."
+  echo -e "\e[0;32m Successfully installed frontail, continuing on... \e[0m"
 else
-  echo -e "Great! You already have frontail installed. Continuing on..."
+  echo -e "\e[0;32m Great! You already have frontail installed. Continuing on... \e[0m"
 fi
 
 # EXECUTE THE LOGGING SCRIPTS
 
 function AddPlaneFinder() {
-  echo -e "\e[94m  Adding PlaneFinder logs...\e[97m"
+  echo -e "\e[94m  Adding PlaneFinder logs... \e[0m"
   if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
 fi
   sudo ln -s /var/log/pfclient/ $PROJECTROOTDIRECTORY/logs/
 }
 
 function AddPiAware() {
-  echo -e "\e[94m  Adding PiAware logs...\e[97m"
+  echo -e "\e[94m  Adding PiAware logs... \e[0m"
   if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
 fi
   sudo ln -s /var/log/piaware.log $PROJECTROOTDIRECTORY/logs/piaware.log
 }
 
 function AddFR24() {
-  echo -e "\e[94m  Adding FlightRadar24 logs...\e[97m"
+  echo -e "\e[94m  Adding FlightRadar24 logs... \e[0m"
   if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
 fi
   sudo ln -s /var/log/fr24feed.log $PROJECTROOTDIRECTORY/logs/fr24feed.log
 }
 
 function AddDump1090() {
-  echo -e "\e[94m  Adding dump1090-mutability logs...\e[97m"
+  echo -e "\e[94m  Adding dump1090-mutability logs... \e[0m"
   if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
 fi
   sudo ln -s /var/log/dump1090-mutability.log $PROJECTROOTDIRECTORY/logs/dump1090-mutability.log
 }
 
 function AddDump978() {
-  echo -e "\e[94m  Adding dump978 logs...\e[97m"
+  echo -e "\e[94m  Adding dump978 logs... \e[0m"
   if [ ! -d "$PROJECTROOTDIRECTORY/logs" ] ; then sudo mkdir $PROJECTROOTDIRECTORY/logs ;
 fi
   sudo ln -s /var/log/dump978.log $PROJECTROOTDIRECTORY/logs/dump978
@@ -213,20 +214,20 @@ fi
 
 # Add frontail logging script to rc.local.
 if ! grep -Fxq "frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs/*.log &" /etc/rc.local; then
-    echo -e "\e[94m  Adding the frontail daemon to /etc/rc.local...\e[97m"
+    echo -e "\e[94m  Adding the frontail daemon to /etc/rc.local... \e[0m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
     ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs/*.log &\n" /etc/rc.local
 fi
 
 # Start frontail.
-echo -e "Starting frontail logging...\033[37m"
+echo -e "\e[0;32m Starting frontail logging... \e[0m"
 nohup frontail -d  --ui-hide-topbar default $PROJECTROOTDIRECTORY/logs/*.log > /dev/null 2>&1 &
 
 # Remove the now unneeded
-echo -e "Removing the unnecessary LOGCHOICES file now..."
+echo -e "\e[0;37m Removing the unnecessary LOGCHOICES file now... \e[0m"
 rm -f LOGCHOICES
 
 # Display the installation complete message box.
-echo -e "Realtime Log Streaming Setup Complete"
+echo -e "\e[0;32m Realtime Log Streaming Setup Complete \e[0m"
 
 exit 0
