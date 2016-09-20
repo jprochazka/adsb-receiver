@@ -208,7 +208,8 @@ EOF;
                                            contents VARCHAR(20000) NOT NULL);';
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                      id INT(11) PRIMARY KEY AUTO_INCREMENT,
-                                                     flight VARCHAR(10) NOT NULL);';
+                                                     flight VARCHAR(10) NOT NULL,
+                                                     lastSeen datetime NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights(
                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
@@ -255,7 +256,8 @@ EOF;
                                          contents VARCHAR(20000) NOT NULL);';
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                    id SERIAL PRIMARY KEY,
-                                                   flight VARCHAR(10) NOT NULL);';
+                                                   flight VARCHAR(10) NOT NULL,
+                                                   lastSeen VARCHAR(100) NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id SERIAL PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
@@ -301,7 +303,8 @@ EOF;
                                          contents TEXT NOT NULL);';
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                   flight TEXT NOT NULL);';
+                                                   flight TEXT NOT NULL,
+                                                   lastSeen DATETIME NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          aircraft INTEGER NOT NULL,
@@ -396,6 +399,12 @@ EOF;
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
             $common->addSetting('timeZone', $_POST['timeZone']);
             $common->addSetting('useDump1090FaMap', FALSE);
+            $common->addSetting('enableFlightNotificationsTwitter', FALSE);
+            $common->addSetting('twitterUserName', '');
+            $common->addSetting('twitterConsumerKey', '');
+            $common->addSetting('twitterConsumerSecret', '');
+            $common->addSetting('twitterAccessToken', '');
+            $common->addSetting('twitterAccessTokenSecret', '');
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);

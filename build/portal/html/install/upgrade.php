@@ -155,9 +155,10 @@
                 }
 
                 if ($settings::db_driver == "mysql") {
-                    // Added check to see if column already exists.
+                    // Check to see if the column already exists.
                     $dbh = $common->pdoOpen();
                     if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."positions` LIKE 'aircraft'")->fetchAll()) == 0) {
+                        // Add the column if it does not exist.
                         $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft BIGINT";
                         $sth = $dbh->prepare($sql);
                         $sth->execute();
@@ -165,6 +166,27 @@
                     }
                     $dbh = NULL;
                 }
+
+                if ($settings::db_driver == "sqlite") {
+                    // Check to see if the column already exists.
+                    $dbh = $common->pdoOpen();
+                    $columns = $dbh->query("pragma table_info(positions)")->fetchArray(SQLITE3_ASSOC);
+                    $columnExists = FALSE;
+                    foreach($columns as $column ){
+                        if ($column['name'] == 'lastSeen') {
+                            $columnExists = TRUE;
+                        }
+                    }
+                    // Add the column if it does not exist.
+                    if (!$columnExists) {
+                        $sql = "ALTER TABLE ".$settings::db_prefix."positionss ADD COLUMN aircraft BIGINT";
+                        $sth = $dbh->prepare($sql);
+                        $sth->execute();
+                        $sth = NULL;
+                    }
+                    $dbh = NULL;
+                }
+
             }
             $common->updateSetting("version", "2.1.0");
             $common->updateSetting("patch", "");
@@ -200,6 +222,61 @@
         try {
             $common->updateSetting("version", "2.3.0");
             $common->updateSetting("patch", "");
+        } catch(Exception $e) {
+            $error = TRUE;
+            $errorMessage = $e->getMessage();
+        }
+    }
+
+    ///////////////////////
+    // UPGRADE TO V2.4.0
+    ///////////////////////
+
+    if ($common->getSetting("version") == "2.3.0") {
+        try {
+
+           // Add lastSeen as a column to the flightNotifications table.
+           if ($settings::db_driver == "mysql") {
+                // Check to see if the column already exists.
+                $dbh = $common->pdoOpen();
+                if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."flightNotifications` LIKE 'lastSeen'")->fetchAll()) == 0) {
+                    // Add the column if it does not exist.
+                    $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications ADD COLUMN lastSeen DATETIME";
+                    $sth = $dbh->prepare($sql);
+                    $sth->execute();
+                    $sth = NULL;
+                }
+                $dbh = NULL;
+            }
+
+            if ($settings::db_driver == "sqlite") {
+                // Check to see if the column already exists.
+                $dbh = $common->pdoOpen();
+                $columns = $dbh->query("pragma table_info(flightNotifications)")->fetchArray(SQLITE3_ASSOC);
+                $columnExists = FALSE;
+                foreach($columns as $column ){
+                    if ($column['name'] == 'lastSeen') {
+                        $columnExists = TRUE;
+                    }
+                }
+                // Add the column if it does not exist.
+                if (!$columnExists) {
+                    $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications ADD COLUMN lastSeen DATETIME";
+                    $sth = $dbh->prepare($sql);
+                    $sth->execute();
+                    $sth = NULL;
+                }
+                $dbh = NULL;
+            }
+
+            // Add new flight notification Twitter settings.
+            $common->addSetting('enableFlightNotificationsTwitter', FALSE);
+            $common->addSetting('twitterUserName', '');
+            $common->addSetting('twitterConsumerKey', '');
+            $common->addSetting('twitterConsumerSecret', '');
+            $common->addSetting('twitterAccessToken', '');
+            $common->addSetting('twitterAccessTokenSecret', '');
+
         } catch(Exception $e) {
             $error = TRUE;
             $errorMessage = $e->getMessage();

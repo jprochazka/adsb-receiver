@@ -150,6 +150,10 @@
         if (isset($_POST['useDump1090FaMap']) && $_POST['useDump1090FaMap'] == "TRUE")
             $useDump1090FaMap = TRUE;
 
+        $enableFlightNotificationsTwitter = FALSE;
+        if (isset($_POST['enableFlightNotificationsTwitter']) && $_POST['enableFlightNotificationsTwitter'] == "TRUE")
+            $enableFlightNotificationsTwitter = TRUE;
+
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
@@ -177,6 +181,12 @@
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
         $common->updateSetting("timeZone", $_POST['timeZone']);
         $common->updateSetting("useDump1090FaMap", $useDump1090FaMap);
+        $common->updateSetting("enableFlightNotificationsTwitter", $enableFlightNotificationsTwitter);
+        $common->updateSetting("twitterUserName", $_POST['twitterUserName']);
+        $common->updateSetting("twitterConsumerKey", $_POST['twitterConsumerKey']);
+        $common->updateSetting("twitterConsumerSecret", $_POST['twitterConsumerSecret']);
+        $common->updateSetting("twitterAccessToken", $_POST['twitterAccessToken']);
+        $common->updateSetting("twitterAccessTokenSecret", $_POST['twitterAccessTokenSecret']);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -193,7 +203,7 @@
         $updated = TRUE;
     }
 
-    // Get all flights to be notified about from the flightNotifications.xml file.
+    // Get notification settings.
     $flightNotifications = NULL;
     $savedFlights = array();
     if ($settings::db_driver == "xml") {
@@ -215,8 +225,13 @@
             $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
         }
     }
-
     $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
+    $enableFlightNotificationsTwitter = $common->getSetting("enableFlightNotificationsTwitter");
+    $twitterUserName = $common->getSetting("twitterUserName");
+    $twitterConsumerKey = $common->getSetting("twitterConsumerKey");
+    $twitterConsumerSecret = $common->getSetting("twitterConsumerSecret ");
+    $twitterAccessToken = $common->getSetting("twitterAccessToken");
+    $twitterAccessTokenSecret = $common->getSetting("twitterAccessTokenSecret");
 
     // Get general settings from settings.xml.
     $siteName = $common->getSetting("siteName");
@@ -374,8 +389,33 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="siteName">Flight Notifications (coma delimited)</label>
+                                <label for="flightNotifications"">Flight Notifications (coma delimited)</label>
                                 <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableFlightNotificationsTwitter" value="TRUE"<?php ($enableFlightNotificationsTwitter == 1 ? print ' checked' : ''); ?>> Enable Twitter flight notifications.
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="twitterUserName">Twitter User Name</label>
+                                <input type="text" class="form-control" id="twitterUserName" name="twitterUserName" value="<?php echo $twitterUsername; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="twitterConsumerKey">Twitter Consumer Key</label>
+                                <input type="text" class="form-control" id="twitterConsumerKey" name="twitterConsumerKey" value="<?php echo $twitterConsumerKey; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="twitterConsumerSecret">Twitter</label>
+                                <input type="text" class="form-control" id="twitterConsumerSecret" name="twitterConsumerSecret" value="<?php echo $twitterConsumerSecret; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="twitterAccessToken">Twitter</label>
+                                <input type="text" class="form-control" id="twitterAccessToken" name="twitterAccessToken" value="<?php echo $twitterAccessToken; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="twitterAccessTokenSecret">Twitter</label>
+                                <input type="text" class="form-control" id="twitterAccessTokenSecret" name="twitterAccessTokenSecret" value="<?php echo $twitterAccessTokenSecret; ?>">
                             </div>
                         </div>
                     </div>
