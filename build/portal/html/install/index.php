@@ -167,7 +167,7 @@ EOF;
                 $xml->startDocument('1.0','UTF-8');
                 $xml->startElement("flights");
                 $xml->endElement();
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $xml->flush(true));
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml", $xml->flush(true));
 
                 // Create XML files used to store settings data.
                 $xml = new XMLWriter();
@@ -206,10 +206,10 @@ EOF;
                                            date datetime NOT NULL,
                                            author VARCHAR(100) NOT NULL,
                                            contents VARCHAR(20000) NOT NULL);';
-                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
+                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
                                                      id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                                      flight VARCHAR(10) NOT NULL,
-                                                     lastSeen datetime NOT NULL);';
+                                                     lastMessageCount INT(11) NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights(
                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
@@ -254,10 +254,10 @@ EOF;
                                          date VARCHAR(20) NOT NULL,
                                          author VARCHAR(100) NOT NULL,
                                          contents VARCHAR(20000) NOT NULL);';
-                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
+                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
                                                    id SERIAL PRIMARY KEY,
                                                    flight VARCHAR(10) NOT NULL,
-                                                   lastSeen VARCHAR(100) NOT NULL);';
+                                                   lastMessageCount INT(11) NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id SERIAL PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
@@ -301,10 +301,10 @@ EOF;
                                          date DATETIME NOT NULL,
                                          author TEXT NOT NULL,
                                          contents TEXT NOT NULL);';
-                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
+                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                    flight TEXT NOT NULL,
-                                                   lastSeen DATETIME NOT NULL);';
+                                                   lastMessageCount INTEGER NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          aircraft INTEGER NOT NULL,
@@ -345,7 +345,7 @@ EOF;
                 $sth->execute();
                 $sth = NULL;
 
-                $sth = $dbh->prepare($flightNotificationsSql);
+                $sth = $dbh->prepare($notificationsSql);
                 $sth->execute();
                 $sth = NULL;
 
@@ -394,12 +394,12 @@ EOF;
             $common->addSetting('measurementTemperature', 'imperial');
             $common->addSetting('measurementBandwidth', 'kbps');
             $common->addSetting('networkInterface', 'eth0');
-            $common->addSetting('enableFlightNotifications', FALSE);
+            $common->addSetting('enableNotifications', FALSE);
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
             $common->addSetting('timeZone', $_POST['timeZone']);
             $common->addSetting('useDump1090FaMap', FALSE);
-            $common->addSetting('enableFlightNotificationsTwitter', FALSE);
+            $common->addSetting('enableTwitterNotifications', FALSE);
             $common->addSetting('twitterUserName', '');
             $common->addSetting('twitterConsumerKey', '');
             $common->addSetting('twitterConsumerSecret', '');

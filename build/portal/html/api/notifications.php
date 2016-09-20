@@ -48,19 +48,19 @@
         $settings = new settings();
         $common = new common();
 
-        // Get all flights to be notified about from the flightNotifications.xml file.
+        // Get all flights to be notified about from the notifications.xml file.
         $lookingFor = array();
 
         if ($settings::db_driver == "xml") {
             // XML
-            $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+            $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
             foreach ($savedFlights as $savedFlight) {
                 $lookingFor[] = array($savedFlight);
             }
         } else {
             // PDO
             $dbh = $common->pdoOpen();
-            $sql = "SELECT flight FROM ".$settings::db_prefix."flightNotifications";
+            $sql = "SELECT flight FROM ".$settings::db_prefix."notifications";
             $sth = $dbh->prepare($sql);
             $sth->execute();
             $lookingFor = $sth->fetchAll();

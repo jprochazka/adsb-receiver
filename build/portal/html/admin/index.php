@@ -50,22 +50,22 @@
 
     if ($common->postBack()) {
         // Flight notifications
-        $notificationArray = explode(',', $_POST['flightNotifications']);
+        $notificationArray = explode(',', $_POST['notifications']);
 
         if ($settings::db_driver == "xml") {
             // XML
-            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
             unset($notifications->flight);
             foreach ($notificationArray as $notification) {
                 $newNotification = $notifications->addChild('flight', $notification);
                 $dom = dom_import_simplexml($notifications)->ownerDocument;
                 $dom->formatOutput = TRUE;
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $dom->saveXML());
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml", $dom->saveXML());
             }
         } else {
             // PDO
             $dbh = $common->pdoOpen();
-            $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+            $sql = "SELECT * FROM ".$settings::db_prefix."notifications";
             $sth = $dbh->prepare($sql);
             $sth->execute();
             $savedFlights = $sth->fetchAll();
@@ -75,7 +75,7 @@
                 // Remove flight if not in list.
                 if (!in_array($flight, $notificationArray)) {
                     $dbh = $common->pdoOpen();
-                    $sql = "DELETE FROM ".$settings::db_prefix."flightNotifications WHERE flight = :flight";
+                    $sql = "DELETE FROM ".$settings::db_prefix."notifications WHERE flight = :flight";
                     $sth = $dbh->prepare($sql);
                     $sth->bindParam(':flight', $flight['flight'], PDO::PARAM_STR, 10);
                     $sth->execute();
@@ -87,7 +87,7 @@
                 // Add flight if not saved already.
                 if (!in_array($flight, $savedFlights)) {
                     $dbh = $common->pdoOpen();
-                    $sql = "INSERT INTO ".$settings::db_prefix."flightNotifications (flight) VALUES (:flight)";
+                    $sql = "INSERT INTO ".$settings::db_prefix."notifications (flight) VALUES (:flight)";
                     $sth = $dbh->prepare($sql);
                     $sth->bindParam(':flight', $flight, PDO::PARAM_STR, 10);
                     $sth->execute();
@@ -98,9 +98,9 @@
         }
 
         // Set TRUE or FALSE for checkbox items.
-        $enableFlightNotifications = FALSE;
-        if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
-            $enableFlightNotifications = TRUE;
+        $enableNotifications = FALSE;
+        if (isset($_POST['enableNotifications']) && $_POST['enableNotifications'] == "TRUE")
+            $enableNotifications = TRUE;
 
         $enableFlights = FALSE;
         if (isset($_POST['enableFlights']) && $_POST['enableFlights'] == "TRUE")
@@ -150,16 +150,16 @@
         if (isset($_POST['useDump1090FaMap']) && $_POST['useDump1090FaMap'] == "TRUE")
             $useDump1090FaMap = TRUE;
 
-        $enableFlightNotificationsTwitter = FALSE;
-        if (isset($_POST['enableFlightNotificationsTwitter']) && $_POST['enableFlightNotificationsTwitter'] == "TRUE")
-            $enableFlightNotificationsTwitter = TRUE;
+        $enableNotificationsTwitter = FALSE;
+        if (isset($_POST['enableTwitterNotifications']) && $_POST['enableTwitterNotifications'] == "TRUE")
+            $enableTwitterNotifications = TRUE;
 
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
-        $common->updateSetting("enableFlightNotifications", $enableFlightNotifications);
+        $common->updateSetting("enableNotifications", $enableNotifications);
         $common->updateSetting("enableFlights", $enableFlights);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
@@ -181,7 +181,7 @@
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
         $common->updateSetting("timeZone", $_POST['timeZone']);
         $common->updateSetting("useDump1090FaMap", $useDump1090FaMap);
-        $common->updateSetting("enableFlightNotificationsTwitter", $enableFlightNotificationsTwitter);
+        $common->updateSetting("enableTwitterNotifications", $enableTwitterNotifications);
         $common->updateSetting("twitterUserName", $_POST['twitterUserName']);
         $common->updateSetting("twitterConsumerKey", $_POST['twitterConsumerKey']);
         $common->updateSetting("twitterConsumerSecret", $_POST['twitterConsumerSecret']);
@@ -204,29 +204,29 @@
     }
 
     // Get notification settings.
-    $flightNotifications = NULL;
+    $notifications = NULL;
     $savedFlights = array();
     if ($settings::db_driver == "xml") {
         // XML
-        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
         foreach ($savedFlights as $savedFlight) {
-            $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
+            $notifications = ltrim($notifications.",".$savedFlight, ',');
         }
     } else {
         //PDO
         $dbh = $common->pdoOpen();
-        $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
+        $sql = "SELECT * FROM ".$settings::db_prefix."notifications";
         $sth = $dbh->prepare($sql);
         $sth->execute();
         $savedFlights = $sth->fetchAll();
         $sth = NULL;
         $dbh = NULL;
         foreach ($savedFlights as $savedFlight) {
-            $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
+            $notifications = ltrim($notifications.",".$savedFlight['flight'], ',');
         }
     }
-    $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
-    $enableFlightNotificationsTwitter = $common->getSetting("enableFlightNotificationsTwitter");
+    $enablenotifications = $common->getSetting("enableNotifications");
+    $enableTwitterNotifications = $common->getSetting("enableTwitterNotifications");
     $twitterUserName = $common->getSetting("twitterUserName");
     $twitterConsumerKey = $common->getSetting("twitterConsumerKey");
     $twitterConsumerSecret = $common->getSetting("twitterConsumerSecret ");
@@ -385,16 +385,16 @@
                         <div class="panel-body">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableFlightNotifications" value="TRUE"<?php ($enableFlightNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
+                                    <input type="checkbox" name="enableNotifications" value="TRUE"<?php ($enableNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="flightNotifications"">Flight Notifications (coma delimited)</label>
-                                <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
+                                <label for="notifications"">Flight Notifications (coma delimited)</label>
+                                <input type="text" class="form-control" id="notifications" name="notifications" value="<?php echo $notifications; ?>">
                             </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableFlightNotificationsTwitter" value="TRUE"<?php ($enableFlightNotificationsTwitter == 1 ? print ' checked' : ''); ?>> Enable Twitter flight notifications.
+                                    <input type="checkbox" name="enableTwitterNotifications" value="TRUE"<?php ($enableTwitterNotifications == 1 ? print ' checked' : ''); ?>> Enable Twitter flight notifications.
                                 </label>
                             </div>
                             <div class="form-group">

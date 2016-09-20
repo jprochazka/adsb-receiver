@@ -235,42 +235,54 @@
     if ($common->getSetting("version") == "2.3.0") {
         try {
 
+           // Rename the file flightNotifications.xml to notifications.xml
+           rename($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
+
            // Add lastSeen as a column to the flightNotifications table.
            if ($settings::db_driver == "mysql") {
-                // Check to see if the column already exists.
                 $dbh = $common->pdoOpen();
-                if (count($dbh->query("SHOW COLUMNS FROM `".$settings::db_prefix."flightNotifications` LIKE 'lastSeen'")->fetchAll()) == 0) {
-                    // Add the column if it does not exist.
-                    $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications ADD COLUMN lastSeen DATETIME";
-                    $sth = $dbh->prepare($sql);
-                    $sth->execute();
-                    $sth = NULL;
-                }
+
+                // Rename the flightNotifications table to notifications.
+                $sql = "RENAME TABLE ".$settings::db_prefix."flightNotifications TO ".$settings::db_prefix."notifications";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+
+                // Add the lastMessageCount column to the notifications table..
+                $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications ADD COLUMN lastSeen DATETIME";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
                 $dbh = NULL;
             }
 
             if ($settings::db_driver == "sqlite") {
-                // Check to see if the column already exists.
                 $dbh = $common->pdoOpen();
-                $columns = $dbh->query("pragma table_info(flightNotifications)")->fetchArray(SQLITE3_ASSOC);
-                $columnExists = FALSE;
-                foreach($columns as $column ){
-                    if ($column['name'] == 'lastSeen') {
-                        $columnExists = TRUE;
-                    }
-                }
+
+                // Rename the flightNotifications table to notifications.
+                $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications RENAME TO ".$settings::db_prefix."notifications";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
                 // Add the column if it does not exist.
-                if (!$columnExists) {
-                    $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications ADD COLUMN lastSeen DATETIME";
-                    $sth = $dbh->prepare($sql);
-                    $sth->execute();
-                    $sth = NULL;
-                }
+                $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications ADD COLUMN lastSeen DATETIME";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
                 $dbh = NULL;
             }
 
-            // Add new flight notification Twitter settings.
-            $common->addSetting('enableFlightNotificationsTwitter', FALSE);
+            // Rename the enableFlightNotifications to enableNotifications.
+            $enableNotifications = $common->getSetting('enableFlightNotifications')
+            $common->addSetting('enableNotifications', $enableNotifications);
+            $common->deleteSetting('enableFlightNotifications');
+
+            // Add new flight notification Twitter settings
+            $common->addSetting('enableTwitterNotifications', FALSE);
             $common->addSetting('twitterUserName', '');
             $common->addSetting('twitterConsumerKey', '');
             $common->addSetting('twitterConsumerSecret', '');

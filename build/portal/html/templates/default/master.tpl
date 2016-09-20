@@ -29,7 +29,7 @@
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/bootstrap.min.css">
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/portal.css">
-        {if setting:enableFlightNotifications eq TRUE}<link rel="stylesheet" href="/templates/{setting:template}/assets/css/notifications.css">{/if}
+        {if setting:enableNotifications eq TRUE}<link rel="stylesheet" href="/templates/{setting:template}/assets/css/notifications.css">{/if}
         {area:head}
     </head>
         <body>
@@ -66,7 +66,7 @@
                     </div>
                 </div>
             </nav>
-            {if setting:enableFlightNotifications eq TRUE}
+            {if setting:enableNotifications eq TRUE}
             <div id="flight-notifications" class="modal fade" tabindex="-1" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -97,7 +97,7 @@
         </footer>
         <script src="/templates/{setting:template}/assets/js/jquery-2.2.1.min.js"></script>
         <script src="/templates/{setting:template}/assets/js/bootstrap.min.js"></script>
-        {if setting:enableFlightNotifications eq TRUE}
+        {if setting:enableNotifications eq TRUE}
         <script src="/templates/{setting:template}/assets/js/notifications.js"></script>
         {/if}
         <script type="text/javascript">

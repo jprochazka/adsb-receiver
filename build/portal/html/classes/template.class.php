@@ -225,9 +225,8 @@
 
                         if ($keys == $variable) {
                             foreach ($values as $item) {
-                                
+
                                 foreach ($item as $key => $value) {
-                                    
 
                                     $pattern = '/\{'.$itemName.'->(.*?)\}/';
                                     preg_match_all($pattern, $thisIteration, $placeholders, PREG_PATTERN_ORDER);
@@ -254,7 +253,7 @@
             // {for i eq 1 | i lte 5 | i++}
             //     ...
             // {/for}
-            
+
             $common = new Common($this);
             $html = NULL;
 

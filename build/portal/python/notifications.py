@@ -58,8 +58,8 @@ class NotificationsProcessor(object):
             return
         mapping = { "s": formatSymbol }
         self.STMTS = {
-            'select_flight_count': "SELECT COUNT(*) FROM adsb_flightNotifications WHERE flight = %(s)s AND lastSeen < %(s)s" % mapping,
-            'update_flight_seen':  "UPDATE adsb_flightNotifications SET lastSeen = %(s)s WHERE flight = %(s)s" % mapping
+            'select_notifications_count': "SELECT COUNT(*) FROM adsb_flightNotifications WHERE flight = %(s)s AND lastSeen < %(s)s" % mapping,
+            'update_notifications_message':  "UPDATE adsb_flightNotifications SET lastSeen = %(s)s WHERE flight = %(s)s" % mapping
         }
 
     def connectDB(self):
