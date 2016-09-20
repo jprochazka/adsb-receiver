@@ -463,7 +463,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-## SETUP FLIGHT LOGGING USING THE SCRIPT LOGGING.SH
+## SETUP ADVANCED PORTAL FEATURES
 
 if [ $ADVANCED = TRUE ]; then
     # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
@@ -478,6 +478,15 @@ if [ $ADVANCED = TRUE ]; then
     export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
     export ADSB_DATABASENAME=$DATABASENAME
 
+    chmod +x $BASHDIRECTORY/portal/advanced.sh
+    $BASHDIRECTORY/portal/advanced.sh
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "\e[91m  THE SCRIPT ADVANCED.SH ENCOUNTERED AND ERROR"
+        echo ""
+        exit 1
+    fi
+
     chmod +x $BASHDIRECTORY/portal/logging.sh
     $BASHDIRECTORY/portal/logging.sh
     if [ $? -ne 0 ]; then
@@ -486,6 +495,14 @@ if [ $ADVANCED = TRUE ]; then
         echo ""
         exit 1
     fi
+
+    # Remove exported variables that are no longer needed.
+    unset ADSB_DATABASEENGINE
+    unset ADSB_DATABASEHOSTNAME
+    unset ADSB_DATABASEUSER
+    unset ADSB_DATABASEPASSWORD1
+    unset ADSB_DATABASENAME
+
 fi
 
 ## ADS-B RECEIVER PROJECT PORTAL SETUP COMPLETE
