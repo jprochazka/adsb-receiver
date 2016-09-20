@@ -90,7 +90,7 @@ while true:
         cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
     row = cursor.fetchone()
     purge_days_old = row[0]
-    
+
     ## Create the purge date from the age specified.
 
     purge_datetime = datetime.datetime.utcnow() - timedelta(days=purge_days_old)
@@ -118,7 +118,7 @@ while true:
                 cursor.execute("DELETE FROM adsb_positions WHERE aircraft = ?", params)
                 cursor.execute("DELETE FROM adsb_flights WHERE aircraft = ?", params)
                 cursor.execute("DELETE FROM adsb_aircraft WHERE id = ?", params)
-    
+
     ## Remove flights not seen since the specified date.
 
     if purge_flights == true:

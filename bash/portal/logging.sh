@@ -64,7 +64,7 @@ echo ""
 case $DATABASEENGINE in
     "MySQL")
         echo -e "\e[94m  Creating the flight logging configuration file for MySQL...\e[97m"
-        tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
+        tee $PORTALBUILDDIRECTORY/python/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
                 "host":"$DATABASEHOSTNAME",
@@ -76,7 +76,7 @@ EOF
             ;;
     "SQLite")
         echo -e "\e[94m  Creating the flight logging configuration file for SQLite...\e[97m"
-        tee $PORTALBUILDDIRECTORY/logging/config.json > /dev/null <<EOF
+        tee $PORTALBUILDDIRECTORY/python/config.json > /dev/null <<EOF
 {
     "database":{"type":"sqlite",
                 "host":"$DATABASEHOSTNAME",
@@ -103,42 +103,47 @@ esac
 
 # Create and set permissions on the flight logging and maintenance maintenance scripts.
 echo -e "\e[94m  Creating the flight logging maintenance script...\e[97m"
-tee $PORTALBUILDDIRECTORY/logging/flights-maint.sh > /dev/null <<EOF
+tee $PORTALBUILDDIRECTORY/python/flights-maint.sh > /dev/null <<EOF
 #!/bin/sh
 while true
   do
     sleep 30
-        $PYTHONPATH $PORTALBUILDDIRECTORY/logging/flights.py
+        $PYTHONPATH $PORTALBUILDDIRECTORY/python/flights.py
   done
 EOF
 
 echo -e "\e[94m  Creating the maintenance maintenance script...\e[97m"
-tee $PORTALBUILDDIRECTORY/logging/maintenance-maint.sh > /dev/null <<EOF
+tee $PORTALBUILDDIRECTORY/python/maintenance-maint.sh > /dev/null <<EOF
 #!/bin/sh
 while true
   do
     sleep 30
-        $PYTHONPATH $PORTALBUILDDIRECTORY/portal/logging/maintenance.py
+        $PYTHONPATH $PORTALBUILDDIRECTORY/portal/python/maintenance.py
   done
 EOF
 
 echo -e "\e[94m  Making the flight logging maintenance script executable...\e[97m"
-chmod +x $PORTALBUILDDIRECTORY/logging/flights-maint.sh
+chmod +x $PORTALBUILDDIRECTORY/python/flights-maint.sh
 echo -e "\e[94m  Making the maintenance maintenance script executable...\e[97m"
-chmod +x $PORTALBUILDDIRECTORY/logging/maintenance-maint.sh
+chmod +x $PORTALBUILDDIRECTORY/python/maintenance-maint.sh
 
+#Remove old flights-maint.sh start up line from /etc/rc.local.
+sed -i '/build\/portal\/logging\/flights-maint.sh/d' /etc/rc.local
 # Add flight logging maintenance script to rc.local.
-if ! grep -Fxq "$PORTALBUILDDIRECTORY/logging/flights-maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$PORTALBUILDDIRECTORY/python/flights-maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the flight logging maintenance script startup line to /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALBUILDDIRECTORY/logging/flights-maint.sh &\n" /etc/rc.local
+    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALBUILDDIRECTORY/python/flights-maint.sh &\n" /etc/rc.local
+else
 fi
 
+#Remove old maintenance-maint.sh start up line from /etc/rc.local.
+sed -i '/build\/portal\/logging\/maintenance-maint.sh/d' /etc/rc.local
 # Add maintenance maintenance script to rc.local.
-if ! grep -Fxq "$PORTALBUILDDIRECTORY/logging/maintenance-maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$PORTALBUILDDIRECTORY/python/maintenance-maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the maintenance maintenance script startup line to /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALBUILDDIRECTORY/logging/maintenance-maint.sh &\n" /etc/rc.local
+    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALBUILDDIRECTORY/python/maintenance-maint.sh &\n" /etc/rc.local
 fi
 
 # Kill any previously running maintenance scripts.
@@ -158,10 +163,10 @@ fi
 
 # Start flight logging.
 echo -e "\e[94m  Executing the flight logging maintenance script...\e[97m"
-nohup $PORTALBUILDDIRECTORY/logging/flights-maint.sh > /dev/null 2>&1 &
+nohup $PORTALBUILDDIRECTORY/python/flights-maint.sh > /dev/null 2>&1 &
 
 # Start maintenance.
 echo -e "\e[94m  Executing the maintenance maintenance script...\e[97m"
-nohup $PORTALBUILDDIRECTORY/logging/maintenance-maint.sh > /dev/null 2>&1 &
+nohup $PORTALBUILDDIRECTORY/python/maintenance-maint.sh > /dev/null 2>&1 &
 
 exit 0
