@@ -19,9 +19,11 @@ This repository contains a set of scripts and files which can be used to setup a
 
 **Web Portal Screenshots**
 
-<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_live_dump1090.png" width="718" height="369" />
+![dump1090 GIF](http://assets-jacobwall.netdna-ssl.com/adsbreceiver_readme.gif)
 
-<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_performance_graphs.png" width="718" height="640" />
+<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_live_dump1090.png" width="600" height="308" />
+
+<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_performance_graphs.png" width="600" height="535" />
 
 **Please note:** As of February 2016, the scripts do not work when run on an SD card where the current PiAware image was installed. The scripts require a clean installation of a Debian derived operating system.
 
