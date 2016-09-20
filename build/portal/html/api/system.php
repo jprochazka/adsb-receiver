@@ -92,6 +92,7 @@
         $cpuInfo = shell_exec("cat /proc/cpuinfo | grep model\ name");
         $cpuModel = strstr($cpuInfo, "\n", true);
         $cpuInformation['model'] = str_replace("model name\t: ", "", $cpuModel);
+        $cpuInformation["temperature"] = floatval(exec('cat /sys/class/thermal/thermal_zone0/temp | cut -c1-2'));
 
         return $cpuInformation;
     }
@@ -139,10 +140,6 @@
         $uptime['minutes'] = floor(($uptime['inSeconds'] - ($uptime['hours'] * 3600)) / 60);
         $uptime['seconds'] = floor($uptime['inSeconds'] % 60);
         return $uptime;
+}
 
-        //$idle['inSeconds'] = trim($uptimeArray[1]);
-        //$idle['hours'] = floor($idle['inSeconds'] / 3600);
-        //$idle['minutes'] = floor(($idle['inSeconds'] - ($idle['hours'] * 3600)) / 60);
-        //$idle['seconds'] = floor($idle['inSeconds'] % 60);
-    }
 ?>
