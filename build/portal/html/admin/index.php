@@ -57,7 +57,8 @@
             $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
             unset($notifications->flight);
             foreach ($notificationArray as $notification) {
-                $newNotification = $notifications->addChild('flight', $notification);
+                $notifications->addChild('flight', $notification);
+                $notifications->addChild('lastMessageCount', -1);
                 $dom = dom_import_simplexml($notifications)->ownerDocument;
                 $dom->formatOutput = TRUE;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml", $dom->saveXML());
