@@ -235,6 +235,61 @@
     if ($common->getSetting("version") == "2.3.0") {
         try {
 
+           if ($settings::db_driver == "sqlite") {
+
+           // Create a new settings.class.php file adding the path to the SQLite database as the value for the db_host constant.
+           $content  = <<<EOF
+<?php
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //                            ADS-B RECEIVER PORTAL                                //
+    // =============================================================================== //
+    // Copyright and Licensing Information:                                            //
+    //                                                                                 //
+    // The MIT License (MIT)                                                           //
+    //                                                                                 //
+    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
+    //                                                                                 //
+    // Permission is hereby granted, free of charge, to any person obtaining a copy    //
+    // of this software and associated documentation files (the "Software"), to deal   //
+    // in the Software without restriction, including without limitation the rights    //
+    // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       //
+    // copies of the Software, and to permit persons to whom the Software is           //
+    // furnished to do so, subject to the following conditions:                        //
+    //                                                                                 //
+    // The above copyright notice and this permission notice shall be included in all  //
+    // copies or substantial portions of the Software.                                 //
+    //                                                                                 //
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      //
+    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        //
+    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE     //
+    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          //
+    // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   //
+    // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   //
+    // SOFTWARE.                                                                       //
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    class settings {
+        // Database Settings
+        const db_driver = 'sqlite';
+        const db_database = '';
+        const db_username = '';
+        const db_password = '';
+        const db_host = '$_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite"';
+        const db_prefix = 'adsb_';
+
+        // Security Settings
+        const sec_length = 6;
+
+        // PDO Settings
+        const pdo_debug = TRUE;
+    }
+
+?>
+EOF;
+               file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php", $content);
+           }
+
            // Rename the file flightNotifications.xml to notifications.xml
            rename($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
 

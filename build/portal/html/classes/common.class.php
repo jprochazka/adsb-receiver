@@ -49,7 +49,7 @@
                     $dsn = "pgsql:host=".$settings::db_host.";dbname=".$settings::db_database;
                     break;
                 case 'sqlite':
-                    $dsn = "sqlite:".$_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite";
+                    $dsn = "sqlite:".$settings::db_host;
                     break;
             }
 
