@@ -171,9 +171,9 @@ sudo dpkg-reconfigure --frontend=noninteractive tzdata
 
 echo "pi:adsbreceiver" | sudo chpasswd
 
-## CLEAN OUT UPDATE PACKAGES
+## CLEAN UP THE SYSTEM TO MAKE THE IMAGE SMALLER
 
-echo -e "\e[95m  Removeing pacakges no longer needed...\e[97m"
+echo -e "\e[95m  Removing packages whic are no longer needed...\e[97m"
 echo ""
 sudo apt-get clean
 sudo apt-get autoclean
