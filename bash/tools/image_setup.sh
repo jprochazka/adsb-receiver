@@ -171,6 +171,15 @@ sudo dpkg-reconfigure --frontend=noninteractive tzdata
 
 echo "pi:adsbreceiver" | sudo chpasswd
 
+## CLEAN OUT UPDATE PACKAGES
+
+echo -e "\e[95m  Removeing pacakges no longer needed...\e[97m"
+echo ""
+sudo apt-get clean
+sudo apt-get autoclean
+sudo apt-get autoremove
+echo ""
+
 ## TOUCH THE IMAGE FILE
 
 echo -e "\e[95m  Touching the \"image\" file...\e[97m"
