@@ -58,7 +58,7 @@
             unset($notifications->flight);
             foreach ($notificationArray as $notification) {
                 $flight = $notifications->addChild('flight', '');
-                $flight->addChild('flightName', $notification);
+                $flight->addChild('name', $notification);
                 $flight->addChild('lastMessageCount', -1);
                 $dom = dom_import_simplexml($notifications)->ownerDocument;
                 $dom->preserveWhiteSpace = FALSE;
@@ -213,7 +213,7 @@
         // XML
         $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
         foreach ($savedFlights as $savedFlight) {
-            $notifications = ltrim($notifications.",".$savedFlight->flightName, ',');
+            $notifications = ltrim($notifications.",".$savedFlight->name, ',');
         }
     } else {
         //PDO
