@@ -28,47 +28,54 @@
 # SOFTWARE.                                                                      #
 #================================================================================#
 
-import datetime
+
+##############################################################
+# TODO:                                                      #
+#------------------------------------------------------------#
+# When no flights are seen a JSON error is encountered.      #
+# Send an email to the administrators when a flight is seen. #
+# Send a tweet to Twitter when a flight is seen.             #
+# Add support for MySQL.                                     #
+# Add support for SQLite.                                    #
+##############################################################
+
+
 import json
-import time
-import os
+import urllib2
 
-def log(string):
-    #print(string) # uncomment to enable debug logging
-    return
-
-# Read the configuration file.
-with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
-    config = json.load(config_file)
-
-# Import the needed database library.
-if config["database"]["type"] == "mysql":
-    import MySQLdb
-else:
-    import sqlite3
+from xml.dom import minidom
 
 
-class NotificationsProcessor(object):
-    def __init__(self, config):
-        self.config = config
-        self.dbType = config["database"]["type"]
+###############################################
+## GATHER XML DATA
 
-    def setupDBStatements(self, formatSymbol):
-        if hasattr(self, 'STMTS'):
-            return
-        mapping = { "s": formatSymbol }
-        self.STMTS = {
-            'select_notifications_count': "SELECT COUNT(*) FROM adsb_flightNotifications WHERE flight = %(s)s AND lastSeen < %(s)s" % mapping,
-            'update_notifications_message':  "UPDATE adsb_flightNotifications SET lastSeen = %(s)s WHERE flight = %(s)s" % mapping
-        }
 
-    def connectDB(self):
-        if self.dbType == "sqlite": ## Connect to a SQLite database.
-            self.setupDBStatements("?")
-            return sqlite3.connect(self.config["database"]["db"])
-        elif self.dbType == "mysql": ## Connect to a MySQL database.
-            self.setupDBStatements("%s")
-            return MySQLdb.connect(host=self.config["database"]["host"],
-                user=self.config["database"]["user"],
-                passwd=self.config["database"]["passwd"],
-                db=self.config["database"]["db"])
+# Get the portal settings from the settings.xml file.
+doc = minidom.parse("/var/www/html/data/settings.xml")
+settings = doc.getElementsByTagName("setting")
+
+# Get the portal administrators from the administrators.xml file.
+doc = minidom.parse("/var/www/html/data/administrators.xml")
+administrators = doc.getElementsByTagName("administrator")
+
+# Get flights to send notifications for from the notifications.xml file.
+doc = minidom.parse("/var/www/html/data/notifications.xml")
+flights = doc.getElementsByTagName("flight")
+
+
+###############################################
+## SEND NOTIFICATION(S) IF FLIGHTS ARE FOUND
+
+
+# Get notification JSON from the portal.
+response = urllib2.urlopen("http://localhost/api/notifications.php?type=flights")
+flights_seen = json.load(response)
+
+for flight in flights:
+    name = flight.getElementsByTagName("name")[0]
+    lastMessageCount = flight.getElementsByTagName("lastMessageCount")[0]
+
+    for i in flights_seen['tracking']:
+        if name.firstChild.data.strip() == i['flight'] and lastMessageCount.firstChild.data.strip() < i['lastMessageCount']:
+            print "Send emails..."
+            print "Send tweet..."

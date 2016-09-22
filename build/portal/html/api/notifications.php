@@ -48,19 +48,19 @@
         $settings = new settings();
         $common = new common();
 
-        // Get all flights to be notified about from the notifications.xml file.
+        // Get all flights to be notified about from the flightNotifications.xml file.
         $lookingFor = array();
 
         if ($settings::db_driver == "xml") {
             // XML
-            $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
+            $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
             foreach ($savedFlights as $savedFlight) {
                 $lookingFor[] = array($savedFlight);
             }
         } else {
             // PDO
             $dbh = $common->pdoOpen();
-            $sql = "SELECT flight FROM ".$settings::db_prefix."notifications";
+            $sql = "SELECT flight, lastMessageCount FROM ".$settings::db_prefix."flightNotifications";
             $sth = $dbh->prepare($sql);
             $sth->execute();
             $lookingFor = $sth->fetchAll();
@@ -84,13 +84,16 @@
             if(strpos($flight[0], "%") !== false) {
                 $searchFor = str_replace("%", "", $flight[0]);
                 foreach ($visibleFlights as $visible) {
+                    // Still needs to be modified to send data using the new format as done below.
                     if (strpos(strtolower($visible), strtolower($searchFor)) !== false) {
                         $foundFlights[] = $visible;
                     }
                 }
             } else {
                 if (in_array($flight[0], $visibleFlights)) {
-                    $foundFlights[] = $flight[0];
+                    $thisFlight['flight'] = $flight[0];
+                    $thisFlight['lastMessageCount'] = $flight[1];
+                    $foundFlights['tracking'][] = $thisFlight;
                 }
             }
         }
