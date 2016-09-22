@@ -57,9 +57,11 @@
             $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
             unset($notifications->flight);
             foreach ($notificationArray as $notification) {
-                $notifications->addChild('flight', $notification);
-                $notifications->addChild('lastMessageCount', -1);
+                $flight = $notifications->addChild('flight', '');
+                $flight->addChild('flightName', $notification);
+                $flight->addChild('lastMessageCount', -1);
                 $dom = dom_import_simplexml($notifications)->ownerDocument;
+                $dom->preserveWhiteSpace = FALSE;
                 $dom->formatOutput = TRUE;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml", $dom->saveXML());
             }
@@ -151,7 +153,7 @@
         if (isset($_POST['useDump1090FaMap']) && $_POST['useDump1090FaMap'] == "TRUE")
             $useDump1090FaMap = TRUE;
 
-        $enableNotificationsTwitter = FALSE;
+        $enableTwitterNotifications = FALSE;
         if (isset($_POST['enableTwitterNotifications']) && $_POST['enableTwitterNotifications'] == "TRUE")
             $enableTwitterNotifications = TRUE;
 
@@ -211,7 +213,7 @@
         // XML
         $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
         foreach ($savedFlights as $savedFlight) {
-            $notifications = ltrim($notifications.",".$savedFlight, ',');
+            $notifications = ltrim($notifications.",".$savedFlight->flightName, ',');
         }
     } else {
         //PDO
@@ -226,7 +228,7 @@
             $notifications = ltrim($notifications.",".$savedFlight['flight'], ',');
         }
     }
-    $enablenotifications = $common->getSetting("enableNotifications");
+    $enableNotifications = $common->getSetting("enableNotifications");
     $enableTwitterNotifications = $common->getSetting("enableTwitterNotifications");
     $twitterUserName = $common->getSetting("twitterUserName");
     $twitterConsumerKey = $common->getSetting("twitterConsumerKey");
@@ -400,7 +402,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="twitterUserName">Twitter User Name</label>
-                                <input type="text" class="form-control" id="twitterUserName" name="twitterUserName" value="<?php echo $twitterUsername; ?>">
+                                <input type="text" class="form-control" id="twitterUserName" name="twitterUserName" value="<?php echo $twitterUserName; ?>">
                             </div>
                             <div class="form-group">
                                 <label for="twitterConsumerKey">Twitter Consumer Key</label>

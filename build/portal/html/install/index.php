@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.3.0";
+    $thisVersion = "2.4.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
@@ -78,14 +78,14 @@
             if (isset($_POST['host']))
                 $dbHost = $_POST['host'];
             if ($_POST[driver] == "sqlite")
-                $dbHost = $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite"
+                $dbHost = $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite";
 
             $dbPrefix = "adsb_";
             //if (isset($_POST['prefix']))
             //    $dbPrefix = $_POST['prefix'];
 
             // Create or edit the settings.class.php file.
-            $content  = <<<EOF
+            $content = <<<EOF
 <?php
 
     /////////////////////////////////////////////////////////////////////////////////////
