@@ -28,13 +28,15 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    $possibleActions = array("flights");
+    $possibleActions = array("flights", "update");
 
     if (isset($_GET['type']) && in_array($_GET["type"], $possibleActions)) {
         switch ($_GET["type"]) {
             case "flights":
                 $queryArray = getVisibleFlights();
                 break;
+            case "update":
+                $queryArray = updateVisibleFlights();
         }
         exit(json_encode($queryArray));
     } else {
@@ -80,6 +82,7 @@
         }
 
         $foundFlights = array();
+        $foundFlights['tracking'] = '';
         foreach ($lookingFor as $flight) {
             if(strpos($flight[0], "%") !== false) {
                 $searchFor = str_replace("%", "", $flight[0]);
@@ -100,5 +103,10 @@
 
 
         return json_decode(json_encode((array)$foundFlights), true);
+    }
+
+    function updateVisibleFlights() {
+        $success = TRUE;
+        return json_decode(json_encode((array)$success), true);
     }
 ?>

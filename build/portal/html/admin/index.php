@@ -90,9 +90,10 @@
                 // Add flight if not saved already.
                 if (!in_array($flight, $savedFlights)) {
                     $dbh = $common->pdoOpen();
-                    $sql = "INSERT INTO ".$settings::db_prefix."notifications (flight) VALUES (:flight)";
+                    $sql = "INSERT INTO ".$settings::db_prefix."notifications (flight, lastMessageCount) VALUES (:flight, :lastMessageCount)";
                     $sth = $dbh->prepare($sql);
                     $sth->bindParam(':flight', $flight, PDO::PARAM_STR, 10);
+                    $sth->bindParam(':lastMessageCount', 0, PDO::PARAM_INT);
                     $sth->execute();
                     $sth = NULL;
                     $dbh = NULL;
@@ -101,10 +102,6 @@
         }
 
         // Set TRUE or FALSE for checkbox items.
-        $enableNotifications = FALSE;
-        if (isset($_POST['enableNotifications']) && $_POST['enableNotifications'] == "TRUE")
-            $enableNotifications = TRUE;
-
         $enableFlights = FALSE;
         if (isset($_POST['enableFlights']) && $_POST['enableFlights'] == "TRUE")
             $enableFlights = TRUE;
@@ -153,6 +150,14 @@
         if (isset($_POST['useDump1090FaMap']) && $_POST['useDump1090FaMap'] == "TRUE")
             $useDump1090FaMap = TRUE;
 
+        $enableWebNotifications = FALSE;
+        if (isset($_POST['enableWebNotifications']) && $_POST['enableWebNotifications'] == "TRUE")
+            $enableWebNotifications = TRUE;
+
+        $enableEmailNotifications = FALSE;
+        if (isset($_POST['enableEmailNotifications']) && $_POST['enableEmailNotifications'] == "TRUE")
+            $enableEmailNotifications = TRUE;
+
         $enableTwitterNotifications = FALSE;
         if (isset($_POST['enableTwitterNotifications']) && $_POST['enableTwitterNotifications'] == "TRUE")
             $enableTwitterNotifications = TRUE;
@@ -162,7 +167,6 @@
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
-        $common->updateSetting("enableNotifications", $enableNotifications);
         $common->updateSetting("enableFlights", $enableFlights);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
@@ -184,7 +188,10 @@
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
         $common->updateSetting("timeZone", $_POST['timeZone']);
         $common->updateSetting("useDump1090FaMap", $useDump1090FaMap);
+        $common->updateSetting("enableWebNotifications", $enableWebNotifications);
+        $common->updateSetting("enableEmailNotifications", $enableEmailNotifications);
         $common->updateSetting("enableTwitterNotifications", $enableTwitterNotifications);
+        $common->updateSetting("emailNotificationAddresses", $_POST['emailNotificationAddresses']);
         $common->updateSetting("twitterUserName", $_POST['twitterUserName']);
         $common->updateSetting("twitterConsumerKey", $_POST['twitterConsumerKey']);
         $common->updateSetting("twitterConsumerSecret", $_POST['twitterConsumerSecret']);
@@ -228,7 +235,8 @@
             $notifications = ltrim($notifications.",".$savedFlight['flight'], ',');
         }
     }
-    $enableNotifications = $common->getSetting("enableNotifications");
+    $enableWebNotifications = $common->getSetting("enableWebNotifications");
+    $enableEmailNotifications = $common->getSetting("enableEmailNotifications");
     $enableTwitterNotifications = $common->getSetting("enableTwitterNotifications");
     $twitterUserName = $common->getSetting("twitterUserName");
     $twitterConsumerKey = $common->getSetting("twitterConsumerKey");
@@ -386,14 +394,23 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Flight Notifications</div>
                         <div class="panel-body">
+                            <div class="form-group">
+                                <label for="notifications"">Flight names. (coma delimited)</label>
+                                <input type="text" class="form-control" id="notifications" name="notifications" value="<?php echo $notifications; ?>">
+                            </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableNotifications" value="TRUE"<?php ($enableNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
+                                    <input type="checkbox" name="enableWebNotifications" value="TRUE"<?php ($enableWebNotifications == 1 ? print ' checked' : ''); ?>> Enable web based flight notifications.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableEmailNotifications" value="TRUE"<?php ($enableEmailNotifications == 1 ? print ' checked' : ''); ?>> Enable email flight notifications.
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="notifications"">Flight Notifications (coma delimited)</label>
-                                <input type="text" class="form-control" id="notifications" name="notifications" value="<?php echo $notifications; ?>">
+                                <label for="notificationEmailAddresses"">Email addresses to be notified. (coma delimited)</label>
+                                <input type="text" class="form-control" id="notificationEmailAddresses" name="notificationEmailAddresses" value="<?php echo $notificationEmailAddresses; ?>">
                             </div>
                             <div class="checkbox">
                                 <label>

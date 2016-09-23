@@ -152,13 +152,17 @@ EOF;
                 $dbh = NULL;
             }
 
-            // Rename the enableFlightNotifications to enableNotifications.
-            $enableNotifications = $common->getSetting('enableFlightNotifications')
-            $common->addSetting('enableNotifications', $enableNotifications);
+            // Rename the enableFlightNotifications to enableWebNotifications.
+            $enableWebNotifications = $common->getSetting('enableFlightNotifications')
+            $common->addSetting('enableWebNotifications', $enableWebNotifications);
             $common->deleteSetting('enableFlightNotifications');
 
-            // Add Twitter API settings.
+            // Add new flight notification settings.
+            $common->addSetting('enableEmailNotifications', FALSE);
             $common->addSetting('enableTwitterNotifications', FALSE);
+            $common->addSetting('emailNotificationAddresses', '');
+
+            // Add Twitter API settings.
             $common->addSetting('twitterUserName', '');
             $common->addSetting('twitterConsumerKey', '');
             $common->addSetting('twitterConsumerSecret', '');
