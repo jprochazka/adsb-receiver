@@ -170,12 +170,12 @@ EOF;
             $common->addSetting('twitterAccessTokenSecret', '')
 
             // Update the version and patch settings..
-            $common->updateSetting("version", "2.4.0");
+            $common->updateSetting("version", "2.5.0");
             $common->updateSetting("patch", "");
 
             // The upgrade process completed successfully.
             $results['success'] = TRUE;
-            $results['message'] = "Upgrade to v2.4.0 successful."
+            $results['message'] = "Upgrade to v2.5.0 successful."
             return $results;
 
         } catch(Exception $e) {
