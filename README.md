@@ -1,4 +1,4 @@
-<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_logo.png" width="468" height="110" />
+<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_logo.png" width="468" height="112" />
 
 # The ADS-B Receiver Project :airplane:
 
@@ -15,7 +15,6 @@ This repository contains a set of scripts and files which can be used to setup a
 * A blog which can be used to share your plane tracking experiences with others.
 * Informs visitors when specific flights are being tracked by dump1090.
 * Easily customize the look of your portal using the template system.
-
 
 **Web Portal Screenshots**
 
@@ -55,7 +54,7 @@ Your local repository will be updated each time install.sh is executed.
 
 #### Portal setup...
 
-This step pertains to both fresh installations as well as when updating and existing installation. After running the installation scripts you will need to setup the portal by visiting the following web address.
+This step pertains to both fresh installations as well as when updating an existing installation. After running the installation scripts you will need to setup the portal by visiting the following web address.
 
     http://<IP_ADDRESS_OF_YOUR_DEVICE>/install/
 
@@ -68,6 +67,7 @@ At this time the following software can be installed using these scripts.
 **Decoders**
 
 * Dump1090 (mutability):  https://github.com/mutability/dump1090
+* Dump1090 (FlightAware): https://github.com/flightaware/dump1090
 * Dump978:                https://github.com/mutability/dump978
 
 **Site Feeders**
