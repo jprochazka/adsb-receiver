@@ -143,6 +143,7 @@ case $DUMP1090OPTION in
         cd $BUILDDIRECTORY/piaware_builder/package-jessie
         dpkg-buildpackage -b
         sudo dpkg -i $PIAWAREBUILDDIRECTORY/piaware_*.deb
+        ;;
     *)
         # Nothing selected.
         exit 1
