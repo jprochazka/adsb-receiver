@@ -143,7 +143,7 @@ case $DUMP1090OPTION in
         ./sensible-build.sh jessie
         cd $BUILDDIRECTORY/piaware_builder/package-jessie
         dpkg-buildpackage -b
-        sudo dpkg -i $PIAWAREBUILDDIRECTORY/piaware_*.deb
+        sudo dpkg -i $BUILDDIRECTORY/piaware_builder/piaware_*.deb
         ;;
     *)
         # Nothing selected.
