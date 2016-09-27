@@ -49,9 +49,8 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 #### Updating existing installations...
 
-    cd ~/adsb-receiver
-    git fetch --all
-    git reset --hard origin/master
+Your local repository will be updated each time install.sh is executed.
+
     ./install.sh
 
 #### Portal setup...
