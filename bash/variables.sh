@@ -34,7 +34,7 @@
 ## SOFTWARE VERSIONS
 
 # The ADS-B Receiver Project
-PROJECTVERSION="2.3.1"
+PROJECTVERSION="2.4.0"
 
 # FlightAware PiAware
 PIAWAREVERSION="3.1.0"
