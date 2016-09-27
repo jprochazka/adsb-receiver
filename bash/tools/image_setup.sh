@@ -72,6 +72,7 @@ sudo apt-get -y dist-upgrade
 
 ## INSTALL DUMP1090
 
+echo ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
