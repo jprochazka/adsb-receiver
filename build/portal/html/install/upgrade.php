@@ -206,6 +206,19 @@
         }
     }
 
+    ///////////////////////
+    // UPGRADE TO V2.4.0
+    ///////////////////////
+
+    if ($common->getSetting("version") == "2.3.0") {
+        try {
+            $common->updateSetting("version", "2.4.0");
+            $common->updateSetting("patch", "");
+        } catch(Exception $e) {
+            $error = TRUE;
+            $errorMessage = $e->getMessage();
+        }
+    }
 
     require_once('../admin/includes/header.inc.php');
 
