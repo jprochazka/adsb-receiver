@@ -8,6 +8,8 @@ The following is a history of the changes made to this project.
 * Scripts are now updated from the master branch each time install.sh is ran.
 * The file install.sh now executes ~/bash/main.sh after updates are applied.
 * Changed dump1090-mutability build directory to ~/build/dump1090-mutability.
+* Removed dump1090-fa map option from portal due to the fact it is no longer needed.
+* Flights.py has been temporariliy switched back to reading aircraft.json over HTTP.
 
 ## v2.3.0
 

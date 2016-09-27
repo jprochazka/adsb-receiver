@@ -399,7 +399,6 @@ EOF;
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
             $common->addSetting('timeZone', $_POST['timeZone']);
-            $common->addSetting('useDump1090FaMap', FALSE);
             $common->addSetting('enableWebNotifications', FALSE);
             $common->addSetting('enableEmailNotifications', FALSE);
             $common->addSetting('enableTwitterNotifications', FALSE);

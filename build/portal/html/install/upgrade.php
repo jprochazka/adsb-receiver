@@ -103,8 +103,7 @@
         $success = $results['success'];
         $message = $results['message'];
         $version = "2.4.0"
-    }
-
+        
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 
     // Display the instalation wizard.

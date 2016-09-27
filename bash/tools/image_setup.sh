@@ -132,11 +132,11 @@ case $DUMP1090OPTION in
         echo ""
         mkdir -p $BUILDDIRECTORY/dump1090-fa
         cd $BUILDDIRECTORY/dump1090-fa
-        git clone https://github.com/mutability/dump1090.git
-        cd $BUILDDIRECTORY/dump1090-mutability/dump1090
+        git clone https://github.com/flightaware/dump1090.git
+        cd $BUILDDIRECTORY/dump1090-fa/dump1090
         dpkg-buildpackage -b
-        cd $BUILDDIRECTORY/dump1090-mutability
-        sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
+        cd $BUILDDIRECTORY/dump1090-fa
+        sudo dpkg -i dump1090-fa_*.deb
 
         # PiAware
         cd $BUILDDIRECTORY
@@ -145,7 +145,7 @@ case $DUMP1090OPTION in
         ./sensible-build.sh jessie
         cd $BUILDDIRECTORY/piaware_builder/package-jessie
         dpkg-buildpackage -b
-        sudo dpkg -i $PIAWAREBUILDDIRECTORY/piaware_*.deb
+        sudo dpkg -i $BUILDDIRECTORY/piaware_builder/piaware_*.deb
         ;;
     *)
         # Nothing selected.

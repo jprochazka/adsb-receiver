@@ -61,6 +61,7 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
+    sudo apt-get update
     sudo apt-get -y dist-upgrade
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"

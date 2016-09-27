@@ -24,7 +24,7 @@
 {/area}
 {area:contents}
             <div id="iframe-wrapper">
-                <iframe id="map" src="{page:dump1090Map}"></iframe>
+                <iframe id="map" src="/dump1090/"></iframe>
             </div>
 {/area}
 {area:scripts/}
