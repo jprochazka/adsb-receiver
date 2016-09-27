@@ -50,6 +50,7 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 Your local repository will be updated each time install.sh is executed.
 
+    cd ~/adsb-receiver
     ./install.sh
 
 #### Portal setup...
