@@ -1,4 +1,4 @@
-<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_logo.png" width="468" height="112" />
+<img src="http://assets.jacobwall.netdna-cdn.com/adsb-receiver_logo.png" width="465" height="135" />
 
 # The ADS-B Receiver Project :airplane:
 
