@@ -369,7 +369,11 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     sudo sed -i "s/$(echo '"^/dump1090/$" => "/dump1090/gmap.html",' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/$(echo '"^/dump1090/$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/g"  /etc/lighttpd/conf-available/89-dump1090.conf
 fi
 
+# Add to the Lighttpd configuration.
 echo -e "\e[94m  Adding the Lighttpd portal configuration file...\e[97m"
+if [ -f /etc/lighttpd/conf-available/89-adsb-portal.conf ]; then
+    sudo rm -f /etc/lighttpd/conf-available/89-adsb-portal.conf
+fi
 sudo touch /etc/lighttpd/conf-available/89-adsb-portal.conf
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
@@ -378,7 +382,7 @@ alias.url += (
   "/dump1090/data/" => "/run/dump1090-fa/",
   "/dump1090/" => "/usr/share/dump1090-fa/html/"
 )
-# redirect the slash-less dump1090 URL
+# Redirect the slash-less dump1090 URL
 url.redirect += (
   "^/dump1090$" => "/dump1090/"
 )
@@ -391,10 +395,6 @@ sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
         url.access-deny = ( "" )
     }
 }
-# Set index file names.
-index-file.names = (
-    "index.php", "index.html", "gmap.html"
-)
 EOF
 
 if ! [ -L /etc/lighttpd/conf-enabled/89-adsb-portal.conf ]; then
