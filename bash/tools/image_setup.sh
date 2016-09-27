@@ -70,10 +70,8 @@ echo ""
 sudo apt-get update
 sudo apt-get -y dist-upgrade
 
-## INSTALL DUMP1090-MUTABILITY
+## INSTALL DUMP1090
 
-echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
-echo ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
@@ -85,14 +83,71 @@ CheckPackage libusb-1.0-0-dev
 CheckPackage pkg-config
 CheckPackage lighttpd
 CheckPackage fakeroot
-echo ""
 
-cd $BUILDDIRECTORY
-git clone https://github.com/mutability/dump1090.git
-cd $BUILDDIRECTORY/dump1090
-dpkg-buildpackage -b
-cd $BUILDDIRECTORY
-sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
+# Ask which version of dump1090 to install.
+DUMP1090OPTION=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Choose Dump1090 Version" --menu "Which version of dump1090 is to be installed?" 12 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)" 3>&1 1>&2 2>&3)
+
+case $DUMP1090OPTION in
+    "dump1090-mutability")
+        echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
+        echo ""
+
+        # Dump1090-mutability
+        echo ""
+        echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
+        echo ""
+        mkdir -p $BUILDDIRECTORY/dump1090-mutability
+        cd $BUILDDIRECTORY/dump1090-mutability
+        git clone https://github.com/mutability/dump1090.git
+        cd $BUILDDIRECTORY/dump1090-mutability/dump1090
+        dpkg-buildpackage -b
+        cd $BUILDDIRECTORY/dump1090-mutability
+        sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
+        ;;
+    "dump1090-fa")
+        echo -e "\e[95m  Installing dump1090-fa and PiAware...\e[97m"
+        echo ""
+
+        # Install prerequisite packages.
+        echo -e "\e[95m  Installing additional dump1090-fa and PiAware prerequisite packages...\e[97m"
+        echo ""
+        CheckPackage tcl8.6-dev
+        CheckPackage autoconf
+        CheckPackage python3-dev
+        CheckPackage python3-venv
+        CheckPackage virtualenv
+        CheckPackage dh-systemd
+        CheckPackage zlib1g-dev
+        CheckPackage tclx8.4
+        CheckPackage tcllib
+        CheckPackage tcl-tls
+        CheckPackage itcl3
+
+        # Dump1090-fa
+        echo ""
+        echo -e "\e[95m  Installing dump1090-fa...\e[97m"
+        echo ""
+        mkdir -p $BUILDDIRECTORY/dump1090-fa
+        cd $BUILDDIRECTORY/dump1090-fa
+        git clone https://github.com/mutability/dump1090.git
+        cd $BUILDDIRECTORY/dump1090-mutability/dump1090
+        dpkg-buildpackage -b
+        cd $BUILDDIRECTORY/dump1090-mutability
+        sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
+
+        # PiAware
+        cd $BUILDDIRECTORY
+        git clone https://github.com/flightaware/piaware_builder.git
+        cd $BUILDDIRECTORY/piaware_builder
+        ./sensible-build.sh jessie
+        cd $BUILDDIRECTORY/piaware_builder/package-jessie
+        dpkg-buildpackage -b
+        sudo dpkg -i $PIAWAREBUILDDIRECTORY/piaware_*.deb
+    *)
+        # Nothing selected.
+        exit 1
+        ;;
+esac
 
 ## INSTALL THE BASE PORTAL PREREQUISITES PACKAGES
 
