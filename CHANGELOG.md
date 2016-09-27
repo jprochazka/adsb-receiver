@@ -2,7 +2,14 @@
 
 The following is a history of the changes made to this project.
 
-## v2.3.0 *(September 15th, 2016)*
+## v2.4.0
+
+* Users can now choose to install dump1090-fa instead of dump1090-mutability.
+* Scripts are now updated from the master branch each time install.sh is ran.
+* The file install.sh now executes ~/bash/main.sh after updates are applied.
+* Changed dump1090-mutability build directory to ~/build/dump1090-mutability.
+
+## v2.3.0
 
 * Massive clean up and in some cases an overhaul of the installation bash scripts.
 * Updated the dump978 map by modifying newer dump1090-mutability map.

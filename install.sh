@@ -42,12 +42,11 @@ BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
 ## MORE VARIABLES
 
-export ADSB_PROJECTTITLE="The ADS-B Receiver Project v$PROJECTVERSION"
+export ADSB_PROJECTTITLE="The ADS-B Receiver Project Installer"
 TERMINATEDMESSAGE="\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
 
 ## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
@@ -141,20 +140,20 @@ UpdateRepository
 
 ## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 
-if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78) then
+if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78) then
     UpdateOperatingSystem
 fi
 
 ## EXECUTE BASH/MAIN.SH
 
-#chmod +x $BASHDIRECTORY/main.sh
-#$BASHDIRECTORY/main.sh
-#if [ $? -ne 0 ]; then
-#    echo ""
-#    echo -e $TERMINATEDMESSAGE
-#    echo ""
-#    exit 1
-#fi
+chmod +x $BASHDIRECTORY/main.sh
+$BASHDIRECTORY/main.sh
+if [ $? -ne 0 ]; then
+    echo ""
+    echo -e $TERMINATEDMESSAGE
+    echo ""
+    exit 1
+fi
 
 ## INSTALLATION COMPLETE
 
