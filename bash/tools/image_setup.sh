@@ -72,7 +72,8 @@ sudo apt-get -y dist-upgrade
 
 ## INSTALL DUMP1090-MUTABILITY
 
-echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
+echo ""
+echo -e "\e[95m  Installing prerequisite packages...\e[97m"
 echo ""
 CheckPackage git
 CheckPackage curl
