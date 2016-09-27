@@ -212,6 +212,10 @@
 
     if ($common->getSetting("version") == "2.3.0") {
         try {
+
+            // Remove the dump1090-fa map selection setting.
+            $common->deleteSetting('useDump1090FaMap');
+
             $common->updateSetting("version", "2.4.0");
             $common->updateSetting("patch", "");
         } catch(Exception $e) {
