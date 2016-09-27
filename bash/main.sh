@@ -45,6 +45,9 @@ BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
+## Set the project title variable.
+export ADSB_PROJECTTITLE="The ADS-B Receiver Project Installer $PROJECTVERSION"
+
 ###############
 ## FUNCTIONS
 
