@@ -228,17 +228,34 @@ sudo dpkg-reconfigure --frontend=noninteractive tzdata
 
 echo "pi:adsbreceiver" | sudo chpasswd
 
+## CLEAN UP THE SYSTEM TO MAKE THE IMAGE SMALLER
+
+echo -e "\e[95m  Removing packages whic are no longer needed...\e[97m"
+
+echo ""
+sudo apt-get -y clean
+sudo apt-get -y autoclean
+sudo apt-get -y autoremove
+echo ""
+
 ## TOUCH THE IMAGE FILE
 
 echo -e "\e[95m  Touching the \"image\" file...\e[97m"
 cd $PROJECTROOTDIRECTORY
 touch image
 
+## CLEAR BASH HISTORY
+
+history -c && history -w
+
 ## DONE
 
 echo ""
 echo -e "\e[91m  Image preparation completed.)\e[39m"
-echo -e "\e[91m  A REBOOT IS REQUIRED! (Actually two wouldn't hurt to be safe...)\e[39m"
+echo -e "\e[91m  Device will be shut down in 5 seconds.)\e[39m"
 echo ""
+
+sleep 5
+sudo halt
 
 exit 0
