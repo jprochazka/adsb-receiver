@@ -234,9 +234,9 @@ echo "pi:adsbreceiver" | sudo chpasswd
 
 echo -e "\e[95m  Removing packages whic are no longer needed...\e[97m"
 echo ""
-sudo apt-get clean
-sudo apt-get autoclean
-sudo apt-get autoremove
+sudo apt-get -y clean
+sudo apt-get -y autoclean
+sudo apt-get -y autoremove
 echo ""
 
 ## TOUCH THE IMAGE FILE
