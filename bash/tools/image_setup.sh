@@ -230,7 +230,7 @@ echo "pi:adsbreceiver" | sudo chpasswd
 
 ## CLEAN UP THE SYSTEM TO MAKE THE IMAGE SMALLER
 
-echo -e "\e[95m  Removing packages whic are no longer needed...\e[97m"
+echo -e "\e[95m  Removing packages which are no longer needed...\e[97m"
 
 echo ""
 sudo apt-get -y clean
@@ -252,7 +252,7 @@ history -c && history -w
 
 echo ""
 echo -e "\e[91m  Image preparation completed.)\e[39m"
-echo -e "\e[91m  Device will be shut down in 5 seconds.)\e[39m"
+echo -e "\e[91m  Device will be shut down in 5 seconds.\e[39m"
 echo ""
 
 sleep 5
