@@ -388,7 +388,7 @@ url.redirect += (
 )
 # Add CORS header
 server.modules += ( "mod_setenv" )
-$HTTP["url"] =~ "^/dump1090/data/.*\.json$" {
+\$HTTP["url"] =~ "^/dump1090/data/.*\.json$" {
   setenv.add-response-header = ( "Access-Control-Allow-Origin" => "*" )
 }
 EOF
