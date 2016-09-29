@@ -247,7 +247,7 @@ touch image
 
 ## CLEAR BASH HISTORY
 
-history -c && histroy -w
+history -c && history -w
 
 ## DONE
 
