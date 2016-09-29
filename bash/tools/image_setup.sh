@@ -245,11 +245,18 @@ echo -e "\e[95m  Touching the \"image\" file...\e[97m"
 cd $PROJECTROOTDIRECTORY
 touch image
 
+## CLEAR BASH HISTORY
+
+history -c && histroy -w
+
 ## DONE
 
 echo ""
 echo -e "\e[91m  Image preparation completed.)\e[39m"
-echo -e "\e[91m  A REBOOT IS REQUIRED! (Actually two wouldn't hurt to be safe...)\e[39m"
+echo -e "\e[91m  Device will be shut down in 5 seconds.)\e[39m"
 echo ""
+
+sleep 5
+sudo halt
 
 exit 0
