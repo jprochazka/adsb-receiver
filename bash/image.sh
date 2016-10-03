@@ -8,7 +8,7 @@
 #  needed to setup a Mode S decoder as well as feeders which are capable of         #
 #  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
 #                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-feeder              #
+#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-receiver            #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
@@ -34,328 +34,200 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-source bash/functions.sh
+## VARIABLES
 
-BUILDDIR="$PWD/build"
+PROJECTROOTDIRECTORY="$PWD"
+BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+
+## INCLUDE EXTERNAL SCRIPTS
+
+source $BASHDIRECTORY/variables.sh
+source $BASHDIRECTORY/functions.sh
 
 # Assign the Lighthttpd document root directory to a variable.
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
-## CONFIGURE DUMP1090-MUTABILITY
+## WELCOME MESSAGE
 
-# Set latitude and longitude in the dump1090-mutability configuration file.
-echo -e "\033[31m"
-echo "SET THE LATITUDE AND LONGITUDE OF YOUR FEEDER"
-echo -e "\033[33m"
-echo "In order for some performance graphs to work properly you will need to"
-echo "set the latitude and longitude of your feeder. If you do not know the"
-echo "latitude and longitude of your feeder you can find out this information"
-echo "by using Geocode by Address tool found on my web site."
-echo ""
-echo "  https://www.swiftbyte.com/toolbox/geocode"
-echo ""
-echo "NOT SETTING LATITUDE AND LONGITUDE WILL BREAK THE RANGE PERFORMANCE GRAPH"
-echo ""
-echo -e "\033[37m"
-read -p "Feeder Latitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLAT
-read -p "Feeder Longitude: (Decimal Degrees XX-XXXXXXX) " FEEDERLON
-echo ""
-ChangeConfig "LAT" $FEEDERLAT "/etc/default/dump1090-mutability"
-ChangeConfig "LON" $FEEDERLON "/etc/default/dump1090-mutability"
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --msgbox "Thank you for choosing to use the ADS-B Receiver Project image.\n\nDuring this setup process the preinstalled dump1090-mutability installation will be configured and the ADS-B Project Web Portal will be installed. If you would like to add additional features to your receiver simply execute ./install.sh again after this initial setup process has been completed." 13 78
 
-# Ask if dump1090-mutability should bind on all IP addresses.
-echo -e "\033[33m"
-echo "By default dump1090-mutability on binds to the localhost IP address of 127.0.0.1 which is a good thing."
-echo ""
-echo "However..."
-echo "Some people like for dump1090-mutability to bind on all available IP addresses for a mutitude of reasons."
-echo "The scripts can bind dump190-mutability to all available IP addresses however this is not recommended"
-echo "unless you understand the possible consequences of doing so."
-echo -e "\033[37m"
-read -p "Would you like dump1090-mutability to bind to all available IP addresses? [y/N] " BINDTOALLIPS
+## ASK TO UPDATE THE OPERATING SYSTEM
 
-if [[ $BINDTOALLIPS =~ ^[yY]$ ]]; then
-    ChangeConfig "NET_BIND_ADDRESS" "0.0.0.0" "/etc/default/dump1090-mutability"
+if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --yesno "The image comes with the latest updates to Raspbian as of it's release. However updates may have been released for the operating system since the image was released. This being said it is highly recommended you allow the script to check for additional updates now in order to ensure you are in fact running the latest software available.\n\nWould you like the script to check for and install updates now?" 13 78) then
+    clear
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+    echo ""
+    echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo ""
+    sudo apt-get update
+    sudo apt-get -y dist-upgrade
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
 fi
 
-# Setup Heywhatsthat.com max range circles for dump1090-mutability.
-echo -e "\033[33m"
-echo "Dump1090-mutability is able to display terrain limit rings using data obtained"
-echo "from the website http://www.heywhatsthat.com. Some work will be required on your"
-echo "part including visiting http://www.heywhatsthat.com and generating a new"
-echo "panorama set to your location."
-echo -e "\033[37m"
-read -p "Do you wish to add terrain limit rings to the dump1090 map? [Y/n] " ADDTERRAINRINGS
+## CONFIGURE DUMP1090
 
-if [[ ! $ADDTERRAINRINGS =~ ^[Nn]$ ]]; then 
-    echo -e "\033[31m"
-    echo "READ THE FOLLOWING INSTRUCTION CAREFULLY!"
-    echo -e "\033[33m"
-    echo "To set up terrain limit rings you will need to first generate a panorama on the website"
-    echo "heywhatsthat.com. To do so visit the following URL:"
-    echo ""
-    echo "  http://www.heywhatsthat.com"
-    echo ""
-    echo "Once the webpage has loaded click on the tab titled New panorama. Fill out the required"
-    echo "information in the form to the left of the map."
-    echo ""
-    echo "After submitting the form your request will be put into a queue to be generated shortly."
-    echo "You will be informed when the generation of your panorama has been completed."
-    echo ""
-    echo "Once generated visit your newly created panorama. Near the top left of the page you will"
-    echo "see a URL displayed which will point you to your newly created panorama. Within this URL's"
-    echo "query string you will see ?view=XXXXXXXX where XXXXXXXX is the identifier for this panorama."
-    echo "Enter below the letters and numbers making up the view identifier displayed there."
-    echo ""
-    echo "Positions for terrain rings for both 10,000 and 40,000 feet will be downloaded by this"
-    echo "script once the panorama has been generated and you are ready to continue."
-    echo -e "\033[37m"
-    read -p "Your heywhatsthat.com view identifier: " HEYWHATSTHATVIEWID
-    read -e -p "First ring altitude in meters (default 3048 meters or 10000 feet): " -i "3048" HEYWHATSTHATRINGONE
-    read -e -p "Second ring altitude in meters (default 12192 meters or 40000 feet): " -i "12192" HEYWHATSTHATRINGTWO
-
-    # Download the generated panoramas JSON data.
-    echo -e "\033[33m"
-    echo "Downloading JSON data pertaining to the panorama ID you supplied..."
-    echo -e "\033[37m"
-    sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATVIEWID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
-fi
-
-# Restart dump1090-mutability.
-echo -e "\033[33m"
-echo "Restarting dump1090-mutability..."
-echo -e "\033[37m"
-sudo /etc/init.d/dump1090-mutability restart
-
-## SETUP THE PORTAL
-
-echo -e "\033[31m"
-echo "Do you wish to enable advanced features?"
-echo -e "\033[33m"
-echo "ENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY"
-echo -e "\033[33m"
-echo "By enabling advanced features the portal will log all flights seen as well as the path of the flight."
-echo "This data is stored in either a MySQL or SQLite database. This will result in a lot more data being"
-echo "stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before"
-echo "selecting to enable these features."
+clear
+echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
 echo ""
-echo "You have been warned."
-echo -e "\033[37m"
-read -p "Use portal with advanced features? [y/N] " ADVANCED
+echo -e "\e[92m  Configure dump1090..."
+echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo ""
 
-## ASK IF ADVANCED FEATURES ARE TO BE USED
+# If dump1090-mutability is installed...
 
-if [[ $ADVANCED =~ ^[yY]$ ]]; then
-    echo -e "\033[31m"
-    echo "Select Database Engine"
-    echo -e "\033[33m"
-    echo "  1) MySQL"
-    echo "  2) SQLLite"
-    echo -e "\033[37m"
-    read -p "Use portal with advanced features? [1] " DATABASEENGINE
+if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    # Set the receivers latitude and longitude.
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    RECEIVERLATITUDE_TITLE="Receiver Latitude"
+    while [[ -z $RECEIVERLATITUDE ]]; do
+        RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+    done
+    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z $RECEIVERLONGITUDE ]]; do
+        RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    done
+    echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
+    ChangeConfig "LAT" $RECEIVERLATITUDE "/etc/default/dump1090-mutability"
+    echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
+    ChangeConfig "LON" $RECEIVERLONGITUDE "/etc/default/dump1090-mutability"
 
-    # Check if the user is using a remote MySQL database.
-    if [[ $DATABASEENGINE != 2 ]]; then
-        echo -e "\033[31m"
-        echo "Will the database be hosted locally on this device or remotely?"
-        echo -e "\033[33m"
-        echo "  1) Locally"
-        echo "  2) Remotely"
-        echo -e "\033[37m"
-        read -p "Use portal with advanced features? [1] " LOCALDATABASE
-    fi
-fi
-
-## CHECK FOR PREREQUISITE PACKAGES
-
-echo -e "\033[33m"
-echo "Installing packages needed to build and fulfill dependencies..."
-echo -e "\033[37m"
-CheckPackage libpython2.7
-if [[ $ADVANCED =~ ^[yY]$ ]]; then
-    if [[ $DATABASEENGINE == 2 ]]; then
-       CheckPackage sqlite3
-       CheckPackage php5-sqlite
+    # Ask if dump1090-mutability should bind on all IP addresses.
+    if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
+        echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
+        CommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
     else
-       if [[ $LOCALDATABASE != 2 ]]; then
-           # Install MySQL locally.
-           CheckPackage mysql-server
-       fi
-       CheckPackage mysql-client
-       CheckPackage php5-mysql
-       CheckPackage python-mysqldb
+        echo -e "\e[94m  Binding dump1090-mutability to the localhost IP addresses...\e[97m"
+        ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
+    fi
+
+    # Reload dump1090-mutability to ensure all changes take effect.
+    echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
+    echo ""
+    sudo /etc/init.d/dump1090-mutability force-reload
+fi
+
+# Download Heywhatsthat.com maximum range rings if the user wishes them to be displayed.
+if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] || [ ! -f /usr/share/dump1090-fa/html/upintheair.json ]; then
+    if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Heywhaststhat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-mutability usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-mutability map you will first need to visit http://www.heywhatsthat.com and generate a new panarama centered on the location of your receiver. Once your panarama has been generated a link to the panarama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
+        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
+        while [[ -z $HEYWHATSTHATID ]]; do
+            HEYWHATSTHATID=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panarama ID." 8 78 3>&1 1>&2 2>&3)
+            HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+        done
+        HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude"
+        while [[ -z $HEYWHATSTHATRINGONE ]]; do
+            HEYWHATSTHATRINGONE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATRINGONE_TITLE" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
+            HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
+        done
+        HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude"
+        while [[ -z $HEYWHATSTHATRINGTWO ]]; do
+            HEYWHATSTHATRINGTWO=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATRINGTWO_TITLE" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
+            HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
+        done
+        echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
+        echo ""
+        if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+            HTMLPATH="/usr/share/dump1090-mutability/html/upintheair.json"
+        else
+            HTMLPATH="/usr/share/dump1090-fa/html/upintheair.json"
+        fi
+        sudo wget -O $HTMLPATH "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
     fi
 fi
 
-# Restart Lighttpd after installing the prerequisite packages.
-echo -e "\033[33m"
-echo -e "Restarting lighttpd...\033[37m"
-sudo /etc/init.d/lighttpd restart
+# Dump1090 configuration is now complete.
+echo ""
+echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  Dump1090 configuration complete.\e[39m"
+echo ""
+read -p "Press enter to continue..." CONTINUE
 
-## CREATE THE DATABASE IF ADVANCED FEATURES WAS SELECTED
 
-if [[ $ADVANCED =~ ^[yY]$ ]]; then
-    if [[ $DATABASEENGINE != 2 ]]; then
-        echo -e "\033[31m"
-        echo "Gathering Database Information"
-        echo -e "\033[33m"
-        echo "Please supply the information pertaining to the new password when asked."
-        echo ""
-        echo -e "\033[31mNOTE:"
-        echo "If the database will be hosted locally on this device a database will be"
-        echo "created automatically for you."
-        echo ""
-        echo "If you are hosting your database remotely YOU WILL NEED TO MANUALLY CREATE"
-        echo "THE DATABASE AND USER BEFORE PROCEEDING WITH THE INSTALLATION."
-        echo -e "\033[37m"
+# CONFIGURE PIAWARE IF NEEDED
 
-        DATABASEHOST="localhost"
-        if [[ $LOCALDATABASE != 2 ]]; then
-            read -p "MySQL user login: [root] " DATABASEADMINUSER
-            read -p "Password for MySQL user: " DATABASEADMINPASSWORD
-            if [[ $LOCALDATABASE == "" ]]; then
-               DATABASEADMINUSER="root"
-            fi
+if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    clear
+    echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
+    echo ""
+    echo -e "\e[92m  Configure PiAware..."
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+    echo ""
 
-            # Check that the supplied password is correct.
-            while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e ";" ; do
-                echo ""
-                echo -e "\033[31m"
-                echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
-                read -p "MySQL user login: [root] " DATABASEADMINUSER
-                read -p "Password for MySQL user: " DATABASEADMINPASSWORD
-                if [[ $LOCALDATABASE == "" ]]; then
-                    DATABASEADMINUSER="root"
-                fi
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
+    # Ask for the users FlightAware login.
+    FLIGHTAWARELOGIN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
+    if [ ! $FLIGHTAWARELOGIN = "" ]; then
+        # If the user supplied their FlightAware login continue with the device claiming process.
+        FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
+        while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
+            FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        done
+        FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password"
+        while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
+            FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        done
+        while [ ! $FLIGHTAWAREPASSWORD1 = $FLIGHTAWAREPASSWORD2 ]; do
+            FLIGHTAWAREPASSWORD1=""
+            FLIGHTAWAREPASSWORD2=""
+            # Display an error message if the passwords did not match.
+            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+            FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password (REQUIRED)"
+            while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
+                 FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
             done
-        fi
-        echo ""
-
-        if [[ $LOCALDATABASE == 2 ]]; then
-            # Ask for remote MySQL address if the database is hosted remotely.
-            read -p "MySQL Server Address: " DATABASEHOST
-        fi
-        read -p "Database Name: " DATABASENAME
-        read -p "Database User Name: " DATABASEUSER
-        read -p "Database User Password: " DATABASEPASSWORD
-        read -p "Confirm Database User Password: " CONFIRMDATABASEPASSWORD
-        while [ $DATABASEPASSWORD != $CONFIRMDATABASEPASSWORD ]; do
-            echo -e "\033[31m"
-            echo -e "The supplied database user passwords did not match.\033[37m"
-            read -p "Database User Password: " DATABASEPASSWORD
-            read -p "Confirm Database User Password: " CONFIRMDATABASEPASSWORD
+            FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password (REQUIRED)"
+            while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
+                 FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+            done
         done
 
-        if [[ $LOCALDATABASE == 2 ]]; then
-            # Check the connection to the remote MySQL server.
-            while ! mysql -u${DATABASEUSER} -p${DATABASEPASSWORD} -h ${DATABASEHOST}  -e ";" ; do
-                echo -e "\033[31m"
-                echo -e "Unable to connect to the MySQL server using the supplied login and password.\033[37m"
-                read -p "MySQL Server Address: " DATABASEHOST
-                read -p "Database user Name: " DATABASEUSER
-                read -p "Database User Password: " DATABASEPASSWORD
-            done
-        else
-            # Create the database and user if running MySQL locally.
-            echo -e "\033[33m"
-            echo -e "Creating MySQL database and user...\033[37m"
-            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "CREATE DATABASE ${DATABASENAME};"
-            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD}\";";
-            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
-            mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD} -e "FLUSH PRIVILEGES;"
-        fi
-
-        echo -e "\033[31m"
-        echo "BE SURE TO WRITE THIS INFORMATION DOWN."
-        echo -e "\033[33m"
-        echo "This information will be needed in order to complete the installation of the portal."
+        # Set the supplied user name and password in the configuration.
+        echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
         echo ""
-        echo "Database Server: ${DATABASEHOST}"
-        echo "Database User: ${DATABASEUSER}"
-        echo "Database Password: ${DATABASEPASSWORD}"
-        echo "Database Name: ${DATABASENAME}"
-        echo -e "\033[37m"
-        read -p "Press enter to continue..." CONTINUE
+        sudo piaware-config flightaware-user $FLIGHTAWARELOGIN
+        echo ""
+        echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
+        echo ""
+        sudo piaware-config flightaware-password $FLIGHTAWAREPASSWORD1
+        echo ""
+        echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
+        echo ""
+        sudo /etc/init.d/piaware restart
+        echo ""
+    else
+        # Display a message to the user stating they need to manually claim their device.
+        whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
     fi
 
-    if [[ $DATABASEENGINE == 2 ]]; then
-        # Create and empty SQLite databse and set the proper permissions on it.
-        sudo sqlite3 ${DOCUMENTROOT}/data/portal.sqlite ""
-        sudo chmod 666 ${DOCUMENTROOT}/data/portal.sqlite
-    fi
-
-    ## SETUP FLIGHT LOGGING SCRIPT
-
-    echo -e "\033[33m"
-    echo -e "Creating configuration file...\033[37m"
-    case $DATABASEENGINE in
-        "2")
-            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
-{
-    "database":{"type":"sqlite",
-                "host":"",
-                "user":"",
-                "passwd":"",
-                "db":"${DOCUMENTROOT}/data/portal.sqlite"}
-}
-EOF
-            ;;
-        *)
-            tee $BUILDDIR/portal/logging/config.json > /dev/null <<EOF
-{
-    "database":{"type":"mysql",
-                "host":"${DATABASEHOST}",
-                "user":"${DATABASEUSER}",
-                "passwd":"${DATABASEPASSWORD}",
-                "db":"${DATABASENAME}"}
-}
-EOF
-            ;;
-    esac
-
-    # Create and set permissions on the flight logging maintainance script.
-    PYTHONPATH=`which python`
-    tee $BUILDDIR/portal/logging/flights-maint.sh > /dev/null <<EOF
-#!/bin/sh
-while true
-  do
-    sleep 30
-        ${PYTHONPATH} ${BUILDDIR}/portal/logging/flights.py
-  done
-EOF
-    chmod +x $BUILDDIR/portal/logging/flights-maint.sh
-
-    # Add flight logging maintainance script to rc.local.
-    if ! grep -Fxq "${BUILDDIR}/portal/logging/flights-maint.sh &" /etc/rc.local; then
-        echo -e "\033[33m"
-        echo -e "Adding startup line to rc.local...\033[37m"
-        lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${BUILDDIR}/portal/logging/flights-maint.sh &\n" /etc/rc.local
-    fi
-
-    # Start flight logging.
-    echo -e "\033[33m"
-    echo -e "Starting flight logging...\033[37m"
-    nohup ${BUILDDIR}/portal/logging/flights-maint.sh > /dev/null 2>&1 &
+    # PiAware configuration is now complete.
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  PiAware configuration complete.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
 fi
 
-## FINISH CONFIGURATION
+## SETUP THE ADS-B RECIEVER PROJECT WEB PORTAL
 
-# This assigns the first IP address in the list to the $IPADDRESS variable.
-IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
+chmod +x $BASHDIRECTORY/portal/install.sh
+$BASHDIRECTORY/portal/install.sh
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
-# Display further portal setup instructions.
-echo -e "\033[33m"
-echo "PORTAL SETUP IS NOT YET COMPLETE"
-echo -e "\033[33m"
-echo "In order to complete the portal setup process visit the following URL in your favorite web browser."
-echo ""
-echo "http://${IPADDRESS}/install/"
-echo ""
-echo "Enter the requested information and submit the form to complete the portal setup."
-echo "It is recomended that after setting up the portal you delete the install.php file."
-echo -e "\033[37m"
+## FINALIZE IMAGE SETUP
 
-# Remove the "image" file now that setup has been ran.
+# remove the "image" file.
 rm -f image
+
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --msgbox "Image setup is now complete. If you have any questions or comments on the project let us know on our website.\n\n  https://www.adsbreceiver.net\n\nRemember to install additional features simply run ./install.sh again." 12 78
+
+exit 0

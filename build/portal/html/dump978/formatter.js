@@ -166,7 +166,7 @@ function format_distance_long(dist) {
 	return dist_text;
 }
 
-// p as a LatLng
+// p is a [lon, lat] coordinate
 function format_latlng(p) {
-	return p.lat().toFixed(3) + DEGREES + "," + NBSP + p.lng().toFixed(3) + DEGREES;
+	return p[1].toFixed(3) + DEGREES + "," + NBSP + p[0].toFixed(3) + DEGREES;
 }

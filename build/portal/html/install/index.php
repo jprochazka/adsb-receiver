@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.2.0";
+    $thisVersion = "2.4.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
@@ -232,41 +232,6 @@ EOF;
                                           id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                           name VARCHAR(50) NOT NULL,
                                           value VARCHAR(100) NOT NULL);';
-                        $faaMasterSql = 'CREATE TABLE '.$dbPrefix.'faa_master (
-                                           nNumber VARCHAR(5) NOT NULL,
-                                           serialNumber VARCHAR(30) NULL,
-                                           mfrMdlCode VARCHAR(7) NULL,
-                                           engMfrMdl VARCHAR(5) NULL,
-                                           yearMfr VARCHAR(4) NULL,
-                                           typeRegistrant VARCHAR(50) NULL,
-                                           name VARCHAR(33) NULL,
-                                           street VARCHAR(33) NULL,
-                                           street2 VARCHAR(18) NULL,
-                                           city VARCHAR(2) NULL,
-                                           state VARCHAR(10) NULL,
-                                           zipCode VARCHAR(1) NULL,
-                                           region VARCHAR(3) NULL,
-                                           county VARCHAR(2) NULL,
-                                           country VARCHAR(8) NULL,
-                                           lastActionDate VARCHAR(8) NULL,
-                                           certIssueDate VARCHAR(10) NULL,
-                                           certification VARCHAR(1) NULL,
-                                           typeAircraft VARCHAR(2) NULL,
-                                           typeEngine VARCHAR(2) NULL,
-                                           statusCode VARCHAR(8) NULL,
-                                           modeSCode VARCHAR(1) NULL,
-                                           fractOwner VARCHAR(8) NULL,
-                                           airWorthDate VARCHAR(50) NULL,
-                                           otherNames1 VARCHAR(50) NULL,
-                                           otherNames2 VARCHAR(50) NULL,
-                                           otherNames3 VARCHAR(50) NULL,
-                                           otherNames4 VARCHAR(50) NULL,
-                                           otherNames5 VARCHAR(50) NULL,
-                                           experiationDate VARCHAR(8) NULL,
-                                           uniqueId VARCHAR(8) NULL,
-                                           kitMfr VARCHAR(30) NULL,
-                                           kitModel VARCHAR(20) NULL,
-                                           modeSCodeHex VARCHAR(10) NULL);';
 
                     break;
                     case "pgsql":
@@ -430,7 +395,6 @@ EOF;
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
             $common->addSetting('timeZone', $_POST['timeZone']);
-            $common->addSetting('useDump1090FaMap', FALSE);
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);

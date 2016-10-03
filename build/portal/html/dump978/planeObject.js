@@ -13,6 +13,7 @@ function PlaneObject(icao) {
         this.altitude  = null;
         this.speed     = null;
         this.track     = null;
+        this.prev_position = null;
         this.position  = null;
         this.position_from_mlat = false
         this.sitedist  = null;
@@ -36,7 +37,12 @@ function PlaneObject(icao) {
         // Display info
         this.visible = true;
         this.marker = null;
-        this.icon = { type: 'generic' };
+        this.markerStyle = null;
+        this.markerIcon = null;
+        this.markerStaticStyle = null;
+        this.markerStaticIcon = null;
+        this.markerStyleKey = null;
+        this.markerSvgKey = null;
 
         // request metadata
         this.registration = null;
@@ -59,67 +65,75 @@ function PlaneObject(icao) {
 // Appends data to the running track so we can get a visual tail on the plane
 // Only useful for a long running browser session.
 PlaneObject.prototype.updateTrack = function(estimate_time) {
-        var here = this.position;
-        if (!here)
-                return;
+        if (!this.position)
+                return false;
+        if (this.position == this.prev_position)
+                return false;
+
+        var projHere = ol.proj.fromLonLat(this.position);
+        var projPrev;
+        if (this.prev_position === null) {
+                projPrev = projHere;
+        } else {
+                projPrev = ol.proj.fromLonLat(this.prev_position);
+        }
+
+        this.prev_position = this.position;
 
         if (this.track_linesegs.length == 0) {
                 // Brand new track
                 //console.log(this.icao + " new track");
-                var newseg = { track : new google.maps.MVCArray([here,here]),
-                               line : null,
-                               head_update : this.last_position_time,
-                               tail_update : this.last_position_time,
-                               estimated : false,
-                               ground : (this.altitude === "ground")
+                var newseg = { fixed: new ol.geom.LineString([projHere]),
+                               feature: null,
+                               head_update: this.last_position_time,
+                               tail_update: this.last_position_time,
+                               estimated: false,
+                               ground: (this.altitude === "ground")
                              };
                 this.track_linesegs.push(newseg);
-                this.history_size += 2;
+                this.history_size ++;
                 return;
         }
-        
+
         var lastseg = this.track_linesegs[this.track_linesegs.length - 1];
-        var lastpos = lastseg.track.getAt(lastseg.track.getLength() - 1);
         var elapsed = (this.last_position_time - lastseg.head_update);
         
-        var new_data = (here !== lastpos);
         var est_track = (elapsed > estimate_time);
         var ground_track = (this.altitude === "ground");
         
-        if (!new_data)
-                return false;
-        
         if (est_track) {
+
                 if (!lastseg.estimated) {
                         // >5s gap in data, create a new estimated segment
                         //console.log(this.icao + " switching to estimated");
-                        this.track_linesegs.push({ track : new google.maps.MVCArray([lastpos, here]),
-                                                   line : null,
-                                                   head_update : this.last_position_time,
-                                                   estimated : true });
+                        lastseg.fixed.appendCoordinate(projPrev);
+                        this.track_linesegs.push({ fixed: new ol.geom.LineString([projPrev, projHere]),
+                                                   feature: null,
+                                                   head_update: this.last_position_time,
+                                                   estimated: true });
                         this.history_size += 2;
-                        return true;
+                } else {
+                        // Keep appending to the existing dashed line; keep every point
+                        lastseg.fixed.appendCoordinate(projPrev);
+                        lastseg.head_update = this.last_position_time;
+                        this.history_size++;
                 }
-                
-                // Append to ongoing estimated line
-                //console.log(this.icao + " extending estimated (" + lastseg.track.getLength() + ")");
-                lastseg.track.push(here);
-                lastseg.head_update = this.last_position_time;
-                this.history_size++;
+
                 return true;
         }
         
         if (lastseg.estimated) {
-                // We are back to good data.
-                //console.log(this.icao + " switching to good track");
-                this.track_linesegs.push({ track : new google.maps.MVCArray([lastpos, here]),
-                                           line : null,
-                                           head_update : this.last_position_time,
-                                           tail_update : this.last_position_time,
-                                           estimated : false,
-                                           ground : (this.altitude === "ground") });
-                this.history_size += 2;
-                return true;
+                // We are back to good data (we got two points close in time), switch back to
+                // solid lines.
+                lastseg = { fixed: new ol.geom.LineString([projPrev]),
+                            feature: null,
+                            head_update: this.last_position_time,
+                            tail_update: this.last_position_time,
+                            estimated: false,
+                            ground: (this.altitude === "ground") };
+                this.track_linesegs.push(lastseg);
+                this.history_size ++;
+                // continue
         }
         
         if ( (lastseg.ground && this.altitude !== "ground") ||
@@ -127,15 +141,16 @@ PlaneObject.prototype.updateTrack = function(estimate_time) {
                 //console.log(this.icao + " ground state changed");
                 // Create a new segment as the ground state changed.
                 // assume the state changed halfway between the two points
-                var midpoint = google.maps.geometry.spherical.interpolate(lastpos,here,0.5);
-                lastseg.track.push(midpoint);
-                this.track_linesegs.push({ track : new google.maps.MVCArray([midpoint,here,here]),
-                                           line : null,
-                                           head_update : this.last_position_time,
-                                           tail_update : this.last_position_time,
-                                           estimated : false,
-                                           ground : (this.altitude === "ground") });
-                this.history_size += 4;
+                // FIXME needs reimplementing post-google
+
+                lastseg.fixed.appendCoordinate(projPrev);
+                this.track_linesegs.push({ fixed: new ol.geom.LineString([projPrev, projHere]),
+                                           feature: null,
+                                           head_update: this.last_position_time,
+                                           tail_update: this.last_position_time,
+                                           estimated: false,
+                                           ground: (this.altitude === "ground") });
+                this.history_size += 3;
                 return true;
         }
         
@@ -145,43 +160,25 @@ PlaneObject.prototype.updateTrack = function(estimate_time) {
         if (this.last_position_time - lastseg.tail_update >= 5) {
                 // enough time has elapsed; retain the last point and add a new one
                 //console.log(this.icao + " retain last point");
-                lastseg.track.push(here);
+                lastseg.fixed.appendCoordinate(projHere);
                 lastseg.tail_update = lastseg.head_update;
                 this.history_size ++;
-        } else {
-                // replace the last point with the current position
-                lastseg.track.setAt(lastseg.track.getLength()-1, here);
         }
+
         lastseg.head_update = this.last_position_time;
         return true;
 };
 
 // This is to remove the line from the screen if we deselect the plane
 PlaneObject.prototype.clearLines = function() {
-        for (var i = 0; i < this.track_linesegs.length; ++i) {
+        for (var i = this.track_linesegs.length - 1; i >= 0 ; --i) {
                 var seg = this.track_linesegs[i];
-                if (seg.line !== null) {
-                        seg.line.setMap(null);
-                        seg.line = null;
+                if (seg.feature !== null) {
+                        PlaneTrailFeatures.remove(seg.feature);
+                        seg.feature = null;
                 }
         }
 };
-
-PlaneObject.prototype.getMarkerIconType = function() {
-        var lookup = {
-                'A1' : 'light',
-                'A2' : 'medium',
-                'A3' : 'medium',
-                'A5' : 'heavy',
-                'A7' : 'rotorcraft'
-
-        };
-
-        if (this.category === null || !(this.category in lookup))
-                return 'generic'
-        else
-                return lookup[this.category];
-}
 
 PlaneObject.prototype.getMarkerColor = function() {
         // Emergency squawks override everything else
@@ -251,32 +248,91 @@ PlaneObject.prototype.getMarkerColor = function() {
         if (l < 5) l = 5;
         else if (l > 95) l = 95;
 
-        return 'hsl(' + h.toFixed(0) + ',' + s.toFixed(0) + '%,' + l.toFixed(0) + '%)'
+        return 'hsl(' + (h/5).toFixed(0)*5 + ',' + (s/5).toFixed(0)*5 + '%,' + (l/5).toFixed(0)*5 + '%)'
 }
 
 PlaneObject.prototype.updateIcon = function() {
         var col = this.getMarkerColor();
         var opacity = (this.position_from_mlat ? 0.75 : 1.0);
         var outline = (this.position_from_mlat ? OutlineMlatColor : OutlineADSBColor);
-        var type = this.getMarkerIconType();
-        var weight = this.selected ? 2 : 1;
+        var baseMarker = getBaseMarker(this.category, this.icaotype);
+        var weight = ((this.selected ? 2 : 1) / baseMarker.scale).toFixed(1);
         var rotation = (this.track === null ? 0 : this.track);
-        
-        if (col === this.icon.fillColor && opacity == this.icon.fillOpacity && weight === this.icon.strokeWeight && outline == this.icon.strokeColor && rotation === this.icon.rotation && type == this.icon.type)
-                return false;  // no changes
-        
-        this.icon.fillColor = col;
-        this.icon.fillOpacity = opacity;
-        this.icon.strokeWeight = weight;
-        this.icon.strokeColor = outline;
-        this.icon.rotation = rotation;
-        this.icon.type = type;
-        this.icon.path = MarkerIcons[type].path;
-        this.icon.anchor = MarkerIcons[type].anchor;
-        this.icon.scale = MarkerIcons[type].scale;
-        if (this.marker)
-                this.marker.setIcon(this.icon);
-        
+
+        var svgKey = col + '!' + outline + '!' + baseMarker.key + '!' + weight;
+        var styleKey = opacity + '!' + rotation;
+
+        if (this.markerStyle === null || this.markerIcon === null || this.markerSvgKey != svgKey) {
+                //console.log(this.icao + " new icon and style " + this.markerSvgKey + " -> " + svgKey);
+
+                var icon = new ol.style.Icon({
+                        anchor: baseMarker.anchor,
+                        anchorXUnits: 'pixels',
+                        anchorYUnits: 'pixels',
+                        scale: baseMarker.scale,
+                        imgSize: baseMarker.size,
+                        src: svgPathToURI(baseMarker.path, baseMarker.size, outline, weight, col),
+                        rotation: (baseMarker.noRotate ? 0 : rotation * Math.PI / 180.0),
+                        opacity: opacity,
+                        rotateWithView: (baseMarker.noRotate ? false : true)
+                });
+
+                if (baseMarker.noRotate) {
+                        // the base marker won't be rotated
+                        this.markerStaticIcon = icon;
+                        this.markerStaticStyle = new ol.style.Style({
+                                image: this.markerStaticIcon
+                        });
+
+                        // create an arrow that we will rotate around the base marker
+                        // to indicate heading
+
+                        var offset = baseMarker.markerRadius * baseMarker.scale + 6;
+                        var size = offset * 2;
+
+                        var arrowPath = "M " + offset + ",0 m 4,4 -8,0 4,-4 z";
+                        this.markerIcon = new ol.style.Icon({
+                                anchor: [offset, offset],
+                                anchorXUnits: 'pixels',
+                                anchorYUnits: 'pixels',
+                                scale: 1.0,
+                                imgSize: [size, size],
+                                src: svgPathToURI(arrowPath, [size, size], outline, 1, outline),
+                                rotation: rotation * Math.PI / 180.0,
+                                opacity: opacity,
+                                rotateWithView: true
+                        });
+                        this.markerStyle = new ol.style.Style({
+                                image: this.markerIcon
+                        });
+                } else {
+                        this.markerIcon = icon;
+                        this.markerStyle = new ol.style.Style({
+                                image: this.markerIcon
+                        });
+                        this.markerStaticIcon = null;
+                        this.markerStaticStyle = new ol.style.Style({});
+                }
+
+                this.markerStyleKey = styleKey;
+                this.markerSvgKey = svgKey;
+
+                if (this.marker !== null) {
+                        this.marker.setStyle(this.markerStyle);
+                        this.markerStatic.setStyle(this.markerStaticStyle);
+                }
+        }
+
+        if (this.markerStyleKey != styleKey) {
+                //console.log(this.icao + " new rotation");
+                this.markerIcon.setRotation(rotation * Math.PI / 180.0);
+                this.markerIcon.setOpacity(opacity);
+                if (this.staticIcon) {
+                        this.staticIcon.setOpacity(opacity);
+                }
+                this.markerStyleKey = styleKey;
+        }
+
         return true;
 };
 
@@ -296,11 +352,12 @@ PlaneObject.prototype.updateData = function(receiver_timestamp, data) {
         if (typeof data.track !== "undefined")
                 this.track	= data.track;
         if (typeof data.lat !== "undefined") {
-                this.position   = new google.maps.LatLng(data.lat, data.lon);
+                this.position   = [data.lon, data.lat];
                 this.last_position_time = receiver_timestamp - data.seen_pos;
 
                 if (SitePosition !== null) {
-                        this.sitedist = google.maps.geometry.spherical.computeDistanceBetween (SitePosition, this.position);
+                        var WGS84 = new ol.Sphere(6378137);
+                        this.sitedist = WGS84.haversineDistance(SitePosition, this.position);
                 }
 
                 this.position_from_mlat = false;
@@ -352,81 +409,96 @@ PlaneObject.prototype.updateTick = function(receiver_timestamp, last_timestamp) 
 
 PlaneObject.prototype.clearMarker = function() {
 	if (this.marker) {
-		this.marker.setMap(null);
-                google.maps.event.clearListeners(this.marker, 'click');
-		this.marker = null;
+                PlaneIconFeatures.remove(this.marker);
+                PlaneIconFeatures.remove(this.markerStatic);
+                /* FIXME google.maps.event.clearListeners(this.marker, 'click'); */
+                this.marker = this.markerStatic = null;
 	}
 };
 
 // Update our marker on the map
 PlaneObject.prototype.updateMarker = function(moved) {
-        if (!this.visible) {
+        if (!this.visible || this.position == null) {
                 this.clearMarker();
                 return;
         }
         
-	if (this.marker) {
-                if (moved)
-			this.marker.setPosition(this.position);
-                this.updateIcon();
-	} else {
-                this.updateIcon();
-		this.marker = new google.maps.Marker({
-			position: this.position,
-			map: GoogleMap,
-			icon: this.icon,
-			visible: true
-		});
-                
-		// Trap clicks for this marker.
-		google.maps.event.addListener(this.marker, 'click', selectPlaneByHex.bind(undefined,this.icao,false));
-		google.maps.event.addListener(this.marker, 'dblclick', selectPlaneByHex.bind(undefined,this.icao,true));
+        this.updateIcon();
+        if (this.marker) {
+                if (moved) {
+                        this.marker.setGeometry(new ol.geom.Point(ol.proj.fromLonLat(this.position)));
+                        this.markerStatic.setGeometry(new ol.geom.Point(ol.proj.fromLonLat(this.position)));
+                }
+        } else {
+                this.marker = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(this.position)));
+                this.marker.hex = this.icao;
+                this.marker.setStyle(this.markerStyle);
+                PlaneIconFeatures.push(this.marker);
+
+                this.markerStatic = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(this.position)));
+                this.markerStatic.hex = this.icao;
+                this.markerStatic.setStyle(this.markerStaticStyle);
+                PlaneIconFeatures.push(this.markerStatic);
 	}
-        
-	// Setting the marker title
-        var title = (this.flight === null || this.flight.length == 0) ? this.icao : (this.flight+' ('+this.icao+')');
-        if (title !== this.marker.title)
-	        this.marker.setTitle(title);
 };
 
 // Update our planes tail line,
 PlaneObject.prototype.updateLines = function() {
         if (!this.selected)
                 return;
-        
+
+        if (this.track_linesegs.length == 0)
+                return;
+
+        var estimateStyle = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                        color: '#a08080',
+                        width: 1.5,
+                        lineDash: [3, 3]
+                })
+        });
+
+        var airStyle = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                        color: '#000000',
+                        width: 2
+                })
+        });
+
+        var groundStyle = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                        color: '#408040',
+                        width: 2
+                })
+        });
+
+        // create the new latest-position line
+        var lastseg = this.track_linesegs[this.track_linesegs.length - 1];
+        var lastfixed = lastseg.fixed.getCoordinateAt(1.0);
+        var geom = new ol.geom.LineString([lastfixed, ol.proj.fromLonLat(this.position)]);
+        var feature = new ol.Feature(geom);
+        feature.setStyle(this.altitude === 'ground' ? groundStyle : airStyle);
+
+        if (PlaneTrailFeatures.length == 0) {
+                PlaneTrailFeatures.push(feature);
+        } else {
+                PlaneTrailFeatures.setAt(0, feature);
+        }
+
+        // create any missing fixed line features
         for (var i = 0; i < this.track_linesegs.length; ++i) {
                 var seg = this.track_linesegs[i];
-                if (seg.line === null) {
-                        // console.log("create line for seg " + i + " with " + seg.track.getLength() + " points" + (seg.estimated ? " (estimated)" : ""));
-                        // for (var j = 0; j < seg.track.getLength(); j++) {
-                        //         console.log("  point " + j + " at " + seg.track.getAt(j).lat() + "," + seg.track.getAt(j).lng());
-                        // }
-                        
+                if (seg.feature === null) {
+                        seg.feature = new ol.Feature(seg.fixed);
                         if (seg.estimated) {
-                                var lineSymbol = {
-                                        path: 'M 0,-1 0,1',
-                                        strokeOpacity : 1,
-                                        strokeColor : '#804040',
-                                        strokeWeight : 2,
-                                        scale: 2
-                                };
-                                
-                                seg.line = new google.maps.Polyline({
-                                        path: seg.track,
-					strokeOpacity: 0,
-                                        icons: [{
-                                                icon: lineSymbol,
-                                                offset: '0',
-                                                repeat: '10px' }],
-                                        map : GoogleMap });
+                                seg.feature.setStyle(estimateStyle);
+                        } else if (seg.ground) {
+                                seg.feature.setStyle(groundStyle);
                         } else {
-                                seg.line = new google.maps.Polyline({
-                                        path: seg.track,
-					strokeOpacity: 1.0,
-					strokeColor: (seg.ground ? '#408040' : '#000000'),
-					strokeWeight: 3,
-					map: GoogleMap });
+                                seg.feature.setStyle(airStyle);
                         }
+
+                        PlaneTrailFeatures.push(seg.feature);
                 }
         }
 };

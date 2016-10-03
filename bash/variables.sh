@@ -33,8 +33,11 @@
 
 ## SOFTWARE VERSIONS
 
+# The ADS-B Receiver Project
+PROJECTVERSION="2.4.0"
+
 # FlightAware PiAware
-PIAWAREVERSION="3.0.5"
+PIAWAREVERSION="3.1.0"
 
 # PlaneFinder ADS-B Client
 PFCLIENTVERSIONARM="3.4.61"

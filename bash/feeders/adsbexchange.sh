@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -33,32 +33,66 @@
 
 ## VARIABLES
 
-BUILDDIR=$PWD
-MLATCLIENTDIR="$BUILDDIR/mlat-client"
-ADSBEXCHANGEDIR="$BUILDDIR/adsbexchange"
+PROJECTROOTDIRECTORY="$PWD"
+BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+MLATCLIENTBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/mlat-client"
+ADSBEXCHANGEBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/adsbexchange"
 
-source ../bash/variables.sh
-source ../bash/functions.sh
+## INCLUDE EXTERNAL SCRIPTS
 
-## INFORMATIVE MESSAAGE ABOUT THIS SOFTWARE
+source $BASHDIRECTORY/variables.sh
+source $BASHDIRECTORY/functions.sh
+
+## BEGIN SETUP
 
 clear
-
-echo -e "\033[31m"
-echo "-----------------------------------------------------"
-echo " Now ready to set up a feed to ADS-B Exchange."
-echo "-----------------------------------------------------"
-echo -e "\033[33mADSBexchange.com is a co-op of ADS-B/Mode S/MLAT feeders from around the world."
+echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
 echo ""
-echo "http://www.adsbexchange.com/how-to-feed/"
-echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE
+echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
+echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo ""
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
+CONTINUESETUP=$?
+if [ $CONTINUESETUP = 1 ]; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
+fi
+
+## CHECK FOR AND REMOVE  ANY OLD STYLE ADB-B EXCHANGE SETUPS IF ANY EXIST
+
+echo -e "\e[95m  Checking for and removing any old style ADS-B Exchange setups if any exist...\e[97m"
+echo ""
+# Check if the old adsbexchange-maint.sh line exists in /etc/rc.local.
+echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
+if grep -Fxq "$ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-maint.sh &" /etc/rc.local; then
+    # Kill any currently running instances of the adsbexchange_maint.sh script.
+    echo -e "\e[94m  Checking for any running adsbexchange-maint.sh processes...\e[97m"
+    PIDS=`ps -efww | grep -w "$ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [ ! -z "$PIDS" ]; then
+        echo -e "\e[94m  Killing any running adsbexchange-maint.sh processes...\e[97m"
+        echo ""
+        sudo kill $PIDS
+        sudo kill -9 $PIDS
+        echo ""
+    fi
+    # Remove the old line from /etc/rc.local.
+    echo -e "\e[94m  Removing the old adsbexchange-maint.sh startup line from /etc/rc.local...\e[97m"
+    sudo sed -i /$$ADSBEXCHANGEDIR\/adsbexchange-maint.sh &/d /etc/rc.local
+fi
+echo ""
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\033[33m"
-echo "Installing packages needed to fulfill dependencies..."
-echo -e "\033[37m"
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
+echo ""
 CheckPackage curl
 CheckPackage build-essential
 CheckPackage debhelper
@@ -67,71 +101,86 @@ CheckPackage netcat
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
-# Check if the git repository already exists locally.
-if [ -d $MLATCLIENTDIR ] && [ -d $MLATCLIENTDIR/.git ]; then
-    # A directory with a git repository containing the source code exists.
-    echo -e "\033[33m"
-    echo "Updating the local mlat-client git repository..."
-    echo -e "\033[37m"
-    cd $MLATCLIENTDIR
+echo ""
+echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
+echo ""
+if [ -d $MLATCLIENTBUILDDIRECTORY ] && [ -d $MLATCLIENTBUILDDIRECTORY/.git ]; then
+    # A directory with a git repository containing the source code already exists.
+    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
+    cd $MLATCLIENTBUILDDIRECTORY
+    echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
+    echo ""
     git pull
-    git checkout tags/${MLATCLIENTTAG}
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\033[33m"
-    echo "Cloning the mlat-client git repository locally..."
-    echo -e "\033[37m"
+    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+    cd $BUILDDIRECTORY
+    echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
+    echo ""
     git clone https://github.com/mutability/mlat-client.git
-    cd $MLATCLIENTDIR
-    git checkout tags/${MLATCLIENTTAG}
 fi
 
 ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
 
-echo -e "\033[33m"
-echo "Building the mlat-client package..."
-echo -e "\033[37m"
+echo ""
+echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
+echo ""
+if [ ! $PWD = $MLATCLIENTBUILDDIRECTORY ]; then
+    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
+    cd $MLATCLIENTBUILDDIRECTORY
+fi
+echo -e "\e[94m  Building the mlat-client package...\e[97m"
+echo ""
 dpkg-buildpackage -b -uc
+echo ""
+echo -e "\e[94m  Installing the mlat-client package...\e[97m"
+echo ""
+sudo dpkg -i $BUILDDIRECTORY/mlat-client_${MLATCLIENTVERSION}*.deb
 
-echo -e "\033[33m"
-echo "Installing the mlat-client package..."
-echo -e "\033[37m"
-sudo dpkg -i ${BUILDDIR}/mlat-client_${MLATCLIENTVERSION}*.deb
-
-## REMOVE THE OLD ADB-B EXCHANGE STARTUP LINE FROM /ETC/RC.LOCAL IF IT EXISTS
-
-# Check if the old adsbexchange-maint.sh line exists in /etc/rc.local.
-if grep -Fxq "${ADSBEXCHANGEDIR}/adsbexchange-maint.sh &" /etc/rc.local; then
-    # Kill any currently running instances of the adsbexchange_maint.sh script.
-    PIDS=`ps -efww | grep -w "${ADSBEXCHANGEDIR}/adsbexchange-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [ ! -z "$PIDS" ]; then
-        sudo kill $PIDS >> $LOGFILE
-        sudo kill -9 $PIDS >> $LOGFILE
-    fi
-    # Remove the old line from /etc/rc.local.
-    sudo sed -i /$$ADSBEXCHANGEDIR\/adsbexchange-maint.sh &/d /etc/rc.local
+# Check that the mlat-client package was installed successfully.
+echo ""
+echo -e "\e[94m  Checking that the mlat-client package was installed properly...\e[97m"
+if [ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    # If the mlat-client package could not be installed halt setup.
+    echo ""
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
+    echo -e "  SETUP HAS BEEN TERMINATED!"
+    echo ""
+    echo -e "\e[93mThe package \"mlat-client\" could not be installed.\e[39m"
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
 fi
 
-## CONFIGURE SCRIPT TO EXECUTE AND MAINTAIN MLAT-CLIENT AND NETCAT TO FEED ADS-B EXCHANGE
+## CREATE THE SCRIPT TO EXECUTE AND MAINTAIN MLAT-CLIENT AND NETCAT TO FEED ADS-B EXCHANGE
+
+echo ""
+echo -e "\e[95m  Creating maintenance for both the mlat-client and netcat feeds...\e[97m"
+echo ""
 
 # Ask the user for the user name for this receiver.
-ADSBEXCHANGEUSER=$(whiptail --backtitle "$BACKTITLETEXT" --title "ADS-B Exchange User Name" --nocancel --inputbox "\nPlease enter your ADS-B Exchange user name.\n\nIf you have more than one receiver, this username should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
+RECEIVERNAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Name" --nocancel --inputbox "\nPlease enter a name for this receiver. (NOT REQUIRED)\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability.
-RECEIVERLAT=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-RECEIVERLON=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
-RECEIVERALT=$(whiptail --backtitle "$BACKTITLETEXT" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your recivers atitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLAT,$RECEIVERLON | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
+RECEIVERALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLATITUDE,$RECEIVERLONGITUDE | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
 
 # Create the adsbexchange directory in the build directory if it does not exist.
-if [ ! -d "$ADSBEXCHANGEDIR" ]; then
-    mkdir $ADSBEXCHANGEDIR
+echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"
+if [ ! -d "$ADSBEXCHANGEBUILDDIRECTORY" ]; then
+    echo -e "\e[94m  Creating the adsbexchange build directory...\e[97m"
+    mkdir $ADSBEXCHANGEBUILDDIRECTORY
 fi
 
-echo -e "\033[33mCreating the file adsbexchange-netcat_maint.sh..."
-echo -e "\033[37m"
-tee $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh > /dev/null <<EOF
+echo -e "\e[94m  Creating the file adsbexchange-netcat_maint.sh...\e[97m"
+tee $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
@@ -140,63 +189,88 @@ while true
   done
 EOF
 
-echo -e "\033[33mCreating the file adsbexchange-mlat_maint.sh..."
-echo -e "\033[37m"
-tee $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh > /dev/null <<EOF
+echo -e "\e[94m  Creating the file adsbexchange-mlat_maint.sh...\e[97m"
+tee $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
     sleep 30
-    /usr/bin/mlat-client --input-type dump1090 --input-connect 127.0.0.1:30005 --lat $RECEIVERLAT --lon $RECEIVERLON --alt $RECEIVERALT --user $ADSBEXCHANGEUSER --server feed.adsbexchange.com:31090 --no-udp --results beast,connect,127.0.0.1:30104
+    /usr/bin/mlat-client --input-type dump1090 --input-connect 127.0.0.1:30005 --lat $RECEIVERLATITUDE --lon $RECEIVERLONGITUDE --alt $RECEIVERALTITUDE --user $RECEIVERNAME --server feed.adsbexchange.com:31090 --no-udp --results beast,connect,127.0.0.1:30104
   done
 EOF
 
-echo -e "\033[33mSetting permissions on adsbexchange-netcat_maint.sh..."
-echo -e "\033[37m"
-sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh
+echo -e "\e[94m  Setting file permissions for adsbexchange-netcat_maint.sh...\e[97m"
+sudo chmod +x $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh
 
-echo -e "\033[33mSetting permissions on adsbexchange-mlat_maint.sh..."
-echo -e "\033[37m"
-sudo chmod +x $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh
+echo -e "\e[94m  Setting file permissions for adsbexchange-mlat_maint.sh...\e[97m"
+sudo chmod +x $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh
 
-echo -e "\033[33mAdding netcat startup line to rc.local..."
-echo -e "\033[37m"
-if ! grep -Fxq "$ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
+echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
+if ! grep -Fxq "$ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
+    echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
 fi
-echo -e "\033[33mAdding mlat-client startup line to rc.local..."
-echo -e "\033[37m"
-if ! grep -Fxq "$ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
+
+echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
+if ! grep -Fxq "$ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
+    echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSBEXCHANGEDIR}/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
 fi
 
 ## START THE MLAT-CLIENT AND NETCAT FEED
 
+echo ""
+echo -e "\e[95m  Starting both the mlat-client and netcat feeds...\e[97m"
+echo ""
+
 # Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
+echo -e "\e[94m  Checking for any running adsbexchange-netcat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "adsbexchange-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [ ! -z "$PIDS" ]; then
+    echo -e "\e[94m  Killing any running adsbexchange-netcat_maint.sh processes...\e[97m"
+    sudo kill $PIDS
+    sudo kill -9 $PIDS
+fi
+PIDS=`ps -efww | grep -w "/bin/nc feed.adsbexchange.com" | awk -vpid=$$ '$2 != pid { print $2 }'`
+if [ ! -z "$PIDS" ]; then
+    echo -e "\e[94m  Killing any running netcat processes...\e[97m"
     sudo kill $PIDS
     sudo kill -9 $PIDS
 fi
 
 # Kill any currently running instances of the adsbexchange-mlat_maint.sh script.
+echo -e "\e[94m  Checking for any running adsbexchange-mlat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "adsbexchange-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [ ! -z "$PIDS" ]; then
+    echo -e "\e[94m  Killing any running adsbexchange-mlat_maint.sh processes...\e[97m"
+    sudo kill $PIDS
+    sudo kill -9 $PIDS
+fi
+PIDS=`ps -efww | grep -w "mlat-client" | awk -vpid=$$ '$2 != pid { print $2 }'`
+if [ ! -z "$PIDS" ]; then
+    echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
     sudo kill $PIDS
     sudo kill -9 $PIDS
 fi
 
-echo -e "\033[33mExecuting adsbexchange-netcat_maint.sh..."
-echo -e "\033[37m"
-sudo $ADSBEXCHANGEDIR/adsbexchange-netcat_maint.sh > /dev/null &
+echo -e "\e[94m  Executing the adsbexchange-netcat_maint.sh script...\e[97m"
+sudo nohup $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh > /dev/null 2>&1 &
 
-echo -e "\033[33mExecuting adsbexchange-mlat_maint.sh..."
-echo -e "\033[37m"
-sudo $ADSBEXCHANGEDIR/adsbexchange-mlat_maint.sh > /dev/null &
+echo -e "\e[94m  Executing the adsbexchange-mlat_maint.sh script...\e[97m"
+sudo nohup $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh > /dev/null 2>&1 &
 
-echo -e "\033[33mConfiguration of the ADS-B Exchange feed is now complete."
-echo "Please look over the output generated to be sure no errors were encountered."
-echo -e "\033[37m"
+## ADS-B EXCHANGE FEED SETUP COMPLETE
+
+# Enter into the project root directory.
+echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+cd $PROJECTROOTDIRECTORY
+
+echo ""
+echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  ADS-B Exchange feed setup is complete.\e[39m"
+echo ""
 read -p "Press enter to continue..." CONTINUE
+
+exit 0

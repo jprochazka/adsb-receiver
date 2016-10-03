@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,24 +31,39 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-BUILDDIR=$PWD
+## VARIABLES
+
+PROJECTROOTDIRECTORY="$PWD"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+
+## CHECK FOR PREREQUISITE PACKAGES
+
+echo ""
+echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
+echo ""
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
-echo -e "\033[33m"
-echo "Configuring dump1090-mutability to measure and save noise data."
-echo "Modifying the dump1090-mutability init script..."
-sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
-echo "Restarting dump1090-mutability..."
-echo -e "\033[37m"
-sudo /etc/init.d/dump1090-mutability restart
+if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+    echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
+    sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
+    echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
+    sudo systemctl daemon-reload
+    echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
+    echo ""
+    sudo /etc/init.d/dump1090-mutability force-reload
+    echo ""
+fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
 
-echo -e "\033[33m"
-echo "Backing up and replacing the current collectd.conf file..."
-echo -e "\033[37m"
-sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back
+# Check if the file /etc/collectd/collectd.conf exists and if so back it up.
+if [ -f /etc/collectd/collectd.conf ]; then
+    echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
+    sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back
+fi
+echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
 sudo tee -a /etc/collectd/collectd.conf > /dev/null <<EOF
 # Config file for collectd(1).
 
@@ -61,7 +76,7 @@ Hostname "localhost"
 # Added types for dump1090.                                                  #
 # Make sure the path to dump1090.db is correct.                              #
 #----------------------------------------------------------------------------#
-TypesDB "${BUILDDIR}/portal/graphs/dump1090.db" "/usr/share/collectd/types.db"
+TypesDB "$PORTALBUILDDIRECTORY/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 #----------------------------------------------------------------------------#
 # Interval at which to query values. This may be overwritten on a per-plugin #
@@ -117,7 +132,7 @@ LoadPlugin disk
 # statistics will be loaded from http://localhost/dump1090/data/stats.json   #
 #----------------------------------------------------------------------------#
 <Plugin python>
-	ModulePath "${BUILDDIR}/portal/graphs"
+	ModulePath "$PORTALBUILDDIRECTORY/graphs"
 	LogTraces true
 	Import "dump1090"
 	<Module dump1090>
@@ -183,27 +198,29 @@ EOF
 
 ## RELOAD COLLECTD
 
-echo -e "\033[33mReloading collectd so the new configuration is used..."
-echo -e "\033[37m"
+echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
+echo ""
 sudo /etc/init.d/collectd force-reload
+echo ""
 
 ## EDIT CRONTAB
 
-echo -e "\033[33mAdding jobs to crontab..."
+echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
+chmod +x $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh
 
 # The next block is temporary in order to insure this file is
 # deleted on older installation before the project renaming.
 if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
-    echo -e "Removing previously installed cron file..."
+    echo -e "\e[94m  Removing outdated performance graphs cron file...\e[97m"
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
 fi
 
 if [ -f /etc/cron.d/adsb-receiver-performance-graphs ]; then
-    echo -e "Removing previously installed cron file..."
+    echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
     sudo rm -f /etc/cron.d/adsb-receiver-performance-graphs
 fi
-echo -e "\033[37m"
-chmod +x $BUILDDIR/portal/graphs/make-collectd-graphs.sh
+
+echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
 sudo tee -a /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
@@ -216,10 +233,12 @@ sudo tee -a /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null
-*/10 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null
-2,12,22,32,42,52 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 24h >/dev/null
-4,24,44 * * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 7d >/dev/null
-6 * * *	* root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 30d >/dev/null
-8 */12 * * * root bash ${BUILDDIR}/portal/graphs/make-collectd-graphs.sh 365d >/dev/null
+*/5 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
+*/10 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
+2,12,22,32,42,52 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
+4,24,44 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
+6 * * *	* root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
+8 */12 * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
+
+exit 0
