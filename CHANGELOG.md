@@ -2,7 +2,15 @@
 
 The following is a history of the changes made to this project.
 
-## v2.4.0
+## v2.5.0
+
+* When upgrading dump1090 the user is once again asked for the LAT and LON settings.
+* Portal related python scripts are now localed in the folder named python.
+* A Google Maps API key can now be specified for use with portal maps.
+* Portal upgrade scripts have been split into multiple files.
+* The path to the SQLite database is no longer hard coded in the portal PHP files.
+
+## v2.4.0 *(September 27th, 2016)*
 
 * Users can now choose to install dump1090-fa instead of dump1090-mutability.
 * Scripts are now updated from the master branch each time install.sh is ran.
@@ -11,7 +19,7 @@ The following is a history of the changes made to this project.
 * Removed dump1090-fa map option from portal due to the fact it is no longer needed.
 * Flights.py has been temporariliy switched back to reading aircraft.json over HTTP.
 
-## v2.3.0
+## v2.3.0 *(September 15th, 2016)*
 
 * Massive clean up and in some cases an overhaul of the installation bash scripts.
 * Updated the dump978 map by modifying newer dump1090-mutability map.

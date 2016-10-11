@@ -457,7 +457,7 @@ EOF;
 <link rel="stylesheet" href="/admin/assets/css/jquery.steps.css">
 <link rel="stylesheet" href="/admin/assets/css/install.css">
 <script src="/admin/assets/js/jquery.steps.min.js"></script>
-<script src="/admin/assets/js/js.cookie-2.1.0.min.js"></script>
+<script src="/admin/assets/js/js.cookie-2.1.3.min.js"></script>
 <script src="/admin/assets/js/jquery.validate.min.js"></script>
 <script src="/admin/assets/js/install.js"></script>
 

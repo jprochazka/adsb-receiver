@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="/admin/assets/css/jquery.datetimepicker.css">
 <?php } ?>
         <link rel="stylesheet" href="/admin/assets/css/admin.css">
-        <script src="/admin/assets/js/jquery-2.2.1.min.js"></script>
+        <script src="/admin/assets/js/jquery-3.1.1.min.js"></script>
         <script src="/admin/assets/js/bootstrap.min.js"></script>
 <?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
         <script src="/admin/assets/js/index.js"></script>

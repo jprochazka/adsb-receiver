@@ -95,7 +95,7 @@
                 </p>
             </div>
         </footer>
-        <script src="/templates/{setting:template}/assets/js/jquery-2.2.1.min.js"></script>
+        <script src="/templates/{setting:template}/assets/js/jquery-3.1.1.min.js"></script>
         <script src="/templates/{setting:template}/assets/js/bootstrap.min.js"></script>
         {if setting:enableWebNotifications eq TRUE}
         <script src="/templates/{setting:template}/assets/js/notifications.js"></script>
