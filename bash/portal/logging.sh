@@ -118,7 +118,7 @@ tee $PORTALBUILDDIRECTORY/logging/maintenance-maint.sh > /dev/null <<EOF
 while true
   do
     sleep 30
-        $PYTHONPATH $PORTALBUILDDIRECTORY/portal/logging/maintenance.py
+        $PYTHONPATH $PORTALBUILDDIRECTORY/logging/maintenance.py
   done
 EOF
 
