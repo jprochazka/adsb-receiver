@@ -33,7 +33,7 @@
     $common = new common();
 
     // The most current stable release.
-    $thisVersion = "2.4.0";
+    $thisVersion = "2.5.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if ($common->getSetting("version") == $thisVersion) {

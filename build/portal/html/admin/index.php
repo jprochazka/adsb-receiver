@@ -118,6 +118,10 @@
         if (isset($_POST['enableGraphs']) && $_POST['enableGraphs'] == "TRUE")
             $enableGraphs = TRUE;
 
+        $enableLinks = FALSE;
+        if (isset($_POST['enableLinks']) && $_POST['enableLinks'] == "TRUE")
+            $enableLinks = TRUE;
+
         $enableDump1090 = FALSE;
         if (isset($_POST['enableDump1090']) && $_POST['enableDump1090'] == "TRUE")
             $enableDump1090 = TRUE;
@@ -167,6 +171,7 @@
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
+        $common->updateSetting("enableLinks", $enableLinks);
         $common->updateSetting("enableDump1090", $enableDump1090);
         $common->updateSetting("enableDump978", $enableDump978);
         $common->updateSetting("enablePfclient", $enablePfclient);
@@ -253,6 +258,7 @@
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
+    $enableLinks = $common->getSetting("enableLinks");
     $enableDump1090 = $common->getSetting("enableDump1090");
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
@@ -462,6 +468,11 @@
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == 1 ? print ' checked' : ''); ?>> Enable performance graphs link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableLinks" value="TRUE"<?php ($enableLinks == 1 ? print ' checked' : ''); ?>> Enable custom links.
                                 </label>
                             </div>
                             <div class="checkbox">

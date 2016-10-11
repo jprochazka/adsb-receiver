@@ -37,7 +37,7 @@
 
             // Check if the portal is installed or needs upgraded.
 
-            $thisVersion = "2.4.0";
+            $thisVersion = "2.5.0";
 
             if (!file_exists($_SERVER['DOCUMENT_ROOT']."/classes/settings.class.php")) {
                 header ("Location: /install/install.php");
@@ -48,8 +48,12 @@
             // The Base URL of this page (needed for Plane Finder client link)
             $pageData['baseurl'] = $common->getBaseUrl();
 
-            // Load the master template.
+            // Load the master template along with required data for the master template..
             $master = $this->readTemplate('master.tpl');
+
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
+            $links = new links();
+            $pageData['links'] = $links->getAllLinks();
 
             // Load the template for the requested page.
             $page = $this->readTemplate($common->removeExtension($_SERVER["SCRIPT_NAME"]).'.tpl');

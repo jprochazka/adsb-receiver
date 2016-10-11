@@ -103,6 +103,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts as $blogPost) {
                     if ($blogPost->title == $newTitle) {
                         return TRUE;

@@ -33,11 +33,11 @@
     // Load the require PHP classes.
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."blog.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
 
     $common = new common();
     $account = new account();
-    $blog = new blog();
+    $links = new links();
 
     // Check if the user is logged in.
     if (!$account->isAuthenticated()) {
@@ -45,17 +45,17 @@
         header ("Location: login.php");
     }
 
-    $titleExists = FALSE;
+    $nameExists = FALSE;
     if ($common->postBack()) {
-        // Check if title already exists.
-        $titleExists = $blog->titleExists($_POST['title']);
+        // Check if the name already exists.
+        $nameExists = $links->nameExists($_POST['name']);
 
-        if (!$titleExists) {
-            // Update the contents of the blog post.
-            $blog->addPost($_SESSION['login'], $_POST['title'], $_POST['contents']);
+        if (!$nameExists) {
+            // Add this link..
+            $links->addLink($_SESSION['name'], $_POST['address']);
 
-            // Forward the user to the blog management index page.
-            header ("Location: /admin/blog/");
+            // Forward the user to the link management index page.
+            header ("Location: /admin/links/");
         }
     }
 
@@ -64,54 +64,30 @@
 
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 ?>
-            <h1>Blog Management</h1>
+            <h1>Links Management</h1>
             <hr />
-            <h2>Add Blog Post</h2>
-            <form id="add-blog-post" method="post" action="add.php">
+            <h2>Add Link</h2>
+            <form id="add-link" method="post" action="add.php">
                 <div class="form-group">
-                    <label for="title">Title</label>
-                    <input type="text" id="title" name="title" class="form-control"<?php echo (isset($_POST['title']) ? ' value="'.$_POST['title'].'"' : '')?> required>
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-control"<?php echo (isset($_POST['name']) ? ' value="'.$_POST['name'].'"' : '')?> required>
 <?php
-    if ($titleExists) {
+    if ($nameExists) {
 ?>
                     <div class="alert alert-danger" role="alert" id="failure-alert">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
-                        Title already exists.
+                        Name already exists.
                     </div>
 <?php
     }
 ?>
                 </div>
                 <div class="form-group">
-                    <textarea id="contents" name="contents"><?php echo (isset($_POST['contents']) ? $_POST['contents'] : '')?></textarea>
+                    <label for="address">Address</label>
+                    <input type="text" id="address" name="address" class="form-control"<?php echo (isset($_POST['address']) ? ' value="'.$_POST['address'].'"' : '')?> required>
                 </div>
-                <input type="submit" class="btn btn-default" value="Publish">
-            </form>
-            <script src='//cdn.tinymce.com/4/tinymce.min.js'></script>
-            <script>
-                tinymce.init({
-                    selector: 'textarea',
-                    height: 500,
-                    plugins: [
-                        'advlist autolink lists link image charmap print preview anchor',
-                        'searchreplace visualblocks code fullscreen',
-                        'insertdatetime media table contextmenu paste code'
-                    ],
-                    toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image moreButton',
-                    setup: function (editor) {
-                        editor.addButton('moreButton', {
-                            type: 'button',
-                            text: 'Read more...',
-                            icon: false,
-                            onclick: function () {
-                                editor.execCommand('mceInsertContent', false, "{more}");
-                            }
-                        });
-                    }
-                });
-            </script>
 <?php
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>

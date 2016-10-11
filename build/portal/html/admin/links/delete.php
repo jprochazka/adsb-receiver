@@ -33,11 +33,11 @@
     // Load the require PHP classes.
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."blog.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
 
     $common = new common();
     $account = new account();
-    $blog = new blog();
+    $links = new links();
 
     // Check if the user is logged in.
     if (!$account->isAuthenticated()) {
@@ -46,40 +46,35 @@
     }
 
     if ($common->postBack()) {
-        // Delete the selected blog post.
-        $blog->deletePostByTitle(urldecode($_GET['title']));
+        // Delete the selected link.
+        $links->deleteLinkByName(urldecode($_GET['name']));
 
-        // Forward the user to the blog management index page.
-        header ("Location: /admin/blog/");
+        // Forward the user to the link management index page.
+        header ("Location: /admin/links/");
     }
 
-    // Get titles and dates for all blog posts.
-    $post = $blog->getPostByTitle(urldecode($_GET['title']));
-
-    // Properly format the date and convert to slected time zone.
-    $date = new DateTime($post['date'], new DateTimeZone('UTC'));
-    $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
-    $postDate = $date->format($common->getSetting('dateFormat'));
+    // Get the data for this link.
+    $link = $links->getLinkByName(urldecode($_GET['name']));
 
     ////////////////
     // BEGIN HTML
 
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 ?>
-            <h1>Blog Management</h1>
+            <h1>Links Management</h1>
             <hr />
-            <h2>Delete Blog Post</h2>
-            <h3><?php echo $post['title']; ?></h3>
-            <p>Posted <strong><?php echo $postDate; ?></strong> by <strong><?php echo $common->getAdminstratorName($post['author']); ?></strong>.</p>
+            <h2>Delete Link</h2>
+            <h3><?php echo $link['name']; ?></h3>
+            <p>With the address of <strong><?php echo $link['address']); ?></strong>.</p>
             <div class="alert alert-danger" role="alert">
                 <p>
                     <strong>Confirm Delete</strong><br />
-                    Are you sure you want to delete this blog post?
+                    Are you sure you want to delete this link?
                 </p>
             </div>
-            <form id="delete-blog-post" method="post" action="delete.php?title=<?php echo urlencode($post['title']); ?>">
+            <form id="delete-link" method="post" action="delete.php?name=<?php echo urlencode($link['name']); ?>">
                 <input type="submit" class="btn btn-default" value="Delete Post">
-                <a href="/admin/blog/" class="btn btn-info" role="button">Cancel</a>
+                <a href="/admin/links/" class="btn btn-info" role="button">Cancel</a>
             </form>
 <?php
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");

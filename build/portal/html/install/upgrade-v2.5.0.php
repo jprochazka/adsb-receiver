@@ -124,9 +124,14 @@ EOF;
                 $sth->execute();
                 $sth = NULL;
 
-
                 // Add the lastMessageCount column to the notifications table.
                 $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications ADD COLUMN lastMessageCount DATETIME";
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
+                // Add the links table.
+                $linksSql = 'CREATE TABLE '.$dbPrefix.'links(id INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, address VARCHAR(250) NOT NULL);';
                 $sth = $dbh->prepare($sql);
                 $sth->execute();
                 $sth = NULL;
@@ -149,7 +154,25 @@ EOF;
                 $sth->execute();
                 $sth = NULL;
 
+                // Add the links table.
+                $linksSql = 'CREATE TABLE '.$dbPrefix.'links(id INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, address VARCHAR(250) NOT NULL);';
+                $sth = $dbh->prepare($sql);
+                $sth->execute();
+                $sth = NULL;
+
                 $dbh = NULL;
+            }
+
+            if ($settings::db_driver == "xml") {
+
+                // Create XML files used to store links data.
+                $xml = new XMLWriter();
+                $xml->openMemory();
+                $xml->setIndent(true);
+                $xml->startDocument('1.0','UTF-8');
+                $xml->startElement("links");
+                $xml->endElement();
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml", $xml->flush(true));
             }
 
             // Rename the enableFlightNotifications to enableWebNotifications.
@@ -171,6 +194,9 @@ EOF;
 
             // Add Google Maps API Key setting.
             $common->addSetting('googleMapsApiKey', '');
+
+            // Add enable custom links setting.
+            $common->addSetting('eableLinks', FALSE);
 
             // Update the version and patch settings..
             $common->updateSetting("version", "2.5.0");

@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.4.0";
+    $thisVersion = "2.5.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists("../classes/settings.class.php")) {
@@ -171,6 +171,15 @@ EOF;
                 $xml->endElement();
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml", $xml->flush(true));
 
+                // Create XML files used to store links data.
+                $xml = new XMLWriter();
+                $xml->openMemory();
+                $xml->setIndent(true);
+                $xml->startDocument('1.0','UTF-8');
+                $xml->startElement("links");
+                $xml->endElement();
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml", $xml->flush(true));
+
                 // Create XML files used to store settings data.
                 $xml = new XMLWriter();
                 $xml->openMemory();
@@ -208,16 +217,20 @@ EOF;
                                            date datetime NOT NULL,
                                            author VARCHAR(100) NOT NULL,
                                            contents VARCHAR(20000) NOT NULL);';
-                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
-                                                     id INT(11) PRIMARY KEY AUTO_INCREMENT,
-                                                     flight VARCHAR(10) NOT NULL,
-                                                     lastMessageCount INT(11) NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights(
                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
                                          flight VARCHAR(100) NOT NULL,
                                          firstSeen datetime NOT NULL,
                                          lastSeen datetime NOT NULL);';
+                        $linksSql = 'CREATE TABLE '.$dbPrefix.'links(
+                                       id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                       name VARCHAR(100) NOT NULL,
+                                       address VARCHAR(250) NOT NULL);';
+                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
+                                                     id INT(11) PRIMARY KEY AUTO_INCREMENT,
+                                                     flight VARCHAR(10) NOT NULL,
+                                                     lastMessageCount INT(11) NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                            flight BIGINT NOT NULL,
@@ -256,16 +269,20 @@ EOF;
                                          date VARCHAR(20) NOT NULL,
                                          author VARCHAR(100) NOT NULL,
                                          contents VARCHAR(20000) NOT NULL);';
-                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
-                                                   id SERIAL PRIMARY KEY,
-                                                   flight VARCHAR(10) NOT NULL,
-                                                   lastMessageCount INT(11) NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id SERIAL PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
                                          flight VARCHAR(100) NOT NULL,
                                          firstSeen VARCHAR(100) NOT NULL,
                                          lastSeen VARCHAR(100) NOT NULL);';
+                        $linksSql = 'CREATE TABLE '.$dbPrefix.'links(
+                                       id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                       name VARCHAR(100) NOT NULL,
+                                       address VARCHAR(250) NOT NULL);';
+                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
+                                                   id SERIAL PRIMARY KEY,
+                                                   flight VARCHAR(10) NOT NULL,
+                                                   lastMessageCount INT(11) NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id SERIAL PRIMARY KEY,
                                            flight BIGINT NOT NULL,
@@ -303,16 +320,20 @@ EOF;
                                          date DATETIME NOT NULL,
                                          author TEXT NOT NULL,
                                          contents TEXT NOT NULL);';
-                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
-                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                   flight TEXT NOT NULL,
-                                                   lastMessageCount INTEGER NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id INTEGER PRIMARY KEY AUTOINCREMENT,
                                          aircraft INTEGER NOT NULL,
                                          flight TEXT NOT NULL,
                                          firstSeen DATETIME NOT NULL,
                                          lastSeen DATETIME NOT NULL);';
+                        $linksSql = 'CREATE TABLE '.$dbPrefix.'links(
+                                       id INT(11) AUTO_INCREMENT PRIMARY KEY,
+                                       name VARCHAR(100) NOT NULL,
+                                       address VARCHAR(250) NOT NULL);';
+                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
+                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                   flight TEXT NOT NULL,
+                                                   lastMessageCount INTEGER NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
                                            flight INTEGER NOT NULL,
@@ -347,11 +368,15 @@ EOF;
                 $sth->execute();
                 $sth = NULL;
 
-                $sth = $dbh->prepare($notificationsSql);
+                $sth = $dbh->prepare($flightsSql);
                 $sth->execute();
                 $sth = NULL;
 
-                $sth = $dbh->prepare($flightsSql);
+                $sth = $dbh->prepare($linksSql);
+                $sth->execute();
+                $sth = NULL;
+
+                $sth = $dbh->prepare($notificationsSql);
                 $sth->execute();
                 $sth = NULL;
 
@@ -380,7 +405,8 @@ EOF;
             $common->addSetting('dateFormat', 'F jS, Y g:i A');
             $common->addSetting('enableBlog', TRUE);
             $common->addSetting('enableInfo', TRUE);
-            $common->addSetting('enableGraphs', TRUE);
+            $common->addSetting('enableLinks', TRUE);
+            $common->addSetting('enableGraphs', FALSE);
             $common->addSetting('enableDump1090', TRUE);
             $common->addSetting('enableDump978', FALSE);
             $common->addSetting('enablePfclient', FALSE);

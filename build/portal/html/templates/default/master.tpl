@@ -47,14 +47,34 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            {if setting:enableFlights eq TRUE}<li id="flights-link"><a href="/flights.php">Flights</a></li>{/if}
                             {if setting:enableBlog eq TRUE}<li id="blog-link"><a href="/blog.php">Blog</a></li>{/if}
-                            {if setting:enableInfo eq TRUE}<li id="system-link"><a href="/system.php">System Information</a></li>{/if}
-                            {if setting:enableGraphs eq TRUE}<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>{/if}
-                            {if setting:enableDump1090 eq TRUE}<li id="dump1090-link"><a href="/dump1090.php">Live Dump1090 Map</a></li>{/if}
-                            {if setting:enableDump978 eq TRUE}<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>{/if}
-                            {if setting:enablePfclient eq TRUE}<li id="planefinder-link"><a href="{page:baseurl}:30053" target="_blank">Plane Finder Client</a></li>{/if}
-                        </ul>
+                            {if setting:enableFlights eq TRUE}<li id="flights-link"><a href="/flights.php">Flights</a></li>{/if}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    {if setting:enableDump1090 eq TRUE}<li id="dump1090-link"><a href="/dump1090.php">Live Dump1090 Map</a></li>{/if}
+                                    {if setting:enableDump978 eq TRUE}<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>{/if}
+                                    {if setting:enablePfclient eq TRUE}<li id="planefinder-link"><a href="{page:baseurl}:30053" target="_blank">Plane Finder Client</a></li>{/if}
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Maps <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    {if setting:enableGraphs eq TRUE}<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>{/if}
+                                    {if setting:enableInfo eq TRUE}<li id="system-link"><a href="/system.php">System Information</a></li>{/if}
+                                </ul>
+                            </li>
+                            {if setting:enableLinks eq TRUE}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Links <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    {foreach page:links as link}
+                                    <li><a href="{link->address}">{link->name}</a></li>
+                                    {/foreach}
+                                </ul>
+                            </li>
+                            {/if}
+                        </nav>
                         {if setting:dataStorage neq xml}
                         <form name="search" method="post" action="flights.php" class="navbar-form navbar-right">
                             <div class="form-group">

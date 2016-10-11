@@ -68,7 +68,7 @@
     ////////////////
     // BEGIN HTML
 
-    require_once('../includes/header.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 
     // Display the updated message if settings were updated.
     if ($updated) {
@@ -112,5 +112,5 @@
                 });
             </script>
 <?php
-    require_once('../includes/footer.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>
