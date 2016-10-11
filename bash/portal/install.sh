@@ -493,28 +493,49 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+## SETUP COMMON PORTAL FEATURES
+
+# Export variables needed by logging.sh.
+if [ $DATABASEENGINE = "MySQL" ] || [ $DATABASEENGINE = "SQLite" ]; then
+    export ADSB_DATABASEENGINE=$DATABASEENGINE
+    export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
+    export ADSB_DATABASEUSER=$DATABASEUSER
+    export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
+    export ADSB_DATABASENAME=$DATABASENAME
+else
+    export ADSB_DATABASEENGINE="xml"
+    export ADSB_DATABASEHOSTNAME=""
+    export ADSB_DATABASEUSER=""
+    export ADSB_DATABASEPASSWORD1=""
+    export ADSB_DATABASENAME=""
+fi
+
+# Execute the core setup script.
+chmod +x $BASHDIRECTORY/portal/core.sh
+$BASHDIRECTORY/portal/core.sh
+if [ $? -ne 0 ]; then
+    echo ""
+    echo -e "\e[91m  THE SCRIPT CORE.SH ENCOUNTERED AND ERROR"
+    echo ""
+    exit 1
+fi
+
+# Execute the notifications setup script.
+chmod +x $BASHDIRECTORY/portal/notifications.sh
+$BASHDIRECTORY/portal/notifications.sh
+if [ $? -ne 0 ]; then
+    echo ""
+    echo -e "\e[91m  THE SCRIPT NOTIFICATIONS.SH ENCOUNTERED AND ERROR"
+    echo ""
+    exit 1
+fi
+
 ## SETUP ADVANCED PORTAL FEATURES
 
 if [ $ADVANCED = TRUE ]; then
     # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
     if [ $DATABASEENGINE = "SQLite" ] && [ -z "$DATABASENAME" ]; then
         $DATABASENAME="$LIGHTTPDDOCUMENTROOT/data/portal.sqlite"
-    fi
-
-    # Export variables needed by logging.sh.
-    export ADSB_DATABASEENGINE=$DATABASEENGINE
-    export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
-    export ADSB_DATABASEUSER=$DATABASEUSER
-    export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
-    export ADSB_DATABASENAME=$DATABASENAME
-
-    chmod +x $BASHDIRECTORY/portal/advanced.sh
-    $BASHDIRECTORY/portal/advanced.sh
-    if [ $? -ne 0 ]; then
-        echo ""
-        echo -e "\e[91m  THE SCRIPT ADVANCED.SH ENCOUNTERED AND ERROR"
-        echo ""
-        exit 1
     fi
 
     chmod +x $BASHDIRECTORY/portal/logging.sh
@@ -525,15 +546,14 @@ if [ $ADVANCED = TRUE ]; then
         echo ""
         exit 1
     fi
-
-    # Remove exported variables that are no longer needed.
-    unset ADSB_DATABASEENGINE
-    unset ADSB_DATABASEHOSTNAME
-    unset ADSB_DATABASEUSER
-    unset ADSB_DATABASEPASSWORD1
-    unset ADSB_DATABASENAME
-
 fi
+
+# Remove exported variables that are no longer needed.
+unset ADSB_DATABASEENGINE
+unset ADSB_DATABASEHOSTNAME
+unset ADSB_DATABASEUSER
+unset ADSB_DATABASEPASSWORD1
+unset ADSB_DATABASENAME
 
 ## ADS-B RECEIVER PROJECT PORTAL SETUP COMPLETE
 

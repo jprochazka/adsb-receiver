@@ -39,79 +39,44 @@ PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
 PORTALPYTHONDIRECTORY="$PORTALBUILDDIRECTORY/python"
 PYTHONPATH=`which python`
 
-## SETUP FLIGHT LOGGING
+## SETUP FLIGHT NOTIFICATIONS
 
 echo ""
-echo -e "\e[95m  Setting up flight logging...\e[97m"
+echo -e "\e[95m  Setting up flight notifications...\e[97m"
 echo ""
 
 # Create and set permissions on the flight logging and maintenance maintenance scripts.
 echo -e "\e[94m  Creating the flight logging maintenance script...\e[97m"
-tee $PORTALPYTHONDIRECTORY/flights-maint.sh > /dev/null <<EOF
+tee $PORTALPYTHONDIRECTORY/notifications-maint.sh > /dev/null <<EOF
 #!/bin/sh
 while true
   do
     sleep 30
-        $PYTHONPATH $PORTALPYTHONDIRECTORY/flights.py
+        $PYTHONPATH $PORTALPYTHONDIRECTORY/notifications.py
   done
 EOF
 
-echo -e "\e[94m  Creating the maintenance maintenance script...\e[97m"
-tee $PORTALPYTHONDIRECTORY/maintenance-maint.sh > /dev/null <<EOF
-#!/bin/sh
-while true
-  do
-    sleep 30
-        $PYTHONPATH $PORTALPYTHONDIRECTORY/maintenance.py
-  done
-EOF
+echo -e "\e[94m  Making the notifications maintenance script executable...\e[97m"
+chmod +x $PORTALPYTHONDIRECTORY/notifications-maint.sh
 
-echo -e "\e[94m  Making the flight logging maintenance script executable...\e[97m"
-chmod +x $PORTALPYTHONDIRECTORY/flights-maint.sh
-echo -e "\e[94m  Making the maintenance maintenance script executable...\e[97m"
-chmod +x $PORTALPYTHONDIRECTORY/maintenance-maint.sh
-
-#Remove old flights-maint.sh start up line from /etc/rc.local.
-sed -i '/build\/portal\/logging\/flights-maint.sh/d' /etc/rc.local
-
-# Add flight logging maintenance script to rc.local.
-if ! grep -Fxq "$PORTALPYTHONDIRECTORY/flights-maint.sh &" /etc/rc.local; then
-    echo -e "\e[94m  Adding the flight logging maintenance script startup line to /etc/rc.local...\e[97m"
+# Add the flight notifications maintenance script to rc.local.
+if ! grep -Fxq "$PORTALPYTHONDIRECTORY/notifications-maint.sh &" /etc/rc.local; then
+    echo -e "\e[94m  Adding the flight notifications maintenance script startup line to /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALPYTHONDIRECTORY/flights-maint.sh &\n" /etc/rc.local
-fi
-
-# Remove old maintenance-maint.sh start up line from /etc/rc.local.
-sed -i '/build\/portal\/logging\/maintenance-maint.sh/d' /etc/rc.local
-
-# Add maintenance maintenance script to rc.local.
-if ! grep -Fxq "$PORTALPYTHONDIRECTORY/maintenance-maint.sh &" /etc/rc.local; then
-    echo -e "\e[94m  Adding the maintenance maintenance script startup line to /etc/rc.local...\e[97m"
-    LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALPYTHONDIRECTORY/maintenance-maint.sh &\n" /etc/rc.local
+    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALPYTHONDIRECTORY/notifications-maint.sh &\n" /etc/rc.local
 fi
 
 # Kill any previously running maintenance scripts.
-echo -e "\e[94m  Checking for any running flights-maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "flights-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
+echo -e "\e[94m  Checking for any running notifications-maint.sh processes...\e[97m"
+PIDS=`ps -efww | grep -w "notifications-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running flights-maint.sh processes...\e[97m"
+    echo -e "\e[94m  Killing any running notifications-maint.sh processes...\e[97m"
     sudo kill $PIDS
     sudo kill -9 $PIDS
 fi
-PIDS=`ps -efww | grep -w "maintenance-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running maintenance-maint.sh processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
-fi
-
-# Start flight logging.
-echo -e "\e[94m  Executing the flight logging maintenance script...\e[97m"
-nohup $PORTALPYTHONDIRECTORY/flights-maint.sh > /dev/null 2>&1 &
 
 # Start maintenance.
-echo -e "\e[94m  Executing the maintenance maintenance script...\e[97m"
-nohup $PORTALPYTHONDIRECTORY/maintenance-maint.sh > /dev/null 2>&1 &
+echo -e "\e[94m  Executing the notifications maintenance script...\e[97m"
+nohup $PORTALPYTHONDIRECTORY/notifications-maint.sh > /dev/null 2>&1 &
 
 exit 0
