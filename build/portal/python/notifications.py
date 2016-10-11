@@ -52,7 +52,7 @@ from xml.dom import minidom
 import xml.etree.ElementTree as ET
 
 # Temporary variables for testing.
-portal_url = "http://172.17.2.148"
+portal_url = "http://localhost"
 debug_script = "true"
 send_email = "false"
 send_tweet = "false"
@@ -98,10 +98,6 @@ if debug_script == "true":
 # Get flights to send notifications for from the notifications.xml file.
 doc = minidom.parse("/var/www/html/data/notifications.xml")
 flights = doc.getElementsByTagName("flight")
-
-
-###############################################
-## SEND NOTIFICATION(S) IF FLIGHTS ARE FOUND
 
 
 # Get notification JSON from the portal.
@@ -151,11 +147,6 @@ Subject: ADS-B Receiver Flight Notification
                     print "Successfully sent tweet"
                 except UnicodeDecodeError:
                     print "Error: unable to send tweet"
-
-
-###############################################
-## UPDATE THE FLIGHTS LASTMESSAGECOUNT
-
 
         if name.firstChild.data.strip() == i['flight']:
             update_data = [('flight',i['flight']),('messages','0')]

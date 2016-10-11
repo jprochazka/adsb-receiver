@@ -408,6 +408,7 @@ EOF;
             $common->addSetting('twitterConsumerSecret', '');
             $common->addSetting('twitterAccessToken', '');
             $common->addSetting('twitterAccessTokenSecret', '');
+            $common->addSetting('googleMapsApiKey', '');
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);

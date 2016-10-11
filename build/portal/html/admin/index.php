@@ -192,6 +192,7 @@
         $common->updateSetting("twitterConsumerSecret", $_POST['twitterConsumerSecret']);
         $common->updateSetting("twitterAccessToken", $_POST['twitterAccessToken']);
         $common->updateSetting("twitterAccessTokenSecret", $_POST['twitterAccessTokenSecret']);
+        $common->updateSetting("googleMapsApiKey", $_POST['googleMapsApiKey']);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -245,6 +246,7 @@
     $defaultPage = $common->getSetting("defaultPage");
     $dateFormat = $common->getSetting("dateFormat");
     $timeZone = $common->getSetting("timeZone");
+    $googleMapsApiKey = $common->getSetting("googleMapsApiKey");
 
     // Get navigation settings from settings.xml.
     $enableFlights = $common->getSetting("enableFlights");
@@ -380,6 +382,10 @@
     }
 ?>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="googleMapsApiKey">Google Maps API Key</label>
+                                <input type="text" class="form-control" id="googleMapsApiKey" name="googleMapsApiKey" value="<?php echo $googleMapsApiKey; ?>">
                             </div>
                         </div>
                     </div>

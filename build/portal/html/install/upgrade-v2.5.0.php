@@ -169,6 +169,9 @@ EOF;
             $common->addSetting('twitterAccessToken', '');
             $common->addSetting('twitterAccessTokenSecret', '')
 
+            // Add Google Maps API Key setting.
+            $common->addSetting('googleMapsApiKey', '');
+
             // Update the version and patch settings..
             $common->updateSetting("version", "2.5.0");
             $common->updateSetting("patch", "");
