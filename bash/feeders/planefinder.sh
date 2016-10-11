@@ -71,7 +71,7 @@ fi
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
 if [[ `uname -m` == "x86_64" ]]; then
-    if [[ `lsb_release -si` == "Debian" ]] && [ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]; then
+    if [ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]; then
         echo -e "\e[94m  Adding the i386 architecture...\e[97m"
         sudo dpkg --add-architecture i386
         echo -e "\e[94m  Downloading latest package lists for enabled repositories and PPAs...\e[97m"
@@ -114,7 +114,7 @@ echo ""
 echo -e "\e[94m  Entering the Plane Finder ADS-B Client build directory...\e[97m"
 cd $PLANEFINDERBUILDDIRECTORY
 # Install the proper package depending on the devices architecture.
-if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]]; then
+if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]] || [[ `uname -m` == "aarch64" ]]; then
     echo -e "\e[94m  Installing the Plane Finder ADS-B Client v$PFCLIENTVERSIONARM for ARM devices package...\e[97m"
     echo ""
     sudo dpkg -i $PLANEFINDERBUILDDIRECTORY/pfclient_${PFCLIENTVERSIONARM}_armhf.deb

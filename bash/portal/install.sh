@@ -386,6 +386,11 @@ alias.url += (
 url.redirect += (
   "^/dump1090$" => "/dump1090/"
 )
+# Add CORS header
+server.modules += ( "mod_setenv" )
+\$HTTP["url"] =~ "^/dump1090/data/.*\.json$" {
+  setenv.add-response-header = ( "Access-Control-Allow-Origin" => "*" )
+}
 EOF
 fi
 sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
