@@ -193,7 +193,7 @@ if __name__ == "__main__":
         # Switch from physical file location to using urllib2 after the addition of the dump1090-fa option.
         # dump1090-fa and dump1090-mutability store aircraft.json in difrent locations.
         # However Lighttpd is set up to serve this file using the same URL no matter which version is installed.
-        response = urllib2.urlopen('http://192.168.254.2/dump1090/data/aircraft.json')
+        response = urllib2.urlopen('http://localhost/dump1090/data/aircraft.json')
         data = json.load(response)
 
         processor.processAircraftList(data["aircraft"])
