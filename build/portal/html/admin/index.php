@@ -447,6 +447,41 @@
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="navigation">
+                  <div class="panel panel-default">
+                      <div class="panel-heading">API Key</div>
+                      <div class="panel-body">
+                        <div class="form-group">
+                                <label for="BingMapsAPI">Bing Maps API Key</label>
+                                <input type="text" class="form-control" id="bingMapAPIKey" name="bingMapAPIKey"
+                                        value="<?php  if(!empty($_POST['bingMapAPIKey'])){
+                                        $apikey = $_POST['bingMapAPIKey'];
+                                        $path_to_file = '/usr/share/dump1090-mutability/html/config.js';
+                                        $file_contents = file_get_contents($path_to_file);
+                                        $file_contents = preg_replace('/BingMapsAPIKey = ([a-zA-Z0-9"]+)/', "BingMapsAPIKey = '" . $_POST['bingMapAPIKey'] . "'" , $file_contents);
+                                        file_put_contents($path_to_file,$file_contents);
+                                        }
+                                        else {
+                                          echo file_get_contents('/usr/share/dump1090-mutability/html/config.js');
+                                        }
+                                        ?>">
+                                </div>
+                                <div class="form-group">
+                                        <label for="mapzenAPIKey">Mapzen Maps API Key</label>
+                                        <input type="text" class="form-control" id="mapzenAPIKey" name="mapzenAPIKey"
+                                                value="<?php  if(!empty($_POST['mapzenAPIKey'])){
+                                                $apikey = $_POST['mapzenAPIKey'];
+                                                $path_to_file = '/usr/share/dump1090-mutability/html/config.js';
+                                                $file_contents = file_get_contents($path_to_file);
+                                                $file_contents = preg_replace('/MapzenAPIKey = ([a-zA-Z0-9"]+)/', "MapzenAPIKey = '" . $_POST['mapzenAPIKey'] . "'" , $file_contents);
+                                                file_put_contents($path_to_file,$file_contents);
+                                                }
+                                                else {
+                                                  echo file_get_contents('/usr/share/dump1090-mutability/html/config.js');
+                                                }
+                                                ?>">
+                                        </div>
+                        </div>
+                      </div>
                     <div class="panel panel-default">
                         <div class="panel-heading">Enable/Disable Navigation Links</div>
                         <div class="panel-body">
