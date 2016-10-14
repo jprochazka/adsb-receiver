@@ -239,6 +239,7 @@
     $enableWebNotifications = $common->getSetting("enableWebNotifications");
     $enableEmailNotifications = $common->getSetting("enableEmailNotifications");
     $enableTwitterNotifications = $common->getSetting("enableTwitterNotifications");
+    $emailNotificationAddresses = $common->getSetting("emailNotificationAddresses");
     $twitterUserName = $common->getSetting("twitterUserName");
     $twitterConsumerKey = $common->getSetting("twitterConsumerKey");
     $twitterConsumerSecret = $common->getSetting("twitterConsumerSecret ");
@@ -415,8 +416,8 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="notificationEmailAddresses"">Email addresses to be notified. (coma delimited)</label>
-                                <input type="text" class="form-control" id="notificationEmailAddresses" name="notificationEmailAddresses" value="<?php echo $notificationEmailAddresses; ?>">
+                                <label for="emailNotificationAddresses"">Email addresses to be notified. (coma delimited)</label>
+                                <input type="text" class="form-control" id="emailNotificationAddresses" name="emailNotificationAddresses" value="<?php echo $emailNotificationAddresses; ?>">
                             </div>
                             <div class="checkbox">
                                 <label>
@@ -659,3 +660,4 @@
 <?php
     require_once('includes/footer.inc.php');
 ?>
+

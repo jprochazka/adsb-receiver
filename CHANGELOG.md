@@ -9,6 +9,7 @@ The following is a history of the changes made to this project.
 * A Google Maps API key can now be specified for use with portal maps.
 * Portal upgrade scripts have been split into multiple files.
 * The path to the SQLite database is no longer hard coded in the portal PHP files.
+* Pagination links now show first and last page links properly.
 
 ## v2.4.0 *(September 27th, 2016)*
 

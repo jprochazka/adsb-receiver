@@ -67,7 +67,7 @@
     $pageData['blogPosts'] = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
 
     // Calculate the number of pagination links to show.
-    $pageData['pageLinks'] = count($allPosts) / $itemsPerPage;
+    $pageData['pageLinks'] = ceil(count($allPosts) / $itemsPerPage);
 
     $template->display($pageData);
 ?>

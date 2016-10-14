@@ -92,7 +92,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
-                $links = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml")
+                $links = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml");
                 foreach ($links as $link) {
                     if ($link->name == $name) {
                         return TRUE;
@@ -140,8 +140,8 @@
                 $dbh = $common->pdoOpen();
                 $sql = "INSERT INTO ".$settings::db_prefix."links (name, address) VALUES (:name, :address)";
                 $sth = $dbh->prepare($sql);
-                $sth->bindParam(':name', $title, PDO::PARAM_STR, 100);
-                $sth->bindParam(':address', $author, PDO::PARAM_STR, 250);
+                $sth->bindParam(':name', $name, PDO::PARAM_STR, 100);
+                $sth->bindParam(':address', $address, PDO::PARAM_STR, 250);
                 $sth->execute();
                 $sth = NULL;
                 $dbh = NULL;

@@ -37,12 +37,8 @@
     // Removes and current patch version from the patch setting.
     // ---------------------------------------------------------
 
-    if($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
-        $results = upgrade();
-        exit(json_encode($results));
-    } else {
-        http_response_code(404);
-    }
+    $results = upgrade();
+    exit(json_encode($results));
 
     function upgrade() {
         require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
@@ -56,7 +52,7 @@
 
             // The upgrade process completed successfully.
             $results['success'] = TRUE;
-            $results['message'] = "Upgrade to v2.0.3 successful."
+            $results['message'] = "Upgrade to v2.0.3 successful.";
             return $results;
 
         } catch(Exception $e) {

@@ -46,7 +46,7 @@
     }
 
     // Get all links.
-    $allLinks = $links->getAllLinks();
+    $links = $links->getAllLinks();
 
     ////////////////
     // BEGIN HTML
@@ -69,7 +69,7 @@
     foreach ($links as $link) {
 ?>
                     <tr>
-                        <td><a href="edit.php?name=<?php echo urlencode($link['name']); ?>">edit</a> <a href="delete.php?title=<?php echo urlencode($link['name']); ?>">delete</a></td>
+                        <td><a href="edit.php?name=<?php echo urlencode($link['name']); ?>">edit</a> <a href="delete.php?name=<?php echo urlencode($link['name']); ?>">delete</a></td>
                         <td><?php echo $link['name']; ?></td>
                         <td><a href="<?php echo $link['address']; ?>" target="_blank"><?php echo $link['address']; ?></a></td>
                     </tr>

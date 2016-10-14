@@ -44,66 +44,76 @@
 
     // UPGRADE TO V2.0.1
     if ($common->getSetting("version") == "2.0.0" && $success) {
-        $json = file_get_contents("http://localhost/install/upgrade-2.0.1.php");
+        $json = file_get_contents("http://localhost/install/upgrade-v2.0.1.php");
         $results = json_decode($json, TRUE);
         $success = $results['success'];
         $message = $results['message'];
-        $version = "2.0.1"
+        $version = "2.0.1";
     }
 
     // UPGRADE TO V2.0.2
     if ($common->getSetting("version") == "2.0.1" && $success) {
-        $json = file_get_contents("http://localhost/install/upgrade-2.0.2.php");
+        $json = file_get_contents("http://localhost/install/upgrade-v2.0.2.php");
         $results = json_decode($json, TRUE);
         $success = $results['success'];
         $message = $results['message'];
-        $version = "2.0.2"
+        $version = "2.0.2";
     }
 
     // UPGRADE RO V2.0.3
     if ($common->getSetting("version") == "2.0.2" && $success) {
-        $json = file_get_contents("http://localhost/install/upgrade-2.0.3.php");
+        $json = file_get_contents("http://localhost/install/upgrade-v2.0.3.php");
         $results = json_decode($json, TRUE);
         $success = $results['success'];
         $message = $results['message'];
-        $version = "2.0.3"
+        $version = "2.0.3";
     }
 
     // UPGRADE TO V2.1.0
     if ($common->getSetting("version") == "2.0.3" && $success) {
-        $json = file_get_contents("http://localhost/install/upgrade-2.1.0.php");
+        $json = file_get_contents("http://localhost/install/upgrade-v2.1.0.php");
         $results = json_decode($json, TRUE);
         $success = $results['success'];
         $message = $results['message'];
-        $version = "2.1.0"
+        $version = "2.1.0";
     }
 
     // UPGRADE TO V2.2.0
     if ($common->getSetting("version") == "2.1.0" && $success) {
-        $json = file_get_contents("http://localhost/install/upgrade-2.2.0.php");
+        $json = file_get_contents("http://localhost/install/upgrade-v2.2.0.php");
         $results = json_decode($json, TRUE);
         $success = $results['success'];
         $message = $results['message'];
-        $version = "2.2.0"
+        $version = "2.2.0";
     }
 
     // UPGRADE TO V2.3.0
     if ($common->getSetting("version") == "2.2.0" && $success) {
-        $json = file_get_contents("http://localhost/install/upgrade-2.3.0.php");
+        $json = file_get_contents("http://localhost/install/upgrade-v2.3.0.php");
         $results = json_decode($json, TRUE);
         $success = $results['success'];
         $message = $results['message'];
-        $version = "2.3.0"
+        $version = "2.3.0";
     }
 
     // UPGRADE TO V2.4.0
     if ($common->getSetting("version") == "2.3.0" && $success) {
-        $json = file_get_contents("http://localhost/install/upgrade-2.4.0.php");
+        $json = file_get_contents("http://localhost/install/upgrade-v2.4.0.php");
         $results = json_decode($json, TRUE);
         $success = $results['success'];
         $message = $results['message'];
-        $version = "2.4.0"
-        
+        $version = "2.4.0";
+    }
+
+    // UPGRADE TO V2.5.0
+    if ($common->getSetting("version") == "2.4.0" && $success) {
+        $json = file_get_contents("http://localhost/install/upgrade-v2.5.0.php");
+        $results = json_decode($json, TRUE);
+        $success = $results['success'];
+        $message = $results['message'];
+        $version = "2.5.0";
+    }
+
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 
     // Display the instalation wizard.

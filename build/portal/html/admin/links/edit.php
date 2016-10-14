@@ -60,18 +60,6 @@
     // BEGIN HTML
 
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
-
-    // Display the updated message if settings were updated.
-    if ($updated) {
-?>
-        <div id="contents-saved" class="alert alert-success fade in" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            Link has been updated.
-        </div>
-<?php
-    }
 ?>
             <h1>Links Management</h1>
             <hr />
@@ -80,11 +68,11 @@
             <form id="edit-link" method="post" action="edit.php">
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input type="text" id="name" name="name" class="form-control"<?php echo $link['name']; ?> required>
+                    <input type="text" id="name" name="name" class="form-control" value="<?php echo $link['name']; ?>" required>
                 </div>
                 <div class="form-group">
                     <label for="address">Address</label>
-                    <input type="text" id="address" name="address" class="form-control"<?php echo $link['address']; ?> required>
+                    <input type="text" id="address" name="address" class="form-control" value="<?php echo $link['address']; ?>" required>
                 </div>
                 <input type="hidden" name="originalName" value="<?php echo $link['name']; ?>">
                 <input type="submit" class="btn btn-default" value="Commit Changes">
@@ -92,3 +80,4 @@
 <?php
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>
+

@@ -77,7 +77,7 @@
     $pageData['flights'] = $common->paginateArray($flights, $page, $itemsPerPage - 1);
 
     // Calculate the number of pagination links to show.
-    $pageData['pageLinks'] = count($flights) / $itemsPerPage;
+    $pageData['pageLinks'] = ceil(count($flights) / $itemsPerPage);
 
     $template->display($pageData);
 ?>
