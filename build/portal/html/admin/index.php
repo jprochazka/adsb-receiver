@@ -93,7 +93,7 @@
                     $sql = "INSERT INTO ".$settings::db_prefix."notifications (flight, lastMessageCount) VALUES (:flight, :lastMessageCount)";
                     $sth = $dbh->prepare($sql);
                     $sth->bindParam(':flight', $flight, PDO::PARAM_STR, 10);
-                    $sth->bindParam(':lastMessageCount', 0, PDO::PARAM_INT);
+                    $sth->bindParam(':lastMessageCount', $a = 0, PDO::PARAM_INT);
                     $sth->execute();
                     $sth = NULL;
                     $dbh = NULL;

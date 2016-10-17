@@ -50,7 +50,7 @@
                 $sql = "SELECT name, address FROM ".$settings::db_prefix."links ORDER BY name";
                 $sth = $dbh->prepare($sql);
                 $sth->execute();
-                $links = $sth->fetchAll();
+                $links = $sth->fetchAll(PDO::FETCH_ASSOC);
                 $sth = NULL;
                 $dbh = NULL;
             }
@@ -79,7 +79,7 @@
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':name', $name, PDO::PARAM_STR, 100);
                 $sth->execute();
-                $link = $sth->fetch();
+                $link = $sth->fetch(PDO::FETCH_ASSOC);
                 $sth = NULL;
                 $dbh = NULL;
                 return $link;
