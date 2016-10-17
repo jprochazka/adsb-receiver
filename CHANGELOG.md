@@ -4,12 +4,15 @@ The following is a history of the changes made to this project.
 
 ## v2.5.0
 
+* Administrators can now specify custom links to be displayed within the portal.
+* The loading speed for the flights page has been dramatically reduced. *(advanced)*
 * When upgrading dump1090 the user is once again asked for the LAT and LON settings.
 * Portal related python scripts are now localed in the folder named python.
 * A Google Maps API key can now be specified for use with portal maps.
 * Portal upgrade scripts have been split into multiple files.
 * The path to the SQLite database is no longer hard coded in the portal PHP files.
 * Pagination links now show first and last page links properly.
+* When no patch is applied N\A is given for the patch version on the system page.
 
 ## v2.4.0 *(September 27th, 2016)*
 
