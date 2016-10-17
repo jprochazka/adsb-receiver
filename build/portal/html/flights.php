@@ -42,6 +42,9 @@
 
     $pageData = array();
 
+    // Items per page.
+    $itemsPerPage = 25;
+
     // The title of this page.
     $pageData['title'] = "Flights Seen";
 
@@ -51,12 +54,30 @@
     } else {
         $searchString = "";
     }
+
+    // Set the start stop positions to be used in the query.
+    $start = 1;
+    if (isset($_GET['page'])) {
+        $start = $_GET['page'] * $itemsPerPage;
+    }
+
     $dbh = $common->pdoOpen();
-    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE ? ORDER BY lastSeen DESC, flight";
+    $sql = "SELECT COUNT(*) FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight";
     $sth = $dbh->prepare($sql);
-    $sth->bindValue(1, "%".$searchString."%", PDO::PARAM_STR);
+    $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
     $sth->execute();
-    $flights = $sth->fetchAll();
+    $totalFlights = $sth->fetchColumn();
+    $sth = NULL;
+    $dbh = NULL;
+
+    $dbh = $common->pdoOpen();
+    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight LIMIT :start, :items";
+    $sth = $dbh->prepare($sql);
+    $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
+    $sth->bindValue(':start', $start, PDO::PARAM_INT);
+    $sth->bindValue(':items', $itemsPerPage, PDO::PARAM_INT);
+    $sth->execute();
+    $flights = $sth->fetchAll(PDO::FETCH_ASSOC);
     $sth = NULL;
     $dbh = NULL;
 
@@ -71,13 +92,10 @@
         $flight['lastSeen'] = $date->format($common->getSetting('dateFormat'));
     }
 
-    // Pagination.
-    $itemsPerPage = 25;
-    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
-    $pageData['flights'] = $common->paginateArray($flights, $page, $itemsPerPage - 1);
+    $pageData['flights'] = $flights;
 
     // Calculate the number of pagination links to show.
-    $pageData['pageLinks'] = ceil(count($flights) / $itemsPerPage);
+    $pageData['pageLinks'] = ceil($totalFlights / $itemsPerPage);
 
     $template->display($pageData);
 ?>
