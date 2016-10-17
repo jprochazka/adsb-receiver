@@ -94,8 +94,7 @@ function ChangeConfig {
 function GetConfig {
     # Use sed to locate the "KEY" then read the "VALUE", the portion after the equals sign, in the specified "FILE".
     # This function should work with any configuration file with settings formated as KEY="VALUE".
-    sudo sed -n '/^$1=\(.*\)$/s//\1/p' $2
-    echo `sed -n "/^$1=\"\(.*\)\"$/s//\1/p" $2`
+    echo `sed -n "/^$1 *= *\"\(.*\)\"$/s//\1/p" $2`
 }
 
 function CommentConfig {
