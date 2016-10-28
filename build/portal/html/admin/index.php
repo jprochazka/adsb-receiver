@@ -359,6 +359,31 @@
                                 </select>
                             </div>
                             <div class="form-group">
+                                <label for="googleMapsApiKey">Google Maps API Key</label>
+                                <input type="text" class="form-control" id="googleMapsApiKey" name="googleMapsApiKey" value="<?php echo $googleMapsApiKey; ?>">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Time Format</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="timeZone">Time Zone</label>
+                                <select class="form-control" id="timeZone" name="timeZone">
+<?php
+    foreach (DateTimeZone::listIdentifiers() as $tz) {
+        $currentTimeZone = new DateTimeZone($tz);
+        $offSet = $currentTimeZone->getOffset($dt);
+        $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
+        $abbr = $transition[0]['abbr'];
+?>
+                                    <option name="timeZone" value="<?php echo $tz; ?>"<?php ($tz == $timeZone ? print " selected" : ""); ?>><?php echo $tz; ?> [<?php echo $abbr; ?> <?php echo formatOffset($offSet);?>]</option>
+<?php
+    }
+?>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label for="defaultPage">Date Format - 12 Hour Format</label>
                                 <div class="radio">
                                     <label><input type="radio" name="dateFormatSlelection" value="F jS, Y g:i A"<?php ($dateFormat == "F jS, Y g:i A" ? print ' checked' : ''); ?>>October 16, 2015 5:00 PM</label>
@@ -385,27 +410,8 @@
                                 <div class="radio">
                                     <label><input type="radio" name="dateFormatSlelection" value="d/m/Y G:i"<?php ($dateFormat == "d/m/Y G:i" ? print ' checked' : ''); ?>>10/16/2015 17:00</label>
                                 </div>
+                                <label for="dateFormat">Date Format</label>
                                 <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
-                            </div>
-                            <div class="form-group">
-                                <label for="timeZone">Time Zone</label>
-                                <select class="form-control" id="timeZone" name="timeZone">
-<?php
-    foreach (DateTimeZone::listIdentifiers() as $tz) {
-        $currentTimeZone = new DateTimeZone($tz);
-        $offSet = $currentTimeZone->getOffset($dt);
-        $transition = $currentTimeZone->getTransitions($dt->getTimestamp(), $dt->getTimeStamp());
-        $abbr = $transition[0]['abbr'];
-?>
-                                    <option name="timeZone" value="<?php echo $tz; ?>"<?php ($tz == $timeZone ? print " selected" : ""); ?>><?php echo $tz; ?> [<?php echo $abbr; ?> <?php echo formatOffset($offSet);?>]</option>
-<?php
-    }
-?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="googleMapsApiKey">Google Maps API Key</label>
-                                <input type="text" class="form-control" id="googleMapsApiKey" name="googleMapsApiKey" value="<?php echo $googleMapsApiKey; ?>">
                             </div>
                         </div>
                     </div>
