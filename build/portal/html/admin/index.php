@@ -412,6 +412,7 @@
                                 </div>
                                 <label for="dateFormat">Date Format</label>
                                 <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                                <p><i>Select one of the formats above or create your own. <a href="http://php.net/manual/en/function.date.php" target="_blank">PHP date function documentation.</a></i></p>
                             </div>
                         </div>
                     </div>
