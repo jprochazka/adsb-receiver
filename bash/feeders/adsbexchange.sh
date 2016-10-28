@@ -163,7 +163,11 @@ echo -e "\e[95m  Creating maintenance for both the mlat-client and netcat feeds.
 echo ""
 
 # Ask the user for the user name for this receiver.
-RECEIVERNAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Name" --nocancel --inputbox "\nPlease enter a name for this receiver. (NOT REQUIRED)\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
+RECEIVERNAME_TITLE="Receiver Name"
+while [[ -z $RECEIVERNAME ]]; do
+    RECEIVERNAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "$RECEIVERNAME_TITLE" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
+    RECEIVERNAME_TITLE="Receiver Name (REQUIRED)"
+done
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability.
 RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
