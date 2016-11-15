@@ -45,6 +45,12 @@ LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
 ## BEGIN THE BACKUP PROCESS
 
+clear
+echo -e "\n\e[91m  ADSB Reciever Project Maintenance"
+echo ""
+echo -e "\e[92m  Backing up portal data..."
+echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+
 echo ""
 echo -e "\e[95m  Backing up current portal data...\e[97m"
 echo ""
@@ -151,5 +157,10 @@ echo ""
 echo -e "  An archive containing the data just backed up can be found at:"
 echo -e "  $TEMPORARYDIRECTORY/adsb-receiver_data_$BACKUPDATE.tar.gz\e[97m"
 echo ""
+
+echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  Finished backing up portal data.\e[39m"
+echo ""
+read -p "Press enter to exit..." CONTINUE
 
 exit 0

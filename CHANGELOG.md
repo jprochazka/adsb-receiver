@@ -5,6 +5,7 @@ The following is a history of the changes made to this project.
 ## v2.5.0
 
 * Twitter and email flight notifications ready for testing. *(lite)*
+* Added script to automate the portal backup process.
 * Added ability to specify the latitude and longitude of the receiver for dump978.
 * Administrators can now specify custom links to be displayed within the portal.
 * The loading speed for the flights page has been dramatically reduced. *(advanced)*
