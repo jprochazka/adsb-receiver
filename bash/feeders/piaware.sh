@@ -103,7 +103,6 @@ else
     echo -e "\e[94m  Cloning the piaware_builder git repository locally...\e[97m"
     echo ""
     git clone https://github.com/flightaware/piaware_builder.git
-    echo ""
 fi
 
 ## BUILD AND INSTALL THE PIAWARE PACKAGE
