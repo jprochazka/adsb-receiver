@@ -174,6 +174,16 @@ else
     ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
 fi
 
+# Ask if measurments should be displayed using imperial or metric.
+UNITOFMEASUREMENT=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Unit of Measurement" --menu "Choose unit of measurement to be used by dump1090-mutbility." 20 78 4 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
+if [ $UNITOFMEASUREMENT = "Metric" ]; then
+    echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Metric...\e[97m"
+    ChangeConfig "Metric" "false" "/usr/share/dump1090-mutability/html/config.js"
+else
+    echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Imperial...\e[97m"
+    ChangeConfig "Metric" "true" "/usr/share/dump1090-mutability/html/config.js"
+fi
+
 # Download Heywhatsthat.com maximum range rings.
 if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] && (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Heywhaststhat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-mutability usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-mutability map you will first need to visit http://www.heywhatsthat.com and generate a new panarama centered on the location of your receiver. Once your panarama has been generated a link to the panarama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
     HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
