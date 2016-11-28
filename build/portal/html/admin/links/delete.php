@@ -65,7 +65,7 @@
             <hr />
             <h2>Delete Link</h2>
             <h3><?php echo $link['name']; ?></h3>
-            <p>With the address of <strong><?php echo $link['address']); ?></strong>.</p>
+            <p>With the address of <strong><?php echo $link['address']; ?></strong>.</p>
             <div class="alert alert-danger" role="alert">
                 <p>
                     <strong>Confirm Delete</strong><br />

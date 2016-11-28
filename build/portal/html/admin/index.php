@@ -93,7 +93,7 @@
                     $sql = "INSERT INTO ".$settings::db_prefix."notifications (flight, lastMessageCount) VALUES (:flight, :lastMessageCount)";
                     $sth = $dbh->prepare($sql);
                     $sth->bindParam(':flight', $flight, PDO::PARAM_STR, 10);
-                    $sth->bindParam(':lastMessageCount', 0, PDO::PARAM_INT);
+                    $sth->bindParam(':lastMessageCount', $a = 0, PDO::PARAM_INT);
                     $sth->execute();
                     $sth = NULL;
                     $dbh = NULL;
@@ -239,6 +239,7 @@
     $enableWebNotifications = $common->getSetting("enableWebNotifications");
     $enableEmailNotifications = $common->getSetting("enableEmailNotifications");
     $enableTwitterNotifications = $common->getSetting("enableTwitterNotifications");
+    $emailNotificationAddresses = $common->getSetting("emailNotificationAddresses");
     $twitterUserName = $common->getSetting("twitterUserName");
     $twitterConsumerKey = $common->getSetting("twitterConsumerKey");
     $twitterConsumerSecret = $common->getSetting("twitterConsumerSecret ");
@@ -358,21 +359,14 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="defaultPage">Date Format</label>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y g:i A"<?php ($dateFormat == "F jS, Y g:i A" ? print ' checked' : ''); ?>>October 16, 2015 12:00 PM</label>
-                                </div>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d g:i A"<?php ($dateFormat == "Y-m-d g:i A" ? print ' checked' : ''); ?>>2015-10-16 12:00 PM</label>
-                                </div>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y g:i A"<?php ($dateFormat == "m/d/Y g:i A" ? print ' checked' : ''); ?>>16/10/2015 12:00 PM</label>
-                                </div>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y g:i A"<?php ($dateFormat == "d/m/Y g:i A" ? print ' checked' : ''); ?>>10/16/2015 12:00 PM</label>
-                                </div>
-                                <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                                <label for="googleMapsApiKey">Google Maps API Key</label>
+                                <input type="text" class="form-control" id="googleMapsApiKey" name="googleMapsApiKey" value="<?php echo $googleMapsApiKey; ?>">
                             </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Time Format</div>
+                        <div class="panel-body">
                             <div class="form-group">
                                 <label for="timeZone">Time Zone</label>
                                 <select class="form-control" id="timeZone" name="timeZone">
@@ -390,8 +384,35 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="googleMapsApiKey">Google Maps API Key</label>
-                                <input type="text" class="form-control" id="googleMapsApiKey" name="googleMapsApiKey" value="<?php echo $googleMapsApiKey; ?>">
+                                <label for="defaultPage">Date Format - 12 Hour Format</label>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y g:i A"<?php ($dateFormat == "F jS, Y g:i A" ? print ' checked' : ''); ?>>October 16, 2015 5:00 PM</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d g:i A"<?php ($dateFormat == "Y-m-d g:i A" ? print ' checked' : ''); ?>>2015-10-16 5:00 PM</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y g:i A"<?php ($dateFormat == "m/d/Y g:i A" ? print ' checked' : ''); ?>>16/10/2015 5:00 PM</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y g:i A"<?php ($dateFormat == "d/m/Y g:i A" ? print ' checked' : ''); ?>>10/16/2015 5:00 PM</label>
+                                </div>
+                                <label for="defaultPage">Date Format - 24 Hour Format</label>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y G:i"<?php ($dateFormat == "F jS, Y G:i" ? print ' checked' : ''); ?>>October 16, 2015 17:00</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d G:i"<?php ($dateFormat == "Y-m-d G:i" ? print ' checked' : ''); ?>>2015-10-16 17:00</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y G:i"<?php ($dateFormat == "m/d/Y G:i" ? print ' checked' : ''); ?>>16/10/2015 17:00</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y G:i"<?php ($dateFormat == "d/m/Y G:i" ? print ' checked' : ''); ?>>10/16/2015 17:00</label>
+                                </div>
+                                <label for="dateFormat">Date Format</label>
+                                <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                                <p><i>Select one of the formats above or create your own. <a href="http://php.net/manual/en/function.date.php" target="_blank">PHP date function documentation.</a></i></p>
                             </div>
                         </div>
                     </div>
@@ -415,8 +436,8 @@
                                 </label>
                             </div>
                             <div class="form-group">
-                                <label for="notificationEmailAddresses"">Email addresses to be notified. (coma delimited)</label>
-                                <input type="text" class="form-control" id="notificationEmailAddresses" name="notificationEmailAddresses" value="<?php echo $notificationEmailAddresses; ?>">
+                                <label for="emailNotificationAddresses"">Email addresses to be notified. (coma delimited)</label>
+                                <input type="text" class="form-control" id="emailNotificationAddresses" name="emailNotificationAddresses" value="<?php echo $emailNotificationAddresses; ?>">
                             </div>
                             <div class="checkbox">
                                 <label>
@@ -447,6 +468,41 @@
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="navigation">
+                  <div class="panel panel-default">
+                      <div class="panel-heading">API Key</div>
+                      <div class="panel-body">
+                        <div class="form-group">
+                                <label for="BingMapsAPI">Bing Maps API Key</label>
+                                <input type="text" class="form-control" id="bingMapAPIKey" name="bingMapAPIKey"
+                                        value="<?php  if(!empty($_POST['bingMapAPIKey'])){
+                                        $apikey = $_POST['bingMapAPIKey'];
+                                        $path_to_file = '/usr/share/dump1090-mutability/html/config.js';
+                                        $file_contents = file_get_contents($path_to_file);
+                                        $file_contents = preg_replace('/BingMapsAPIKey = ([a-zA-Z0-9"]+)/', "BingMapsAPIKey = '" . $_POST['bingMapAPIKey'] . "'" , $file_contents);
+                                        file_put_contents($path_to_file,$file_contents);
+                                        }
+                                        else {
+                                          echo file_get_contents('/usr/share/dump1090-mutability/html/config.js');
+                                        }
+                                        ?>">
+                                </div>
+                                <div class="form-group">
+                                        <label for="mapzenAPIKey">Mapzen Maps API Key</label>
+                                        <input type="text" class="form-control" id="mapzenAPIKey" name="mapzenAPIKey"
+                                                value="<?php  if(!empty($_POST['mapzenAPIKey'])){
+                                                $apikey = $_POST['mapzenAPIKey'];
+                                                $path_to_file = '/usr/share/dump1090-mutability/html/config.js';
+                                                $file_contents = file_get_contents($path_to_file);
+                                                $file_contents = preg_replace('/MapzenAPIKey = ([a-zA-Z0-9"]+)/', "MapzenAPIKey = '" . $_POST['mapzenAPIKey'] . "'" , $file_contents);
+                                                file_put_contents($path_to_file,$file_contents);
+                                                }
+                                                else {
+                                                  echo file_get_contents('/usr/share/dump1090-mutability/html/config.js');
+                                                }
+                                                ?>">
+                                        </div>
+                        </div>
+                      </div>
                     <div class="panel panel-default">
                         <div class="panel-heading">Enable/Disable Navigation Links</div>
                         <div class="panel-body">

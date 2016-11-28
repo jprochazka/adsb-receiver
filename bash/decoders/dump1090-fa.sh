@@ -145,6 +145,20 @@ fi
 
 ## DUMP1090-FA POST INSTALLATION CONFIGURATION
 
+# Ask for a Bing Maps API key.
+BINGMAPSKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 11 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+if [[ ! -z $BINGMAPSKEY ]]; then
+    echo -e "\e[94m  Setting the Bing Maps API Key to $BINGMAPSKEY...\e[97m"
+    ChangeConfig "BingMapsAPIKey" "$BINGMAPSKEY" "/usr/share/dump1090-fa/html/config.js"
+fi
+
+# Ask for a Mapzen API key.
+MAPZENKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the dump1090-mutability map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 `GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+if [[ ! -z $MAPZENKEY ]]; then
+    echo -e "\e[94m  Setting the Mapzen API Key to $MAPZENKEY...\e[97m"
+    ChangeConfig "MapzenAPIKey" "$MAPZENKEY" "/usr/share/dump1090-fa/html/config.js"
+fi
+
 # Download Heywhatsthat.com maximum range rings.
 if [ ! -f /usr/share/dump1090-fa/html/upintheair.json ] && (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Heywhaststhat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-fa usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-fa map you will first need to visit http://www.heywhatsthat.com and generate a new panarama centered on the location of your receiver. Once your panarama has been generated a link to the panarama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
     HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"

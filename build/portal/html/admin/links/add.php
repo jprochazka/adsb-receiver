@@ -52,7 +52,7 @@
 
         if (!$nameExists) {
             // Add this link..
-            $links->addLink($_SESSION['name'], $_POST['address']);
+            $links->addLink($_POST['name'], $_POST['address']);
 
             // Forward the user to the link management index page.
             header ("Location: /admin/links/");
@@ -88,6 +88,8 @@
                     <label for="address">Address</label>
                     <input type="text" id="address" name="address" class="form-control"<?php echo (isset($_POST['address']) ? ' value="'.$_POST['address'].'"' : '')?> required>
                 </div>
+                <input type="submit" class="btn btn-default" value="Add">
+            </form>
 <?php
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>

@@ -37,11 +37,12 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li id="logout-link"><a href="/admin">Settings</a></li>
-                            <li id="logout-link"><a href="/admin/blog">Blog</a></li>
-                            <li id="logout-link"><a href="/admin/account.php">Account</a></li>
+                            <li id="settings-link"><a href="/admin">Settings</a></li>
+                            <li id="blog-link"><a href="/admin/blog">Blog</a></li>
+                            <li id="links-link"><a href="/admin/links">Links</a></li>
+                            <li id="account-link"><a href="/admin/account.php">Account</a></li>
                             <li id="logout-link"><a href="/admin/logout.php">Logout</a></li>
-                            <li id="logout-link"><a href="/" target="_blank">Portal Home</a></li>
+                            <li id="portal-link"><a href="/" target="_blank">Portal Home</a></li>
                         </ul>
                     </div>
                 </div>

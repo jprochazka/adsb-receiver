@@ -173,6 +173,12 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     echo ""
     sudo /etc/init.d/dump1090-mutability restart
     echo ""
+
+    # Get the latitude and longitude set in the dump1090-mutability configuration file to be used later.
+    echo -e "\e[94m  Retrieving the receiver's latitude from /etc/default/dump1090-mutability...\e[97m"
+    RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+    echo -e "\e[94m  Retrieving the receiver's longitude from /etc/default/dump1090-mutability...\e[97m"
+    RECIEVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 fi
 
 # If a device has not yet been assigned to dump978 assign the first available.
@@ -181,10 +187,29 @@ if [ -z $DUMP978DEVICE ]; then
     DUMP978DEVICE="0"
 fi
 
-# Create the dump978 JSON directory in Lighttpd's document root.
+# Declare the LIGHTTPDDOCUMENTROOTDIRECTORY variable.
 echo -e "\e[94m  Getting the path to Lighttpd's document root...\e[97m"
 LIGHTTPDDOCUMENTROOTSETTING=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 LIGHTTPDDOCUMENTROOTDIRECTORY=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $LIGHTTPDDOCUMENTROOTSETTING`
+
+# Set the receivers latitude and longitude.
+if [ -z $RECEIVERLATITUDE ] && [ -z $RECEIVERLONGITUDE ]; then
+    # If dump1090-mutability is not installed ask for the latitude and longitude of this receiver.
+    RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude (OPTIONAL)" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)\n\nLeave blank and select <Ok> to skip." 12 78 3>&1 1>&2 2>&3)
+    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z $RECEIVERLONGITUDE ]]; do
+        RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    done
+fi
+if [ ! -z $RECEIVERLATITUDE ] && [ ! -z $RECEIVERLONGITUDE ]; then
+    echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
+    ChangeConfig "SiteLat" "$RECEIVERLATITUDE" "$LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/config.js"
+    echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
+    ChangeConfig "SiteLon" "$RECEIVERLONGITUDE" "$LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/config.js"
+fi
+
+# Create the dump978 JSON directory in Lighttpd's document root.
 echo -e "\e[94m  Creating the dump978 JSON data directory within Lighttpd's document root...\e[97m"
 sudo mkdir -p $LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/data
 echo -e "\e[94m  Setting permissions for the dump978 JSON data directory within Lighttpd's document root...\e[97m"

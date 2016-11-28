@@ -72,7 +72,7 @@ echo -e "\e[94m  Making the maintenance maintenance script executable...\e[97m"
 chmod +x $PORTALPYTHONDIRECTORY/maintenance-maint.sh
 
 #Remove old flights-maint.sh start up line from /etc/rc.local.
-sed -i '/build\/portal\/logging\/flights-maint.sh/d' /etc/rc.local
+sudo sed -i '/build\/portal\/logging\/flights-maint.sh/d' /etc/rc.local
 
 # Add flight logging maintenance script to rc.local.
 if ! grep -Fxq "$PORTALPYTHONDIRECTORY/flights-maint.sh &" /etc/rc.local; then
@@ -82,7 +82,7 @@ if ! grep -Fxq "$PORTALPYTHONDIRECTORY/flights-maint.sh &" /etc/rc.local; then
 fi
 
 # Remove old maintenance-maint.sh start up line from /etc/rc.local.
-sed -i '/build\/portal\/logging\/maintenance-maint.sh/d' /etc/rc.local
+sudo sed -i '/build\/portal\/logging\/maintenance-maint.sh/d' /etc/rc.local
 
 # Add maintenance maintenance script to rc.local.
 if ! grep -Fxq "$PORTALPYTHONDIRECTORY/maintenance-maint.sh &" /etc/rc.local; then

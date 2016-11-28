@@ -53,7 +53,7 @@
 
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
             $links = new links();
-            $pageData['links'] = $links->getAllLinks();
+            $pageData['customLinks'] = $links->getAllLinks();
 
             // Load the template for the requested page.
             $page = $this->readTemplate($common->removeExtension($_SERVER["SCRIPT_NAME"]).'.tpl');
@@ -218,7 +218,6 @@
             $pattern = '/\{foreach(.*?)\{\/foreach\}/s';
             preg_match_all($pattern, $output, $foreach, PREG_PATTERN_ORDER);
             foreach ($foreach[0] as $element) {
-
                 // Loop through $pageData.
                 if (strpos($element, 'page:') !== false) {
                     $variable = $common->extractString($element, "{foreach page:", " ");
@@ -226,12 +225,9 @@
                     $contents = $common->extractString($element, "{foreach page:".$variable." as ".$itemName."}", "{/foreach}");
                     $thisIteration = $contents;
                     foreach ($pageData as $keys => $values) {
-
                         if ($keys == $variable) {
                             foreach ($values as $item) {
-
                                 foreach ($item as $key => $value) {
-
                                     $pattern = '/\{'.$itemName.'->(.*?)\}/';
                                     preg_match_all($pattern, $thisIteration, $placeholders, PREG_PATTERN_ORDER);
                                     foreach ($placeholders as $placeholder) {
@@ -246,8 +242,8 @@
                         }
                     }
                     $output = str_replace($element, $html, $output);
+                    $html = NULL;
                 }
-
             }
             return $output;
         }
