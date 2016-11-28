@@ -137,7 +137,7 @@
                 // XML
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts->xpath("blogPost[title='".$originalTitle."']") as $blogPost) {
-                    $blogPost->contents = $contents;
+                    $blogPost->contents = html_entity_decode($contents, null, "UTF-8");
                 }
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml", $blogPosts->asXML());
             } else {
@@ -161,6 +161,7 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
+                // XML
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach($blogPosts as $blogPost) {
                     if($blogPost->title == $title) {
@@ -189,12 +190,13 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
+                // XML
                 $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 $blogPost = $blogPosts->addChild('blogPost', '');
                 $blogPost->addChild('title', $title);
                 $blogPost->addChild('date', gmdate('Y-m-d H:i:s', time()));
                 $blogPost->addChild('author', $author);
-                $blogPost->addChild('contents', $contents);
+                $blogPost->addChild('contents', html_entity_decode($contents, null, "UTF-8"));
                 $dom = dom_import_simplexml($blogPosts)->ownerDocument;
                 $dom->formatOutput = TRUE;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml", $dom->saveXML());
