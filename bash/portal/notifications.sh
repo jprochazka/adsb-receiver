@@ -39,6 +39,16 @@ PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
 PORTALPYTHONDIRECTORY="$PORTALBUILDDIRECTORY/python"
 PYTHONPATH=`which python`
 
+## CHECK FOR PREREQUISITE PACKAGES
+
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
+echo ""
+CheckPackage python-pip
+
+echo -e "\e[94m  Using pip to install python-twitter...\e[97m"
+echo ""
+sudo pip install python-twitter
+
 ## SETUP FLIGHT NOTIFICATIONS
 
 echo ""

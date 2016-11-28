@@ -34,7 +34,6 @@
 #------------------------------------------------------------#
 # When no flights are seen a JSON error is encountered.      #
 # Send a tweet to Twitter when a flight is seen.             #
-# Add pip install python-twitter to the install script.      #
 # Update the lastMessageCount using the API.                 #
 # Add support for MySQL.                                     #
 # Add support for SQLite.                                    #
