@@ -39,6 +39,10 @@ PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
 PORTALPYTHONDIRECTORY="$PORTALBUILDDIRECTORY/python"
 PYTHONPATH=`which python`
 
+## INCLUDE EXTERNAL SCRIPTS
+
+source $BASHDIRECTORY/functions.sh
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
