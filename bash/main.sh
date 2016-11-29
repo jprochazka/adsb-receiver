@@ -389,7 +389,7 @@ if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ];
     InstallDump1090Mutability
 fi
 
-if [ $DUMP1090FA_INSTALL = 0 ] || [ $DUMP1090FA_REINSTALL = 0 ]; then
+if [ $DUMP1090FA_INSTALL = 0 ] || [ $DUMP1090FA_UPGRADE = 0 ]; then
     InstallDump1090Fa
 fi
 
