@@ -36,6 +36,7 @@
 
 ## VARIABLES
 
+PROJECTBRANCH="2.5.0"
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
@@ -106,6 +107,10 @@ function UpdateRepository() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
     CheckPackage git
+    echo -e "\e[94m  Switching to branch $PROJECTBRANCH...\e[97m"
+    echo ""
+    git checkout $PROJECTBRANCH
+    echo ""
     echo -e "\e[94m  Pulling the latest git repository...\e[97m"
     echo ""
     git pull

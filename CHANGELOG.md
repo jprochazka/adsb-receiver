@@ -6,6 +6,7 @@ The following is a history of the changes made to this project.
 
 * Twitter and email flight notifications ready for testing.
 * Can now specify the unit of measurement for dump1090-mutability during setup.
+* Users can now specify the repository branch they wish to use in the file install.sh.
 * Possible fix for blog post containing characters not UTF-8 compatible. *(lite)*
 * Added script to automate the portal backup process.
 * Added ability to specify the latitude and longitude of the receiver for dump978.
