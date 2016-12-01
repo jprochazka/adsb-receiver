@@ -520,16 +520,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Execute the notifications setup script.
-chmod +x $BASHDIRECTORY/portal/notifications.sh
-$BASHDIRECTORY/portal/notifications.sh
-if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "\e[91m  THE SCRIPT NOTIFICATIONS.SH ENCOUNTERED AND ERROR"
-    echo ""
-    exit 1
-fi
-
 ## SETUP ADVANCED PORTAL FEATURES
 
 if [ $ADVANCED = TRUE ]; then

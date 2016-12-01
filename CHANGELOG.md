@@ -4,7 +4,6 @@ The following is a history of the changes made to this project.
 
 ## v2.5.0
 
-* Twitter and email flight notifications ready for testing.
 * Can now specify the unit of measurement for dump1090-mutability during setup.
 * Users can now specify the repository branch they wish to use in the file install.sh.
 * Possible fix for blog post containing characters not UTF-8 compatible. *(lite)*
@@ -21,6 +20,9 @@ The following is a history of the changes made to this project.
 * The path to the SQLite database is no longer hard coded in the portal PHP files.
 * Pagination links now show first and last page links properly.
 * When no patch is applied N\A is given for the patch version on the system page.
+* Yes set to default when asked whether to bind dump1090-mutability to all IP addresses.
+* Fixed issue with install script causing PiAware to not upgrade.
+* Fixed collectd graph generation script so it works with newer versions of rrdtool.
 
 ## v2.4.0 *(September 27th, 2016)*
 

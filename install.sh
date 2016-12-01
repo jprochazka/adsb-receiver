@@ -76,23 +76,25 @@ function AptUpdate() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
     sudo apt-get update
+    echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
 }
 
-function CheckWhiptail() {
+function CheckPrerequisites() {
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
-    echo -e "\e[92m  Checking to make sure the whiptail package is installed..."
+    echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
     CheckPackage whiptail
+    CheckPackage git
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  The whiptail package is installed.\e[39m"
+    echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
 }
@@ -106,7 +108,6 @@ function UpdateRepository() {
     echo -e "\e[92m  Pulling the latest version of the ADS-B Receiver Project repository..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
-    CheckPackage git
     echo -e "\e[94m  Switching to branch $PROJECTBRANCH...\e[97m"
     echo ""
     git checkout $PROJECTBRANCH
@@ -138,7 +139,7 @@ function UpdateOperatingSystem() {
 }
 
 AptUpdate
-CheckWhiptail
+CheckPrerequisites
 UpdateRepository
 
 ## DISPLAY WELCOME SCREEN

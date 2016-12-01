@@ -54,21 +54,18 @@
 
         if ($settings::db_driver == "xml") {
             // XML
-            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
+            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
             unset($notifications->flight);
             foreach ($notificationArray as $notification) {
-                $flight = $notifications->addChild('flight', '');
-                $flight->addChild('name', $notification);
-                $flight->addChild('lastMessageCount', -1);
+                $newNotification = $notifications->addChild('flight', $notification);
                 $dom = dom_import_simplexml($notifications)->ownerDocument;
-                $dom->preserveWhiteSpace = FALSE;
                 $dom->formatOutput = TRUE;
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml", $dom->saveXML());
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $dom->saveXML());
             }
         } else {
             // PDO
             $dbh = $common->pdoOpen();
-            $sql = "SELECT * FROM ".$settings::db_prefix."notifications";
+            $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
             $sth = $dbh->prepare($sql);
             $sth->execute();
             $savedFlights = $sth->fetchAll();
@@ -78,7 +75,7 @@
                 // Remove flight if not in list.
                 if (!in_array($flight, $notificationArray)) {
                     $dbh = $common->pdoOpen();
-                    $sql = "DELETE FROM ".$settings::db_prefix."notifications WHERE flight = :flight";
+                    $sql = "DELETE FROM ".$settings::db_prefix."flightNotifications WHERE flight = :flight";
                     $sth = $dbh->prepare($sql);
                     $sth->bindParam(':flight', $flight['flight'], PDO::PARAM_STR, 10);
                     $sth->execute();
@@ -90,10 +87,9 @@
                 // Add flight if not saved already.
                 if (!in_array($flight, $savedFlights)) {
                     $dbh = $common->pdoOpen();
-                    $sql = "INSERT INTO ".$settings::db_prefix."notifications (flight, lastMessageCount) VALUES (:flight, :lastMessageCount)";
+                    $sql = "INSERT INTO ".$settings::db_prefix."flightNotifications (flight) VALUES (:flight)";
                     $sth = $dbh->prepare($sql);
                     $sth->bindParam(':flight', $flight, PDO::PARAM_STR, 10);
-                    $sth->bindParam(':lastMessageCount', $a = 0, PDO::PARAM_INT);
                     $sth->execute();
                     $sth = NULL;
                     $dbh = NULL;
@@ -154,14 +150,6 @@
         if (isset($_POST['enableWebNotifications']) && $_POST['enableWebNotifications'] == "TRUE")
             $enableWebNotifications = TRUE;
 
-        $enableEmailNotifications = FALSE;
-        if (isset($_POST['enableEmailNotifications']) && $_POST['enableEmailNotifications'] == "TRUE")
-            $enableEmailNotifications = TRUE;
-
-        $enableTwitterNotifications = FALSE;
-        if (isset($_POST['enableTwitterNotifications']) && $_POST['enableTwitterNotifications'] == "TRUE")
-            $enableTwitterNotifications = TRUE;
-
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
@@ -189,14 +177,6 @@
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
         $common->updateSetting("timeZone", $_POST['timeZone']);
         $common->updateSetting("enableWebNotifications", $enableWebNotifications);
-        $common->updateSetting("enableEmailNotifications", $enableEmailNotifications);
-        $common->updateSetting("enableTwitterNotifications", $enableTwitterNotifications);
-        $common->updateSetting("emailNotificationAddresses", $_POST['emailNotificationAddresses']);
-        $common->updateSetting("twitterUserName", $_POST['twitterUserName']);
-        $common->updateSetting("twitterConsumerKey", $_POST['twitterConsumerKey']);
-        $common->updateSetting("twitterConsumerSecret", $_POST['twitterConsumerSecret']);
-        $common->updateSetting("twitterAccessToken", $_POST['twitterAccessToken']);
-        $common->updateSetting("twitterAccessTokenSecret", $_POST['twitterAccessTokenSecret']);
         $common->updateSetting("googleMapsApiKey", $_POST['googleMapsApiKey']);
 
         // Purge older flight positions.
@@ -237,14 +217,6 @@
         }
     }
     $enableWebNotifications = $common->getSetting("enableWebNotifications");
-    $enableEmailNotifications = $common->getSetting("enableEmailNotifications");
-    $enableTwitterNotifications = $common->getSetting("enableTwitterNotifications");
-    $emailNotificationAddresses = $common->getSetting("emailNotificationAddresses");
-    $twitterUserName = $common->getSetting("twitterUserName");
-    $twitterConsumerKey = $common->getSetting("twitterConsumerKey");
-    $twitterConsumerSecret = $common->getSetting("twitterConsumerSecret ");
-    $twitterAccessToken = $common->getSetting("twitterAccessToken");
-    $twitterAccessTokenSecret = $common->getSetting("twitterAccessTokenSecret");
 
     // Get general settings from settings.xml.
     $siteName = $common->getSetting("siteName");
@@ -305,7 +277,7 @@
     ////////////////
     // BEGIN HTML
 
-    require_once('includes/header.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."includes/header.inc.php");
 
     // Display the updated message if settings were updated.
     if ($updated) {
@@ -430,79 +402,10 @@
                                     <input type="checkbox" name="enableWebNotifications" value="TRUE"<?php ($enableWebNotifications == 1 ? print ' checked' : ''); ?>> Enable web based flight notifications.
                                 </label>
                             </div>
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" name="enableEmailNotifications" value="TRUE"<?php ($enableEmailNotifications == 1 ? print ' checked' : ''); ?>> Enable email flight notifications.
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="emailNotificationAddresses"">Email addresses to be notified. (coma delimited)</label>
-                                <input type="text" class="form-control" id="emailNotificationAddresses" name="emailNotificationAddresses" value="<?php echo $emailNotificationAddresses; ?>">
-                            </div>
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" name="enableTwitterNotifications" value="TRUE"<?php ($enableTwitterNotifications == 1 ? print ' checked' : ''); ?>> Enable Twitter flight notifications.
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="twitterUserName">Twitter User Name</label>
-                                <input type="text" class="form-control" id="twitterUserName" name="twitterUserName" value="<?php echo $twitterUserName; ?>">
-                            </div>
-                            <div class="form-group">
-                                <label for="twitterConsumerKey">Twitter Consumer Key</label>
-                                <input type="text" class="form-control" id="twitterConsumerKey" name="twitterConsumerKey" value="<?php echo $twitterConsumerKey; ?>">
-                            </div>
-                            <div class="form-group">
-                                <label for="twitterConsumerSecret">Twitter</label>
-                                <input type="text" class="form-control" id="twitterConsumerSecret" name="twitterConsumerSecret" value="<?php echo $twitterConsumerSecret; ?>">
-                            </div>
-                            <div class="form-group">
-                                <label for="twitterAccessToken">Twitter</label>
-                                <input type="text" class="form-control" id="twitterAccessToken" name="twitterAccessToken" value="<?php echo $twitterAccessToken; ?>">
-                            </div>
-                            <div class="form-group">
-                                <label for="twitterAccessTokenSecret">Twitter</label>
-                                <input type="text" class="form-control" id="twitterAccessTokenSecret" name="twitterAccessTokenSecret" value="<?php echo $twitterAccessTokenSecret; ?>">
-                            </div>
                         </div>
                     </div>
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="navigation">
-                  <div class="panel panel-default">
-                      <div class="panel-heading">API Key</div>
-                      <div class="panel-body">
-                        <div class="form-group">
-                                <label for="BingMapsAPI">Bing Maps API Key</label>
-                                <input type="text" class="form-control" id="bingMapAPIKey" name="bingMapAPIKey"
-                                        value="<?php  if(!empty($_POST['bingMapAPIKey'])){
-                                        $apikey = $_POST['bingMapAPIKey'];
-                                        $path_to_file = '/usr/share/dump1090-mutability/html/config.js';
-                                        $file_contents = file_get_contents($path_to_file);
-                                        $file_contents = preg_replace('/BingMapsAPIKey = ([a-zA-Z0-9"]+)/', "BingMapsAPIKey = '" . $_POST['bingMapAPIKey'] . "'" , $file_contents);
-                                        file_put_contents($path_to_file,$file_contents);
-                                        }
-                                        else {
-                                          echo file_get_contents('/usr/share/dump1090-mutability/html/config.js');
-                                        }
-                                        ?>">
-                                </div>
-                                <div class="form-group">
-                                        <label for="mapzenAPIKey">Mapzen Maps API Key</label>
-                                        <input type="text" class="form-control" id="mapzenAPIKey" name="mapzenAPIKey"
-                                                value="<?php  if(!empty($_POST['mapzenAPIKey'])){
-                                                $apikey = $_POST['mapzenAPIKey'];
-                                                $path_to_file = '/usr/share/dump1090-mutability/html/config.js';
-                                                $file_contents = file_get_contents($path_to_file);
-                                                $file_contents = preg_replace('/MapzenAPIKey = ([a-zA-Z0-9"]+)/', "MapzenAPIKey = '" . $_POST['mapzenAPIKey'] . "'" , $file_contents);
-                                                file_put_contents($path_to_file,$file_contents);
-                                                }
-                                                else {
-                                                  echo file_get_contents('/usr/share/dump1090-mutability/html/config.js');
-                                                }
-                                                ?>">
-                                        </div>
-                        </div>
-                      </div>
                     <div class="panel panel-default">
                         <div class="panel-heading">Enable/Disable Navigation Links</div>
                         <div class="panel-body">
@@ -678,5 +581,5 @@
             <input type="submit" class="btn btn-default" value="Save Settings">
         </form>
 <?php
-    require_once('includes/footer.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."includes/footer.inc.php");
 ?>

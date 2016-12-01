@@ -32,8 +32,8 @@
     $thisVersion = "2.5.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
-    if (file_exists("../classes/settings.class.php")) {
-        require('../classes/common.class.php');
+    if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
+        require($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
         $common = new common();
 
         if ($common-> getSetting("version") < $thisVersion) {
@@ -50,7 +50,7 @@
     $installed = FALSE;
     //if ($common->postBack()) {
     if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST') {
-        require_once('../classes/account.class.php');
+        require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
         $account = new account();
 
         // Validate the submited form.
@@ -136,7 +136,7 @@
 EOF;
             file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php", $content);
 
-            require('../classes/common.class.php');
+            require($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
             $common = new common();
 
             // Setup data storage.
@@ -169,7 +169,7 @@ EOF;
                 $xml->startDocument('1.0','UTF-8');
                 $xml->startElement("flights");
                 $xml->endElement();
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml", $xml->flush(true));
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $xml->flush(true));
 
                 // Create XML files used to store links data.
                 $xml = new XMLWriter();
@@ -227,10 +227,9 @@ EOF;
                                        id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                        name VARCHAR(100) NOT NULL,
                                        address VARCHAR(250) NOT NULL);';
-                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                      id INT(11) PRIMARY KEY AUTO_INCREMENT,
-                                                     flight VARCHAR(10) NOT NULL,
-                                                     lastMessageCount INT(11) NOT NULL);';
+                                                     flight VARCHAR(10) NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                            flight BIGINT NOT NULL,
@@ -279,10 +278,9 @@ EOF;
                                        id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                        name VARCHAR(100) NOT NULL,
                                        address VARCHAR(250) NOT NULL);';
-                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                    id SERIAL PRIMARY KEY,
-                                                   flight VARCHAR(10) NOT NULL,
-                                                   lastMessageCount INT(11) NOT NULL);';
+                                                   flight VARCHAR(10) NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id SERIAL PRIMARY KEY,
                                            flight BIGINT NOT NULL,
@@ -330,10 +328,9 @@ EOF;
                                        id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                        name VARCHAR(100) NOT NULL,
                                        address VARCHAR(250) NOT NULL);';
-                        $notificationsSql = 'CREATE TABLE '.$dbPrefix.'notifications (
+                        $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                   flight TEXT NOT NULL,
-                                                   lastMessageCount INTEGER NOT NULL);';
+                                                   flight TEXT NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
                                            flight INTEGER NOT NULL,
@@ -376,7 +373,7 @@ EOF;
                 $sth->execute();
                 $sth = NULL;
 
-                $sth = $dbh->prepare($notificationsSql);
+                $sth = $dbh->prepare($flightNotificationsSql);
                 $sth->execute();
                 $sth = NULL;
 
@@ -426,14 +423,6 @@ EOF;
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
             $common->addSetting('timeZone', $_POST['timeZone']);
             $common->addSetting('enableWebNotifications', FALSE);
-            $common->addSetting('enableEmailNotifications', FALSE);
-            $common->addSetting('enableTwitterNotifications', FALSE);
-            $common->addSetting('emailNotificationAddresses', '');
-            $common->addSetting('twitterUserName', '');
-            $common->addSetting('twitterConsumerKey', '');
-            $common->addSetting('twitterConsumerSecret', '');
-            $common->addSetting('twitterAccessToken', '');
-            $common->addSetting('twitterAccessTokenSecret', '');
             $common->addSetting('googleMapsApiKey', '');
 
             if ($_POST['driver'] == "xml")
@@ -442,7 +431,7 @@ EOF;
                 $common->addSetting('enableFlights', TRUE);
 
             // Add the administrator account.
-            require_once('../classes/account.class.php');
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
             $account->addAdministrator($_POST['name'], $_POST['email'], $_POST['login'], password_hash($_POST['password1'], PASSWORD_DEFAULT));
 
             // Mark the installation as complete.
@@ -475,7 +464,7 @@ EOF;
     // Display HTML
     //////////////////
 
-    require_once('../admin/includes/header.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 
     // Display the instalation wizard.
     if (!$installed) {
@@ -601,5 +590,5 @@ EOF;
 </p>
 <?php
     }
-    require_once("../admin/includes/footer.inc.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>

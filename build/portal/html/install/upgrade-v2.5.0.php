@@ -34,12 +34,8 @@
 
     // ------------------------------------------------------------------------------------------
     // If using SQLite creates a new settings.class.php file containing the path to the database.
-    // Renames flightNotifications.xml to notifications.xml.
-    // Renames the flightNotifications table to notifications on MySQL and SQLite databases.
-    // Adds the lastMessageCount column to the notifications table on MySQL and SQLite databases.
     // Renames the enableFlightNotifications setting to enableNotifications.
-    // Adds new Twitter API settings.
-    // Updates the version setting to 2.4.0.
+    // Updates the version setting to 2.5.0.
     // Removes and current patch version from the patch setting.
     // ------------------------------------------------------------------------------------------
 
@@ -55,9 +51,6 @@
 
         try {
             if ($settings::db_driver == "xml") {
-                // Rename the file flightNotifications.xml to notifications.xml
-                rename($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
-
                 // Create XML files used to store links data.
                 $xml = new XMLWriter();
                 $xml->openMemory();
@@ -70,18 +63,6 @@
 
             if ($settings::db_driver == "mysql") {
                 $dbh = $common->pdoOpen();
-
-                // Rename the flightNotifications table to notifications.
-                $sql = "RENAME TABLE ".$settings::db_prefix."flightNotifications TO ".$settings::db_prefix."notifications";
-                $sth = $dbh->prepare($sql);
-                $sth->execute();
-                $sth = NULL;
-
-                // Add the lastMessageCount column to the flightNotifications table.
-                $sql = "ALTER TABLE ".$settings::db_prefix."notifications ADD COLUMN lastMessageCount INT";
-                $sth = $dbh->prepare($sql);
-                $sth->execute();
-                $sth = NULL;
 
                 // Add the links table.
                 $sql = "CREATE TABLE ".$settings::db_prefix."links(id INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, address VARCHAR(250) NOT NULL);";
@@ -148,19 +129,6 @@ EOF;
                 // Open a connection to the database.
                 $dbh = $common->pdoOpen();
 
-                // Rename the flightNotifications table to notifications.
-
-                $sql = "ALTER TABLE ".$settings::db_prefix."flightNotifications RENAME TO ".$settings::db_prefix."notifications";
-                $sth = $dbh->prepare($sql);
-                $sth->execute();
-                $sth = NULL;
-
-                // Add the lastMessageCount column to the notifications table.
-                $sql = "ALTER TABLE ".$settings::db_prefix."notifications ADD COLUMN lastMessageCount DATETIME";
-                $sth = $dbh->prepare($sql);
-                $sth->execute();
-                $sth = NULL;
-
                 // Add the links table.
                 $sql = "CREATE TABLE ".$dbPrefix."links(id INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, address VARCHAR(250) NOT NULL);";
                 $sth = $dbh->prepare($sql);
@@ -174,18 +142,6 @@ EOF;
             $enableWebNotifications = $common->getSetting('enableFlightNotifications');
             $common->addSetting('enableWebNotifications', $enableWebNotifications);
             $common->deleteSetting('enableFlightNotifications');
-
-            // Add new flight notification settings.
-            $common->addSetting('enableEmailNotifications', FALSE);
-            $common->addSetting('enableTwitterNotifications', FALSE);
-            $common->addSetting('emailNotificationAddresses', '');
-
-            // Add Twitter API settings.
-            $common->addSetting('twitterUserName', '');
-            $common->addSetting('twitterConsumerKey', '');
-            $common->addSetting('twitterConsumerSecret', '');
-            $common->addSetting('twitterAccessToken', '');
-            $common->addSetting('twitterAccessTokenSecret', '');
 
             // Add Google Maps API Key setting.
             $common->addSetting('googleMapsApiKey', '');
