@@ -51,15 +51,15 @@ aircraft_message_rate_graph() {
   "TEXTALIGN:center" \
   "DEF:aircrafts=$2/dump1090_aircraft-recent.rrd:total:AVERAGE" \
   "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
-  "CDEF:rate-provisional=messages,aircrafts,/" \
-  "CDEF:rate=aircrafts,0,GT,rate-provisional,0,IF" \
+  "CDEF:provisional=messages,aircrafts,/" \
+  "CDEF:rate=aircrafts,0,GT,provisional,0,IF" \
   "CDEF:aircrafts10=aircrafts,10,/" \
   "VDEF:avgrate=rate,AVERAGE" \
   "VDEF:maxrate=rate,MAXIMUM" \
   "LINE1:rate#0000FF:Messages / AC" \
   "LINE1:avgrate#666666:Average:dashes" \
   "GPRINT:avgrate:%3.1lf" \
-  "LINE1:maxrate#FF0000:Maximum:" \
+  "LINE1:maxrate#FF0000:Maximum" \
   "GPRINT:maxrate:%3.1lf\c" \
   "LINE1:aircrafts10#990000:Aircraft Seen / Tracked (RHS) \c" \
   --watermark "Drawn: $nowlit";
