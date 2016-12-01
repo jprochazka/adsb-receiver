@@ -78,13 +78,22 @@ PHANTOMJSEXISTS="false"
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
+CheckPackage python3-pip
+
 # These packages are only needed if the user decided to build PhantomJS.
 CheckPackage build-essential
 CheckPackage g++
 
+# Needed if the PhantomJS binary is downloaded.
+CheckPackage bzip2
+
 # These ackages are required even if the user chooses to download the binary.
 CheckPackage libstdc++6
+
+# This package is libc6 in Ubuntu.
 CheckPackage glibc
+CheckPackage libc6
+
 CheckPackage flex
 CheckPackage bison
 CheckPackage gperf
@@ -96,7 +105,11 @@ CheckPackage libfontconfig1-dev
 CheckPackage libicu-dev
 CheckPackage libfreetype6
 CheckPackage libssl-dev
+
+# This package is libpng12-dev in Ubuntu.
 CheckPackage libpng-dev
+CheckPackage libpng12-dev
+
 CheckPackage libjpeg-dev
 CheckPackage python
 CheckPackage libx11-dev
@@ -104,6 +117,7 @@ CheckPackage libxext-dev
 
 # The package ttf-mscorefonts-installer requires contrib be added to the repositories contained in /etc/apt/sources.list.
 # This package appears to be optional but without it the images generated may not look as good.
+# The contrib flag does not need to be added for Raspbian Jessie and Ubuntu only Debian so far.
 if [ $ADDCONTRIB = "" ]; then
 
     # THIS LINE NEEDS TO BE CHANGED TO WORK ON ALL DEBIAN FLAVORS!!!
@@ -123,6 +137,15 @@ if [ -f /usr/bin/phantomjs ] && [ `/usr/bin/phantomjs --version` = $PHANTOMJSVER
 fi
 
 # DOWNLOAD THE PHANTOMJS BINARY
+
+cd $BUILDDIRECTORY
+wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
+#wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-i686.tar.bz2
+bunzip2 -v phantomjs-2.1.1-linux-i686.tar.bz2
+tar -vcxf phantomjs-2.1.1-linux-i686.tar
+rm -f phantomjs-2.1.1-linux-i686.tar
+sudo cp phantomjs-2.1.1-linux-i686/bin/phantomjs /usr/bin
+sudo chmod +x /usr/bin/phantomjs
 
 # BUILD PHANTOMJS
 
@@ -186,8 +209,17 @@ sudo chmod +x /usr/bin/phantomjs
 
 ## SETUP SELENIUM
 
-sudo pip install -U selenium
+# Upgrade pip.
+sudo pip3 install --upgrade pip
+sudo pip3 install --upgrade virtualenv
+
+sudo pip3 install selenium
 
 ## INSTALL THE PYTHON TWITTER PLUGIN
 
-sudo pip install twitter
+sudo pip3 install twitter
+sudo pip3 install python-dateutil
+
+## ABOVETUSTIN
+
+git clone https://github.com/kevinabrandon/AboveTustin.git
