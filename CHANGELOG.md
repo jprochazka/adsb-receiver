@@ -23,6 +23,7 @@ The following is a history of the changes made to this project.
 * Yes set to default when asked whether to bind dump1090-mutability to all IP addresses.
 * Fixed issue with install script causing PiAware to not upgrade.
 * Fixed collectd graph generation script so it works with newer versions of rrdtool.
+* The navigation bar for the default portal template has been modified to fit better.
 
 ## v2.4.0 *(September 27th, 2016)*
 
