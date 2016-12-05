@@ -325,9 +325,9 @@ EOF;
                                          firstSeen DATETIME NOT NULL,
                                          lastSeen DATETIME NOT NULL);';
                         $linksSql = 'CREATE TABLE '.$dbPrefix.'links(
-                                       id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                       name VARCHAR(100) NOT NULL,
-                                       address VARCHAR(250) NOT NULL);';
+                                       id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                       name TEXT NOT NULL,
+                                       address TEXT NOT NULL);';
                         $flightNotificationsSql = 'CREATE TABLE '.$dbPrefix.'flightNotifications (
                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                    flight TEXT NOT NULL);';
