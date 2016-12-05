@@ -58,9 +58,6 @@ function InstallDump1090Mutability() {
     chmod +x $BASHDIRECTORY/decoders/dump1090-mutability.sh
     $BASHDIRECTORY/decoders/dump1090-mutability.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }
@@ -70,9 +67,6 @@ function InstallDump1090Fa() {
     chmod +x $BASHDIRECTORY/decoders/dump1090-fa.sh
     $BASHDIRECTORY/decoders/dump1090-fa.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }
@@ -83,9 +77,6 @@ function InstallDump978() {
     chmod +x $BASHDIRECTORY/decoders/dump978.sh
     $BASHDIRECTORY/decoders/dump978.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }
@@ -97,9 +88,6 @@ function InstallPiAware() {
     chmod +x $BASHDIRECTORY/feeders/piaware.sh
     $BASHDIRECTORY/feeders/piaware.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }
@@ -109,9 +97,6 @@ function InstallPlaneFinder() {
     chmod +x $BASHDIRECTORY/feeders/planefinder.sh
     $BASHDIRECTORY/feeders/planefinder.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }
@@ -121,9 +106,6 @@ function InstallFlightradar24() {
     chmod +x $BASHDIRECTORY/feeders/flightradar24.sh
     $BASHDIRECTORY/feeders/flightradar24.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }
@@ -133,9 +115,6 @@ function InstallAdsbExchange() {
     chmod +x $BASHDIRECTORY/feeders/adsbexchange.sh
     $BASHDIRECTORY/feeders/adsbexchange.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }
@@ -147,9 +126,6 @@ function InstallWebPortal() {
     chmod +x $BASHDIRECTORY/portal/install.sh
     $BASHDIRECTORY/portal/install.sh
     if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
         exit 1
     fi
 }

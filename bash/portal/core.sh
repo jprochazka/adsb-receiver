@@ -44,8 +44,6 @@ DATABASEUSER=$ADSB_DATABASEUSER
 DATABASEPASSWORD1=$ADSB_DATABASEPASSWORD1
 DATABASENAME=$ADSB_DATABASENAME
 
-PYTHONPATH=`which python`
-
 ## SETUP FLIGHT LOGGING
 
 echo ""
@@ -76,18 +74,5 @@ EOF
                 "db":"$DATABASENAME"}
 }
 EOF
-        ;;
-    *)
-        echo ""
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  SETUP HAS BEEN TERMINATED!"
-        echo ""
-        echo -e "\e[93mInvalid \"DATABASEENGINE\" supplied.\e[39m"
-        echo ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-        echo -e "\e[92m  ADS-B Receiver Project Portal halted.\e[39m"
-        echo ""
-        read -p "Press enter to continue..." CONTINUE
-        exit 1
         ;;
 esac

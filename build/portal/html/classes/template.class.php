@@ -53,7 +53,7 @@
 
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
             $links = new links();
-            $pageData['customLinks'] = $links->getAllLinks();
+            $pageData['links'] = $links->getAllLinks();
 
             // Load the template for the requested page.
             $page = $this->readTemplate($common->removeExtension($_SERVER["SCRIPT_NAME"]).'.tpl');

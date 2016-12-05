@@ -237,15 +237,13 @@ if ! grep -Fxq "$DUMP978BUILDDIRECTORY/dump978-maint.sh &" /etc/rc.local; then
     ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${DUMP978BUILDDIRECTORY}/dump978-maint.sh &\n" /etc/rc.local
 fi
 
-exit 0
-
 ## EXECUTE THE MAINTAINANCE SCRIPT TO START DUMP978
 
 echo ""
 echo -e "\e[95m  Starting dump978...\e[97m"
 echo ""
 echo -e "\e[94m  Starting dump978 by executing the dump978 maintenance script...\e[97m"
-sudo $DUMP978BUILDDIRECTORY/dump978-maint.sh > /dev/null &
+sudo nohup $DUMP978BUILDDIRECTORY/dump978-maint.sh > /dev/null 2>&1 &
 
 ## DUMP978 SETUP COMPLETE
 

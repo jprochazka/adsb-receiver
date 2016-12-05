@@ -126,8 +126,8 @@
             if ($settings::db_driver == "xml") {
                 // XML
                 $links = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml");
-                $link = $blogPosts->addChild('blogPost', '');
-                $link->addChild('name', $title);
+                $link = $links->addChild('link', '');
+                $link->addChild('name', $name);
                 $link->addChild('address', $address);
                 $dom = dom_import_simplexml($links)->ownerDocument;
                 $dom->formatOutput = TRUE;
@@ -182,14 +182,14 @@
             $settings = new settings();
 
             if ($settings::db_driver == "xml") {
-                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml");
-                foreach($linkss as $link) {
+                $links = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml");
+                foreach($links as $link) {
                     if($link->name == $name) {
                         $dom = dom_import_simplexml($link);
                         $dom->parentNode->removeChild($dom);
                     }
                 }
-                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml", $blogPosts->asXml());
+                file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."links.xml", $links->asXml());
             } else {
                 // PDO
                 require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");

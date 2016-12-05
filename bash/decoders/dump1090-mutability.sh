@@ -101,7 +101,6 @@ else
     echo -e "\e[94m  Cloning the dump1090-mutability git repository locally...\e[97m"
     echo ""
     git clone https://github.com/mutability/dump1090.git
-    echo ""
 fi
 
 ## BUILD AND INSTALL THE DUMP1090-MUTABILITY PACKAGE
@@ -169,7 +168,7 @@ echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m
 ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVERLONGITUDE})" "/etc/default/dump1090-mutability"
 
 # Ask for a Bing Maps API key.
-BINGMAPSKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 11 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+BINGMAPSKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 12 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
 if [[ ! -z $BINGMAPSKEY ]]; then
     echo -e "\e[94m  Setting the Bing Maps API Key to $BINGMAPSKEY...\e[97m"
     ChangeConfig "BingMapsAPIKey" "$BINGMAPSKEY" "/usr/share/dump1090-mutability/html/config.js"
@@ -182,8 +181,6 @@ if [[ ! -z $MAPZENKEY ]]; then
     ChangeConfig "MapzenAPIKey" "$MAPZENKEY" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
-exit 0
-
 # Ask if dump1090-mutability should bind on all IP addresses.
 if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
     echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
@@ -195,7 +192,7 @@ else
 fi
 
 # Ask if measurments should be displayed using imperial or metric.
-UNITOFMEASUREMENT=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Unit of Measurement" --menu "Choose unit of measurement to be used by dump1090-mutbility." 20 78 4 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
+UNITOFMEASUREMENT=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by dump1090-mutbility." 11 78 2 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
 if [ $UNITOFMEASUREMENT = "Metric" ]; then
     echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Metric...\e[97m"
     ChangeConfig "Metric" "false" "/usr/share/dump1090-mutability/html/config.js"

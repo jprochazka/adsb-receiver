@@ -108,7 +108,6 @@ fi
 
 ## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE
 
-echo ""
 echo -e "\e[95m  Installing the Plane Finder ADS-B Client package...\e[97m"
 echo ""
 echo -e "\e[94m  Entering the Plane Finder ADS-B Client build directory...\e[97m"

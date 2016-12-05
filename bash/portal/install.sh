@@ -488,7 +488,7 @@ chmod +x $BASHDIRECTORY/portal/graphs.sh
 $BASHDIRECTORY/portal/graphs.sh
 if [ $? -ne 0 ]; then
     echo ""
-    echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AND ERROR"
+    echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AN ERROR"
     echo ""
     exit 1
 fi
@@ -496,7 +496,7 @@ fi
 ## SETUP COMMON PORTAL FEATURES
 
 # Export variables needed by logging.sh.
-if [ $DATABASEENGINE = "MySQL" ] || [ $DATABASEENGINE = "SQLite" ]; then
+if [ "$DATABASEENGINE" = "MySQL" ] || [ "$DATABASEENGINE" = "SQLite" ]; then
     export ADSB_DATABASEENGINE=$DATABASEENGINE
     export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
     export ADSB_DATABASEUSER=$DATABASEUSER
@@ -515,7 +515,7 @@ chmod +x $BASHDIRECTORY/portal/core.sh
 $BASHDIRECTORY/portal/core.sh
 if [ $? -ne 0 ]; then
     echo ""
-    echo -e "\e[91m  THE SCRIPT CORE.SH ENCOUNTERED AND ERROR"
+    echo -e "  \e[91m  THE SCRIPT CORE.SH ENCOUNTERED AN ERROR"
     echo ""
     exit 1
 fi
@@ -532,7 +532,7 @@ if [ $ADVANCED = TRUE ]; then
     $BASHDIRECTORY/portal/logging.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AND ERROR"
+        echo -e "  \e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AN ERROR"
         echo ""
         exit 1
     fi

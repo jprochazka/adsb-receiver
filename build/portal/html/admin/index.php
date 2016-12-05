@@ -277,7 +277,7 @@
     ////////////////
     // BEGIN HTML
 
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."includes/header.inc.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 
     // Display the updated message if settings were updated.
     if ($updated) {
@@ -581,5 +581,5 @@
             <input type="submit" class="btn btn-default" value="Save Settings">
         </form>
 <?php
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."includes/footer.inc.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>
