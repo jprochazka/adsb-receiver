@@ -112,7 +112,7 @@
         const db_database = '';
         const db_username = '';
         const db_password = '';
-        const db_host = '/var/www/html/portal.sqlite';
+        const db_host = '/var/www/html/data/portal.sqlite';
         const db_prefix = 'adsb_';
 
         // Security Settings
