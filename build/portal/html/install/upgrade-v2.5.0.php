@@ -130,7 +130,7 @@ EOF;
                 $dbh = $common->pdoOpen();
 
                 // Add the links table.
-                $sql = "CREATE TABLE ".$dbPrefix."links(id INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL, address VARCHAR(250) NOT NULL);";
+                $sql = "CREATE TABLE ".$settings::db_prefix."links(INTEGER PRIMARY KEY, name TEXT NOT NULL, address TEXT NOT NULL);";
                 $sth = $dbh->prepare($sql);
                 $sth->execute();
                 $sth = NULL;
