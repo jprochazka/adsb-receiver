@@ -77,7 +77,7 @@
             $dbHost = "";
             if (isset($_POST['host']))
                 $dbHost = $_POST['host'];
-            if ($_POST[driver] == "sqlite")
+            if ($_POST['driver'] == "sqlite")
                 $dbHost = $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite";
 
             $dbPrefix = "adsb_";

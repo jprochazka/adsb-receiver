@@ -50,15 +50,15 @@
 
     if ($common->postBack()) {
         // Flight notifications
-        $notificationArray = explode(',', $_POST['notifications']);
+        $flightNotificationArray = explode(',', $_POST['flightNotifications']);
 
         if ($settings::db_driver == "xml") {
             // XML
-            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
-            unset($notifications->flight);
-            foreach ($notificationArray as $notification) {
-                $newNotification = $notifications->addChild('flight', $notification);
-                $dom = dom_import_simplexml($notifications)->ownerDocument;
+            $flightNotifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+            unset($flightNotifications->flight);
+            foreach ($flightNotificationArray as $flightNotification) {
+                $newFlightNotification = $flightNotifications->addChild('flight', $flightNotification);
+                $dom = dom_import_simplexml($flightNotifications)->ownerDocument;
                 $dom->formatOutput = TRUE;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $dom->saveXML());
             }
@@ -83,7 +83,7 @@
                     $dbh = NULL;
                 }
             }
-            foreach ($notificationArray as $flight) {
+            foreach ($flightNotificationArray as $flight) {
                 // Add flight if not saved already.
                 if (!in_array($flight, $savedFlights)) {
                     $dbh = $common->pdoOpen();
@@ -195,25 +195,25 @@
     }
 
     // Get notification settings.
-    $notifications = NULL;
+    $flightNotifications = NULL;
     $savedFlights = array();
     if ($settings::db_driver == "xml") {
         // XML
-        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."notifications.xml");
+        $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
         foreach ($savedFlights as $savedFlight) {
-            $notifications = ltrim($notifications.",".$savedFlight->name, ',');
+            $flightNotifications = ltrim($flightNotifications.",".$savedFlight->name, ',');
         }
     } else {
         //PDO
         $dbh = $common->pdoOpen();
-        $sql = "SELECT * FROM ".$settings::db_prefix."notifications";
+        $sql = "SELECT * FROM ".$settings::db_prefix."flightNotifications";
         $sth = $dbh->prepare($sql);
         $sth->execute();
         $savedFlights = $sth->fetchAll();
         $sth = NULL;
         $dbh = NULL;
         foreach ($savedFlights as $savedFlight) {
-            $notifications = ltrim($notifications.",".$savedFlight['flight'], ',');
+            $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
         }
     }
     $enableWebNotifications = $common->getSetting("enableWebNotifications");
@@ -394,8 +394,8 @@
                         <div class="panel-heading">Flight Notifications</div>
                         <div class="panel-body">
                             <div class="form-group">
-                                <label for="notifications"">Flight names. (coma delimited)</label>
-                                <input type="text" class="form-control" id="notifications" name="notifications" value="<?php echo $notifications; ?>">
+                                <label for="flightNotifications"">Flight names. (coma delimited)</label>
+                                <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
                             </div>
                             <div class="checkbox">
                                 <label>
