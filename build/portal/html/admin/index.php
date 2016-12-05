@@ -201,7 +201,7 @@
         // XML
         $savedFlights = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
         foreach ($savedFlights as $savedFlight) {
-            $flightNotifications = ltrim($flightNotifications.",".$savedFlight->name, ',');
+            $flightNotifications = ltrim($flightNotifications.",".$savedFlight, ',');
         }
     } else {
         //PDO
