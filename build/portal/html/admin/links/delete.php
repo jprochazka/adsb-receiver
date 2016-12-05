@@ -73,7 +73,7 @@
                 </p>
             </div>
             <form id="delete-link" method="post" action="delete.php?name=<?php echo urlencode($link['name']); ?>">
-                <input type="submit" class="btn btn-default" value="Delete Post">
+                <input type="submit" class="btn btn-default" value="Delete Link">
                 <a href="/admin/links/" class="btn btn-info" role="button">Cancel</a>
             </form>
 <?php
