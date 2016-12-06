@@ -101,7 +101,6 @@ else
     echo -e "\e[94m  Cloning the dump1090-mutability git repository locally...\e[97m"
     echo ""
     git clone https://github.com/mutability/dump1090.git
-    echo ""
 fi
 
 ## BUILD AND INSTALL THE DUMP1090-MUTABILITY PACKAGE
@@ -148,32 +147,58 @@ fi
 echo ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
 echo ""
-if [[ `GetConfig "LAT" "/etc/default/dump1090-mutability"` == "" ]] || [[ `GetConfig "LON" "/etc/default/dump1090-mutability"` == "" ]]; then
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-    RECEIVERLATITUDE_TITLE="Receiver Latitude"
-    while [[ -z $RECEIVERLATITUDE ]]; do
-        RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
-    done
-    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
-    while [[ -z $RECEIVERLONGITUDE ]]; do
-        RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
-    done
-    echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
-    ChangeConfig "LAT" $RECEIVERLATITUDE "/etc/default/dump1090-mutability"
-    echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
-    ChangeConfig "LON" $RECEIVERLONGITUDE "/etc/default/dump1090-mutability"
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+RECEIVERLATITUDE_TITLE="Receiver Latitude"
+while [[ -z $RECEIVERLATITUDE ]]; do
+    RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+    RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVERLATITUDE" 3>&1 1>&2 2>&3)
+    RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+done
+RECEIVERLONGITUDE_TITLE="Receiver Longitude"
+while [[ -z $RECEIVERLONGITUDE ]]; do
+    RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVERLONGITUDE" 3>&1 1>&2 2>&3)
+    RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+done
+
+echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
+
+ChangeConfig "LAT" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVERLATITUDE})" "/etc/default/dump1090-mutability"
+echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
+ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVERLONGITUDE})" "/etc/default/dump1090-mutability"
+
+# Ask for a Bing Maps API key.
+BINGMAPSKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 12 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+if [[ ! -z $BINGMAPSKEY ]]; then
+    echo -e "\e[94m  Setting the Bing Maps API Key to $BINGMAPSKEY...\e[97m"
+    ChangeConfig "BingMapsAPIKey" "$BINGMAPSKEY" "/usr/share/dump1090-mutability/html/config.js"
+fi
+
+# Ask for a Mapzen API key.
+MAPZENKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the dump1090-mutability map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 `GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+if [[ ! -z $MAPZENKEY ]]; then
+    echo -e "\e[94m  Setting the Mapzen API Key to $MAPZENKEY...\e[97m"
+    ChangeConfig "MapzenAPIKey" "$MAPZENKEY" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
 # Ask if dump1090-mutability should bind on all IP addresses.
-if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
+if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
     echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
     CommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
 else
     echo -e "\e[94m  Binding dump1090-mutability to the localhost IP addresses...\e[97m"
     UncommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
     ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
+fi
+
+# Ask if measurments should be displayed using imperial or metric.
+UNITOFMEASUREMENT=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by dump1090-mutbility." 11 78 2 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
+if [ $UNITOFMEASUREMENT = "Metric" ]; then
+    echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Metric...\e[97m"
+    ChangeConfig "Metric" "false" "/usr/share/dump1090-mutability/html/config.js"
+else
+    echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Imperial...\e[97m"
+    ChangeConfig "Metric" "true" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
 # Download Heywhatsthat.com maximum range rings.

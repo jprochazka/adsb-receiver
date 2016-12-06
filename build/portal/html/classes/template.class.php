@@ -37,7 +37,7 @@
 
             // Check if the portal is installed or needs upgraded.
 
-            $thisVersion = "2.4.0";
+            $thisVersion = "2.5.0";
 
             if (!file_exists($_SERVER['DOCUMENT_ROOT']."/classes/settings.class.php")) {
                 header ("Location: /install/install.php");
@@ -48,8 +48,12 @@
             // The Base URL of this page (needed for Plane Finder client link)
             $pageData['baseurl'] = $common->getBaseUrl();
 
-            // Load the master template.
+            // Load the master template along with required data for the master template..
             $master = $this->readTemplate('master.tpl');
+
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
+            $links = new links();
+            $pageData['links'] = $links->getAllLinks();
 
             // Load the template for the requested page.
             $page = $this->readTemplate($common->removeExtension($_SERVER["SCRIPT_NAME"]).'.tpl');
@@ -214,7 +218,6 @@
             $pattern = '/\{foreach(.*?)\{\/foreach\}/s';
             preg_match_all($pattern, $output, $foreach, PREG_PATTERN_ORDER);
             foreach ($foreach[0] as $element) {
-
                 // Loop through $pageData.
                 if (strpos($element, 'page:') !== false) {
                     $variable = $common->extractString($element, "{foreach page:", " ");
@@ -222,13 +225,9 @@
                     $contents = $common->extractString($element, "{foreach page:".$variable." as ".$itemName."}", "{/foreach}");
                     $thisIteration = $contents;
                     foreach ($pageData as $keys => $values) {
-
                         if ($keys == $variable) {
                             foreach ($values as $item) {
-                                
                                 foreach ($item as $key => $value) {
-                                    
-
                                     $pattern = '/\{'.$itemName.'->(.*?)\}/';
                                     preg_match_all($pattern, $thisIteration, $placeholders, PREG_PATTERN_ORDER);
                                     foreach ($placeholders as $placeholder) {
@@ -243,8 +242,8 @@
                         }
                     }
                     $output = str_replace($element, $html, $output);
+                    $html = NULL;
                 }
-
             }
             return $output;
         }
@@ -254,7 +253,7 @@
             // {for i eq 1 | i lte 5 | i++}
             //     ...
             // {/for}
-            
+
             $common = new Common($this);
             $html = NULL;
 

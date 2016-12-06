@@ -96,6 +96,7 @@ echo ""
 CheckPackage curl
 CheckPackage build-essential
 CheckPackage debhelper
+CheckPackage python-dev
 CheckPackage python3-dev
 CheckPackage netcat
 

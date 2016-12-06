@@ -49,7 +49,14 @@
                     $dsn = "pgsql:host=".$settings::db_host.";dbname=".$settings::db_database;
                     break;
                 case 'sqlite':
-                    $dsn = "sqlite:".$_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite";
+                    // In v2.5.0 the path to the SQLite database is no longer hard coded.
+                    // So if there is a problem getting the path the the SQLite database
+                    // from settings.class.php we must use the old style hard coded path.
+                    $dsn = "sqlite:".$settings::db_host;
+                    if ($dsn == "sqlite:") {
+                        // Use the legacy hard coded path for older systems being updated before v2.5.0.
+                        $dsn = "sqlite:".$_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite";
+                    }
                     break;
             }
 

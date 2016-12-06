@@ -28,46 +28,42 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
-    session_start();
+    ///////////////////////
+    // UPGRADE TO V2.3.0
+    ///////////////////////
 
-    // Load the common PHP classes.
-    require_once('classes/common.class.php');
-    require_once('classes/template.class.php');
-    require_once('classes/blog.class.php');
+    // ---------------------------------------------------------------
+    // Removes the useDump1090FaMap setting which is no longer needed.
+    // Updates the version setting to 2.3.0.
+    // Removes and current patch version from the patch setting.
+    // ---------------------------------------------------------------
 
-    $common = new common();
-    $template = new template();
-    $blog = new blog();
+    $results = upgrade();
+    exit(json_encode($results));
 
-    $pageData = array();
+    function upgrade() {
+        require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
 
-    // The title of this page.
-    $pageData['title'] = "Blog";
+        $common = new common();
 
-    // Get all blog posts from the XML file storing them.
-    $allPosts = $blog->getAllPosts();
+        try {
+            // Remove the dump1090-fa map selection setting.
+            $common->deleteSetting('useDump1090FaMap');
 
-    // Format the post dates according to the related setting.
-    foreach ($allPosts as &$post) {
-        if (strpos($post['contents'], '{more}') !== false) {
-            $post['contents'] = substr($post['contents'], 0, strpos($post['contents'], '{more}'));
+            // Update the version and patch settings..
+            $common->updateSetting("version", "2.4.0");
+            $common->updateSetting("patch", "");
+
+            // The upgrade process completed successfully.
+            $results['success'] = TRUE;
+            $results['message'] = "Upgrade to v2.4.0 successful.";
+            return $results;
+
+        } catch(Exception $e) {
+            // Something went wrong during this upgrade process.
+            $results['success'] = FALSE;
+            $results['message'] = $e->getMessage();
+            return $results;
         }
-        $post['author'] = $common->getAdminstratorName($post['author']);
-
-        // Properly format the date and convert to slected time zone.
-        $date = new DateTime($post['date'], new DateTimeZone('UTC'));
-        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
-        $post['date'] = $date->format($common->getSetting('dateFormat'));
     }
-
-    // Pagination.
-    $itemsPerPage = 5;
-    $page = (isset($_GET['page']) ? $_GET['page'] : 1);
-    $pageData['blogPosts'] = $common->paginateArray($allPosts, $page, $itemsPerPage - 1);
-
-    // Calculate the number of pagination links to show.
-    $pageData['pageLinks'] = ceil(count($allPosts) / $itemsPerPage);
-
-    $template->display($pageData);
 ?>

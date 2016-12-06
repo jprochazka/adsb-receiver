@@ -73,6 +73,8 @@ sudo apt-get -y dist-upgrade
 ## INSTALL DUMP1090
 
 echo ""
+echo -e "\e[95m  Installing prerequisite packages...\e[97m"
+echo ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
@@ -231,7 +233,6 @@ echo "pi:adsbreceiver" | sudo chpasswd
 ## CLEAN UP THE SYSTEM TO MAKE THE IMAGE SMALLER
 
 echo -e "\e[95m  Removing packages which are no longer needed...\e[97m"
-
 echo ""
 sudo apt-get -y clean
 sudo apt-get -y autoclean

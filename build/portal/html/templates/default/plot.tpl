@@ -315,5 +315,5 @@
 
       }
     </script>      
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAibOqEH7XseMCHOPQUdBon6LHKSlbGHj4&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key={setting:googleMapsApiKey}&callback=initMap"></script>
 {/area}

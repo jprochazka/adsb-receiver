@@ -2,7 +2,30 @@
 
 The following is a history of the changes made to this project.
 
-## v2.4.0
+## v2.5.0
+
+* Can now specify the unit of measurement for dump1090-mutability during setup.
+* Users can now specify the repository branch they wish to use in the file install.sh.
+* Possible fix for blog post containing characters not UTF-8 compatible. *(lite)*
+* Added script to automate the portal backup process.
+* Added ability to specify the latitude and longitude of the receiver for dump978.
+* Administrators can now specify custom links to be displayed within the portal.
+* The loading speed for the flights page has been dramatically reduced. *(advanced)*
+* When upgrading dump1090 the user is once again asked for the LAT and LON settings.
+* Portal related python scripts are now located in the folder named python.
+* A Google Maps API key can now be specified for use with portal maps.
+* When setting up dump1090-mutability the user is asked for a Bing Maps API key.
+* When setting up dump1090-mutability the user is asked for a Mapzen API key.
+* Portal upgrade scripts have been split into multiple files.
+* The path to the SQLite database is no longer hard coded in the portal PHP files.
+* Pagination links now show first and last page links properly.
+* When no patch is applied N\A is given for the patch version on the system page.
+* Yes set to default when asked whether to bind dump1090-mutability to all IP addresses.
+* Fixed issue with install script causing PiAware to not upgrade.
+* Fixed collectd graph generation script so it works with newer versions of rrdtool.
+* The navigation bar for the default portal template has been modified to fit better.
+
+## v2.4.0 *(September 27th, 2016)*
 
 * Users can now choose to install dump1090-fa instead of dump1090-mutability.
 * Scripts are now updated from the master branch each time install.sh is ran.
@@ -11,7 +34,7 @@ The following is a history of the changes made to this project.
 * Removed dump1090-fa map option from portal due to the fact it is no longer needed.
 * Flights.py has been temporariliy switched back to reading aircraft.json over HTTP.
 
-## v2.3.0
+## v2.3.0 *(September 15th, 2016)*
 
 * Massive clean up and in some cases an overhaul of the installation bash scripts.
 * Updated the dump978 map by modifying newer dump1090-mutability map.

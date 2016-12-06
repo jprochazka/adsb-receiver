@@ -51,7 +51,10 @@
 
     // Get software information.
     $pageData['portalVersion'] = $common->getSetting('version');
-    $pageData['portalPatch'] = $common->getSetting('patch');
+    $pageData['portalPatch'] = "N/A";
+    if ($common->getSetting('patch') != '') {
+        $pageData['portalPatch'] = $common->getSetting('patch');
+    }
 
     // Get the current system uptime.
     $json = file_get_contents("http://localhost/api/system.php?action=getUptimeInformation");

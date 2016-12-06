@@ -31,9 +31,9 @@
     session_start();
 
     // Load the require PHP classes.
-    require_once('../../classes/common.class.php');
-    require_once('../../classes/account.class.php');
-    require_once('../../classes/blog.class.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."blog.class.php");
 
     $common = new common();
     $account = new account();
@@ -62,7 +62,7 @@
     ////////////////
     // BEGIN HTML
 
-    require_once('../includes/header.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 ?>
             <h1>Blog Management</h1>
             <hr />
@@ -113,5 +113,5 @@
                 });
             </script>
 <?php
-    require_once('../includes/footer.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>

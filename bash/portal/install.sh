@@ -488,12 +488,39 @@ chmod +x $BASHDIRECTORY/portal/graphs.sh
 $BASHDIRECTORY/portal/graphs.sh
 if [ $? -ne 0 ]; then
     echo ""
-    echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AND ERROR"
+    echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AN ERROR"
     echo ""
     exit 1
 fi
 
-## SETUP FLIGHT LOGGING USING THE SCRIPT LOGGING.SH
+## SETUP COMMON PORTAL FEATURES
+
+# Export variables needed by logging.sh.
+if [ "$DATABASEENGINE" = "MySQL" ] || [ "$DATABASEENGINE" = "SQLite" ]; then
+    export ADSB_DATABASEENGINE=$DATABASEENGINE
+    export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
+    export ADSB_DATABASEUSER=$DATABASEUSER
+    export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
+    export ADSB_DATABASENAME=$DATABASENAME
+else
+    export ADSB_DATABASEENGINE="xml"
+    export ADSB_DATABASEHOSTNAME=""
+    export ADSB_DATABASEUSER=""
+    export ADSB_DATABASEPASSWORD1=""
+    export ADSB_DATABASENAME=""
+fi
+
+# Execute the core setup script.
+chmod +x $BASHDIRECTORY/portal/core.sh
+$BASHDIRECTORY/portal/core.sh
+if [ $? -ne 0 ]; then
+    echo ""
+    echo -e "  \e[91m  THE SCRIPT CORE.SH ENCOUNTERED AN ERROR"
+    echo ""
+    exit 1
+fi
+
+## SETUP ADVANCED PORTAL FEATURES
 
 if [ $ADVANCED = TRUE ]; then
     # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
@@ -501,22 +528,22 @@ if [ $ADVANCED = TRUE ]; then
         $DATABASENAME="$LIGHTTPDDOCUMENTROOT/data/portal.sqlite"
     fi
 
-    # Export variables needed by logging.sh.
-    export ADSB_DATABASEENGINE=$DATABASEENGINE
-    export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
-    export ADSB_DATABASEUSER=$DATABASEUSER
-    export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
-    export ADSB_DATABASENAME=$DATABASENAME
-
     chmod +x $BASHDIRECTORY/portal/logging.sh
     $BASHDIRECTORY/portal/logging.sh
     if [ $? -ne 0 ]; then
         echo ""
-        echo -e "\e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AND ERROR"
+        echo -e "  \e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AN ERROR"
         echo ""
         exit 1
     fi
 fi
+
+# Remove exported variables that are no longer needed.
+unset ADSB_DATABASEENGINE
+unset ADSB_DATABASEHOSTNAME
+unset ADSB_DATABASEUSER
+unset ADSB_DATABASEPASSWORD1
+unset ADSB_DATABASENAME
 
 ## ADS-B RECEIVER PROJECT PORTAL SETUP COMPLETE
 

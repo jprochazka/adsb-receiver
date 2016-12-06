@@ -50,15 +50,15 @@
 
     if ($common->postBack()) {
         // Flight notifications
-        $notificationArray = explode(',', $_POST['flightNotifications']);
+        $flightNotificationArray = explode(',', $_POST['flightNotifications']);
 
         if ($settings::db_driver == "xml") {
             // XML
-            $notifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
-            unset($notifications->flight);
-            foreach ($notificationArray as $notification) {
-                $newNotification = $notifications->addChild('flight', $notification);
-                $dom = dom_import_simplexml($notifications)->ownerDocument;
+            $flightNotifications = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml");
+            unset($flightNotifications->flight);
+            foreach ($flightNotificationArray as $flightNotification) {
+                $newFlightNotification = $flightNotifications->addChild('flight', $flightNotification);
+                $dom = dom_import_simplexml($flightNotifications)->ownerDocument;
                 $dom->formatOutput = TRUE;
                 file_put_contents($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."flightNotifications.xml", $dom->saveXML());
             }
@@ -83,7 +83,7 @@
                     $dbh = NULL;
                 }
             }
-            foreach ($notificationArray as $flight) {
+            foreach ($flightNotificationArray as $flight) {
                 // Add flight if not saved already.
                 if (!in_array($flight, $savedFlights)) {
                     $dbh = $common->pdoOpen();
@@ -98,10 +98,6 @@
         }
 
         // Set TRUE or FALSE for checkbox items.
-        $enableFlightNotifications = FALSE;
-        if (isset($_POST['enableFlightNotifications']) && $_POST['enableFlightNotifications'] == "TRUE")
-            $enableFlightNotifications = TRUE;
-
         $enableFlights = FALSE;
         if (isset($_POST['enableFlights']) && $_POST['enableFlights'] == "TRUE")
             $enableFlights = TRUE;
@@ -117,6 +113,10 @@
         $enableGraphs = FALSE;
         if (isset($_POST['enableGraphs']) && $_POST['enableGraphs'] == "TRUE")
             $enableGraphs = TRUE;
+
+        $enableLinks = FALSE;
+        if (isset($_POST['enableLinks']) && $_POST['enableLinks'] == "TRUE")
+            $enableLinks = TRUE;
 
         $enableDump1090 = FALSE;
         if (isset($_POST['enableDump1090']) && $_POST['enableDump1090'] == "TRUE")
@@ -146,16 +146,20 @@
         if (isset($_POST['enableAdsbExchangeLink']) && $_POST['enableAdsbExchangeLink'] == "TRUE")
             $enableAdsbExchangeLink = TRUE;
 
+        $enableWebNotifications = FALSE;
+        if (isset($_POST['enableWebNotifications']) && $_POST['enableWebNotifications'] == "TRUE")
+            $enableWebNotifications = TRUE;
+
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
         $common->updateSetting("defaultPage", $_POST['defaultPage']);
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
-        $common->updateSetting("enableFlightNotifications", $enableFlightNotifications);
         $common->updateSetting("enableFlights", $enableFlights);
         $common->updateSetting("enableBlog", $enableBlog);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
+        $common->updateSetting("enableLinks", $enableLinks);
         $common->updateSetting("enableDump1090", $enableDump1090);
         $common->updateSetting("enableDump978", $enableDump978);
         $common->updateSetting("enablePfclient", $enablePfclient);
@@ -172,6 +176,8 @@
         $common->updateSetting("measurementBandwidth", $_POST['measurementBandwidth']);
         $common->updateSetting("networkInterface", $_POST['networkInterface']);
         $common->updateSetting("timeZone", $_POST['timeZone']);
+        $common->updateSetting("enableWebNotifications", $enableWebNotifications);
+        $common->updateSetting("googleMapsApiKey", $_POST['googleMapsApiKey']);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -188,7 +194,7 @@
         $updated = TRUE;
     }
 
-    // Get all flights to be notified about from the flightNotifications.xml file.
+    // Get notification settings.
     $flightNotifications = NULL;
     $savedFlights = array();
     if ($settings::db_driver == "xml") {
@@ -210,8 +216,7 @@
             $flightNotifications = ltrim($flightNotifications.",".$savedFlight['flight'], ',');
         }
     }
-
-    $enableFlightNotifications = $common->getSetting("enableFlightNotifications");
+    $enableWebNotifications = $common->getSetting("enableWebNotifications");
 
     // Get general settings from settings.xml.
     $siteName = $common->getSetting("siteName");
@@ -219,12 +224,14 @@
     $defaultPage = $common->getSetting("defaultPage");
     $dateFormat = $common->getSetting("dateFormat");
     $timeZone = $common->getSetting("timeZone");
+    $googleMapsApiKey = $common->getSetting("googleMapsApiKey");
 
     // Get navigation settings from settings.xml.
     $enableFlights = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
+    $enableLinks = $common->getSetting("enableLinks");
     $enableDump1090 = $common->getSetting("enableDump1090");
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
@@ -270,7 +277,7 @@
     ////////////////
     // BEGIN HTML
 
-    require_once('includes/header.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 
     // Display the updated message if settings were updated.
     if ($updated) {
@@ -324,21 +331,14 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="defaultPage">Date Format</label>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y g:i A"<?php ($dateFormat == "F jS, Y g:i A" ? print ' checked' : ''); ?>>October 16, 2015 12:00 PM</label>
-                                </div>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d g:i A"<?php ($dateFormat == "Y-m-d g:i A" ? print ' checked' : ''); ?>>2015-10-16 12:00 PM</label>
-                                </div>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y g:i A"<?php ($dateFormat == "m/d/Y g:i A" ? print ' checked' : ''); ?>>16/10/2015 12:00 PM</label>
-                                </div>
-                                <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y g:i A"<?php ($dateFormat == "d/m/Y g:i A" ? print ' checked' : ''); ?>>10/16/2015 12:00 PM</label>
-                                </div>
-                                <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                                <label for="googleMapsApiKey">Google Maps API Key</label>
+                                <input type="text" class="form-control" id="googleMapsApiKey" name="googleMapsApiKey" value="<?php echo $googleMapsApiKey; ?>">
                             </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Time Format</div>
+                        <div class="panel-body">
                             <div class="form-group">
                                 <label for="timeZone">Time Zone</label>
                                 <select class="form-control" id="timeZone" name="timeZone">
@@ -355,6 +355,37 @@
 ?>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="defaultPage">Date Format - 12 Hour Format</label>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y g:i A"<?php ($dateFormat == "F jS, Y g:i A" ? print ' checked' : ''); ?>>October 16, 2015 5:00 PM</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d g:i A"<?php ($dateFormat == "Y-m-d g:i A" ? print ' checked' : ''); ?>>2015-10-16 5:00 PM</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y g:i A"<?php ($dateFormat == "m/d/Y g:i A" ? print ' checked' : ''); ?>>16/10/2015 5:00 PM</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y g:i A"<?php ($dateFormat == "d/m/Y g:i A" ? print ' checked' : ''); ?>>10/16/2015 5:00 PM</label>
+                                </div>
+                                <label for="defaultPage">Date Format - 24 Hour Format</label>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="F jS, Y G:i"<?php ($dateFormat == "F jS, Y G:i" ? print ' checked' : ''); ?>>October 16, 2015 17:00</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="Y-m-d G:i"<?php ($dateFormat == "Y-m-d G:i" ? print ' checked' : ''); ?>>2015-10-16 17:00</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y G:i"<?php ($dateFormat == "m/d/Y G:i" ? print ' checked' : ''); ?>>16/10/2015 17:00</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y G:i"<?php ($dateFormat == "d/m/Y G:i" ? print ' checked' : ''); ?>>10/16/2015 17:00</label>
+                                </div>
+                                <label for="dateFormat">Date Format</label>
+                                <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
+                                <p><i>Select one of the formats above or create your own. <a href="http://php.net/manual/en/function.date.php" target="_blank">PHP date function documentation.</a></i></p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -362,14 +393,14 @@
                     <div class="panel panel-default">
                         <div class="panel-heading">Flight Notifications</div>
                         <div class="panel-body">
+                            <div class="form-group">
+                                <label for="flightNotifications"">Flight names. (coma delimited)</label>
+                                <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
+                            </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="enableFlightNotifications" value="TRUE"<?php ($enableFlightNotifications == 1 ? print ' checked' : ''); ?>> Enable flight notifications.
+                                    <input type="checkbox" name="enableWebNotifications" value="TRUE"<?php ($enableWebNotifications == 1 ? print ' checked' : ''); ?>> Enable web based flight notifications.
                                 </label>
-                            </div>
-                            <div class="form-group">
-                                <label for="siteName">Flight Notifications (coma delimited)</label>
-                                <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
                             </div>
                         </div>
                     </div>
@@ -396,6 +427,11 @@
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enableGraphs" value="TRUE"<?php ($enableGraphs == 1 ? print ' checked' : ''); ?>> Enable performance graphs link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableLinks" value="TRUE"<?php ($enableLinks == 1 ? print ' checked' : ''); ?>> Enable custom links.
                                 </label>
                             </div>
                             <div class="checkbox">
@@ -545,5 +581,5 @@
             <input type="submit" class="btn btn-default" value="Save Settings">
         </form>
 <?php
-    require_once('includes/footer.inc.php');
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>

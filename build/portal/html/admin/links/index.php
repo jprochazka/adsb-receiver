@@ -28,74 +28,56 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
     session_start();
 
-    // Load the common PHP classes.
+    // Load the require PHP classes.
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."template.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
 
     $common = new common();
-    $settings = new settings();
-    $template = new template();
+    $account = new account();
+    $links = new links();
 
-    $pageData = array();
-
-    // Items per page.
-    $itemsPerPage = 25;
-
-    // The title of this page.
-    $pageData['title'] = "Flights Seen";
-
-    // Add flight data to the $pageData array using the search string if available.
-    if (isset($_POST['flight'])) {
-        $searchString = $_POST['flight'];
-    } else {
-        $searchString = "";
+    // Check if the user is logged in.
+    if (!$account->isAuthenticated()) {
+        // The user is not logged in so forward them to the login page.
+        header ("Location: login.php");
     }
 
-    // Set the start stop positions to be used in the query.
-    $start = 1;
-    if (isset($_GET['page'])) {
-        $start = $_GET['page'] * $itemsPerPage;
+    // Get all links.
+    $links = $links->getAllLinks();
+
+    ////////////////
+    // BEGIN HTML
+
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
+?>
+
+            <h1>Links Management</h1>
+            <hr />
+            <h2>Links</h2>
+            <a href="add.php" class="btn btn-info" style="margin-bottom:  10px;" role="button">Add Link</a>
+            <div class="table-responsive">
+                <table class="table table-striped table-condensed">
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Address</th>
+                    </tr>
+<?php
+    foreach ($links as $link) {
+?>
+                    <tr>
+                        <td><a href="edit.php?name=<?php echo urlencode($link['name']); ?>">edit</a> <a href="delete.php?name=<?php echo urlencode($link['name']); ?>">delete</a></td>
+                        <td><?php echo $link['name']; ?></td>
+                        <td><a href="<?php echo $link['address']; ?>" target="_blank"><?php echo $link['address']; ?></a></td>
+                    </tr>
+<?php
     }
-
-    $dbh = $common->pdoOpen();
-    $sql = "SELECT COUNT(*) FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight";
-    $sth = $dbh->prepare($sql);
-    $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
-    $sth->execute();
-    $totalFlights = $sth->fetchColumn();
-    $sth = NULL;
-    $dbh = NULL;
-
-    $dbh = $common->pdoOpen();
-    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight LIMIT :start, :items";
-    $sth = $dbh->prepare($sql);
-    $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
-    $sth->bindValue(':start', $start, PDO::PARAM_INT);
-    $sth->bindValue(':items', $itemsPerPage, PDO::PARAM_INT);
-    $sth->execute();
-    $flights = $sth->fetchAll(PDO::FETCH_ASSOC);
-    $sth = NULL;
-    $dbh = NULL;
-
-    // Change dates to the proper timezone and format.
-    foreach ($flights as &$flight) {
-        $date = new DateTime($flight['firstSeen'], new DateTimeZone('UTC'));
-        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
-        $flight['firstSeen'] = $date->format($common->getSetting('dateFormat'));
-
-        $date = new DateTime($flight['lastSeen'], new DateTimeZone('UTC'));
-        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
-        $flight['lastSeen'] = $date->format($common->getSetting('dateFormat'));
-    }
-
-    $pageData['flights'] = $flights;
-
-    // Calculate the number of pagination links to show.
-    $pageData['pageLinks'] = ceil($totalFlights / $itemsPerPage);
-
-    $template->display($pageData);
+?>
+                </table>
+            </div>
+<?php
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>

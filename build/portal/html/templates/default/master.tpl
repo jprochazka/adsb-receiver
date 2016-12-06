@@ -29,7 +29,7 @@
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/bootstrap.min.css">
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="/templates/{setting:template}/assets/css/portal.css">
-        {if setting:enableFlightNotifications eq TRUE}<link rel="stylesheet" href="/templates/{setting:template}/assets/css/notifications.css">{/if}
+        {if setting:enableWebNotifications eq TRUE}<link rel="stylesheet" href="/templates/{setting:template}/assets/css/notifications.css">{/if}
         {area:head}
     </head>
         <body>
@@ -47,13 +47,31 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            {if setting:enableFlights eq TRUE}<li id="flights-link"><a href="/flights.php">Flights</a></li>{/if}
                             {if setting:enableBlog eq TRUE}<li id="blog-link"><a href="/blog.php">Blog</a></li>{/if}
-                            {if setting:enableInfo eq TRUE}<li id="system-link"><a href="/system.php">System Information</a></li>{/if}
-                            {if setting:enableGraphs eq TRUE}<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>{/if}
-                            {if setting:enableDump1090 eq TRUE}<li id="dump1090-link"><a href="/dump1090.php">Live Dump1090 Map</a></li>{/if}
-                            {if setting:enableDump978 eq TRUE}<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>{/if}
-                            {if setting:enablePfclient eq TRUE}<li id="planefinder-link"><a href="{page:baseurl}:30053" target="_blank">Plane Finder Client</a></li>{/if}
+                            {if setting:enableFlights eq TRUE}<li id="flights-link"><a href="/flights.php">Flights</a></li>{/if}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    {if setting:enableGraphs eq TRUE}<li id="graphs-link"><a href="/graphs.php">Performance Graphs</a></li>{/if}
+                                    {if setting:enableInfo eq TRUE}<li id="system-link"><a href="/system.php">System Information</a></li>{/if}
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Maps <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    {if setting:enableDump1090 eq TRUE}<li id="dump1090-link"><a href="/dump1090.php">Live Dump1090 Map</a></li>{/if}
+                                    {if setting:enableDump978 eq TRUE}<li id="dump978-link"><a href="/dump978.php">Live Dump978 Map</a></li>{/if}
+                                    {if setting:enablePfclient eq TRUE}<li id="planefinder-link"><a href="{page:baseurl}:30053" target="_blank">Plane Finder Client</a></li>{/if}
+                                </ul>
+                            </li>
+                            {if setting:enableLinks eq TRUE}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Links <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                                    {foreach page:links as link}<li><a href="{link->address}">{link->name}</a></li>{/foreach}
+                                </ul>
+                            </li>
+                            {/if}
                         </ul>
                         {if setting:dataStorage neq xml}
                         <form name="search" method="post" action="flights.php" class="navbar-form navbar-right">
@@ -66,7 +84,7 @@
                     </div>
                 </div>
             </nav>
-            {if setting:enableFlightNotifications eq TRUE}
+            {if setting:enableWebNotifications eq TRUE}
             <div id="flight-notifications" class="modal fade" tabindex="-1" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -95,9 +113,9 @@
                 </p>
             </div>
         </footer>
-        <script src="/templates/{setting:template}/assets/js/jquery-2.2.1.min.js"></script>
+        <script src="/templates/{setting:template}/assets/js/jquery-3.1.1.min.js"></script>
         <script src="/templates/{setting:template}/assets/js/bootstrap.min.js"></script>
-        {if setting:enableFlightNotifications eq TRUE}
+        {if setting:enableWebNotifications eq TRUE}
         <script src="/templates/{setting:template}/assets/js/notifications.js"></script>
         {/if}
         <script type="text/javascript">
@@ -106,3 +124,4 @@
         {area:scripts}
    </body>
 </html>
+

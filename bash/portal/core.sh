@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,24 +31,48 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## SOFTWARE VERSIONS
+## VARIABLES
 
-# The ADS-B Receiver Project
-PROJECTVERSION="2.5.0"
+PROJECTROOTDIRECTORY="$PWD"
+BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+PORTALPYTHONDIRECTORY="$PORTALBUILDDIRECTORY/python"
 
-# FlightAware PiAware
-PIAWAREVERSION="3.1.0"
+DATABASEENGINE=$ADSB_DATABASEENGINE
+DATABASEHOSTNAME=$ADSB_DATABASEHOSTNAME
+DATABASEUSER=$ADSB_DATABASEUSER
+DATABASEPASSWORD1=$ADSB_DATABASEPASSWORD1
+DATABASENAME=$ADSB_DATABASENAME
 
-# PlaneFinder ADS-B Client
-PFCLIENTVERSIONARM="3.4.61"
-PFCLIENTVERSIONI386="3.4.61"
+## SETUP FLIGHT LOGGING
 
-# Flightradar24 Linux Debian package
-FR24CLIENTVERSIONI386="1.0.18-5"
+echo ""
+echo -e "\e[95m  Setting up core advanced portal features...\e[97m"
+echo ""
 
-# mlat-client
-MLATCLIENTVERSION="0.2.6"
-MLATCLIENTTAG="v0.2.6"
-
-# PhantomJS
-PHANTOMJSVERSION="2.1.1"
+case $DATABASEENGINE in
+    "MySQL")
+        echo -e "\e[94m  Creating the flight Python configuration file for MySQL...\e[97m"
+        tee $PORTALPYTHONDIRECTORY/config.json > /dev/null <<EOF
+{
+    "database":{"type":"mysql",
+                "host":"$DATABASEHOSTNAME",
+                "user":"$DATABASEUSER",
+                "passwd":"$DATABASEPASSWORD1",
+                "db":"$DATABASENAME"}
+}
+EOF
+            ;;
+    "SQLite")
+        echo -e "\e[94m  Creating the Python configuration file for SQLite...\e[97m"
+        tee $PORTALPYTHONDIRECTORY/config.json > /dev/null <<EOF
+{
+    "database":{"type":"sqlite",
+                "host":"$DATABASEHOSTNAME",
+                "user":"$DATABASEUSER",
+                "passwd":"$DATABASEPASSWORD1",
+                "db":"$DATABASENAME"}
+}
+EOF
+        ;;
+esac

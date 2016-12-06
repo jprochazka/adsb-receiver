@@ -36,6 +36,7 @@
 
 ## VARIABLES
 
+PROJECTBRANCH="2.5.0"
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
@@ -47,7 +48,7 @@ source $BASHDIRECTORY/functions.sh
 ## MORE VARIABLES
 
 export ADSB_PROJECTTITLE="The ADS-B Receiver Project Installer"
-TERMINATEDMESSAGE="\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+TERMINATEDMESSAGE="  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
 
 ## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
@@ -75,23 +76,25 @@ function AptUpdate() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
     sudo apt-get update
+    echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
 }
 
-function CheckWhiptail() {
+function CheckPrerequisites() {
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
-    echo -e "\e[92m  Checking to make sure the whiptail package is installed..."
+    echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
     CheckPackage whiptail
+    CheckPackage git
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  The whiptail package is installed.\e[39m"
+    echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE
 }
@@ -105,7 +108,10 @@ function UpdateRepository() {
     echo -e "\e[92m  Pulling the latest version of the ADS-B Receiver Project repository..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo ""
-    CheckPackage git
+    echo -e "\e[94m  Switching to branch $PROJECTBRANCH...\e[97m"
+    echo ""
+    git checkout $PROJECTBRANCH
+    echo ""
     echo -e "\e[94m  Pulling the latest git repository...\e[97m"
     echo ""
     git pull
@@ -133,7 +139,7 @@ function UpdateOperatingSystem() {
 }
 
 AptUpdate
-CheckWhiptail
+CheckPrerequisites
 UpdateRepository
 
 ## DISPLAY WELCOME SCREEN
@@ -149,7 +155,6 @@ fi
 chmod +x $BASHDIRECTORY/main.sh
 $BASHDIRECTORY/main.sh
 if [ $? -ne 0 ]; then
-    echo ""
     echo -e $TERMINATEDMESSAGE
     echo ""
     exit 1

@@ -60,7 +60,7 @@
                 $sql = "SELECT * FROM ".$settings::db_prefix."blogPosts ORDER BY date ".$orderBy;
                 $sth = $dbh->prepare($sql);
                 $sth->execute();
-                $posts = $sth->fetchAll();
+                $posts = $sth->fetchAll(PDO::FETCH_ASSOC);
                 $sth = NULL;
                 $dbh = NULL;
                 return $posts;
@@ -90,7 +90,7 @@
                 $sth = $dbh->prepare($sql);
                 $sth->bindParam(':title', $title, PDO::PARAM_STR, 100);
                 $sth->execute();
-                $blogPost = $sth->fetch();
+                $blogPost = $sth->fetch(PDO::FETCH_ASSOC);
                 $sth = NULL;
                 $dbh = NULL;
                 return $blogPost;
@@ -103,6 +103,7 @@
 
             if ($settings::db_driver == "xml") {
                 // XML
+                $blogPosts = simplexml_load_file($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."blogPosts.xml");
                 foreach ($blogPosts as $blogPost) {
                     if ($blogPost->title == $newTitle) {
                         return TRUE;

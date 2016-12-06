@@ -10,7 +10,8 @@ $(document).ready(function () {
             ['Memory', 100],
             ['CPU', 100],
             ['In ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 100],
-            ['Out ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 100]
+            ['Out ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 100],
+            ['CPU Temp', 100]
         ]);
 
         var options = {
@@ -28,6 +29,7 @@ $(document).ready(function () {
         data.setValue(1, 1, 0);
         data.setValue(2, 1, 0);
         data.setValue(3, 1, 0);
+        data.setValue(4, 1, 0);
         chart.draw(data, options);
 
         setInterval(function () {
@@ -58,6 +60,13 @@ $(document).ready(function () {
                 chart.draw(data, options);
             });
         }, 7000);
+        setInterval(function () {
+            $timestamp = new Date().getTime() / 1000;
+            $.getJSON("/api/system.php?action=getCpuInformation&time=" + $timestamp, function (json) {
+                data.setValue(4, 1, Math.round(json.temperature));
+                chart.draw(data, options);
+            });
+        }, 3000);
     }
 
     // Convert uptime to a more readable format and increment it every second.

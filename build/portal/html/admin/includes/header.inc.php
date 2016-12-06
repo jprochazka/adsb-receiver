@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="/admin/assets/css/jquery.datetimepicker.css">
 <?php } ?>
         <link rel="stylesheet" href="/admin/assets/css/admin.css">
-        <script src="/admin/assets/js/jquery-2.2.1.min.js"></script>
+        <script src="/admin/assets/js/jquery-3.1.1.min.js"></script>
         <script src="/admin/assets/js/bootstrap.min.js"></script>
 <?php if (basename($_SERVER['PHP_SELF']) == "index.php") { ?>
         <script src="/admin/assets/js/index.js"></script>
@@ -37,11 +37,12 @@
                     </div>
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li id="logout-link"><a href="/admin">Settings</a></li>
-                            <li id="logout-link"><a href="/admin/blog">Blog</a></li>
-                            <li id="logout-link"><a href="/admin/account.php">Account</a></li>
+                            <li id="settings-link"><a href="/admin">Settings</a></li>
+                            <li id="blog-link"><a href="/admin/blog">Blog</a></li>
+                            <li id="links-link"><a href="/admin/links">Links</a></li>
+                            <li id="account-link"><a href="/admin/account.php">Account</a></li>
                             <li id="logout-link"><a href="/admin/logout.php">Logout</a></li>
-                            <li id="logout-link"><a href="/" target="_blank">Portal Home</a></li>
+                            <li id="portal-link"><a href="/" target="_blank">Portal Home</a></li>
                         </ul>
                     </div>
                 </div>

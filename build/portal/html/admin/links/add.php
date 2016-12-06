@@ -28,74 +28,68 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    // Start session
     session_start();
 
-    // Load the common PHP classes.
+    // Load the require PHP classes.
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
-    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."template.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."account.class.php");
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."links.class.php");
 
     $common = new common();
-    $settings = new settings();
-    $template = new template();
+    $account = new account();
+    $links = new links();
 
-    $pageData = array();
-
-    // Items per page.
-    $itemsPerPage = 25;
-
-    // The title of this page.
-    $pageData['title'] = "Flights Seen";
-
-    // Add flight data to the $pageData array using the search string if available.
-    if (isset($_POST['flight'])) {
-        $searchString = $_POST['flight'];
-    } else {
-        $searchString = "";
+    // Check if the user is logged in.
+    if (!$account->isAuthenticated()) {
+        // The user is not logged in so forward them to the login page.
+        header ("Location: login.php");
     }
 
-    // Set the start stop positions to be used in the query.
-    $start = 1;
-    if (isset($_GET['page'])) {
-        $start = $_GET['page'] * $itemsPerPage;
+    $nameExists = FALSE;
+    if ($common->postBack()) {
+        // Check if the name already exists.
+        $nameExists = $links->nameExists($_POST['name']);
+
+        if (!$nameExists) {
+            // Add this link..
+            $links->addLink($_POST['name'], $_POST['address']);
+
+            // Forward the user to the link management index page.
+            header ("Location: /admin/links/");
+        }
     }
 
-    $dbh = $common->pdoOpen();
-    $sql = "SELECT COUNT(*) FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight";
-    $sth = $dbh->prepare($sql);
-    $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
-    $sth->execute();
-    $totalFlights = $sth->fetchColumn();
-    $sth = NULL;
-    $dbh = NULL;
+    ////////////////
+    // BEGIN HTML
 
-    $dbh = $common->pdoOpen();
-    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight LIMIT :start, :items";
-    $sth = $dbh->prepare($sql);
-    $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
-    $sth->bindValue(':start', $start, PDO::PARAM_INT);
-    $sth->bindValue(':items', $itemsPerPage, PDO::PARAM_INT);
-    $sth->execute();
-    $flights = $sth->fetchAll(PDO::FETCH_ASSOC);
-    $sth = NULL;
-    $dbh = NULL;
-
-    // Change dates to the proper timezone and format.
-    foreach ($flights as &$flight) {
-        $date = new DateTime($flight['firstSeen'], new DateTimeZone('UTC'));
-        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
-        $flight['firstSeen'] = $date->format($common->getSetting('dateFormat'));
-
-        $date = new DateTime($flight['lastSeen'], new DateTimeZone('UTC'));
-        $date->setTimezone(new DateTimeZone($common->getSetting('timeZone')));
-        $flight['lastSeen'] = $date->format($common->getSetting('dateFormat'));
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
+?>
+            <h1>Links Management</h1>
+            <hr />
+            <h2>Add Link</h2>
+            <form id="add-link" method="post" action="add.php">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-control"<?php echo (isset($_POST['name']) ? ' value="'.$_POST['name'].'"' : '')?> required>
+<?php
+    if ($nameExists) {
+?>
+                    <div class="alert alert-danger" role="alert" id="failure-alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        Name already exists.
+                    </div>
+<?php
     }
-
-    $pageData['flights'] = $flights;
-
-    // Calculate the number of pagination links to show.
-    $pageData['pageLinks'] = ceil($totalFlights / $itemsPerPage);
-
-    $template->display($pageData);
+?>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" name="address" class="form-control"<?php echo (isset($_POST['address']) ? ' value="'.$_POST['address'].'"' : '')?> required>
+                </div>
+                <input type="submit" class="btn btn-default" value="Add">
+            </form>
+<?php
+    require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>
