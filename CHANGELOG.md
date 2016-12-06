@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.5.0
+## v2.5.0 *(December 5th, 2016)*
 
 * Can now specify the unit of measurement for dump1090-mutability during setup.
 * Users can now specify the repository branch they wish to use in the file install.sh.
