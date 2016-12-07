@@ -60,7 +60,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  AboveTustin setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -99,7 +101,9 @@ else
             echo -e "\e[93m----------------------------------------------------------------------------------------------------"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
             echo ""
-            read -p "Press enter to continue..." CONTINUE
+            if [ ${VERBOSE} ] ; then
+                read -p "Press enter to continue..." CONTINUE
+            fi
             exit 1
         fi
         echo -e "\e[94m  Will attempt to build the PhantomJS binary from source...\e[97m"
@@ -118,7 +122,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  AboveTustin setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -321,7 +327,9 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
             echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
             echo ""
-            read -p "Press enter to continue..." CONTINUE
+            if [ ${VERBOSE} ] ; then
+                read -p "Press enter to continue..." CONTINUE
+            fi
             exit 1
         fi
 
@@ -462,6 +470,8 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  OverTustin setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [ ${VERBOSE} ] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0

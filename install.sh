@@ -40,6 +40,7 @@ PROJECTBRANCH="master"
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+VERBOSE=""
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -49,6 +50,27 @@ source $BASHDIRECTORY/functions.sh
 
 export ADSB_PROJECTTITLE="The ADS-B Receiver Project Installer"
 TERMINATEDMESSAGE="  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+
+## PARSE OPTIONS FROM CLI
+
+# Parse the command line options
+while [[ $1 = -* ]]; do
+        case "$1" in
+                -v|--verbose)
+                        VERBOSE="1"
+                        shift 1
+                        ;;
+                --help)
+                        usage
+                        exit 1
+                        ;;
+                *)
+                        echo "Error: Unknown option: $1" >&2
+                        usage
+                        exit 1
+                        ;;
+        esac
+done
 
 ## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
@@ -80,7 +102,9 @@ function AptUpdate() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then 
+       read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 function CheckPrerequisites() {
@@ -96,7 +120,9 @@ function CheckPrerequisites() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 
@@ -119,7 +145,9 @@ function UpdateRepository() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 # UPDATE THE OPERATING SYSTEM
@@ -135,7 +163,9 @@ function UpdateOperatingSystem() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 AptUpdate
