@@ -85,6 +85,8 @@ done
 ## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
 if [ -f $PROJECTROOTDIRECTORY/image ]; then
+    # Enable extra confirmation dialogs..
+    VERBOSE="1"
     # Execute image setup script..
     chmod +x $BASHDIRECTORY/image.sh
     $BASHDIRECTORY/image.sh
