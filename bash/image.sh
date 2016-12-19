@@ -70,6 +70,23 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     read -p "Press enter to continue..." CONTINUE
 fi
 
+## ASK USER TO CONFIRM RECIEVER LATITUDE AND LONGITUDE
+
+if [ -z $RECEIVERLATITUDE ] || [ -z $RECEIVERLONGITUDE ] ; then
+# Set the receivers latitude and longitude.
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    RECEIVERLATITUDE_TITLE="Receiver Latitude"
+    while [[ -z $RECEIVERLATITUDE ]]; do
+        RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+    done
+    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z $RECEIVERLONGITUDE ]]; do
+        RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    done
+fi
+
 ## CONFIGURE DUMP1090
 
 clear
@@ -82,18 +99,6 @@ echo ""
 # If dump1090-mutability is installed...
 
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-    # Set the receivers latitude and longitude.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-    RECEIVERLATITUDE_TITLE="Receiver Latitude"
-    while [[ -z $RECEIVERLATITUDE ]]; do
-        RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
-    done
-    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
-    while [[ -z $RECEIVERLONGITUDE ]]; do
-        RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
-    done
     echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
     ChangeConfig "LAT" $RECEIVERLATITUDE "/etc/default/dump1090-mutability"
     echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
