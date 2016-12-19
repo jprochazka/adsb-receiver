@@ -160,7 +160,7 @@ fi
 
 # Check for multiple tuners...
 if [[ `rtl_test 2>&1 | grep -c "SN:" ` -gt 1 ]] ; then
-# Multiple tuners found, check if device specified for this decoder is present
+# Multiple tuners found, check if device specified for this decoder is present.
     if [[ ${OGN_DEVICE_SERIAL} ]] ; then
         if [[ `rtl_test 2>&1 | grep -c "SN: ${OGN_DEVICE_SERIAL}" ` -eq 1 ]] ; then
             OGN_DEVICE_ID=`rtl_test 2>&1 | grep "SN: ${OGN_DEVICE_SERIAL}" | awk -F ":" '{print $1}' | sed -e 's/\ //g' `
@@ -178,7 +178,17 @@ if [[ `rtl_test 2>&1 | grep -c "SN:" ` -gt 1 ]] ; then
         if [[ -z ${OGN_DEVICE_ID} ]] ; then
             echo -e "\e [94m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME} ...\e [97m"
             OGN_DEVICE_ID="0"
+        fi
     fi
+elif [[ `rtl_test 2>&1 | grep -c "SN:" ` -eq 1 ]] ; then
+# Single tuner present so we must stop dump-mutablity...
+    echo -e "\e [94m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME} ...\e [97m"
+    OGN_DEVICE_ID="0"
+    sudo /etc/init.d/dump1090-mutability
+elif [[ `rtl_test 2>&1 | grep -c "SN:" ` -lt 1 ]] ; then
+# No tuner found.
+    echo -e "\e [94m  No RTL-SDR device detected but \"0\" to ${DECODER_NAME} for future use ...\e [97m"
+    OGN_DEVICE_ID="0"
 fi
 
 ### CREATE THE CONFIGURATION FILE
