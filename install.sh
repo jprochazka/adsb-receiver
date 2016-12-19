@@ -50,7 +50,7 @@ usage()
     echo -e "Option     GNU long option     Meaning"
     echo -e "-h         --help              Shows this message."
     echo -e "-l         --log-output        Logs all output to a file in the logs directory."
-    echo -e "-v         --verbose           Provides extra confirmation at each stage of the install"
+    echo -e "-v         --verbose           Provides extra confirmation at each stage of the install."
     echo -e ""
 }
 
@@ -93,7 +93,7 @@ else
     $BASHDIRECTORY/init.sh
 fi
 
-## 
+## CATCH EXIT STATUS
 
 if [ $? -ne 0 ]; then
     exit 1
