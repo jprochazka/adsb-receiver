@@ -61,7 +61,7 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
     echo ""
-    if [ ${VERBOSE} ] ; then
+    if [[ ! -z ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -141,7 +141,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
     echo ""
-    if [ ${VERBOSE} ] ; then
+    if [[ ! -z ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -195,7 +195,7 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090-fa setup is complete.\e[39m"
 echo ""
-if [ ${VERBOSE} ] ; then
+if [[ ! -z ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

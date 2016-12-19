@@ -161,7 +161,7 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Finished backing up portal data.\e[39m"
 echo ""
-if [ ${VERBOSE} ] ; then
+if [[ ! -z ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
