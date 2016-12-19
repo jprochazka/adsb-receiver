@@ -77,7 +77,6 @@ fi
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies for ${DECODER_NAME} ...\e[97m"
 echo -e ""
 CheckPackage git
-CheckPackage install
 CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
@@ -105,7 +104,19 @@ blacklist rtl2830
 blacklist rtl2832
 EOF
 
+### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+
+if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
+    sudo service rtlsdr-ogn stop
+fi
+
 ### DOWNLOAD AND SET UP THE BINARIES
+
+# Create build directory if not already present.
+if [[ ! -d ${BUILDDIRECTORY_RTLSDROGN} ]] ; then
+    mkdir ${BUILDDIRECTORY_RTLSDROGN}
+fi
+cd ${BUILDDIRECTORY_RTLSDROGN}
 
 # Download and extract the proper binaries.
 case `uname -m` in
