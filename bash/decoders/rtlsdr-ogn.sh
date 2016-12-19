@@ -63,7 +63,6 @@ fi
 ### CHECK FOR PREREQUISITE PACKAGES
 
 CheckPackage git
-CheckPackage install
 CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
@@ -91,7 +90,19 @@ blacklist rtl2830
 blacklist rtl2832
 EOF
 
+### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+
+if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
+    sudo service rtlsdr-ogn stop
+fi
+
 ### DOWNLOAD AND SET UP THE BINARIES
+
+# Create build directory if not already present.
+if [[ ! -d ${BUILDDIRECTORY_RTLSDROGN} ]] ; then
+    mkdir ${BUILDDIRECTORY_RTLSDROGN}
+fi
+cd ${BUILDDIRECTORY_RTLSDROGN}
 
 # Download and extract the proper binaries.
 case `uname -m` in
@@ -124,6 +135,8 @@ sudo mkfifo ogn-rf.fifo
 # Set file permissions.
 sudo chown root gsm_scan
 sudo chmod a+s  gsm_scan
+sudo chown root ogn-rf
+sudo chmod a+s  ogn-rf
 sudo chown root rtlsdr-ogn
 sudo chmod a+s  rtlsdr-ogn
 
@@ -175,3 +188,19 @@ sudo update-rc.d rtlsdr-ogn defaults
 echo -e "\033[33mStarting the rtlsdr-ogn service..."
 echo -e "\033[37m"
 sudo service rtlsdr-ogn start
+
+### SETUP COMPLETE
+
+# Enter into the project root directory.
+echo -e "\e[94m  Entering the $ADSB_PROJECTTITLE root directory...\e[97m"
+cd $PROJECTROOTDIRECTORY
+
+echo -e ""
+echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
+echo -e ""
+if [[ ! -z ${VERBOSE} ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
+
+exit 0
