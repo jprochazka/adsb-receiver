@@ -40,6 +40,10 @@ PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 LOGDIRECTORY="$PROJECTROOTDIRECTORY/logs"
 
+## INCLUDE EXTERNAL SCRIPTS
+
+source $BASHDIRECTORY/functions.sh
+
 ## CHECK FOR OPTIONS AND ARGUMENTS
 
 while test $# -gt 0; do
@@ -55,7 +59,7 @@ while test $# -gt 0; do
             ;;
         -l|--log-output)
             # Enable logging to a log file.
-            ENABLE_LOGGING="true"
+            ENABLELOGGING="true"
             shift
             ;;
         *)
@@ -66,9 +70,11 @@ while test $# -gt 0; do
 done
 
 chmod +x $BASHDIRECTORY/init.sh
-if [ ! -z $ENABLE_LOGGING ] && [ $ENABLE_LOGGING = "true" ]; then
+if [ ! -z $ENABLELOGGING ] && [ $ENABLELOGGING = "true" ]; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    $BASHDIRECTORY/init.sh 2>&1 | tee -a "$LOGDIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    LOGFILE="$LOGDIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    $BASHDIRECTORY/init.sh 2>&1 | tee -a "$LOGFILE"
+    CleanLogFile "$LOGFILE"
 else
     # Execute init.sh without logging any output to the log directory.
     $BASHDIRECTORY/init.sh
