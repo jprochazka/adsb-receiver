@@ -192,10 +192,10 @@ if [[ `rtl_test 2>&1 | grep -c "SN:" ` -gt 1 ]] ; then
         fi
     fi
 elif [[ `rtl_test 2>&1 | grep -c "SN:" ` -eq 1 ]] ; then
-# Single tuner present so we must stop dump-mutablity...
+# Single tuner present so we must stop any other running decoders, or at least dump1090-mutablity for a default install...
     echo -e "\e [94m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME} ...\e [97m"
     OGN_DEVICE_ID="0"
-    sudo /etc/init.d/dump1090-mutability
+    sudo /etc/init.d/dump1090-mutability stop
 elif [[ `rtl_test 2>&1 | grep -c "SN:" ` -lt 1 ]] ; then
 # No tuner found.
     echo -e "\e [94m  No RTL-SDR device detected but \"0\" to ${DECODER_NAME} for future use ...\e [97m"
@@ -208,21 +208,21 @@ OGN_WHITELIST="0"
 OGN_GSM_FREQ="957.800"
 OGN_GSM_GAIN="35"
 
-# Use receiver coordinates are already know, otherwise popualte with dummy values
-if [[ ${RECEIVER_LATITUDE ]] ; then
-    OGN_LAT="${RECEIVER_LATITUDE}"
+# Use receiver coordinates are already know, otherwise populate with dummy values
+if [[ -n ${RECEIVERLATITUDE} ]] ; then
+    OGN_LAT="${RECEIVERLATITUDE}"
 else
     OGN_LAT="0.0000000"
 fi
 
-if [[ ${RECEIVER_LONGITUDE} ]] ; then
-    OGN_LON="${ECEIVER_LONGITUDE}"
+if [[ -n ${RECEIVERLONGITUDE} ]] ; then
+    OGN_LON="${RECEIVERLONGITUDE}"
 else
     OGN_LON="0.0000000"
 fi
 
-if [[ ${RECIEVER_ALTITUDE} ]] ; then
-     OGN_ALT="${RECIEVER_ALTITUDE}"
+if [[ -n ${RECIEVERALTITUDE} ]] ; then
+     OGN_ALT="${RECIEVERALTITUDE}"
 else
      OGN_ALT="0"
 fi
@@ -230,7 +230,7 @@ fi
 # Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
 # To find value you can check: 	http://geographiclib.sourceforge.net/cgi-bin/GeoidEval
 # Need to derive from co-ords but will set to altitude as a placeholders
-if [[ ${RECIEVER_ALTITUDE} ]] ; then
+if [[ -z ${RECIEVERALTITUDE} ]] ; then
     OGN_GEOID=""
 else
     OGN_GEOID="0"
@@ -238,7 +238,9 @@ fi
 
 # Callsign should be between 3 and 9 alphanumeric charactors, with no punctuation
 # Please see: 	http://wiki.glidernet.org/receiver-naming-convention
-if [[ -z ${OGN_CALLSIGN} ]] ; then 
+if [[ -n ${OGN_RECEIVER_NAME} ]] ; then 
+    OGN_CALLSIGN=`echo ${OGN_RECEIVER_NAME} | tr -cd '[:alnum:]' | cut -c -9`
+else
     OGN_CALLSIGN=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
 fi
 
@@ -276,7 +278,7 @@ APRS:
 #
 DDB:
 {
-  UseAsWhitelist = "${OGN_WHITELIST}";	# 0 of 1 	Setting to 1 enforces strict opt in
+  UseAsWhitelist = "${OGN_WHITELIST}";	# [0|1] 	Setting to 1 enforces strict opt in
 } ;
 #
 EOF
@@ -307,6 +309,8 @@ sudo update-rc.d rtlsdr-ogn defaults
 echo -e "\033[33m Starting the ${DECODER_NAME} service..."
 echo -e "\033[37m "
 sudo service rtlsdr-ogn start
+
+### ARCHIVE SETUP PACKAGES
 
 ### SETUP COMPLETE
 
