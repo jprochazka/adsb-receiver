@@ -52,14 +52,26 @@ while test $# -gt 0; do
             # Display a help message.
             echo "Usage: install.sh [OPTIONS] [ARGUMENTS]"
             echo ""
-            echo "Option     GNU long option     Meaning"
-            echo "-h         --help              Shows this message."
-            echo "-l         --log-output        Logs all output to a file in the logs directory."
+            echo "Option     GNU long option          Meaning"
+            echo "-h         --help                   Shows this message."
+            echo "-l         --log-output             Logs all output to a file in the logs directory."
+            echo "-u         --unattended             Begins an unattended installation using a configuration file."
+            echo "-c         --config-file=<FILE>     The configuration file to be use for an unattended installation."
             exit 0
             ;;
         -l|--log-output)
             # Enable logging to a log file.
             ENABLELOGGING="true"
+            shift
+            ;;
+        -u|--unattended)
+            # Enable logging to a log file.
+            export ADSB_UNATTENDED="true"
+            shift
+            ;;
+        -c|--config-file*)
+            # The specified installation configuration file.
+            export ADSB_CONFIGURATIONFILE=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift
             ;;
         *)
@@ -68,6 +80,11 @@ while test $# -gt 0; do
             ;;
     esac
 done
+
+if [ $ADSB_UNATTENDED = "true" ]; then
+    echo "The unattended installation option is still in development..."
+    exit 1
+fi
 
 chmod +x $BASHDIRECTORY/init.sh
 if [ ! -z $ENABLELOGGING ] && [ $ENABLELOGGING = "true" ]; then
@@ -79,6 +96,15 @@ else
     # Execute init.sh without logging any output to the log directory.
     $BASHDIRECTORY/init.sh
 fi
+
+# Remove any global variables assigned by this script.
+unset ADSB_UNATTENDED
+unset ADSB_CONFIGURATIONFILE
+
+# Check if any errors were encountered by any child scripts.
+# If no errors were encountered then exit this script cleanly.
 if [ $? -ne 0 ]; then
     exit 1
+else
+    exit 0
 fi
