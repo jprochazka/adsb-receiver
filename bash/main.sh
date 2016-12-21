@@ -130,6 +130,35 @@ function InstallWebPortal() {
     fi
 }
 
+## Extras
+
+# Execute the AboveTustin setup script.
+function InstallAboveTustin() {
+    chmod +x $BASHDIRECTORY/extras/abovetustin.sh
+    $BASHDIRECTORY/extras/abovetustin.sh
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+}
+
+# Execute the beast-splitter setup script.
+function InstallBeastSplitter() {
+    chmod +x $BASHDIRECTORY/extras/beeastsplitter.sh
+    $BASHDIRECTORY/extras/beastsplitter.sh
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+}
+
+# Execute the Duck DNS setup script.
+function InstallDuckDns() {
+    chmod +x $BASHDIRECTORY/extras/duckdns.sh
+    $BASHDIRECTORY/extras/duckdns.sh
+    if [ $? -ne 0 ]; then
+        exit 1
+    fi
+}
+
 #############
 ## DIALOGS
 
@@ -218,7 +247,7 @@ fi
 
 # Check for the Planefinder ADS-B Client package.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The Planefinder ADS-B Client package appears to be installed.
+    # The Planefinder ADS-B Client package does not appear to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 else
     # Set version depending on the device architecture.
@@ -234,7 +263,7 @@ fi
 
 # Check for the Flightradar24 Feeder Client package.
 if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The Flightradar24 client package appears to be installed.
+    # The Flightradar24 client package does not appear to be installed.
     FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24 Client' '' OFF)
 else
     # Check if a newer version can be installed if this is not a Raspberry Pi device.
@@ -267,10 +296,51 @@ fi
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal on this device?" 8 78
 PORTAL_INSTALL=$?
 
+## Extras
+
+# Declare the EXTRASLIST array which will store choices for extras which are available for install.
+declare array EXTRASLIST
+
+# Check if the AboveTustin repository has been cloned.
+if [ -d $BUILDDIRECTORY/AboveTustin ] && [ -d $BUILDDIRECTORY/AboveTustin/.git ]; then
+    # The AboveTustin repository has been cloned to this device.
+    EXTRASLIST=("${EXTRASLIST[@]}" 'AboveTustin (reinstall)' '' OFF)
+else
+    # The AboveTustin repository has not been cloned to this device.
+    EXTRASLIST=("${EXTRASLIST[@]}" 'AboveTustin' '' OFF)
+fi
+
+# Check if the beast-splitter package is installed.
+if [ $(dpkg-query -W -f='${STATUS}' beast-splitter 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    # The beast-splitter package appears to not be installed.
+    EXTRASLIST=("${EXTRASLIST[@]}" 'beast-splitter' '' OFF)
+else
+    # Offer the option to build then reinstall the beast-splitter package.
+    EXTRASLIST=("${EXTRASLIST[@]}" 'beast-splitter (reinstall)' '' OFF)
+fi
+
+# Check if the Duck DNS update script exists.
+if [ ! -f $BUILDDIRECTORY/duckdns/duck.sh ]; then
+    # Duck DNS does not appear to be set up on this device.
+    EXTRASLIST=("${EXTRASLIST[@]}" 'Duck DNS Free Dynamic DNS Hosting' '' OFF)
+else
+    # Offer the option to install/setup Duck DNS once more.
+    EXTRASLIST=("${EXTRASLIST[@]}" 'Duck DNS Free Dynamic DNS Hosting (reinstall)' '' OFF)
+
+declare EXTRASCHOICES
+
+if [[ -n "$FEEDERLIST" ]]; then
+    # Display a checklist containing feeders that are not installed if any.
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following extras are available for installation.\nChoose the extrass you wish to install." 13 65 4 "${EXTRASLIST[@]}" 2>EXTRASCHOICES
+else
+    # Since all available extras appear to be installed inform the user of the fact.
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "All Extras Installed" --msgbox "It appears that all the optional extras available for installation by this script have been installed already." 8 65
+fi
+
 ## Setup Confirmation
 
 # Check if anything is to be done before moving on.
-if [ $DUMP1090MUTABILITY_INSTALL = 1 ] && [ $DUMP1090MUTABILITY_REINSTALL = 1 ] && [ $DUMP1090FA_INSTALL = 1 ] && [ $DUMP1090FA_UPGRADE = 1 ] && [ $DUMP978_INSTALL = 1 ] && [ $DUMP978_REINSTALL = 1 ] && [ $PORTAL_INSTALL = 1 ] && [ ! -s FEEDERCHOICES ]; then
+if [ $DUMP1090MUTABILITY_INSTALL = 1 ] && [ $DUMP1090MUTABILITY_REINSTALL = 1 ] && [ $DUMP1090FA_INSTALL = 1 ] && [ $DUMP1090FA_UPGRADE = 1 ] && [ $DUMP978_INSTALL = 1 ] && [ $DUMP978_REINSTALL = 1 ] && [ $PORTAL_INSTALL = 1 ] && [ ! -s FEEDERCHOICES ] && [ ! -s EXTRASCHOICES ]; then
     whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\033[31m"
     echo "Nothing was selected to do or be installed."
@@ -281,7 +351,7 @@ fi
 declare CONFIRMATION
 
 # If the user decided to install software...
-if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] || [ $DUMP1090FA_INSTALL = 0 ] || [ $DUMP1090FA_UPGRADE = 0 ] || [ $DUMP978_INSTALL = 0 ] || [ $DUMP978_REINSTALL = 0 ] || [ $PORTAL_INSTALL = 0 ] || [ -s FEEDERCHOICES ]; then
+if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] || [ $DUMP1090FA_INSTALL = 0 ] || [ $DUMP1090FA_UPGRADE = 0 ] || [ $DUMP978_INSTALL = 0 ] || [ $DUMP978_REINSTALL = 0 ] || [ $PORTAL_INSTALL = 0 ] || [ -s FEEDERCHOICES ] || [ -s EXTRASCHOICES ]; then
     CONFIRMATION="$The following software will be installed:\n"
 
     if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ]; then
@@ -319,7 +389,7 @@ if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] 
             case $FEEDERCHOICE in
                 "FlightAware PiAware")
                     CONFIRMATION="$CONFIRMATION\n  * FlightAware PiAware"
-                     ;;
+                    ;;
                 "FlightAware PiAware (upgrade)")
                     CONFIRMATION="$CONFIRMATION\n  * FlightAware PiAware (upgrade)"
                     ;;
@@ -331,10 +401,10 @@ if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] 
                     ;;
                 "Flightradar24 Client")
                     CONFIRMATION="$CONFIRMATION\n  * Flightradar24 Client"
-                   ;;
+                    ;;
                 "Flightradar24 Client (upgrade)")
                     CONFIRMATION="$CONFIRMATION\n  * Flightradar24 Client (upgrade)"
-                   ;;
+                    ;;
                 "ADS-B Exchange Script")
                     CONFIRMATION="$CONFIRMATION\n  * ADS-B Exchange Script"
                     ;;
@@ -345,12 +415,39 @@ if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] 
     if [ $PORTAL_INSTALL = 0 ]; then
         CONFIRMATION="$CONFIRMATION\n  * ADS-B Receiver Project Web Portal"
     fi
+
+    if [ -s EXTRASCHOICES ]; then
+        while read EXTRASCHOICE
+        do
+            case $EXTRASCHOICE in
+                "AboveTustin")
+                    CONFIRMATION="$CONFIRMATION\n  * AboveTustin"
+                    ;;
+                "AboveTustin (reinstall)")
+                    CONFIRMATION="$CONFIRMATION\n  * AboveTustin (reinstall)"
+                    ;;
+                "beast-splitter")
+                    CONFIRMATION="$CONFIRMATION\n  * beast-splitter"
+                    ;;
+                "beast-splitter (reinstall)")
+                    CONFIRMATION="$CONFIRMATION\n  * beast-splitter (reinstall)"
+                    ;;
+                "Duck DNS Free Dynamic DNS Hosting")
+                    CONFIRMATION="$CONFIRMATION\n  * Duck DNS Free Dynamic DNS Hosting"
+                    ;;
+                "Duck DNS Free Dynamic DNS Hosting (reinstall)")
+                    CONFIRMATION="$CONFIRMATION\n  * Duck DNS Free Dynamic DNS Hosting (reinstall)"
+                    ;;
+            esac
+        done < EXTRASCHOICES
+    fi
+
     CONFIRMATION="$CONFIRMATION\n\n"
 fi
 
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}Do you wish to continue setup?"
-if ! (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 17 78) then
+if ! (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 20 78) then
     echo -e "\033[31m"
     echo "  Installation canceled by user."
     exit 1
@@ -389,16 +486,16 @@ if [ -s FEEDERCHOICES ]; then
         case $FEEDERCHOICE in
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
                 RUNPIAWARESCRIPT=0
-            ;;
+                ;;
             "Plane Finder ADS-B Client"|"Plane Finder ADS-B Client (upgrade)")
                 RUNPLANEFINDERSCRIPT=0
-            ;;
+                ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
                 RUNFLIGHTRADAR24SCRIPT=0
-            ;;
+                ;;
             "ADS-B Exchange Script")
                 RUNADSBEXCHANGESCRIPT=0
-            ;;
+                ;;
         esac
     done < FEEDERCHOICES
 fi
@@ -423,6 +520,42 @@ fi
 
 if [ $PORTAL_INSTALL = 0 ]; then
     InstallWebPortal
+fi
+
+# Moved execution of functions outside of while loop.
+# Inside the while loop the installation scripts are not stopping at reads.
+
+RUNABOVETUSTINSCRIPT=1
+RUNBEASTSPLITTERSCRIPT=1
+RUNDUCKDNSSCRIPT=1
+
+if [ -s EXTRASCHOICES ]; then
+    while read EXTRASCHOICE
+    do
+        case $EXTRASCHOICE in
+            "AboveTustin"|"AboveTustin (reinstall)")
+                RUNABOVETUSTINSCRIPT=0
+                ;;
+            "beast-splitter"|"beast-splitter (reinstall)")
+                RUNBEASTSPLITTERSCRIPT=0
+                ;;
+            "Duck DNS Free Dynamic DNS Hosting"|"Duck DNS Free Dynamic DNS Hosting (reinstall)")
+                RUNDUCKDNSSCRIPT=0
+                ;;
+        esac
+    done < EXTRASCHOICES
+fi
+
+if [ $RUNABOVETUSTINSCRIPT = 0 ]; then
+    InstallAboveTustin
+fi
+
+if [ $RUNBEASTSPLITTERSCRIPT = 0 ]; then
+    InstallBeastSplitter
+fi
+
+if [ $RUNDUCKDNSSCRIPT = 0 ]; then
+    InstallDuckDns
 fi
 
 exit 0

@@ -167,8 +167,9 @@ whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complet
 # Unset any exported variables.
 unset ADSB_PROJECTTITLE
 
-# Remove the FEEDERCHOICES file created by whiptail.
+# Remove the FEEDERCHOICES and EXTRASCHOICES files created by whiptail.
 rm -f FEEDERCHOICES
+rm -f EXTRASCHOICES
 
 echo -e "\033[32m"
 echo "Installation complete."
