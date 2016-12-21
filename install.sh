@@ -53,6 +53,7 @@ usage()
     echo -e ""
     echo -e "Option     GNU long option     	Meaning"
     echo -e "-c <FILE>  --config-file <FILE>	The configuration file to be use for an unattended installation."
+    echo -e "-d         --delay            	Add a pseudo-random delay of between 5 and 59 minutes."
     echo -e "-h         --help              	Shows this message."
     echo -e "-l         --log-output        	Logs all output to a file in the logs directory."
     echo -e "-u         --unattended        	Begins an unattended installation using a configuration file."
@@ -73,6 +74,10 @@ while [[ $# -gt 0 ]]; do
             # The specified installation configuration file.
             export ADSB_CONFIGURATIONFILE="$2"
             shift 2
+            ;;
+        -d|--delay)
+            DELAY="true"
+            shift 1
             ;;
         -l|--log-output)
             # Enable logging to a file in the logs directory.
@@ -129,6 +134,7 @@ fi
 unset AUTOMATED_INSTALLATION_ENABLED
 unset ADSB_CONFIGURATIONFILE
 unset VERBOSE
+unset DELAY
 
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.
