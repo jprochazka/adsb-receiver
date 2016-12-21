@@ -40,6 +40,10 @@ PROJECT_ROOT_DIRECTORY="$PWD"
 BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
 LOG_DIRECTORY="$PROJECT_ROOT_DIRECTORY/logs"
 
+ENABLE_LOGGING="false"
+AUTOMATED_INSTALL="false"
+CONFIGURATION_FILE="default"
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source $BASH_DIRECTORY/functions.sh
@@ -52,7 +56,7 @@ usage()
     echo -e "Usage: $0 [OPTIONS] [ARGUMENTS]"
     echo -e ""
     echo -e "Option     GNU long option     	Meaning"
-    echo -e "-c <FILE>  --config-file <FILE>	The configuration file to be use for an unattended installation."
+    echo -e "-c <FILE>  --config-file=<FILE>	The configuration file to be use for an unattended installation."
     echo -e "-d         --delay            	Add a pseudo-random delay of between 5 and 59 minutes."
     echo -e "-h         --help              	Shows this message."
     echo -e "-l         --log-output        	Logs all output to a file in the logs directory."
@@ -70,10 +74,20 @@ while [[ $# -gt 0 ]]; do
             usage
             exit 0
             ;;
-        -c|--config-file)
+        -a|--automated)
+            # Enable logging to a log file.
+            AUTOMATED_INSTALL="true"
+            shift 1
+            ;;
+        -c)
             # The specified installation configuration file.
-            export ADSB_CONFIGURATION_FILE="$2"
+            CONFIGURATION_FILE="$2"
             shift 2
+            ;;
+        --config-file*)
+            # The specified installation configuration file.
+            CONFIGURATION_FILE=`echo $1 | sed -e 's/^[^=]*=//g'`
+            shift 1
             ;;
         -d|--delay)
             DELAY="true"
@@ -82,11 +96,6 @@ while [[ $# -gt 0 ]]; do
         -l|--log-output)
             # Enable logging to a file in the logs directory.
             ENABLE_LOGGING="true"
-            shift 1
-            ;;
-        -u|--unattended)
-            # Enable logging to a log file.
-            export GLOBAL_UNATTENDED_INSTALL="true"
             shift 1
             ;;
         -v|--verbose)
@@ -103,12 +112,32 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-### UNATTENDED INSTALL
+### AUTOMATED INSTALL
 
-if [[ $GLOBAL_UNATTENDED_INSTALL = "true" ]] ; then
-    echo "The unattended installation option is still in development..."
+# If the automated installation option was selected set the needed environmental variables.
+if [ $AUTOMATED_INSTALL = "true" ]; then
+
+    ###################################################################
+    ##            THIS FEATURE IS NOT READY FOR USE YET             ###
+    echo "The automated installation option is still in development..."
     exit 1
+    ###################################################################
+
+    # If no configuration file was specified use the default configuration file path and name.
+    if [ $CONFIGURATION_FILE = "default" ]; then
+        CONFIGURATION_FILE="$PROJECT_ROOT_DIRECTORY/install.config"
+    fi
+
+    # If either the -c or --config-file= flags were set a valid file must reside there.
+    if [ ! -f $CONFIGURATION_FILE ]; then
+        echo "The specified configuration file does not exist."
+        exit 1
+    fi
 fi
+
+# Add any environmental variables needed by any child scripts.
+export AUTOMATED_INSTALL
+export CONFIGURATION_FILE
 
 ### EXECUTE BASH/INIT.SH
 
@@ -126,8 +155,8 @@ fi
 ### CLEAN UP
 
 # Remove any global variables assigned by this script.
-unset GLOBAL_UNATTENDED_INSTALL
-unset ADSB_CONFIGURATION_FILE
+unset AUTOMATED_INSTALL
+unset CONFIGURATION_FILE
 unset VERBOSE
 unset DELAY
 
