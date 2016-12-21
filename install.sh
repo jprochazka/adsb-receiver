@@ -34,27 +34,33 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 LOGDIRECTORY="$PROJECTROOTDIRECTORY/logs"
 
-## USAGE 
+### INCLUDE EXTERNAL SCRIPTS
+
+source $BASHDIRECTORY/functions.sh
+
+### USAGE 
 
 usage()
 {   
     echo -e ""
     echo -e "Usage: $0 [OPTIONS] [ARGUMENTS]"
     echo -e ""
-    echo -e "Option     GNU long option     Meaning"
-    echo -e "-h         --help              Shows this message."
-    echo -e "-l         --log-output        Logs all output to a file in the logs directory."
-    echo -e "-v         --verbose           Provides extra confirmation at each stage of the install."
+    echo -e "Option     GNU long option     	Meaning"
+    echo -e "-c <FILE>  --config-file <FILE>	The configuration file to be use for an unattended installation."
+    echo -e "-h         --help              	Shows this message."
+    echo -e "-l         --log-output        	Logs all output to a file in the logs directory."
+    echo -e "-u         --unattended        	Begins an unattended installation using a configuration file."
+    echo -e "-v         --verbose           	Provides extra confirmation at each stage of the install."
     echo -e ""
 }
 
-## CHECK FOR OPTIONS AND ARGUMENTS
+### CHECK FOR OPTIONS AND ARGUMENTS
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -63,15 +69,25 @@ while [[ $# -gt 0 ]]; do
             usage
             exit 0
             ;;
+        -c|--config-file)
+            # The specified installation configuration file.
+            export ADSB_CONFIGURATIONFILE="$2"
+            shift 2
+            ;;
         -l|--log-output)
             # Enable logging to a file in the logs directory.
             ENABLE_LOGGING="true"
-            shift
+            shift 1
+            ;;
+        -u|--unattended)
+            # Enable logging to a log file.
+            export AUTOMATED_INSTALLATION_ENABLED="true"
+            shift 1
             ;;
         -v|--verbose)
             # Provides extra confirmation at each stage of the install.
-            VERBOSE="true"
-            shift 
+            export VERBOSE="true"
+            shift 1
             ;;
         *)
             # Unknown options were set so exit.
@@ -82,19 +98,38 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-## EXECUTE BASH/INIT.SH
+### UNATTENDED INSTALL
+
+if [[ $AUTOMATED_INSTALLATION_ENABLED = "true" ]] ; then
+    echo "The unattended installation option is still in development..."
+    exit 1
+fi
+
+### EXECUTE BASH/INIT.SH
 
 chmod +x $BASHDIRECTORY/init.sh
-if [ ! -z $ENABLE_LOGGING ] && [ $ENABLE_LOGGING = "true" ]; then
+if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    $BASHDIRECTORY/init.sh 2>&1 | tee -a "$LOGDIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    LOGFILE="$LOGDIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    $BASHDIRECTORY/init.sh 2>&1 | tee -a "$LOGFILE"
+    CleanLogFile "$LOGFILE"
 else
     # Execute init.sh without logging any output to the log directory.
     $BASHDIRECTORY/init.sh
 fi
 
-## CATCH EXIT STATUS
 
-if [ $? -ne 0 ]; then
+### TIDY UP
+
+# Remove any global variables assigned by this script.
+unset AUTOMATED_INSTALLATION_ENABLED
+unset ADSB_CONFIGURATIONFILE
+unset VERBOSE
+
+# Check if any errors were encountered by any child scripts.
+# If no errors were encountered then exit this script cleanly.
+if [[ $? -ne 0 ]] ; then
     exit 1
+else
+    exit 0
 fi
