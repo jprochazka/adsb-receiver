@@ -40,6 +40,10 @@ PROJECT_ROOT_DIRECTORY="$PWD"
 BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
 LOG_DIRECTORY="$PROJECT_ROOT_DIRECTORY/logs"
 
+ENABLE_LOGGING="false"
+AUTOMATED_INSTALL="false"
+CONFIGURATION_FILE="default"
+
 ## INCLUDE EXTERNAL SCRIPTS
 
 source $BASH_DIRECTORY/functions.sh
@@ -55,7 +59,7 @@ while test $# -gt 0; do
             echo "Option     GNU long option          Meaning"
             echo "-h         --help                   Shows this message."
             echo "-l         --log-output             Logs all output to a file in the logs directory."
-            echo "-u         --unattended             Begins an unattended installation using a configuration file."
+            echo "-a         --automated              Begins an automated installation using a configuration file."
             echo "-c         --config-file=<FILE>     The configuration file to be use for an unattended installation."
             exit 0
             ;;
@@ -64,31 +68,20 @@ while test $# -gt 0; do
             ENABLE_LOGGING="true"
             shift
             ;;
-        -u|--unattended)
+        -a|--automated)
             # Enable logging to a log file.
-            export ADSB_UNATTENDED_INSTALL="true"
+            AUTOMATED_INSTALL="true"
             shift
             ;;
         -c)
             # The specified installation configuration file.
             shift
-            if test $# -gt 0; then
-                export ADSB_CONFIGURATION_FILE=$1
-            else
-                echo "No configuration file specified."
-                exit 1
-            fi
+            CONFIGURATION_FILE=$1
             shift
             ;;
         --config-file*)
             # The specified installation configuration file.
             CONFIGURATION_FILE=`echo $1 | sed -e 's/^[^=]*=//g'`
-            if test ${#CONFIGURATION_FILE} -gt 0; then
-                export ADSB_CONFIGURATION_FILE=$CONFIGURATION_FILE
-            else
-                echo "No configuration file specified."
-                exit 1
-            fi
             shift
             ;;
         *)
@@ -98,10 +91,30 @@ while test $# -gt 0; do
     esac
 done
 
-if [ $GLOBAL_UNATTENDED_INSTALL = "true" ]; then
-    echo "The unattended installation option is still in development..."
+# If the automated installation option was selected set the needed environmental variables.
+if [ $AUTOMATED_INSTALL = "true" ]; then
+
+    ###################################################################
+    ##            THIS FEATURE IS NOT READY FOR USE YET             ###
+    echo "The automated installation option is still in development..."
     exit 1
+    ###################################################################
+
+    # If no configuration file was specified use the default configuration file path and name.
+    if [ $CONFIGURATION_FILE = "default" ]; then
+        CONFIGURATION_FILE="$PROJECT_ROOT_DIRECTORY/install.config"
+    fi
+
+    # If either the -c or --config-file= flags were set a valid file must reside there.
+    if [ ! -f $CONFIGURATION_FILE ]; then
+        echo "The specified configuration file does not exist."
+        exit 1
+    fi
 fi
+
+# Add any environmental variables needed by any child scripts.
+export ADSB_ADSB_AUTOMATED_INSTALL
+export ADSB_CONFIGURATION_FILE
 
 chmod +x $BASH_DIRECTORY/init.sh
 if [ ! -z $ENABLE_LOGGING ] && [ $ENABLE_LOGGING = "true" ]; then
@@ -114,7 +127,7 @@ else
     $BASH_DIRECTORY/init.sh
 fi
 
-# Remove any global variables assigned by this script.
+# Remove any environmental variables assigned by this script.
 unset ADSB_UNATTENDED_INSTALL
 unset ADSB_CONFIGURATION_FILE
 
