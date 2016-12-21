@@ -67,7 +67,9 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 fi
 
 ## CONFIGURE DUMP1090
