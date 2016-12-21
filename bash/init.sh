@@ -36,7 +36,6 @@
 
 ## VARIABLES
 
-PROJECTBRANCH="master"
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
@@ -50,9 +49,16 @@ source $BASHDIRECTORY/functions.sh
 export ADSB_PROJECTTITLE="The ADS-B Receiver Project Installer"
 TERMINATEDMESSAGE="  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
 
+# If git branch not already specified then set to master.
+if [[ -z ${PROJECTBRANCH} ]] ; then
+    PROJECTBRANCH="master"
+fi
+
 ## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
 if [ -f $PROJECTROOTDIRECTORY/image ]; then
+    # Enable extra confirmation dialogs..
+    VERBOSE="true"
     # Execute image setup script..
     chmod +x $BASHDIRECTORY/image.sh
     $BASHDIRECTORY/image.sh
@@ -80,7 +86,9 @@ function AptUpdate() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 function CheckPrerequisites() {
@@ -96,7 +104,9 @@ function CheckPrerequisites() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 function UpdateRepository() {
@@ -118,7 +128,9 @@ function UpdateRepository() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 # UPDATE THE OPERATING SYSTEM
@@ -134,7 +146,9 @@ function UpdateOperatingSystem() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 }
 
 AptUpdate
