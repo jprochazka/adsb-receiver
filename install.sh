@@ -36,13 +36,13 @@
 
 ## VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-LOGDIRECTORY="$PROJECTROOTDIRECTORY/logs"
+PROJECT_ROOT_DIRECTORY="$PWD"
+BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
+LOG_DIRECTORY="$PROJECT_ROOT_DIRECTORY/logs"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/functions.sh
+source $BASH_DIRECTORY/functions.sh
 
 ## CHECK FOR OPTIONS AND ARGUMENTS
 
@@ -61,17 +61,34 @@ while test $# -gt 0; do
             ;;
         -l|--log-output)
             # Enable logging to a log file.
-            ENABLELOGGING="true"
+            ENABLE_LOGGING="true"
             shift
             ;;
         -u|--unattended)
             # Enable logging to a log file.
-            export ADSB_UNATTENDED="true"
+            export ADSB_UNATTENDED_INSTALL="true"
             shift
             ;;
-        -c|--config-file*)
+        -c)
             # The specified installation configuration file.
-            export ADSB_CONFIGURATIONFILE=`echo $1 | sed -e 's/^[^=]*=//g'`
+            shift
+            if test $# -gt 0; then
+                export ADSB_CONFIGURATION_FILE=$1
+            else
+                echo "No configuration file specified."
+                exit 1
+            fi
+            shift
+            ;;
+        --config-file*)
+            # The specified installation configuration file.
+            CONFIGURATION_FILE=`echo $1 | sed -e 's/^[^=]*=//g'`
+            if test ${#CONFIGURATION_FILE} -gt 0; then
+                export ADSB_CONFIGURATION_FILE=$CONFIGURATION_FILE
+            else
+                echo "No configuration file specified."
+                exit 1
+            fi
             shift
             ;;
         *)
@@ -81,25 +98,25 @@ while test $# -gt 0; do
     esac
 done
 
-if [ $ADSB_UNATTENDED = "true" ]; then
+if [ $GLOBAL_UNATTENDED_INSTALL = "true" ]; then
     echo "The unattended installation option is still in development..."
     exit 1
 fi
 
-chmod +x $BASHDIRECTORY/init.sh
-if [ ! -z $ENABLELOGGING ] && [ $ENABLELOGGING = "true" ]; then
+chmod +x $BASH_DIRECTORY/init.sh
+if [ ! -z $ENABLE_LOGGING ] && [ $ENABLE_LOGGING = "true" ]; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    LOGFILE="$LOGDIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
-    $BASHDIRECTORY/init.sh 2>&1 | tee -a "$LOGFILE"
-    CleanLogFile "$LOGFILE"
+    LOGFILE="$LOG_DIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    $BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
+    CleanLogFile "$LOG_FILE"
 else
     # Execute init.sh without logging any output to the log directory.
-    $BASHDIRECTORY/init.sh
+    $BASH_DIRECTORY/init.sh
 fi
 
 # Remove any global variables assigned by this script.
-unset ADSB_UNATTENDED
-unset ADSB_CONFIGURATIONFILE
+unset ADSB_UNATTENDED_INSTALL
+unset ADSB_CONFIGURATION_FILE
 
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.
