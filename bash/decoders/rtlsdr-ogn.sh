@@ -167,7 +167,7 @@ else
     sudo mknod gpu_dev c 249 0
 fi
 
-## ASSIGN THE RTL-SDR TUNER DEVICE TO THIS DECODER
+### ASSIGN THE RTL-SDR TUNER DEVICE TO THIS DECODER
 
 # Check for multiple tuners...
 if [[ `rtl_test 2>&1 | grep -c "SN:" ` -gt 1 ]] ; then
