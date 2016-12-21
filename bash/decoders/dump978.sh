@@ -61,7 +61,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump978 setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -126,7 +128,9 @@ if [ ! -f $DUMP978BUILDDIRECTORY/dump978 ] || [ ! -f $DUMP978BUILDDIRECTORY/uat2
     echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump978 setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -255,6 +259,8 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump978 setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ! -z ${VERBOSE} ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0

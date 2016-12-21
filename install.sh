@@ -34,7 +34,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
 PROJECT_ROOT_DIRECTORY="$PWD"
 BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
@@ -44,52 +44,70 @@ ENABLE_LOGGING="false"
 AUTOMATED_INSTALL="false"
 CONFIGURATION_FILE="default"
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source $BASH_DIRECTORY/functions.sh
 
-## CHECK FOR OPTIONS AND ARGUMENTS
+### USAGE 
 
-while test $# -gt 0; do
+usage()
+{   
+    echo -e ""
+    echo -e "Usage: $0 [OPTIONS] [ARGUMENTS]"
+    echo -e ""
+    echo -e "Option     GNU long option     	Meaning"
+    echo -e "-c <FILE>  --config-file=<FILE>	The configuration file to be use for an unattended installation."
+    echo -e "-h         --help              	Shows this message."
+    echo -e "-l         --log-output        	Logs all output to a file in the logs directory."
+    echo -e "-u         --unattended        	Begins an unattended installation using a configuration file."
+    echo -e "-v         --verbose           	Provides extra confirmation at each stage of the install."
+    echo -e ""
+}
+
+### CHECK FOR OPTIONS AND ARGUMENTS
+
+while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help)
             # Display a help message.
-            echo "Usage: install.sh [OPTIONS] [ARGUMENTS]"
-            echo ""
-            echo "Option     GNU long option          Meaning"
-            echo "-h         --help                   Shows this message."
-            echo "-l         --log-output             Logs all output to a file in the logs directory."
-            echo "-a         --automated              Begins an automated installation using a configuration file."
-            echo "-c         --config-file=<FILE>     The configuration file to be use for an unattended installation."
+            usage
             exit 0
-            ;;
-        -l|--log-output)
-            # Enable logging to a log file.
-            ENABLE_LOGGING="true"
-            shift
             ;;
         -a|--automated)
             # Enable logging to a log file.
             AUTOMATED_INSTALL="true"
-            shift
+            shift 1
             ;;
         -c)
             # The specified installation configuration file.
-            shift
-            CONFIGURATION_FILE=$1
-            shift
+            CONFIGURATION_FILE="$2"
+            shift 2
             ;;
         --config-file*)
             # The specified installation configuration file.
             CONFIGURATION_FILE=`echo $1 | sed -e 's/^[^=]*=//g'`
-            shift
+            shift 1
+            ;;
+        -l|--log-output)
+            # Enable logging to a file in the logs directory.
+            ENABLE_LOGGING="true"
+            shift 1
+            ;;
+        -v|--verbose)
+            # Provides extra confirmation at each stage of the install.
+            export VERBOSE="true"
+            shift 1
             ;;
         *)
-            # No options were set so exit.
-            break
+            # Unknown options were set so exit.
+            echo -e "Error: Unknown option: $1" >&2
+            usage
+            exit 1
             ;;
     esac
 done
+
+### AUTOMATED INSTALL
 
 # If the automated installation option was selected set the needed environmental variables.
 if [ $AUTOMATED_INSTALL = "true" ]; then
@@ -113,13 +131,15 @@ if [ $AUTOMATED_INSTALL = "true" ]; then
 fi
 
 # Add any environmental variables needed by any child scripts.
-export ADSB_ADSB_AUTOMATED_INSTALL
-export ADSB_CONFIGURATION_FILE
+export AUTOMATED_INSTALL
+export CONFIGURATION_FILE
+
+### EXECUTE BASH/INIT.SH
 
 chmod +x $BASH_DIRECTORY/init.sh
-if [ ! -z $ENABLE_LOGGING ] && [ $ENABLE_LOGGING = "true" ]; then
+if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    LOGFILE="$LOG_DIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    LOG_FILE="$LOG_DIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
     $BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
     CleanLogFile "$LOG_FILE"
 else
@@ -127,13 +147,16 @@ else
     $BASH_DIRECTORY/init.sh
 fi
 
-# Remove any environmental variables assigned by this script.
-unset ADSB_UNATTENDED_INSTALL
-unset ADSB_CONFIGURATION_FILE
+### CLEAN UP
+
+# Remove any global variables assigned by this script.
+unset AUTOMATED_INSTALL
+unset CONFIGURATION_FILE
+unset VERBOSE
 
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]] ; then
     exit 1
 else
     exit 0

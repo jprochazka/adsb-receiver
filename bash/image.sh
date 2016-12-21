@@ -67,7 +67,9 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 fi
 
 ## CONFIGURE DUMP1090
@@ -148,7 +150,9 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090 configuration complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ! -z ${VERBOSE} ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 
 # CONFIGURE PIAWARE IF NEEDED
@@ -212,7 +216,9 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware configuration complete.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 fi
 
 ## SETUP THE ADS-B RECIEVER PROJECT WEB PORTAL
