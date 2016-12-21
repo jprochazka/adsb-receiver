@@ -57,6 +57,7 @@ usage()
     echo -e ""
     echo -e "Option     GNU long option     	Meaning"
     echo -e "-c <FILE>  --config-file=<FILE>	The configuration file to be use for an unattended installation."
+    echo -e "-d         --delay            	Add a pseudo-random delay of between 5 and 59 minutes."
     echo -e "-h         --help              	Shows this message."
     echo -e "-l         --log-output        	Logs all output to a file in the logs directory."
     echo -e "-u         --unattended        	Begins an unattended installation using a configuration file."
@@ -86,6 +87,10 @@ while [[ $# -gt 0 ]]; do
         --config-file*)
             # The specified installation configuration file.
             CONFIGURATION_FILE=`echo $1 | sed -e 's/^[^=]*=//g'`
+            shift 1
+            ;;
+        -d|--delay)
+            DELAY="true"
             shift 1
             ;;
         -l|--log-output)
@@ -153,6 +158,7 @@ fi
 unset AUTOMATED_INSTALL
 unset CONFIGURATION_FILE
 unset VERBOSE
+unset DELAY
 
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.

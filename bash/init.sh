@@ -34,19 +34,21 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source $BASHDIRECTORY/functions.sh
 
-## MORE VARIABLES
+### MORE VARIABLES
 
-export ADSB_PROJECTTITLE="The ADS-B Receiver Project Installer"
+export PROJECT_TITLE="The ADS-B Receiver Project Installer"
+export PROJECT_WEBSITE="https://www.adsbreceiver.net"
+export ADSB_PROJECTTITLE="$PROJECT_TITLE"
 TERMINATEDMESSAGE="  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
 
 # If git branch not already specified then set to master.
@@ -71,7 +73,7 @@ if [ -f $PROJECTROOTDIRECTORY/image ]; then
     exit 0
 fi
 
-## FUNCTIONS
+### FUNCTIONS
 
 # UPDATE REPOSITORY PACKAGE LISTS
 function AptUpdate() {
@@ -110,7 +112,7 @@ function CheckPrerequisites() {
 }
 
 function UpdateRepository() {
-## UPDATE THIS REPOSITORY
+### UPDATE THIS REPOSITORY
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
@@ -151,34 +153,52 @@ function UpdateOperatingSystem() {
     fi
 }
 
+# Add a pseudo-random delay of between 5 and 59 minutes
+function RandomDelay() {
+    if [[ ${DELAY} = "true" ]] ; then
+        DELAY_TIME=`echo "(( 300 + ( $RANDOM + $RANDOM )) / 20 )" | bc`
+        DATE=`date`
+        echo -e ""
+        echo -e "\e[91m  $ADSB_PROJECTTITLE"
+        echo -e ""
+        echo -en "\e[92m  Pausing for ${DELAY_TIME} seconds from: \t\e[39m $DATE"
+        echo -e ""
+        sleep $DELAY_TIME
+    fi
+}
+
+RandomDelay
 AptUpdate
 CheckPrerequisites
 UpdateRepository
 
-## DISPLAY WELCOME SCREEN
+### DISPLAY WELCOME SCREEN
 
-## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
+### ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 
 if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78) then
     UpdateOperatingSystem
 fi
 
-## EXECUTE BASH/MAIN.SH
+### EXECUTE BASH/MAIN.SH
 
 chmod +x $BASHDIRECTORY/main.sh
 $BASHDIRECTORY/main.sh
+# Catch unclean exist from main.sh
 if [ $? -ne 0 ]; then
     echo -e $TERMINATEDMESSAGE
     echo ""
     exit 1
 fi
 
-## INSTALLATION COMPLETE
+### INSTALLATION COMPLETE
 
 # Display the installation complete message box.
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\nhttps://github.com/jprochazka/adsb-receiver" 20 65
 
 # Unset any exported variables.
+unset PROJECT_TITLE
+unset PROJECT_WEBSITE
 unset ADSB_PROJECTTITLE
 
 # Remove the FEEDERCHOICES file created by whiptail.

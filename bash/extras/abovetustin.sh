@@ -31,45 +31,45 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
 PROJECTROOTDIRECTORY="$PWD"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 PHANTOMJSBUILDDIRECTORY="$BUILDDIRECTORY/phantomjs"
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 clear
 echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-echo ""
+echo -e ""
 echo -e "\e[92m  Setting up AboveTustin..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
 CONTINUESETUP=$?
 if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
-    echo ""
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-    echo ""
+    echo -e ""
     if [[ ! -z ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
 fi
 
-## CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
+### CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
-echo ""
+echo -e ""
 if [ -f /usr/bin/phantomjs ] && [ `phantomjs --version` = $PHANTOMJSVERSION ]; then
     # A PhantomJS binary which is the proper version appears to exist on this device.
     echo -e "\e[94m  PhantomJS is present on this device and is the proper version...\e[97m"
@@ -97,10 +97,10 @@ else
             # Setup has been halted by the user.
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  Setup has been halted at the request of the user."
-            echo ""
+            echo -e ""
             echo -e "\e[93m----------------------------------------------------------------------------------------------------"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-            echo ""
+            echo -e ""
             if [[ ! -z ${VERBOSE} ]] ; then
                 read -p "Press enter to continue..." CONTINUE
             fi
@@ -110,7 +110,7 @@ else
     fi
 fi
 
-## GATHER TWITTER API INFORMATION FROM THE USER
+### GATHER TWITTER API INFORMATION FROM THE USER
 
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
 CONTINUESETUP=$?
@@ -118,10 +118,10 @@ if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
-    echo ""
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-    echo ""
+    echo -e ""
     if [[ ! -z ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -167,10 +167,10 @@ while [[ -z $TWITTERCONSUMERSECRET ]]; do
     TWITTERCONSUMERSECRET_TITLE="Twitter Consumer Secret (REQUIRED)"
 done
 
-## CHECK FOR PREREQUISITE PACKAGES
+### CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
+echo -e ""
 
 # The package ttf-mscorefonts-installer requires contrib be added to the Debian repositories contained in /etc/apt/sources.list.
 # The contrib flag does not need to be added for Raspbian Jessie and Ubuntu only Debian so far.
@@ -210,16 +210,16 @@ else
     CheckPackage bzip2
 fi
 
-## SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
+### SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
 
 if [ $PHANTOMJSEXISTS = "false" ]; then
     if [ $BINARYAVAILABLE = "true" ]; then
 
         # DOWNLOAD THE PHANTOMJS BINARY
 
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Downloading then placing the PhantomJS binary...\e[97m"
-        echo ""
+        echo -e ""
 
         # Enter the root of the project build directory.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
@@ -230,19 +230,19 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
             "x86_64")
                 # Download the x86_64 version of the PhantomJS binary.
                 echo -e "\e[94m  Downloading the official x86_64 PhantomJS v$PHANTOMJSVERSION binary for Linux...\e[97m"
-                echo ""
+                echo -e ""
                 wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
                 ;;
             "i686"
                 # Download the i686 version of the PantomJS binary.
                 echo -e "\e[94m  Downloading the official i686 PhantomJS v$PHANTOMJSVERSION binary for Linux...\e[97m"
-                echo ""
+                echo -e ""
                 wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-i686.tar.bz2
                 ;;
         esac
 
         echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
-        echo ""
+        echo -e ""
         bunzip2 -v phantomjs-${PHANTOMJSVERSION}-linux-$PHANTOMJSVERSION.tar.bz2
         tar -vxf phantomjs-${PHANTOMJSVERSION}-linux-$PHANTOMJSVERSION.tar
         rm -f phantomjs-${PHANTOMJSVERSION}-linux-$PHANTOMJSVERSION.tar
@@ -257,29 +257,29 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
 
         # BUILD PHANTOMJS
 
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Building then placing the PhantomJS binary...\e[97m"
-        echo ""
+        echo -e ""
 
         # Download the source code.
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Preparing the PhantomJS Git repository...\e[97m"
-        echo ""
+        echo -e ""
         if [ -d $PHANTOMJSBUILDDIRECTORY ] && [ -d $PHANTOMJSBUILDDIRECTORY/.git ]; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
             cd $PHANTOMJSBUILDDIRECTORY
             echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
-            echo ""
+            echo -e ""
             git pull --all
         else
             # A directory containing the source code does not exist in the build directory.
             echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
             cd $BUILDDIRECTORY
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
-            echo ""
+            echo -e ""
             git clone git://github.com/ariya/phantomjs.git
-            echo ""
+            echo -e ""
         fi
 
         # Enter the PhantomJS build directory if not already there.
@@ -290,17 +290,17 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
 
         # Checkout the proper branch then init and update the submodules.
         echo -e "\e[94m  Checking out the branch $PHANTOMJSVERSION...\e[97m"
-        echo ""
+        echo -e ""
         git checkout $PHANTOMJSVERSION
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Initializing Git submodules...\e[97m"
-        echo ""
+        echo -e ""
         git submodule init
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Updating Git submodules...\e[97m"
-        echo ""
+        echo -e ""
         git submodule update
-        echo ""
+        echo -e ""
 
         # Compile and link the code.
         if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]] || [[ `uname -m` == "aarch64" ]]; then
@@ -312,21 +312,21 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
             echo -e "\e[94m  Building PhantomJS...\e[97m"
             python build.py
         fi
-        echo ""
+        echo -e ""
 
         # Test that the binary was built properly.
         if [ ! -f bin/pahntomjs ] || [ ! `bin/phantomjs --version` = $PHANTOMJSVERSION ]; then
             # If the dump978 binaries could not be found halt setup.
-            echo ""
+            echo -e ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  THE PHANTOMJS BINARIES BUILD APPEARS TO HAVE FAILED."
             echo -e "  SETUP HAS BEEN TERMINATED!"
-            echo ""
+            echo -e ""
             echo -e "\e[93mThe PhantomJS binary appear to have not been built successfully..\e[39m"
-            echo ""
+            echo -e ""
             echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-            echo ""
+            echo -e ""
             if [[ ! -z ${VERBOSE} ]] ; then
                 read -p "Press enter to continue..." CONTINUE
             fi
@@ -342,41 +342,41 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
     fi
 fi
 
-## INSTALL THE NEEDED PYTHON MODULES
+### INSTALL THE NEEDED PYTHON MODULES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting up the required Python modules...\e[97m"
-echo ""
+echo -e ""
 
 # Upgrade pip.
 echo -e "\e[94m  Upgrading pip...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install --upgrade pip
-echo ""
+echo -e ""
 echo -e "\e[94m  Upgrading virtualenv...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install --upgrade virtualenv
-echo ""
+echo -e ""
 
 # Install Python modules.
 echo -e "\e[94m  Installing the selenium Python module...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install selenium
-echo ""
+echo -e ""
 echo -e "\e[94m  Installing the twitter Python module...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install twitter
-echo ""
+echo -e ""
 echo -e "\e[94m  Installing the python-dateutil Python module...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install python-dateutil
-echo ""
+echo -e ""
 
-## SETUP ABOVETUSTIN
+### SETUP ABOVETUSTIN
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
-echo ""
+echo -e ""
 
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd $BUILDDIRECTORY
@@ -387,7 +387,7 @@ if [ -d $BUILDDIRECTORY/AboveTustin ] && [ -d $BUILDDIRECTORY/AboveTustin/.git ]
     echo -e "\e[94m  Entering the AboveTustin git repository directory...\e[97m"
     cd $BUILDDIRECTORY/AboveTustin
     echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
-    echo ""
+    echo -e ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
@@ -395,9 +395,9 @@ else
     mkdir -p $BUILDDIRECTORY
     cd $BUILDDIRECTORY
     echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
-    echo ""
+    echo -e ""
     git clone https://github.com/kevinabrandon/AboveTustin.git
-    echo ""
+    echo -e ""
 fi
 
 # Make the logs directory if it does not already exist.
@@ -460,16 +460,16 @@ fi
 echo -e "\e[94m  Executing the adsbexchange-netcat_maint.sh script...\e[97m"
 sudo nohup $BUILDDIRECTORY/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
 
-## OVERTUSTIN SETUP COMPLETE
+### ABOVETUSTIN SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd $PROJECTROOTDIRECTORY
 
-echo ""
+echo -e ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-echo -e "\e[92m  OverTustin setup is complete.\e[39m"
-echo ""
+echo -e "\e[92m  AboveTustin setup is complete.\e[39m"
+echo -e ""
 if [[ ! -z ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
