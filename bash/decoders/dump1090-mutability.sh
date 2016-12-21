@@ -156,24 +156,24 @@ echo -e ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
 echo -e ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-RECEIVERLATITUDE_TITLE="Receiver Latitude"
-while [[ -z $RECEIVERLATITUDE ]] ; do
-    RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-    RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVERLATITUDE" 3>&1 1>&2 2>&3)
-    RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+while [[ -z $RECEIVER_LATITUDE ]] ; do
+    RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+    RECEIVER_LATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVER_LATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVER_LATITUDE" 3>&1 1>&2 2>&3)
+    RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
-RECEIVERLONGITUDE_TITLE="Receiver Longitude"
-while [[ -z $RECEIVERLONGITUDE ]] ; do
-    RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
-    RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVERLONGITUDE" 3>&1 1>&2 2>&3)
-    RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
+while [[ -z $RECEIVER_LONGITUDE ]] ; do
+    RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    RECEIVER_LONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVER_LONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVER_LONGITUDE" 3>&1 1>&2 2>&3)
+    RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
 done
 
-echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
+echo -e "\e[94m  Setting the receiver's latitude to $RECEIVER_LATITUDE...\e[97m"
 
-ChangeConfig "LAT" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVERLATITUDE})" "/etc/default/dump1090-mutability"
-echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
-ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVERLONGITUDE})" "/etc/default/dump1090-mutability"
+ChangeConfig "LAT" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LATITUDE})" "/etc/default/dump1090-mutability"
+echo -e "\e[94m  Setting the receiver's longitude to $RECEIVER_LONGITUDE...\e[97m"
+ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LONGITUDE})" "/etc/default/dump1090-mutability"
 
 # Ask for a Bing Maps API key.
 BINGMAPSKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 12 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)

@@ -209,20 +209,20 @@ OGN_GSM_FREQ="957.800"
 OGN_GSM_GAIN="35"
 
 # Use receiver coordinates are already know, otherwise populate with dummy values
-if [[ -n ${RECEIVERLATITUDE} ]] ; then
-    OGN_LAT="${RECEIVERLATITUDE}"
+if [[ -n ${RECEIVER_LATITUDE} ]] ; then
+    OGN_LAT="${RECEIVER_LATITUDE}"
 else
     OGN_LAT="0.0000000"
 fi
 
-if [[ -n ${RECEIVERLONGITUDE} ]] ; then
-    OGN_LON="${RECEIVERLONGITUDE}"
+if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
+    OGN_LON="${ECEIVER_LONGITUDE}"
 else
     OGN_LON="0.0000000"
 fi
 
-if [[ -n ${RECIEVERALTITUDE} ]] ; then
-     OGN_ALT="${RECIEVERALTITUDE}"
+if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
+     OGN_ALT="${RECIEVER_ALTITUDE}"
 else
      OGN_ALT="0"
 fi
@@ -230,7 +230,7 @@ fi
 # Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
 # To find value you can check: 	http://geographiclib.sourceforge.net/cgi-bin/GeoidEval
 # Need to derive from co-ords but will set to altitude as a placeholders
-if [[ -z ${RECIEVERALTITUDE} ]] ; then
+if [[ -z ${RECIEVER_ALTITUDE} ]] ; then
     OGN_GEOID=""
 else
     OGN_GEOID="0"

@@ -185,7 +185,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "
 
     # Get the latitude and longitude set in the dump1090-mutability configuration file to be used later.
     echo -e "\e[94m  Retrieving the receiver's latitude from /etc/default/dump1090-mutability...\e[97m"
-    RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+    RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
     echo -e "\e[94m  Retrieving the receiver's longitude from /etc/default/dump1090-mutability...\e[97m"
     RECIEVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 fi
@@ -202,25 +202,25 @@ LIGHTTPDDOCUMENTROOTSETTING=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -
 LIGHTTPDDOCUMENTROOTDIRECTORY=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $LIGHTTPDDOCUMENTROOTSETTING`
 
 # Confirm the receivers latitude and longitude, if not already known.
-if [[ -z $RECEIVERLATITUDE ]] || [[ -z $RECEIVERLONGITUDE ]] ; then
+if [[ -z $RECEIVER_LATITUDE ]] || [[ -z $RECEIVER_LONGITUDE ]] ; then
     # If dump1090-mutability is not installed ask for the latitude and longitude of this receiver.
-    RECEIVERLATITUDE_TITLE="Receiver Latitude (OPTIONAL)" 
-#    while [[ -z $RECEIVERLATITUDE ]] ; do
-        RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)\n\nLeave blank and select <Ok> to skip." 12 78 3>&1 1>&2 2>&3)
-        RECEIVERLONGITUDE_TITLE="Receiver Longitude"
+    RECEIVER_LATITUDE_TITLE="Receiver Latitude (OPTIONAL)" 
+#    while [[ -z $RECEIVER_LATITUDE ]] ; do
+        RECEIVER_LATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVER_LATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)\n\nLeave blank and select <Ok> to skip." 12 78 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
 #    done
-    while [[ -z $RECEIVERLONGITUDE ]] ; do
-        RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    while [[ -z $RECEIVER_LONGITUDE ]] ; do
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVER_LONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 fi
 
 # Now set the receivers latitude and longitude.
-if [[ ! -z $RECEIVERLATITUDE ]] && [[ ! -z $RECEIVERLONGITUDE ]] ; then
-    echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
-    ChangeConfig "SiteLat" "$RECEIVERLATITUDE" "$LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/config.js"
-    echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
-    ChangeConfig "SiteLon" "$RECEIVERLONGITUDE" "$LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/config.js"
+if [[ ! -z $RECEIVER_LATITUDE ]] && [[ ! -z $RECEIVER_LONGITUDE ]] ; then
+    echo -e "\e[94m  Setting the receiver's latitude to $RECEIVER_LATITUDE...\e[97m"
+    ChangeConfig "SiteLat" "$RECEIVER_LATITUDE" "$LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/config.js"
+    echo -e "\e[94m  Setting the receiver's longitude to $RECEIVER_LONGITUDE...\e[97m"
+    ChangeConfig "SiteLon" "$RECEIVER_LONGITUDE" "$LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/config.js"
 fi
 
 # Create the dump978 JSON directory in Lighttpd's document root.
