@@ -2,6 +2,13 @@
 
 The following is a history of the changes made to this project.
 
+## v2.6.0
+
+* Added the ability to install beast-splitter as an extra.
+* Added the ability to setup Duck DNS dynamic DNS service as an extra.
+* Added the ability to setup the AboveTustin Twitter bot.
+* A log file can be kept by using either the -l or --log-output switch.
+
 ## v2.5.0 *(December 5th, 2016)*
 
 * Can now specify the unit of measurement for dump1090-mutability during setup.

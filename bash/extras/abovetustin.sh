@@ -60,7 +60,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  AboveTustin setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -79,7 +81,7 @@ else
     echo -e "\e[94m  Detecting CPU architeture...\e[97m"
     CPUARCHITECTURE=`uname -m`
     echo -e "\e[94m  CPU architecture detected as $CPUARCHITECTURE...\e[97m"
-    if [ $CPUARCHITECTURE = "x86_64" ] || or [  $CPUARCHITECTURE = "i686" ]; then
+    if [ $CPUARCHITECTURE = "armv7l" ] || [ $CPUARCHITECTURE = "x86_64" ] || [  $CPUARCHITECTURE = "i686" ]; then
         # A precompiled binary should be available for this device.
         echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for this CPU's arcitecture...\e[97m"
         BINARYAVAILABLE="true"
@@ -99,7 +101,9 @@ else
             echo -e "\e[93m----------------------------------------------------------------------------------------------------"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
             echo ""
-            read -p "Press enter to continue..." CONTINUE
+            if [[ ! -z ${VERBOSE} ]] ; then
+                read -p "Press enter to continue..." CONTINUE
+            fi
             exit 1
         fi
         echo -e "\e[94m  Will attempt to build the PhantomJS binary from source...\e[97m"
@@ -118,7 +122,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  AboveTustin setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -221,14 +227,19 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
 
         # Download the proper PhantomJS binary.
         case $CPUARCHITECTURE in
+            "armv7l")
+                # Download the armv7l version of the PhantomJS binary from https://github.com/jprochazka/phantomjs-linux-armv7l.
+                echo -e "\e[94m  Downloading the armv7l PhantomJS v$PHANTOMJSVERSION binary for Linux...\e[97m"
+                echo ""
+                wget https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/2.1.1/phantomjs-2.1.1-linux-armv7l.tar.bz2
             "x86_64")
-                # Download the x86_64 version of the PhantomJS binary.
+                # Download the x86_64 version of the PhantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official x86_64 PhantomJS v$PHANTOMJSVERSION binary for Linux...\e[97m"
                 echo ""
                 wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
                 ;;
             "i686"
-                # Download the i686 version of the PantomJS binary.
+                # Download the i686 version of the PantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official i686 PhantomJS v$PHANTOMJSVERSION binary for Linux...\e[97m"
                 echo ""
                 wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-i686.tar.bz2
@@ -321,7 +332,9 @@ if [ $PHANTOMJSEXISTS = "false" ]; then
             echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
             echo ""
-            read -p "Press enter to continue..." CONTINUE
+            if [[ ! -z ${VERBOSE} ]] ; then
+                read -p "Press enter to continue..." CONTINUE
+            fi
             exit 1
         fi
 
@@ -462,6 +475,8 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  OverTustin setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ! -z ${VERBOSE} ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0
