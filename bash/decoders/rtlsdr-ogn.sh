@@ -175,7 +175,9 @@ fi
 ### ASSIGN THE RTL-SDR TUNER DEVICE TO THIS DECODER
 
 # Check for multiple tuners...
-if [[ `rtl_test 2>&1 | grep -c "SN:" ` -gt 1 ]] ; then
+TUNER_COUNT=`rtl_test 2>&1 | grep -c ", SN: "`
+
+if [[ ${TUNER_COUNT} -gt 1 ]] ; then
 # Multiple tuners found, check if device specified for this decoder is present.
     if [[ ${OGN_DEVICE_SERIAL} ]] ; then
         if [[ `rtl_test 2>&1 | grep -c "SN: ${OGN_DEVICE_SERIAL}" ` -eq 1 ]] ; then
@@ -196,12 +198,12 @@ if [[ `rtl_test 2>&1 | grep -c "SN:" ` -gt 1 ]] ; then
             OGN_DEVICE_ID="0"
         fi
     fi
-elif [[ `rtl_test 2>&1 | grep -c "SN:" ` -eq 1 ]] ; then
+elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
 # Single tuner present so we must stop any other running decoders, or at least dump1090-mutablity for a default install...
     echo -e "\e [94m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME} ...\e [97m"
     OGN_DEVICE_ID="0"
     sudo /etc/init.d/dump1090-mutability stop
-elif [[ `rtl_test 2>&1 | grep -c "SN:" ` -lt 1 ]] ; then
+elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
 # No tuner found.
     echo -e "\e [94m  No RTL-SDR device detected but \"0\" to ${DECODER_NAME} for future use ...\e [97m"
     OGN_DEVICE_ID="0"
