@@ -326,6 +326,7 @@ if [ ! -f $BUILDDIRECTORY/duckdns/duck.sh ]; then
 else
     # Offer the option to install/setup Duck DNS once more.
     EXTRASLIST=("${EXTRASLIST[@]}" 'Duck DNS Free Dynamic DNS Hosting (reinstall)' '' OFF)
+fi
 
 declare EXTRASCHOICES
 
