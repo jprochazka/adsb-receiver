@@ -130,13 +130,6 @@ unset AUTOMATED_INSTALLATION_ENABLED
 unset ADSB_CONFIGURATIONFILE
 unset VERBOSE
 
-### TIDY UP
-
-# Remove any global variables assigned by this script.
-unset AUTOMATED_INSTALLATION_ENABLED
-unset ADSB_CONFIGURATIONFILE
-unset VERBOSE
-
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.
 if [[ $? -ne 0 ]] ; then
