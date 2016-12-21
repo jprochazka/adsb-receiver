@@ -93,7 +93,7 @@ CheckPackage lynx
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
 echo -e "\033[33m Stopping unwanted kernel modules from being loaded..."
-echo -e "\033[37m "
+echo -e "\033[37m"
 sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
 blacklist dvb_usb_rtl28xxu
 blacklist dvb_usb_v2
@@ -142,9 +142,13 @@ case `uname -m` in
         ;;
 esac
 
-# Create named pipe.
+# Change to work directory
 cd $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn
-sudo mkfifo ogn-rf.fifo
+
+# Create named pipe.
+if [[ ! -p ogn-rf.fifo ]] ; then
+    sudo mkfifo ogn-rf.fifo
+fi
 
 # Set file permissions.
 sudo chown root gsm_scan
@@ -154,17 +158,18 @@ sudo chmod a+s  ogn-rf
 sudo chown root rtlsdr-ogn
 sudo chmod a+s  rtlsdr-ogn
 
-# Check if kernel v4.1 or higher is being used.
+if [[ ! -c gpu_dev ]] ; then
+    # Check if kernel v4.1 or higher is being used.
+    KERNEL=`uname -r`
+    VERSION="`echo $KERNEL | cut -d \. -f 1`.`echo $KERNEL | cut -d \. -f 2`"
 
-KERNEL=`uname -r`
-VERSION="`echo $KERNEL | cut -d \. -f 1`.`echo $KERNEL | cut -d \. -f 2`"
-
-if [[ $VERSION < 4.1 ]] ; then
-    # Kernel is older than version 4.1.
-    sudo mknod gpu_dev c 100 0
-else
-    # Kernel is version 4.1 or newer.
-    sudo mknod gpu_dev c 249 0
+    if [[ $VERSION < 4.1 ]] ; then
+        # Kernel is older than version 4.1.
+        sudo mknod gpu_dev c 100 0
+    else
+        # Kernel is version 4.1 or newer.
+        sudo mknod gpu_dev c 249 0
+    fi
 fi
 
 ### ASSIGN THE RTL-SDR TUNER DEVICE TO THIS DECODER
@@ -244,7 +249,7 @@ else
     OGN_CALLSIGN=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
 fi
 
-sudo tee $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn.conf > /dev/null <<EOF
+sudo tee $BUILDDIRECTORY_RTLSDROGN/${OGN_CALLSIGN}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
@@ -286,28 +291,28 @@ EOF
 ### INSTALL AS A SERVICE
 
 echo -e "\033[33m Downloading and setting permissions on the init script..."
-echo -e "\033[37m "
+echo -e "\033[37m"
 sudo wget http://download.glidernet.org/common/service/rtlsdr-ogn -O /etc/init.d/rtlsdr-ogn
 sudo chmod +x /etc/init.d/rtlsdr-ogn
 
 echo -e "\033[33m Creating file /etc/rtlsdr-ogn.conf ..."
-echo -e "\033[37m "
+echo -e "\033[37m"
 sudo tee /etc/rtlsdr-ogn.conf > /dev/null <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50000  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-rf     rtlsdr-ogn.conf
-50001  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-decode rtlsdr-ogn.conf
+50000  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-rf     ${OGN_CALLSIGN}.conf
+50001  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-decode ${OGN_CALLSIGN}.conf
 EOF
 
 echo -e "\033[33m Setting up ${DECODER_NAME} as a service..."
-echo -e "\033[37m "
+echo -e "\033[37m"
 sudo update-rc.d rtlsdr-ogn defaults
 
 echo -e "\033[33m Starting the ${DECODER_NAME} service..."
-echo -e "\033[37m "
+echo -e "\033[37m"
 sudo service rtlsdr-ogn start
 
 ### ARCHIVE SETUP PACKAGES
