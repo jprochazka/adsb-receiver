@@ -36,13 +36,13 @@
 
 ### VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-LOGDIRECTORY="$PROJECTROOTDIRECTORY/logs"
+PROJECT_ROOT_DIRECTORY="$PWD"
+BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
+LOG_DIRECTORY="$PROJECT_ROOT_DIRECTORY/logs"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/functions.sh
+source $BASH_DIRECTORY/functions.sh
 
 ### USAGE 
 
@@ -72,7 +72,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -c|--config-file)
             # The specified installation configuration file.
-            export ADSB_CONFIGURATIONFILE="$2"
+            export ADSB_CONFIGURATION_FILE="$2"
             shift 2
             ;;
         -d|--delay)
@@ -86,12 +86,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -u|--unattended)
             # Enable logging to a log file.
-            export AUTOMATED_INSTALLATION_ENABLED="true"
-            shift 1
-            ;;
-        -u|--unattended)
-            # Enable logging to a log file.
-            export AUTOMATED_INSTALLATION_ENABLED="true"
+            export GLOBAL_UNATTENDED_INSTALL="true"
             shift 1
             ;;
         -v|--verbose)
@@ -110,29 +105,29 @@ done
 
 ### UNATTENDED INSTALL
 
-if [[ $AUTOMATED_INSTALLATION_ENABLED = "true" ]] ; then
+if [[ $GLOBAL_UNATTENDED_INSTALL = "true" ]] ; then
     echo "The unattended installation option is still in development..."
     exit 1
 fi
 
 ### EXECUTE BASH/INIT.SH
 
-chmod +x $BASHDIRECTORY/init.sh
+chmod +x $BASH_DIRECTORY/init.sh
 if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    LOGFILE="$LOGDIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
-    $BASHDIRECTORY/init.sh 2>&1 | tee -a "$LOGFILE"
-    CleanLogFile "$LOGFILE"
+    LOG_FILE="$LOG_DIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    $BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
+    CleanLogFile "$LOG_FILE"
 else
     # Execute init.sh without logging any output to the log directory.
-    $BASHDIRECTORY/init.sh
+    $BASH_DIRECTORY/init.sh
 fi
 
 ### CLEAN UP
 
 # Remove any global variables assigned by this script.
-unset AUTOMATED_INSTALLATION_ENABLED
-unset ADSB_CONFIGURATIONFILE
+unset GLOBAL_UNATTENDED_INSTALL
+unset ADSB_CONFIGURATION_FILE
 unset VERBOSE
 unset DELAY
 
