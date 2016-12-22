@@ -353,7 +353,7 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 fi
 
 echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
-sudo update-rc.d rtlsdr-ogn defaults 2>/dev/null
+sudo update-rc.d rtlsdr-ogn defaults 2>&1 >/dev/null
 echo -e "\t\e[92m [Done]\e[39m\n"
 
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
