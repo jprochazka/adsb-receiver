@@ -185,32 +185,32 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
     if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
         if [[ `rtl_test 2>&1 | grep -c "SN: ${OGN_DEVICE_SERIAL}" ` -eq 1 ]] ; then
             OGN_DEVICE_ID=`rtl_test 2>&1 | grep "SN: ${OGN_DEVICE_SERIAL}" | awk -F ":" '{print $1}' | sed -e 's/\ //g' `
-            echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e [97m"
+            echo -e "\e[94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e [97m"
         else
-            echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
+            echo -e "\e[94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
         fi
     # Or if a device has been specified by device ID then confirm this is currently detected.
     elif [[ -n ${OGN_DEVICE_ID} ]] ; then
         if [[ `rtl_test 2>&1 | grep "SN: " | grep -c "^\ *${OGN_DEVICE_ID}:"` -eq 1 ]] ; then
-            echo -e "\e [94m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e [97m"
+            echo -e "\e[94m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e [97m"
         else
-            echo -e "\e [94m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
+            echo -e "\e[94m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
         fi
     # Failing that configure it with device ID 0.
     else
         if [[ -z ${OGN_DEVICE_ID} ]] ; then
-            echo -e "\e [94m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
+            echo -e "\e[94m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
             OGN_DEVICE_ID="0"
         fi
     fi
 # Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
-    echo -e "\e [94m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e [97m"
+    echo -e "\e[94m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e [97m"
     OGN_DEVICE_ID="0"
     sudo /etc/init.d/dump1090-mutability stop
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
-    echo -e "\e [94m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e [97m"
+    echo -e "\e[94m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e [97m"
     OGN_DEVICE_ID="0"
     sudo /etc/init.d/dump1090-mutability stop 2>/dev/null
 fi
