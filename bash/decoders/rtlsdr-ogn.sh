@@ -57,7 +57,7 @@ echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\n Please note that ${DECODER_NAME} requests a dedicated SDR tuner. \n\n $DECODER_WEBSITE \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requests a dedicated SDR tuner. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
 CONTINUESETUP=$?
 
 if [[ $CONTINUESETUP = 1 ]] ; then
