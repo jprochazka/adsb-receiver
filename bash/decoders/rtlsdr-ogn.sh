@@ -271,9 +271,9 @@ fi
 # Test if config file exists, if not create it.
 
 if [[ -s $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf ]] ; then
-    echo -e "\e [94m  Existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\" found...\e [97m"
+    echo -e "\e[94m  Using existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\"...\e [97m"
 else 
-    echo -e "\e [94m  Generating new ${DECODER_NAME} config file as \"${OGN_CALLSIGN}.conf\"...\e [97m"
+    echo -e "\e[94m  Generating new ${DECODER_NAME} config file as \"${OGN_CALLSIGN}.conf\"...\e [97m"
     sudo tee $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -321,7 +321,7 @@ DECODER_SERVICE_CONFIG="/etc/rtlsdr-ogn.conf"
 
 echo -e "\033[33m Downloading and setting permissions on the init script..."
 echo -e "\033[37m"
-sudo wget http://download.glidernet.org/common/service/rtlsdr-ogn -O ${DECODER_SERVICE_SCRIPT}
+sudo wget -q http://download.glidernet.org/common/service/rtlsdr-ogn -O ${DECODER_SERVICE_SCRIPT}
 sudo chmod +x ${DECODER_SERVICE_SCRIPT}
 
 echo -e "\033[33m Creating service config file \"${DECODER_SERVICE_CONFIG}\"..."
