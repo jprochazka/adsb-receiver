@@ -34,48 +34,58 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-### VARIABLES
+## VARIABLES
 
-PROJECT_ROOT_DIRECTORY="$PWD"
-BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
-LOG_DIRECTORY="$PROJECT_ROOT_DIRECTORY/logs"
-
-ENABLE_LOGGING="false"
-AUTOMATED_INSTALL="false"
+AUTOMATED_INSTALL="true"
+PROJECT_BRANCH="master"
 CONFIGURATION_FILE="default"
+ENABLE_LOGGING="false"
 
-### INCLUDE EXTERNAL SCRIPTS
+export RECIEVER_ROOT_DIRECTORY="$PWD"
+export RECIEVER_BASH_DIRECTORY="$PWD/bash"
+export RECIEVER_BUILD_DIRECTORY="$PWD/build"
 
-source $BASH_DIRECTORY/functions.sh
+## SOURCE EXTERNAL SCRIPTS
 
-### USAGE 
+source $RECIEVER_ROOT_DIRECTORY/bash/functions.sh
 
-usage()
-{   
-    echo -e ""
-    echo -e "Usage: $0 [OPTIONS] [ARGUMENTS]"
-    echo -e ""
-    echo -e "Option     GNU long option     	Meaning"
-    echo -e "-c <FILE>  --config-file=<FILE>	The configuration file to be use for an unattended installation."
-    echo -e "-h         --help              	Shows this message."
-    echo -e "-l         --log-output        	Logs all output to a file in the logs directory."
-    echo -e "-u         --unattended        	Begins an unattended installation using a configuration file."
-    echo -e "-v         --verbose           	Provides extra confirmation at each stage of the install."
-    echo -e ""
+## FUNCTIONS
+
+# Display the help message.
+function DisplayHelp() {
+    echo ""
+    echo "Usage: $0 [OPTIONS] [ARGUMENTS]"
+    echo ""
+    echo "Option        GNU long option        Meaning"
+    echo "-a            --automated-install    Use a configuration file to automate the install process somewhat."
+    echo "-b <BRANCH>   --branch=<BRANCH>      Specifies the repository branch to be used."
+    echo "-c <FILE>     --config-file=<FILE>   The configuration file to be use for an unattended installation."
+    echo "-h            --help                 Shows this message."
+    echo "-l            --log-output           Logs all output to a file in the logs directory."
+    echo "-v            --verbose              Provides extra confirmation at each stage of the install."
+    echo ""
 }
 
-### CHECK FOR OPTIONS AND ARGUMENTS
+## CHECK FOR OPTIONS AND ARGUMENTS
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help)
             # Display a help message.
-            usage
+            DisplayHelp
             exit 0
             ;;
-        -a|--automated)
-            # Enable logging to a log file.
+        -a|--automated-install)
             AUTOMATED_INSTALL="true"
+            ;;
+        -b)
+            # The specified installation configuration file.
+            PROJECT_BRANCH="$2"
+            shift 2
+            ;;
+        --branch*)
+            # The specified installation configuration file.
+            PROJECT_BRANCH=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift 1
             ;;
         -c)
@@ -95,7 +105,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -v|--verbose)
             # Provides extra confirmation at each stage of the install.
-            export VERBOSE="true"
+            VERBOSE="true"
             shift 1
             ;;
         *)
@@ -107,39 +117,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-### AUTOMATED INSTALL
+## AUTOMATED INSTALL
 
 # If the automated installation option was selected set the needed environmental variables.
-if [ $AUTOMATED_INSTALL = "true" ]; then
-
-    ###################################################################
-    ##            THIS FEATURE IS NOT READY FOR USE YET             ###
-    echo "The automated installation option is still in development..."
-    exit 1
-    ###################################################################
-
+if [ ${#CONFIGURATION_FILE} -gt 0 ]; then
     # If no configuration file was specified use the default configuration file path and name.
     if [ $CONFIGURATION_FILE = "default" ]; then
-        CONFIGURATION_FILE="$PROJECT_ROOT_DIRECTORY/install.config"
+        CONFIGURATION_FILE="$RECIEVER_ROOT_DIRECTORY/install.config"
     fi
 
     # If either the -c or --config-file= flags were set a valid file must reside there.
     if [ ! -f $CONFIGURATION_FILE ]; then
-        echo "The specified configuration file does not exist."
+        echo "Unable to locate the installation configuration file."
         exit 1
     fi
 fi
 
 # Add any environmental variables needed by any child scripts.
-export AUTOMATED_INSTALL
-export CONFIGURATION_FILE
+export RECEIVER_AUTOMATED_INSTALL=$AUTOMATED_INSTALL
+export RECIEVER_PROJECT_BRANCH=$BRANCH
+export RECEIVER_CONFIGURATION_FILE=$CONFIGURATION_FILE
+export RECIEVER_VERBOSE=$VERBOSE
 
-### EXECUTE BASH/INIT.SH
+## EXECUTE BASH/INIT.SH
 
 chmod +x $BASH_DIRECTORY/init.sh
 if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    LOG_FILE="$LOG_DIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    LOG_FILE="$RECIEVER_ROOT_DIRECTORY/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
     $BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
     CleanLogFile "$LOG_FILE"
 else
@@ -147,12 +152,21 @@ else
     $BASH_DIRECTORY/init.sh
 fi
 
-### CLEAN UP
+## CLEAN UP
+
+# Remove any files created by whiptail.
+rm -f $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+rm -f $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
 
 # Remove any global variables assigned by this script.
-unset AUTOMATED_INSTALL
-unset CONFIGURATION_FILE
-unset VERBOSE
+unset RECIEVER_ROOT_DIRECTORY
+unset RECIEVER_BASH_DIRECTORY
+unset RECIEVER_BUILD_DIRECTORY
+unset RECIEVER_PROJECT_BRANCH
+unset RECEIVER_AUTOMATED_INSTALL
+unset RECEIVER_CONFIGURATION_FILE
+unset RECIEVER_VERBOSE
+unset RECEIVER_PROJECT_TITLE
 
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.
