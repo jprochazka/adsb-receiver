@@ -75,10 +75,18 @@ fi
 
 ### FUNCTIONS
 
-RandomDelay
-AptUpdate
+# Only call AptUpdate if last update was more than $APT_UPDATE_THRESHOLD seconds ago
+CURRENT_EPOCH=`date +%s`
+APT_UPDATE_EPOCH=`stat -c %Y /var/cache/apt/pkgcache.bin`
+APT_UPDATE_DELTA=`echo $[${CURRENT_EPOCH} - ${APT_UPDATE_EPOCH}]`
+APT_UPDATE_THRESHOLD="300"
+if [[ ${APT_UPDATE_DELTA} -gt ${APT_UPDATE_THRESHOLD} ]] ; then
+    AptUpdate
+fi
+
 CheckPrerequisites
 UpdateRepository
+RandomDelay
 
 ### DISPLAY WELCOME SCREEN
 
