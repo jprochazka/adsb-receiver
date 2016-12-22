@@ -80,6 +80,25 @@ function CheckPackage {
     done
 }
 
+# CHECK PREREQUISITES
+function CheckPrerequisites() {
+    clear
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+    echo ""
+    echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo ""
+    CheckPackage whiptail
+    CheckPackage git
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
+    echo ""
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
+}
+
 #################################################################################
 # Change a setting in a configuration file.
 # The function expects 3 parameters to be passed to it in the following order.
