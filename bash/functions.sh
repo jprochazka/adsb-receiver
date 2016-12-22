@@ -139,6 +139,31 @@ function CheckPrerequisites() {
 }
 
 #################################################################################
+# UPDATE GIT REPOSITORY
+function UpdateRepository() {
+    clear
+    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+    echo ""
+    echo -e "\e[92m  Pulling the latest version of the $ADSB_PROJECTTITLE git repository..."
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo ""
+    echo -e "\e[94m  Switching to branch $PROJECTBRANCH...\e[97m"
+    echo ""
+    git checkout $PROJECTBRANCH
+    echo ""
+    echo -e "\e[94m  Pulling the latest git repository...\e[97m"
+    echo ""
+    git pull
+    echo ""
+    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[92m  Finished pulling the latest version of the $ADSB_PROJECTTITLE git repository....\e[39m"
+    echo ""
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
+}
+
+#################################################################################
 # Change a setting in a configuration file.
 # The function expects 3 parameters to be passed to it in the following order.
 # ChangeConfig KEY VALUE FILE
