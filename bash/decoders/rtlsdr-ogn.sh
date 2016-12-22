@@ -328,7 +328,7 @@ fi
 DECODER_SERVICE_SCRIPT="/etc/init.d/rtlsdr-ogn"
 DECODER_SERVICE_CONFIG="/etc/rtlsdr-ogn.conf"
 
-echo -e "\033[33m Downloading and setting permissions on the init script..."
+echo -e "\033[33m Downloading and setting permissions on the service script..."
 echo -e "\033[37m"
 sudo wget -q http://download.glidernet.org/common/service/rtlsdr-ogn -O ${DECODER_SERVICE_SCRIPT}
 sudo chmod +x ${DECODER_SERVICE_SCRIPT}
@@ -353,12 +353,12 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 fi
 
 echo -e "\033[33m Configuring ${DECODER_NAME} as a service..."
-echo -e "\033[37m"
 sudo update-rc.d rtlsdr-ogn defaults 2>/dev/null
+echo -e "\t\e[92m [Done]\e[39m\n"
 
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
 sudo service rtlsdr-ogn start
-echo -e "\e[92m [Done]\e[39m"
+echo -e "\t\e[92m [Done]\e[39m\n"
 
 ### ARCHIVE SETUP PACKAGES
 
