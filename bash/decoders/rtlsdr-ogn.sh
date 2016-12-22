@@ -128,7 +128,7 @@ case `uname -m` in
         tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C $BUILDDIRECTORY_RTLSDROGN
         ;;
     "armv7l")
-        # Raspberry Pi 2
+        # Raspberry Pi 2 onwards
         wget http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -O $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn-bin-ARM-latest.tgz
         tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C $BUILDDIRECTORY_RTLSDROGN
         ;;
@@ -277,9 +277,9 @@ fi
 # Test if config file exists, if not create it.
 
 if [[ -s $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf ]] ; then
-    echo -e "\e[94m  Using existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\"...\e [97m"
+    echo -e "\e[94m Using existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\"...\e [97m"
 else 
-    echo -e "\e[94m  Generating new ${DECODER_NAME} config file as \"${OGN_CALLSIGN}.conf\"...\e [97m"
+    echo -e "\e[94m Generating new ${DECODER_NAME} config file as \"${OGN_CALLSIGN}.conf\"...\e [97m"
     sudo tee $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -290,8 +290,8 @@ else
 RF:
 { 
   FreqCorr	= ${OGN_FREQ_CORR};             	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan
-  Device   	= ${OGN_DEVICE_ID};      	   	# 		Device index of USB RTL-SDR 
-#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	  	# char[12] 	Serial number of the rtl-sdr device to be selected
+  Device   	= ${OGN_DEVICE_ID};      	   	# 		Device index of the USB RTL-SDR device to be selected
+#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	  	# char[12] 	Serial number of the USB RTL-SDR device to be selected
   GSM:
   { 
     CenterFreq	= ${OGN_GSM_FREQ};		# [MHz]		Fnd the best GSM frequency with gsm_scan
@@ -301,10 +301,10 @@ RF:
 #
 Position:
 { 
-  Latitude	= ${OGN_LAT};    		# [deg] 	Antenna coordinates
-  Longitude	= ${OGN_LON};           	# [deg] 	Antenna coordinates
+  Latitude	= ${OGN_LAT};    		# [deg] 	Antenna coordinates in decimal degrees
+  Longitude	= ${OGN_LON};           	# [deg] 	Antenna coordinates in decimal degrees
   Altitude	= ${OGN_ALT};   		# [m]   	Altitude above sea leavel
-  GeoidSepar	= ${OGN_GEOID};         	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
+  GeoidSepar	= ${OGN_GEOID};           	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
 } ;
 #
 APRS:
@@ -314,7 +314,7 @@ APRS:
 #
 DDB:
 {
-  UseAsWhitelist = ${OGN_WHITELIST};          	# [0|1] 	Setting to 1 enforces strict opt in
+  UseAsWhitelist = ${OGN_WHITELIST};     	     	# [0|1] 	Setting to 1 enforces strict opt in
 } ;
 #
 EOF
