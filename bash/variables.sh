@@ -1,4 +1,4 @@
-#!/bin/bash
+5#!/bin/bash
 
 #####################################################################################
 #                                  ADS-B RECEIVER                                   #
@@ -40,7 +40,7 @@ PROJECTVERSION="2.5.0"
 PIAWAREVERSION="3.1.0"
 
 # PlaneFinder ADS-B Client
-PFCLIENTVERSIONARM="3.4.61"
+PFCLIENTVERSIONARM="3.5.461"
 PFCLIENTVERSIONI386="3.4.61"
 
 # Flightradar24 Linux Debian package
