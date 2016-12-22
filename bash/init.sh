@@ -93,6 +93,7 @@ function AptUpdate() {
     fi
 }
 
+# CHECK PREREQUISITES
 function CheckPrerequisites() {
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
@@ -111,8 +112,8 @@ function CheckPrerequisites() {
     fi
 }
 
+# UPDATE THIS REPOSITORY
 function UpdateRepository() {
-### UPDATE THIS REPOSITORY
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
@@ -150,20 +151,6 @@ function UpdateOperatingSystem() {
     echo ""
     if [[ ! -z ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
-    fi
-}
-
-# Add a pseudo-random delay of between 5 and 59 minutes
-function RandomDelay() {
-    if [[ ${DELAY} = "true" ]] ; then
-        DELAY_TIME=`echo "(( 300 + ( $RANDOM + $RANDOM )) / 20 )" | bc`
-        DATE=`date`
-        echo -e ""
-        echo -e "\e[91m  $ADSB_PROJECTTITLE"
-        echo -e ""
-        echo -en "\e[92m  Pausing for ${DELAY_TIME} seconds from: \t\e[39m $DATE"
-        echo -e ""
-        sleep $DELAY_TIME
     fi
 }
 
