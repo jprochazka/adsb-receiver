@@ -356,9 +356,9 @@ echo -e "\033[33m Configuring ${DECODER_NAME} as a service..."
 echo -e "\033[37m"
 sudo update-rc.d rtlsdr-ogn defaults 2>/dev/null
 
-echo -e "\033[33m Starting the ${DECODER_NAME} service..."
-echo -e "\033[37m"
+echo -en "\033[33m Starting the ${DECODER_NAME} service..."
 sudo service rtlsdr-ogn start
+echo -e "\e[92m [Done]\e[39m"
 
 ### ARCHIVE SETUP PACKAGES
 
