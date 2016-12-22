@@ -40,6 +40,7 @@ BUILDDIRECTORY_RTLSDROGN="$BUILDDIRECTORY/rtlsdr-ogn"
 
 DECODER_NAME="RTLSDR-OGN"
 DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
+DECORDER_GITHUB="https://github.com/glidernet/ogn-rf"
 DECODER_WEBSITE="http://wiki.glidernet.org"
 
 ### INCLUDE EXTERNAL SCRIPTS
@@ -178,34 +179,37 @@ fi
 # Check for multiple tuners...
 TUNER_COUNT=`rtl_test 2>&1 | grep -c ", SN: "`
 
+# Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
 if [[ ${TUNER_COUNT} -gt 1 ]] ; then
-# Multiple tuners found, check if device specified for this decoder is present.
-    if [[ ${OGN_DEVICE_SERIAL} ]] ; then
+    # If a device has been specified by serial number then try to match that with the currently detected tuners.
+    if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
         if [[ `rtl_test 2>&1 | grep -c "SN: ${OGN_DEVICE_SERIAL}" ` -eq 1 ]] ; then
             OGN_DEVICE_ID=`rtl_test 2>&1 | grep "SN: ${OGN_DEVICE_SERIAL}" | awk -F ":" '{print $1}' | sed -e 's/\ //g' `
             echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME} ...\e [97m"
         else
             echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"0\" to ${DECODER_NAME} ...\e [97m"
         fi
-    elif [[ ${OGN_DEVICE_ID} ]] ; then
+    # Or if a device has been specified by device ID then confirm this is currently detected.
+    elif [[ -n ${OGN_DEVICE_ID} ]] ; then
         if [[ `rtl_test 2>&1 | grep "SN: " | grep -c "^\ *${OGN_DEVICE_ID}:"` -eq 1 ]] ; then
             echo -e "\e [94m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME} ...\e [97m"
         else
             echo -e "\e [94m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"0\" to ${DECODER_NAME} ...\e [97m"
         fi
+    # Failing that configure it with device ID 0.
     else
         if [[ -z ${OGN_DEVICE_ID} ]] ; then
             echo -e "\e [94m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME} ...\e [97m"
             OGN_DEVICE_ID="0"
         fi
     fi
+# Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
-# Single tuner present so we must stop any other running decoders, or at least dump1090-mutablity for a default install...
     echo -e "\e [94m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME} ...\e [97m"
     OGN_DEVICE_ID="0"
     sudo /etc/init.d/dump1090-mutability stop
+# No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
-# No tuner found.
     echo -e "\e [94m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\" ...\e [97m"
     OGN_DEVICE_ID="0"
     sudo /etc/init.d/dump1090-mutability stop
@@ -219,7 +223,7 @@ OGN_GSM_GAIN="35"
 
 # Use receiver coordinates if already know, otherwise populate with dummy values to generate a valid config file.
 
-if [[ -n ${OGN_LAT} ]] ; then
+if [[ -z ${OGN_LAT} ]] ; then
     if [[ -n ${RECEIVER_LATITUDE} ]] ; then
         OGN_LAT="${RECEIVER_LATITUDE}"
     else
@@ -227,7 +231,7 @@ if [[ -n ${OGN_LAT} ]] ; then
     fi
 fi
 
-if [[ -n ${OGN_LON} ]] ; then
+if [[ -z ${OGN_LON} ]] ; then
     if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
         OGN_LON="${ECEIVER_LONGITUDE}"
     else
@@ -235,7 +239,7 @@ if [[ -n ${OGN_LON} ]] ; then
     fi
 fi 
 
-if [[ -n ${OGN_ALT} ]] ; then
+if [[ -z ${OGN_ALT} ]] ; then
     if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
          OGN_ALT="${RECIEVER_ALTITUDE}"
     else
@@ -246,18 +250,22 @@ fi
 # Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
 # To find value you can check: 	http://geographiclib.sourceforge.net/cgi-bin/GeoidEval
 # Need to derive from co-ords but will set to altitude as a placeholders
-if [[ -z ${RECIEVER_ALTITUDE} ]] ; then
-    OGN_GEOID=""
-else
-    OGN_GEOID="0"
+if [[ -z ${OGN_GEOID} ]] ; then
+    if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
+        OGN_GEOID="${RECIEVER_ALTITUDE}"
+    else
+        OGN_GEOID="0"
+    fi
 fi
 
 # Callsign should be between 3 and 9 alphanumeric charactors, with no punctuation
 # Please see: 	http://wiki.glidernet.org/receiver-naming-convention
-if [[ -n ${OGN_RECEIVER_NAME} ]] ; then 
-    OGN_CALLSIGN=`echo ${OGN_RECEIVER_NAME} | tr -cd '[:alnum:]' | cut -c -9`
-else
-    OGN_CALLSIGN=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
+if [[ -z ${OGN_CALLSIGN} ]] ; then
+    if [[ -n ${OGN_RECEIVER_NAME} ]] ; then 
+        OGN_CALLSIGN=`echo ${OGN_RECEIVER_NAME} | tr -cd '[:alnum:]' | cut -c -9`
+    else
+        OGN_CALLSIGN=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
+    fi
 fi
 
 # Test if config file exists, if not create it.
@@ -307,14 +315,17 @@ fi
 
 ### INSTALL AS A SERVICE
 
+DECODER_SERVICE_SCRIPT="/etc/init.d/rtlsdr-ogn"
+DECODER_SERVICE_CONFIG="/etc/rtlsdr-ogn.conf"
+
 echo -e "\033[33m Downloading and setting permissions on the init script..."
 echo -e "\033[37m"
-sudo wget http://download.glidernet.org/common/service/rtlsdr-ogn -O /etc/init.d/rtlsdr-ogn
-sudo chmod +x /etc/init.d/rtlsdr-ogn
+sudo wget http://download.glidernet.org/common/service/rtlsdr-ogn -O ${DECODER_SERVICE_SCRIPT}
+sudo chmod +x ${DECODER_SERVICE_SCRIPT}
 
-echo -e "\033[33m Creating file /etc/rtlsdr-ogn.conf ..."
+echo -e "\033[33m Creating file ${DECODER_SERVICE_CONFIG} ..."
 echo -e "\033[37m"
-sudo tee /etc/rtlsdr-ogn.conf > /dev/null <<EOF
+sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
