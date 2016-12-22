@@ -75,24 +75,6 @@ fi
 
 ### FUNCTIONS
 
-# UPDATE REPOSITORY PACKAGE LISTS
-function AptUpdate() {
-    clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
-    echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
-    sudo apt-get update
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
-    echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
-        read -p "Press enter to continue..." CONTINUE
-    fi
-}
-
 # UPDATE THIS REPOSITORY
 function UpdateRepository() {
     clear
@@ -111,24 +93,6 @@ function UpdateRepository() {
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
-    echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
-        read -p "Press enter to continue..." CONTINUE
-    fi
-}
-
-# UPDATE THE OPERATING SYSTEM
-function UpdateOperatingSystem() {
-    clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
-    echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
-    sudo apt-get -y dist-upgrade
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
     if [[ ! -z ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
