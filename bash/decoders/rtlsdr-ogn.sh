@@ -233,7 +233,7 @@ fi
 
 if [[ -z ${OGN_LON} ]] ; then
     if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
-        OGN_LON="${ECEIVER_LONGITUDE}"
+        OGN_LON="${RECEIVER_LONGITUDE}"
     else
         OGN_LON="0.0000000"
     fi
@@ -339,7 +339,7 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 # Less than 2 tuners present so we must stop the dump1090-mutability before starting this decoder.
     echo -e "\033[33m Less than 2 RTL-SDR devices present so dump1090-mutability service will be disabled..."
     echo -e "\033[37m"
-    sudo /etc/init.d/dump1090-mutability disable
+    sudo update-rc.d dump1090-mutability disable
 fi
 
 echo -e "\033[33m Setting up ${DECODER_NAME} as a service..."
