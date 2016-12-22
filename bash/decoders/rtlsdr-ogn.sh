@@ -106,7 +106,7 @@ EOF
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
+if [[ -x /etc/init.d/rtlsdr-ogn ]] ; then
     sudo service rtlsdr-ogn stop
 fi
 
@@ -182,12 +182,12 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
     if [[ ${OGN_DEVICE_SERIAL} ]] ; then
         if [[ `rtl_test 2>&1 | grep -c "SN: ${OGN_DEVICE_SERIAL}" ` -eq 1 ]] ; then
             OGN_DEVICE_ID=`rtl_test 2>&1 | grep "SN: ${OGN_DEVICE_SERIAL}" | awk -F ":" '{print $1}' | sed -e 's/\ //g' `
-            echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}" matches device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME} ...\e [97m"
+            echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" matches device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME} ...\e [97m"
         else
             echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"0\" to ${DECODER_NAME} ...\e [97m"
         fi
     elif [[ ${OGN_DEVICE_ID} ]] ; then
-        if [[ `rtl_test 2>&1 | grep "SN: " | grep -c "^\ *${OGN_DEVICE_ID}:" -eq 1 ]] ; then
+        if [[ `rtl_test 2>&1 | grep "SN: " | grep -c "^\ *${OGN_DEVICE_ID}:"` -eq 1 ]] ; then
             echo -e "\e [94m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME} ...\e [97m"
         else
             echo -e "\e [94m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"0\" to ${DECODER_NAME} ...\e [97m"
@@ -216,22 +216,29 @@ OGN_GSM_FREQ="957.800"
 OGN_GSM_GAIN="35"
 
 # Use receiver coordinates are already know, otherwise populate with dummy values
-if [[ -n ${RECEIVER_LATITUDE} ]] ; then
-    OGN_LAT="${RECEIVER_LATITUDE}"
-else
-    OGN_LAT="0.0000000"
+
+if [[ -n ${OGN_LAT} ]] ; then
+    if [[ -n ${RECEIVER_LATITUDE} ]] ; then
+        OGN_LAT="${RECEIVER_LATITUDE}"
+    else
+        OGN_LAT="0.0000000"
+    fi
 fi
 
-if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
-    OGN_LON="${ECEIVER_LONGITUDE}"
-else
-    OGN_LON="0.0000000"
-fi
+if [[ -n ${OGN_LON} ]] ; then
+    if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
+        OGN_LON="${ECEIVER_LONGITUDE}"
+    else
+        OGN_LON="0.0000000"
+    fi
+fi 
 
-if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
-     OGN_ALT="${RECIEVER_ALTITUDE}"
-else
-     OGN_ALT="0"
+if [[ -n ${OGN_ALT} ]] ; then
+    if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
+         OGN_ALT="${RECIEVER_ALTITUDE}"
+    else
+         OGN_ALT="0"
+    fi
 fi
 
 # Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
@@ -251,7 +258,12 @@ else
     OGN_CALLSIGN=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
 fi
 
-sudo tee $BUILDDIRECTORY_RTLSDROGN/${OGN_CALLSIGN}.conf > /dev/null <<EOF
+# Test if config file exists, if not create it.
+
+if [[ -s $BUILDDIRECTORY_RTLSDROGN/${OGN_CALLSIGN}.conf ]] ; then
+    echo -e "\e [94m  Existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\" found...\e [97m"
+else 
+    sudo tee $BUILDDIRECTORY_RTLSDROGN/${OGN_CALLSIGN}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
@@ -289,6 +301,7 @@ DDB:
 } ;
 #
 EOF
+fi
 
 ### INSTALL AS A SERVICE
 
@@ -321,7 +334,7 @@ sudo service rtlsdr-ogn start
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the $ADSB_PROJECTTITLE root directory...\e[97m"
 cd $PROJECTROOTDIRECTORY
 
