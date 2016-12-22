@@ -79,7 +79,7 @@ fi
 CURRENT_EPOCH=`date +%s`
 APT_UPDATE_EPOCH=`stat -c %Y /var/cache/apt/pkgcache.bin`
 APT_UPDATE_DELTA=`echo $[${CURRENT_EPOCH} - ${APT_UPDATE_EPOCH}]`
-APT_UPDATE_THRESHOLD="300"
+APT_UPDATE_THRESHOLD="1800"
 if [[ ${APT_UPDATE_DELTA} -gt ${APT_UPDATE_THRESHOLD} ]] ; then
     AptUpdate
 fi
