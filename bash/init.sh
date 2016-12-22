@@ -47,35 +47,37 @@ source $BASHDIRECTORY/functions.sh
 ### MORE VARIABLES
 
 export PROJECT_TITLE="The ADS-B Receiver Project Installer"
+export PROJECT_GITHUB="https://github.com/jprochazka/adsb-receiver"
 export PROJECT_WEBSITE="https://www.adsbreceiver.net"
 export ADSB_PROJECTTITLE="$PROJECT_TITLE"
 TERMINATEDMESSAGE="  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
 
-# If git branch not already specified then set to master.
+# Set git branch to master if not already specified.
 if [[ -z ${PROJECTBRANCH} ]] ; then
     PROJECTBRANCH="master"
 fi
 
-## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
+### CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
 if [ -f $PROJECTROOTDIRECTORY/image ]; then
-    # Enable extra confirmation dialogs..
+    # Enable extra confirmation dialogs.
     VERBOSE="true"
-    # Execute image setup script..
+    # Execute image setup script.
     chmod +x $BASHDIRECTORY/image.sh
     $BASHDIRECTORY/image.sh
     if [ $? -ne 0 ]; then
-        echo ""
+        echo -e ""
         echo -e $TERMINATEDMESSAGE
-        echo ""
+        echo -e ""
         exit 1
+    else 
+        exit 0
     fi
-    exit 0
 fi
 
 ### FUNCTIONS
 
-# Only call AptUpdate if last update was more than $APT_UPDATE_THRESHOLD seconds ago
+# Only call AptUpdate if last update was more than $APT_UPDATE_THRESHOLD seconds ago.
 CURRENT_EPOCH=`date +%s`
 APT_UPDATE_EPOCH=`stat -c %Y /var/cache/apt/pkgcache.bin`
 APT_UPDATE_DELTA=`echo $[${CURRENT_EPOCH} - ${APT_UPDATE_EPOCH}]`
@@ -100,25 +102,29 @@ fi
 
 chmod +x $BASHDIRECTORY/main.sh
 $BASHDIRECTORY/main.sh
-# Catch unclean exist from main.sh
+# Catch unclean exits.
 if [ $? -ne 0 ]; then
+    echo -e ""
     echo -e $TERMINATEDMESSAGE
-    echo ""
+    echo -e ""
     exit 1
 fi
 
 ### INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\nhttps://github.com/jprochazka/adsb-receiver" 20 65
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\n ${PROJECT_GITHUB}" 20 65
 
 # Unset any exported variables.
 unset PROJECT_TITLE
+unset PROJECT_GITHUB
 unset PROJECT_WEBSITE
 unset ADSB_PROJECTTITLE
 
 # Remove the FEEDERCHOICES file created by whiptail.
-rm -f FEEDERCHOICES
+if [[ -f FEEDERCHOICES ]] ; then
+    rm -f FEEDERCHOICES
+fi
 
 echo -e "\033[32m"
 echo "Installation complete."
