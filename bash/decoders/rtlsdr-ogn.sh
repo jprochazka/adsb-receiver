@@ -218,7 +218,7 @@ fi
 ### CREATE THE CONFIGURATION FILE
 
 OGN_WHITELIST="0"
-OGN_GSM_FREQ="0"
+OGN_FREQ_CORR="0"
 OGN_GSM_FREQ="957.800"
 OGN_GSM_GAIN="35"
 
@@ -313,6 +313,9 @@ DDB:
 } ;
 #
 EOF
+
+    # Update ownership of new config file.
+    chown pi:pi $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf
 fi
 
 ### INSTALL AS A SERVICE
