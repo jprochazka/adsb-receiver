@@ -289,9 +289,9 @@ else
 #
 RF:
 { 
-  FreqCorr	= ${OGN_FREQ_CORR};      \t# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan
-  Device   	= ${OGN_DEVICE_ID}; 	 \t# 		Device index of USB RTL-SDR 
-#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 \t# char[12] 	Serial number of the rtl-sdr device to be selected
+  FreqCorr	= ${OGN_FREQ_CORR};        	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan
+  Device   	= ${OGN_DEVICE_ID}; 	   	# 		Device index of USB RTL-SDR 
+#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	   	# char[12] 	Serial number of the rtl-sdr device to be selected
   GSM:
   { 
     CenterFreq	= ${OGN_GSM_FREQ};		# [MHz]		Fnd the best GSM frequency with gsm_scan
@@ -301,9 +301,9 @@ RF:
 #
 Position:
 { 
-  Latitude	= ${OGN_LAT};    	# [deg] 	Antenna coordinates
-  Longitude	= ${OGN_LON}; 	 	# [deg] 	Antenna coordinates
-  Altitude	= ${OGN_ALT};   	# [m]   	Altitude above sea leavel
+  Latitude	= ${OGN_LAT};    		# [deg] 	Antenna coordinates
+  Longitude	= ${OGN_LON}; 	 		# [deg] 	Antenna coordinates
+  Altitude	= ${OGN_ALT};   		# [m]   	Altitude above sea leavel
   GeoidSepar	= ${OGN_GEOID};         	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
 } ;
 #
@@ -352,7 +352,7 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     sudo update-rc.d dump1090-mutability disable 2>/dev/null
 fi
 
-echo -e "\033[33m Setting up ${DECODER_NAME} as a service..."
+echo -e "\033[33m Configuring ${DECODER_NAME} as a service..."
 echo -e "\033[37m"
 sudo update-rc.d rtlsdr-ogn defaults 2>/dev/null
 
