@@ -177,31 +177,36 @@ fi
 ### ASSIGN THE RTL-SDR TUNER DEVICE TO THIS DECODER
 
 # Check for multiple tuners...
-TUNER_COUNT=`rtl_test 2>&1 | grep -c ", SN: "`
+TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
 
 # Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
 if [[ ${TUNER_COUNT} -gt 1 ]] ; then
     # If a device has been specified by serial number then try to match that with the currently detected tuners.
     if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
-        if [[ `rtl_test 2>&1 | grep -c "SN: ${OGN_DEVICE_SERIAL}" ` -eq 1 ]] ; then
-            OGN_DEVICE_ID=`rtl_test 2>&1 | grep "SN: ${OGN_DEVICE_SERIAL}" | awk -F ":" '{print $1}' | sed -e 's/\ //g' `
-            echo -e "\e[94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e [97m"
-        else
-            echo -e "\e[94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
+        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do 
+            if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
+                echo -e "\e[94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e [97m"
+                OGN_DEVICE_ID=${DEVICE_ID}
+            fi
+        done
+        # If no match for this serial then assume the highest numbered tuner will be used.
+        if [[ -z ${OGN_DEVICE_ID} ]] ; then
+            echo -e "\e[94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e [97m"
+            OGN_DEVICE_ID=${TUNER_COUNT}
         fi
     # Or if a device has been specified by device ID then confirm this is currently detected.
     elif [[ -n ${OGN_DEVICE_ID} ]] ; then
-        if [[ `rtl_test 2>&1 | grep "SN: " | grep -c "^\ *${OGN_DEVICE_ID}:"` -eq 1 ]] ; then
+        if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
             echo -e "\e[94m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e [97m"
+        # If no match for this serial then assume the highest numbered tuner will be used.
         else
-            echo -e "\e[94m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
+            echo -e "\e[94m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e [97m"
+            OGN_DEVICE_ID=${TUNER_COUNT}
         fi
     # Failing that configure it with device ID 0.
     else
-        if [[ -z ${OGN_DEVICE_ID} ]] ; then
-            echo -e "\e[94m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
-            OGN_DEVICE_ID="0"
-        fi
+        echo -e "\e[94m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e [97m"
+        OGN_DEVICE_ID=${TUNER_COUNT}
     fi
 # Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
@@ -309,7 +314,7 @@ APRS:
 #
 DDB:
 {
-  UseAsWhitelist = "${OGN_WHITELIST}";	# [0|1] 	Setting to 1 enforces strict opt in
+  UseAsWhitelist = ${OGN_WHITELIST};	# [0|1] 	Setting to 1 enforces strict opt in
 } ;
 #
 EOF
