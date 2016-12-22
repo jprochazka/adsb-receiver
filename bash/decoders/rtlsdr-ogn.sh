@@ -34,8 +34,8 @@
 ### VARIABLES
 
 PROJECT_ROOT_DIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
-BUILDDIRECTORY="$PROJECT_ROOT_DIRECTORY/build"
+BASHDIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
+BUILDDIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
 BUILDDIRECTORY_RTLSDROGN="$BUILDDIRECTORY/rtlsdr-ogn"
 
 DECODER_NAME="RTLSDR-OGN"
@@ -45,19 +45,19 @@ DECODER_WEBSITE="http://wiki.glidernet.org"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/variables.sh
-source $BASHDIRECTORY/functions.sh
+source ${BASHDIRECTORY}/variables.sh
+source ${BASHDIRECTORY}/functions.sh
 
 ### BEGIN SETUP
 
 clear
 echo -e ""
-echo -e "\e[91m  $ADSB_PROJECTTITLE"
+echo -e "\e[91m  ${ADSB_PROJECTTITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requests a dedicated SDR tuner. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
+whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requests a dedicated SDR tuner. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
 CONTINUESETUP=$?
 
 if [[ $CONTINUESETUP = 1 ]] ; then
@@ -124,28 +124,28 @@ cd ${BUILDDIRECTORY_RTLSDROGN}
 case `uname -m` in
     "armv6l")
         # Raspberry Pi 1
-        wget http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -O $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C $BUILDDIRECTORY_RTLSDROGN
+        wget http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
+        tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards
-        wget http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -O $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn-bin-ARM-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C $BUILDDIRECTORY_RTLSDROGN
+        wget http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-ARM-latest.tgz
+        tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
     "x86_64")
         # 64 Bit
-        wget http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -O $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn-bin-x64-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-x64-latest.tgz -C $BUILDDIRECTORY_RTLSDROGN
+        wget http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-x64-latest.tgz
+        tar xvzf rtlsdr-ogn-bin-x64-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
     *)
         # 32 Bit (default install if no others matched)
-        wget http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -O $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn-bin-x86-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-x86-latest.tgz -C $BUILDDIRECTORY_RTLSDROGN
+        wget http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-x86-latest.tgz
+        tar xvzf rtlsdr-ogn-bin-x86-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
 esac
 
 # Change to work directory
-cd $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn
+cd ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn
 
 # Create named pipe.
 if [[ ! -p ogn-rf.fifo ]] ; then
@@ -276,11 +276,11 @@ fi
 
 # Test if config file exists, if not create it.
 
-if [[ -s $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf ]] ; then
+if [[ -s ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_CALLSIGN}.conf ]] ; then
     echo -e "\e[94m Using existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\"...\e [97m"
 else 
     echo -e "\e[94m Generating new ${DECODER_NAME} config file as \"${OGN_CALLSIGN}.conf\"...\e [97m"
-    sudo tee $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf > /dev/null <<EOF
+    sudo tee ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_CALLSIGN}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
@@ -320,7 +320,7 @@ DDB:
 EOF
 
     # Update ownership of new config file.
-    chown pi:pi $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf
+    chown pi:pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_CALLSIGN}.conf
 fi
 
 ### INSTALL AS A SERVICE
@@ -347,12 +347,12 @@ EOF
 
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 # Less than 2 tuners present so we must stop the dump1090-mutability before starting this decoder.
-    echo -e "\033[33m Less than 2 RTL-SDR devices present so dump1090-mutability service will be disabled..."
-    echo -e "\033[37m"
+    echo -en "\033[33m Less than 2 RTL-SDR devices present so dump1090-mutability service will be disabled..."
     sudo update-rc.d dump1090-mutability disable 2>/dev/null
+    echo -e "\t\e[92m [Done]\e[39m\n"
 fi
 
-echo -e "\033[33m Configuring ${DECODER_NAME} as a service..."
+echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
 sudo update-rc.d rtlsdr-ogn defaults 2>/dev/null
 echo -e "\t\e[92m [Done]\e[39m\n"
 
@@ -365,8 +365,8 @@ echo -e "\t\e[92m [Done]\e[39m\n"
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -e "\e[94m  Entering the $ADSB_PROJECTTITLE root directory...\e[97m"
-cd $PROJECT_ROOT_DIRECTORY
+echo -e "\e[94m  Entering the ${ADSB_PROJECTTITLE} root directory...\e[97m"
+cd ${PROJECT_ROOT_DIRECTORY}
 
 echo -e ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
