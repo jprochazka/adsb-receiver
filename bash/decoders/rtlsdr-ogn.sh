@@ -270,10 +270,10 @@ fi
 
 # Test if config file exists, if not create it.
 
-if [[ -s $BUILDDIRECTORY_RTLSDROGN/${OGN_CALLSIGN}.conf ]] ; then
+if [[ -s $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf ]] ; then
     echo -e "\e [94m  Existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\" found...\e [97m"
 else 
-    sudo tee $BUILDDIRECTORY_RTLSDROGN/${OGN_CALLSIGN}.conf > /dev/null <<EOF
+    sudo tee $BUILDDIRECTORY_RTLSDROGN/rtlsdr-ogn/${OGN_CALLSIGN}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
