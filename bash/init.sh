@@ -36,13 +36,13 @@
 
 ### VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PROJECT_ROOT_DIRECTORY="$PWD"
+BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
+BUILD_DIRECTORY="$PROJECT_ROOT_DIRECTORY/build"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/functions.sh
+source $BASH_DIRECTORY/functions.sh
 
 ### MORE VARIABLES
 
@@ -59,12 +59,12 @@ fi
 
 ### CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
-if [ -f $PROJECTROOTDIRECTORY/image ]; then
+if [ -f $PROJECT_ROOT_DIRECTORY/image ]; then
     # Enable extra confirmation dialogs.
     VERBOSE="true"
     # Execute image setup script.
-    chmod +x $BASHDIRECTORY/image.sh
-    $BASHDIRECTORY/image.sh
+    chmod +x $BASH_DIRECTORY/image.sh
+    $BASH_DIRECTORY/image.sh
     if [ $? -ne 0 ]; then
         echo -e ""
         echo -e $TERMINATEDMESSAGE
@@ -100,8 +100,8 @@ fi
 
 ### EXECUTE BASH/MAIN.SH
 
-chmod +x $BASHDIRECTORY/main.sh
-$BASHDIRECTORY/main.sh
+chmod +x $BASH_DIRECTORY/main.sh
+$BASH_DIRECTORY/main.sh
 # Catch unclean exits.
 if [ $? -ne 0 ]; then
     echo -e ""

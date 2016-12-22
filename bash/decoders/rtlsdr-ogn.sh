@@ -33,9 +33,9 @@
 
 ### VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PROJECT_ROOT_DIRECTORY="$PWD"
+BASHDIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
+BUILDDIRECTORY="$PROJECT_ROOT_DIRECTORY/build"
 BUILDDIRECTORY_RTLSDROGN="$BUILDDIRECTORY/rtlsdr-ogn"
 
 DECODER_NAME="RTLSDR-OGN"
@@ -357,7 +357,7 @@ sudo service rtlsdr-ogn start
 
 # Return to the project root directory.
 echo -e "\e[94m  Entering the $ADSB_PROJECTTITLE root directory...\e[97m"
-cd $PROJECTROOTDIRECTORY
+cd $PROJECT_ROOT_DIRECTORY
 
 echo -e ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
