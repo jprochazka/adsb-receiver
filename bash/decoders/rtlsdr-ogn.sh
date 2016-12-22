@@ -39,6 +39,7 @@ BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 BUILDDIRECTORY_RTLSDROGN="$BUILDDIRECTORY/rtlsdr-ogn"
 
 DECODER_NAME="RTLSDR-OGN"
+DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
 DECODER_WEBSITE="http://wiki.glidernet.org"
 
 ### INCLUDE EXTERNAL SCRIPTS
@@ -55,7 +56,7 @@ echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} is the decoder for the Open Glider Network which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker. \n\n Please note that ${DECODER_NAME} requests a dedicated SDR tuner. \n\n $DECODER_WEBSITE \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\n Please note that ${DECODER_NAME} requests a dedicated SDR tuner. \n\n $DECODER_WEBSITE \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
 CONTINUESETUP=$?
 
 if [[ $CONTINUESETUP = 1 ]] ; then
@@ -182,7 +183,7 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
     if [[ ${OGN_DEVICE_SERIAL} ]] ; then
         if [[ `rtl_test 2>&1 | grep -c "SN: ${OGN_DEVICE_SERIAL}" ` -eq 1 ]] ; then
             OGN_DEVICE_ID=`rtl_test 2>&1 | grep "SN: ${OGN_DEVICE_SERIAL}" | awk -F ":" '{print $1}' | sed -e 's/\ //g' `
-            echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" matches device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME} ...\e [97m"
+            echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME} ...\e [97m"
         else
             echo -e "\e [94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"0\" to ${DECODER_NAME} ...\e [97m"
         fi
@@ -205,8 +206,9 @@ elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
     sudo /etc/init.d/dump1090-mutability stop
 elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
 # No tuner found.
-    echo -e "\e [94m  No RTL-SDR device detected but \"0\" to ${DECODER_NAME} for future use ...\e [97m"
+    echo -e "\e [94m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\" ...\e [97m"
     OGN_DEVICE_ID="0"
+    sudo /etc/init.d/dump1090-mutability stop
 fi
 
 ### CREATE THE CONFIGURATION FILE
@@ -215,7 +217,7 @@ OGN_WHITELIST="0"
 OGN_GSM_FREQ="957.800"
 OGN_GSM_GAIN="35"
 
-# Use receiver coordinates are already know, otherwise populate with dummy values
+# Use receiver coordinates if already know, otherwise populate with dummy values to generate a valid config file.
 
 if [[ -n ${OGN_LAT} ]] ; then
     if [[ -n ${RECEIVER_LATITUDE} ]] ; then
@@ -321,6 +323,13 @@ sudo tee /etc/rtlsdr-ogn.conf > /dev/null <<EOF
 50000  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-rf     ${OGN_CALLSIGN}.conf
 50001  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-decode ${OGN_CALLSIGN}.conf
 EOF
+
+if [[ ${TUNER_COUNT} -lt 2 ]] ; then
+# Less than 2 tuners present so we must stop the dump1090-mutability before starting this decoder.
+    echo -e "\033[33m Less than 2 RTL-SDR devices present so dump1090-mutability service will be disabled..."
+    echo -e "\033[37m"
+    sudo /etc/init.d/dump1090-mutability disable
+fi
 
 echo -e "\033[33m Setting up ${DECODER_NAME} as a service..."
 echo -e "\033[37m"
