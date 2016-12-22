@@ -289,9 +289,9 @@ else
 #
 RF:
 { 
-  FreqCorr	= ${OGN_FREQ_CORR};        	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan
-  Device   	= ${OGN_DEVICE_ID}; 	   	# 		Device index of USB RTL-SDR 
-#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	   	# char[12] 	Serial number of the rtl-sdr device to be selected
+  FreqCorr	= ${OGN_FREQ_CORR};             	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan
+  Device   	= ${OGN_DEVICE_ID};      	   	# 		Device index of USB RTL-SDR 
+#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	  	# char[12] 	Serial number of the rtl-sdr device to be selected
   GSM:
   { 
     CenterFreq	= ${OGN_GSM_FREQ};		# [MHz]		Fnd the best GSM frequency with gsm_scan
@@ -302,7 +302,7 @@ RF:
 Position:
 { 
   Latitude	= ${OGN_LAT};    		# [deg] 	Antenna coordinates
-  Longitude	= ${OGN_LON}; 	 		# [deg] 	Antenna coordinates
+  Longitude	= ${OGN_LON};           	# [deg] 	Antenna coordinates
   Altitude	= ${OGN_ALT};   		# [m]   	Altitude above sea leavel
   GeoidSepar	= ${OGN_GEOID};         	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
 } ;
@@ -314,7 +314,7 @@ APRS:
 #
 DDB:
 {
-  UseAsWhitelist = ${OGN_WHITELIST};     	# [0|1] 	Setting to 1 enforces strict opt in
+  UseAsWhitelist = ${OGN_WHITELIST};          	# [0|1] 	Setting to 1 enforces strict opt in
 } ;
 #
 EOF
