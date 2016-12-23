@@ -1,14 +1,11 @@
 #!/bin/bash
 
 #####################################################################################
-#                                   ADS-B RECEIVER                                  #
+#                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
-#  A set of scripts created to automate the process of installing the software      #
-#  needed to setup a Mode S decoder as well as feeders which are capable of         #
-#  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
-#                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-receiver            #
+# This script is not meant to be executed directly.                                 #
+# Instead execute install.sh to begin the installation process.                     #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #

@@ -31,39 +31,38 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
-
-PROJECTROOTDIRECTORY="$PWD"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-PHANTOMJSBUILDDIRECTORY="$BUILDDIRECTORY/phantomjs"
-
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/variables.sh
-source $BASHDIRECTORY/functions.sh
+source $RECEIVER_BASH_DIRECTORY/variables.sh
+source $RECEIVER_BASH_DIRECTORY/functions.sh
+
+if [ $RECEIVER_AUTOMATED_INSTALL -eq "true" ]; then
+    source $RECEIVER_CONFIGURATION_FILE
+fi
 
 ## BEGIN SETUP
 
-clear
-echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+    clear
+    echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
+fi
 echo ""
 echo -e "\e[92m  Setting up AboveTustin..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
-CONTINUESETUP=$?
-if [ $CONTINUESETUP = 1 ]; then
-    # Setup has been halted by the user.
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-    echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
+    if [ $? -eq 1 ]; then
+        # Setup has been halted by the user.
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  Setup has been halted at the request of the user."
+        echo ""
+        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[92m  AboveTustin setup halted.\e[39m"
+        echo ""
         read -p "Press enter to continue..." CONTINUE
+        exit 1
     fi
-    exit 1
 fi
 
 ## CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
@@ -92,8 +91,7 @@ else
         # Warn the user of the build time if there is no binary available for download.
         # The user should be allowed to cancel out of the setup process at this time.
         whiptail --backtitle "$ADSB_PROJECTTITLE" --title "PhantomJS Binary Not Available" --yesno "It appears there is not a precompiled PhantomJS binary available for your devices architecture.\n\nThis script is capable of downloading and compiling the PhantomJS source but THIS MAY TAKE AN EXTREMELY LONG TO TO COMPLETE. Expect the build process to range anywhere from a half our to literally hours.\n\nDo you wish to compile PhantomJS from source?" 13 78
-        CONTINUESETUP=$?
-        if [ $CONTINUESETUP = 1 ]; then
+        if [ $? -eq 1 ]; then
             # Setup has been halted by the user.
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  Setup has been halted at the request of the user."
@@ -113,8 +111,7 @@ fi
 ## GATHER TWITTER API INFORMATION FROM THE USER
 
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
-CONTINUESETUP=$?
-if [ $CONTINUESETUP = 1 ]; then
+if [ $? -eq 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."

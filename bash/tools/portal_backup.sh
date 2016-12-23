@@ -4,15 +4,14 @@
 #                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
-#  A set of scripts created to automate the process of installing the software      #
-#  needed to setup a Mode S decoder as well as feeders which are capable of         #
-#  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
-#                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-feeder              #
+#  This script was created to allow users to backup their portal data. At this      #
+#  time this script has not been integrated into the current collection of          #
+#  scripts. However this script, possibly in a modified form, will be integrated    #
+#  for simplified use by those who set up their receivers using this project.       #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
