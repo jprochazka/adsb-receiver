@@ -46,6 +46,7 @@ hard work and dedication this project would not have been possible.
 * Dump1090-Tools:             https://github.com/mutability/dump1090-tools
 * AboveTustin                 https://github.com/kevinbrandon/abovetustin
 * Beast-Splitter              https://github.com/flightaware/beast-splitter
+* bootpag                     http://botmonster.com/jquery-bootpag
 * Bootstrap:                  http://getbootstrap.com/
 * jQuery:                     http://jquery.com/
 * jQuery Steps:               http://www.jquery-steps.com
