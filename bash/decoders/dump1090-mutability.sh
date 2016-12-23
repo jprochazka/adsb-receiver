@@ -195,10 +195,10 @@ fi
 UNITOFMEASUREMENT=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by dump1090-mutbility." 11 78 2 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
 if [ $UNITOFMEASUREMENT = "Metric" ]; then
     echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Metric...\e[97m"
-    ChangeConfig "Metric" "false" "/usr/share/dump1090-mutability/html/config.js"
+    ChangeConfig "Metric" "true;" "/usr/share/dump1090-mutability/html/config.js"
 else
     echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Imperial...\e[97m"
-    ChangeConfig "Metric" "true" "/usr/share/dump1090-mutability/html/config.js"
+    ChangeConfig "Metric" "false;" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
 # Download Heywhatsthat.com maximum range rings.
