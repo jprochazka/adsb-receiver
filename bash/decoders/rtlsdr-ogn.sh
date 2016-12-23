@@ -222,12 +222,24 @@ fi
 
 ### CREATE THE CONFIGURATION FILE
 
-OGN_WHITELIST="0"
-OGN_FREQ_CORR="0"
-OGN_GSM_FREQ="957.800"
-OGN_GSM_GAIN="35"
+# Check for decoder specific variable, if not set then populate with dummy values to ensure valid config generation.
+if [[ -z ${OGN_WHITELIST} ]] ; then
+    OGN_WHITELIST="0"
+fi
 
-# Use receiver coordinates if already know, otherwise populate with dummy values to generate a valid config file.
+if [[ -z ${OGN_FREQ_CORR} ]] ; then
+    OGN_FREQ_CORR="0"
+fi
+
+if [[ -z ${OGN_GSM_FREQ} ]] ; then
+    OGN_GSM_FREQ="957.800"
+fi
+
+if [[ -z ${OGN_GSM_GAIN} ]] ; then
+    OGN_GSM_GAIN="35"
+fi
+
+# Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
 
 if [[ -z ${OGN_LAT} ]] ; then
     if [[ -n ${RECEIVER_LATITUDE} ]] ; then
