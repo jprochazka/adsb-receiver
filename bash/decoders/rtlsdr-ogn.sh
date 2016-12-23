@@ -89,7 +89,7 @@ CheckPackage libjpeg-dev
 CheckPackage libconfig9
 CheckPackage procserv
 CheckPackage telnet
-CheckPackage wget
+CheckPackage curl 
 CheckPackage lynx
 
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
@@ -124,22 +124,22 @@ cd ${BUILDDIRECTORY_RTLSDROGN}
 case `uname -m` in
     "armv6l")
         # Raspberry Pi 1
-        wget http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
+        curl http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
         tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards
-        wget http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-ARM-latest.tgz
+        curl http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -o ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-ARM-latest.tgz
         tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
     "x86_64")
         # 64 Bit
-        wget http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-x64-latest.tgz
+        curl http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -o ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-x64-latest.tgz
         tar xvzf rtlsdr-ogn-bin-x64-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
     *)
         # 32 Bit (default install if no others matched)
-        wget http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -O ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-x86-latest.tgz
+        curl http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -o ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn-bin-x86-latest.tgz
         tar xvzf rtlsdr-ogn-bin-x86-latest.tgz -C ${BUILDDIRECTORY_RTLSDROGN}
         ;;
 esac
@@ -330,7 +330,7 @@ DECODER_SERVICE_CONFIG="/etc/rtlsdr-ogn.conf"
 
 echo -e "\033[33m Downloading and setting permissions on the service script..."
 echo -e "\033[37m"
-sudo wget -q http://download.glidernet.org/common/service/rtlsdr-ogn -O ${DECODER_SERVICE_SCRIPT}
+sudo curl http://download.glidernet.org/common/service/rtlsdr-ogn -o ${DECODER_SERVICE_SCRIPT}
 sudo chmod +x ${DECODER_SERVICE_SCRIPT}
 
 echo -e "\033[33m Creating service config file \"${DECODER_SERVICE_CONFIG}\"..."
