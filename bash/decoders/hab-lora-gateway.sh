@@ -144,7 +144,7 @@ else
 ###########################################################################################
 #
 
-##### Station details #####
+##### Station Details #####
 
 tracker=${HAB_RECEIVER_NAME}
 Latitude=${HAB_LATITUDE}
@@ -154,20 +154,29 @@ Antenna=${HAB_ANTENNA}
 
 ##### Config Options #####
 
-EnableHabitat=Y		#	[Y|N]		Enables uploading of telemetry packets to Habitat
-EnableSSDV=Y		#	[Y|N]		Enables uploading of SSDV image packets to the SSDV server.
-JPGFolder=ssdv		#	<folder>	Tells the gateway where to save local JPEG files built from incoming SSDV packets.
-LogTelemetry=Y		#	[Y|N]		Enables logging of telemetry packets (ASCII only at present) to telemetry.txt.
-LogPackets=Y		#	[Y|N]		Enables logging of packet information (SNR, RSSI, length, type) to packets.txt.
-CallingTimeout=60	#	<seconds>	Sets a timeout for returning to calling mode after a period with no received packets.
-ServerPort=6004		#	[1-65535]	Opens a server socket which can have 1 client connected.  Sends JSON telemetry and status information to that client.
-#SMSFolder=./		#	<folder>	Tells the gateway to check for incoming SMS messages or tweets that should be sent to the tracker via the uplink.
-EnableDev=N		#	[Y|N]		Presumably some sort of developer mode..
+# 	EnableHabitat=	[Y|N]		Enables uploading of telemetry packets to Habitat.
+EnableHabitat=Y
+# 	EnableSSDV=	[Y|N]		Enables uploading of SSDV image packets to the SSDV server.
+EnableSSDV=Y
+# 	JPGFolder=	<folder>	Tells the gateway where to save local JPEG files built from incoming SSDV packets.
+JPGFolder=ssdv
+# 	LogTelemetry	[Y|N]		Enables logging of telemetry packets (ASCII only at present) to telemetry.txt.
+LogTelemetry=Y
+# 	LogPackets=	[Y|N]		Enables logging of packet information (SNR, RSSI, length, type) to packets.txt.
+LogPackets=Y
+# 	CallingTimeout=	<seconds>	Sets a timeout for returning to calling mode after a period with no received packets.
+CallingTimeout=60
+# 	ServerPort=	[1-65535]	Opens a server socket which can have 1 client connected.  Sends JSON telemetry and status information to that client.
+ServerPort=6004
+# 	SMSFolder=	<folder>	Tells the gateway to check for incoming SMS messages or tweets that should be sent to the tracker via the uplink.
+#SMSFolder=./
+#	EnableDev=	[Y|N]		Presumably some sort of developer mode.
+EnableDev=N
 
-#NetworkLED=22		#	<WiringPi pin>	These are used for LED status indicators.
-#InternetLED=23		#       <WiringPi pin>	Which may be useful for packaged gateways that don't have a monitor attached.	
-#ActivityLED_0=21	#       <WiringPi pin>	
-#ActivityLED_1=29	#       <WiringPi pin>	
+#	NetworkLED=	<WiringPi pin>	These are used for LED status indicators.
+#NetworkLED=22
+#	InternetLED=    <WiringPi pin>	Which may be useful for packaged gateways that don't have a monitor attached.	
+#InternetLED=23
 
 ##### Transceiver Config #####
 
@@ -185,9 +194,12 @@ EnableDev=N		#	[Y|N]		Presumably some sort of developer mode..
 
 ##### Config CE0 #####
 
-frequency_0=434.451	#	<freq in MHz>  	Sets the frequency for LoRa module.
-mode_0=1  		#	[0-4]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.
-AFC_0=Y 	 	#	[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
+#	frequency_0=	<freq in MHz>  	Sets the frequency for LoRa module.
+frequency_0=434.451
+#	mode_0=  	[0-4]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.
+mode_0=1
+#	AFC_0=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
+AFC_0=Y
 #bandwidth_0=125K	#	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.	
 #implicit_0=0		#	[Y|N]		TBC.
 #coding_0=5		#	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.
@@ -195,12 +207,15 @@ AFC_0=Y 	 	#	[Y|N]		Enables automatic frequency control (retunes by the frequenc
 #lowopt_0=0		#	[Y|N]		Enables low data rate optimization.
 #power_0=255		#	[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
 #						** Only set values that are legal in your location (for EU see IR2030) **
-DIO0_0=31		#	<WiringPi pin>
-DIO5_0=26		#	<WiringPi pin>	
+#	DIO0_0=		<WiringPi pin>
+DIO0_0=31
+#	DIO5_0=		<WiringPi pin>	
+DIO5_0=26
 #UplinkTime_0=2		#	<seconds>	When to send any uplink messages, measured as seconds into each cycle.
 #UplinkCycle_0=60	#	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00. 
 #						eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.	
-
+#	ActivityLED_0=	<WiringPi pin>
+#ActivityLED_0=21
 
 ##### Config CE1 #####
 
@@ -219,6 +234,9 @@ DIO5_0=26		#	<WiringPi pin>
 #UplinkTime_1=5		#	<seconds>	When to send any uplink messages, measured as seconds into each cycle.	
 #UplinkCycle_1=60	#	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.	
 #						eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.
+#	ActivityLED_1=	<WiringPi pin>
+#ActivityLED_1=29
+
 EOF
     # Update ownership of new config file.
     chown pi:pi ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt
@@ -246,11 +264,16 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 EOF
 
 echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
-sudo update-rc.d hab-lora-gateway defaults 2>&1 >/dev/null
+if [[ `sudo update-rc.d hab-lora-gateway defaults 2>&1 >/dev/null` ]] ; then
+    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+else
+    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+fi
+
 echo -e "\t\e[92m [Done]\e[39m\n"
 
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
-if [[ `sudo service hab-lora-gateway start` ]] ; then
+if [[ `sudo service hab-lora-gateway start 2>&1 >/dev/null` ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else 
     echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
