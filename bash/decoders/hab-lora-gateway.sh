@@ -7,8 +7,8 @@ BASHDIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
 BUILDDIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
 BUILDDIRECTORY_HAB="$BUILDDIRECTORY/hab/"
 
-DECODER_NAME="HAB-LORA-GATEWAY"
-DECODER_DESC="is Part of the LoRa Balloon Tracking System"
+DECODER_NAME="HAB-LoRa-Gateway"
+DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
 DECORDER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
 DECODER_WEBSITE="http://www.pi-in-the-sky.com"
 
@@ -166,7 +166,8 @@ EnableDev=N		#	[Y|N]		Presumably some sort of developer mode..
 ##### Transceiver Config #####
 
 # Channel specific configuration for each LoRa module with each variable in the $variable_n format where n = 0 for the first, 1 for the second etc.
-
+# If the frequency_n line is commented out, then that channel is disabled.
+#
 # There are a number of preset "modes" which can be used to configure a module for various roles:
 #	
 #	0 = (normal for telemetry)  		Explicit mode, Error coding 4:8, Bandwidth 20.8 kHz, SF 11, Low data rate optimize on
@@ -213,6 +214,9 @@ DIO5_0=26		#	<WiringPi pin>
 #UplinkCycle_1=60	#	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.	
 #						eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.
 EOF
+    # Update ownership of new config file.
+    chown pi:pi ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt
+fi
 
 ### INSTALL AS A SERVICE
 
