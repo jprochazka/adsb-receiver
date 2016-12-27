@@ -241,27 +241,27 @@ fi
 
 # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
 
-if [[ -z ${OGN_LAT} ]] ; then
+if [[ -z ${OGN_LATITUDE} ]] ; then
     if [[ -n ${RECEIVER_LATITUDE} ]] ; then
-        OGN_LAT="${RECEIVER_LATITUDE}"
+        OGN_LATITUDE="${RECEIVER_LATITUDE}"
     else
-        OGN_LAT="0.0000000"
+        OGN_LATITUDE="0.0000000"
     fi
 fi
 
-if [[ -z ${OGN_LON} ]] ; then
+if [[ -z ${OGN_LONGITUDE} ]] ; then
     if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
-        OGN_LON="${RECEIVER_LONGITUDE}"
+        OGN_LONGITUDE="${RECEIVER_LONGITUDE}"
     else
-        OGN_LON="0.0000000"
+        OGN_LONGITUDE="0.0000000"
     fi
 fi 
 
-if [[ -z ${OGN_ALT} ]] ; then
+if [[ -z ${OGN_ALTITUDE} ]] ; then
     if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
-         OGN_ALT="${RECIEVER_ALTITUDE}"
+         OGN_ALTITUDE="${RECIEVER_ALTITUDE}"
     else
-         OGN_ALT="0"
+         OGN_ALTITUDE="0"
     fi
 fi
 
@@ -278,26 +278,26 @@ fi
 
 # Callsign should be between 3 and 9 alphanumeric charactors, with no punctuation
 # Please see: 	http://wiki.glidernet.org/receiver-naming-convention
-if [[ -z ${OGN_CALLSIGN} ]] ; then
-    if [[ -n ${OGN_RECEIVER_NAME} ]] ; then 
-        OGN_CALLSIGN=`echo ${OGN_RECEIVER_NAME} | tr -cd '[:alnum:]' | cut -c -9`
+if [[ -z ${OGN_RECEIVER_NAME} ]] ; then
+    if [[ -n ${RECEIVERNAME} ]] ; then 
+        OGN_RECEIVER_NAME=`echo ${RECEIVERNAME} | tr -cd '[:alnum:]' | cut -c -9`
     else
-        OGN_CALLSIGN=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
+        OGN_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
     fi
 fi
 
 # Test if config file exists, if not create it.
 
-if [[ -s ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_CALLSIGN}.conf ]] ; then
-    echo -e "\e[94m Using existing ${DECODER_NAME} config file \"${OGN_CALLSIGN}.conf\"...\e [97m"
+if [[ -s ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
+    echo -e "\e[94m Using existing ${DECODER_NAME} config file \"${OGN_RECEIVER_NAME}.conf\"...\e [97m"
 else 
-    echo -e "\e[94m Generating new ${DECODER_NAME} config file as \"${OGN_CALLSIGN}.conf\"...\e [97m"
-    sudo tee ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_CALLSIGN}.conf > /dev/null <<EOF
+    echo -e "\e[94m Generating new ${DECODER_NAME} config file as \"${OGN_RECEIVER_NAME}.conf\"...\e [97m"
+    sudo tee ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
 #                                                                                         #
-##########################################################################################
+###########################################################################################
 #
 RF:
 { 
@@ -313,15 +313,15 @@ RF:
 #
 Position:
 { 
-  Latitude	= ${OGN_LAT};    		# [deg] 	Antenna coordinates in decimal degrees
-  Longitude	= ${OGN_LON};           	# [deg] 	Antenna coordinates in decimal degrees
-  Altitude	= ${OGN_ALT};   		# [m]   	Altitude above sea leavel
+  Latitude	= ${OGN_LATITUDE};    		# [deg] 	Antenna coordinates in decimal degrees
+  Longitude	= ${OGN_LONGITUDE};           	# [deg] 	Antenna coordinates in decimal degrees
+  Altitude	= ${OGN_ALTITUDE};   		# [m]   	Altitude above sea leavel
   GeoidSepar	= ${OGN_GEOID};           	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
 } ;
 #
 APRS:
 {
-  Call		= "${OGN_CALLSIGN}";  	# 		APRS callsign (max. 9 characters)
+  Call		= "${OGN_RECEIVER_NAME}";  	# 		APRS callsign (max. 9 characters)
 } ;
 #
 DDB:
@@ -332,7 +332,7 @@ DDB:
 EOF
 
     # Update ownership of new config file.
-    chown pi:pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_CALLSIGN}.conf
+    chown pi:pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf
 fi
 
 ### INSTALL AS A SERVICE
@@ -353,8 +353,8 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50000  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-rf     ${OGN_CALLSIGN}.conf
-50001  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-decode ${OGN_CALLSIGN}.conf
+50000  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
+50001  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
 
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
