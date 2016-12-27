@@ -73,25 +73,29 @@ fi
 # Download and compile the required SSDV library.
 if [[ -d ${BUILDDIRECTORY_HAB}/ssdv ]] ; then
     cd ${BUILDDIRECTORY_HAB}/ssdv
+    sudo make clean 
     git pull
+    sudo make install
 else
     cd ${BUILDDIRECTORY_HAB}
     git clone https://github.com/fsphil/ssdv.git
     cd ${BUILDDIRECTORY_HAB}/ssdv
+    sudo make install
 fi
-sudo make install
 cd ${BUILDDIRECTORY_HAB}
 
 # Download and compile the decoder itself.
 if [[ -d ${BUILDDIRECTORY_HAB}/lora-gateway ]] ; then
     cd ${BUILDDIRECTORY_HAB}/lora-gateway
+    make clean
     git pull
+    make
 else
     cd ${BUILDDIRECTORY_HAB}
     git clone https://github.com/PiInTheSky/lora-gateway.git
     cd ${BUILDDIRECTORY_HAB}/lora-gateway
+    make
 fi
-make
 cd ${BUILDDIRECTORY_HAB}
 
 # TODO - Map GPIO pins using WiringPi.
@@ -247,13 +251,11 @@ fi
 #DECODER_SERVICE_SCRIPT="/etc/init.d/hab-lora-gateway"
 DECODER_SERVICE_CONFIG="/etc/hab-lora-gateway.conf"
 
-#echo -e "\033[33m Downloading and setting permissions on the service script..."
-#echo -e "\033[37m"
+#echo -en "\033[33m Downloading and setting permissions on the service script..."
 #sudo curl http:// -o ${DECODER_SERVICE_SCRIPT}
 #sudo chmod +x ${DECODER_SERVICE_SCRIPT}
 
-echo -e "\033[33m Creating service config file \"${DECODER_SERVICE_CONFIG}\"..."
-echo -e "\033[37m"
+echo -en"\033[33m Creating service config file \"${DECODER_SERVICE_CONFIG}\"..."
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -262,9 +264,14 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #port  user     directory                 command       args
 50100  pi ${BUILDDIRECTORY_HAB}/lora-gateway    ./gateway  
 EOF
+if [[ $? -eq 0 ]] ; then
+    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+else
+    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+fi
 
 echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
-sudo update-rc.d hab-lora-gateway defaults 2>&1 >/dev/null
+sudo update-rc.d hab-lora-gateway defaults 2>&1 > /dev/null
 if [[ $? -eq 0 ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else
@@ -272,7 +279,7 @@ else
 fi
 
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
-sudo service hab-lora-gateway start 2>&1 >/dev/null
+sudo service hab-lora-gateway start 2>&1 > /dev/null
 if [[ $? -eq 0 ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else 
@@ -288,7 +295,7 @@ echo -e "\e[94m  Entering the ${ADSB_PROJECTTITLE} root directory...\e[97m"
 cd ${PROJECT_ROOT_DIRECTORY}
 
 echo -e ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[93m-------------------------------------------------------------------------------------------------------\n"
 echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ ! -z ${VERBOSE} ]] ; then
