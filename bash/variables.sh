@@ -36,6 +36,9 @@
 # The ADS-B Receiver Project
 PROJECT_VERSION="2.6.0"
 
+# RTL-SDR OGN
+RTLSDROGN_VERSION="0.2.5"
+
 # FlightAware PiAware
 PIAWARE_VERSION="3.1.0"
 
