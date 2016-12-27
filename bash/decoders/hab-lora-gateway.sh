@@ -69,22 +69,28 @@ fi
 if [[ ! -d ${BUILDDIRECTORY_HAB} ]] ; then
     mkdir ${BUILDDIRECTORY_HAB}
 fi
-cd ${BUILDDIRECTORY_HAB}
-
 
 # Download and compile the required SSDV library.
-
-cd ${BUILDDIRECTORY_HAB}
-git clone https://github.com/fsphil/ssdv.git
-cd ${BUILDDIRECTORY_HAB}/ssdv
+if [[ -d ${BUILDDIRECTORY_HAB}/ssdv ]] ; then
+    cd ${BUILDDIRECTORY_HAB}/ssdv
+    git pull
+else
+    cd ${BUILDDIRECTORY_HAB}
+    git clone https://github.com/fsphil/ssdv.git
+    cd ${BUILDDIRECTORY_HAB}/ssdv
+fi
 sudo make install
 cd ${BUILDDIRECTORY_HAB}
 
 # Download and compile the decoder itself.
-
-cd ${BUILDDIRECTORY_HAB}
-git clone https://github.com/PiInTheSky/lora-gateway.git
-cd ${BUILDDIRECTORY_HAB}/lora-gateway
+if [[ -d ${BUILDDIRECTORY_HAB}/lora-gateway ]] ; then
+    cd ${BUILDDIRECTORY_HAB}/lora-gateway
+    git pull
+else
+    cd ${BUILDDIRECTORY_HAB}
+    git clone https://github.com/PiInTheSky/lora-gateway.git
+    cd ${BUILDDIRECTORY_HAB}/lora-gateway
+fi
 make
 cd ${BUILDDIRECTORY_HAB}
 
@@ -244,8 +250,11 @@ sudo update-rc.d hab-lora-gateway defaults 2>&1 >/dev/null
 echo -e "\t\e[92m [Done]\e[39m\n"
 
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
-sudo service hab-lora-gateway start
-echo -e "\t\e[92m [Done]\e[39m\n"
+if [[ `sudo service hab-lora-gateway start` ]] ; then
+    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+else 
+    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+fi
 
 ### ARCHIVE SETUP PACKAGES
 
