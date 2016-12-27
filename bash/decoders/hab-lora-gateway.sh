@@ -5,7 +5,7 @@
 PROJECT_ROOT_DIRECTORY="$PWD"
 BASHDIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
 BUILDDIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
-BUILDDIRECTORY_HAB="$BUILDDIRECTORY/hab/"
+BUILDDIRECTORY_HAB="$BUILDDIRECTORY/hab"
 
 DECODER_NAME="HAB-LoRa-Gateway"
 DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
@@ -148,7 +148,7 @@ else
 
 tracker=${HAB_RECEIVER_NAME}
 Latitude=${HAB_LATITUDE}
-Longitude=${HAB_ALTITUDE}
+Longitude=${HAB_LONGITUDE}
 Antenna=${HAB_ANTENNA}
 
 
