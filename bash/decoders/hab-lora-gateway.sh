@@ -264,16 +264,16 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 EOF
 
 echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
-if [[ `sudo update-rc.d hab-lora-gateway defaults 2>&1 >/dev/null` ]] ; then
+sudo update-rc.d hab-lora-gateway defaults 2>&1 >/dev/null
+if [[ $? -eq 0 ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else
     echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
 fi
 
-echo -e "\t\e[92m [Done]\e[39m\n"
-
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
-if [[ `sudo service hab-lora-gateway start 2>&1 >/dev/null` ]] ; then
+sudo service hab-lora-gateway start 2>&1 >/dev/null
+if [[ $? -eq 0 ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else 
     echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
