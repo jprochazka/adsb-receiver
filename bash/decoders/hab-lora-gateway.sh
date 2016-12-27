@@ -137,9 +137,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt ]] ; then
-    echo -e "\e[94m Using existing ${DECODER_NAME} config file \"gateway.txt\"...\e [97m"
+    echo -en "\e[33m Using existing ${DECODER_NAME} config file \"gateway.txt\"...\e [97m"
 else
-    echo -e "\e[94m Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
+    echo -en "\e[33m Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
     sudo tee ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -242,8 +242,14 @@ DIO5_0=26
 #ActivityLED_1=29
 
 EOF
-    # Update ownership of new config file.
-    chown pi:pi ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt
+fi
+
+# Update ownership of new config file.
+chown pi:pi ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt
+if [[ $? -eq 0 ]] ; then
+    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+else
+    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
 fi
 
 ### INSTALL AS A SERVICE
