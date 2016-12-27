@@ -17,6 +17,14 @@ DECODER_WEBSITE="http://www.pi-in-the-sky.com"
 source ${BASHDIRECTORY}/variables.sh
 source ${BASHDIRECTORY}/functions.sh
 
+function ReturnCode {
+if [[ $? -eq 0 ]] ; then
+    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+else
+    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+fi
+}
+
 ### BEGIN SETUP
 
 clear
@@ -246,11 +254,12 @@ fi
 
 # Update ownership of new config file.
 chown pi:pi ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt
-if [[ $? -eq 0 ]] ; then
-    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-else
-    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-fi
+ReturnCode
+#if [[ $? -eq 0 ]] ; then
+#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+#else
+#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+#fi
 
 ### INSTALL AS A SERVICE
 
@@ -270,27 +279,30 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #port  user     directory                 command       args
 50100  pi ${BUILDDIRECTORY_HAB}/lora-gateway    ./gateway  
 EOF
-if [[ $? -eq 0 ]] ; then
-    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-else
-    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-fi
+ReturnCode
+#if [[ $? -eq 0 ]] ; then
+#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+#else
+#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+#fi
 
 echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
 sudo update-rc.d hab-lora-gateway defaults 2>&1 > /dev/null
-if [[ $? -eq 0 ]] ; then
-    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-else
-    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-fi
+ReturnCode
+#if [[ $? -eq 0 ]] ; then
+#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+#else
+#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+#fi
 
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
 sudo service hab-lora-gateway start 2>&1 > /dev/null
-if [[ $? -eq 0 ]] ; then
-    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-else 
-    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-fi
+ReturnCode
+#if [[ $? -eq 0 ]] ; then
+#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+#else 
+#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+#fi
 
 ### ARCHIVE SETUP PACKAGES
 
