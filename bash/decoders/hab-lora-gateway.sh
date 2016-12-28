@@ -63,12 +63,14 @@ CheckPackage libncurses5-dev
 CheckPackage libcurl4-openssl-dev
 CheckPackage curl
 CheckPackage wiringpi
+echo -e ""
 
 # Check if SPI is enabled, if not use raspi-config to enable it.
 if [[ `sudo raspi-config nonint get_spi` -eq 1 ]] ; then
     echo -en "\033[33m Enabling SPI interface used by LoRa radio module..."
     sudo raspi-config nonint do_spi 0
     CheckReturnCode
+    echo -e ""
 fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
@@ -80,6 +82,7 @@ if [[ ! -d ${BUILD_DIRECTORY_HAB} ]] ; then
     echo -en "\033[33m Creating build directory \"${BUILD_DIRECTORY_HAB}\"...\t\t\t"
     mkdir ${BUILD_DIRECTORY_HAB}
     CheckReturnCode
+    echo -e ""
 fi
 
 # Download and compile the required SSDV library.
@@ -100,6 +103,7 @@ else
     sudo make install
 fi
 CheckReturnCode
+echo -e ""
 cd ${BUILD_DIRECTORY_HAB}
 
 # Download and compile the decoder itself.
@@ -120,6 +124,7 @@ else
     make
 fi
 CheckReturnCode
+echo -e ""
 cd ${BUILD_DIRECTORY_HAB}
 
 # TODO - Map GPIO pins using WiringPi.
@@ -271,6 +276,7 @@ fi
 # Update ownership of new config file.
 chown pi:pi ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null 2>&1
 CheckReturnCode
+echo -e ""
 
 ### INSTALL AS A SERVICE
 
@@ -316,4 +322,4 @@ if [[ ! -z ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
-exit 0
+Exit 0
