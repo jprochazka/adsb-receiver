@@ -293,7 +293,7 @@ ReturnCode
 #fi
 
 echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
-sudo update-rc.d hab-lora-gateway defaults 2>&1 > /dev/null
+sudo update-rc.d hab-lora-gateway defaults > /dev/null 2>&1
 ReturnCode
 #if [[ $? -eq 0 ]] ; then
 #    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
@@ -302,7 +302,7 @@ ReturnCode
 #fi
 
 echo -en "\033[33m Starting the ${DECODER_NAME} service..."
-sudo service hab-lora-gateway start 2>&1 > /dev/null
+sudo service hab-lora-gateway start > /dev/null 2>&1
 ReturnCode
 #if [[ $? -eq 0 ]] ; then
 #    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
