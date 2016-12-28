@@ -84,7 +84,7 @@ fi
 
 # Download and compile the required SSDV library.
 if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
-    echo -en "\033[33m Updating SSDV library from github...\t\t\t"
+    echo -en "\033[33m Updating SSDV library from github...\t\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -93,7 +93,7 @@ if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\033[33m Cloning SSDV library from github...\t\t\t"
+    echo -en "\033[33m Cloning SSDV library from github...\t\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}
     git clone https://github.com/fsphil/ssdv.git
     cd ${BUILD_DIRECTORY_HAB}/ssdv
@@ -164,7 +164,7 @@ if [[ -s ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt ]] ; then
     echo -en "\e[33m Found existing ${DECODER_NAME} config file at \"gateway.txt\"...\e [97m"
 else
     echo -en "\e[33m Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
-    sudo tee ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt 2>&1 > /dev/null <<EOF
+    sudo tee ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #
