@@ -308,7 +308,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\033[94m  Returning to the ${PROJECT_TITLE} root directory...\e[97m\t\t"
+echo -en "\033[94m  Returning to ${PROJECT_TITLE} root directory...\e[97m"
 cd ${PROJECT_ROOT_DIRECTORY}
 CheckReturnCode
 
