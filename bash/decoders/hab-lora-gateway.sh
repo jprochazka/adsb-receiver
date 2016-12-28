@@ -81,9 +81,12 @@ fi
 # Download and compile the required SSDV library.
 if [[ -d ${BUILDDIRECTORY_HAB}/ssdv ]] ; then
     cd ${BUILDDIRECTORY_HAB}/ssdv
-    sudo make clean 
-    git pull
-    sudo make install
+    git remote update
+    if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+        sudo make clean
+        git pull
+        sudo make install
+    fi
 else
     cd ${BUILDDIRECTORY_HAB}
     git clone https://github.com/fsphil/ssdv.git
