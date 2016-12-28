@@ -4,8 +4,8 @@
 
 PROJECT_ROOT_DIRECTORY="$PWD"
 BASHDIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
-BUILDDIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
-BUILDDIRECTORY_HAB="$BUILDDIRECTORY/hab"
+BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
+BUILD_DIRECTORY_HAB="$BUILD_DIRECTORY/hab"
 
 DECODER_NAME="HAB-LoRa-Gateway"
 DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
@@ -17,7 +17,7 @@ DECODER_WEBSITE="http://www.pi-in-the-sky.com"
 source ${BASHDIRECTORY}/variables.sh
 source ${BASHDIRECTORY}/functions.sh
 
-function ReturnCode {
+function CheckReturnCode {
 if [[ $? -eq 0 ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else
@@ -66,7 +66,9 @@ CheckPackage wiringpi
 
 # Check if SPI is enabled, if not use raspi-config to enable it.
 if [[ `sudo raspi-config nonint get_spi` -eq 1 ]] ; then
+    echo -en "\033[33m Enabling SPI interface used by LoRa radio module..."
     sudo raspi-config nonint do_spi 0
+    CheckReturnCode
 fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
@@ -74,13 +76,16 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d ${BUILDDIRECTORY_HAB} ]] ; then
-    mkdir ${BUILDDIRECTORY_HAB}
+if [[ ! -d ${BUILD_DIRECTORY_HAB} ]] ; then
+    echo -en "\033[33m Creating build directory \"${BUILD_DIRECTORY_HAB}\"..."
+    mkdir ${BUILD_DIRECTORY_HAB}
+    CheckReturnCode
 fi
 
 # Download and compile the required SSDV library.
-if [[ -d ${BUILDDIRECTORY_HAB}/ssdv ]] ; then
-    cd ${BUILDDIRECTORY_HAB}/ssdv
+if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
+    echo -en "\033[33m Updating SSDV library from github..."
+    cd ${BUILD_DIRECTORY_HAB}/ssdv
     git remote update
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         sudo make clean
@@ -88,16 +93,19 @@ if [[ -d ${BUILDDIRECTORY_HAB}/ssdv ]] ; then
         sudo make install
     fi
 else
-    cd ${BUILDDIRECTORY_HAB}
+    echo -en "\033[33m Cloning SSDV library from github..."
+    cd ${BUILD_DIRECTORY_HAB}
     git clone https://github.com/fsphil/ssdv.git
-    cd ${BUILDDIRECTORY_HAB}/ssdv
+    cd ${BUILD_DIRECTORY_HAB}/ssdv
     sudo make install
 fi
-cd ${BUILDDIRECTORY_HAB}
+CheckReturnCode
+cd ${BUILD_DIRECTORY_HAB}
 
 # Download and compile the decoder itself.
-if [[ -d ${BUILDDIRECTORY_HAB}/lora-gateway ]] ; then
-    cd ${BUILDDIRECTORY_HAB}/lora-gateway
+if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
+    echo -en "\033[33m Updating ${DECODER_NAME} from github..."
+    cd ${BUILD_DIRECTORY_HAB}/lora-gateway
     git remote update
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         make clean
@@ -105,12 +113,14 @@ if [[ -d ${BUILDDIRECTORY_HAB}/lora-gateway ]] ; then
         make
     fi
 else
-    cd ${BUILDDIRECTORY_HAB}
+    echo -en "\033[33m Cloning ${DECODER_NAME} from github..."
+    cd ${BUILD_DIRECTORY_HAB}
     git clone https://github.com/PiInTheSky/lora-gateway.git
-    cd ${BUILDDIRECTORY_HAB}/lora-gateway
+    cd ${BUILD_DIRECTORY_HAB}/lora-gateway
     make
 fi
-cd ${BUILDDIRECTORY_HAB}
+CheckReturnCode
+cd ${BUILD_DIRECTORY_HAB}
 
 # TODO - Map GPIO pins using WiringPi.
 
@@ -150,11 +160,11 @@ if [[ -z ${HAB_ANTENNA} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt ]] ; then
-    echo -en "\e[33m Using existing ${DECODER_NAME} config file \"gateway.txt\"...\e [97m"
+if [[ -s ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt ]] ; then
+    echo -en "\e[33m Found existing ${DECODER_NAME} config file at \"gateway.txt\"...\e [97m"
 else
     echo -en "\e[33m Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
-    sudo tee ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null <<EOF
+    sudo tee ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #
@@ -259,13 +269,8 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${BUILDDIRECTORY_HAB}/lora-gateway/gateway.txt
-ReturnCode
-#if [[ $? -eq 0 ]] ; then
-#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-#else
-#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-#fi
+chown pi:pi ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt
+CheckReturnCode
 
 ### INSTALL AS A SERVICE
 
@@ -283,32 +288,17 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50100  pi ${BUILDDIRECTORY_HAB}/lora-gateway    ./gateway  
+50100  pi ${BUILD_DIRECTORY_HAB}/lora-gateway    ./gateway  
 EOF
-ReturnCode
-#if [[ $? -eq 0 ]] ; then
-#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-#else
-#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-#fi
+CheckReturnCode
 
-echo -en "\033[33m Configuring ${DECODER_NAME} as a service..."
+echo -en "\033[33m Configuring ${DECODER_NAME} as a service...\t"
 sudo update-rc.d hab-lora-gateway defaults > /dev/null 2>&1
-ReturnCode
-#if [[ $? -eq 0 ]] ; then
-#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-#else
-#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-#fi
+CheckReturnCode
 
-echo -en "\033[33m Starting the ${DECODER_NAME} service..."
+echo -en "\033[33m Starting the ${DECODER_NAME} service...\t\t"
 sudo service hab-lora-gateway start > /dev/null 2>&1
-ReturnCode
-#if [[ $? -eq 0 ]] ; then
-#    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-#else 
-#    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
-#fi
+CheckReturnCode
 
 ### ARCHIVE SETUP PACKAGES
 
