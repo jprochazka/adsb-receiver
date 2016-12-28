@@ -151,9 +151,14 @@ function UpdateRepository() {
     echo ""
     git checkout $PROJECTBRANCH
     echo ""
-    echo -e "\e[94m  Pulling the latest git repository...\e[97m"
+    git remote update
     echo ""
-    git pull
+    if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+       echo -e "\e[94m  Pulling the latest git repository...\e[97m"
+       git pull
+    else
+       echo -e "\e[94m  Local install matches the latest git repository...\e[97m"
+    fi
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the $ADSB_PROJECTTITLE git repository....\e[39m"

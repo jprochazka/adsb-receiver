@@ -98,9 +98,12 @@ cd ${BUILDDIRECTORY_HAB}
 # Download and compile the decoder itself.
 if [[ -d ${BUILDDIRECTORY_HAB}/lora-gateway ]] ; then
     cd ${BUILDDIRECTORY_HAB}/lora-gateway
-    make clean
-    git pull
-    make
+    git remote update
+    if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+        make clean
+        git pull
+        make
+    fi
 else
     cd ${BUILDDIRECTORY_HAB}
     git clone https://github.com/PiInTheSky/lora-gateway.git
