@@ -287,7 +287,7 @@ DECODER_SERVICE_CONFIG="/etc/hab-lora-gateway.conf"
 #sudo curl http:// -o ${DECODER_SERVICE_SCRIPT}
 #sudo chmod +x ${DECODER_SERVICE_SCRIPT}
 
-echo -en "\033[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"..."
+echo -en "\033[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\t"
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
