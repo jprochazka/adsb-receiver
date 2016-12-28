@@ -86,7 +86,7 @@ fi
 if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
     echo -en "\033[33m Updating SSDV library from github..."
     cd ${BUILD_DIRECTORY_HAB}/ssdv
-    git remote update
+    git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         sudo make clean
         git pull
@@ -106,7 +106,7 @@ cd ${BUILD_DIRECTORY_HAB}
 if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
     echo -en "\033[33m Updating ${DECODER_NAME} from github..."
     cd ${BUILD_DIRECTORY_HAB}/lora-gateway
-    git remote update
+    git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         make clean
         git pull
@@ -281,7 +281,7 @@ DECODER_SERVICE_CONFIG="/etc/hab-lora-gateway.conf"
 #sudo curl http:// -o ${DECODER_SERVICE_SCRIPT}
 #sudo chmod +x ${DECODER_SERVICE_SCRIPT}
 
-echo -en "\033[33m Creating service config file \"${DECODER_SERVICE_CONFIG}\"..."
+echo -en "\033[33m Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\n"
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -292,11 +292,11 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 EOF
 CheckReturnCode
 
-echo -en "\033[33m Configuring ${DECODER_NAME} as a service...\t"
+echo -en "\033[33m Configuring ${DECODER_NAME} as a service...\t\t\t"
 sudo update-rc.d hab-lora-gateway defaults > /dev/null 2>&1
 CheckReturnCode
 
-echo -en "\033[33m Starting the ${DECODER_NAME} service...\t\t"
+echo -en "\033[33m Starting the ${DECODER_NAME} service...\t\t\t"
 sudo service hab-lora-gateway start > /dev/null 2>&1
 CheckReturnCode
 
