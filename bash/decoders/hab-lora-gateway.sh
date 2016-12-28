@@ -34,7 +34,7 @@ echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requests a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
+whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
 CONTINUESETUP=$?
 
 if [[ $CONTINUESETUP = 1 ]] ; then
@@ -77,14 +77,14 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${BUILD_DIRECTORY_HAB} ]] ; then
-    echo -en "\033[33m Creating build directory \"${BUILD_DIRECTORY_HAB}\"..."
+    echo -en "\033[33m Creating build directory \"${BUILD_DIRECTORY_HAB}\"...\t\t\t"
     mkdir ${BUILD_DIRECTORY_HAB}
     CheckReturnCode
 fi
 
 # Download and compile the required SSDV library.
 if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
-    echo -en "\033[33m Updating SSDV library from github..."
+    echo -en "\033[33m Updating SSDV library from github...\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -93,7 +93,7 @@ if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\033[33m Cloning SSDV library from github..."
+    echo -en "\033[33m Cloning SSDV library from github...\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}
     git clone https://github.com/fsphil/ssdv.git
     cd ${BUILD_DIRECTORY_HAB}/ssdv
@@ -104,7 +104,7 @@ cd ${BUILD_DIRECTORY_HAB}
 
 # Download and compile the decoder itself.
 if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
-    echo -en "\033[33m Updating ${DECODER_NAME} from github..."
+    echo -en "\033[33m Updating ${DECODER_NAME} from github...\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -113,7 +113,7 @@ if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
         make
     fi
 else
-    echo -en "\033[33m Cloning ${DECODER_NAME} from github..."
+    echo -en "\033[33m Cloning ${DECODER_NAME} from github...\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}
     git clone https://github.com/PiInTheSky/lora-gateway.git
     cd ${BUILD_DIRECTORY_HAB}/lora-gateway
@@ -164,7 +164,7 @@ if [[ -s ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt ]] ; then
     echo -en "\e[33m Found existing ${DECODER_NAME} config file at \"gateway.txt\"...\e [97m"
 else
     echo -en "\e[33m Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
-    sudo tee ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null <<EOF
+    sudo tee ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt 2>&1 > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #
