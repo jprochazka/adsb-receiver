@@ -67,7 +67,7 @@ echo -e ""
 
 # Check if SPI is enabled, if not use raspi-config to enable it.
 if [[ `sudo raspi-config nonint get_spi` -eq 1 ]] ; then
-    echo -en "\033[33m Enabling SPI interface used by LoRa radio module..."
+    echo -en "\033[33m  Enabling SPI interface used by LoRa radio module..."
     sudo raspi-config nonint do_spi 0
     CheckReturnCode
     echo -e ""
@@ -79,7 +79,7 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${BUILD_DIRECTORY_HAB} ]] ; then
-    echo -en "\033[33m Creating build directory \"${BUILD_DIRECTORY_HAB}\"...\t\t\t"
+    echo -en "\033[33m  Creating build directory \"${BUILD_DIRECTORY_HAB}\"...\t\t\t"
     mkdir ${BUILD_DIRECTORY_HAB}
     CheckReturnCode
     echo -e ""
@@ -87,7 +87,7 @@ fi
 
 # Download and compile the required SSDV library.
 if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
-    echo -en "\033[33m Updating SSDV library from github...\t\t\t\t"
+    echo -en "\033[33m  Updating SSDV library from github...\t\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -96,7 +96,7 @@ if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\033[33m Cloning SSDV library from github...\t\t\t\t"
+    echo -en "\033[33m  Cloning SSDV library from github...\t\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}
     git clone https://github.com/fsphil/ssdv.git
     cd ${BUILD_DIRECTORY_HAB}/ssdv
@@ -108,7 +108,7 @@ cd ${BUILD_DIRECTORY_HAB}
 
 # Download and compile the decoder itself.
 if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
-    echo -en "\033[33m Updating ${DECODER_NAME} from github...\t\t\t"
+    echo -en "\033[33m  Updating ${DECODER_NAME} from github...\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -117,7 +117,7 @@ if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
         make
     fi
 else
-    echo -en "\033[33m Cloning ${DECODER_NAME} from github...\t\t\t"
+    echo -en "\033[33m  Cloning ${DECODER_NAME} from github...\t\t\t"
     cd ${BUILD_DIRECTORY_HAB}
     git clone https://github.com/PiInTheSky/lora-gateway.git
     cd ${BUILD_DIRECTORY_HAB}/lora-gateway
@@ -166,9 +166,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt ]] ; then
-    echo -en "\e[33m Found existing ${DECODER_NAME} config file at \"gateway.txt\"...\e [97m"
+    echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"gateway.txt\"...\e [97m"
 else
-    echo -en "\e[33m Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
     sudo tee ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -287,7 +287,7 @@ DECODER_SERVICE_CONFIG="/etc/hab-lora-gateway.conf"
 #sudo curl http:// -o ${DECODER_SERVICE_SCRIPT}
 #sudo chmod +x ${DECODER_SERVICE_SCRIPT}
 
-echo -en "\033[33m Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\n"
+echo -en "\033[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\n"
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -298,11 +298,11 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null <<EOF
 EOF
 CheckReturnCode
 
-echo -en "\033[33m Configuring ${DECODER_NAME} as a service...\t\t\t"
+echo -en "\033[33m  Configuring ${DECODER_NAME} as a service...\t\t\t"
 sudo update-rc.d hab-lora-gateway defaults > /dev/null 2>&1
 CheckReturnCode
 
-echo -en "\033[33m Starting the ${DECODER_NAME} service...\t\t\t"
+echo -en "\033[33m  Starting the ${DECODER_NAME} service...\t\t\t"
 sudo service hab-lora-gateway start > /dev/null 2>&1
 CheckReturnCode
 
