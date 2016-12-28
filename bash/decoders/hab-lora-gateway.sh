@@ -308,7 +308,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\033[94m  Returning to the ${ADSB_PROJECTTITLE} root directory...\e[97m"
+echo -en "\033[94m  Returning to the ${ADSB_PROJECTTITLE} root directory...\e[97m\t\t"
 cd ${PROJECT_ROOT_DIRECTORY}
 CheckReturnCode
 
