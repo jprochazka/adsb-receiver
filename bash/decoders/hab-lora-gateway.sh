@@ -322,4 +322,5 @@ if [[ ! -z ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
-Exit 0
+exit 0
+
