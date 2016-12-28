@@ -29,12 +29,12 @@ fi
 
 clear
 echo -e ""
-echo -e "\e[91m  ${ADSB_PROJECTTITLE}"
+echo -e "\e[91m  ${PROJECT_TITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
+whiptail --backtitle "${PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
 CONTINUESETUP=$?
 
 if [[ $CONTINUESETUP = 1 ]] ; then
@@ -308,7 +308,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\033[94m  Returning to the ${ADSB_PROJECTTITLE} root directory...\e[97m\t\t"
+echo -en "\033[94m  Returning to the ${PROJECT_TITLE} root directory...\e[97m\t\t"
 cd ${PROJECT_ROOT_DIRECTORY}
 CheckReturnCode
 
