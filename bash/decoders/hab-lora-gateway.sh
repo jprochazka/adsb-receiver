@@ -1,9 +1,41 @@
 #!/bin/bash
 
+#####################################################################################
+#                                  ADS-B RECEIVER                                   #
+#####################################################################################
+#                                                                                   #
+# This script is not meant to be executed directly.                                 #
+# Instead execute install.sh to begin the installation process.                     #
+#                                                                                   #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                                                   #
+# Copyright (c) 2016, Joseph A. Prochazka & Romeo Golf                              #
+#                                                                                   #
+# Permission is hereby granted, free of charge, to any person obtaining a copy      #
+# of this software and associated documentation files (the "Software"), to deal     #
+# in the Software without restriction, including without limitation the rights      #
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell         #
+# copies of the Software, and to permit persons to whom the Software is             #
+# furnished to do so, subject to the following conditions:                          #
+#                                                                                   #
+# The above copyright notice and this permission notice shall be included in all    #
+# copies or substantial portions of the Software.                                   #
+#                                                                                   #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR        #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,          #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE       #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER            #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,     #
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE     #
+# SOFTWARE.                                                                         #
+#                                                                                   #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
 ### VARIABLES
 
 PROJECT_ROOT_DIRECTORY="$PWD"
-BASHDIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
+RECEIVER_BASH_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
 BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
 BUILD_DIRECTORY_HAB="$BUILD_DIRECTORY/hab"
 
@@ -12,10 +44,14 @@ DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude
 DECORDER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
 DECODER_WEBSITE="http://www.pi-in-the-sky.com"
 
+DECODER_SERVICE_NAME="hab-lora-gateway"
+#DECODER_SERVICE_SCRIPT="/etc/init.d/hab-lora-gateway"
+DECODER_SERVICE_CONFIG="/etc/hab-lora-gateway.conf"
+
 ### INCLUDE EXTERNAL SCRIPTS
 
-source ${BASHDIRECTORY}/variables.sh
-source ${BASHDIRECTORY}/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 function CheckReturnCode {
 if [[ $? -eq 0 ]] ; then
@@ -29,12 +65,12 @@ fi
 
 clear
 echo -e ""
-echo -e "\e[91m  ${PROJECT_TITLE}"
+echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
 CONTINUESETUP=$?
 
 if [[ $CONTINUESETUP = 1 ]] ; then
@@ -75,6 +111,12 @@ fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
+if [[ -x ${DECODER_SERVICE_SCRIPT} ]] ; then
+    echo -en "\033[33m  Stopping the ${DECODER_NAME} service...\t\t\t"
+    sudo service ${DECODER_SERVICE_NAME} stop
+    CheckReturnCode
+fi
+
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
@@ -84,6 +126,11 @@ if [[ ! -d ${BUILD_DIRECTORY_HAB} ]] ; then
     CheckReturnCode
     echo -e ""
 fi
+
+# Enter the build directory.
+echo -en "\033[33m  Entering the directory \"${BUILD_DIRECTORY_HAB}\"...\t\t"
+cd ${BUILD_DIRECTORY_HAB}
+CheckReturnCode
 
 # Download and compile the required SSDV library.
 if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
@@ -277,12 +324,9 @@ CheckReturnCode
 
 ### INSTALL AS A SERVICE
 
-#DECODER_SERVICE_SCRIPT="/etc/init.d/hab-lora-gateway"
-DECODER_SERVICE_CONFIG="/etc/hab-lora-gateway.conf"
-
-#echo -en "\033[33m Downloading and setting permissions on the service script..."
-#sudo curl http:// -o ${DECODER_SERVICE_SCRIPT}
-#sudo chmod +x ${DECODER_SERVICE_SCRIPT}
+#echo -en "\033[33m Downloading and setting permissions on the service script...\t"
+#sudo curl -s http:// -o ${DECODER_SERVICE_SCRIPT}
+#sudo chmod +x ${DECODER_SERVICE_SCRIPT} > /dev/null 2>&1
 
 echo -en "\033[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\t"
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
@@ -293,14 +337,15 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #port  user     directory                 command       args
 50100  pi ${BUILD_DIRECTORY_HAB}/lora-gateway    ./gateway  
 EOF
+chown pi:pi ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1
 CheckReturnCode
 
 echo -en "\033[33m  Configuring ${DECODER_NAME} as a service...\t\t\t"
-sudo update-rc.d hab-lora-gateway defaults > /dev/null 2>&1
+sudo update-rc.d ${DECODER_SERVICE_NAME} defaults > /dev/null 2>&1
 CheckReturnCode
 
 echo -en "\033[33m  Starting the ${DECODER_NAME} service...\t\t\t"
-sudo service hab-lora-gateway start > /dev/null 2>&1
+sudo service ${DECODER_SERVICE_NAME} start > /dev/null 2>&1
 CheckReturnCode
 
 ### ARCHIVE SETUP PACKAGES
@@ -308,7 +353,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\033[94m  Returning to ${PROJECT_TITLE} root directory...\e[97m"
+echo -en "\033[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
 cd ${PROJECT_ROOT_DIRECTORY}
 CheckReturnCode
 
@@ -321,4 +366,3 @@ if [[ ! -z ${VERBOSE} ]] ; then
 fi
 
 exit 0
-
