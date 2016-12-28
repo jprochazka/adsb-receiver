@@ -128,7 +128,7 @@ if [[ ! -d ${BUILD_DIRECTORY_HAB} ]] ; then
 fi
 
 # Enter the build directory.
-echo -en "\033[33m  Entering the directory \"${BUILD_DIRECTORY_HAB}\"...\t\t"
+echo -en "\033[33m  Entering the directory \"${BUILD_DIRECTORY_HAB}\"...\t"
 cd ${BUILD_DIRECTORY_HAB}
 CheckReturnCode
 
