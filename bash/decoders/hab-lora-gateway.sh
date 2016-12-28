@@ -269,7 +269,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt
+chown pi:pi ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null 2>&1
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
