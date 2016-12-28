@@ -103,7 +103,6 @@ else
     sudo make install
 fi
 CheckReturnCode
-echo -e ""
 cd ${BUILD_DIRECTORY_HAB}
 
 # Download and compile the decoder itself.
@@ -124,7 +123,6 @@ else
     make
 fi
 CheckReturnCode
-echo -e ""
 cd ${BUILD_DIRECTORY_HAB}
 
 # TODO - Map GPIO pins using WiringPi.
@@ -276,7 +274,6 @@ fi
 # Update ownership of new config file.
 chown pi:pi ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null 2>&1
 CheckReturnCode
-echo -e ""
 
 ### INSTALL AS A SERVICE
 
