@@ -126,8 +126,8 @@ fi
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -x ${DECODER_SERVICE_SCRIPT} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t"
-    sudo service ${DECODER_SERVICE_NAME} stop
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t"
+    sudo service ${DECODER_SERVICE_NAME} stop > /dev/null 2>&1
     CheckReturnCode
 fi
 
@@ -135,7 +135,7 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${BUILD_DIRECTORY_DECODER} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t\t\t"
+    echo -en "\e[33m  Creating build directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t"
     mkdir ${BUILD_DIRECTORY_DECODER}
     CheckReturnCode
 fi
@@ -147,31 +147,35 @@ CheckReturnCode
 
 # Detect CPU ARchitecture.
 CPU_ARCHITECTURE=`uname -m`
-echo -e "\e[94m  CPU architecture detected as $CPUARCHITECTURE...\e[97m"
+echo -e "\e[33m  CPU architecture detected as ${CPU_ARCHITECTURE}...\n"
 
 # Download and extract the proper binaries.
+CURL="curl -s"
+
+echo -e "\e[33m  Downloading ${DECODER_NAME} binaries...\n"
 case ${CPU_ARCHITECTURE} in
     "armv6l")
         # Raspberry Pi 1
-        curl http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
+        ${CURL} http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
         tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards
-        curl http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-ARM-latest.tgz
+        ${CURL} http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-ARM-latest.tgz
         tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
     "x86_64")
         # 64 Bit
-        curl http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x64-latest.tgz
+        ${CURL} http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x64-latest.tgz
         tar xvzf rtlsdr-ogn-bin-x64-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
     *)
         # 32 Bit (default install if no others matched)
-        curl http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x86-latest.tgz
+        ${CURL} http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x86-latest.tgz
         tar xvzf rtlsdr-ogn-bin-x86-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
 esac
+CheckReturnCode
 
 # Change to work directory
 cd ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn
@@ -249,12 +253,12 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
 elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
     echo -e "\e[94m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e [97m"
     OGN_DEVICE_ID="0"
-    sudo /etc/init.d/dump1090-mutability stop
+    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
     echo -e "\e[94m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e [97m"
     OGN_DEVICE_ID="0"
-    sudo /etc/init.d/dump1090-mutability stop 2>/dev/null
+    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
 fi
 
 ### CREATE THE CONFIGURATION FILE
@@ -329,9 +333,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
-    echo -e "\e[94m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
+    echo -e "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
 else
-    echo -e "\e[94m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
+    echo -e "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
     sudo tee ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -398,7 +402,7 @@ CheckReturnCode
 
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 # Less than 2 tuners present so we must stop the dump1090-mutability before starting this decoder.
-    echo -en "\e[33m  Less than 2 RTL-SDR devices present so dump1090-mutability service will be disabled...\t"
+    echo -en "\e[33m  Less than 2 tuners found so other decoders will be disabled...\t"
     sudo update-rc.d dump1090-mutability disable > /dev/null 2>&1
     CheckReturnCode
 fi
