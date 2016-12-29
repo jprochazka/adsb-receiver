@@ -156,7 +156,7 @@ fi
 CURL="curl -s"
 TAR="tar xzf"
 
-echo -e "\e[33m  Downloading ${DECODER_NAME} binaries...\n"
+echo -e "\e[33m  Downloading ${CPU_ARCHITECTURE} binaries for ${DECODER_NAME}...\n"
 case ${CPU_ARCHITECTURE} in
     "armv6l")
         # Raspberry Pi 1
