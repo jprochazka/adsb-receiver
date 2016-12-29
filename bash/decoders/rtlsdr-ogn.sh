@@ -151,28 +151,29 @@ echo -e "\e[33m  CPU architecture detected as ${CPU_ARCHITECTURE}...\n"
 
 # Download and extract the proper binaries.
 CURL="curl -s"
+TAR="tar xzf"
 
 echo -e "\e[33m  Downloading ${DECODER_NAME} binaries...\n"
 case ${CPU_ARCHITECTURE} in
     "armv6l")
         # Raspberry Pi 1
         ${CURL} http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${TAR} rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards
         ${CURL} http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-ARM-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${TAR} rtlsdr-ogn-bin-ARM-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
     "x86_64")
         # 64 Bit
         ${CURL} http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x64-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-x64-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${TAR} rtlsdr-ogn-bin-x64-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
     *)
         # 32 Bit (default install if no others matched)
         ${CURL} http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x86-latest.tgz
-        tar xvzf rtlsdr-ogn-bin-x86-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${TAR} rtlsdr-ogn-bin-x86-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
         ;;
 esac
 CheckReturnCode
@@ -402,7 +403,7 @@ CheckReturnCode
 
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 # Less than 2 tuners present so we must stop the dump1090-mutability before starting this decoder.
-    echo -en "\e[33m  Less than 2 tuners found so other decoders will be disabled...\t"
+    echo -en "\e[33m  Less than 2 tuners found so other decoders will be disabled..."
     sudo update-rc.d dump1090-mutability disable > /dev/null 2>&1
     CheckReturnCode
 fi
