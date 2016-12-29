@@ -95,7 +95,7 @@ CheckPackage git
 CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
-CheckPackage libncurses5-dev 
+CheckPackage libncurses5-dev
 CheckPackage libcurl4-openssl-dev
 CheckPackage curl
 CheckPackage wiringpi
@@ -121,13 +121,13 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${BUILD_DIRECTORY_DECODER} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e37${BUILD_DIRECTORY_DECODER}\e33\"...\t\t\t"
+    echo -en "\e[33m  Creating build directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t\t\t"
     mkdir ${BUILD_DIRECTORY_DECODER}
     CheckReturnCode
 fi
 
 # Enter the build directory.
-echo -en "\e[33m  Entering the directory \"\e37${BUILD_DIRECTORY_DECODER}\e33\"...\t"
+echo -en "\e[33m  Entering the directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t"
 cd ${BUILD_DIRECTORY_DECODER}
 CheckReturnCode
 
@@ -199,7 +199,7 @@ fi
 # Set receiver callsign for this decoder.
 # Format TBC, for now assume it should be between 3 and 9 alphanumeric charactors, with no punctuation.
 if [[ -z ${HAB_RECEIVER_NAME} ]] ; then
-    if [[ -n ${RECEIVERNAME} ]] ; then 
+    if [[ -n ${RECEIVERNAME} ]] ; then
         HAB_RECEIVER_NAME=`echo ${RECEIVERNAME} | tr -cd '[:alnum:]' | cut -c -9`
     else
         HAB_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
@@ -226,39 +226,56 @@ else
 
 ##### Station Details #####
 
+#	tracker=	<callsign>	The stations callsign.
 tracker=${HAB_RECEIVER_NAME}
+
+#	Latitude=	[-180 to 180]	Latitude in decimal degrees.
 Latitude=${HAB_LATITUDE}
+
+#	Longitude=	[-180 to 180]	Longitude in decimal degrees.
 Longitude=${HAB_LONGITUDE}
+
+#	Antenna=	<freetext>	Antenna description.
 Antenna=${HAB_ANTENNA}
 
-
-##### Config Options #####
+##### Global Options #####
+#
 
 # 	EnableHabitat=	[Y|N]		Enables uploading of telemetry packets to Habitat.
 EnableHabitat=Y
+
 # 	EnableSSDV=	[Y|N]		Enables uploading of SSDV image packets to the SSDV server.
 EnableSSDV=Y
+
 # 	JPGFolder=	<folder>	Tells the gateway where to save local JPEG files built from incoming SSDV packets.
 JPGFolder=ssdv
+
 # 	LogTelemetry	[Y|N]		Enables logging of telemetry packets (ASCII only at present) to telemetry.txt.
 LogTelemetry=Y
+
 # 	LogPackets=	[Y|N]		Enables logging of packet information (SNR, RSSI, length, type) to packets.txt.
 LogPackets=Y
+
 # 	CallingTimeout=	<seconds>	Sets a timeout for returning to calling mode after a period with no received packets.
 CallingTimeout=60
+
 # 	ServerPort=	[1-65535]	Opens a server socket which can have 1 client connected.  Sends JSON telemetry and status information to that client.
 ServerPort=6004
+
 # 	SMSFolder=	<folder>	Tells the gateway to check for incoming SMS messages or tweets that should be sent to the tracker via the uplink.
 #SMSFolder=./
+
 #	EnableDev=	[Y|N]		Presumably some sort of developer mode.
 EnableDev=N
 
 #	NetworkLED=	<WiringPi pin>	These are used for LED status indicators.
 #NetworkLED=22
+
 #	InternetLED=    <WiringPi pin>	Which may be useful for packaged gateways that don't have a monitor attached.	
 #InternetLED=23
 
 ##### Transceiver Config #####
+#
 
 # Channel specific configuration for each LoRa module with each variable in the $variable_n format where n = 0 for the first, 1 for the second etc.
 # If the frequency_n line is commented out, then that channel is disabled.
@@ -273,47 +290,96 @@ EnableDev=N
 #	5 = (normal for calling mode) 		Explicit mode, Error coding 4:8, Bandwidth 41.7 kHz, SF 11, Low data rate optimize off
 
 ##### Config CE0 #####
+#
 
 #	frequency_0=	<freq in MHz>  	Sets the frequency for LoRa module.
 frequency_0=434.451
+
 #	mode_0=  	[0-4]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.
 mode_0=1
+
 #	AFC_0=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
 AFC_0=Y
-#bandwidth_0=125K	#	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.	
-#implicit_0=0		#	[Y|N]		TBC.
-#coding_0=5		#	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.
-#sf_0=8			#	<Spread Factor> TBC.
-#lowopt_0=0		#	[Y|N]		Enables low data rate optimization.
-#power_0=255		#	[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
-#						** Only set values that are legal in your location (for EU see IR2030) **
+
+#	bandwidth_0=	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.	
+#bandwidth_0=125K
+
+#	implicit_0	[Y|N]		TBC.
+#implicit_0=0
+
+#	coding_0=	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.
+#coding_0=5
+
+#	sf_0=		<Spread Factor> TBC.
+#sf_0=8
+
+#	lowopt_0=	[Y|N]		Enables low data rate optimization.
+#lowopt_0=0
+
+#	power_0=	[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
+#					** Only set values that are legal in your location (for EU see IR2030) **
+#power_0=255
+
 #	DIO0_0=		<WiringPi pin>
 DIO0_0=31
+
 #	DIO5_0=		<WiringPi pin>	
 DIO5_0=26
-#UplinkTime_0=2		#	<seconds>	When to send any uplink messages, measured as seconds into each cycle.
-#UplinkCycle_0=60	#	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00. 
-#						eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.	
+
+#	UplinkTime_0=	<seconds>	When to send any uplink messages, measured as seconds into each cycle.
+#UplinkTime_0=2
+
+#	UplinkCycle_0=	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.
+#					eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.	
+#UplinkCycle_0=60
+
 #	ActivityLED_0=	<WiringPi pin>
 #ActivityLED_0=21
 
 ##### Config CE1 #####
+#
 
-#frequency_1=434.500	#	<freq in MHz>	Sets the frequency for LoRa module.	
-#mode_1=1		#	[0-5]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.	
-#AFC_1=Y 		#	[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
-#bandwidth_1=125K	#	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.	
-#implicit_1=0		#	[Y|N]		TBC.	
-#coding_1=5		#	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.	
-#sf_1=8A		#	<Spread Factor>	TBC.	
-#lowopt_1=0		#	[Y|N]		Enables low data rate optimization.
-#power_1=255		#	[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
-#						** Only set values that are legal in your location (for EU see IR2030) **
-#DIO0_1=6		#	<WiringPi pin>	
-#DIO5_1=5		#	<WiringPi pin>	
-#UplinkTime_1=5		#	<seconds>	When to send any uplink messages, measured as seconds into each cycle.	
-#UplinkCycle_1=60	#	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.	
-#						eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.
+#	frequency_1=	<freq in MHz>	Sets the frequency for LoRa module.	
+#frequency_1=434.500
+
+#	mode_1=		[0-5]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.	
+#mode_1=1
+
+#	AFC_1=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
+#AFC_1=Y
+
+#	bandwidth_1=	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.	
+#bandwidth_1=125K
+
+#	implicit_1=	[Y|N]		TBC.	
+#implicit_1=0
+
+#	coding_1=	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.	
+#coding_1=5
+
+#	sf_1=		<Spread Factor>	TBC.	
+#sf_1=8A
+
+#	lowopt_1=	[Y|N]		Enables low data rate optimization.
+#lowopt_1=0
+
+#	power_1		[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
+#					** Only set values that are legal in your location (for EU see IR2030) **
+#power_1=255
+
+#	DIO0_1=6	<WiringPi pin>	
+#DIO0_1=6
+
+#	DIO5_1=		<WiringPi pin>	
+#DIO5_1=5
+
+#	UplinkTime_1=	<seconds>	When to send any uplink messages, measured as seconds into each cycle.
+#UplinkTime_1=5
+
+#	UplinkCycle_1=	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.	
+#					eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.
+#UplinkCycle_1=60
+
 #	ActivityLED_1=	<WiringPi pin>
 #ActivityLED_1=29
 
@@ -337,7 +403,7 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50100  pi ${BUILD_DIRECTORY_DECODER}/lora-gateway    ./gateway  
+50100  pi ${BUILD_DIRECTORY_DECODER}/lora-gateway    ./gateway
 EOF
 chown pi:pi ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1
 CheckReturnCode

@@ -103,7 +103,7 @@ CheckPackage libjpeg-dev
 CheckPackage libconfig9
 CheckPackage procserv
 CheckPackage telnet
-CheckPackage curl 
+CheckPackage curl
 CheckPackage lynx
 echo -e ""
 
@@ -135,13 +135,13 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${BUILD_DIRECTORY_DECODER} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e37${BUILD_DIRECTORY_DECODER}\e33\"...\t\t\t"
+    echo -en "\e[33m  Creating build directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t\t\t"
     mkdir ${BUILD_DIRECTORY_DECODER}
     CheckReturnCode
 fi
 
 # Enter the build directory.
-echo -en "\e[33m  Entering the directory \"\e37${BUILD_DIRECTORY_DECODER}\e33\"...\t"
+echo -en "\e[33m  Entering the directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t"
 cd ${BUILD_DIRECTORY_DECODER}
 CheckReturnCode
 
@@ -220,7 +220,7 @@ TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
 if [[ ${TUNER_COUNT} -gt 1 ]] ; then
     # If a device has been specified by serial number then try to match that with the currently detected tuners.
     if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
-        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do 
+        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
             if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
                 echo -e "\e[94m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e [97m"
                 OGN_DEVICE_ID=${DEVICE_ID}
@@ -294,7 +294,7 @@ if [[ -z ${OGN_LONGITUDE} ]] ; then
     else
         OGN_LONGITUDE="0.0000000"
     fi
-fi 
+fi
 
 # Altitude.
 if [[ -z ${OGN_ALTITUDE} ]] ; then
@@ -320,7 +320,7 @@ fi
 # This should be between 3 and 9 alphanumeric charactors, with no punctuation.
 # Please see: 	http://wiki.glidernet.org/receiver-naming-convention
 if [[ -z ${OGN_RECEIVER_NAME} ]] ; then
-    if [[ -n ${RECEIVERNAME} ]] ; then 
+    if [[ -n ${RECEIVERNAME} ]] ; then
         OGN_RECEIVER_NAME=`echo ${RECEIVERNAME} | tr -cd '[:alnum:]' | cut -c -9`
     else
         OGN_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
@@ -330,7 +330,7 @@ fi
 # Test if config file exists, if not create it.
 if [[ -s ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
     echo -e "\e[94m  Using existing ${DECODER_NAME} config file \"${OGN_RECEIVER_NAME}.conf\"...\e [97m\t"
-else 
+else
     echo -e "\e[94m  Generating new ${DECODER_NAME} config file as \"${OGN_RECEIVER_NAME}.conf\"...\e [97m\t"
     sudo tee ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null <<EOF
 ###########################################################################################
@@ -340,19 +340,19 @@ else
 ###########################################################################################
 #
 RF:
-{ 
+{
   FreqCorr	= ${OGN_FREQ_CORR};             	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan
   Device   	= ${OGN_DEVICE_ID};      	   	# 		Device index of the USB RTL-SDR device to be selected
 #  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	  	# char[12] 	Serial number of the USB RTL-SDR device to be selected
   GSM:
-  { 
+  {
     CenterFreq	= ${OGN_GSM_FREQ};		# [MHz]		Fnd the best GSM frequency with gsm_scan
     Gain	= ${OGN_GSM_GAIN};   	 	# [0.1 dB] 	RF input gain for frequency calibration (beware that GSM signals are very strong)
   } ;
 } ;
 #
 Position:
-{ 
+{
   Latitude	= ${OGN_LATITUDE};    		# [deg] 	Antenna coordinates in decimal degrees
   Longitude	= ${OGN_LONGITUDE};           	# [deg] 	Antenna coordinates in decimal degrees
   Altitude	= ${OGN_ALTITUDE};   		# [m]   	Altitude above sea leavel
