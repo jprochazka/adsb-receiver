@@ -222,11 +222,11 @@ sudo chmod +w $LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/data
 # Create the dump978 maintenance script.
 echo -e "\e[94m  Creating the dump978 maintenance script...\e[97m"
 tee $DUMP978BUILDDIRECTORY/dump978-maint.sh > /dev/null <<EOF
-#! /bin/sh
+#! /bin/bash
 
 # Start dump978 without logging.
 while true; do
-    rtl_sdr -d $DUMP978DEVICE -f 978000000 -s 2083334 -g 48 - | $DUMP978BUILDDIRECTORY/dump978 | $DUMP978BUILDDIRECTORY/uat2json $LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/data | $DUMP978BUILDDIRECTORY/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    rtl_sdr -d $DUMP978DEVICE -f 978000000 -s 2083334 -g 48 - | $DUMP978BUILDDIRECTORY/dump978 | tee >($DUMP978BUILDDIRECTORY/uat2json $LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/data) | $DUMP978BUILDDIRECTORY/uat2esnt | /bin/nc -q1 127.0.0.1 30001
     sleep 15
 done
 EOF
