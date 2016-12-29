@@ -213,9 +213,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt ]] ; then
-    echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"gateway.txt\"...\e [97m"
+    echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\e [97m"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\e [97m"
     sudo tee ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -396,7 +396,7 @@ CheckReturnCode
 #sudo curl -s http:// -o ${DECODER_SERVICE_SCRIPT}
 #sudo chmod +x ${DECODER_SERVICE_SCRIPT} > /dev/null 2>&1
 
-echo -en "\e[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\t"
+echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG}\e[33m\"...\t"
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.

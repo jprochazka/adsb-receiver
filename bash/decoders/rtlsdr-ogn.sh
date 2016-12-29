@@ -329,9 +329,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
-    echo -e "\e[94m  Using existing ${DECODER_NAME} config file \"${OGN_RECEIVER_NAME}.conf\"...\e [97m\t"
+    echo -e "\e[94m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
 else
-    echo -e "\e[94m  Generating new ${DECODER_NAME} config file as \"${OGN_RECEIVER_NAME}.conf\"...\e [97m\t"
+    echo -e "\e[94m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
     sudo tee ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -383,7 +383,7 @@ sudo curl -s http://download.glidernet.org/common/service/rtlsdr-ogn -o ${DECODE
 sudo chmod +x ${DECODER_SERVICE_SCRIPT} > /dev/null 2>&1
 CheckReturnCode
 
-echo -en "\e[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\t"
+echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG}\e[33m\"...\t"
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
