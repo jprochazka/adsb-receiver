@@ -37,11 +37,11 @@
 PROJECT_ROOT_DIRECTORY="$PWD"
 RECEIVER_BASH_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
 BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
-BUILD_DIRECTORY_HAB="$BUILD_DIRECTORY/hab"
+BUILD_DIRECTORY_DECODER="$BUILD_DIRECTORY/hab"
 
 DECODER_NAME="HAB-LoRa-Gateway"
 DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
-DECORDER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
+DECODER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
 DECODER_WEBSITE="http://www.pi-in-the-sky.com"
 
 DECODER_SERVICE_NAME="hab-lora-gateway"
@@ -103,7 +103,7 @@ echo -e ""
 
 # Check if SPI is enabled, if not use raspi-config to enable it.
 if [[ `sudo raspi-config nonint get_spi` -eq 1 ]] ; then
-    echo -en "\033[33m  Enabling SPI interface used by LoRa radio module..."
+    echo -en "\e[33m  Enabling SPI interface used by LoRa radio module..."
     sudo raspi-config nonint do_spi 0
     CheckReturnCode
     echo -e ""
@@ -112,7 +112,7 @@ fi
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -x ${DECODER_SERVICE_SCRIPT} ]] ; then
-    echo -en "\033[33m  Stopping the ${DECODER_NAME} service...\t\t\t"
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t"
     sudo service ${DECODER_SERVICE_NAME} stop
     CheckReturnCode
 fi
@@ -120,22 +120,21 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d ${BUILD_DIRECTORY_HAB} ]] ; then
-    echo -en "\033[33m  Creating build directory \"${BUILD_DIRECTORY_HAB}\"...\t\t\t"
-    mkdir ${BUILD_DIRECTORY_HAB}
+if [[ ! -d ${BUILD_DIRECTORY_DECODER} ]] ; then
+    echo -en "\e[33m  Creating build directory \"\e37${BUILD_DIRECTORY_DECODER}\e33\"...\t\t\t"
+    mkdir ${BUILD_DIRECTORY_DECODER}
     CheckReturnCode
-    echo -e ""
 fi
 
 # Enter the build directory.
-echo -en "\033[33m  Entering the directory \"${BUILD_DIRECTORY_HAB}\"...\t"
-cd ${BUILD_DIRECTORY_HAB}
+echo -en "\e[33m  Entering the directory \"\e37${BUILD_DIRECTORY_DECODER}\e33\"...\t"
+cd ${BUILD_DIRECTORY_DECODER}
 CheckReturnCode
 
 # Download and compile the required SSDV library.
-if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
-    echo -en "\033[33m  Updating SSDV library from github...\t\t\t\t"
-    cd ${BUILD_DIRECTORY_HAB}/ssdv
+if [[ -d ${BUILD_DIRECTORY_DECODER}/ssdv ]] ; then
+    echo -en "\e[33m  Updating SSDV library from github...\t\t\t\t"
+    cd ${BUILD_DIRECTORY_DECODER}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         sudo make clean
@@ -143,19 +142,19 @@ if [[ -d ${BUILD_DIRECTORY_HAB}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\033[33m  Cloning SSDV library from github...\t\t\t\t"
-    cd ${BUILD_DIRECTORY_HAB}
+    echo -en "\e[33m  Cloning SSDV library from github...\t\t\t\t"
+    cd ${BUILD_DIRECTORY_DECODER}
     git clone https://github.com/fsphil/ssdv.git
-    cd ${BUILD_DIRECTORY_HAB}/ssdv
+    cd ${BUILD_DIRECTORY_DECODER}/ssdv
     sudo make install
 fi
 CheckReturnCode
-cd ${BUILD_DIRECTORY_HAB}
+cd ${BUILD_DIRECTORY_DECODER}
 
 # Download and compile the decoder itself.
-if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
-    echo -en "\033[33m  Updating ${DECODER_NAME} from github...\t\t\t"
-    cd ${BUILD_DIRECTORY_HAB}/lora-gateway
+if [[ -d ${BUILD_DIRECTORY_DECODER}/lora-gateway ]] ; then
+    echo -en "\e[33m  Updating ${DECODER_NAME} from github...\t\t\t"
+    cd ${BUILD_DIRECTORY_DECODER}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         make clean
@@ -163,14 +162,14 @@ if [[ -d ${BUILD_DIRECTORY_HAB}/lora-gateway ]] ; then
         make
     fi
 else
-    echo -en "\033[33m  Cloning ${DECODER_NAME} from github...\t\t\t"
-    cd ${BUILD_DIRECTORY_HAB}
+    echo -en "\e[33m  Cloning ${DECODER_NAME} from github...\t\t\t"
+    cd ${BUILD_DIRECTORY_DECODER}
     git clone https://github.com/PiInTheSky/lora-gateway.git
-    cd ${BUILD_DIRECTORY_HAB}/lora-gateway
+    cd ${BUILD_DIRECTORY_DECODER}/lora-gateway
     make
 fi
 CheckReturnCode
-cd ${BUILD_DIRECTORY_HAB}
+cd ${BUILD_DIRECTORY_DECODER}
 
 # TODO - Map GPIO pins using WiringPi.
 
@@ -179,6 +178,7 @@ cd ${BUILD_DIRECTORY_HAB}
 
 # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
 
+# Latitude.
 if [[ -z ${HAB_LATITUDE} ]] ; then
     if [[ -n ${RECEIVER_LATITUDE} ]] ; then
         HAB_LATITUDE="${RECEIVER_LATITUDE}"
@@ -187,6 +187,7 @@ if [[ -z ${HAB_LATITUDE} ]] ; then
     fi
 fi
 
+# Longitude.
 if [[ -z ${HAB_LONGITUDE} ]] ; then
     if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
         HAB_LONGITUDE="${RECEIVER_LONGITUDE}"
@@ -195,7 +196,8 @@ if [[ -z ${HAB_LONGITUDE} ]] ; then
     fi
 fi
 
-# Callsign format TBC, for now assume it should be between 3 and 9 alphanumeric charactors, with no punctuation.
+# Set receiver callsign for this decoder.
+# Format TBC, for now assume it should be between 3 and 9 alphanumeric charactors, with no punctuation.
 if [[ -z ${HAB_RECEIVER_NAME} ]] ; then
     if [[ -n ${RECEIVERNAME} ]] ; then 
         HAB_RECEIVER_NAME=`echo ${RECEIVERNAME} | tr -cd '[:alnum:]' | cut -c -9`
@@ -210,11 +212,11 @@ if [[ -z ${HAB_ANTENNA} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt ]] ; then
+if [[ -s ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt ]] ; then
     echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"gateway.txt\"...\e [97m"
 else
     echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"gateway.txt\"...\e [97m"
-    sudo tee ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
+    sudo tee ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #
@@ -319,32 +321,34 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${BUILD_DIRECTORY_HAB}/lora-gateway/gateway.txt > /dev/null 2>&1
+chown pi:pi ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt > /dev/null 2>&1
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
 
-#echo -en "\033[33m Downloading and setting permissions on the service script...\t"
+#echo -en "\e[33m Downloading and setting permissions on the service script...\t"
 #sudo curl -s http:// -o ${DECODER_SERVICE_SCRIPT}
 #sudo chmod +x ${DECODER_SERVICE_SCRIPT} > /dev/null 2>&1
 
-echo -en "\033[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\t"
+echo -en "\e[33m  Creating service config file \"${DECODER_SERVICE_CONFIG}\"...\t"
 sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50100  pi ${BUILD_DIRECTORY_HAB}/lora-gateway    ./gateway  
+50100  pi ${BUILD_DIRECTORY_DECODER}/lora-gateway    ./gateway  
 EOF
 chown pi:pi ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1
 CheckReturnCode
 
-echo -en "\033[33m  Configuring ${DECODER_NAME} as a service...\t\t\t"
+# Configure $DECODER as a service.
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t"
 sudo update-rc.d ${DECODER_SERVICE_NAME} defaults > /dev/null 2>&1
 CheckReturnCode
 
-echo -en "\033[33m  Starting the ${DECODER_NAME} service...\t\t\t"
+# Start the $DECODER service.
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t"
 sudo service ${DECODER_SERVICE_NAME} start > /dev/null 2>&1
 CheckReturnCode
 
@@ -353,7 +357,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\033[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
+echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${PROJECT_ROOT_DIRECTORY}
 CheckReturnCode
 

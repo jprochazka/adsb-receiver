@@ -1,0 +1,9 @@
+# exclude build directories
+adsbexchange/
+dump1090-mutability/
+mlat-client/
+mlat-client*
+piaware_builder/
+planefinder/
+portal/graphs/dump1090.pyc
+portal/logging/
