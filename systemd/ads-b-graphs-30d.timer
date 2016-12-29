@@ -1,0 +1,10 @@
+[Unit]
+Description=ADS-B Graphs 30d
+
+[Timer]
+OnBootSec=10
+OnCalendar=*-*-* 00:00:00
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

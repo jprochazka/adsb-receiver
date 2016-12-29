@@ -1,0 +1,6 @@
+[Unit]
+Description=ADS-B Graphs 30d
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/make-collectd-graphs.sh 30d
