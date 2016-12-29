@@ -35,8 +35,8 @@
 
 PROJECT_ROOT_DIRECTORY="$PWD"
 RECEIVER_BASH_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
-BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
-BUILD_DIRECTORY_DECODER="$BUILD_DIRECTORY/ogn"
+RECEIVER_BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
+DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}ogn"
 
 DECODER_NAME="RTLSDR-OGN"
 DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
@@ -134,15 +134,15 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d ${BUILD_DIRECTORY_DECODER} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t"
-    mkdir ${BUILD_DIRECTORY_DECODER}
+if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
+    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+    mkdir ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
 
 # Enter the build directory.
-echo -en "\e[33m  Entering the directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t"
-cd ${BUILD_DIRECTORY_DECODER}
+echo -en "\e[33m  Entering the directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+cd ${DECODER_BUILD_DIRECTORY}
 CheckReturnCode
 
 # Detect CPU ARchitecture.
@@ -160,29 +160,29 @@ echo -e "\e[33m  Downloading ${DECODER_NAME} binaries...\n"
 case ${CPU_ARCHITECTURE} in
     "armv6l")
         # Raspberry Pi 1
-        ${CURL} http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz > /dev/null 2>&1
-        ${TAR} rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILD_DIRECTORY_DECODER} > /dev/null 2>&1
+        ${CURL} http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz > /dev/null 2>&1
+        ${TAR} rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards
-        ${CURL} http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-ARM-latest.tgz
-        ${TAR} rtlsdr-ogn-bin-ARM-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${CURL} http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -o ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn-bin-ARM-latest.tgz
+        ${TAR} rtlsdr-ogn-bin-ARM-latest.tgz -C ${DECODER_BUILD_DIRECTORY}
         ;;
     "x86_64")
         # 64 Bit
-        ${CURL} http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x64-latest.tgz
-        ${TAR} rtlsdr-ogn-bin-x64-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${CURL} http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -o ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn-bin-x64-latest.tgz
+        ${TAR} rtlsdr-ogn-bin-x64-latest.tgz -C ${DECODER_BUILD_DIRECTORY}
         ;;
     *)
         # 32 Bit (default install if no others matched)
-        ${CURL} http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-x86-latest.tgz
-        ${TAR} rtlsdr-ogn-bin-x86-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${CURL} http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -o ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn-bin-x86-latest.tgz
+        ${TAR} rtlsdr-ogn-bin-x86-latest.tgz -C ${DECODER_BUILD_DIRECTORY}
         ;;
 esac
 CheckReturnCode
 
 # Change to work directory
-cd ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn
+cd ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn
 
 # Create named pipe.
 if [[ ! -p ogn-rf.fifo ]] ; then
@@ -199,8 +199,8 @@ for FILE in gsm_scan ogn-rf rtlsdr-ogn ; do
 done
 CheckReturnCode
 
+# Check if kernel v4.1 or higher is being used.
 if [[ ! -c gpu_dev ]] ; then
-    # Check if kernel v4.1 or higher is being used.
     echo -en "\e[33m  ...\t\t\t"
     echo -e "\e[94m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
@@ -336,11 +336,11 @@ if [[ -z ${OGN_RECEIVER_NAME} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
+if [[ -s ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
     echo -e "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
 else
     echo -e "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
-    sudo tee ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null <<EOF
+    sudo tee ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
@@ -381,7 +381,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1
+chown pi:pi ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -398,8 +398,8 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50000  pi ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
-50001  pi ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
+50000  pi ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
+50001  pi ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
 chown pi:pi ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1
 CheckReturnCode
@@ -417,7 +417,7 @@ sudo update-rc.d ${DECODER_SERVICE_NAME} defaults > /dev/null 2>&1
 CheckReturnCode
 
 # Start the $DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t"
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t"
 sudo service ${DECODER_SERVICE_NAME} start > /dev/null 2>&1
 CheckReturnCode
 

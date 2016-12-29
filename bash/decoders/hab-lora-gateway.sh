@@ -36,8 +36,8 @@
 
 PROJECT_ROOT_DIRECTORY="$PWD"
 RECEIVER_BASH_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
-BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
-BUILD_DIRECTORY_DECODER="$BUILD_DIRECTORY/hab"
+RECEIVER_BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
+DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
 
 DECODER_NAME="HAB-LoRa-Gateway"
 DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
@@ -120,21 +120,21 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d ${BUILD_DIRECTORY_DECODER} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t\t\t"
-    mkdir ${BUILD_DIRECTORY_DECODER}
+if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
+    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
+    mkdir ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
 
 # Enter the build directory.
-echo -en "\e[33m  Entering the directory \"\e[37m${BUILD_DIRECTORY_DECODER}\e[33m\"...\t"
-cd ${BUILD_DIRECTORY_DECODER}
+echo -en "\e[33m  Entering the directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+cd ${DECODER_BUILD_DIRECTORY}
 CheckReturnCode
 
 # Download and compile the required SSDV library.
-if [[ -d ${BUILD_DIRECTORY_DECODER}/ssdv ]] ; then
+if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
     echo -en "\e[33m  Updating SSDV library from github...\t\t\t\t"
-    cd ${BUILD_DIRECTORY_DECODER}/ssdv
+    cd ${DECODER_BUILD_DIRECTORY}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         sudo make clean
@@ -143,18 +143,18 @@ if [[ -d ${BUILD_DIRECTORY_DECODER}/ssdv ]] ; then
     fi
 else
     echo -en "\e[33m  Cloning SSDV library from github...\t\t\t\t"
-    cd ${BUILD_DIRECTORY_DECODER}
+    cd ${DECODER_BUILD_DIRECTORY}
     git clone https://github.com/fsphil/ssdv.git
-    cd ${BUILD_DIRECTORY_DECODER}/ssdv
+    cd ${DECODER_BUILD_DIRECTORY}/ssdv
     sudo make install
 fi
 CheckReturnCode
-cd ${BUILD_DIRECTORY_DECODER}
+cd ${DECODER_BUILD_DIRECTORY}
 
 # Download and compile the decoder itself.
-if [[ -d ${BUILD_DIRECTORY_DECODER}/lora-gateway ]] ; then
+if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from github...\t\t\t"
-    cd ${BUILD_DIRECTORY_DECODER}/lora-gateway
+    cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         make clean
@@ -163,13 +163,13 @@ if [[ -d ${BUILD_DIRECTORY_DECODER}/lora-gateway ]] ; then
     fi
 else
     echo -en "\e[33m  Cloning ${DECODER_NAME} from github...\t\t\t"
-    cd ${BUILD_DIRECTORY_DECODER}
+    cd ${DECODER_BUILD_DIRECTORY}
     git clone https://github.com/PiInTheSky/lora-gateway.git
-    cd ${BUILD_DIRECTORY_DECODER}/lora-gateway
+    cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     make
 fi
 CheckReturnCode
-cd ${BUILD_DIRECTORY_DECODER}
+cd ${DECODER_BUILD_DIRECTORY}
 
 # TODO - Map GPIO pins using WiringPi.
 
@@ -212,11 +212,11 @@ if [[ -z ${HAB_ANTENNA} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt ]] ; then
+if [[ -s ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt ]] ; then
     echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\e [97m"
 else
     echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\e [97m"
-    sudo tee ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
+    sudo tee ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #
@@ -387,7 +387,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${BUILD_DIRECTORY_DECODER}/lora-gateway/gateway.txt > /dev/null 2>&1
+chown pi:pi ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt > /dev/null 2>&1
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -403,7 +403,7 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50100  pi ${BUILD_DIRECTORY_DECODER}/lora-gateway    ./gateway
+50100  pi ${DECODER_BUILD_DIRECTORY}/lora-gateway    ./gateway
 EOF
 chown pi:pi ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1
 CheckReturnCode
