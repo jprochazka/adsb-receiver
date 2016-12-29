@@ -7,7 +7,11 @@ The following is a history of the changes made to this project.
 * Added the ability to install beast-splitter as an extra.
 * Added the ability to setup Duck DNS dynamic DNS service as an extra.
 * Added the ability to setup the AboveTustin Twitter bot.
-* A log file can be kept by using either the -l or --log-output switch.
+* Help pertaining to the new switches is available using the -h or --help switch.
+* An installation log file can be kept by using either the -l or --log-output switch.
+* The branch you wish to use can be specified using the -b or --branch switch.
+* Pagination on the flights page has been minimized.
+* Corrected the page count on the flights page.
 
 ## v2.5.0 *(December 5th, 2016)*
 
