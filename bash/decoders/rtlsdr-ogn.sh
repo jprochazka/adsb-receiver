@@ -125,7 +125,7 @@ fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -x ${DECODER_SERVICE_SCRIPT} ]] ; then
+if [[ -f ${DECODER_SERVICE_SCRIPT} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t"
     sudo service ${DECODER_SERVICE_NAME} stop > /dev/null 2>&1
     CheckReturnCode
