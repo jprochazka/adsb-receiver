@@ -90,7 +90,7 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to build and fulfill dependencies for ${DECODER_NAME}...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
 echo -e ""
 CheckPackage git
 CheckPackage rtl-sdr
