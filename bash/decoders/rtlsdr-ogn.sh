@@ -146,8 +146,11 @@ cd ${BUILD_DIRECTORY_DECODER}
 CheckReturnCode
 
 # Detect CPU ARchitecture.
-CPU_ARCHITECTURE=`uname -m`
-echo -e "\e[33m  CPU architecture detected as ${CPU_ARCHITECTURE}...\n"
+if [[ -z ${CPU_ARCHITECTURE} ]] ; then
+    echo -e "\e[33m  Detecting CPU architecture...\t\t\t"
+    CPU_ARCHITECTURE=`uname -m`
+    CheckReturnCode
+fi
 
 # Download and extract the proper binaries.
 CURL="curl -s"
@@ -157,8 +160,8 @@ echo -e "\e[33m  Downloading ${DECODER_NAME} binaries...\n"
 case ${CPU_ARCHITECTURE} in
     "armv6l")
         # Raspberry Pi 1
-        ${CURL} http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
-        ${TAR} rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILD_DIRECTORY_DECODER}
+        ${CURL} http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -o ${BUILD_DIRECTORY_DECODER}/rtlsdr-ogn-bin-RPI-GPU-latest.tgz > /dev/null 2>&1
+        ${TAR} rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${BUILD_DIRECTORY_DECODER} > /dev/null 2>&1
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards
@@ -189,7 +192,7 @@ if [[ ! -p ogn-rf.fifo ]] ; then
 fi
 
 # Set file permissions.
-echo -en "\e[33m  Setting proper file permissions...\t\t\t"
+echo -en "\e[33m  Setting proper file permissions...\t\t\t\t"
 for FILE in gsm_scan ogn-rf rtlsdr-ogn ; do
     sudo chown root ${FILE}
     sudo chmod a+s  ${FILE}
