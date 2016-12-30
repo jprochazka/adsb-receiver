@@ -178,9 +178,9 @@ esac
 # Attempt to download and extract binaries.
 if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
-    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for ${CPU_ARCHITECTURE} CODER_NAME}...\t"
+    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for ${CPU_ARCHITECTURE} architecture...\t"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
-    curl -s ${DECODER_BINARY_URL} -s ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} > /dev/null 2>&1
+    curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} > /dev/null 2>&1
     CheckReturnCode
     # Extract binaries.
     echo -en "\e[33m  Extracting ${DECODER_NAME} package \"${DECODER_BINARY_FILE}\"..."
