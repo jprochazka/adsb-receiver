@@ -436,7 +436,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50100  pi ${DECODER_BUILD_DIRECTORY}/lora-gateway    ./gateway
+50100  root ${DECODER_BUILD_DIRECTORY}/lora-gateway    /usr/bin/env TERM="vt220" ./gateway
 EOF
     chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
 else
