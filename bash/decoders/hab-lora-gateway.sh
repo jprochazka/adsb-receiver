@@ -134,8 +134,9 @@ if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Download and compile the required SSDV library.
+DECODER_GITHUB_URL_SSDV="//github.com/fsphil/ssdv.git"
 if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
-    echo -en "\e[33m  Updating SSDV library from github...\t\t\t\t\t"
+    echo -en "\e[33m  Updating SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV}\e[33m\"...\t\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -144,17 +145,18 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\e[33m  Cloning SSDV library from github...\t\t\t\t\t"
+    echo -en "\e[33m  Cloning SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV}\e[33m\"...\t\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://github.com/fsphil/ssdv.git
+    git clone ${DECODER_GITHUB_URL_SSDV} 
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
     sudo make install
 fi
 CheckReturnCode
 
 # Download and compile the decoder itself.
+DECODER_GITHUB_URL_LORA_GATEWAY="https://github.com/PiInTheSky/lora-gateway.git"
 if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
-    echo -en "\e[33m  Updating ${DECODER_NAME} from github...\t\t\t\t"
+    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -163,9 +165,9 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
         make
     fi
 else
-    echo -en "\e[33m  Cloning ${DECODER_NAME} from github...\t\t\t\t"
+    echo -en "\e[33m  Cloning ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://github.com/PiInTheSky/lora-gateway.git
+    git clone ${DECODER_GITHUB_URL_LORA_GATEWAY}
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     make
 fi
