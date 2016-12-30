@@ -135,7 +135,7 @@ fi
 
 # Download and compile the required SSDV library.
 DECODER_GITHUB_URL_SSDV="https://github.com/fsphil/ssdv.git"
-DECODER_GITHUB_URL_SSDV_SHORT=`echo ${DECODER_GITHUB_URL_SSDV} | sed -e 's/http:\/\///g' -e 's/https:\/\///g'`
+DECODER_GITHUB_URL_SSDV_SHORT=`echo ${DECODER_GITHUB_URL_SSDV} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t"
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
@@ -156,7 +156,7 @@ CheckReturnCode
 
 # Download and compile the decoder itself.
 DECODER_GITHUB_URL_LORA_GATEWAY="https://github.com/PiInTheSky/lora-gateway.git"
-DECODER_GITHUB_URL_LORA_GATEWAY_SHORT=`echo ${DECODER_GITHUB_URL_LORA_GATEWAY} | sed -e 's/http:\/\///g' -e 's/https:\/\///g'`
+DECODER_GITHUB_URL_LORA_GATEWAY_SHORT=`echo ${DECODER_GITHUB_URL_LORA_GATEWAY} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]' 
 if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
