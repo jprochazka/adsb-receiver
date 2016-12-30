@@ -156,7 +156,7 @@ CheckReturnCode
 
 # Download and compile the decoder itself.
 DECODER_GITHUB_URL_LORA_GATEWAY="https://github.com/PiInTheSky/lora-gateway.git"
-DECODER_GITHUB_URL_LORA_GATEWAY_SHORT=`echo ${DECODER_GITHUB_URL_LORA_GATEWAY} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]' 
+DECODER_GITHUB_URL_LORA_GATEWAY_SHORT=`echo ${DECODER_GITHUB_URL_LORA_GATEWAY} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
