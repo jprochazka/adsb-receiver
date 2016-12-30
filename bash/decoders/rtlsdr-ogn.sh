@@ -33,9 +33,9 @@
 
 ### VARIABLES
 
-PROJECT_ROOT_DIRECTORY="$PWD"
-RECEIVER_BASH_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${PROJECT_ROOT_DIRECTORY}/build"
+RECIEVER_ROOT_DIRECTORY="$PWD"
+RECEIVER_BASH_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
 
 DECODER_NAME="RTLSDR-OGN"
@@ -96,6 +96,52 @@ fi
 ## ASK FOR DEVICE ASSIGNMENTS
 
 ### ASSIGN RTL-SDR DONGLE FOR RTL-SDR OGN...
+
+# Potentially obselse tuner detection code.
+# Check for multiple tuners...
+TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
+
+# Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
+if [[ ${TUNER_COUNT} -gt 1 ]] ; then
+    # If a device has been specified by serial number then try to match that with the currently detected tuners.
+    if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
+        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
+            if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
+                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m\t"
+                OGN_DEVICE_ID=${DEVICE_ID}
+            fi
+        done
+        # If no match for this serial then assume the highest numbered tuner will be used.
+        if [[ -z ${OGN_DEVICE_ID} ]] ; then
+            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m\t"
+            OGN_DEVICE_ID=${TUNER_COUNT}
+        fi
+    # Or if a device has been specified by device ID then confirm this is currently detected.
+    elif [[ -n ${OGN_DEVICE_ID} ]] ; then
+        if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m\t"
+        # If no match for this serial then assume the highest numbered tuner will be used.
+        else
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m\t"
+            OGN_DEVICE_ID=${TUNER_COUNT}
+        fi
+    # Failing that configure it with device ID 0.
+    else
+        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e[97m\t"
+        OGN_DEVICE_ID=${TUNER_COUNT}
+    fi
+# Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
+elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
+    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m\t"
+    OGN_DEVICE_ID="0"
+    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
+# No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
+elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
+    echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m\t"
+    OGN_DEVICE_ID="0"
+    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
+fi
+CheckReturnCode
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -246,54 +292,6 @@ if [[ ! -c gpu_dev ]] ; then
     fi
     CheckReturnCode
 fi
-
-### ASSIGN RTL-SDR DONGLE FOR RTL-SDR OGN...
-
-# Potentially obselse tuner detection code.
-# Check for multiple tuners...
-TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
-
-# Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
-if [[ ${TUNER_COUNT} -gt 1 ]] ; then
-    # If a device has been specified by serial number then try to match that with the currently detected tuners.
-    if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
-        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
-            if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
-                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m\t"
-                OGN_DEVICE_ID=${DEVICE_ID}
-            fi
-        done
-        # If no match for this serial then assume the highest numbered tuner will be used.
-        if [[ -z ${OGN_DEVICE_ID} ]] ; then
-            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m\t"
-            OGN_DEVICE_ID=${TUNER_COUNT}
-        fi
-    # Or if a device has been specified by device ID then confirm this is currently detected.
-    elif [[ -n ${OGN_DEVICE_ID} ]] ; then
-        if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m\t"
-        # If no match for this serial then assume the highest numbered tuner will be used.
-        else
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m\t"
-            OGN_DEVICE_ID=${TUNER_COUNT}
-        fi
-    # Failing that configure it with device ID 0.
-    else
-        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e[97m\t"
-        OGN_DEVICE_ID=${TUNER_COUNT}
-    fi
-# Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
-    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m\t"
-    OGN_DEVICE_ID="0"
-    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
-# No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
-    echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m\t"
-    OGN_DEVICE_ID="0"
-    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
-fi
-CheckReturnCode
 
 ## CREATE THE CONFIGURATION FILE
 
@@ -488,7 +486,7 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
-cd ${PROJECT_ROOT_DIRECTORY}
+cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
 
 echo -e ""
