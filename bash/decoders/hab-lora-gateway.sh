@@ -118,7 +118,7 @@ fi
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t"
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t\t\t"
     sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop
     CheckReturnCode
 fi
@@ -127,14 +127,14 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
     mkdir ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
 
 # Enter the build directory.
 if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
@@ -143,7 +143,7 @@ fi
 DECODER_GITHUB_URL_SSDV="https://github.com/fsphil/ssdv.git"
 DECODER_GITHUB_URL_SSDV_SHORT=`echo ${DECODER_GITHUB_URL_SSDV} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
-    echo -en "\e[33m  Updating SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t"
+    echo -en "\e[33m  Updating SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -152,7 +152,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\e[33m  Cloning SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t"
+    echo -en "\e[33m  Cloning SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://${DECODER_GITHUB_URL_SSDV_SHORT} 
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
@@ -226,9 +226,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt ]] ; then
-    echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\t"
+    echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\t\t\t"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\t"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\t\t\t"
     sudo tee ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -409,33 +409,33 @@ CheckReturnCode
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
+        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t"
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t\t"
         false
     fi
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
+        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
         sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t"
+        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t\t\t"
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t\t\t"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -451,12 +451,12 @@ fi
 CheckReturnCode
 
 # Configure $DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t"
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t\t\t"
 sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults > /dev/null 2>&1
 CheckReturnCode
 
 # Start the $DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t"
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t\t"
 sudo service ${DECODER_SERVICE_SCRIPT_NAME} start > /dev/null 2>&1
 CheckReturnCode
 
@@ -465,7 +465,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
+echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t\t\t"
 cd ${PROJECT_ROOT_DIRECTORY}
 CheckReturnCode
 

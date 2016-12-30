@@ -463,7 +463,7 @@ CheckReturnCode
 # Potentially obselse tuner detection code.
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
-    echo -en "\e[33m  Less than 2 tuners found so other decoders will be disabled...\t"
+    echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\t"
     SERVICES="dump1090-mutability"
     for SERVICE in ${SERVICES} ; do
         if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
