@@ -122,7 +122,7 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
+    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
     mkdir ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
@@ -136,7 +136,7 @@ fi
 
 # Download and compile the required SSDV library.
 if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
-    echo -en "\e[33m  Updating SSDV library from github...\t\t\t\t"
+    echo -en "\e[33m  Updating SSDV library from github...\t\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -145,7 +145,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\e[33m  Cloning SSDV library from github...\t\t\t\t"
+    echo -en "\e[33m  Cloning SSDV library from github...\t\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://github.com/fsphil/ssdv.git
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
@@ -155,7 +155,7 @@ CheckReturnCode
 
 # Download and compile the decoder itself.
 if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
-    echo -en "\e[33m  Updating ${DECODER_NAME} from github...\t\t\t"
+    echo -en "\e[33m  Updating ${DECODER_NAME} from github...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -164,7 +164,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
         make
     fi
 else
-    echo -en "\e[33m  Cloning ${DECODER_NAME} from github...\t\t\t"
+    echo -en "\e[33m  Cloning ${DECODER_NAME} from github...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://github.com/PiInTheSky/lora-gateway.git
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
@@ -217,9 +217,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt ]] ; then
-    echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\e [97m"
+    echo -en "\e[33m  Found existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\t"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\e [97m"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\t"
     sudo tee ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -398,17 +398,17 @@ CheckReturnCode
 
 # Check for local copy of service script, otherwise download it.
 if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-    echo -en "\e[33m  Installing and setting permissions on the service script...\t"
+    echo -en "\e[33m  Installing and setting permissions on the service script...\t\t"
     cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
 else
-    echo -en "\e[33m  Downloading and setting permissions on the service script...\t"
+    echo -en "\e[33m  Downloading and setting permissions on the service script...\t\t"
     sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
 fi
 sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
 CheckReturnCode
 
 #
-echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t"
+echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
@@ -425,12 +425,12 @@ fi
 CheckReturnCode
 
 # Configure $DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t"
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t"
 sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults > /dev/null 2>&1
 CheckReturnCode
 
 # Start the $DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t"
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t"
 sudo service ${DECODER_SERVICE_SCRIPT_NAME} start > /dev/null 2>&1
 CheckReturnCode
 
