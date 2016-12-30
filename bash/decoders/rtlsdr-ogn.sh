@@ -487,8 +487,6 @@ echo -e ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------\n"
 echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ! -z ${VERBOSE} ]] ; then
-    read -p "Press enter to continue..." CONTINUE
-fi
+read -p "Press enter to continue..." CONTINUE
 
 exit 0
