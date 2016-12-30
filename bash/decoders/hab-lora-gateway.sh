@@ -164,7 +164,7 @@ CheckReturnCode
 DECODER_GITHUB_URL_LORA_GATEWAY="https://github.com/PiInTheSky/lora-gateway.git"
 DECODER_GITHUB_URL_LORA_GATEWAY_SHORT=`echo ${DECODER_GITHUB_URL_LORA_GATEWAY} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
-    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
+    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"...\t"
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
