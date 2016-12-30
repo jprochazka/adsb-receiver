@@ -44,9 +44,10 @@ DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude
 DECODER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
 DECODER_WEBSITE="http://www.pi-in-the-sky.com"
 
-DECODER_SERVICE_NAME="hab-lora-gateway"
-#DECODER_SERVICE_SCRIPT="/etc/init.d/hab-lora-gateway"
-DECODER_SERVICE_CONFIG="/etc/hab-lora-gateway.conf"
+DECODER_SERVICE_SCRIPT_NAME="hab-lora-gateway"
+DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
+DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
+DECODER_SERVICE_SCRIPT_URL=""
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -111,9 +112,9 @@ fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f ${DECODER_SERVICE_SCRIPT} ]] ; then
+if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t"
-    sudo service ${DECODER_SERVICE_NAME} stop
+    sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop
     CheckReturnCode
 fi
 
@@ -127,9 +128,11 @@ if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Enter the build directory.
-echo -en "\e[33m  Entering the directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
-cd ${DECODER_BUILD_DIRECTORY}
-CheckReturnCode
+if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
+    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+    cd ${DECODER_BUILD_DIRECTORY}
+    CheckReturnCode
+fi
 
 # Download and compile the required SSDV library.
 if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
@@ -149,7 +152,6 @@ else
     sudo make install
 fi
 CheckReturnCode
-cd ${DECODER_BUILD_DIRECTORY}
 
 # Download and compile the decoder itself.
 if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
@@ -169,7 +171,9 @@ else
     make
 fi
 CheckReturnCode
-cd ${DECODER_BUILD_DIRECTORY}
+
+# Change to DECODER work directory for post-build actions.
+cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
 
 # TODO - Map GPIO pins using WiringPi.
 
@@ -183,7 +187,7 @@ if [[ -z ${HAB_LATITUDE} ]] ; then
     if [[ -n ${RECEIVER_LATITUDE} ]] ; then
         HAB_LATITUDE="${RECEIVER_LATITUDE}"
     else
-        HAB_LATITUDE="0.0000000"
+        HAB_LATITUDE="0.000"
     fi
 fi
 
@@ -192,7 +196,7 @@ if [[ -z ${HAB_LONGITUDE} ]] ; then
     if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
         HAB_LONGITUDE="${RECEIVER_LONGITUDE}"
     else
-        HAB_LONGITUDE="0.0000000"
+        HAB_LONGITUDE="0.000"
     fi
 fi
 
@@ -392,12 +396,21 @@ CheckReturnCode
 
 ### INSTALL AS A SERVICE
 
-#echo -en "\e[33m Downloading and setting permissions on the service script...\t"
-#sudo curl -s http:// -o ${DECODER_SERVICE_SCRIPT}
-#sudo chmod +x ${DECODER_SERVICE_SCRIPT} > /dev/null 2>&1
+# Check for local copy of service script, otherwise download it.
+if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+    echo -en "\e[33m  Installing and setting permissions on the service script...\t"
+    cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
+else
+    echo -en "\e[33m  Downloading and setting permissions on the service script...\t"
+    sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
+fi
+sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+CheckReturnCode
 
-echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG}\e[33m\"...\t"
-sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
+#
+echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t"
+if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
+    sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
@@ -405,17 +418,20 @@ sudo tee ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1 <<EOF
 #port  user     directory                 command       args
 50100  pi ${DECODER_BUILD_DIRECTORY}/lora-gateway    ./gateway
 EOF
-chown pi:pi ${DECODER_SERVICE_CONFIG} > /dev/null 2>&1
+    chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
+else
+   false
+fi
 CheckReturnCode
 
 # Configure $DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t"
-sudo update-rc.d ${DECODER_SERVICE_NAME} defaults > /dev/null 2>&1
+sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults > /dev/null 2>&1
 CheckReturnCode
 
 # Start the $DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t"
-sudo service ${DECODER_SERVICE_NAME} start > /dev/null 2>&1
+sudo service ${DECODER_SERVICE_SCRIPT_NAME} start > /dev/null 2>&1
 CheckReturnCode
 
 ### ARCHIVE SETUP PACKAGES
