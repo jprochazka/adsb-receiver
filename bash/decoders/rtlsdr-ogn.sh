@@ -408,22 +408,34 @@ CheckReturnCode
 
 ### INSTALL AS A SERVICE
 
-# Check for local copy of service script, otherwise download it.
-if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-    echo -en "\e[33m  Installing and setting permissions on the service script...\t\t"
-    cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
-    sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
-elif [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-    echo -en "\e[33m  Downloading and setting permissions on the service script...\t\t"
-    sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
-    sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
+    # Check for local copy of service script.
+    if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+        echo -en "\e[33m  Installing and setting permissions on the service script...\t\t"
+        cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
+        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+    else
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t"
+        false
+    fi
+elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
+    # Otherwise attempt to download service script.
+    if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
+        echo -en "\e[33m  Downloading and setting permissions on the service script...\t\t"
+        sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
+        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+    else
+        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t"
+        false
+    fi
 else
-    echo -en "\e[33m  Unable to install service script...\t\t\t\t"
-    false 
+    # Otherwise error if unable to use local or downloaded service script
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
+    false
 fi
 CheckReturnCode
 
-#
+# Generate and install service script configuration file.
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
     echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
