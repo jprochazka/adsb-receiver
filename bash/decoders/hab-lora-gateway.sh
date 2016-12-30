@@ -405,15 +405,21 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
         echo -en "\e[33m  Installing and setting permissions on the service script...\t\t"
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+    else
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t"
+        false
     fi
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading and setting permissions on the service script...\t\t"
         sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+    else
+        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t"
+        false
     fi
 else
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}e[33m\"...\t\t"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
     false 
 fi
 CheckReturnCode
