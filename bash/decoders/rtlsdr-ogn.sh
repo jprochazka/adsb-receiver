@@ -135,7 +135,7 @@ fi
 ## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t"
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t\t"
     sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop > /dev/null 2>&1
     CheckReturnCode
 fi
@@ -158,7 +158,7 @@ fi
 
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
-    echo -en "\e[33m  Detecting CPU architecture...\t\t\t\t\t"
+    echo -en "\e[33m  Detecting CPU architecture...\t\t\t\t\t\t"
     CPU_ARCHITECTURE=`uname -m | tr -d "\n\r" `
     CheckReturnCode
 fi
@@ -186,12 +186,12 @@ esac
 # Attempt to download and extract binaries.
 if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
-    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for ${CPU_ARCHITECTURE} architecture...\t"
+    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for ${CPU_ARCHITECTURE} architecture...\t\t"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
     curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} > /dev/null 2>&1
     CheckReturnCode
     # Extract binaries.
-    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"..."
+    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\t"
     tar xzf ${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
     CheckReturnCode
 else
@@ -205,13 +205,13 @@ cd ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn
 
 # Create named pipe if required.
 if [[ ! -p ogn-rf.fifo ]] ; then
-    echo -en "\e[33m  Creating named pipe...\t\t\t"
+    echo -en "\e[33m  Creating named pipe...\t\t\t\t\t"
     sudo mkfifo ogn-rf.fifo
     CheckReturnCode
 fi
 
 # Set file permissions.
-echo -en "\e[33m  Setting proper file permissions...\t\t\t\t"
+echo -en "\e[33m  Setting proper file permissions...\t\t\t\t\t"
 DECODER_SETUID_BINARIES="gsm_scan ogn-rf rtlsdr-ogn"
 DECODER_SETUID_COUNT="0"
 for DECODER_SETUID_BINARY in ${DECODER_SETUID_BINARIES} ; do
@@ -230,18 +230,17 @@ CheckReturnCode
 # Creat GPU device if required.
 if [[ ! -c gpu_dev ]] ; then
     # Check if kernel v4.1 or higher is being used.
-    echo -en "\e[33m  ...\t\t\t"
-    echo -e "\e[94m  Getting the version of the kernel currently running...\e[97m"
+    echo -en "\e[33m  Getting the version of the kernel currently running...\t\t\t"
     KERNEL=`uname -r`
     KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
     CheckReturnCode
     if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
         # Kernel is older than version 4.1.
-        echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
+        echo -en "\e[33m  Executing mknod for older kernels...\e[97m\t\t\t\t\t"
         sudo mknod gpu_dev c 100 0
     else
         # Kernel is version 4.1 or newer.
-        echo -en "\e[33m  Executing mknod for newer kernels...\e[97m"
+        echo -en "\e[33m  Executing mknod for newer kernels...\e[97m\t\t\t\t\t"
         sudo mknod gpu_dev c 249 0
     fi
     CheckReturnCode
@@ -367,9 +366,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
-    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
+    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
     sudo tee ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -419,17 +418,17 @@ CheckReturnCode
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
+        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t"
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t"
         false
     fi
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
+        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
         sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
     else
@@ -438,14 +437,14 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t"
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -464,7 +463,7 @@ CheckReturnCode
 # Potentially obselse tuner detection code.
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
-    echo -en "\e[33m  Less than 2 tuners found so other decoders will be disabled..."
+    echo -en "\e[33m  Less than 2 tuners found so other decoders will be disabled...\t"
     SERVICES="dump1090-mutability"
     for SERVICE in ${SERVICES} ; do
         if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
@@ -475,19 +474,19 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 fi
 
 # Configure $DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t"
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t"
 sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults > /dev/null 2>&1
 CheckReturnCode
 
 # Start the $DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t"
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t"
 sudo service ${DECODER_SERVICE_SCRIPT_NAME} start > /dev/null 2>&1
 CheckReturnCode
 
 ## RTL-SDR OGN SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
+echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
 cd ${PROJECT_ROOT_DIRECTORY}
 CheckReturnCode
 
