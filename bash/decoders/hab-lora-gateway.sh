@@ -147,16 +147,16 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-        sudo make clean
-        git pull
-        sudo make install
+        sudo make clean > /dev/null 2>&1
+        git pull > /dev/null 2>&1
+        sudo make install > /dev/null 2>&1
     fi
 else
     echo -en "\e[33m  Cloning SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${DECODER_GITHUB_URL_SSDV_SHORT} 
+    git clone https://${DECODER_GITHUB_URL_SSDV_SHORT} > /dev/null 2>&1
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
-    sudo make install
+    sudo make install > /dev/null 2>&1
 fi
 CheckReturnCode
 
@@ -168,16 +168,16 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-        make clean
-        git pull
-        make
+        make clean > /dev/null 2>&1
+        git pull > /dev/null 2>&1
+        make > /dev/null 2>&1
     fi
 else
     echo -en "\e[33m  Cloning ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}
+    git clone https://${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT} > /dev/null 2>&1
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
-    make
+    make > /dev/null 2>&1
 fi
 CheckReturnCode
 
