@@ -402,7 +402,7 @@ CheckReturnCode
 # Install service script.
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
-    if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+    if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing and setting permissions on the service script...\t\t"
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
