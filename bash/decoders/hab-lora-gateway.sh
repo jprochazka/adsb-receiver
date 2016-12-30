@@ -169,7 +169,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
         make > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
+    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"...\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT} > /dev/null 2>&1
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
