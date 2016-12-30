@@ -46,7 +46,7 @@ DECODER_WEBSITE="http://www.pi-in-the-sky.com"
 DECODER_SERVICE_SCRIPT_NAME="hab-lora-gateway"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
-DECODER_SERVICE_SCRIPT_URL=""
+DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/lora-gateway/master/hab-lora-gateway"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -304,7 +304,7 @@ EnableDev=N
 #	frequency_0=	<freq in MHz>  	Sets the frequency for LoRa module.
 frequency_0=434.451
 
-#	mode_0=  	[0-4]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.
+#	mode_0=  	[0-5]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.
 mode_0=1
 
 #	AFC_0=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
