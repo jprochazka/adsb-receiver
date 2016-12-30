@@ -73,7 +73,7 @@ clear
 echo -e ""
 echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
 echo -e ""
-echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
+echo -e "\e[92m  Setting up ${DECODER_NAME}..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78

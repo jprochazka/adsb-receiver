@@ -74,7 +74,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
     echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${DECODER_NAME}...."
+echo -e "\e[92m  Setting up ${DECODER_NAME}..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
