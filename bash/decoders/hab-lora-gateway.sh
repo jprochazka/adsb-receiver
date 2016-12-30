@@ -137,7 +137,7 @@ fi
 DECODER_GITHUB_URL_SSDV="https://github.com/fsphil/ssdv.git"
 DECODER_GITHUB_URL_SSDV_SHORT=`echo ${DECODER_GITHUB_URL_SSDV} | sed -e 's/http:\/\///g' -e 's/https:\/\///g'`
 if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
-    echo -en "\e[33m  Updating SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t"
+    echo -en "\e[33m  Updating SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t"
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -146,7 +146,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
         sudo make install
     fi
 else
-    echo -en "\e[33m  Cloning SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t"
+    echo -en "\e[33m  Cloning SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://${DECODER_GITHUB_URL_SSDV_SHORT} 
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
@@ -158,7 +158,7 @@ CheckReturnCode
 DECODER_GITHUB_URL_LORA_GATEWAY="https://github.com/PiInTheSky/lora-gateway.git"
 DECODER_GITHUB_URL_LORA_GATEWAY_SHORT=`echo ${DECODER_GITHUB_URL_LORA_GATEWAY} | sed -e 's/http:\/\///g' -e 's/https:\/\///g'`
 if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
-    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"...\t"
+    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -167,7 +167,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
         make
     fi
 else
-    echo -en "\e[33m  Cloning ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"...\t"
+    echo -en "\e[33m  Cloning ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
