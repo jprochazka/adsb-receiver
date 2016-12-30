@@ -95,6 +95,9 @@ fi
 
 ## ASK FOR DEVICE ASSIGNMENTS
 
+### ASSIGN RTL-SDR DONGLE FOR RTL-SDR OGN...
+
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
