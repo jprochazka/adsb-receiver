@@ -413,7 +413,7 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Unable to install service script...\t\t\t\t\t"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}e[33m\"...\t\t"
     false 
 fi
 CheckReturnCode
