@@ -176,7 +176,7 @@ case ${CPU_ARCHITECTURE} in
 esac
 
 # Attempt to download and extract binaries.
-if [[ `grep -c "^http" ${DECODER_BINARY_URL}` -gt 0 ]] ; then
+if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
     echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for ${CPU_ARCHITECTURE} CODER_NAME}...\t"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
