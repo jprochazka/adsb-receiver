@@ -48,7 +48,7 @@ DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
 
-### INCLUDE EXTERNAL SCRIPTS
+## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
@@ -61,7 +61,7 @@ else
 fi
 }
 
-### BEGIN SETUP
+## BEGIN SETUP
 
 clear
 echo -e ""
@@ -87,9 +87,9 @@ if [[ $CONTINUESETUP = 1 ]] ; then
     exit 1
 fi
 
-### ASK FOR DEVICE ASSIGNMENTS
+## ASK FOR DEVICE ASSIGNMENTS
 
-### CHECK FOR PREREQUISITE PACKAGES
+## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
 echo -e ""
@@ -108,7 +108,7 @@ CheckPackage curl
 CheckPackage lynx
 echo -e ""
 
-### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
 if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
     echo -e "\e[33m Stopping unwanted kernel modules from being loaded..."
@@ -124,7 +124,7 @@ blacklist rtl2832
 EOF
 fi
 
-### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t"
@@ -239,10 +239,9 @@ if [[ ! -c gpu_dev ]] ; then
     CheckReturnCode
 fi
 
-### ASSIGN THE RTL-SDR TUNER DEVICE TO THIS DECODER
+### ASSIGN RTL-SDR DONGLE FOR RTL-SDR OGN...
 
 # Potentially obselse tuner detection code.
-
 # Check for multiple tuners...
 TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
 
@@ -288,7 +287,7 @@ elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
 fi
 CheckReturnCode
 
-### CREATE THE CONFIGURATION FILE
+## CREATE THE CONFIGURATION FILE
 
 # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
 
@@ -477,9 +476,7 @@ echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t"
 sudo service ${DECODER_SERVICE_SCRIPT_NAME} start > /dev/null 2>&1
 CheckReturnCode
 
-### ARCHIVE SETUP PACKAGES
-
-### SETUP COMPLETE
+## RTL-SDR OGN SETUP COMPLETE
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
