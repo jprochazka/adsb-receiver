@@ -337,7 +337,7 @@ DIO5_0=26
 #UplinkTime_0=2
 
 #	UplinkCycle_0=	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.
-#					eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.	
+#					eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.
 #UplinkCycle_0=60
 
 #	ActivityLED_0=	<WiringPi pin>
