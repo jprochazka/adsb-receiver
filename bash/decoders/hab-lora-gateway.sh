@@ -129,15 +129,11 @@ fi
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
     mkdir ${DECODER_BUILD_DIRECTORY}
-    CheckReturnCode
-fi
-
-# Enter the build directory.
-if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
+else
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
-    cd ${DECODER_BUILD_DIRECTORY}
-    CheckReturnCode
 fi
+cd ${DECODER_BUILD_DIRECTORY}
+CheckReturnCode
 
 # Download and compile the required SSDV library.
 DECODER_GITHUB_URL_SSDV="https://github.com/fsphil/ssdv.git"
@@ -152,7 +148,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
         sudo make install > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Cloning SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Building SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://${DECODER_GITHUB_URL_SSDV_SHORT} > /dev/null 2>&1
     cd ${DECODER_BUILD_DIRECTORY}/ssdv
@@ -173,7 +169,7 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
         make > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Cloning ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
+    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT} > /dev/null 2>&1
     cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
