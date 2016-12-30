@@ -74,24 +74,22 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
     echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
+echo -e "\e[92m  Setting up ${DECODER_NAME}...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requests a dedicated SDR tuner. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
-CONTINUESETUP=$?
-
-if [[ $CONTINUESETUP = 1 ]] ; then
-    # Setup has been halted by the user.
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo -e ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
-    echo -e ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}.\n\nPlease note you will need a dedicated RTL-SDR dongle to use this software.\n\n  ${DECODER_WEBSITE}\n\nContinue setup by installing ${DECODER_NAME}?" 14 78
+    if [ $? -eq 1 ]; then
+        # Setup has been halted by the user.
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  Setup has been halted at the request of the user."
+        echo -e ""
+        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
+        exit 1
     fi
-    exit 1
 fi
 
 
