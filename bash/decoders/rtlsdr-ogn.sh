@@ -53,19 +53,26 @@ DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+# Should be moved to functions.sh.
 function CheckReturnCode {
-if [[ $? -eq 0 ]] ; then
-    echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
-else
-    echo -e "\t\e[97m [\e[31mError\e[97m]\e[31m\n"
-fi
+    if [[ $? -eq 0 ]] ; then
+        echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+    else
+        echo -e "\t\e[97m [\e[31mError\e[97m]\e[31m\n"
+    fi
 }
+
+# Source the automated install configuration file if this is an automated installation.
+if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "true" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
+fi
 
 ## BEGIN SETUP
 
-clear
-echo -e ""
-echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
+if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
+    clear
+    echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
+fi
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
@@ -86,6 +93,7 @@ if [[ $CONTINUESETUP = 1 ]] ; then
     fi
     exit 1
 fi
+
 
 ## ASK FOR DEVICE ASSIGNMENTS
 
