@@ -186,7 +186,7 @@ esac
 # Attempt to download and extract binaries.
 if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
-    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for ${CPU_ARCHITECTURE} architecture...\t\t"
+    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\t\t"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
     curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} > /dev/null 2>&1
     CheckReturnCode
