@@ -205,7 +205,7 @@ cd ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn
 
 # Create named pipe if required.
 if [[ ! -p ogn-rf.fifo ]] ; then
-    echo -en "\e[33m  Creating named pipe...\t\t\t\t\t"
+    echo -en "\e[33m  Creating named pipe...\t\t\t\t\t\t"
     sudo mkfifo ogn-rf.fifo
     CheckReturnCode
 fi
@@ -230,7 +230,7 @@ CheckReturnCode
 # Creat GPU device if required.
 if [[ ! -c gpu_dev ]] ; then
     # Check if kernel v4.1 or higher is being used.
-    echo -en "\e[33m  Getting the version of the kernel currently running...\t\t\t"
+    echo -en "\e[33m  Getting the version of the kernel currently running...\t\t"
     KERNEL=`uname -r`
     KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
     CheckReturnCode
