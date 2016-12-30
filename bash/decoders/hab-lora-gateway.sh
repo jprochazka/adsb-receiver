@@ -89,7 +89,7 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to build and fulfill dependencies for ${DECODER_NAME}...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
 echo -e ""
 CheckPackage git
 CheckPackage rtl-sdr
@@ -403,7 +403,7 @@ CheckReturnCode
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
     else
@@ -413,7 +413,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
         sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
         sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
     else
@@ -423,7 +423,7 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
 else
     # Otherwise error if unable to use local or downloaded service script
     echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
-    false 
+    false
 fi
 CheckReturnCode
 
@@ -440,7 +440,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 EOF
     chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
 else
-    false 
+    false
 fi
 CheckReturnCode
 
