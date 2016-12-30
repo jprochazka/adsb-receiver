@@ -112,7 +112,7 @@ fi
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t"
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t"
     sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop
     CheckReturnCode
 fi
