@@ -183,7 +183,7 @@ if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} > /dev/null 2>&1
     CheckReturnCode
     # Extract binaries.
-    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"${DECODER_BINARY_FILE}\"..."
+    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"..."
     tar xzf ${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
     CheckReturnCode
 else
@@ -456,9 +456,14 @@ CheckReturnCode
 
 # Potentially obselse tuner detection code.
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
-# Less than 2 tuners present so we must stop the dump1090-mutability before starting this decoder.
+    # Less than 2 tuners present so we must stop other services before starting this decoder.
     echo -en "\e[33m  Less than 2 tuners found so other decoders will be disabled..."
-    sudo update-rc.d dump1090-mutability disable > /dev/null 2>&1
+    SERVICES="dump1090-mutability"
+    for SERVICE in ${SERVICES} ; do
+        if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
+            sudo update-rc.d ${SERVICE} disable > /dev/null 2>&1
+        fi
+    done
     CheckReturnCode
 fi
 
