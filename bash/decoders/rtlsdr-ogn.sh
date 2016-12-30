@@ -150,7 +150,7 @@ fi
 
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
-    echo -e "\e[33m  Detecting CPU architecture...\t\t\t"
+    echo -en "\e[33m  Detecting CPU architecture...\t\t\t"
     CPU_ARCHITECTURE=`uname -m | tr -d "\n\r" `
     CheckReturnCode
 fi
@@ -359,9 +359,9 @@ fi
 
 # Test if config file exists, if not create it.
 if [[ -s ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
-    echo -e "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
+    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
 else
-    echo -e "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t"
     sudo tee ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
