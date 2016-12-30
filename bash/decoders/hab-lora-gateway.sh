@@ -31,7 +31,6 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-
 ### VARIABLES
 
 PROJECT_ROOT_DIRECTORY="$PWD"
@@ -58,7 +57,7 @@ function CheckReturnCode {
 if [[ $? -eq 0 ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else
-    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+    echo -e "\t\e[97m [\e[31mError\e[97m]\e[31m\n"
 fi
 }
 
@@ -400,16 +399,20 @@ CheckReturnCode
 if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
     echo -en "\e[33m  Installing and setting permissions on the service script...\t\t"
     cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
-else
+    sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+elif [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
     echo -en "\e[33m  Downloading and setting permissions on the service script...\t\t"
     sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
+    sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+else
+    echo -en "\e[33m  Unable to install service script...\t\t\t\t"
+    false 
 fi
-sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
 CheckReturnCode
 
 #
-echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -420,7 +423,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 EOF
     chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
 else
-   false
+    false 
 fi
 CheckReturnCode
 

@@ -57,7 +57,7 @@ function CheckReturnCode {
 if [[ $? -eq 0 ]] ; then
     echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
 else
-    echo -e "\t\e[97m [\e[31mFailed\e[97m]\e[31m\n"
+    echo -e "\t\e[97m [\e[31mError\e[97m]\e[31m\n"
 fi
 }
 
@@ -174,20 +174,20 @@ case ${CPU_ARCHITECTURE} in
         DECODER_BINARY_URL="http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz"
         ;;
 esac
-# Download binaries.
+
+# Attempt to download and extract binaries.
 if [[ `grep -c "^http" ${DECODER_BINARY_URL}` -gt 0 ]] l then
     # Download binaries.
     echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for ${CPU_ARCHITECTURE} CODER_NAME}...\t"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
     curl -s ${DECODER_BINARY_URL} -s ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} > /dev/null 2>&1
     CheckReturnCode
-
     # Extract binaries.
     echo -en "\e[33m  Extracting ${DECODER_NAME} package \"${DECODER_BINARY_FILE}\"...\t"
     tar xzf ${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
     CheckReturnCode
 else
-    # Should through out error.
+    # Unable to download bimary due to invalid URL.
     echo -e "\e[33m  Error invalid DECODER_BINARY_URL \"${DECODER_BINARY_URL}\"..."
     exit 1
 fi
@@ -215,7 +215,7 @@ done
 if [[ `ls -l ${DECODER_SETUID_BINARIES} | grep -c "\-rwsr-sr-x"` -eq ${DECODER_SETUID_COUNT} ]] ; then
     true
 else
-   flase
+    false
 fi
 CheckReturnCode
 
@@ -410,18 +410,22 @@ CheckReturnCode
 
 # Check for local copy of service script, otherwise download it.
 if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-    echo -en "\e[33m  Installing and setting permissions on the service script...\t"
+    echo -en "\e[33m  Installing and setting permissions on the service script...\t\t"
     cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
-else
-    echo -en "\e[33m  Downloading and setting permissions on the service script...\t"
+    sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+elif [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
+    echo -en "\e[33m  Downloading and setting permissions on the service script...\t\t"
     sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
+    sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+else
+    echo -en "\e[33m  Unable to install service script...\t\t\t\t"
+    false 
 fi
-sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
 CheckReturnCode
 
 #
-echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t"
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -433,7 +437,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 EOF
     chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
 else 
-   false
+    false
 fi
 CheckReturnCode
 
