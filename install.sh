@@ -122,7 +122,7 @@ done
 # If the automated installation option was selected set the needed environmental variables.
 if [ $AUTOMATED_INSTALL == "true" ]; then
     # If no configuration file was specified use the default configuration file path and name.
-`   if [ -n $CONFIGURATION_FILE ] || [ $CONFIGURATION_FILE == "default" ]; then
+   if [ -n $CONFIGURATION_FILE ] || [ $CONFIGURATION_FILE == "default" ]; then
         CONFIGURATION_FILE="$RECIEVER_ROOT_DIRECTORY/install.config"
     # If either the -c or --config-file= flags were set a valid file must reside there.
     elif [ ! -f $CONFIGURATION_FILE ]; then
