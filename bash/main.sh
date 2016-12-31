@@ -38,7 +38,9 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 # Source the automated install configuration file if this is an automated installation.
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "true" ]; then
-    source $RECEIVER_CONFIGURATION_FILE
+    if [ -s "$RECEIVER_CONFIGURATION_FILE" ] ; then
+        source $RECEIVER_CONFIGURATION_FILE
+    fi
 fi
 
 ## Set the project title variable.
