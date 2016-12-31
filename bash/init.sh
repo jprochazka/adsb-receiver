@@ -52,7 +52,7 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 ## SET VARIABLES
 
-TITLE="\e[1mThe ADS-B Receiver Project Preliminary Setup Process\e[21m"
+TITLE="\e[1mThe ADS-B Receiver Project Preliminary Setup Process\e[0m"
 
 ## FUNCTIONS
 
