@@ -597,7 +597,7 @@ else
     fi
 
     # If PiAware is required add it to the list.
-    if [ "$DUMP1090_FORK" -e "fa" ]; then
+    if [ "$DUMP1090_FORK" = "fa" ]; then
         CONFIRMATION="$CONFIRMATION\n  * FlightAware PiAware"
     fi
 
