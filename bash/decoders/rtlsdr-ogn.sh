@@ -91,6 +91,7 @@ fi
 
 # If either dump1090 or dump978 is installed we must assign RTL-SDR dongles for each of these decoders.
 if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true" ]] ; then
+    # Check if dump1090 is installed.
     if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
         # The dump1090-mutability package appear to be installed.
         if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
@@ -105,6 +106,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
 
         fi
     fi
+    # Check if Dump978 is installed..         
     if [[ ${DUMP978_IS_INSTALLED} = "true" ]] ; then
         # The dump978 binaries appear to exist on this device.
         if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
@@ -119,19 +121,18 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
 
         fi
     fi
-
+    #
     if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
         # Ask the user which USB device is to be use for RTL-SDR OGN.
         RTLSDROGN_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         while [[ -z ${DUMP978_USB_DEVICE} ]] ; do
-            RTLSDROGN_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 $
+            RTLSDROGN_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     else
 
             ### GET DONGLE ID FROM THE INSTALLATION CONFIGURATION FILE...
 
     fi
-
 
     # Assign the specified RTL-SDR dongle to dump1090.
     if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
