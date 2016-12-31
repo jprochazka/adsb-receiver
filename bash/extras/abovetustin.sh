@@ -245,7 +245,7 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
                 echo ""
                 wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
                 ;;
-            "i686"
+            "i686")
                 # Download the i686 version of the PantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official i686 PhantomJS v$PHANTOMJS_VERSION binary for Linux...\e[97m"
                 echo ""
