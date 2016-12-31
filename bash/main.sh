@@ -228,7 +228,7 @@ if [ $DUMP1090_FORK -eq "fa" ] && [ $DUMP1090_DO_UPGRADE -eq "true" ] || [ $DUMP
 fi
 
 # Check if the dump978 binaries exist.
-if [ -f $RECIEVER_BUILD_DIRECTORY/dump978/dump978 ] && [ -f $RECIEVER_BUILD_DIRECTORY/dump978/uat2text ] && [ -f $RECIEVER_BUILD_DIRECTORY/dump978/uat2esnt ] && [ -f $RECIEVER_BUILD_DIRECTORY/dump978/uat2json ]; then
+if [ -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] && [ -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2text ] && [ -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2esnt ] && [ -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2json ]; then
     # Dump978 appears to have been built already.
     if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "Dump978 appears to be installed on your device, however...\n\nThe dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.\n\nDownload and rebuild the dump978 binaries?" 14 65
@@ -259,7 +259,7 @@ if [ -f /etc/init.d/rtlsdr-ogn ]; then
     # The RTL-SDR OGN exist on this device.
     if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
         # Check if a newer version of the binaries are available.
-        if [ ! -d $RECIEVER_BUILD_DIRECTORY/rtlsdr-ogn/rtlsdr-ogn-$RTLSDROGN_VERSION ]; then
+        if [ ! -d $RECEIVER_BUILD_DIRECTORY/rtlsdr-ogn/rtlsdr-ogn-$RTLSDROGN_VERSION ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "A newer version of the RTL-SDR OGN binaries is available.\n\nWould you like to setup the newer binaries on this device?" 14 65
         case $? in
             0) RTLSDROGN_DO_UPGRADE="true" ;;
@@ -288,7 +288,7 @@ fi
 
 # Declare the FEEDER_LIST array and the FEEDER_CHOICES file which will store choices for feeders which are available for install.
 declare array FEEDER_LIST
-touch $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+touch $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
 
 # Check for the PiAware package.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
@@ -302,7 +302,7 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
             # Check the installation configuration file to see if PiAware is to be installed.
             if [ -z $PIAWARE_INSTALL ] && [ $PIAWARE_INSTALL -eq "true" ]; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                echo "FlightAware PiAware" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+                echo "FlightAware PiAware" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
             fi
         fi
     fi
@@ -316,7 +316,7 @@ else
             # Check the installation configuration file to see if PiAware is to be upgraded.
             if [ -z $PIAWARE_INSTALL ] && [ $PIAWARE_INSTALL -eq "true" ] && [ -z $PIAWARE_UPGRADE ] && [ $PIAWARE_UPGRADE -eq "true" ]; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                echo "FlightAware PiAware (upgrade)" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+                echo "FlightAware PiAware (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
             fi
         fi
     fi
@@ -332,7 +332,7 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
         # Check the installation configuration file to see if the Plane Finder Client is to be installed.
         if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-            echo "Plane Finder Client" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+            echo "Plane Finder Client" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
         fi
     fi
 else
@@ -346,7 +346,7 @@ else
                 # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
                 if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL -eq "true" ] && [ -z $PLANEFINDER_UPGRADE ] && [ $PLANEFINDER_UPGRADE -eq "true" ]; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                    echo "Plane Finder Client (upgrade)" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+                    echo "Plane Finder Client (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
                 fi
             fi
         fi
@@ -359,7 +359,7 @@ else
                 # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
                 if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL -eq "true" ] && [ -z $PLANEFINDER_UPGRADE ] && [ $PLANEFINDER_UPGRADE -eq "true" ]; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                    echo "Plane Finder Client (upgrade)" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+                    echo "Plane Finder Client (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
                 fi
             fi
         fi
@@ -376,7 +376,7 @@ if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed
         # Check the installation configuration file to see if the Flightradar24 Client is to be installed.
         if [ -z $FLIGHTRADAR_INSTALL ] && [ $FLIGHTRADAR_INSTALL -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-            echo "Flightradar24 Client" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+            echo "Flightradar24 Client" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
         fi
     fi
 else
@@ -390,7 +390,7 @@ else
                 # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
                 if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL -eq "true" ] && [ -z $PLANEFINDER_UPGRADE ] && [ $PLANEFINDER_UPGRADE -eq "true" ]; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                    echo " (upgrade)" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+                    echo " (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
                 fi
             fi
         fi
@@ -407,7 +407,7 @@ if [ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok instal
         # Check the installation configuration file to see if ADS-B Exchange feeding is to be setup.
         if [ -z $ADSBEXCHANGE_INSTALL ] && [ $ADSBEXCHANGE_INSTALL -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-            echo "Netcat and MLAT Client for ADS-B Exchange" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+            echo "Netcat and MLAT Client for ADS-B Exchange" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
         fi
     fi
 else
@@ -420,7 +420,7 @@ else
             # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
             if [ -z $ADSBEXCHANGE_INSTALL ] && [ $ADSBEXCHANGE_INSTALL -eq "true" ] && [ -z $ADSBEXCHANGE_UPGRADE ] && [ $ADSBEXCHANGE_UPGRADE -eq "true" ]; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                echo "Netcat and MLAT Client for ADS-B Exchange (upgrade)" >> $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+                echo "Netcat and MLAT Client for ADS-B Exchange (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
             fi
         fi
     fi
@@ -429,7 +429,7 @@ fi
 if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
     if [ -n "$FEEDER_LIST" ]; then
         # Display a checklist containing feeders that are not installed if any.
-        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDER_LIST[@]}" 2>$RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDER_LIST[@]}" 2>$RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
     else
         # Since all available feeders appear to be installed inform the user of the fact.
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
@@ -451,7 +451,7 @@ fi
 
 # Declare the EXTRAS_LIST array and the EXTRAS_CHOICES file which will store choices for extras which are available for install.
 declare array EXTRAS_LIST
-touch $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+touch $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
 
 # Check if the AboveTustin repository has been cloned.
 if [ -d $BUILDDIRECTORY/AboveTustin ] && [ -d $BUILDDIRECTORY/AboveTustin/.git ]; then
@@ -463,7 +463,7 @@ if [ -d $BUILDDIRECTORY/AboveTustin ] && [ -d $BUILDDIRECTORY/AboveTustin/.git ]
         # Check the installation configuration file to see if AboveTustin is to be upgraded.
         if [ -z $ABOVETUSTIN_INSTALL ] && [ $ABOVETUSTIN_INSTALL -eq "true" ] && [ -z $ABOVETUSTIN_UPGRADE ] && [ $ABOVETUSTIN_UPGRADE -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-            echo "AboveTustin (reinstall)" >> $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+            echo "AboveTustin (reinstall)" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 else
@@ -475,7 +475,7 @@ else
         # Check the installation configuration file to see if AboveTustin is to be installed.
         if [ -z $ABOVETUSTIN_INSTALL ] && [ $ABOVETUSTIN_INSTALL -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-            echo "AboveTustin" >> $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+            echo "AboveTustin" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 fi
@@ -490,7 +490,7 @@ if [ $(dpkg-query -W -f='${STATUS}' beast-splitter 2>/dev/null | grep -c "ok ins
         # Check the installation configuration file to see if beast-splitter is to be installed.
         if [ -z $BEASTSPLITTER_INSTALL ] && [ $BEASTSPLITTER_INSTALL -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-            echo "beast-splitter" >> $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+            echo "beast-splitter" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 else
@@ -501,7 +501,7 @@ else
     else
         if [ -z $BEASTSPLITTER_INSTALL ] && [ $BEASTSPLITTER_INSTALL -eq "true" ] && [ -z $BEASTSPLITTER_UPGRADE ] && [ $BEASTSPLITTER_UPGRADE -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-            echo "beast-splitter (reinstall)" >> $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+            echo "beast-splitter (reinstall)" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 fi
@@ -516,7 +516,7 @@ if [ ! -f $BUILDDIRECTORY/duckdns/duck.sh ]; then
         # Check the installation configuration file to see if Duck DNS dynamic DNS support is to be added.
         if [ -z $DUCKDNS_INSTALL ] && [ $DUCKDNS_INSTALL -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-             echo "Duck DNS Free Dynamic DNS Hosting" >> $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+             echo "Duck DNS Free Dynamic DNS Hosting" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 else
@@ -527,7 +527,7 @@ else
     else
         if [ -z $DUCKDNS_INSTALL ] && [ $DUCKDNS_INSTALL -eq "true" ] && [ -z $DUCKDNS_UPGRADE ] && [ $DUCKDNS_UPGRADE -eq "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-            echo "Duck DNS Free Dynamic DNS Hosting (reinstall)" >> $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+            echo "Duck DNS Free Dynamic DNS Hosting (reinstall)" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 fi
@@ -537,7 +537,7 @@ if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
     # Display a menu the user can use to pick extras to be installed.
     if [[ -n "$EXTRAS_LIST" ]]; then
         # Display a checklist containing feeders that are not installed if any.
-        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following extras are available for installation.\nChoose the extrass you wish to install." 13 65 4 "${EXTRAS_LIST[@]}" 2>$RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following extras are available for installation.\nChoose the extrass you wish to install." 13 65 4 "${EXTRAS_LIST[@]}" 2>$RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
     else
         # Since all available extras appear to be installed inform the user of the fact.
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "All Extras Installed" --msgbox "It appears that all the optional extras available for installation by this script have been installed already." 8 65
@@ -549,7 +549,7 @@ fi
 declare CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ $DUMP1090_INSTALL -eq "false" ] && [ $DUMP1090_UPGRADE -eq "false" ] && [ $DUMP978_INSTALL -eq "false" ] && [ $DUMP978_UPGRADE -eq "false" ] && [ $PORTAL_INSTALL -eq "false" ] && [ ! -s $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES ] && [ ! -s $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
+if [ $DUMP1090_INSTALL -eq "false" ] && [ $DUMP1090_UPGRADE -eq "false" ] && [ $DUMP978_INSTALL -eq "false" ] && [ $DUMP978_UPGRADE -eq "false" ] && [ $PORTAL_INSTALL -eq "false" ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
     # Nothing was chosen to be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\033[31m"
@@ -598,7 +598,7 @@ else
         CONFIRMATION="$CONFIRMATION\n  * FlightAware PiAware"
     fi
 
-    if [ -s $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES ]; then
+    if [ -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ]; then
         while read FEEDER_CHOICE
         do
             case $FEEDER_CHOICE in
@@ -627,14 +627,14 @@ else
                     CONFIRMATION="$CONFIRMATION\n  * Netcat and MLAT Client for ADS-B Exchange (upgrade)"
                     ;;
             esac
-        done < $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+        done < $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
     fi
 
     if [ $PORTAL_INSTALL = 0 ]; then
         CONFIRMATION="$CONFIRMATION\n  * ADS-B Receiver Project Web Portal"
     fi
 
-    if [ -s $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
+    if [ -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
         while read EXTRAS_CHOICE
         do
             case $EXTRAS_CHOICE in
@@ -657,7 +657,7 @@ else
                     CONFIRMATION="$CONFIRMATION\n  * Duck DNS Free Dynamic DNS Hosting (reinstall)"
                     ;;
             esac
-        done < $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+        done < $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
     fi
 
     CONFIRMATION="$CONFIRMATION\n\n"
@@ -701,7 +701,7 @@ RUN_PLANEFINDER_SCRIPT="false"
 RUN_FLIGHTRADAR24_SCRIPT="false"
 RUN_ADSBEXCHANGE_SCRIPT="false"
 
-if [ -s $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES ]; then
+if [ -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ]; then
     while read FEEDER_CHOICE
     do
         case $FEEDER_CHOICE in
@@ -718,7 +718,7 @@ if [ -s $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES ]; then
                 RUN_ADSBEXCHANGE_SCRIPT=0
                 ;;
         esac
-    done < $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
+    done < $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
 fi
 
 if [ $RUN_PIAWARE_SCRIPT = 0 ] || [ $FORCE_PIAWARE_INSTALL -eq "true" ]; then
@@ -750,7 +750,7 @@ RUN_ABOVETUSTIN_SCRIPT="false"
 RUN_BEASTSPLITTER_SCRIPT="false"
 RUN_DUCKDNS_SCRIPT="false"
 
-if [ -s $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
+if [ -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
     while read EXTRAS_CHOICE
     do
         case $EXTRAS_CHOICE in
@@ -764,7 +764,7 @@ if [ -s $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
                 RUN_DUCKDNS_SCRIPT="true"
                 ;;
         esac
-    done < $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+    done < $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
 fi
 
 if [ $RUN_ABOVETUSTIN_SCRIPT -eq "true" ]; then

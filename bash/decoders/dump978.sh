@@ -177,7 +177,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     echo -e "\e[94m  Retrieving the receiver's latitude from /etc/default/dump1090-mutability...\e[97m"
     RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
     echo -e "\e[94m  Retrieving the receiver's longitude from /etc/default/dump1090-mutability...\e[97m"
-    RECIEVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 fi
 
 # If a device has not yet been assigned to dump978 assign the first available.
@@ -192,7 +192,7 @@ LIGHTTPD_DOCUMENT_ROOT_SETTING=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.con
 LIGHTTPD_DOCUMENT_ROOT_DIRECTORY=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $LIGHTTPD_DOCUMENT_ROOT_SETTING`
 
 # Set the receivers latitude and longitude.
-if [ -z $RECEIVER_LATITUDE ] && [ -z $RECIEVER_LONGITUDE ] && [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ -z $RECEIVER_LATITUDE ] && [ -z $RECEIVER_LONGITUDE ] && [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
     # If the receiver's' latitude has not yet been set ask for it.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [ -z $RECEIVER_LATITUDE ]; do
@@ -222,7 +222,7 @@ sudo chmod +w $LIGHTTPD_DOCUMENT_ROOT_DIRECTORY/dump978/data
 
 # Create the dump978 maintenance script.
 echo -e "\e[94m  Creating the dump978 maintenance script...\e[97m"
-tee $RECIEVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null <<EOF
+tee $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null <<EOF
 #!/bin/bash
 
 # Start dump978 without logging.
@@ -232,14 +232,14 @@ while true; do
 done
 EOF
 echo -e "\e[94m  Setting permissions on the dump978 maintenance script...\e[97m"
-chmod +x $RECIEVER_BUILD_DIRECTORY/dump978/dump978-maint.sh
+chmod +x $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh
 
 # Add the dump978 maintenance script to /etc/rc.local.
 echo -e "\e[94m  Checking if the file /etc/rc.local is already set to execute the dump978 maintenance script...\e[97m"
-if ! grep -Fxq "$RECIEVER_BUILD_DIRECTORY/dump978/dump978-maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding a line to execute the dump978 maintenance script to the file /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${RECIEVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &\n" /etc/rc.local
+    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &\n" /etc/rc.local
 fi
 
 ## EXECUTE THE MAINTAINANCE SCRIPT TO START DUMP978
@@ -248,13 +248,13 @@ echo ""
 echo -e "\e[95m  Starting dump978...\e[97m"
 echo ""
 echo -e "\e[94m  Starting dump978 by executing the dump978 maintenance script...\e[97m"
-sudo nohup $RECIEVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null 2>&1 &
+sudo nohup $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null 2>&1 &
 
 ## DUMP978 SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECIEVER_ROOT_DIRECTORY
+cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"

@@ -41,13 +41,13 @@ PROJECT_BRANCH="master"
 CONFIGURATION_FILE="default"
 ENABLE_LOGGING="false"
 
-export RECIEVER_ROOT_DIRECTORY="$PWD"
-export RECIEVER_BASH_DIRECTORY="$PWD/bash"
-export RECIEVER_BUILD_DIRECTORY="$PWD/build"
+export RECEIVER_ROOT_DIRECTORY="$PWD"
+export RECEIVER_BASH_DIRECTORY="$PWD/bash"
+export RECEIVER_BUILD_DIRECTORY="$PWD/build"
 
 ## SOURCE EXTERNAL SCRIPTS
 
-source $RECIEVER_ROOT_DIRECTORY/bash/functions.sh
+source $RECEIVER_ROOT_DIRECTORY/bash/functions.sh
 
 ## FUNCTIONS
 
@@ -120,10 +120,10 @@ done
 ## AUTOMATED INSTALL
 
 # If the automated installation option was selected set the needed environmental variables.
-if [ $AUTOMATED_INSTALL == "true" ]; then
+if [ $AUTOMATED_INSTALL = "true" ]; then
     # If no configuration file was specified use the default configuration file path and name.
-   if [ -n $CONFIGURATION_FILE ] || [ $CONFIGURATION_FILE == "default" ]; then
-        CONFIGURATION_FILE="$RECIEVER_ROOT_DIRECTORY/install.config"
+   if [ -n $CONFIGURATION_FILE ] || [ $CONFIGURATION_FILE = "default" ]; then
+        CONFIGURATION_FILE="$RECEIVER_ROOT_DIRECTORY/install.config"
     # If either the -c or --config-file= flags were set a valid file must reside there.
     elif [ ! -f $CONFIGURATION_FILE ]; then
         echo "Unable to locate the installation configuration file."
@@ -133,37 +133,37 @@ fi
 
 # Add any environmental variables needed by any child scripts.
 export RECEIVER_AUTOMATED_INSTALL=$AUTOMATED_INSTALL
-export RECIEVER_PROJECT_BRANCH=$BRANCH
+export RECEIVER_PROJECT_BRANCH=$BRANCH
 export RECEIVER_CONFIGURATION_FILE=$CONFIGURATION_FILE
-export RECIEVER_VERBOSE=$VERBOSE
+export RECEIVER_VERBOSE=$VERBOSE
 
 ## EXECUTE BASH/INIT.SH
 
-chmod +x $RECIEVER_BASH_DIRECTORY/init.sh
+chmod +x $RECEIVER_BASH_DIRECTORY/init.sh
 if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    LOG_FILE="$RECIEVER_ROOT_DIRECTORY/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
-    $RECIEVER_BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
+    LOG_FILE="$RECEIVER_ROOT_DIRECTORY/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    $RECEIVER_BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
     CleanLogFile "$LOG_FILE"
 else
     # Execute init.sh without logging any output to the log directory.
-    $RECIEVER_BASH_DIRECTORY/init.sh
+    $RECEIVER_BASH_DIRECTORY/init.sh
 fi
 
 ## CLEAN UP
 
 # Remove any files created by whiptail.
-rm -f $RECIEVER_ROOT_DIRECTORY/FEEDER_CHOICES
-rm -f $RECIEVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+rm -f $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
+rm -f $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
 
 # Remove any global variables assigned by this script.
-unset RECIEVER_ROOT_DIRECTORY
-unset RECIEVER_BASH_DIRECTORY
-unset RECIEVER_BUILD_DIRECTORY
-unset RECIEVER_PROJECT_BRANCH
+unset RECEIVER_ROOT_DIRECTORY
+unset RECEIVER_BASH_DIRECTORY
+unset RECEIVER_BUILD_DIRECTORY
+unset RECEIVER_PROJECT_BRANCH
 unset RECEIVER_AUTOMATED_INSTALL
 unset RECEIVER_CONFIGURATION_FILE
-unset RECIEVER_VERBOSE
+unset RECEIVER_VERBOSE
 unset RECEIVER_PROJECT_TITLE
 
 # Check if any errors were encountered by any child scripts.

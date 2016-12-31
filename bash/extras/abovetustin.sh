@@ -139,8 +139,8 @@ fi
 if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
     TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token"
     while [ -z $TWITTER_ACCESS_TOKEN ]; do
-        if [ -f $RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
-            TWITTER_ACCESS_TOKEN=`GetConfig "access_token" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+        if [ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
+            TWITTER_ACCESS_TOKEN=`GetConfig "access_token" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
         TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_ACCESS_TOKEN_TITLE" --nocancel --inputbox "\nEnter your Twitter Access Token." 7 78 "$TWITTER_ACCESS_TOKEN" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token (REQUIRED)"
@@ -148,8 +148,8 @@ if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
 
     TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret"
     while [ -z $TWITTER_ACCESS_TOKEN_SECRET ]; do
-        if [ -f $RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
-            TWITTER_ACCESS_TOKEN_SECRET=`GetConfig "access_token_secret" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+        if [ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
+            TWITTER_ACCESS_TOKEN_SECRET=`GetConfig "access_token_secret" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
         TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_ACCESS_TOKEN_SECRET_TITLE" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 7 78 " $TWITTER_ACCESS_TOKEN_SECRET" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret (REQUIRED)"
@@ -157,8 +157,8 @@ if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
 
     TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key"
     while [ -z $TWITTER_CONSUMER_KEY ]; do
-        if [ -f $RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
-            TWITTER_CONSUMER_KEY=`GetConfig "consumer_key" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+        if [ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
+            TWITTER_CONSUMER_KEY=`GetConfig "consumer_key" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
         TWITTER_CONSUMER_KEY=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_CONSUMER_KEY_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "$TWITTER_CONSUMER_KEY" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key (REQUIRED)"
@@ -166,8 +166,8 @@ if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
 
     TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret"
     while [ -z $TWITTER_CONSUMER_SECRET ]; do
-        if [ -f $RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
-            TWITTER_CONSUMER_SECRET=`GetConfig "consumer_secret" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+        if [ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
+            TWITTER_CONSUMER_SECRET=`GetConfig "consumer_secret" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
         TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_CONSUMER_SECRET_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "$TWITTER_CONSUMER_SECRET" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret (REQUIRED)"
@@ -230,7 +230,7 @@ if [ $PHANTOMJS_EXISTS -eq "false" ]; then
 
         # Enter the root of the project build directory.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-        cd $RECIEVER_BUILD_DIRECTORY
+        cd $RECEIVER_BUILD_DIRECTORY
 
         # Download the proper PhantomJS binary.
         case $CPU_ARCHITECTURE in
@@ -278,17 +278,17 @@ if [ $PHANTOMJS_EXISTS -eq "false" ]; then
         echo ""
         echo -e "\e[95m  Preparing the PhantomJS Git repository...\e[97m"
         echo ""
-        if [ -d $RECIEVER_BUILD_DIRECTORY/phantomjs ] && [ -d $RECIEVER_BUILD_DIRECTORY/phantomjs/.git ]; then
+        if [ -d $RECEIVER_BUILD_DIRECTORY/phantomjs ] && [ -d $RECEIVER_BUILD_DIRECTORY/phantomjs/.git ]; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
-            cd $RECIEVER_BUILD_DIRECTORY/phantomjs
+            cd $RECEIVER_BUILD_DIRECTORY/phantomjs
             echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
             echo ""
             git pull --all
         else
             # A directory containing the source code does not exist in the build directory.
             echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-            cd $RECIEVER_BUILD_DIRECTORY
+            cd $RECEIVER_BUILD_DIRECTORY
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
             echo ""
             git clone git://github.com/ariya/phantomjs.git
@@ -296,9 +296,9 @@ if [ $PHANTOMJS_EXISTS -eq "false" ]; then
         fi
 
         # Enter the PhantomJS build directory if not already there.
-        if [ ! $PWD -eq $RECIEVER_BUILD_DIRECTORY/phantomjs ]; then
+        if [ ! $PWD -eq $RECEIVER_BUILD_DIRECTORY/phantomjs ]; then
             echo -e "\e[94m  Entering the PhantomJS Git repository directory...\e[97m"
-            cd $RECIEVER_BUILD_DIRECTORY/phantomjs
+            cd $RECEIVER_BUILD_DIRECTORY/phantomjs
         fi
 
         # Checkout the proper branch then init and update the submodules.
@@ -390,21 +390,21 @@ echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
 echo ""
 
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd $RECIEVER_BUILD_DIRECTORY
+cd $RECEIVER_BUILD_DIRECTORY
 
 echo -e "\e[94m  Checking if the AboveTustin Git repository has been cloned...\e[97m"
-if [ -d $RECIEVER_BUILD_DIRECTORY/AboveTustin ] && [ -d $RECIEVER_BUILD_DIRECTORY/AboveTustin/.git ]; then
+if [ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin ] && [ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin/.git ]; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the AboveTustin git repository directory...\e[97m"
-    cd $RECIEVER_BUILD_DIRECTORY/AboveTustin
+    cd $RECEIVER_BUILD_DIRECTORY/AboveTustin
     echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     echo ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -p $RECIEVER_BUILD_DIRECTORY
-    cd $RECIEVER_BUILD_DIRECTORY
+    mkdir -p $RECEIVER_BUILD_DIRECTORY
+    cd $RECEIVER_BUILD_DIRECTORY
     echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
     echo ""
     git clone https://github.com/kevinabrandon/AboveTustin.git
@@ -413,19 +413,19 @@ fi
 
 # Copy the file config.sample.ini to config.ini
 echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
-cp $RECIEVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini
+cp $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini
 
 # Write out the supplied values to the file config.ini.
 echo -e "\e[94m  Writing the Twitter token value to the config.ini file...\e[97m"
-ChangeConfig "access_token" "$TWITTER_ACCESS_TOKEN" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "access_token" "$TWITTER_ACCESS_TOKEN" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 echo -e "\e[94m  Writing the Twitter token secret value to the config.ini file...\e[97m"
-ChangeConfig "access_token_secret" "$TWITTER_ACCESS_TOKEN_SECRET" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "access_token_secret" "$TWITTER_ACCESS_TOKEN_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 echo -e "\e[94m  Writing the Twitter consumer key value to the config.ini file...\e[97m"
-ChangeConfig "consumer_key" "$TWITTER_CONSUMER_KEY" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "consumer_key" "$TWITTER_CONSUMER_KEY" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 echo -e "\e[94m  Writing the Twitter consumer secret to the config.ini file...\e[97m"
-ChangeConfig "consumer_secret" "$TWITTER_CONSUMER_SECRET" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "consumer_secret" "$TWITTER_CONSUMER_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 echo -e "\e[94m  Writing the receiver's timezone to the config.ini file...\e[97m"
-ChangeConfig "time_zone" "`cat /etc/timezone`" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "time_zone" "`cat /etc/timezone`" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 
 # Ask for the receivers latitude and longitude.
 if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
@@ -443,16 +443,16 @@ if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
     done
 fi
 echo -e "\e[94m  Writing the receiver's latitude to the config.ini file...\e[97m"
-ChangeConfig "latitude" "$RECEIVER_LATITUDE" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "latitude" "$RECEIVER_LATITUDE" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 echo -e "\e[94m  Writing the receiver's longitude to the config.ini file...\e[97m"
-ChangeConfig "longitude" "$RECEIVER_LONGITUDE" "$RECIEVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "longitude" "$RECEIVER_LONGITUDE" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
 echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "$RECIEVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &" /etc/rc.local; then
+if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the AboveTustin startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECIEVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &\n" /etc/rc.local
 fi
 
 # Kill any currently running instances of the run_tracker.sh script.
@@ -481,13 +481,13 @@ if [ ! -z "$PIDS" ]; then
 fi
 
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
-sudo nohup $RECIEVER_BUILD_DIRECTORY//AboveTustin/run_tracker.sh > /dev/null 2>&1 &
+sudo nohup $RECEIVER_BUILD_DIRECTORY//AboveTustin/run_tracker.sh > /dev/null 2>&1 &
 
 ## OVERTUSTIN SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECIEVER_ROOT_DIRECTORY
+cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"

@@ -265,7 +265,7 @@ sudo /etc/init.d/dump1090-mutability force-reload
 # Enter into the project root directory.
 echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECIEVER_ROOT_DIRECTORY
+cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"

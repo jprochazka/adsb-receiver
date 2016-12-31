@@ -98,17 +98,17 @@ CheckPackage dh-systemd
 echo ""
 echo -e "\e[95m  Preparing the beast-splitter Git repository...\e[97m"
 echo ""
-if [ -d $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter ] && [ -d $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter/.git ]; then
+if [ -d $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter ] && [ -d $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter/.git ]; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the beast-splitter git repository directory...\e[97m"
-    cd $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter
+    cd $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter
     echo -e "\e[94m  Updating the local beast-splitter git repository...\e[97m"
     echo ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd $RECIEVER_BUILD_DIRECTORY/beast-splitter
+    cd $RECEIVER_BUILD_DIRECTORY/beast-splitter
     echo -e "\e[94m  Cloning the beast-splitter git repository locally...\e[97m"
     echo ""
     git clone https://github.com/flightaware/beast-splitter.git
@@ -119,23 +119,23 @@ fi
 echo ""
 echo -e "\e[95m  Building and installing the beast-splitter package...\e[97m"
 echo ""
-if [ ! $PWD -eq $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter ]; then
+if [ ! $PWD -eq $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter ]; then
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
-    cd $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter
+    cd $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter
 fi
 echo -e "\e[94m  Executing the beast-splitter build script...\e[97m"
 echo ""
 dpkg-buildpackage -b
 echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd $RECIEVER_BUILD_DIRECTORY/beast-splitter
+cd $RECEIVER_BUILD_DIRECTORY/beast-splitter
 echo -e "\e[94m  Installing the beast-splitter package...\e[97m"
 sudo dpkg -i beast-splitter_*.deb
 
 ## CREATE THE SCRIPT TO BE USED TO EXECUTE BEAST-SPLITTER
 
 echo -e "\e[94m  Creating the file beast-splitter_maint.sh...\e[97m"
-tee $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh > /dev/null <<EOF
+tee $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
@@ -145,13 +145,13 @@ while true
 EOF
 
 echo -e "\e[94m  Setting file permissions for beast-splitter_maint.sh...\e[97m"
-sudo chmod +x $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh
+sudo chmod +x $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh
 
 echo -e "\e[94m  Checking if the beast-splitter startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "$RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the beast-splitter startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh &\n" /etc/rc.local
 fi
 
 ## START BEAST-SPLITTER
@@ -178,13 +178,13 @@ if [ ! -z "$PIDS" ]; then
 fi
 
 echo -e "\e[94m  Executing the beast-splitter_maint.sh script...\e[97m"
-sudo nohup $RECIEVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh > /dev/null 2>&1 &
+sudo nohup $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh > /dev/null 2>&1 &
 
 ## BEAST-SPLITTER SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECIEVER_ROOT_DIRECTORY
+cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"

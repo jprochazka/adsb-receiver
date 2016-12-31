@@ -218,7 +218,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     fi
 fi
 
-## SETUP THE ADS-B RECIEVER PROJECT WEB PORTAL
+## SETUP THE ADS-B RECEIVER PROJECT WEB PORTAL
 
 chmod +x $BASHDIRECTORY/portal/install.sh
 $BASHDIRECTORY/portal/install.sh

@@ -88,23 +88,23 @@ CheckPackage cron
 CheckPackage curl
 
 # Create a duckdns directory within the build directory if it does not already exist.
-if [ ! -d $RECIEVER_BUILD_DIRECTORY/duckdns ]; then
-    echo -e "\e[94m  Creating the directory $RECIEVER_BUILD_DIRECTORY/duckdns...\e[97m"
-    mkdir $RECIEVER_BUILD_DIRECTORY/duckdns
+if [ ! -d $RECEIVER_BUILD_DIRECTORY/duckdns ]; then
+    echo -e "\e[94m  Creating the directory $RECEIVER_BUILD_DIRECTORY/duckdns...\e[97m"
+    mkdir $RECEIVER_BUILD_DIRECTORY/duckdns
 fi
 
 # Create then set permissions on the file duck.sh.
 echo -e "\e[94m  Creating the Duck DNS update script...\e[97m"
-tee $RECIEVER_BUILD_DIRECTORY/duckdns/duck.sh > /dev/null <<EOF
-echo url="https://www.duckdns.org/update?domains=$DOMAIN&token=$TOKEN&ip=" | curl -k -o $RECIEVER_BUILD_DIRECTORY/duckdns/duck.log -K -
+tee $RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh > /dev/null <<EOF
+echo url="https://www.duckdns.org/update?domains=$DOMAIN&token=$TOKEN&ip=" | curl -k -o $RECEIVER_BUILD_DIRECTORY/duckdns/duck.log -K -
 EOF
 
 echo -e "\e[94m  Setting execute permissions for only this user on the Duck DNS update script...\e[97m"
-chmod 700 $RECIEVER_BUILD_DIRECTORY/duckdns/duck.sh
+chmod 700 $RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh
 
 # Add job to the users crontab if it does not exist.
 echo -e "\e[94m  Adding the Duck DNS update command to your crontab if it does not exist already...\e[97m"
-COMMAND="$RECIEVER_BUILD_DIRECTORY/duckdns/duck.sh >/dev/null 2>&1"
+COMMAND="$RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh >/dev/null 2>&1"
 JOB="*/5 * * * * $COMMAND"
 
 # Should only add the job if the COMMAND does not already exist in the users crontab.
@@ -116,14 +116,14 @@ JOB="*/5 * * * * $COMMAND"
 # Run the Duck DNS update script for the first time..
 echo -e "\e[94m  Executing the Duck DNS update script...\e[97m"
 echo ""
-$RECIEVER_BUILD_DIRECTORY/duckdns/duck.sh
+$RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh
 echo ""
 
 ## DUCK DNS SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECIEVER_ROOT_DIRECTORY
+cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"

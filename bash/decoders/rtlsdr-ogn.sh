@@ -83,7 +83,7 @@ fi
 
 # Check if the dump978 binaries exist.
 echo -e "\e[94m  Checking if the dump978 binaries exist on this device...\e[97m"
-if [[ -f ${RECIEVER_BUILD_DIRECTORY}/dump978/dump978 ]] && [[ -f ${RECIEVER_BUILD_DIRECTORY}/dump978/uat2text ]] && [[ -f ${RECIEVER_BUILD_DIRECTORY}/dump978/uat2esnt ]] && [[ -f ${RECIEVER_BUILD_DIRECTORY}/dump978/uat2json ]] ; then
+if [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978 ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json ]] ; then
     DUMP978_IS_INSTALLED="true"
 else
     DUMP978_IS_INSTALLED="false"
@@ -337,7 +337,7 @@ sudo service rtlsdr-ogn start
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd ${RECIEVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY}
 
 echo -e ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"

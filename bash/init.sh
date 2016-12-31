@@ -33,10 +33,10 @@
 
 ## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
 
-if [ -f $RECIEVER_ROOT_DIRECTORY/image ]; then
+if [ -f $RECEIVER_ROOT_DIRECTORY/image ]; then
     # Execute image setup script.
-    chmod +x $RECIEVER_BASH_DIRECTORY/image.sh
-    $RECIEVER_BASH_DIRECTORY/image.sh
+    chmod +x $RECEIVER_BASH_DIRECTORY/image.sh
+    $RECEIVER_BASH_DIRECTORY/image.sh
     if [ $? -ne 0 ]; then
         echo ""
         echo -e "  \e[91m  IMAGE SETUP HAS BEEN TERMINISTED.\e[39m"
