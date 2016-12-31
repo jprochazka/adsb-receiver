@@ -36,20 +36,20 @@
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "true" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "true" ]; then
     source $RECEIVER_CONFIGURATION_FILE
 fi
 
 ## BEGIN SETUP
 
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     clear
     echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
 fi
 echo -e "\e[92m  Setting up beast-splitter..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Beast-Splitter Setup" --yesno "This is a helper utility for the Mode-S Beast.\n\nThe Beast provides a single data stream over a (USB) serial port. If you have more than one thing that wants to read that data stream, you need something to redistribute the data. This is what beast-splitter does.\n\n  https://github.com/flightaware/beast-splitter\n\nContinue beast-splitter setup?" 15 78
     if [ $? -eq 1 ]; then
         # Setup has been halted by the user.
@@ -67,7 +67,7 @@ fi
 ## CHECK FOR PREREQUISITE PACKAGES
 
 # Ask the beast-splitter listen port.
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
     while [[ -z $BEASTSPLITTER_LISTEN_PORT ]]; do
         BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$BEASTSPLITTER_LISTEN_PORT_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
@@ -76,7 +76,7 @@ if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
 fi
 
 # Ask the beast-splitter connect port.
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"
     while [[ -z $BEASTSPLITTER_CONNECT_PORT ]]; do
         BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$BEASTSPLITTER_CONNECT_PORT_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)

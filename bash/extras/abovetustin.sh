@@ -36,13 +36,13 @@
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "true" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "true" ]; then
     source $RECEIVER_CONFIGURATION_FILE
 fi
 
 ## BEGIN SETUP
 
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     clear
     echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
 fi
@@ -50,7 +50,7 @@ echo ""
 echo -e "\e[92m  Setting up AboveTustin..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
     if [ $? -eq 1 ]; then
         # Setup has been halted by the user.
@@ -79,7 +79,7 @@ else
     echo -e "\e[94m  Detecting CPU architeture...\e[97m"
     CPU_ARCHITECTURE=`uname -m`
     echo -e "\e[94m  CPU architecture detected as $CPUARCHITECTURE...\e[97m"
-    if [ $CPU_ARCHITECTURE -eq "armv7l" ] || [ $CPU_ARCHITECTURE -eq "x86_64" ] || [  $CPU_ARCHITECTURE -eq "i686" ]; then
+    if [ $CPU_ARCHITECTURE = "armv7l" ] || [ $CPU_ARCHITECTURE = "x86_64" ] || [  $CPU_ARCHITECTURE = "i686" ]; then
         # A precompiled binary should be available for this device.
         echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for this CPU's arcitecture...\e[97m"
         BINARY_AVAILABLE="true"
@@ -88,7 +88,7 @@ else
         echo -e "\e[94m  A precompiled PhantomJS binary does not appear to be available for this CPU's arcitecture...\e[97m"
         BINARY_AVAILABLE="false"
 
-        if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+        if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
             # Warn the user of the build time if there is no binary available for download.
             # The user should be allowed to cancel out of the setup process at this time.
             whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "PhantomJS Binary Not Available" --yesno "It appears there is not a precompiled PhantomJS binary available for your devices architecture.\n\nThis script is capable of downloading and compiling the PhantomJS source but THIS MAY TAKE AN EXTREMELY LONG TO TO COMPLETE. Expect the build process to range anywhere from a half our to literally hours.\n\nDo you wish to compile PhantomJS from source?" 13 78
@@ -120,7 +120,7 @@ fi
 
 ## GATHER TWITTER API INFORMATION FROM THE USER
 
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
     if [ $? -eq 1 ]; then
         # Setup has been halted by the user.
@@ -136,7 +136,7 @@ if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
 fi
 
 # If any exist assign the current Twitter keys and access tokens to variables.
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token"
     while [ -z $TWITTER_ACCESS_TOKEN ]; do
         if [ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]; then
@@ -181,7 +181,7 @@ echo ""
 
 # The package ttf-mscorefonts-installer requires contrib be added to the Debian repositories contained in /etc/apt/sources.list.
 # The contrib flag does not need to be added for Raspbian Jessie and Ubuntu only Debian so far.
-if [ `lsb_release -si` -eq "Debian" ]; then
+if [ `lsb_release -si` = "Debian" ]; then
     echo -e "\e[94m  Adding the contrib component to the repositories contained sources.list...\e[97m"
     sudo sed -i 's/main/main contrib/g' /etc/apt/sources.list
     echo -e "\e[94m  Updating the repository package lists...\e[97m"
@@ -208,7 +208,7 @@ CheckPackage libxext-dev
 CheckPackage libpng12-dev
 CheckPackage libc6
 
-if [ $BINARY_AVAILABLE -eq "false" ]; then
+if [ $BINARY_AVAILABLE = "false" ]; then
     # These packages are only needed if the user decided to build PhantomJS.
     CheckPackage build-essential
     CheckPackage g++
@@ -219,8 +219,8 @@ fi
 
 ## SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
 
-if [ $PHANTOMJS_EXISTS -eq "false" ]; then
-    if [ $BINARY_AVAILABLE -eq "true" ]; then
+if [ $PHANTOMJS_EXISTS = "false" ]; then
+    if [ $BINARY_AVAILABLE = "true" ]; then
 
         # DOWNLOAD THE PHANTOMJS BINARY
 
@@ -316,7 +316,7 @@ if [ $PHANTOMJS_EXISTS -eq "false" ]; then
         echo ""
 
         # Compile and link the code.
-        if [ `uname -m` -eq "armv7l" ] || [ `uname -m` -eq "armv6l" ] || [ `uname -m` -eq "aarch64" ]; then
+        if [ `uname -m` = "armv7l" ] || [ `uname -m` = "armv6l" ] || [ `uname -m` = "aarch64" ]; then
             # Limit the amount of processors being used on Raspberry Pi devices.
             # Not doing will very likely cause the compile to fail due to an out of memory error.
             echo -e "\e[94m  Building PhantomJS... (Job will be limited to using 1 processor.)\e[97m"
@@ -428,7 +428,7 @@ echo -e "\e[94m  Writing the receiver's timezone to the config.ini file...\e[97m
 ChangeConfig "time_zone" "`cat /etc/timezone`" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
 
 # Ask for the receivers latitude and longitude.
-if [ $RECEIVER_AUTOMATED_INSTALL -eq "false" ]; then
+if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
     # Explain to the user that the receiver's latitude and longitude is required.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     # Ask the user for the receiver's latitude.

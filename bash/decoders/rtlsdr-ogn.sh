@@ -37,13 +37,13 @@ source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Source the automated install configuration file if this is an automated installation.
-if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "true" ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
 ## BEGIN SETUP
 
-if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
@@ -51,7 +51,7 @@ echo -e ""
 echo -e "\e[92m  Setting up RTL-SDR OGN..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Setup" --yesno "The objective of the Open Glider Network is to create and maintain a unified tracking platform for gliders and other GA aircraft. Currently OGN focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nPlease note you will need a dedicated RTL-SDR dongle to use this software.\n\n  http://wiki.glidernet.org\n\nContinue setup by installing RTL-SDR OGN?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -90,10 +90,10 @@ else
 fi
 
 # If either dump1090 or dump978 is installed we must assign RTL-SDR dongles for each of these decoders.
-if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] || [[${DUMP978_IS_INSTALLED} -eq "true" ]] ; then
-    if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] ; then
+if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true" ]] ; then
+    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
         # The dump1090-mutability package appear to be installed.
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
+        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
             # Ask the user which USB device is to be used for dump1090.
             DUMP1090_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             while [[ -z ${DUMP1090_USB_DEVICE} ]] ; do
@@ -105,9 +105,9 @@ if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] || [[${DUMP978_IS_INSTALLED} -eq "t
 
         fi
     fi
-    if [[ ${DUMP978_IS_INSTALLED} -eq "true" ]] ; then
+    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] ; then
         # The dump978 binaries appear to exist on this device.
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
+        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
             # Ask the user which USB device is to be use for dump978.
             DUMP978_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             while [[ -z ${DUMP978_USB_DEVICE} ]] ; do
@@ -120,7 +120,7 @@ if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] || [[${DUMP978_IS_INSTALLED} -eq "t
         fi
     fi
 
-    if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
+    if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
         # Ask the user which USB device is to be use for RTL-SDR OGN.
         RTLSDROGN_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         while [[ -z ${DUMP978_USB_DEVICE} ]] ; do
@@ -134,7 +134,7 @@ if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] || [[${DUMP978_IS_INSTALLED} -eq "t
 
 
     # Assign the specified RTL-SDR dongle to dump1090.
-    if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] ; then
+    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_USB_DEVICE\" to dump1090-mutability...\e[97m"
         ChangeConfig "DEVICE" ${DUMP1090_USB_DEVICE} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
@@ -144,7 +144,7 @@ if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] || [[${DUMP978_IS_INSTALLED} -eq "t
     fi
 
     # Assign the specified RTL-SDR dongle to dump978
-    if [[ ${DUMP978_IS_INSTALLED} -eq "true" ]] ; then
+    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP978_USB_DEVICE}\" to dump978...\e[97m"
 
         ### ADD DEVICE TO MAINTENANCE SCRIPT...
