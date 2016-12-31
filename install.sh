@@ -111,7 +111,7 @@ while [[ $# -gt 0 ]]; do
         *)
             # Unknown options were set so exit.
             echo -e "Error: Unknown option: $1" >&2
-            usage
+            DisplayHelp
             exit 1
             ;;
     esac
