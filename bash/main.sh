@@ -37,7 +37,7 @@ source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 # Source the automated install configuration file if this is an automated installation.
-if [ $RECEIVER_AUTOMATED_INSTALL = "true" ]; then
+if [ -n $RECEIVER_AUTOMATED_INSTALL ] && [ $RECEIVER_AUTOMATED_INSTALL = "true" ]; then
     source $RECEIVER_CONFIGURATION_FILE
 fi
 
@@ -182,7 +182,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
         esac
     else
         # Refer to the installation configuration to decide if dump1090-mutability is to be reinstalled or not.
-        if [ $DUMP1090_UPGRADE = "true" ]; then
+        if [ -n $DUMP1090_UPGRADE ] && [ $DUMP1090_UPGRADE = "true" ]; then
             DUMP1090_DO_UPGRADE="true"
         else
             DUMP1090_DO_UPGRADE="false"
@@ -204,7 +204,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
             esac
         else
             # If a newer version of dump1090-fa is available refer to the installation configuration to decide if it should be upgraded or not.
-            if [ $DUMP1090_UPGRADE = "true" ]; then
+            if [ -n $DUMP1090_UPGRADE ] && [ $DUMP1090_UPGRADE = "true" ]; then
                 DUMP1090_DO_UPGRADE="true"
             else
                 DUMP1090_DO_UPGRADE="false"
