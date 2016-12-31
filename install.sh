@@ -139,15 +139,15 @@ export RECIEVER_VERBOSE=$VERBOSE
 
 ## EXECUTE BASH/INIT.SH
 
-chmod +x $BASH_DIRECTORY/init.sh
+chmod +x $RECIEVER_BASH_DIRECTORY/init.sh
 if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
     LOG_FILE="$RECIEVER_ROOT_DIRECTORY/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
-    $BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
+    $RECIEVER_BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
     CleanLogFile "$LOG_FILE"
 else
     # Execute init.sh without logging any output to the log directory.
-    $BASH_DIRECTORY/init.sh
+    $RECIEVER_BASH_DIRECTORY/init.sh
 fi
 
 ## CLEAN UP
