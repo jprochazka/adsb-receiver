@@ -70,7 +70,7 @@ fi
 ## ASK FOR DEVICE ASSIGNMENTS
 
 # Check if the dump1090-mutability package is installed.
-echo -e "\e[95m  Checking for the existance of existing decoders...\e[97m"
+echo -e "\e[95m  Checking for existing decoders...\e[97m"
 echo -e ""
 
 # Check if the dump1090-mutability package is installed.
@@ -91,7 +91,7 @@ fi
 
 # If either dump1090 or dump978 is installed we must assign RTL-SDR dongles for each of these decoders.
 if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true" ]] ; then
-    # Check if dump1090 is installed.
+    # Check if Dump1090 is installed.
     if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
         # The dump1090-mutability package appear to be installed.
         if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
@@ -106,7 +106,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
 
         fi
     fi
-    # Check if Dump978 is installed..         
+    # Check if Dump978 is installed.
     if [[ ${DUMP978_IS_INSTALLED} = "true" ]] ; then
         # The dump978 binaries appear to exist on this device.
         if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
