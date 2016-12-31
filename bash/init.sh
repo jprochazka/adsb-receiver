@@ -1,4 +1,4 @@
-#!/bin/bash
+#q!/bin/bash
 
 #####################################################################################
 #                                  ADS-B RECEIVER                                   #
@@ -198,7 +198,7 @@ UpdateRepository
 ## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 
 if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
-    whiptail --backtitle "$TITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78) then
+    whiptail --backtitle "$TITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78
     case $? in
         0) UPDATE_OPERATING_SYSTEM="true" ;;
         1) UPDATE_OPERATING_SYSTEM="false" ;;
