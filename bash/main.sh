@@ -666,12 +666,14 @@ else
     CONFIRMATION="$CONFIRMATION\n\n"
 fi
 
-# Ask for confirmation before moving on.
-CONFIRMATION="${CONFIRMATION}Do you wish to continue setup?"
-if ! (whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78) then
-    echo -e "\033[31m"
-    echo "  Installation canceled by user."
-    exit 1
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+    # Ask for confirmation before moving on.
+    CONFIRMATION="${CONFIRMATION}Do you wish to continue setup?"
+    if ! (whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78) then
+        echo -e "\033[31m"
+        echo "  Installation canceled by user."
+        exit 1
+    fi
 fi
 
 #################
