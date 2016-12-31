@@ -126,7 +126,7 @@ function UpdateRepository() {
     echo ""
 
     # Save the current branch state if the user wished to do so.
-    if [ $BACKUP_BRANCH_STATE = "true" ]; then
+    if [ $BACKUP_BRANCH_STATE ] && [ $BACKUP_BRANCH_STATE = "true" ]; then
         echo -e "\e[94m  Creating a new branch named $NEW_BRANCH_NAME containing the current state of the $RECEIVER_PROJECT_BRANCH branch...\e[97m"
         echo ""
         git commit -a -m "Saving current branch state."
@@ -204,7 +204,7 @@ if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
         1) UPDATE_OPERATING_SYSTEM="false" ;;
     esac
 fi
-if [ $UPDATE_OPERATING_SYSTEM = "true" ]; then
+if [ $UPDATE_OPERATING_SYSTEM ] && [ $UPDATE_OPERATING_SYSTEM = "true" ]; then
     UpdateOperatingSystem
 fi
 
