@@ -127,9 +127,8 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
                 DUMP1090_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
-
             ### GET DONGLE ID FROM THE INSTALLATION CONFIGURATION FILE...
-
+            true
         fi
     fi
     # Check if Dump978 is installed.
@@ -142,9 +141,8 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
                 DUMP978_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
-
             ### GET DONGLE ID FROM THE INSTALLATION CONFIGURATION FILE...
-
+            true
         fi
     fi
     #
@@ -155,9 +153,8 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
             RTLSDROGN_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     else
-
             ### GET DONGLE ID FROM THE INSTALLATION CONFIGURATION FILE...
-
+            true
     fi
 
     # Assign the specified RTL-SDR dongle to dump1090.
