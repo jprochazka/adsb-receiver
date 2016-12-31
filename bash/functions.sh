@@ -176,7 +176,7 @@ function UpdateRepository() {
 function ChangeConfig {
     # Use sed to locate the "KEY" then replace the "VALUE", the portion after the equals sign, in the specified "FILE".
     # This function should work with any configuration file with settings formated as KEY="VALUE".
-    sudo sed -i "s/\($1 *= *\).*/\1\"$2\"/" $3
+    sudo sed -i -e "s/\($1 *= *\).*/\1\"$2\"/" $3
 }
 
 function GetConfig {
