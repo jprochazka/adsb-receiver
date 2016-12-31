@@ -47,20 +47,20 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
-echo ""
+echo -e ""
 echo -e "\e[92m  Setting up RTL-SDR OGN..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} -eq "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Setup" --yesno "The objective of the Open Glider Network is to create and maintain a unified tracking platform for gliders and other GA aircraft. Currently OGN focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nPlease note you will need a dedicated RTL-SDR dongle to use this software.\n\n  http://wiki.glidernet.org\n\nContinue setup by installing RTL-SDR OGN?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo ""
+        echo -e ""
         echo -e "\e[93m----------------------------------------------------------------------------------------------------"
         echo -e "\e[92m  RTL-SDR OGN setup halted.\e[39m"
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
@@ -71,7 +71,7 @@ fi
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[95m  Checking for the existance of existing decoders...\e[97m"
-echo ""
+echo -e ""
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
@@ -138,9 +138,9 @@ if [[ ${DUMP1090_IS_INSTALLED} -eq "true" ]] || [[${DUMP978_IS_INSTALLED} -eq "t
         echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_USB_DEVICE\" to dump1090-mutability...\e[97m"
         ChangeConfig "DEVICE" ${DUMP1090_USB_DEVICE} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-        echo ""
+        echo -e ""
         sudo /etc/init.d/dump1090-mutability force-reload
-        echo ""
+        echo -e ""
     fi
 
     # Assign the specified RTL-SDR dongle to dump978
@@ -162,7 +162,7 @@ fi
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
-echo ""
+echo -e ""
 CheckPackage git
 CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
@@ -178,7 +178,7 @@ CheckPackage wget
 CheckPackage lynx
 
 echo -e "\e[95m  Configuring this device to run the RTL-SDR OGN binaries...\e[97m"
-echo ""
+echo -e ""
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
@@ -220,47 +220,47 @@ case `uname -m` in
     "armv6l")
         # Raspberry Pi 1
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN RPI-GPU binaries...\e[97m"
-        echo ""
+        echo -e ""
         wget http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN RPI-GPU binaries from the archive...\e[97m"
-        echo ""
+        echo -e ""
         tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
         ;;
     "armv7l")
         # Raspberry Pi 2
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN ARM binaries...\e[97m"
-        echo ""
+        echo -e ""
         wget http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-ARM-latest.tgz
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN ARM binaries from the archive...\e[97m"
-        echo ""
+        echo -e ""
         tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
         ;;
     "x86_64")
         # 64 Bit
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN x64 binaries...\e[97m"
-        echo ""
+        echo -e ""
         wget http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-x64-latest.tgz
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN x64 binaries from the archive...\e[97m"
-        echo ""
+        echo -e ""
         tar xvzf rtlsdr-ogn-bin-x64-latest.tgz -C ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
         ;;
     *)
         # 32 Bit (default install if no others matched)
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN x86 binaries...\e[97m"
-        echo ""
+        echo -e ""
         wget http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-x86-latest.tgz
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN x86 binaries from the archive...\e[97m"
-        echo ""
+        echo -e ""
         tar xvzf rtlsdr-ogn-bin-x86-latest.tgz -C ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
         ;;
 esac
 
 # Enter the directory containing the binaries that were downloaded.
-echo ""
+echo -e ""
 echo -e "\e[94m  Entering the directory containing the RTL-SDR binaries...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn
 
@@ -339,10 +339,10 @@ sudo service rtlsdr-ogn start
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECIEVER_ROOT_DIRECTORY}
 
-echo ""
+echo -e ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  RTL-SDR OGN setup is complete.\e[39m"
-echo ""
+echo -e ""
 read -p "Press enter to continue..." CONTINUE
 
 exit 0
