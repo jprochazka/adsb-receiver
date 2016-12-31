@@ -262,29 +262,29 @@ if [ -f /etc/init.d/rtlsdr-ogn ]; then
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Check if a newer version of the binaries are available.
         if [ ! -d $RECEIVER_BUILD_DIRECTORY/rtlsdr-ogn/rtlsdr-ogn-$RTLSDROGN_VERSION ]; then
-        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "A newer version of the RTL-SDR OGN binaries is available.\n\nWould you like to setup the newer binaries on this device?" 14 65
-        case $? in
-            0) RTLSDROGN_DO_UPGRADE="true" ;;
-            1) RTLSDROGN_DO_UPGRADE="false" ;;
-        esac
-    else
-        # Refer to the installation configuration to decide if dump978 is to be rebuilt from source or not.
-        if [ "$RTLSDROGN_UPGRADE" = "true" ]; then
-            RTLSDROGN_DO_UPGRADE="true"
+            whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "A newer version of the RTL-SDR OGN binaries is available.\n\nWould you like to setup the newer binaries on this device?" 14 65
+            case $? in
+                0) RTLSDROGN_DO_UPGRADE="true" ;;
+                1) RTLSDROGN_DO_UPGRADE="false" ;;
+            esac
         else
-            RTLSDROGN_DO_UPGRADE="false"
+            # Refer to the installation configuration to decide if RTL-SDR OGN is to be rebuilt from source or not.
+            if [ "$RTLSDROGN_UPGRADE" = "true" ]; then
+                RTLSDROGN_DO_UPGRADE="true"
+            else
+                RTLSDROGN_DO_UPGRADE="false"
+            fi
+        fi
+    else
+        # The RTL-SDR OGN binaries do not appear to exist on this device.
+        if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+            whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Not Installed" --defaultno --yesno "The goal the OGN project is to create a unified platform for tracking aircraft equipped with FLARM (or FLARM-compatible) emitters and OGN trackers.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is generally only used within Europe.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
+            case $? in
+                0) RTLSDROGN_INSTALL="true" ;;
+                1) RTLSDROGN_INSTALL="false" ;;
+            esac
         fi
     fi
-else
-    # The RTL-SDR OGN binaries do not appear to exist on this device.
-    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Not Installed" --defaultno --yesno "The goal the OGN project is to create a unified platform for tracking aircraft equipped with FLARM (or FLARM-compatible) emitters and OGN trackers.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is generally only used within Europe.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
-        case $? in
-            0) RTLSDROGN_INSTALL="true" ;;
-            1) RTLSDROGN_INSTALL="false" ;;
-        esac
-    fi
-fi
 fi
 
 ## Feeder Selection Menu
