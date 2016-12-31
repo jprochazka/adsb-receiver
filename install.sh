@@ -77,6 +77,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -a|--automated-install)
             AUTOMATED_INSTALL="true"
+            shift 1
             ;;
         -b)
             # The specified installation configuration file.
