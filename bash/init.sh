@@ -107,15 +107,17 @@ function UpdateRepository() {
             1) BACKUP_BRANCH_STATE="false" ;;
         esac
 
-        # If the user wishes to create a new branch containing the current branches state ask for a name for this new branch.
-        BACKUP_BRANCH_NAME_TITLE="Name Of Backup Branch"
-        while [[ -z $BACKUP_BRANCH_NAME ]]; do
-            BACKUP_BRANCH_NAME=$(whiptail --backtitle "$TITLE" --title "$BACKUP_BRANCH_NAME_TITLE" --nocancel --inputbox "\nPlease enter a name for this new branch." 10 78 3>&1 1>&2 2>&3)
-            BACKUP_BRANCH_NAME_TITLE="Name Of Backup Branch (REQUIRED)"
-        done
-
-        echo -e "\n\e[91m  $TITLE"
+        if [ $BACKUP_BRANCH_STATE = "true" ]; then
+            # If the user wishes to create a new branch containing the current branches state ask for a name for this new branch.
+            BACKUP_BRANCH_NAME_TITLE="Name Of Backup Branch"
+            while [[ -z $BACKUP_BRANCH_NAME ]]; do
+                BACKUP_BRANCH_NAME=$(whiptail --backtitle "$TITLE" --title "$BACKUP_BRANCH_NAME_TITLE" --nocancel --inputbox "\nPlease enter a name for this new branch." 10 78 3>&1 1>&2 2>&3)
+                BACKUP_BRANCH_NAME_TITLE="Name Of Backup Branch (REQUIRED)"
+            done
+        fi
     fi
+
+    echo -e "\n\e[91m  $TITLE"
     echo ""
     echo -e "\e[92m  Pulling the latest version of the ADS-B Receiver Project repository..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
