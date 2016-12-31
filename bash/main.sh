@@ -561,7 +561,7 @@ if [ "$DUMP1090_INSTALL" = "false" ] && [ "$DUMP1090_UPGRADE" = "false" ] && [ "
     exit 1
 else
     # The user decided to install software.
-    CONFIRMATION="$The following software will be installed:\n"
+    CONFIRMATION="The following software will be installed:\n"
 
     # dump1090
     if [ "$DUMP1090_INSTALL" = "true" ] || [ "$DUMP1090_UPGRADE" = "true" ]; then
