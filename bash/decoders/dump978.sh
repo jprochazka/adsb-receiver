@@ -38,7 +38,7 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 ### BEGIN SETUP
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     clear
     echo -e "\n\e[91m  $RECEIVER_PROJECT_TITLE"
 fi
@@ -46,7 +46,7 @@ echo ""
 echo -e "\e[92m  Setting up dump978..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Setup" --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  https://github.com/mutability/dump978\n\nWould you like to continue setup by installing dump978?" 9 78
     if [ $? -eq 1 ]; then
         # Setup has been halted by the user.
@@ -100,7 +100,7 @@ echo ""
 echo -e "\e[95m  Building the dump978 binaries...\e[97m"
 echo ""
 # Enter the dump978 repository if we are not already in it.
-if [ ! $PWD = $RECEIVER_BUILD_DIRECTORY/dump978 ]; then
+if [ ! "$PWD" = $RECEIVER_BUILD_DIRECTORY/dump978 ]; then
     echo -e "\e[94m  Entering the dump978 Git repository directory...\e[97m"
     cd $RECEIVER_BUILD_DIRECTORY/dump978
 fi
@@ -152,7 +152,7 @@ echo ""
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "RTL-SDR Dongle Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run dump978 in tandem with dump1090-mutability you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
         # Ask the user which USB device is to be used for dump1090.
         DUMP1090_USB_DEVICE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
@@ -192,7 +192,7 @@ LIGHTTPD_DOCUMENT_ROOT_SETTING=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.con
 LIGHTTPD_DOCUMENT_ROOT_DIRECTORY=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $LIGHTTPD_DOCUMENT_ROOT_SETTING`
 
 # Set the receivers latitude and longitude.
-if [ -z $RECEIVER_LATITUDE ] && [ -z $RECEIVER_LONGITUDE ] && [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ -z $RECEIVER_LATITUDE ] && [ -z $RECEIVER_LONGITUDE ] && [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # If the receiver's' latitude has not yet been set ask for it.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [ -z $RECEIVER_LATITUDE ]; do

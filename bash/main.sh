@@ -37,7 +37,7 @@ source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 # Source the automated install configuration file if this is an automated installation.
-if [ -n $RECEIVER_AUTOMATED_INSTALL ] && [ $RECEIVER_AUTOMATED_INSTALL = "true" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "true" ]; then
     source $RECEIVER_CONFIGURATION_FILE
 fi
 
@@ -173,7 +173,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     DUMP1090_FORK="mutability"
     DUMP1090_INSTALLED="true"
     # Skip over this dialog if this installation is set to be automated.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Ask if dump1090-mutability should be reinstalled.
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Installed" --defaultno --yesno "The dump1090-mutability package appears to be installed on your device, however...\n\nThe dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering. To ensure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.\n\nDownload, build, and reinstall this package?" 16 65
         case $? in
@@ -182,7 +182,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
         esac
     else
         # Refer to the installation configuration to decide if dump1090-mutability is to be reinstalled or not.
-        if [ -n $DUMP1090_UPGRADE ] && [ $DUMP1090_UPGRADE = "true" ]; then
+        if [ "$DUMP1090_UPGRADE" = "true" ]; then
             DUMP1090_DO_UPGRADE="true"
         else
             DUMP1090_DO_UPGRADE="false"
@@ -196,7 +196,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     DUMP1090_INSTALLED="true"
     # Check if a newer version can be installed.
     if [ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: $PIAWARE_VERSION") -eq 0 ]; then
-        if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+        if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
             whiptail  --backtitle "RECEIVER_PROJECT_TITLE" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
             case $? in
                 0) DUMP1090_DO_UPGRADE="true" ;;
@@ -204,7 +204,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
             esac
         else
             # If a newer version of dump1090-fa is available refer to the installation configuration to decide if it should be upgraded or not.
-            if [ -n $DUMP1090_UPGRADE ] && [ $DUMP1090_UPGRADE = "true" ]; then
+            if [ "$DUMP1090_UPGRADE" = "true" ]; then
                 DUMP1090_DO_UPGRADE="true"
             else
                 DUMP1090_DO_UPGRADE="false"
@@ -214,7 +214,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
 fi
 
 # If no dump1090 fork is installed and this is not an automated installation ask the user which one to install.
-if [ $DUMP1090_INSTALLED = "false" ] && [ $RECEIVER_AUTOMATED_INSTALL = "false" ] ; then
+if [ "$DUMP1090_INSTALLED" = "false" ] && [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ] ; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Choose Dump1090 Version To Install" --menu "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of these two packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)"
     case $? in
         "dump1090-mutability") DUMP1090_FORK="mutability" ;;
@@ -223,14 +223,14 @@ if [ $DUMP1090_INSTALLED = "false" ] && [ $RECEIVER_AUTOMATED_INSTALL = "false" 
 fi
 
 # If the FlightAware fork of dump1090 is or has been chosen to be installed PiAware must be installed.
-if [ $DUMP1090_FORK = "fa" ] && [ $DUMP1090_DO_UPGRADE = "true" ] || [ $DUMP1090_INSTALLED = "false" ]; then
+if [ "$DUMP1090_FORK" = "fa" ] && [ "$DUMP1090_DO_UPGRADE" = "true" ] || [ "$DUMP1090_INSTALLED" = "false" ]; then
     FORCE_PIAWARE_INSTALL="true"
 fi
 
 # Check if the dump978 binaries exist.
 if [ -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] && [ -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2text ] && [ -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2esnt ] && [ -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2json ]; then
     # Dump978 appears to have been built already.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "Dump978 appears to be installed on your device, however...\n\nThe dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.\n\nDownload and rebuild the dump978 binaries?" 14 65
         case $? in
             0) DUMP978_DO_UPGRADE="true" ;;
@@ -238,7 +238,7 @@ if [ -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] && [ -f $RECEIVER_BUILD_DIRE
         esac
     else
         # Refer to the installation configuration to decide if dump978 is to be rebuilt from source or not.
-        if [ $DUMP1090_UPGRADE = "true" ]; then
+        if [ "$DUMP1090_UPGRADE" = "true" ]; then
             DUMP978_DO_UPGRADE="true"
         else
             DUMP978_DO_UPGRADE="false"
@@ -246,7 +246,7 @@ if [ -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] && [ -f $RECEIVER_BUILD_DIRE
     fi
 else
     # Dump978 does not appear to be present on this device.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Not Installed" --defaultno --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.\n\nDo you wish to install dump978?" 10 65
         case $? in
             0) DUMP978_INSTALL="true" ;;
@@ -257,7 +257,7 @@ fi
 
 if [ -f /etc/init.d/rtlsdr-ogn ]; then
     # The RTL-SDR OGN exist on this device.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Check if a newer version of the binaries are available.
         if [ ! -d $RECEIVER_BUILD_DIRECTORY/rtlsdr-ogn/rtlsdr-ogn-$RTLSDROGN_VERSION ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "A newer version of the RTL-SDR OGN binaries is available.\n\nWould you like to setup the newer binaries on this device?" 14 65
@@ -267,7 +267,7 @@ if [ -f /etc/init.d/rtlsdr-ogn ]; then
         esac
     else
         # Refer to the installation configuration to decide if dump978 is to be rebuilt from source or not.
-        if [ $RTLSDROGN_UPGRADE = "true" ]; then
+        if [ "$RTLSDROGN_UPGRADE" = "true" ]; then
             RTLSDROGN_DO_UPGRADE="true"
         else
             RTLSDROGN_DO_UPGRADE="false"
@@ -275,7 +275,7 @@ if [ -f /etc/init.d/rtlsdr-ogn ]; then
     fi
 else
     # The RTL-SDR OGN binaries do not appear to exist on this device.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Not Installed" --defaultno --yesno "The goal the OGN project is to create a unified platform for tracking aircraft equipped with FLARM (or FLARM-compatible) emitters and OGN trackers.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is generally only used within Europe.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
         case $? in
             0) RTLSDROGN_INSTALL="true" ;;
@@ -293,14 +293,14 @@ touch $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
 # Check for the PiAware package.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
-    if [ $DUMP1090_FORK -ne "fa" ]; then
+    if [ "$DUMP1090_FORK" != "fa" ]; then
         # The PiAware package appears to not be installed.
-        if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+        if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
             # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
             FEEDER_LIST=("${FEEDER_LIST[@]}" 'FlightAware PiAware' '' OFF)
         else
             # Check the installation configuration file to see if PiAware is to be installed.
-            if [ -z $PIAWARE_INSTALL ] && [ $PIAWARE_INSTALL = "true" ]; then
+            if [ -z "$PIAWARE_INSTALL" ] && [ "$PIAWARE_INSTALL" = "true" ]; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                 echo "FlightAware PiAware" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
             fi
@@ -309,12 +309,12 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
 else
     # Check if a newer version can be installed.
     if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: $PIAWARE_VERSION") -eq 0 ]; then
-        if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+        if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
             # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
             FEEDER_LIST=("${FEEDER_LIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
         else
             # Check the installation configuration file to see if PiAware is to be upgraded.
-            if [ -z $PIAWARE_INSTALL ] && [ $PIAWARE_INSTALL = "true" ] && [ -z $PIAWARE_UPGRADE ] && [ $PIAWARE_UPGRADE = "true" ]; then
+            if [ -z "$PIAWARE_INSTALL" ] && [ "$PIAWARE_INSTALL" = "true" ] && [ -z "$PIAWARE_UPGRADE" ] && [ "$PIAWARE_UPGRADE" = "true" ]; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                 echo "FlightAware PiAware (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
             fi
@@ -325,12 +325,12 @@ fi
 # Check for the Planefinder ADS-B Client package.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Planefinder Client package does not appear to be installed.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
         FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client' '' OFF)
     else
         # Check the installation configuration file to see if the Plane Finder Client is to be installed.
-        if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL = "true" ]; then
+        if [ -z "$PLANEFINDER_INSTALL" ] && [ "$PLANEFINDER_INSTALL" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
             echo "Plane Finder Client" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
         fi
@@ -339,12 +339,12 @@ else
     # Check if a newer version can be installed.
     if [ `uname -m` = "armv7l" ]; then
         if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: $PLANEFINDER_CLIENT_VERSION_ARM") -eq 0 ]; then
-            if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+            if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
                 # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
                 FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
             else
                 # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
-                if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL = "true" ] && [ -z $PLANEFINDER_UPGRADE ] && [ $PLANEFINDER_UPGRADE = "true" ]; then
+                if [ -z "$PLANEFINDER_INSTALL" ] && [ "$PLANEFINDER_INSTALL" = "true" ] && [ -z "$PLANEFINDER_UPGRADE" ] && [ "$PLANEFINDER_UPGRADE" = "true" ]; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                     echo "Plane Finder Client (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
                 fi
@@ -352,12 +352,12 @@ else
         fi
     else
         if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: $PLANEFINDER_CLIENT_VERSION_I386") -eq 0 ]; then
-            if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+            if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
                 # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
                 FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
             else
                 # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
-                if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL = "true" ] && [ -z $PLANEFINDER_UPGRADE ] && [ $PLANEFINDER_UPGRADE = "true" ]; then
+                if [ -z "$PLANEFINDER_INSTALL" ] && [ "$PLANEFINDER_INSTALL" = "true" ] && [ -z "$PLANEFINDER_UPGRADE" ] && [ "$PLANEFINDER_UPGRADE" = "true" ]; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                     echo "Plane Finder Client (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
                 fi
@@ -369,26 +369,26 @@ fi
 # Check for the Flightradar24 Feeder Client package.
 if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Flightradar24 client package does not appear to be installed.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
         FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client' '' OFF)
     else
         # Check the installation configuration file to see if the Flightradar24 Client is to be installed.
-        if [ -z $FLIGHTRADAR_INSTALL ] && [ $FLIGHTRADAR_INSTALL = "true" ]; then
+        if [ -z "$FLIGHTRADAR_INSTALL" ] && [ "$FLIGHTRADAR_INSTALL" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
             echo "Flightradar24 Client" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
         fi
     fi
 else
     # Check if a newer version can be installed if this is not a Raspberry Pi device.
-    if [ `uname -m` -ne "armv7l" ]; then
+    if [ `uname -m` != "armv7l" ]; then
         if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]; then
-            if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+            if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
                 # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
                 FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client (upgrade)' '' OFF)
             else
                 # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
-                if [ -z $PLANEFINDER_INSTALL ] && [ $PLANEFINDER_INSTALL = "true" ] && [ -z $PLANEFINDER_UPGRADE ] && [ $PLANEFINDER_UPGRADE = "true" ]; then
+                if [ -z "$PLANEFINDER_INSTALL" ] && [ "$PLANEFINDER_INSTALL" = "true" ] && [ -z "$PLANEFINDER_UPGRADE" ] && [ "$PLANEFINDER_UPGRADE" = "true" ]; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                     echo " (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
                 fi
@@ -400,12 +400,12 @@ fi
 # Check if MLAT client has been installed to be used to feed ADS-B Exchange.
 if [ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The mlat-client package does not appear to be installed.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
         FEEDER_LIST=("${FEEDER_LIST[@]}" 'Netcat and MLAT Client for ADS-B Exchange' '' OFF)
     else
         # Check the installation configuration file to see if ADS-B Exchange feeding is to be setup.
-        if [ -z $ADSBEXCHANGE_INSTALL ] && [ $ADSBEXCHANGE_INSTALL = "true" ]; then
+        if [ -z "$ADSBEXCHANGE_INSTALL" ] && [ "$ADSBEXCHANGE_INSTALL" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
             echo "Netcat and MLAT Client for ADS-B Exchange" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
         fi
@@ -413,12 +413,12 @@ if [ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok instal
 else
     # Check if a newer version of mlat-client can be installed.
     if [ $(sudo dpkg -s mlat-client 2>/dev/null | grep -c "Version: ${MLAT_CLIENT_VERSION}") -eq 0 ]; then
-        if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+        if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
             # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
             FEEDER_LIST=("${FEEDER_LIST[@]}" 'Netcat and MLAT Client for ADS-B Exchange (upgrade)' '' OFF)
         else
             # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
-            if [ -z $ADSBEXCHANGE_INSTALL ] && [ $ADSBEXCHANGE_INSTALL = "true" ] && [ -z $ADSBEXCHANGE_UPGRADE ] && [ $ADSBEXCHANGE_UPGRADE = "true" ]; then
+            if [ -z "$ADSBEXCHANGE_INSTALL" ] && [ "$ADSBEXCHANGE_INSTALL" = "true" ] && [ -z "$ADSBEXCHANGE_UPGRADE" ] && [ "$ADSBEXCHANGE_UPGRADE" = "true" ]; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                 echo "Netcat and MLAT Client for ADS-B Exchange (upgrade)" >> $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
             fi
@@ -426,7 +426,7 @@ else
     fi
 fi
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     if [ -n "$FEEDER_LIST" ]; then
         # Display a checklist containing feeders that are not installed if any.
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDER_LIST[@]}" 2>$RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
@@ -438,7 +438,7 @@ fi
 
 ## ADS-B Receiver Project Web Portal
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Ask if the web portal should be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal on this device?" 8 78
     case $? in
@@ -456,24 +456,24 @@ touch $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
 # Check if the AboveTustin repository has been cloned.
 if [ -d $BUILDDIRECTORY/AboveTustin ] && [ -d $BUILDDIRECTORY/AboveTustin/.git ]; then
     # The AboveTustin repository has been cloned to this device.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
         EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'AboveTustin (reinstall)' '' OFF)
     else
         # Check the installation configuration file to see if AboveTustin is to be upgraded.
-        if [ -z $ABOVETUSTIN_INSTALL ] && [ $ABOVETUSTIN_INSTALL = "true" ] && [ -z $ABOVETUSTIN_UPGRADE ] && [ $ABOVETUSTIN_UPGRADE = "true" ]; then
+        if [ -z "$ABOVETUSTIN_INSTALL" ] && [ "$ABOVETUSTIN_INSTALL" = "true" ] && [ -z "$ABOVETUSTIN_UPGRADE" ] && [ "$ABOVETUSTIN_UPGRADE" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
             echo "AboveTustin (reinstall)" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 else
     # The AboveTustin repository has not been cloned to this device.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
         EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'AboveTustin' '' OFF)
     else
         # Check the installation configuration file to see if AboveTustin is to be installed.
-        if [ -z $ABOVETUSTIN_INSTALL ] && [ $ABOVETUSTIN_INSTALL = "true" ]; then
+        if [ -z "$ABOVETUSTIN_INSTALL" ] && [ "$ABOVETUSTIN_INSTALL" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
             echo "AboveTustin" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
@@ -483,23 +483,23 @@ fi
 # Check if the beast-splitter package is installed.
 if [ $(dpkg-query -W -f='${STATUS}' beast-splitter 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The beast-splitter package appears to not be installed.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
         EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'beast-splitter' '' OFF)
     else
         # Check the installation configuration file to see if beast-splitter is to be installed.
-        if [ -z $BEASTSPLITTER_INSTALL ] && [ $BEASTSPLITTER_INSTALL = "true" ]; then
+        if [ -z "$BEASTSPLITTER_INSTALL" ] && [ "$BEASTSPLITTER_INSTALL" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
             echo "beast-splitter" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 else
     # Offer the option to build then reinstall the beast-splitter package.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
         EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'beast-splitter (reinstall)' '' OFF)
     else
-        if [ -z $BEASTSPLITTER_INSTALL ] && [ $BEASTSPLITTER_INSTALL = "true" ] && [ -z $BEASTSPLITTER_UPGRADE ] && [ $BEASTSPLITTER_UPGRADE = "true" ]; then
+        if [ -z "$BEASTSPLITTER_INSTALL" ] && [ "$BEASTSPLITTER_INSTALL" = "true" ] && [ -z "$BEASTSPLITTER_UPGRADE" ] && [ "$BEASTSPLITTER_UPGRADE" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
             echo "beast-splitter (reinstall)" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
@@ -509,23 +509,23 @@ fi
 # Check if the Duck DNS update script exists.
 if [ ! -f $BUILDDIRECTORY/duckdns/duck.sh ]; then
     # Duck DNS does not appear to be set up on this device.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
         EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'Duck DNS Free Dynamic DNS Hosting' '' OFF)
     else
         # Check the installation configuration file to see if Duck DNS dynamic DNS support is to be added.
-        if [ -z $DUCKDNS_INSTALL ] && [ $DUCKDNS_INSTALL = "true" ]; then
+        if [ -z "$DUCKDNS_INSTALL" ] && [ "$DUCKDNS_INSTALL" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
              echo "Duck DNS Free Dynamic DNS Hosting" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
     fi
 else
     # Offer the option to install/setup Duck DNS once more.
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
         EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'Duck DNS Free Dynamic DNS Hosting (reinstall)' '' OFF)
     else
-        if [ -z $DUCKDNS_INSTALL ] && [ $DUCKDNS_INSTALL = "true" ] && [ -z $DUCKDNS_UPGRADE ] && [ $DUCKDNS_UPGRADE = "true" ]; then
+        if [ -z "$DUCKDNS_INSTALL" ] && [ "$DUCKDNS_INSTALL" = "true" ] && [ -z "$DUCKDNS_UPGRADE" ] && [ "$DUCKDNS_UPGRADE" = "true" ]; then
             # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
             echo "Duck DNS Free Dynamic DNS Hosting (reinstall)" >> $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
         fi
@@ -533,7 +533,7 @@ else
 fi
 
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Display a menu the user can use to pick extras to be installed.
     if [[ -n "$EXTRAS_LIST" ]]; then
         # Display a checklist containing feeders that are not installed if any.
@@ -549,7 +549,7 @@ fi
 declare CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ $DUMP1090_INSTALL = "false" ] && [ $DUMP1090_UPGRADE = "false" ] && [ $DUMP978_INSTALL = "false" ] && [ $DUMP978_UPGRADE = "false" ] && [ $PORTAL_INSTALL = "false" ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
+if [ "$DUMP1090_INSTALL" = "false" ] && [ "$DUMP1090_UPGRADE" = "false" ] && [ "$DUMP978_INSTALL" = "false" ] && [ "$DUMP978_UPGRADE" = "false" ] && [ "$PORTAL_INSTALL" = "false" ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
     # Nothing was chosen to be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\033[31m"
@@ -561,8 +561,8 @@ else
     CONFIRMATION="$The following software will be installed:\n"
 
     # dump1090
-    if [ $DUMP1090_INSTALL = "true" ] || [ $DUMP1090_UPGRADE = "true" ]; then
-        if [ $DUMP1090_DO_UPGRADE = "true" ]; then
+    if [ "$DUMP1090_INSTALL" = "true" ] || [ "$DUMP1090_UPGRADE" = "true" ]; then
+        if [ "$DUMP1090_DO_UPGRADE" = "true" ]; then
             case $DUMP1090_FORK in
                 "mutability") CONFIRMATION="$CONFIRMATION\n  * dump1090-mutability (reinstall)" ;;
                 "fa") CONFIRMATION="$CONFIRMATION\n  * dump1090-fa (upgrade)" ;;
@@ -576,8 +576,8 @@ else
     fi
 
     # dump978
-    if [ $DUMP978_INSTALL = "true" ] || [ $DUMP978_UPGRADE = "true" ]; then
-        if [ $DUMP978_DO_UPGRADE = "true" ]; then
+    if [ "$DUMP978_INSTALL" = "true" ] || [ "$DUMP978_UPGRADE" = "true" ]; then
+        if [ "$DUMP978_DO_UPGRADE" = "true" ]; then
             CONFIRMATION="$CONFIRMATION\n  * dump978 (rebuild)"
         else
             CONFIRMATION="$CONFIRMATION\n  * dump978"
@@ -585,8 +585,8 @@ else
     fi
 
     # RTL-SDR OGN
-    if [ $RTLSDROGN_INSTALL = "true" ] || [ $RTLSDROGN_UPGRADE = "true" ]; then
-        if [ $RTLSDROGN_DO_UPGRADE = "true" ]; then
+    if [ "$RTLSDROGN_INSTALL" = "true" ] || [ "$RTLSDROGN_UPGRADE" = "true" ]; then
+        if [ "$RTLSDROGN_DO_UPGRADE" = "true" ]; then
             CONFIRMATION="$CONFIRMATION\n  * RTL-SDR OGN (upgrade)"
         else
             CONFIRMATION="$CONFIRMATION\n  * RTL-SDR OGN"
@@ -594,7 +594,7 @@ else
     fi
 
     # If PiAware is required add it to the list.
-    if [ $DUMP1090_FORK -e "fa" ]; then
+    if [ "$DUMP1090_FORK" -e "fa" ]; then
         CONFIRMATION="$CONFIRMATION\n  * FlightAware PiAware"
     fi
 
@@ -630,7 +630,7 @@ else
         done < $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
     fi
 
-    if [ $PORTAL_INSTALL = 0 ]; then
+    if [ "$PORTAL_INSTALL" = 0 ]; then
         CONFIRMATION="$CONFIRMATION\n  * ADS-B Receiver Project Web Portal"
     fi
 
@@ -676,18 +676,18 @@ fi
 
 ## Decoders
 
-if [ $DUMP1090_INSTALL = "true" ] || [ $DUMP1090_UPGRADE = "true" ]; then
+if [ "$DUMP1090_INSTALL" = "true" ] || [ "$DUMP1090_UPGRADE" = "true" ]; then
     case $DUMP1090_FORK in
         "mutability") InstallDump1090Mutability ;;
         "fa") InstallDump1090Fa ;;
     esac
 fi
 
-if [ $DUMP978_INSTALL = "true" ] || [ $DUMP978_UPGRADE = "true" ]; then
+if [ "$DUMP978_INSTALL" = "true" ] || [ "$DUMP978_UPGRADE" = "true" ]; then
     InstallDump978
 fi
 
-if [ $RTLSDROGN_INSTALL = "true" ] || [ $RTLSDROGN_UPGRADE = "true" ]; then
+if [ "$RTLSDROGN_INSTALL" = "true" ] || [ "$RTLSDROGN_UPGRADE" = "true" ]; then
     InstallRtlsdrOgn
 fi
 
@@ -721,25 +721,25 @@ if [ -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ]; then
     done < $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
 fi
 
-if [ $RUN_PIAWARE_SCRIPT = 0 ] || [ $FORCE_PIAWARE_INSTALL = "true" ]; then
+if [ "$RUN_PIAWARE_SCRIPT" = 0 ] || [ "$FORCE_PIAWARE_INSTALL" = "true" ]; then
     InstallPiAware
 fi
 
-if [ $RUN_PLANEFINDER_SCRIPT = 0 ]; then
+if [ "$RUN_PLANEFINDER_SCRIPT" = 0 ]; then
     InstallPlaneFinder
 fi
 
-if [ $RUN_FLIGHTRADAR24_SCRIPT = 0 ]; then
+if [ "$RUN_FLIGHTRADAR24_SCRIPT" = 0 ]; then
     InstallFlightradar24
 fi
 
-if [ $RUN_ADSBEXCHANGE_SCRIPT = 0 ]; then
+if [ "$RUN_ADSBEXCHANGE_SCRIPT" = 0 ]; then
     InstallAdsbExchange
 fi
 
 ## ADS-B Receiver Project Web Portal
 
-if [ $PORTAL_INSTALL = 0 ]; then
+if [ "$PORTAL_INSTALL" = 0 ]; then
     InstallWebPortal
 fi
 
@@ -767,15 +767,15 @@ if [ -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
     done < $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
 fi
 
-if [ $RUN_ABOVETUSTIN_SCRIPT = "true" ]; then
+if [ "$RUN_ABOVETUSTIN_SCRIPT" = "true" ]; then
     InstallAboveTustin
 fi
 
-if [ $RUN_BEASTSPLITTER_SCRIPT = "true" ]; then
+if [ "$RUN_BEASTSPLITTER_SCRIPT" = "true" ]; then
     InstallBeastSplitter
 fi
 
-if [ $RUN_DUCKDNS_SCRIPT = "true" ]; then
+if [ "$RUN_DUCKDNS_SCRIPT" = "true" ]; then
     InstallDuckDns
 fi
 

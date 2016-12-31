@@ -53,7 +53,7 @@ echo -e "\e[93m-----------------------------------------------------------------
 echo ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78
 CONTINUESETUP=$?
-if [ $CONTINUESETUP = 1 ]; then
+if [ "$CONTINUESETUP" = 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
@@ -112,7 +112,7 @@ fi
 echo ""
 echo -e "\e[95m  Building and installing the PiAware package...\e[97m"
 echo ""
-if [ ! $PWD = $PIAWAREBUILDDIRECTORY ]; then
+if [ ! "$PWD" = $PIAWAREBUILDDIRECTORY ]; then
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
     cd $PIAWAREBUILDDIRECTORY
 fi
@@ -166,7 +166,7 @@ mv $PIAWAREBUILDDIRECTORY/piaware_*.changes $PIAWAREBUILDDIRECTORY/packages/
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
 # Ask for the users FlightAware login.
 FLIGHTAWARELOGIN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
-if [ ! $FLIGHTAWARELOGIN = "" ]; then
+if [ ! "$FLIGHTAWARELOGIN" = "" ]; then
     # If the user supplied their FlightAware login continue with the device claiming process.
     FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
     while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do

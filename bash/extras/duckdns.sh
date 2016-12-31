@@ -36,13 +36,13 @@
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "true" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "true" ]; then
     source $RECEIVER_CONFIGURATION_FILE
 fi
 
 ## BEGIN SETUP
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     clear
     echo -e "\n\e[91m  $RECEIVER_PROJECT_TITLE"
 fi
@@ -50,7 +50,7 @@ echo ""
 echo -e "\e[92m  Setting up the Duck DNS dynamic DNS update script..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Duck DNS Dynamic DNS" --yesno "Duck DNS is a free dynamic DNS service hosted on Amazon VPC.\n\nPLEASE NOTE:\n\nBefore continuing this setup it is recommended that you visit the Duck DNS website and signup for then setup a sub domain which will be used by this device. You will need both the domain and token supplied to you after setting up your account.\n\nhttp://www.duckdns.org\n\nContinue with Duck DNS update script setup?" 18 78
     if [ $? -eq 1 ]; then
         # Setup has been halted by the user.
@@ -68,7 +68,7 @@ fi
 echo -e "\e[95m  Setting up Duck DNS dynamic DNS on this device...\e[97m"
 echo ""
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Ask the user for the user sub domain to be assigned to this device.
     DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain"
     while [[ -z $DOMAIN ]]; do

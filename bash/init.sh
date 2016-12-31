@@ -68,7 +68,7 @@ function AptUpdate() {
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -76,7 +76,7 @@ function AptUpdate() {
 
 # Check that the packages required by these scripts are installed.
 function CheckPrerequisites() {
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         clear
         echo -e "\n\e[91m  $TITLE"
     fi
@@ -89,7 +89,7 @@ function CheckPrerequisites() {
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -97,7 +97,7 @@ function CheckPrerequisites() {
 
 # Update The ADS-B Receiver Project Git repository.
 function UpdateRepository() {
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         clear
 
         # Ask if the user wishes to save any changes made to any core files before resetting them.
@@ -110,7 +110,7 @@ function UpdateRepository() {
         # If the user wishes to create a new branch containing the current branches state ask for a name for this new branch.
         BACKUP_BRANCH_NAME_TITLE="Name Of Backup Branch"
         while [[ -z $BACKUP_BRANCH_NAME ]]; do
-            BACKUP_BRANCH_NAME==$(whiptail --backtitle "$TITLE" --title "$BACKUP_BRANCH_NAME_TITLE" --nocancel --inputbox "\nPlease enter a name for this new branch." 10 78 3>&1 1>&2 2>&3)
+            BACKUP_BRANCH_NAME=$(whiptail --backtitle "$TITLE" --title "$BACKUP_BRANCH_NAME_TITLE" --nocancel --inputbox "\nPlease enter a name for this new branch." 10 78 3>&1 1>&2 2>&3)
             BACKUP_BRANCH_NAME_TITLE="Name Of Backup Branch (REQUIRED)"
         done
 
@@ -126,7 +126,7 @@ function UpdateRepository() {
     echo ""
 
     # Save the current branch state if the user wished to do so.
-    if [ $BACKUP_BRANCH_STATE ] && [ $BACKUP_BRANCH_STATE = "true" ]; then
+    if [ "$BACKUP_BRANCH_STATE" = "true" ]; then
         echo -e "\e[94m  Creating a new branch named $NEW_BRANCH_NAME containing the current state of the $RECEIVER_PROJECT_BRANCH branch...\e[97m"
         echo ""
         git commit -a -m "Saving current branch state."
@@ -144,7 +144,7 @@ function UpdateRepository() {
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -152,7 +152,7 @@ function UpdateRepository() {
 
 # Update the operating system.
 function UpdateOperatingSystem() {
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         clear
         echo -e "\n\e[91m  $TITLE"
     fi
@@ -164,7 +164,7 @@ function UpdateOperatingSystem() {
     echo ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
-    if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -177,10 +177,10 @@ CheckPrerequisites
 
 ## DISPLAY WELCOME SCREEN
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "The ADS-B Receiver Project" --title "The ADS-B Receiver Project" --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.net\n\nWould you like to continue setup?" 14 78
     CONTINUE_SETUP=$?
-    if [ $CONTINUE_SETUP = 1 ]; then
+    if [ "$CONTINUE_SETUP" = 1 ]; then
     # Setup has been halted by the user.
         echo ""
         echo -e "\e[91m  \e[5mSETUP HALTED!\e[25m"
@@ -197,14 +197,14 @@ UpdateRepository
 
 ## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 
-if [ $RECEIVER_AUTOMATED_INSTALL = "false" ]; then
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$TITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78
     case $? in
         0) UPDATE_OPERATING_SYSTEM="true" ;;
         1) UPDATE_OPERATING_SYSTEM="false" ;;
     esac
 fi
-if [ $UPDATE_OPERATING_SYSTEM ] && [ $UPDATE_OPERATING_SYSTEM = "true" ]; then
+if [ "$UPDATE_OPERATING_SYSTEM" = "true" ]; then
     UpdateOperatingSystem
 fi
 

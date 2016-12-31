@@ -120,9 +120,9 @@ done
 ## AUTOMATED INSTALL
 
 # If the automated installation option was selected set the needed environmental variables.
-if [ $AUTOMATED_INSTALL = "true" ]; then
+if [ "$AUTOMATED_INSTALL" = "true" ]; then
     # If no configuration file was specified use the default configuration file path and name.
-   if [ -n $CONFIGURATION_FILE ] || [ $CONFIGURATION_FILE = "default" ]; then
+   if [ -n "$CONFIGURATION_FILE" ] || [ "$CONFIGURATION_FILE" = "default" ]; then
         CONFIGURATION_FILE="$RECEIVER_ROOT_DIRECTORY/install.config"
     # If either the -c or --config-file= flags were set a valid file must reside there.
     elif [ ! -f $CONFIGURATION_FILE ]; then
@@ -140,7 +140,7 @@ export RECEIVER_VERBOSE=$VERBOSE
 ## EXECUTE BASH/INIT.SH
 
 chmod +x $RECEIVER_BASH_DIRECTORY/init.sh
-if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
+if [[ -z "$ENABLE_LOGGING" ]] && [[ "$ENABLE_LOGGING" = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
     LOG_FILE="$RECEIVER_ROOT_DIRECTORY/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
     $RECEIVER_BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
