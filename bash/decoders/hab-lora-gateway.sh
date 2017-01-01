@@ -39,9 +39,9 @@ RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
 
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
 DECODER_NAME="HAB-LoRa-Gateway"
-DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
 DECODER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
 DECODER_WEBSITE="http://www.pi-in-the-sky.com"
+DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
 
 DECODER_SERVICE_SCRIPT_NAME="hab-lora-gateway"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
@@ -77,21 +77,19 @@ echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME}..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
-CONTINUESETUP=$?
-
-if [[ $CONTINUESETUP = 1 ]] ; then
-    # Setup has been halted by the user.
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo -e ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
-    echo -e ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
+    if [[ $? -eq 1 ]] ; then
+        # Setup has been halted by the user.
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  Setup has been halted at the request of the user."
+        echo -e ""
+        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
+        exit 1
     fi
-    exit 1
 fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
@@ -106,6 +104,8 @@ CheckPackage libncurses5-dev
 CheckPackage libcurl4-openssl-dev
 CheckPackage curl
 CheckPackage wiringpi
+
+echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
 
 # Check if SPI is enabled, if not use raspi-config to enable it.
@@ -128,13 +128,17 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
+    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
     mkdir ${DECODER_BUILD_DIRECTORY}
-else
-    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t\t\t"
+    CheckReturnCode
 fi
-cd ${DECODER_BUILD_DIRECTORY}
-CheckReturnCode
+
+# Enter the build directory.
+if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
+    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+    cd ${DECODER_BUILD_DIRECTORY}
+    CheckReturnCode
+fi
 
 # Download and compile the required SSDV library.
 DECODER_GITHUB_URL_SSDV="https://github.com/fsphil/ssdv.git"
