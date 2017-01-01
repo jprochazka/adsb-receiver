@@ -461,32 +461,32 @@ else
 #
 RF:
 {
-  FreqCorr	= ${OGN_FREQ_CORR};             	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan
-  Device   	= ${OGN_DEVICE_ID};      	   	# 		Device index of the USB RTL-SDR device to be selected
-#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	  	# char[12] 	Serial number of the USB RTL-SDR device to be selected
+  FreqCorr	= ${OGN_FREQ_CORR};             	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan.
+  Device   	= ${OGN_DEVICE_ID};      	   	# 		Device index of the USB RTL-SDR device to be selected.
+#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	# char[12] 	Serial number of the USB RTL-SDR device to be selected.
   GSM:
   {
-    CenterFreq	= ${OGN_GSM_FREQ};		# [MHz]		Fnd the best GSM frequency with gsm_scan
-    Gain	= ${OGN_GSM_GAIN};   	 	# [0.1 dB] 	RF input gain for frequency calibration (beware that GSM signals are very strong)
+    CenterFreq	= ${OGN_GSM_FREQ};		# [MHz]		Fnd the best GSM frequency with gsm_scan.
+    Gain	= ${OGN_GSM_GAIN};   	 	# [0.1 dB] 	RF input gain for frequency calibration (beware that GSM signals are very strong).
   } ;
 } ;
 #
 Position:
 {
-  Latitude	= ${OGN_LATITUDE};    		# [deg] 	Antenna coordinates in decimal degrees
-  Longitude	= ${OGN_LONGITUDE};           	# [deg] 	Antenna coordinates in decimal degrees
-  Altitude	= ${OGN_ALTITUDE};   		# [m]   	Altitude above sea leavel
-  GeoidSepar	= ${OGN_GEOID};           	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude
+  Latitude	= ${OGN_LATITUDE};    		# [deg] 	Antenna coordinates in decimal degrees.
+  Longitude	= ${OGN_LONGITUDE};           	# [deg] 	Antenna coordinates in decimal degrees.
+  Altitude	= ${OGN_ALTITUDE};   		# [m]   	Altitude above sea leavel.
+  GeoidSepar	= ${OGN_GEOID};           	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude.
 } ;
 #
 APRS:
 {
-  Call		= "${OGN_RECEIVER_NAME}";  	# 		APRS callsign (max. 9 characters)
+  Call		= "${OGN_RECEIVER_NAME}";  	# char[9]	APRS callsign (max. 9 characters).
 } ;
 #
 DDB:
 {
-  UseAsWhitelist = ${OGN_WHITELIST};     	     	# [0|1] 	Setting to 1 enforces strict opt in
+  UseAsWhitelist = ${OGN_WHITELIST};     	     	# [0|1] 	Setting to 1 enforces strict opt in.
 } ;
 #
 EOF
