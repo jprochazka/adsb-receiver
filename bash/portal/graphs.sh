@@ -147,49 +147,49 @@ LoadPlugin curl
 # RTLSDR-OGN Graphs                                                          #
 #----------------------------------------------------------------------------#
 <Plugin curl>
-  <Page "RTLSDR-OGN">
+  <Page "rtlsdr-ogn">
     URL "http://192.168.69.241:8080/"
     # OGN center Frequency
     <Match>
       Regex "<tr><td>RF.OGN.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
       DSType "GaugeLast"
       Type "frequency"
-      Instance "OGN-Center-Frequency"
+      Instance "Center-Frequency-OGN"
     </Match>
     # GSM  center Frequency
     <Match>
       Regex "<tr><td>RF.GSM.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
       DSType "GaugeLast"
       Type "frequency"
-      Instance "GSM-Center-Frequency"
+      Instance "Center-Frequency-GSM"
     </Match>
     # OGN Frequency Correction
     <Match>
       Regex "<tr><td>Frequency correction</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
       DSType "GaugeLast"
       Type "frequency_offset"
-      Instance "OGN-Frequency-Correction"
+      Instance "Frequency-Correction-OGN"
     </Match>
     # NTP Frequency Correction
     <Match>
       Regex "<tr><td>NTP freq. corr.</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
       DSType "GaugeLast"
       Type "frequency_offset"
-      Instance "NTP-Frequency-Correction"
+      Instance "Frequency-Correction-NTP"
     </Match>
     # OGN Gain
     <Match>
       Regex "<tr><td>RF.OGN.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
       DSType "GaugeLast"
       Type "gauge"
-      Instance "OGN-Gain"
+      Instance "Gain-OGN"
     </Match>
     # GSM Gain
     <Match>
       Regex "<tr><td>RF.GSM.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
       DSType "GaugeLast"
       Type "gauge"
-      Instance "GSM-Gain"
+      Instance "Gain-GSM"
     </Match>
   </Page>
 </Plugin>
