@@ -445,8 +445,8 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Ask if the web portal should be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal on this device?" 8 78
     case $? in
-        0) WEBPORTAL_INSTALL="true" ;;
-        1) WEBPORTAL_INSTALL="false" ;;
+        0) PORTAL_INSTALL="true" ;;
+        1) PORTAL_INSTALL="false" ;;
     esac
 fi
 
@@ -633,7 +633,7 @@ else
         done < $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
     fi
 
-    if [ "$PORTAL_INSTALL" = 0 ]; then
+    if [ "$PORTAL_INSTALL" = "true" ]; then
         CONFIRMATION="$CONFIRMATION\n  * ADS-B Receiver Project Web Portal"
     fi
 
@@ -711,40 +711,40 @@ if [ -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ]; then
     do
         case $FEEDER_CHOICE in
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
-                RUN_PIAWARE_SCRIPT=0
+                RUN_PIAWARE_SCRIPT="true"
                 ;;
             "Plane Finder ADS-B Client"|"Plane Finder Client (upgrade)")
-                RUN_PLANEFINDER_SCRIPT=0
+                RUN_PLANEFINDER_SCRIPT="true"
                 ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
-                RUN_FLIGHTRADAR24_SCRIPT=0
+                RUN_FLIGHTRADAR24_SCRIPT="true"
                 ;;
             "Netcat and MLAT Client for ADS-B Exchange"|"Netcat and MLAT Client for ADS-B Exchange (upgrade)")
-                RUN_ADSBEXCHANGE_SCRIPT=0
+                RUN_ADSBEXCHANGE_SCRIPT="true"
                 ;;
         esac
     done < $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
 fi
 
-if [ "$RUN_PIAWARE_SCRIPT" = 0 ] || [ "$FORCE_PIAWARE_INSTALL" = "true" ]; then
+if [ "$RUN_PIAWARE_SCRIPT" = "true" ] || [ "$FORCE_PIAWARE_INSTALL" = "true" ]; then
     InstallPiAware
 fi
 
-if [ "$RUN_PLANEFINDER_SCRIPT" = 0 ]; then
+if [ "$RUN_PLANEFINDER_SCRIPT" = "true" ]; then
     InstallPlaneFinder
 fi
 
-if [ "$RUN_FLIGHTRADAR24_SCRIPT" = 0 ]; then
+if [ "$RUN_FLIGHTRADAR24_SCRIPT" = "true" ]; then
     InstallFlightradar24
 fi
 
-if [ "$RUN_ADSBEXCHANGE_SCRIPT" = 0 ]; then
+if [ "$RUN_ADSBEXCHANGE_SCRIPT" = "true" ]; then
     InstallAdsbExchange
 fi
 
 ## ADS-B Receiver Project Web Portal
 
-if [ "$PORTAL_INSTALL" = 0 ]; then
+if [ "$PORTAL_INSTALL" = "true" ]; then
     InstallWebPortal
 fi
 
