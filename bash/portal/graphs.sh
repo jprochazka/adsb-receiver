@@ -116,6 +116,7 @@ LoadPlugin disk
 <LoadPlugin python>
 	Globals true
 </LoadPlugin>
+LoadPlugin curl
 
 ##############################################################################
 # Plugin configuration                                                       #
@@ -142,6 +143,60 @@ LoadPlugin disk
 	</Module>
 </Plugin>
 
+#----------------------------------------------------------------------------#
+# RTLSDR-OGN Graphs                                                          #
+#----------------------------------------------------------------------------#
+<Plugin curl>
+  <Page "RTLSDR-OGN">
+    URL "http://192.168.69.241:8080/"
+    # OGN center Frequency
+    <Match>
+      Regex "<tr><td>RF.OGN.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
+      DSType "GaugeLast"
+      Type "frequency"
+      Instance "OGN-Center-Frequency"
+    </Match>
+    # GSM  center Frequency
+    <Match>
+      Regex "<tr><td>RF.GSM.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
+      DSType "GaugeLast"
+      Type "frequency"
+      Instance "GSM-Center-Frequency"
+    </Match>
+    # OGN Frequency Correction
+    <Match>
+      Regex "<tr><td>Frequency correction</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
+      DSType "GaugeLast"
+      Type "frequency_offset"
+      Instance "OGN-Frequency-Correction"
+    </Match>
+    # NTP Frequency Correction
+    <Match>
+      Regex "<tr><td>NTP freq. corr.</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
+      DSType "GaugeLast"
+      Type "frequency_offset"
+      Instance "NTP-Frequency-Correction"
+    </Match>
+    # OGN Gain
+    <Match>
+      Regex "<tr><td>RF.OGN.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
+      DSType "GaugeLast"
+      Type "gauge"
+      Instance "OGN-Gain"
+    </Match>
+    # GSM Gain
+    <Match>
+      Regex "<tr><td>RF.GSM.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
+      DSType "GaugeLast"
+      Type "gauge"
+      Instance "GSM-Gain"
+    </Match>
+  </Page>
+</Plugin>
+
+#----------------------------------------------------------------------------#
+# System Graphs                                                              #
+#----------------------------------------------------------------------------#
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
 		Instance localhost
