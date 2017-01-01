@@ -285,7 +285,7 @@ EnableDev=N
 #	NetworkLED=	<WiringPi pin>	These are used for LED status indicators.
 #NetworkLED=22
 
-#	InternetLED=    <WiringPi pin>	Which may be useful for packaged gateways that don't have a monitor attached.	
+#	InternetLED=    <WiringPi pin>	Which may be useful for packaged gateways that don't have a monitor attached.
 #InternetLED=23
 
 ##### Transceiver Config #####
@@ -295,13 +295,13 @@ EnableDev=N
 # If the frequency_n line is commented out, then that channel is disabled.
 #
 # There are a number of preset "modes" which can be used to configure a module for various roles:
-#	
-#	0 = (normal for telemetry)  		Explicit mode, Error coding 4:8, Bandwidth 20.8 kHz, SF 11, Low data rate optimize on
-#	1 = (normal for SSDV)       		Implicit mode, Error coding 4:5, Bandwidth 20.8 kHz, SF  6, Low data rate optimize off
-#	2 = (normal for repeater)   		Explicit mode, Error coding 4:8, Bandwidth 62.5 kHz, SF  8, Low data rate optimize off
-#	3 = (normal for fast SSDV)  		Explicit mode, Error coding 4:6, Bandwidth 250  kHz, SF  7, Low data rate optimize off
-#	4 = Test mode not for normal use.	
-#	5 = (normal for calling mode) 		Explicit mode, Error coding 4:8, Bandwidth 41.7 kHz, SF 11, Low data rate optimize off
+#
+#       0 = (normal for telemetry)              Explicit mode, Error coding 4:8, Bandwidth 20.8 kHz, SF 11, Low data rate optimize on
+#       1 = (normal for SSDV)                   Implicit mode, Error coding 4:5, Bandwidth 20.8 kHz, SF  6, Low data rate optimize off
+#       2 = (normal for repeater)               Explicit mode, Error coding 4:8, Bandwidth 62.5 kHz, SF  8, Low data rate optimize off
+#       3 = (normal for fast SSDV)              Explicit mode, Error coding 4:6, Bandwidth 250  kHz, SF  7, Low data rate optimize off
+#       4 = Test mode not for normal use.
+#       5 = (normal for calling mode)           Explicit mode, Error coding 4:8, Bandwidth 41.7 kHz, SF 11, Low data rate optimize off
 
 ##### Config CE0 #####
 #
@@ -312,14 +312,14 @@ frequency_0=434.451
 #	mode_0=  	[0-5]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.
 mode_0=1
 
-#	AFC_0=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
+#	AFC_0=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).
 AFC_0=Y
 
-#	bandwidth_0=	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.	
+#	bandwidth_0=	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.
 #bandwidth_0=125K
 
 #	implicit_0	[Y|N]		TBC.
-#implicit_0=0
+#implicit_0=N
 
 #	coding_0=	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.
 #coding_0=5
@@ -328,16 +328,16 @@ AFC_0=Y
 #sf_0=8
 
 #	lowopt_0=	[Y|N]		Enables low data rate optimization.
-#lowopt_0=0
+#lowopt_0=N
 
 #	power_0=	[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
 #					** Only set values that are legal in your location (for EU see IR2030) **
 #power_0=255
 
-#	DIO0_0=		<WiringPi pin>
+#	DIO0_0=		<WiringPi pin>	DIO0
 DIO0_0=31
 
-#	DIO5_0=		<WiringPi pin>	
+#	DIO5_0=		<WiringPi pin> 	DIO5
 DIO5_0=26
 
 #	UplinkTime_0=	<seconds>	When to send any uplink messages, measured as seconds into each cycle.
@@ -347,54 +347,54 @@ DIO5_0=26
 #					eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.
 #UplinkCycle_0=60
 
-#	ActivityLED_0=	<WiringPi pin>
+#	ActivityLED_0=	<WiringPi pin>	Optional activity LED.
 #ActivityLED_0=21
 
 ##### Config CE1 #####
 #
 
-#	frequency_1=	<freq in MHz>	Sets the frequency for LoRa module.	
+#	frequency_1=	<freq in MHz>	Sets the frequency for LoRa module.
 #frequency_1=434.500
 
-#	mode_1=		[0-5]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.	
+#	mode_1=		[0-5]		Sets the "mode" which offers a simple way of setting the various LoRa parameters in one go.
 #mode_1=1
 
-#	AFC_1=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).	
+#	AFC_1=		[Y|N]		Enables automatic frequency control (retunes by the frequency error of last received packet).
 #AFC_1=Y
 
-#	bandwidth_1=	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.	
+#	bandwidth_1=	<Bandwidth>	Options are 7K8, 10K4, 15K6, 20K8, 31K25, 41K7, 62K5, 125K, 250K, 500K.
 #bandwidth_1=125K
 
-#	implicit_1=	[Y|N]		TBC.	
-#implicit_1=0
+#	implicit_1=	[Y|N]		TBC.
+#implicit_1=N
 
-#	coding_1=	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.	
+#	coding_1=	[5-8]		Second value of 4:x error coding, eg a value of 5 corresponds to 4:5 error coding.
 #coding_1=5
 
-#	sf_1=		<Spread Factor>	TBC.	
-#sf_1=8A
+#	sf_1=		<Spread Factor>	TBC.
+#sf_1=8
 
 #	lowopt_1=	[Y|N]		Enables low data rate optimization.
-#lowopt_1=0
+#lowopt_1=N
 
-#	power_1		[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
+#	power_1=	[0-255]		This is the power setting used for uplinks.  Refer to the LoRa manual for details on setting this.
 #					** Only set values that are legal in your location (for EU see IR2030) **
 #power_1=255
 
-#	DIO0_1=6	<WiringPi pin>	
+#	DIO0_1=		<WiringPi pin>	DIO0
 #DIO0_1=6
 
-#	DIO5_1=		<WiringPi pin>	
-#DIO5_1=5
+#       DIO5_1=         <WiringPi pin> 	DIO5
+#DIO5_1=5 
 
 #	UplinkTime_1=	<seconds>	When to send any uplink messages, measured as seconds into each cycle.
 #UplinkTime_1=5
 
-#	UplinkCycle_1=	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.	
+#	UplinkCycle_1=	<seconds>	Cycle time for uplinks, first cycle starts at 00:00:00.
 #					eg for uplink time=2 and cycle=30, transmissions will start at 2 and 32 seconds after each minute.
 #UplinkCycle_1=60
 
-#	ActivityLED_1=	<WiringPi pin>
+#	ActivityLED_1=	<WiringPi pin>	Optional activity LED.
 #ActivityLED_1=29
 
 EOF
