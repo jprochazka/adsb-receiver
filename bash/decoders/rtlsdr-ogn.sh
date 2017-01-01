@@ -33,15 +33,15 @@
 
 ### VARIABLES
 
-RECIEVER_ROOT_DIRECTORY="$PWD"
+RECIEVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
 
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
-DECODER_NAME="RTLSDR-OGN"
-DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
 DECODER_GITHUB="https://github.com/glidernet/ogn-rf"
 DECODER_WEBSITE="http://wiki.glidernet.org"
+DECODER_NAME="RTLSDR-OGN"
+DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
 
 DECODER_SERVICE_SCRIPT_NAME="rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
@@ -71,7 +71,7 @@ fi
 
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     clear
-    echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME}..."
@@ -243,6 +243,8 @@ CheckPackage procserv
 CheckPackage telnet
 CheckPackage curl
 CheckPackage lynx
+
+echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
