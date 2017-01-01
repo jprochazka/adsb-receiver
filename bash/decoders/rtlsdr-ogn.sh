@@ -179,6 +179,7 @@ echo -e ""
 
 if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
     echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
+    echo -e ""
     sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
     blacklist dvb_usb_rtl28xxu
     blacklist dvb_usb_v2
