@@ -177,7 +177,6 @@ echo -e ""
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
-echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
 if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
     echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
     sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
