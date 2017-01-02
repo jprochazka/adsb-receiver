@@ -414,11 +414,18 @@ if [[ ! -c gpu_dev ]] ; then
     CheckReturnCode
 fi
 
-# Calculate RTL-SDR device error rate using Kalibrate.
-if [[ -f `which kal` ]] ; then
-    KALIBRATE_GAIN="40"
-    KALIBRATE_GSM_FREQ=`kal -d "${OGN_DEVICE_ID}" -g "${KALIBRATE_GAIN}" -s GSM900 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:" | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
-    KALIBRATE_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${KALIBRATE_GAIN}" -f "${KALIBRATE_GSM_FREQ}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'` 
+# Calculate RTL-SDR device error rate
+DERIVED_GSM_BAND="GSM900"
+DERIVED_GAIN="40"
+if [[ -x "`which kal`" ]] ; then
+    DERIVED_GSM_FREQ=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:" | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
+    DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -f "${DERIVED_GSM_FREQ}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'` 
+elif [[ -x "${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/gsm_scan" ]] ; then
+    if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
+        DERIVED_GSM_FREQ=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" --gsm850 `
+    else
+        DERIVED_GSM_FREQ=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}"  `
+    fi
 fi
 
 ## CREATE THE CONFIGURATION FILE
@@ -476,15 +483,15 @@ fi
 
 # Check for decoder specific variable, if not set then populate with dummy values to ensure valid config generation.
 if [[ -z ${OGN_FREQ_CORR} ]] ; then
-    OGN_FREQ_CORR="${KALIBRATE_ERROR}"
+    OGN_FREQ_CORR="${DERIVED_ERROR}"
 fi
 
 if [[ -z ${OGN_GSM_FREQ} ]] ; then
-    OGN_GSM_FREQ="${KALIBRATE_GSM_FREQ}"
+    OGN_GSM_FREQ="${DERIVED_GSM_FREQ}"
 fi
 
 if [[ -z ${OGN_GSM_GAIN} ]] ; then
-    OGN_GSM_GAIN="${KALIBRATE_GAIN}"
+    OGN_GSM_GAIN="${DERIVED_GAIN}"
 fi
 
 if [[ -z ${OGN_WHITELIST} ]] ; then
