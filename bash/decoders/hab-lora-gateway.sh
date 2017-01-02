@@ -145,7 +145,7 @@ if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Enter the build directory.
-if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
+if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
