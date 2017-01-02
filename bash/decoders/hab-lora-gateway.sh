@@ -122,7 +122,7 @@ fi
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t\t\t"
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t"
     ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
     CheckReturnCode
 fi
@@ -149,7 +149,7 @@ SSDV_GITHUB_URL_SHORT=`echo ${SSDV_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/h
 SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 SSDV_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
 if [[ -d ${SSDV_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t"
     cd ${SSDV_DIRECTORY}
     ACTION=$(git remote update)
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -159,7 +159,7 @@ if [[ -d ${SSDV_DIRECTORY} ]] ; then
         ACTION=$(sudo make install)
     fi
 else
-    echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t"
     ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
     cd ${SSDV_DIRECTORY}
     ACTION=$(make)
@@ -169,8 +169,8 @@ CheckReturnCode
 
 # Download and compile the decoder itself.
 DECODER_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
-DECODER_GITHUB_URL_SHORT=`echo ${LORA_GATEWAY_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-DECODER_GITHUB_PROJECT=`echo ${LORA_GATEWAY_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+DECODER_GITHUB_URL_SHORT=`echo ${DECODER_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+DECODER_GITHUB_PROJECT=`echo ${DECODER_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
@@ -238,9 +238,9 @@ fi
 # Test if config file exists, if not create it.
 DECODER_CONFIG_FILE_NAME="gateway.txt"
 if [[ -s "${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME}" ]] ; then
-    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t\t"
+    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t\t"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t"
     sudo tee ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -421,33 +421,33 @@ CheckReturnCode
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
+        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
         ACTION=$(cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t\t"
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t"
         false
     fi
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
+        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
         ACTION=$(sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t\t\t"
+        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t\t"
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t\t"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -463,12 +463,12 @@ fi
 CheckReturnCode
 
 # Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t\t\t"
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t\t"
 ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
 CheckReturnCode
 
 # Start the DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t\t"
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t"
 ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
 CheckReturnCode
 
@@ -477,7 +477,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t\t\t"
+echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t\t"
 cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
 
