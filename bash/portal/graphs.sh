@@ -126,6 +126,62 @@ LoadPlugin curl
 </Plugin>
 
 #----------------------------------------------------------------------------#
+# System Graphs                                                              #
+#----------------------------------------------------------------------------#
+<Plugin table>
+        <Table "/sys/class/thermal/thermal_zone0/temp">
+                Instance localhost
+                Separator " "
+                <Result>
+                        Type gauge
+                        InstancePrefix "cpu_temp"
+                        ValuesFrom 0
+                </Result>
+        </Table>
+</Plugin>
+
+<Plugin "interface">
+        Interface "eth0"
+        Interface "wlan0"
+</Plugin>
+
+<Plugin "aggregation">
+        <Aggregation>
+                Plugin "cpu"
+                Type "cpu"
+                GroupBy "Host"
+                GroupBy "TypeInstance"
+                CalculateAverage true
+        </Aggregation>
+</Plugin>
+
+<Plugin "df">
+        MountPoint "/"
+        IgnoreSelected false
+        ReportReserved true
+        ReportInodes true
+</Plugin>
+
+<Plugin "disk">
+        Disk "mmcblk0"
+        IgnoreSelected false
+</Plugin>
+
+<Chain "PostCache">
+        <Rule>
+                <Match regex>
+                Plugin "^cpu\$"
+                        PluginInstance "^[0-9]+\$"
+                </Match>
+                <Target write>
+                        Plugin "aggregation"
+                </Target>
+                Target stop
+        </Rule>
+        Target "write"
+</Chain>
+
+#----------------------------------------------------------------------------#
 # Configure the dump1090 python module.                                      #
 #                                                                            #
 # Each Instance block collects statistics from a separate named dump1090.    #
@@ -148,7 +204,7 @@ LoadPlugin curl
 #----------------------------------------------------------------------------#
 <Plugin curl>
   <Page "rtlsdr-ogn">
-    URL "http://192.168.69.241:8080/"
+    URL "http://localhost:8080/"
     # OGN center Frequency
     <Match>
       Regex "<tr><td>RF.OGN.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
@@ -193,62 +249,6 @@ LoadPlugin curl
     </Match>
   </Page>
 </Plugin>
-
-#----------------------------------------------------------------------------#
-# System Graphs                                                              #
-#----------------------------------------------------------------------------#
-<Plugin table>
-	<Table "/sys/class/thermal/thermal_zone0/temp">
-		Instance localhost
-		Separator " "
-		<Result>
-			Type gauge
-			InstancePrefix "cpu_temp"
-			ValuesFrom 0
-		</Result>
-	</Table>
-</Plugin>
-
-<Plugin "interface">
-	Interface "eth0"
-        Interface "wlan0"
-</Plugin>
-
-<Plugin "aggregation">
-	<Aggregation>
-		Plugin "cpu"
-		Type "cpu"
-		GroupBy "Host"
-		GroupBy "TypeInstance"
-		CalculateAverage true
-	</Aggregation>
-</Plugin>
-
-<Plugin "df">
-	MountPoint "/"
-	IgnoreSelected false
-	ReportReserved true
-	ReportInodes true
-</Plugin>
-
-<Plugin "disk">
-	Disk "mmcblk0"
-	IgnoreSelected false
-</Plugin>
-
-<Chain "PostCache">
-	<Rule>
-		<Match regex>
-		Plugin "^cpu\$"
-			PluginInstance "^[0-9]+\$"
-		</Match>
-		<Target write>
-			Plugin "aggregation"
-		</Target>
-		Target stop
-	</Rule>
-	Target "write"
-</Chain>
 EOF
 
 ## RELOAD COLLECTD
