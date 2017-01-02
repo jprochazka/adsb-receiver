@@ -48,8 +48,9 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up RTL-SDR OGN..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[92m  Setting up RTL-SDR OGN...\e[97m"
+echo -e ""
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Setup" --yesno "The objective of the Open Glider Network is to create and maintain a unified tracking platform for gliders and other GA aircraft. Currently OGN focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nPlease note you will need a dedicated RTL-SDR dongle to use this software.\n\n  http://wiki.glidernet.org\n\nContinue setup by installing RTL-SDR OGN?" 14 78
@@ -58,7 +59,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  RTL-SDR OGN setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
@@ -335,9 +336,11 @@ echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY}
 
 echo -e ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  RTL-SDR OGN setup is complete.\e[39m"
 echo -e ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0
