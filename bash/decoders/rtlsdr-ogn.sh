@@ -319,8 +319,7 @@ if [[ ! -x `which kal` ]] ; then
         fi
     else
         echo -en "\e[33m  Building Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
-        cd ${DECODER_BUILD_DIRECTORY}
-        git clone https://${KALIBRATE_GITHUB_URL_SHORT} > /dev/null 2>&1
+        git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         ./bootstrap > /dev/null 2>&1
         ./configure > /dev/null 2>&1

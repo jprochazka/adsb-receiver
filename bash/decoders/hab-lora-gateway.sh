@@ -156,8 +156,7 @@ if [[ -d ${SSDV_DIRECTORY} ]] ; then
     fi
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
-    cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${SSDV_GITHUB_URL_SHORT} > /dev/null 2>&1
+    git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
     cd ${SSDV_DIRECTORY}
     sudo make install > /dev/null 2>&1
 fi
@@ -179,8 +178,7 @@ if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     fi
 else
     echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
-    cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${DECODER_GITHUB_URL_SHORT} > /dev/null 2>&1
+    git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
     cd ${DECODER_PROJECT_DIRECTORY}
     make > /dev/null 2>&1
 fi
