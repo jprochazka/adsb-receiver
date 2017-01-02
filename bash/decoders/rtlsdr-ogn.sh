@@ -241,12 +241,14 @@ CheckPackage rtl-sdr
 # Required for Kalibrate.
 CheckPackage autoconf 
 CheckPackage automake 
+CheckPackage libfftw3-3
 CheckPackage libfftw3-dev
 CheckPackage libtool
 # Required for RTLSDR-OGN.
 CheckPackage curl
 CheckPackage libconfig9
 CheckPackage libconfig-dev
+CheckPackage libfftw3-3
 CheckPackage libfftw3-dev
 CheckPackage libjpeg8
 CheckPackage libjpeg-dev
