@@ -305,7 +305,7 @@ KALIBRATE_GITHUB_URL_SHORT=`echo ${KALIBRATE_GITHUB_URL} | sed -e 's/http:\/\///
 KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 KALIBRATE_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
 if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
-    echo -en "\e[33m  Updating Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Updating Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
     cd ${KALIBRATE_PROJECT_DIRECTORY}
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -317,7 +317,7 @@ if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
         sudo make install > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Building Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Building Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
     cd ${DECODER_BUILD_DIRECTORY}
     git clone https://${KALIBRATE_GITHUB_URL_SHORT} > /dev/null 2>&1
     cd ${KALIBRATE_PROJECT_DIRECTORY}
