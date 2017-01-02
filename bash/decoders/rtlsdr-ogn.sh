@@ -239,8 +239,8 @@ CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage rtl-sdr
 # Required for Kalibrate.
-CheckPackage autoconf 
-CheckPackage automake 
+CheckPackage autoconf
+CheckPackage automake
 CheckPackage libfftw3-3
 CheckPackage libfftw3-dev
 CheckPackage libtool
@@ -425,21 +425,24 @@ if [[ ! -c gpu_dev ]] ; then
 fi
 
 # Calculate RTL-SDR device error rate
-DERIVED_GSM_BAND="GSM900"
-DERIVED_GAIN="40"
-if [[ -x "`which kal`" ]] ; then
-    DERIVED_GSM_SCAN=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
-    DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
-    DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
-    DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'` 
-elif [[ -x "${DECODER_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
-    if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
-        DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" --gsm850 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
-    else
-        DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
+    # GSM Band is GSM850 in US and GSM900 elsewhere.
+    DERIVED_GSM_BAND="GSM900"
+    DERIVED_GAIN="40"
+    if [[ -x "`which kal`" ]] ; then
+        DERIVED_GSM_SCAN=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
+        DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
+        DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
+        DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
+    elif [[ -x "${DECODER_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
+        if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
+            DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" --gsm850 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+        else
+            DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+        fi
+        DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
+        DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
     fi
-    DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
-    DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
 fi
 
 ## CREATE THE CONFIGURATION FILE
