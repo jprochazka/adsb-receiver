@@ -454,23 +454,23 @@ if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
     DERIVED_GSM_BAND="GSM900"
     DERIVED_GAIN="40"
     if [[ -x "`which kal`" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate...\e[97m"
+        echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, may take upto 10 minutes...\e[97m"
         DERIVED_GSM_SCAN=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
         DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
         DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
     elif [[ -x "${DECODER_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan...\e[97m"
+        echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take upto 10 minutes...\e[97m"
         if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
-            DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" --gsm850 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+            DERIVED_GSM_OPTS="--gsm850"
         else
-            DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+            DERIVED_GSM_OPTS=""
         fi
+        DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" ${DERIVED_GSM_OPTS} | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
         DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
     else
         echo -en "\e[33m  Unable to calibrate RTL-SDR device...\e[97m"
-
     fi
     CheckReturnCode
 fi
