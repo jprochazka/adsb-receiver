@@ -380,6 +380,11 @@ if [[ ! -c gpu_dev ]] ; then
 fi
 
 # Calculate RTL-SDR device error rate using Kalibrate.
+if [[ -f `which kal` ]] ; then
+    KALIBRATE_GAIN="40"
+    KALIBRATE_GSM_FREQ=`kal -d ${OGN_DEVICE_ID} -g ${KALIBRATE_GAIN} -s GSM900 2>&1 | grep "chan:" | sort -n -r -k 7 | grep -m1 "power" | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
+    KALIBRATE_ERROR=`kal -d ${OGN_DEVICE_ID} -g ${KALIBRATE_GAIN} -f ${KALIBRATE_GSM_FREQ} 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'` 
+fi
 
 ## CREATE THE CONFIGURATION FILE
 
@@ -436,15 +441,15 @@ fi
 
 # Check for decoder specific variable, if not set then populate with dummy values to ensure valid config generation.
 if [[ -z ${OGN_FREQ_CORR} ]] ; then
-    OGN_FREQ_CORR="0"
+    OGN_FREQ_CORR="${KALIBRATE_ERROR}"
 fi
 
 if [[ -z ${OGN_GSM_FREQ} ]] ; then
-    OGN_GSM_FREQ="957.800"
+    OGN_GSM_FREQ="${KALIBRATE_GSM_FREQ}"
 fi
 
 if [[ -z ${OGN_GSM_GAIN} ]] ; then
-    OGN_GSM_GAIN="35"
+    OGN_GSM_GAIN="${KALIBRATE_GAIN}"
 fi
 
 if [[ -z ${OGN_WHITELIST} ]] ; then
