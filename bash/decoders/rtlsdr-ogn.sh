@@ -547,12 +547,12 @@ if [[ -z ${OGN_WHITELIST} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-DECODER_CONFIG_FILE_PATH="${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf"
-if [[ -s ${DECODER_CONFIG_FILE_PATH} ]] ; then
-    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
+DECODER_CONFIG_FILE_NAME="${OGN_RECEIVER_NAME}.conf"
+if [[ -s "${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME}" ]] ; then
+    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t\t"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
-    sudo tee ${DECODER_CONFIG_FILE_PATH} > /dev/null 2>&1 <<EOF
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t\t"
+    sudo tee ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
@@ -593,7 +593,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-ACTION=$(chown pi:pi ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf)
+ACTION=$(chown pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME})
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -656,12 +656,12 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     CheckReturnCode
 fi
 
-# Configure $DECODER as a service.
+# Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t"
 ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
 CheckReturnCode
 
-# Start the $DECODER service.
+# Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t"
 ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
 CheckReturnCode
