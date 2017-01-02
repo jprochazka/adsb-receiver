@@ -300,11 +300,13 @@ if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Download and compile Kalibrate.
-DECODER_GITHUB_URL_KAL="https://github.com/steve-m/kalibrate-rtl.git"
-DECODER_GITHUB_URL_KAL_SHORT=`echo ${DECODER_GITHUB_URL_KAL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-if [[ -d ${DECODER_BUILD_DIRECTORY}/kalibrate-rtl ]] ; then
-    echo -en "\e[33m  Updating Kalibrate from \"\e[37m${DECODER_GITHUB_URL_KAL_SHORT}\e[33m\"...\t\t\t\t"
-    cd ${DECODER_BUILD_DIRECTORY}/kalibrate-rtl
+KALIBRATE_GITHUB_URL="https://github.com/steve-m/kalibrate-rtl.git"
+KALIBRATE_GITHUB_URL_SHORT=`echo ${KALIBRATE_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+KALIBRATE_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
+if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
+    echo -en "\e[33m  Updating Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
+    cd ${KALIBRATE_PROJECT_DIRECTORY}
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         sudo make clean > /dev/null 2>&1
@@ -315,10 +317,10 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/kalibrate-rtl ]] ; then
         sudo make install > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Building Kalibrate from \"\e[37m${DECODER_GITHUB_URL_KAL_SHORT}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Building Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${DECODER_GITHUB_URL_KAL_SHORT} > /dev/null 2>&1
-    cd ${DECODER_BUILD_DIRECTORY}/kalibrate-rtl
+    git clone https://${KALIBRATE_GITHUB_URL_SHORT} > /dev/null 2>&1
+    cd ${KALIBRATE_PROJECT_DIRECTORY}
     ./bootstrap > /dev/null 2>&1
     ./configure > /dev/null 2>&1
     make > /dev/null 2>&1
@@ -371,7 +373,13 @@ else
 fi
 
 # Change to DECODER work directory for post-build actions.
-cd ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn
+DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn"
+if [[ -f ${DECODER_PROJECT_DIRECTORY} ]] ; then
+    cd ${DECODER_PROJECT_DIRECTORY}
+else
+    echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"..."
+    exit 1
+fi
 
 # Create named pipe if required.
 if [[ ! -p ogn-rf.fifo ]] ; then
@@ -422,7 +430,7 @@ DERIVED_GAIN="40"
 if [[ -x "`which kal`" ]] ; then
     DERIVED_GSM_FREQ=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:" | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
     DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -f "${DERIVED_GSM_FREQ}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'` 
-elif [[ -x "${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/gsm_scan" ]] ; then
+elif [[ -x "${DECODER_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
     if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
         DERIVED_GSM_SCAN_RESULT=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" --gsm850 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
     else
@@ -503,11 +511,11 @@ if [[ -z ${OGN_WHITELIST} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf ]] ; then
+if [[ -s ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf ]] ; then
     echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
 else
     echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
-    sudo tee ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1 <<EOF
+    sudo tee ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
@@ -548,7 +556,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1
+chown pi:pi ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -589,8 +597,8 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50000  pi ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
-50001  pi ${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
+50000  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
+50001  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
     chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
 else

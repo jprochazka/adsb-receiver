@@ -141,11 +141,13 @@ if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Download and compile the required SSDV library.
-DECODER_GITHUB_URL_SSDV="https://github.com/fsphil/ssdv.git"
-DECODER_GITHUB_URL_SSDV_SHORT=`echo ${DECODER_GITHUB_URL_SSDV} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
-    echo -en "\e[33m  Updating SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t\t\t"
-    cd ${DECODER_BUILD_DIRECTORY}/ssdv
+SSDV_GITHUB_URL="https://github.com/fsphil/ssdv.git"
+SSDV_GITHUB_URL_SHORT=`echo ${SSDV_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+SSDV_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
+if [[ -d ${SSDV_DIRECTORY} ]] ; then
+    echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
+    cd ${SSDV_DIRECTORY}
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         sudo make clean > /dev/null 2>&1
@@ -153,20 +155,22 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/ssdv ]] ; then
         sudo make install > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Building SSDV library from \"\e[37m${DECODER_GITHUB_URL_SSDV_SHORT}\e[33m\"...\t\t\t\t"
+    echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${DECODER_GITHUB_URL_SSDV_SHORT} > /dev/null 2>&1
-    cd ${DECODER_BUILD_DIRECTORY}/ssdv
+    git clone https://${SSDV_GITHUB_URL_SHORT} > /dev/null 2>&1
+    cd ${SSDV_DIRECTORY}
     sudo make install > /dev/null 2>&1
 fi
 CheckReturnCode
 
 # Download and compile the decoder itself.
-DECODER_GITHUB_URL_LORA_GATEWAY="https://github.com/PiInTheSky/lora-gateway.git"
-DECODER_GITHUB_URL_LORA_GATEWAY_SHORT=`echo ${DECODER_GITHUB_URL_LORA_GATEWAY} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
-    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"...\t\t"
-    cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
+DECODER_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
+DECODER_GITHUB_URL_SHORT=`echo ${LORA_GATEWAY_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+DECODER_GITHUB_PROJECT=`echo ${LORA_GATEWAY_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
+if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
+    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
+    cd ${DECODER_PROJECT_DIRECTORY}
     git remote update > /dev/null 2>&1
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         make clean > /dev/null 2>&1
@@ -174,16 +178,16 @@ if [[ -d ${DECODER_BUILD_DIRECTORY}/lora-gateway ]] ; then
         make > /dev/null 2>&1
     fi
 else
-    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT}\e[33m\"...\t\t"
+    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${DECODER_GITHUB_URL_LORA_GATEWAY_SHORT} > /dev/null 2>&1
-    cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
+    git clone https://${DECODER_GITHUB_URL_SHORT} > /dev/null 2>&1
+    cd ${DECODER_PROJECT_DIRECTORY}
     make > /dev/null 2>&1
 fi
 CheckReturnCode
 
 # Change to DECODER work directory for post-build actions.
-cd ${DECODER_BUILD_DIRECTORY}/lora-gateway
+cd ${DECODER_PROJECT_DIRECTORY}
 
 # TODO - Map GPIO pins using WiringPi.
 
@@ -226,11 +230,11 @@ if [[ -z ${HAB_ANTENNA} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt ]] ; then
+if [[ -s ${DECODER_PROJECT_DIRECTORY}/gateway.txt ]] ; then
     echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\t\t\t"
 else
     echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\t\t\t"
-    sudo tee ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt > /dev/null 2>&1 <<EOF
+    sudo tee ${DECODER_PROJECT_DIRECTORY}/gateway.txt > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #
@@ -401,7 +405,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${DECODER_BUILD_DIRECTORY}/lora-gateway/gateway.txt > /dev/null 2>&1
+chown pi:pi ${DECODER_PROJECT_DIRECTORY}/gateway.txt > /dev/null 2>&1
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -443,7 +447,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50100  root ${DECODER_BUILD_DIRECTORY}/lora-gateway    /usr/bin/env TERM="vt220" ./gateway
+50100  root ${DECODER_PROJECT_DIRECTORY}    /usr/bin/env TERM="vt220" ./gateway
 EOF
     chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
 else
