@@ -61,9 +61,9 @@ function CheckReturnCode {
     COL=$((`stty size | awk '{print $2}'` - 8))
     tput cup "${LINE}" "${COL}"
     if [[ $? -eq 0 ]] ; then
-        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n\n"
+        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
     else
-        echo -e "\e[97m[\e[31mError\e[97m]\e[31m\n\n"
+        echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
     fi
 }
 
@@ -194,37 +194,37 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
     if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
         for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
             if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
-                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m\t"
+                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m"
                 OGN_DEVICE_ID=${DEVICE_ID}
             fi
         done
         # If no match for this serial then assume the highest numbered tuner will be used.
         if [[ -z ${OGN_DEVICE_ID} ]] ; then
-            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m\t"
+            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
             OGN_DEVICE_ID=${TUNER_COUNT}
         fi
     # Or if a device has been specified by device ID then confirm this is currently detected.
     elif [[ -n ${OGN_DEVICE_ID} ]] ; then
         if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m\t"
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m"
         # If no match for this serial then assume the highest numbered tuner will be used.
         else
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m\t"
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
             OGN_DEVICE_ID=${TUNER_COUNT}
         fi
     # Failing that configure it with device ID 0.
     else
-        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e[97m\t"
+        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e[97m"
         OGN_DEVICE_ID=${TUNER_COUNT}
     fi
 # Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
-    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m\t"
+    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
-    echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m\t"
+    echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
 fi
@@ -267,7 +267,7 @@ echo -e ""
 ## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
 if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
-    echo -en "\e[33m  Stopping unwanted kernel modules from being loaded...\t\t\t"
+    echo -en "\e[33m  Stopping unwanted kernel modules from being loaded..."
     sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
 blacklist dvb_usb_rtl28xxu
 blacklist dvb_usb_v2
@@ -283,7 +283,7 @@ fi
 ## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t\t"
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service..."
     ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
     CheckReturnCode
 fi
@@ -292,14 +292,14 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"..."
     mkdir ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
 
 # Enter the build directory.
 if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\t"
+    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"..."
     cd ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
@@ -311,7 +311,7 @@ if [[ ! -x `which kal` ]] ; then
     KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
     KALIBRATE_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
     if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
-        echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
+        echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"..."
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         ACTION=$(git remote update)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -320,7 +320,7 @@ if [[ ! -x `which kal` ]] ; then
             DO_INSTALL_KALIBRATE="true"
         fi
     else
-        echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
+        echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"..."
         ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         DO_INSTALL_KALIBRATE="true"
@@ -342,7 +342,7 @@ fi
 
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
-    echo -en "\e[33m  Detecting CPU architecture...\t\t\t\t\t\t"
+    echo -en "\e[33m  Detecting CPU architecture..."
     CPU_ARCHITECTURE=`uname -m | tr -d "\n\r" `
     CheckReturnCode
 fi
@@ -370,12 +370,12 @@ esac
 # Attempt to download and extract binaries.
 if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
-    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\t\t"
+    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture..."
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
     ACTION=$(curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE})
     CheckReturnCode
     # Extract binaries.
-    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\t"
+    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"..."
     ACTION=$(tar xzf ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY})
     CheckReturnCode
 else
@@ -395,13 +395,13 @@ fi
 
 # Create named pipe if required.
 if [[ ! -p ogn-rf.fifo ]] ; then
-    echo -en "\e[33m  Creating named pipe...\t\t\t\t\t\t"
+    echo -en "\e[33m  Creating named pipe..."
     ACTION=$(sudo mkfifo ogn-rf.fifo)
     CheckReturnCode
 fi
 
 # Set file permissions.
-echo -en "\e[33m  Setting proper file permissions...\t\t\t\t\t"
+echo -en "\e[33m  Setting proper file permissions..."
 DECODER_SETUID_BINARIES="gsm_scan ogn-rf rtlsdr-ogn"
 DECODER_SETUID_COUNT="0"
 for DECODER_SETUID_BINARY in ${DECODER_SETUID_BINARIES} ; do
@@ -420,17 +420,17 @@ CheckReturnCode
 # Creat GPU device if required.
 if [[ ! -c gpu_dev ]] ; then
     # Check if kernel v4.1 or higher is being used.
-    echo -en "\e[33m  Getting the version of the kernel currently running...\t\t"
+    echo -en "\e[33m  Getting the version of the kernel currently running..."
     KERNEL=`uname -r`
     KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
     CheckReturnCode
     if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
         # Kernel is older than version 4.1.
-        echo -en "\e[33m  Executing mknod for older kernels...\e[97m\t\t\t\t\t"
+        echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
         ACTION=$(sudo mknod gpu_dev c 100 0)
     else
         # Kernel is version 4.1 or newer.
-        echo -en "\e[33m  Executing mknod for newer kernels...\e[97m\t\t\t\t\t"
+        echo -en "\e[33m  Executing mknod for newer kernels...\e[97m"
         ACTION=$(sudo mknod gpu_dev c 249 0)
     fi
     CheckReturnCode
@@ -444,13 +444,13 @@ if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
     DERIVED_GSM_BAND="GSM900"
     DERIVED_GAIN="40"
     if [[ -x "`which kal`" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate...\e[97m\t\t\t\t"
+        echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate...\e[97m"
         DERIVED_GSM_SCAN=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
         DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
         DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
     elif [[ -x "${DECODER_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan...\e[97m\t\t\t\t"
+        echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan...\e[97m"
         if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
             DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" --gsm850 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
         else
@@ -459,7 +459,7 @@ if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
         DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
     else
-        echo -en "\e[33m  Unable to calibrate RTL-SDR device...\e[97m\t\t\t\t\t"
+        echo -en "\e[33m  Unable to calibrate RTL-SDR device...\e[97m"
 
     fi
     CheckReturnCode
@@ -555,9 +555,9 @@ fi
 # Test if config file exists, if not create it.
 DECODER_CONFIG_FILE_NAME="${OGN_RECEIVER_NAME}.conf"
 if [[ -s "${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME}" ]] ; then
-    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t\t"
+    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m\t\t"
+    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
     sudo tee ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
@@ -607,33 +607,33 @@ CheckReturnCode
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"..."
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t"
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"..."
         false
     fi
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"..."
         ACTION=$(sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t"
+        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"..."
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"..."
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"..."
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -652,7 +652,7 @@ CheckReturnCode
 # Potentially obselse tuner detection code.
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
-    echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\t"
+    echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled..."
     SERVICES="dump1090-mutability"
     for SERVICE in ${SERVICES} ; do
         if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
@@ -663,12 +663,12 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 fi
 
 # Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t"
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service..."
 ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
 CheckReturnCode
 
 # Start the DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t"
+echo -en "\e[33m  Starting the ${DECODER_NAME} service..."
 ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
 CheckReturnCode
 
@@ -676,7 +676,7 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -e ""
-echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
+echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
 
