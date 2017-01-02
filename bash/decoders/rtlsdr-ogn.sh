@@ -234,7 +234,6 @@ echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODE
 echo -e ""
 CheckPackage git
 # Required for USB SDR devices.
-CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage rtl-sdr
@@ -248,6 +247,7 @@ CheckPackage libtool
 CheckPackage curl
 CheckPackage libconfig9
 CheckPackage libconfig-dev
+CheckPackage libcurl3
 CheckPackage libfftw3-3
 CheckPackage libfftw3-dev
 CheckPackage libjpeg8
@@ -429,6 +429,7 @@ fi
 # Calculate RTL-SDR device error rate
 if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
     # Attempt to calibrate if required values are not provided.
+    # May take 10+ minutes, should probably confirm if user wishes to calibrate.
     # GSM Band is GSM850 in US and GSM900 elsewhere.
     DERIVED_GSM_BAND="GSM900"
     DERIVED_GAIN="40"
