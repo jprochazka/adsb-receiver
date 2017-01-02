@@ -233,18 +233,26 @@ CheckReturnCode
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
 echo -e ""
 CheckPackage git
+# Required for USB SDR devices.
 CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
+CheckPackage rtl-sdr
+# Required for Kalibrate.
+CheckPackage autoconf 
+CheckPackage automake 
+CheckPackage libfftw3-dev
+CheckPackage libtool
+# Required for RTLSDR-OGN.
+CheckPackage curl
+CheckPackage libconfig9
 CheckPackage libconfig-dev
 CheckPackage libfftw3-dev
 CheckPackage libjpeg8
 CheckPackage libjpeg-dev
-CheckPackage libconfig9
+CheckPackage lynx
 CheckPackage procserv
 CheckPackage telnet
-CheckPackage curl
-CheckPackage lynx
 
 echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
