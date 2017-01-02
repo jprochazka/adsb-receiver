@@ -483,6 +483,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
+echo -e ""
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
 cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
