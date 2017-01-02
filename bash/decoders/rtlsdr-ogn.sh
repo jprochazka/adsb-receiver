@@ -306,45 +306,53 @@ if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Download and compile Kalibrate.
-if [[ ! -x `which kal` ]] ; then
+if [[ `true` ]] ; then
     KALIBRATE_GITHUB_URL="https://github.com/steve-m/kalibrate-rtl.git"
     KALIBRATE_GITHUB_URL_SHORT=`echo ${KALIBRATE_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
     KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-    KALIBRATE_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
-    if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
+    KALIBRATE_PROJECT_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
+    # Check if Kalibrate is already present and located where we would expect it to be.
+    if [[ -x `which kal` ]] && [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
+        # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"..."
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         ACTION=$(git remote update)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-            ACTION=$(sudo make clean)
+            # Local branch is behind remote so update.
             ACTION=$(git pull)
-            DO_INSTALL_KALIBRATE="true"
+            # And remove previous binaries.
+            ACTION=$(sudo make clean)
+            DO_INSTALL_FROM_GIT="true"
         fi
     else
+        # Otherwise clone from github.
         echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"..."
         ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
-        cd ${KALIBRATE_PROJECT_DIRECTORY}
-        DO_INSTALL_KALIBRATE="true"
+        DO_INSTALL_FROM_GIT="true"
     fi
-    if [[ ${DO_INSTALL_KALIBRATE} = "true" ]] ; then
-        if [[ -f "bootstrap" ]] ; then
+    if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
+        # And build from source
+        cd ${KALIBRATE_PROJECT_DIRECTORY}
+        if [[ -x "bootstrap" ]] ; then
             ACTION=$(./bootstrap)
-         fi
-        if [[ -f "configure" ]] ; then
+        fi
+        if [[ -x "configure" ]] ; then
             ACTION=$(./configure)
         fi
         ACTION=$(make)
-        ACTION=$(sudo make install)
+        if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
+            ACTION=$(sudo make install)
+        fi
     fi
     CheckReturnCode
+    unset DO_INSTALL_FROM_GIT
     cd ${DECODER_BUILD_DIRECTORY}
-    unset DO_INSTALL_KALIBRATE
 fi
 
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
     echo -en "\e[33m  Detecting CPU architecture..."
-    CPU_ARCHITECTURE=`uname -m | tr -d "\n\r" `
+    CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
     CheckReturnCode
 fi
 
@@ -372,7 +380,7 @@ esac
 if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
     echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture..."
-    DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
+    DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}'`
     ACTION=$(curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE})
     CheckReturnCode
     # Extract binaries.
