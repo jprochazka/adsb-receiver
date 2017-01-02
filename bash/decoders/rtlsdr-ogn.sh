@@ -517,16 +517,16 @@ fi
 
 # Frequency Correction
 if [[ -z ${OGN_FREQ_CORR} ]] ; then
-    if [[ -z "${DERIVED_ERROR}" ]] ; then
-    OGN_FREQ_CORR="${DERIVED_ERROR}"
+    if [[ -n "${DERIVED_ERROR}" ]] ; then
+        OGN_FREQ_CORR="${DERIVED_ERROR}"
     else
-    OGN_FREQ_CORR="30"
+        OGN_FREQ_CORR="30"
     fi
 fi
 
 # GSM Reference signal frequency.
 if [[ -z ${OGN_GSM_FREQ} ]] ; then
-    if [[ -z "${DERIVED_GSM_FREQ}" ]] ; then
+    if [[ -n "${DERIVED_GSM_FREQ}" ]] ; then
        OGN_GSM_FREQ="${DERIVED_GSM_FREQ}"
     else
        OGN_GSM_FREQ="958"
@@ -535,7 +535,7 @@ fi
 
 # Gain value for RTL-SDR device.
 if [[ -z ${OGN_GSM_GAIN} ]] ; then
-    if [[ -z "${DERIVED_GAIN}" ]] ; then
+    if [[ -n "${DERIVED_GAIN}" ]] ; then
         OGN_GSM_GAIN="${DERIVED_GAIN}"
     else
         OGN_GSM_GAIN="40"
