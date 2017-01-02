@@ -255,6 +255,7 @@ CheckPackage lynx
 CheckPackage procserv
 CheckPackage telnet
 
+echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
 
