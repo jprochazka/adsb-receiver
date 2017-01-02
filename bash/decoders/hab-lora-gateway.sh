@@ -173,7 +173,7 @@ DECODER_GITHUB_URL_SHORT=`echo ${DECODER_GITHUB_URL} | sed -e 's/http:\/\///g' -
 DECODER_GITHUB_PROJECT=`echo ${DECODER_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
+    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"..."
     cd ${DECODER_PROJECT_DIRECTORY}
     ACTION=$(git remote update)
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -182,7 +182,7 @@ if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
         ACTION=$(make)
     fi
 else
-    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
+    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"..."
     ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
     cd ${DECODER_PROJECT_DIRECTORY}
     ACTION=$(make)
@@ -421,33 +421,33 @@ CheckReturnCode
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
         ACTION=$(cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t"
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t"
         false
     fi
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
         ACTION=$(sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t\t"
+        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t"
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t\t"
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\t\t"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -463,12 +463,12 @@ fi
 CheckReturnCode
 
 # Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t\t"
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t"
 ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
 CheckReturnCode
 
 # Start the DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t"
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t"
 ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
 CheckReturnCode
 
@@ -477,7 +477,7 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t\t"
+echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m\t"
 cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
 
