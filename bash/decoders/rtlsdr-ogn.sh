@@ -37,16 +37,18 @@ RECIEVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
 
+# Decoder specific variables.
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
 DECODER_GITHUB="https://github.com/glidernet/ogn-rf"
 DECODER_WEBSITE="http://wiki.glidernet.org"
 DECODER_NAME="RTLSDR-OGN"
 DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
 
+# Decoder service script variables.
 DECODER_SERVICE_SCRIPT_NAME="rtlsdr-ogn"
+DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
-DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -55,10 +57,13 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Should be moved to functions.sh.
 function CheckReturnCode {
+    LINE=$((`stty size | awk '{print $1}'` - 2))
+    COL=$((`stty size | awk '{print $2}'` - 8))
+    tput cup "${LINE}" "${COL}"
     if [[ $? -eq 0 ]] ; then
-        echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
     else
-        echo -e "\t\e[97m [\e[31mError\e[97m]\e[31m\n"
+        echo -e "\e[97m[\e[31mError\e[97m]\e[31m\n"
     fi
 }
 

@@ -37,16 +37,18 @@ RECIEVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
 
+# Decoder specific variables.
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
-DECODER_NAME="HAB-LoRa-Gateway"
 DECODER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
 DECODER_WEBSITE="http://www.pi-in-the-sky.com"
+DECODER_NAME="HAB-LoRa-Gateway"
 DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
 
+# Decoder service script variables.
 DECODER_SERVICE_SCRIPT_NAME="hab-lora-gateway"
+DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/lora-gateway/master/hab-lora-gateway"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
-DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/lora-gateway/master/hab-lora-gateway"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -55,10 +57,13 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Should be moved to functions.sh.
 function CheckReturnCode {
+    LINE=$((`stty size | awk '{print $1}'` - 2))
+    COL=$((`stty size | awk '{print $2}'` - 8))
+    tput cup "${LINE}" "${COL}"
     if [[ $? -eq 0 ]] ; then
-        echo -e "\t\e[97m [\e[32mDone\e[97m]\e[39m\n"
+        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
     else
-        echo -e "\t\e[97m [\e[31mError\e[97m]\e[31m\n"
+        echo -e "\e[97m[\e[31mError\e[97m]\e[31m\n"
     fi
 }
 
