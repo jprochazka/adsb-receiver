@@ -376,7 +376,7 @@ fi
 
 # Change to DECODER work directory for post-build actions.
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn"
-if [[ -f ${DECODER_PROJECT_DIRECTORY} ]] ; then
+if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     cd ${DECODER_PROJECT_DIRECTORY}
 else
     echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"..."
