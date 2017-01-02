@@ -306,23 +306,27 @@ if [[ ! -x `which kal` ]] ; then
     KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
     KALIBRATE_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
     if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
-        echo -en "\e[33m  Updating Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
+        echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         git remote update > /dev/null 2>&1
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             sudo make clean > /dev/null 2>&1
             git pull > /dev/null 2>&1
-            ./bootstrap > /dev/null 2>&1
-            ./configure > /dev/null 2>&1
-            make > /dev/null 2>&1
-            sudo make install > /dev/null 2>&1
+            DO_INSTALL_KALIBRATE="true"
         fi
     else
-        echo -en "\e[33m  Building Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
+        echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
         git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
         cd ${KALIBRATE_PROJECT_DIRECTORY}
-        ./bootstrap > /dev/null 2>&1
-        ./configure > /dev/null 2>&1
+        DO_INSTALL_KALIBRATE="true"
+    fi
+    if [[ ${DO_INSTALL_KALIBRATE} = "true" ]] ; then
+        if [[ -f "bootstrap" ]] ; then
+            ./bootstrap > /dev/null 2>&1
+         fi
+        if [[ -f "configure" ]] ; then
+            ./configure > /dev/null 2>&1
+        fi
         make > /dev/null 2>&1
         sudo make install > /dev/null 2>&1
     fi
@@ -561,7 +565,7 @@ RF:
 #  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	# char[12] 	Serial number of the USB RTL-SDR device to be selected.
   GSM:
   {
-    CenterFreq	= ${OGN_GSM_FREQ};		# [MHz]		Fnd the best GSM frequency with gsm_scan.
+    CenterFreq	= ${OGN_GSM_FREQ};   		# [MHz]		Fnd the best GSM frequency with gsm_scan.
     Gain	= ${OGN_GSM_GAIN};   	 	# [0.1 dB] 	RF input gain for frequency calibration (beware that GSM signals are very strong).
   } ;
 } ;
