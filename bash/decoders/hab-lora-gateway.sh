@@ -48,8 +48,6 @@ DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/lora-gateway/master/hab-lora-gateway"
 
-DECODER_OUTPUT="> /dev/null 2>&1"
-
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -98,13 +96,16 @@ fi
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
 echo -e ""
+# Required by install script.
 CheckPackage git
-CheckPackage rtl-sdr
+# Required for USB SDR devices.
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
-CheckPackage libncurses5-dev
-CheckPackage libcurl4-openssl-dev
+CheckPackage rtl-sdr
+# Required by LoRa Gateway.
 CheckPackage curl
+CheckPackage libcurl4-openssl-dev
+CheckPackage libncurses5-dev
 CheckPackage wiringpi
 
 echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
@@ -113,7 +114,7 @@ echo -e ""
 # Check if SPI is enabled, if not use raspi-config to enable it.
 if [[ `sudo raspi-config nonint get_spi` -eq 1 ]] ; then
     echo -en "\e[33m  Enabling SPI interface used by LoRa radio module..."
-    sudo raspi-config nonint do_spi 0
+    ACTION=$(sudo raspi-config nonint do_spi 0)
     CheckReturnCode
     echo -e ""
 fi
@@ -122,7 +123,7 @@ fi
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t\t\t"
-    sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop
+    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
     CheckReturnCode
 fi
 
@@ -150,19 +151,19 @@ SSDV_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
 if [[ -d ${SSDV_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
     cd ${SSDV_DIRECTORY}
-    git remote update ${DECODER_OUTPUT}
+    ACTION=$(git remote update)
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-        make clean ${DECODER_OUTPUT}
-        git pull ${DECODER_OUTPUT}
-        make ${DECODER_OUTPUT}
-        sudo make install ${DECODER_OUTPUT}
+        ACTION=$(make clean)
+        ACTION=$(git pull)
+        ACTION=$(make)
+        ACTION=$(sudo make install)
     fi
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
-    git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} ${DECODER_OUTPUT}
+    ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
     cd ${SSDV_DIRECTORY}
-    make ${DECODER_OUTPUT}
-    sudo make install ${DECODER_OUTPUT}
+    ACTION=$(make)
+    ACTION=$(sudo make install)
 fi
 CheckReturnCode
 
@@ -174,17 +175,17 @@ DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
     cd ${DECODER_PROJECT_DIRECTORY}
-    git remote update ${DECODER_OUTPUT}
+    ACTION=$(git remote update)
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-        make clean ${DECODER_OUTPUT}
-        git pull ${DECODER_OUTPUT}
-        make ${DECODER_OUTPUT}
+        ACTION=$(make clean)
+        ACTION=$(git pull)
+        ACTION=$(make)
     fi
 else
     echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
-    git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} ${DECODER_OUTPUT}
+    ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
     cd ${DECODER_PROJECT_DIRECTORY}
-    make ${DECODER_OUTPUT}
+    ACTION=$(make)
 fi
 CheckReturnCode
 
@@ -215,6 +216,9 @@ if [[ -z ${HAB_LONGITUDE} ]] ; then
         HAB_LONGITUDE="0.000"
     fi
 fi
+
+# Altitude.
+# Not required by this decoder.
 
 # Set receiver callsign for this decoder.
 # Format TBC, for now assume it should be between 3 and 9 alphanumeric charactors, with no punctuation.
@@ -407,7 +411,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${DECODER_PROJECT_DIRECTORY}/gateway.txt ${DECODER_OUTPUT}
+ACTION=$(chown pi:pi ${DECODER_PROJECT_DIRECTORY}/gateway.txt)
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -417,8 +421,8 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
-        cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
-        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} ${DECODER_OUTPUT}
+        ACTION=$(cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t\t"
         false
@@ -427,8 +431,8 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
-        sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
-        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} ${DECODER_OUTPUT}
+        ACTION=$(sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t\t\t"
         false
@@ -451,7 +455,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 #port  user     directory                 command       args
 50100  root ${DECODER_PROJECT_DIRECTORY}    /usr/bin/env TERM="vt220" ./gateway
 EOF
-    chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} ${DECODER_OUTPUT}
+    ACTION=$(chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG})
 else
     false
 fi
@@ -459,12 +463,12 @@ CheckReturnCode
 
 # Configure $DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t\t\t"
-sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults ${DECODER_OUTPUT}
+ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
 CheckReturnCode
 
 # Start the $DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t\t"
-sudo service ${DECODER_SERVICE_SCRIPT_NAME} start ${DECODER_OUTPUT}
+ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
 CheckReturnCode
 
 ### ARCHIVE SETUP PACKAGES
