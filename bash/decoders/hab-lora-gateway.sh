@@ -236,11 +236,12 @@ if [[ -z ${HAB_ANTENNA} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${DECODER_PROJECT_DIRECTORY}/gateway.txt ]] ; then
+DECODER_CONFIG_FILE_PATH="${DECODER_PROJECT_DIRECTORY}/gateway.txt"
+if [[ -s ${DECODER_CONFIG_FILE_PATH} ]] ; then
     echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37mgateway.txt\e[33m\"...\t\t\t"
 else
     echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37mgateway.txt\e[33m\"...\t\t\t"
-    sudo tee ${DECODER_PROJECT_DIRECTORY}/gateway.txt > /dev/null 2>&1 <<EOF
+    sudo tee ${DECODER_CONFIG_FILE_PATH} > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #

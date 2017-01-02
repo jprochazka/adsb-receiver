@@ -547,11 +547,12 @@ if [[ -z ${OGN_WHITELIST} ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-if [[ -s ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf ]] ; then
+DECODER_CONFIG_FILE_PATH="${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf"
+if [[ -s ${DECODER_CONFIG_FILE_PATH} ]] ; then
     echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
 else
     echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${OGN_RECEIVER_NAME}.conf\e[33m\"...\e [97m\t\t"
-    sudo tee ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1 <<EOF
+    sudo tee ${DECODER_CONFIG_FILE_PATH} > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
