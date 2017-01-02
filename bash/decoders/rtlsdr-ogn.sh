@@ -218,12 +218,12 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
 elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
     echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m\t"
     OGN_DEVICE_ID="0"
-    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
+    sudo /etc/init.d/dump1090-mutability stop ${DECODER_OUTPUT}
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
     echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m\t"
     OGN_DEVICE_ID="0"
-    sudo /etc/init.d/dump1090-mutability stop > /dev/null 2>&1
+    sudo /etc/init.d/dump1090-mutability stop ${DECODER_OUTPUT}
 fi
 CheckReturnCode
 
@@ -279,7 +279,7 @@ fi
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\t\t\t\t\t"
-    sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop > /dev/null 2>&1
+    sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop ${DECODER_OUTPUT}
     CheckReturnCode
 fi
 
@@ -308,30 +308,31 @@ if [[ ! -x `which kal` ]] ; then
     if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
         echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
         cd ${KALIBRATE_PROJECT_DIRECTORY}
-        git remote update > /dev/null 2>&1
+        git remote update ${DECODER_OUTPUT}
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-            sudo make clean > /dev/null 2>&1
-            git pull > /dev/null 2>&1
+            sudo make clean ${DECODER_OUTPUT}
+            git pull ${DECODER_OUTPUT}
             DO_INSTALL_KALIBRATE="true"
         fi
     else
         echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
-        git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
+        git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} ${DECODER_OUTPUT}
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         DO_INSTALL_KALIBRATE="true"
     fi
     if [[ ${DO_INSTALL_KALIBRATE} = "true" ]] ; then
         if [[ -f "bootstrap" ]] ; then
-            ./bootstrap > /dev/null 2>&1
+            ./bootstrap ${DECODER_OUTPUT}
          fi
         if [[ -f "configure" ]] ; then
-            ./configure > /dev/null 2>&1
+            ./configure ${DECODER_OUTPUT}
         fi
-        make > /dev/null 2>&1
-        sudo make install > /dev/null 2>&1
+        make ${DECODER_OUTPUT}
+        sudo make install ${DECODER_OUTPUT}
     fi
     CheckReturnCode
     cd ${DECODER_BUILD_DIRECTORY}
+    unset DO_INSTALL_KALIBRATE
 fi
 
 # Detect CPU Architecture.
@@ -366,11 +367,11 @@ if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
     echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\t\t"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}' `
-    curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} > /dev/null 2>&1
+    curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} ${DECODER_OUTPUT}
     CheckReturnCode
     # Extract binaries.
     echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\t"
-    tar xzf ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
+    tar xzf ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY} ${DECODER_OUTPUT}
     CheckReturnCode
 else
     # Unable to download bimary due to invalid URL.
@@ -592,7 +593,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf > /dev/null 2>&1
+chown pi:pi ${DECODER_PROJECT_DIRECTORY}/${OGN_RECEIVER_NAME}.conf ${DECODER_OUTPUT}
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -602,7 +603,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
-        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} ${DECODER_OUTPUT}
     else
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t"
         false
@@ -612,7 +613,7 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t"
         sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
-        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} ${DECODER_OUTPUT}
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t"
         false
@@ -636,7 +637,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 50000  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
 50001  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
-    chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
+    chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} ${DECODER_OUTPUT}
 else
     false
 fi
@@ -649,7 +650,7 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     SERVICES="dump1090-mutability"
     for SERVICE in ${SERVICES} ; do
         if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
-            sudo update-rc.d ${SERVICE} disable > /dev/null 2>&1
+            sudo update-rc.d ${SERVICE} disable ${DECODER_OUTPUT}
         fi
     done
     CheckReturnCode
@@ -657,12 +658,12 @@ fi
 
 # Configure $DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t"
-sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults > /dev/null 2>&1
+sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults ${DECODER_OUTPUT}
 CheckReturnCode
 
 # Start the $DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t"
-sudo service ${DECODER_SERVICE_SCRIPT_NAME} start > /dev/null 2>&1
+sudo service ${DECODER_SERVICE_SCRIPT_NAME} start ${DECODER_OUTPUT}
 CheckReturnCode
 
 ## RTL-SDR OGN SETUP COMPLETE

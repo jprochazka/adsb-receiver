@@ -48,6 +48,8 @@ DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/lora-gateway/master/hab-lora-gateway"
 
+DECODER_OUTPUT="> /dev/null 2>&1"
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -148,17 +150,19 @@ SSDV_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
 if [[ -d ${SSDV_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
     cd ${SSDV_DIRECTORY}
-    git remote update > /dev/null 2>&1
+    git remote update ${DECODER_OUTPUT}
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-        sudo make clean > /dev/null 2>&1
-        git pull > /dev/null 2>&1
-        sudo make install > /dev/null 2>&1
+        make clean ${DECODER_OUTPUT}
+        git pull ${DECODER_OUTPUT}
+        make ${DECODER_OUTPUT}
+        sudo make install ${DECODER_OUTPUT}
     fi
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\t\t\t\t"
-    git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
+    git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} ${DECODER_OUTPUT}
     cd ${SSDV_DIRECTORY}
-    sudo make install > /dev/null 2>&1
+    make ${DECODER_OUTPUT}
+    sudo make install ${DECODER_OUTPUT}
 fi
 CheckReturnCode
 
@@ -170,17 +174,17 @@ DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
     cd ${DECODER_PROJECT_DIRECTORY}
-    git remote update > /dev/null 2>&1
+    git remote update ${DECODER_OUTPUT}
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-        make clean > /dev/null 2>&1
-        git pull > /dev/null 2>&1
-        make > /dev/null 2>&1
+        make clean ${DECODER_OUTPUT}
+        git pull ${DECODER_OUTPUT}
+        make ${DECODER_OUTPUT}
     fi
 else
     echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\t\t"
-    git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
+    git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY} ${DECODER_OUTPUT}
     cd ${DECODER_PROJECT_DIRECTORY}
-    make > /dev/null 2>&1
+    make ${DECODER_OUTPUT}
 fi
 CheckReturnCode
 
@@ -403,7 +407,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-chown pi:pi ${DECODER_PROJECT_DIRECTORY}/gateway.txt > /dev/null 2>&1
+chown pi:pi ${DECODER_PROJECT_DIRECTORY}/gateway.txt ${DECODER_OUTPUT}
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -414,7 +418,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
         cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH}
-        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} ${DECODER_OUTPUT}
     else
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\t\t\t\t"
         false
@@ -424,7 +428,7 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\t\t\t"
         sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH}
-        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} > /dev/null 2>&1
+        sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} ${DECODER_OUTPUT}
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\t\t\t\t"
         false
@@ -447,7 +451,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 #port  user     directory                 command       args
 50100  root ${DECODER_PROJECT_DIRECTORY}    /usr/bin/env TERM="vt220" ./gateway
 EOF
-    chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1
+    chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} ${DECODER_OUTPUT}
 else
     false
 fi
@@ -455,12 +459,12 @@ CheckReturnCode
 
 # Configure $DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\t\t\t\t\t\t"
-sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults > /dev/null 2>&1
+sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults ${DECODER_OUTPUT}
 CheckReturnCode
 
 # Start the $DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\t\t\t\t\t\t"
-sudo service ${DECODER_SERVICE_SCRIPT_NAME} start > /dev/null 2>&1
+sudo service ${DECODER_SERVICE_SCRIPT_NAME} start ${DECODER_OUTPUT}
 CheckReturnCode
 
 ### ARCHIVE SETUP PACKAGES
