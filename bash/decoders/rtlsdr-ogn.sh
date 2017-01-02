@@ -287,6 +287,8 @@ if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
     CheckReturnCode
 fi
 
+# Download and compile Kalibrate.
+
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
     echo -en "\e[33m  Detecting CPU architecture...\t\t\t\t\t\t"
@@ -376,6 +378,8 @@ if [[ ! -c gpu_dev ]] ; then
     fi
     CheckReturnCode
 fi
+
+# Calculate RTL-SDR device error rate using Kalibrate.
 
 ## CREATE THE CONFIGURATION FILE
 
