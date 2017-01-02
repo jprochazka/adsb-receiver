@@ -80,7 +80,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${DECODER_NAME}..."
+echo -e "\e[92m  Setting up ${DECODER_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
@@ -269,7 +269,7 @@ echo -e ""
 ## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
 if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
-    echo -en "\e[33m  Stopping unwanted kernel modules from being loaded..."
+    echo -en "\e[33m  Stopping unwanted kernel modules from being loaded...\e[97m"
     sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
 blacklist dvb_usb_rtl28xxu
 blacklist dvb_usb_v2
@@ -285,7 +285,7 @@ fi
 ## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service..."
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
     ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
     CheckReturnCode
 fi
@@ -294,14 +294,14 @@ fi
 
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"..."
+    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     mkdir ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
 
 # Enter the build directory.
 if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
-    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"..."
+    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     cd ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
@@ -315,7 +315,7 @@ if [[ true ]] ; then
     # Check if Kalibrate is already present and located where we would expect it to be.
     if [[ -x `which kal` ]] && [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
-        echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"..."
+        echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         ACTION=$(git remote update)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
@@ -327,7 +327,7 @@ if [[ true ]] ; then
         fi
     else
         # Otherwise clone from github.
-        echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"..."
+        echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
         DO_INSTALL_FROM_GIT="true"
     fi
@@ -352,7 +352,7 @@ fi
 
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
-    echo -en "\e[33m  Detecting CPU architecture..."
+    echo -en "\e[33m  Detecting CPU architecture...\e[97m"
     CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
     CheckReturnCode
 fi
@@ -380,17 +380,17 @@ esac
 # Attempt to download and extract binaries.
 if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
-    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture..."
+    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\e[97m"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}'`
     ACTION=$(curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE})
     CheckReturnCode
     # Extract binaries.
-    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"..."
+    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\e[97m"
     ACTION=$(tar xzf ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY})
     CheckReturnCode
 else
     # Unable to download bimary due to invalid URL.
-    echo -e "\e[33m  Error invalid DECODER_BINARY_URL \"${DECODER_BINARY_URL}\"..."
+    echo -e "\e[33m  Error invalid DECODER_BINARY_URL \"${DECODER_BINARY_URL}\"...\e[97m"
     exit 1
 fi
 
@@ -399,19 +399,19 @@ DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     cd ${DECODER_PROJECT_DIRECTORY}
 else
-    echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"..."
+    echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"...\e[97m"
     exit 1
 fi
 
 # Create named pipe if required.
 if [[ ! -p ogn-rf.fifo ]] ; then
-    echo -en "\e[33m  Creating named pipe..."
+    echo -en "\e[33m  Creating named pipe...\e[97m"
     ACTION=$(sudo mkfifo ogn-rf.fifo)
     CheckReturnCode
 fi
 
 # Set file permissions.
-echo -en "\e[33m  Setting proper file permissions..."
+echo -en "\e[33m  Setting proper file permissions...\e[97m"
 DECODER_SETUID_BINARIES="gsm_scan ogn-rf rtlsdr-ogn"
 DECODER_SETUID_COUNT="0"
 for DECODER_SETUID_BINARY in ${DECODER_SETUID_BINARIES} ; do
@@ -430,7 +430,7 @@ CheckReturnCode
 # Creat GPU device if required.
 if [[ ! -c gpu_dev ]] ; then
     # Check if kernel v4.1 or higher is being used.
-    echo -en "\e[33m  Getting the version of the kernel currently running..."
+    echo -en "\e[33m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
     KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
     CheckReturnCode
@@ -618,33 +618,33 @@ CheckReturnCode
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"..."
+        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"..."
+        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
     fi
 elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"..."
+        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"..."
+        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"..."
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
 if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"..."
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\e[97m"
     sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
@@ -663,7 +663,7 @@ CheckReturnCode
 # Potentially obselse tuner detection code.
 if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
-    echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled..."
+    echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\e[97m"
     SERVICES="dump1090-mutability"
     for SERVICE in ${SERVICES} ; do
         if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
@@ -674,12 +674,12 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
 fi
 
 # Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service..."
+echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
 ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
 CheckReturnCode
 
 # Start the DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service..."
+echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
 ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
 CheckReturnCode
 
