@@ -80,6 +80,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
 fi
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME}..."
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
@@ -481,7 +482,6 @@ CheckReturnCode
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -e ""
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
