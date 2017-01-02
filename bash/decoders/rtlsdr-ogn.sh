@@ -520,7 +520,7 @@ fi
 
 # GSM Reference signal frequency.
 if [[ -z ${OGN_GSM_FREQ} ]] ; then
-    if [[ -z "${DERIVED_GSM_FREQ}"]] ; then
+    if [[ -z "${DERIVED_GSM_FREQ}" ]] ; then
        OGN_GSM_FREQ="${DERIVED_GSM_FREQ}"
     else
        OGN_GSM_FREQ="958"
@@ -529,7 +529,7 @@ fi
 
 # Gain value for RTL-SDR device.
 if [[ -z ${OGN_GSM_GAIN} ]] ; then
-    if [[ -z "${DERIVED_GAIN}"]] ; then
+    if [[ -z "${DERIVED_GAIN}" ]] ; then
         OGN_GSM_GAIN="${DERIVED_GAIN}"
     else
         OGN_GSM_GAIN="40"
