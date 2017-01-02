@@ -80,7 +80,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
 fi
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME}..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}. \n\nPlease note that ${DECODER_NAME} requires a LoRa transceiver connected via SPI. \n\n${DECODER_WEBSITE} \n\nContinue setup by installing ${DECODER_NAME} ?" 14 78
@@ -89,7 +89,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
@@ -478,8 +478,6 @@ echo -en "\e[33m  Starting the ${DECODER_NAME} service..."
 ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
 CheckReturnCode
 
-### ARCHIVE SETUP PACKAGES
-
 ### SETUP COMPLETE
 
 # Return to the project root directory.
@@ -488,11 +486,10 @@ echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m
 cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
 
-echo -e ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------\n"
+echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
