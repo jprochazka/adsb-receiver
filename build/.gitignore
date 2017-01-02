@@ -1,8 +1,11 @@
 # exclude build directories
 adsbexchange/
+acarsdec/
 dump1090-mutability/
+hab/
 mlat-client/
 mlat-client*
+ogn/
 piaware_builder/
 planefinder/
 portal/graphs/dump1090.pyc
