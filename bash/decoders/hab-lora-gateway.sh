@@ -140,14 +140,14 @@ fi
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    mkdir ${DECODER_BUILD_DIRECTORY}
+    ACTION=$(mkdir ${DECODER_BUILD_DIRECTORY})
     CheckReturnCode
 fi
 
 # Enter the build directory.
 if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    cd ${DECODER_BUILD_DIRECTORY}
+    ACTION=$(cd ${DECODER_BUILD_DIRECTORY})
     CheckReturnCode
 fi
 
@@ -158,7 +158,7 @@ SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e
 SSDV_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
 if [[ -d ${SSDV_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    cd ${SSDV_DIRECTORY}
+    ACTION=$(cd ${SSDV_DIRECTORY})
     ACTION=$(git remote update)
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         ACTION=$(make clean)
@@ -169,7 +169,7 @@ if [[ -d ${SSDV_DIRECTORY} ]] ; then
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
-    cd ${SSDV_DIRECTORY}
+    ACTION=$(cd ${SSDV_DIRECTORY})
     ACTION=$(make)
     ACTION=$(sudo make install)
 fi
@@ -182,7 +182,7 @@ DECODER_GITHUB_PROJECT=`echo ${DECODER_GITHUB_URL} | awk -F "/" '{print $NF}' | 
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    cd ${DECODER_PROJECT_DIRECTORY}
+    ACTION=$(cd ${DECODER_PROJECT_DIRECTORY})
     ACTION=$(git remote update)
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         ACTION=$(make clean)
@@ -192,7 +192,7 @@ if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
 else
     echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
-    cd ${DECODER_PROJECT_DIRECTORY}
+    ACTION=$(cd ${DECODER_PROJECT_DIRECTORY})
     ACTION=$(make)
 fi
 CheckReturnCode
@@ -484,7 +484,7 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECIEVER_ROOT_DIRECTORY}
+ACTION=$(cd ${RECIEVER_ROOT_DIRECTORY})
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"

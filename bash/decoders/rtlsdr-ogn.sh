@@ -295,14 +295,14 @@ fi
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    mkdir ${DECODER_BUILD_DIRECTORY}
+    ACTION=$(mkdir ${DECODER_BUILD_DIRECTORY})
     CheckReturnCode
 fi
 
 # Enter the build directory.
 if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    cd ${DECODER_BUILD_DIRECTORY}
+    ACTION=$(cd ${DECODER_BUILD_DIRECTORY})
     CheckReturnCode
 fi
 
@@ -316,7 +316,7 @@ if [[ true ]] ; then
     if [[ -x `which kal` ]] && [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        cd ${KALIBRATE_PROJECT_DIRECTORY}
+        ACTION=$(cd ${KALIBRATE_PROJECT_DIRECTORY})
         ACTION=$(git remote update)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
@@ -333,7 +333,7 @@ if [[ true ]] ; then
     fi
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
         # And build from source
-        cd ${KALIBRATE_PROJECT_DIRECTORY}
+        ACTION=$(cd ${KALIBRATE_PROJECT_DIRECTORY})
         if [[ -x "bootstrap" ]] ; then
             ACTION=$(./bootstrap)
         fi
@@ -397,7 +397,7 @@ fi
 # Change to DECODER work directory for post-build actions.
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
-    cd ${DECODER_PROJECT_DIRECTORY}
+    ACTION=$(cd ${DECODER_PROJECT_DIRECTORY})
 else
     echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"...\e[97m"
     exit 1
@@ -449,18 +449,18 @@ fi
 # Calculate RTL-SDR device error rate
 if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
     # Attempt to calibrate if required values are not provided.
-    # May take 10+ minutes, should probably confirm if user wishes to calibrate.
+    # Should probably confirm if user wishes to calibrate.
     # GSM Band is GSM850 in US and GSM900 elsewhere.
     DERIVED_GSM_BAND="GSM900"
     DERIVED_GAIN="40"
     if [[ -x "`which kal`" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, may take upto 10 minutes...\e[97m"
+        echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, may take up to 10 minutes...\e[97m"
         DERIVED_GSM_SCAN=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
         DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
         DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
     elif [[ -x "${DECODER_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take upto 10 minutes...\e[97m"
+        echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take up to 20 minutes...\e[97m"
         if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
             DERIVED_GSM_OPTS="--gsm850"
         else
@@ -687,7 +687,7 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECIEVER_ROOT_DIRECTORY}
+ACTION=$(cd ${RECIEVER_ROOT_DIRECTORY})
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
