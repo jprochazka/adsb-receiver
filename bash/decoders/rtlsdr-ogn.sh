@@ -48,6 +48,8 @@ DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
 
+DECODER_OUTPUT="> /dev/null 2>&1"
+
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -288,6 +290,31 @@ if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Download and compile Kalibrate.
+DECODER_GITHUB_URL_KAL="https://github.com/steve-m/kalibrate-rtl.git"
+DECODER_GITHUB_URL_KAL_SHORT=`echo ${DECODER_GITHUB_URL_KAL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+if [[ -d ${DECODER_BUILD_DIRECTORY}/kalibrate-rtl ]] ; then
+    echo -en "\e[33m  Updating Kalibrate from \"\e[37m${DECODER_GITHUB_URL_KAL_SHORT}\e[33m\"...\t\t\t\t"
+    cd ${DECODER_BUILD_DIRECTORY}/kalibrate-rtl
+    git remote update > /dev/null 2>&1
+    if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+        sudo make clean > /dev/null 2>&1
+        git pull > /dev/null 2>&1
+        ./bootstrap > /dev/null 2>&1
+        ./configure > /dev/null 2>&1
+        make > /dev/null 2>&1
+        sudo make install > /dev/null 2>&1
+    fi
+else
+    echo -en "\e[33m  Building Kalibrate from \"\e[37m${DECODER_GITHUB_URL_KAL_SHORT}\e[33m\"...\t\t\t\t"
+    cd ${DECODER_BUILD_DIRECTORY}
+    git clone https://${DECODER_GITHUB_URL_KAL_SHORT} > /dev/null 2>&1
+    cd ${DECODER_BUILD_DIRECTORY}/kalibrate-rtl
+    ./bootstrap > /dev/null 2>&1
+    ./configure > /dev/null 2>&1
+    make > /dev/null 2>&1
+    sudo make install > /dev/null 2>&1
+fi
+CheckReturnCode
 
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
@@ -382,8 +409,8 @@ fi
 # Calculate RTL-SDR device error rate using Kalibrate.
 if [[ -f `which kal` ]] ; then
     KALIBRATE_GAIN="40"
-    KALIBRATE_GSM_FREQ=`kal -d ${OGN_DEVICE_ID} -g ${KALIBRATE_GAIN} -s GSM900 2>&1 | grep "chan:" | sort -n -r -k 7 | grep -m1 "power" | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
-    KALIBRATE_ERROR=`kal -d ${OGN_DEVICE_ID} -g ${KALIBRATE_GAIN} -f ${KALIBRATE_GSM_FREQ} 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'` 
+    KALIBRATE_GSM_FREQ=`kal -d "${OGN_DEVICE_ID}" -g "${KALIBRATE_GAIN}" -s GSM900 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:" | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
+    KALIBRATE_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${KALIBRATE_GAIN}" -f "${KALIBRATE_GSM_FREQ}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'` 
 fi
 
 ## CREATE THE CONFIGURATION FILE
