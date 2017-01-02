@@ -300,33 +300,36 @@ if [[ ! ${PWD} == ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Download and compile Kalibrate.
-KALIBRATE_GITHUB_URL="https://github.com/steve-m/kalibrate-rtl.git"
-KALIBRATE_GITHUB_URL_SHORT=`echo ${KALIBRATE_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-KALIBRATE_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
-if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
-    echo -en "\e[33m  Updating Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
-    cd ${KALIBRATE_PROJECT_DIRECTORY}
-    git remote update > /dev/null 2>&1
-    if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-        sudo make clean > /dev/null 2>&1
-        git pull > /dev/null 2>&1
+if [[ ! -x `which kal` ]] ; then
+    KALIBRATE_GITHUB_URL="https://github.com/steve-m/kalibrate-rtl.git"
+    KALIBRATE_GITHUB_URL_SHORT=`echo ${KALIBRATE_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+    KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+    KALIBRATE_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
+    if [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
+        echo -en "\e[33m  Updating Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
+        cd ${KALIBRATE_PROJECT_DIRECTORY}
+        git remote update > /dev/null 2>&1
+        if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+            sudo make clean > /dev/null 2>&1
+            git pull > /dev/null 2>&1
+            ./bootstrap > /dev/null 2>&1
+            ./configure > /dev/null 2>&1
+            make > /dev/null 2>&1
+            sudo make install > /dev/null 2>&1
+        fi
+    else
+        echo -en "\e[33m  Building Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
+        cd ${DECODER_BUILD_DIRECTORY}
+        git clone https://${KALIBRATE_GITHUB_URL_SHORT} > /dev/null 2>&1
+        cd ${KALIBRATE_PROJECT_DIRECTORY}
         ./bootstrap > /dev/null 2>&1
         ./configure > /dev/null 2>&1
         make > /dev/null 2>&1
         sudo make install > /dev/null 2>&1
     fi
-else
-    echo -en "\e[33m  Building Kalibrate from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\t"
+    CheckReturnCode
     cd ${DECODER_BUILD_DIRECTORY}
-    git clone https://${KALIBRATE_GITHUB_URL_SHORT} > /dev/null 2>&1
-    cd ${KALIBRATE_PROJECT_DIRECTORY}
-    ./bootstrap > /dev/null 2>&1
-    ./configure > /dev/null 2>&1
-    make > /dev/null 2>&1
-    sudo make install > /dev/null 2>&1
 fi
-CheckReturnCode
 
 # Detect CPU Architecture.
 if [[ -z ${CPU_ARCHITECTURE} ]] ; then
@@ -364,7 +367,7 @@ if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     CheckReturnCode
     # Extract binaries.
     echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\t"
-    tar xzf ${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
+    tar xzf ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY} > /dev/null 2>&1
     CheckReturnCode
 else
     # Unable to download bimary due to invalid URL.
