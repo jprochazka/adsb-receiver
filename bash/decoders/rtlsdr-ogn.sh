@@ -207,7 +207,7 @@ if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn ]] ; then
     mkdir ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
 fi
 
-# Enter the RTL-SDR OGN build directory.
+# Enter the build directory.
 echo -e "\e[94m  Entering the directory (${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn)...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
 
@@ -260,9 +260,11 @@ echo -e ""
 echo -e "\e[94m  Entering the directory containing the RTL-SDR binaries...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn
 
-# Create named pipe.
-echo -e "\e[94m  Creating named pipe...\e[97m"
-sudo mkfifo ogn-rf.fifo
+# Create named pipe if required.
+if [[ ! -p ogn-rf.fifo ]] ; then
+    echo -e "\e[94m  Creating named pipe...\e[97m"
+    sudo mkfifo ogn-rf.fifo
+fi
 
 # Set file permissions.
 echo -e "\e[94m  Setting proper file permissions...\e[97m"
@@ -273,20 +275,22 @@ sudo chmod a+s  ogn-rf
 sudo chown root rtlsdr-ogn
 sudo chmod a+s  rtlsdr-ogn
 
-# Check if kernel v4.1 or higher is being used.
-
-echo -e "\e[94m  Getting the version of the kernel currently running...\e[97m"
-KERNEL=`uname -r`
-KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
-
-if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
-    # Kernel is older than version 4.1.
-    echo -e "\e[94m  Executing mknod for older kernels...\e[97m"
-    sudo mknod gpu_dev c 100 0
-else
-    # Kernel is version 4.1 or newer.
-    echo -e "\e[94m  Executing mknod for newer kernels...\e[97m"
-    sudo mknod gpu_dev c 249 0
+# Creat GPU device if required.
+if [[ ! -c gpu_dev ]] ; then
+    # Check if kernel v4.1 or higher is being used.
+    echo -e "\e[94m  Getting the version of the kernel currently running...\e[97m"
+    KERNEL=`uname -r`
+    KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
+    #
+    if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
+        # Kernel is older than version 4.1.
+        echo -e "\e[94m  Executing mknod for older kernels...\e[97m"
+        sudo mknod gpu_dev c 100 0
+    else
+        # Kernel is version 4.1 or newer.
+        echo -e "\e[94m  Executing mknod for newer kernels...\e[97m"
+        sudo mknod gpu_dev c 249 0
+    fi
 fi
 
 ## CREATE THE CONFIGURATION FILE
