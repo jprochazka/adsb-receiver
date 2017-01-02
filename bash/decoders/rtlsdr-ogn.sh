@@ -57,13 +57,13 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Should be moved to functions.sh.
 function CheckReturnCode {
-    LINE=$((`stty size | awk '{print $1}'` - 2))
+    LINE=$((`stty size | awk '{print $1}'` - 1))
     COL=$((`stty size | awk '{print $2}'` - 8))
     tput cup "${LINE}" "${COL}"
     if [[ $? -eq 0 ]] ; then
-        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
+        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n\n"
     else
-        echo -e "\e[97m[\e[31mError\e[97m]\e[31m\n"
+        echo -e "\e[97m[\e[31mError\e[97m]\e[31m\n\n"
     fi
 }
 
