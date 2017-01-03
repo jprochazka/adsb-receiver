@@ -447,7 +447,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(cp -v ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
-        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
@@ -457,7 +457,7 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
-        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
         false
