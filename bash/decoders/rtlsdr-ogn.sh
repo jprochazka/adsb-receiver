@@ -97,9 +97,9 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         # The dump1090-mutability package appear to be installed.
         if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
             # Ask the user which USB device is to be used for dump1090.
-            DUMP1090_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z ${DUMP1090_USB_DEVICE} ]] ; do
-                DUMP1090_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+            DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+            while [[ -z ${DUMP1090_DEVICE_ID} ]] ; do
+                DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
             ### GET DONGLE ID FROM THE INSTALLATION CONFIGURATION FILE...
@@ -111,9 +111,9 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         # The dump978 binaries appear to exist on this device.
         if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
             # Ask the user which USB device is to be use for dump978.
-            DUMP978_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z ${DUMP978_USB_DEVICE} ]] ; do
-                DUMP978_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+            DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+            while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
+                DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
             ### GET DONGLE ID FROM THE INSTALLATION CONFIGURATION FILE...
@@ -123,26 +123,26 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
     #
     if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
         # Ask the user which USB device is to be use for RTL-SDR OGN.
-        RTLSDROGN_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-        while [[ -z ${DUMP978_USB_DEVICE} ]] ; do
-            RTLSDROGN_USB_DEVICE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
+            RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     else
         ### GET DONGLE ID FROM THE INSTALLATION CONFIGURATION FILE...
         true
     fi
     # Assign the specified RTL-SDR dongle to dump1090.
-    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP1090_USB_DEVICE} ]] ; then
-        echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_USB_DEVICE\" to dump1090-mutability...\e[97m"
-        ChangeConfig "DEVICE" ${DUMP1090_USB_DEVICE} "/etc/default/dump1090-mutability"
+    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP1090_DEVICE_ID} ]] ; then
+        echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_DEVICE_ID\" to dump1090-mutability...\e[97m"
+        ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
         echo -e ""
         sudo /etc/init.d/dump1090-mutability force-reload
         echo -e ""
     fi
     # Assign the specified RTL-SDR dongle to dump978
-    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP978_USB_DEVICE} ]] ; then
-        echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP978_USB_DEVICE}\" to dump978...\e[97m"
+    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP978_DEVICE_ID} ]] ; then
+        echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP978_DEVICE_ID}\" to dump978...\e[97m"
         ### ADD DEVICE TO MAINTENANCE SCRIPT...
         echo -e "\e[94m  Reloading dump978...\e[97m"
         ### KILL EXISTING DUMP978 PROCESSES...
