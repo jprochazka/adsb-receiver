@@ -120,9 +120,9 @@ echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\
 echo -e ""
 
 # Check if SPI is enabled, if not use raspi-config to enable it.
-if [[ `sudo raspi-config nonint get_spi` -eq 1 ]] ; then
+if [[ `sudo raspi-config nonint get_spi 2>&1` -eq 1 ]] ; then
     echo -en "\e[33m  Enabling SPI interface used by LoRa radio module...\e[97m"
-    ACTION=$(sudo raspi-config nonint do_spi 0)
+    ACTION=$(sudo raspi-config nonint do_spi 0 2>&1)
     CheckReturnCode
     echo -e ""
 fi
@@ -131,7 +131,7 @@ fi
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
+    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -169,7 +169,7 @@ if [[ -d ${SSDV_PROJECT_DIRECTORY} ]] ; then
             ACTION=$(make -C ${SSDV_PROJECT_DIRECTORY})
         fi
         if [[ `grep -c "^install:" ${SSDV_PROJECT_DIRECTORY}/Makefile` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${SSDV_PROJECT_DIRECTORY} install)
+            ACTION=$(sudo make -C ${SSDV_PROJECT_DIRECTORY} install 2>&1)
         fi
     fi
 else
@@ -180,7 +180,7 @@ else
         ACTION=$(make -C ${SSDV_PROJECT_DIRECTORY})
     fi
     if [[ `grep -c "^install:" ${SSDV_PROJECT_DIRECTORY}/Makefile` -gt 0 ]] ; then
-        ACTION=$(sudo make -C ${SSDV_PROJECT_DIRECTORY} install)
+        ACTION=$(sudo make -C ${SSDV_PROJECT_DIRECTORY} install 2>&1)
     fi
 fi
 CheckReturnCode
@@ -447,7 +447,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
-        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
@@ -456,8 +456,8 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
-        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
         false
@@ -488,12 +488,12 @@ CheckReturnCode
 
 # Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
+ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
+ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE

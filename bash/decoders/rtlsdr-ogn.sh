@@ -153,7 +153,7 @@ fi
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
+    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -215,12 +215,12 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
 elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
     echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m"
     OGN_DEVICE_ID="0"
-    ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
+    ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
     echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m"
     OGN_DEVICE_ID="0"
-    ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
+    ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
 fi
 CheckReturnCode
 
@@ -271,7 +271,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         ChangeConfig "DEVICE" ${DUMP1090_USB_DEVICE} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
         echo -e ""
-        ACTION=$(sudo /etc/init.d/dump1090-mutability force-reload)
+        ACTION=$(sudo /etc/init.d/dump1090-mutability force-reload 2>&1)
         echo -e ""
     fi
     # Assign the specified RTL-SDR dongle to dump978
@@ -331,19 +331,19 @@ if [[ true ]] ; then
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         # And remove previous binaries.
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} clean)
+            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} clean 2>&1)
         fi
         if [[ -x "bootstrap" ]] ; then
-            ACTION=$(./bootstrap)
+            ACTION=$(./bootstrap 2>&1)
         fi
         if [[ -x "configure" ]] ; then
-            ACTION=$(./configure)
+            ACTION=$(./configure 2>&1)
         fi
         if [[ -f "Makefile" ]] ; then
-            ACTION=$(make -C ${KALIBRATE_PROJECT_DIRECTORY})
+            ACTION=$(make -C ${KALIBRATE_PROJECT_DIRECTORY} 2>&1)
         fi
         if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} install)
+            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} install 2>&1)
         fi
     fi
     CheckReturnCode
@@ -407,7 +407,7 @@ fi
 # Create named pipe if required.
 if [[ ! -p ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo ]] ; then
     echo -en "\e[33m  Creating named pipe...\e[97m"
-    ACTION=$(sudo mkfifo ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo)
+    ACTION=$(sudo mkfifo ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo 2>&1)
     CheckReturnCode
 fi
 
@@ -417,8 +417,8 @@ DECODER_SETUID_BINARIES="gsm_scan ogn-rf rtlsdr-ogn"
 DECODER_SETUID_COUNT="0"
 for DECODER_SETUID_BINARY in ${DECODER_SETUID_BINARIES} ; do
     DECODER_SETUID_COUNT=$((DECODER_SETUID_COUNT+1))
-    ACTION=$(sudo chown root ${DECODER_SETUID_BINARY})
-    ACTION=$(sudo chmod a+s  ${DECODER_SETUID_BINARY})
+    ACTION=$(sudo chown root ${DECODER_SETUID_BINARY} 2>&1)
+    ACTION=$(sudo chmod a+s  ${DECODER_SETUID_BINARY} 2>&1)
 done
 # And check that the file permissions have been applied.
 if [[ `ls -l ${DECODER_SETUID_BINARIES} | grep -c "\-rwsr-sr-x"` -eq ${DECODER_SETUID_COUNT} ]] ; then
@@ -438,11 +438,11 @@ if [[ ! -c ${DECODER_PROJECT_DIRECTORY}/gpu_dev ]] ; then
     if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
-        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 100 0)
+        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 100 0 2>&1)
     else
         # Kernel is version 4.1 or newer.
         echo -en "\e[33m  Executing mknod for newer kernels...\e[97m"
-        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 249 0)
+        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 249 0 2>&1)
     fi
     CheckReturnCode
 fi
@@ -621,7 +621,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(cp ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
-        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
@@ -630,8 +630,8 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
-        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
         false
@@ -668,7 +668,7 @@ if [[ ${TUNER_COUNT} -lt 2 ]] ; then
     SERVICES="dump1090-mutability"
     for SERVICE in ${SERVICES} ; do
         if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
-            ACTION=$(sudo update-rc.d ${SERVICE} disable)
+            ACTION=$(sudo update-rc.d ${SERVICE} disable 2>&1)
         fi
     done
     CheckReturnCode
@@ -676,12 +676,12 @@ fi
 
 # Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults)
+ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start)
+ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start 2>&1)
 CheckReturnCode
 
 ## RTL-SDR OGN SETUP COMPLETE
