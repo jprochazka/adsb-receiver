@@ -155,10 +155,10 @@ fi
 SSDV_GITHUB_URL="https://github.com/fsphil/ssdv.git"
 SSDV_GITHUB_URL_SHORT=`echo ${SSDV_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-SSDV_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
-if [[ -d ${SSDV_DIRECTORY} ]] ; then
+SSDV_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
+if [[ -d ${SSDV_PROJECT_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    ACTION=$(cd ${SSDV_DIRECTORY})
+    ACTION=$(cd ${SSDV_PROJECT_DIRECTORY})
     ACTION=$(git remote update)
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         ACTION=$(make clean)
@@ -168,8 +168,8 @@ if [[ -d ${SSDV_DIRECTORY} ]] ; then
     fi
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
-    ACTION=$(cd ${SSDV_DIRECTORY})
+    ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${SSDV_PROJECT_DIRECTORY})
+    ACTION=$(cd ${SSDV_PROJECT_DIRECTORY})
     ACTION=$(make)
     ACTION=$(sudo make install)
 fi
@@ -191,7 +191,7 @@ if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     fi
 else
     echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
+    ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_PROJECT_DIRECTORY})
     ACTION=$(cd ${DECODER_PROJECT_DIRECTORY})
     ACTION=$(make)
 fi

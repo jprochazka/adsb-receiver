@@ -325,7 +325,7 @@ if [[ true ]] ; then
     else
         # Otherwise clone from github.
         echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${DECODER_BUILD_DIRECTORY})
+        ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${KALIBRATE_PROJECT_DIRECTORY})
         DO_INSTALL_FROM_GIT="true"
     fi
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
