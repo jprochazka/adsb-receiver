@@ -401,9 +401,9 @@ else
 fi
 
 # Create named pipe if required.
-if [[ ! -p ogn-rf.fifo ]] ; then
+if [[ ! -p ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo ]] ; then
     echo -en "\e[33m  Creating named pipe...\e[97m"
-    ACTION=$(sudo mkfifo ogn-rf.fifo)
+    ACTION=$(sudo mkfifo ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo)
     CheckReturnCode
 fi
 
@@ -425,7 +425,7 @@ fi
 CheckReturnCode
 
 # Creat GPU device if required.
-if [[ ! -c gpu_dev ]] ; then
+if [[ ! -c ${DECODER_PROJECT_DIRECTORY}/gpu_dev ]] ; then
     # Check if kernel v4.1 or higher is being used.
     echo -en "\e[33m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
@@ -434,11 +434,11 @@ if [[ ! -c gpu_dev ]] ; then
     if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
-        ACTION=$(sudo mknod gpu_dev c 100 0)
+        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 100 0)
     else
         # Kernel is version 4.1 or newer.
         echo -en "\e[33m  Executing mknod for newer kernels...\e[97m"
-        ACTION=$(sudo mknod gpu_dev c 249 0)
+        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 249 0)
     fi
     CheckReturnCode
 fi
