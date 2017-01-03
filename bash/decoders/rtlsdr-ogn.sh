@@ -318,8 +318,6 @@ if [[ true ]] ; then
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
             ACTION=$(git pull)
-            # And remove previous binaries.
-            ACTION=$(sudo make clean)
             DO_INSTALL_FROM_GIT="true"
         fi
     else
@@ -329,15 +327,21 @@ if [[ true ]] ; then
         DO_INSTALL_FROM_GIT="true"
     fi
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
-        # And build from source
+        # Prepare to build from source.
         ACTION=$(cd ${KALIBRATE_PROJECT_DIRECTORY})
+        # And remove previous binaries.
+        if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
+            ACTION=$(sudo make clean)
+        fi
         if [[ -x "bootstrap" ]] ; then
             ACTION=$(./bootstrap)
         fi
         if [[ -x "configure" ]] ; then
             ACTION=$(./configure)
         fi
-        ACTION=$(make)
+        if [[ -f "Makefile" ]] ; then
+            ACTION=$(make)
+        fi
         if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
             ACTION=$(sudo make install)
         fi
