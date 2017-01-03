@@ -299,7 +299,7 @@ fi
 # Enter the build directory.
 if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    ACTION=$(cd ${DECODER_BUILD_DIRECTORY})
+    cd ${DECODER_BUILD_DIRECTORY}
     CheckReturnCode
 fi
 
@@ -313,7 +313,7 @@ if [[ true ]] ; then
     if [[ -x `which kal` ]] && [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        ACTION=$(cd ${KALIBRATE_PROJECT_DIRECTORY})
+        (cd ${KALIBRATE_PROJECT_DIRECTORY}
         ACTION=$(git remote update)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
@@ -328,10 +328,10 @@ if [[ true ]] ; then
     fi
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
         # Prepare to build from source.
-        ACTION=$(cd ${KALIBRATE_PROJECT_DIRECTORY})
+        cd ${KALIBRATE_PROJECT_DIRECTORY}
         # And remove previous binaries.
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
-            ACTION=$(sudo make clean)
+            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} clean)
         fi
         if [[ -x "bootstrap" ]] ; then
             ACTION=$(./bootstrap)
@@ -398,7 +398,7 @@ fi
 # Change to DECODER work directory for post-build actions.
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
-    ACTION=$(cd ${DECODER_PROJECT_DIRECTORY})
+    cd ${DECODER_PROJECT_DIRECTORY}
 else
     echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"...\e[97m"
     exit 1
@@ -688,7 +688,7 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-ACTION=$(cd ${RECIEVER_ROOT_DIRECTORY})
+cd ${RECIEVER_ROOT_DIRECTORY}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
