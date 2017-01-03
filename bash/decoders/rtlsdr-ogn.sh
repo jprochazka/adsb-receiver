@@ -292,7 +292,7 @@ fi
 # Create build directory if not already present.
 if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    ACTION=$(mkdir ${DECODER_BUILD_DIRECTORY})
+    ACTION=$(mkdir -v ${DECODER_BUILD_DIRECTORY} 2>&1)
     CheckReturnCode
 fi
 
