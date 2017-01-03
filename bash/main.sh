@@ -445,8 +445,8 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Ask if the web portal should be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal on this device?" 8 78
     case $? in
-        0) PORTAL_INSTALL="true" ;;
-        1) PORTAL_INSTALL="false" ;;
+        0) WEBPORTAL_INSTALL="true" ;;
+        1) WEBPORTAL_INSTALL="false" ;;
     esac
 fi
 
@@ -552,7 +552,7 @@ fi
 declare CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [ "$DUMP1090_INSTALL" = "false" ] && [ "$DUMP1090_UPGRADE" = "false" ] && [ "$DUMP978_INSTALL" = "false" ] && [ "$DUMP978_UPGRADE" = "false" ] && [ "$PORTAL_INSTALL" = "false" ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
+if [ "$DUMP1090_INSTALL" = "false" ] && [ "$DUMP1090_UPGRADE" = "false" ] && [ "$DUMP978_INSTALL" = "false" ] && [ "$DUMP978_UPGRADE" = "false" ] && [ "$WEBPORTAL_INSTALL" = "false" ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
     # Nothing was chosen to be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\033[31m"
@@ -633,7 +633,7 @@ else
         done < $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
     fi
 
-    if [ "$PORTAL_INSTALL" = "true" ]; then
+    if [ "$WEBPORTAL_INSTALL" = "true" ]; then
         CONFIRMATION="$CONFIRMATION\n  * ADS-B Receiver Project Web Portal"
     fi
 
@@ -744,7 +744,7 @@ fi
 
 ## ADS-B Receiver Project Web Portal
 
-if [ "$PORTAL_INSTALL" = "true" ]; then
+if [ "$WEBPORTAL_INSTALL" = "true" ]; then
     InstallWebPortal
 fi
 
