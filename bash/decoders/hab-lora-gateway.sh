@@ -163,15 +163,23 @@ if [[ -d ${SSDV_PROJECT_DIRECTORY} ]] ; then
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         ACTION=$(make clean)
         ACTION=$(git pull)
-        ACTION=$(make)
-        ACTION=$(sudo make install)
+        if [[ -f "Makefile" ]] ; then
+            ACTION=$(make -C ${SSDV_PROJECT_DIRECTORY})
+        fi
+        if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
+            ACTION=$(sudo make -C ${SSDV_PROJECT_DIRECTORY} install)
+        fi
     fi
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${SSDV_PROJECT_DIRECTORY})
     ACTION=$(cd ${SSDV_PROJECT_DIRECTORY})
-    ACTION=$(make)
-    ACTION=$(sudo make install)
+    if [[ -f "Makefile" ]] ; then
+        ACTION=$(make -C ${SSDV_PROJECT_DIRECTORY})
+    fi
+    if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
+        ACTION=$(sudo make -C ${SSDV_PROJECT_DIRECTORY} install)
+    fi
 fi
 CheckReturnCode
 
@@ -187,13 +195,17 @@ if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
         ACTION=$(make clean)
         ACTION=$(git pull)
-        ACTION=$(make)
+        if [[ -f "Makefile" ]] ; then
+            ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY})
+        fi
     fi
 else
     echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_PROJECT_DIRECTORY})
     ACTION=$(cd ${DECODER_PROJECT_DIRECTORY})
-    ACTION=$(make)
+    if [[ -f "Makefile" ]] ; then
+        ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY})
+    fi
 fi
 CheckReturnCode
 

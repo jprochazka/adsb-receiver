@@ -340,10 +340,10 @@ if [[ true ]] ; then
             ACTION=$(./configure)
         fi
         if [[ -f "Makefile" ]] ; then
-            ACTION=$(make)
+            ACTION=$(make -C ${KALIBRATE_PROJECT_DIRECTORY})
         fi
         if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
-            ACTION=$(sudo make install)
+            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} install)
         fi
     fi
     CheckReturnCode
