@@ -456,7 +456,7 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"

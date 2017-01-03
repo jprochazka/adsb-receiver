@@ -383,7 +383,7 @@ if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
     echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\e[97m"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}'`
-    ACTION=$(curl -s ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE})
+    ACTION=$(curl ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE})
     CheckReturnCode
     # Extract binaries.
     echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\e[97m"
@@ -630,7 +630,7 @@ elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl -s ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod +x ${DECODER_SERVICE_SCRIPT_PATH})
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
