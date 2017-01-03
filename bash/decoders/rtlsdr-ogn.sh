@@ -314,16 +314,16 @@ if [[ true ]] ; then
         # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         (cd ${KALIBRATE_PROJECT_DIRECTORY})
-        ACTION=$(git remote update)
+        ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
-            ACTION=$(git pull)
+            ACTION=$(git pull 2>&1)
             DO_INSTALL_FROM_GIT="true"
         fi
     else
         # Otherwise clone from github.
         echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${KALIBRATE_PROJECT_DIRECTORY})
+        ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${KALIBRATE_PROJECT_DIRECTORY} 2>&1)
         DO_INSTALL_FROM_GIT="true"
     fi
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then

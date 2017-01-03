@@ -159,12 +159,12 @@ SSDV_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
 if [[ -d ${SSDV_PROJECT_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     cd ${SSDV_PROJECT_DIRECTORY}
-    ACTION=$(git remote update)
-    if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+    ACTION=$(git remote update 2>&1)
+    if [[ `git status -uno 2>&1 | grep -c "is behind"` -gt 0 ]] ; then
         if [[ `ls -l ${DECODER_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
             ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY} clean)
         fi
-        ACTION=$(git pull)
+        ACTION=$(git pull 2>&1)
         if [[ -f "${SSDV_PROJECT_DIRECTORY}/Makefile" ]] ; then
             ACTION=$(make -C ${SSDV_PROJECT_DIRECTORY})
         fi
@@ -174,7 +174,7 @@ if [[ -d ${SSDV_PROJECT_DIRECTORY} ]] ; then
     fi
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${SSDV_PROJECT_DIRECTORY})
+    ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${SSDV_PROJECT_DIRECTORY} 2>&1)
     cd ${SSDV_PROJECT_DIRECTORY}
     if [[ -f "${SSDV_PROJECT_DIRECTORY}/Makefile" ]] ; then
         ACTION=$(make -C ${SSDV_PROJECT_DIRECTORY})
@@ -193,19 +193,19 @@ DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
 if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     cd ${DECODER_PROJECT_DIRECTORY}
-    ACTION=$(git remote update)
-    if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+    ACTION=$(git remote update 2>&1)
+    if [[ `git status -uno 2>&1 | grep -c "is behind"` -gt 0 ]] ; then
         if [[ `ls -l ${DECODER_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
             ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY} clean)
         fi
-        ACTION=$(git pull)
+        ACTION=$(git pull 2>&1)
         if [[ -f "${DECODER_PROJECT_DIRECTORY}/Makefile" ]] ; then
             ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY})
         fi
     fi
 else
     echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_PROJECT_DIRECTORY})
+    ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_PROJECT_DIRECTORY} 2>&1)
     cd ${DECODER_PROJECT_DIRECTORY}
     if [[ -f "${DECODER_PROJECT_DIRECTORY}/Makefile" ]] ; then
         ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY})
