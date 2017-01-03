@@ -84,6 +84,7 @@ echo -e "\e[92m  Setting up ${DECODER_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
+#
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}.\n\n${DECODER_RADIO}.\n\n${DECODER_WEBSITE}\n\nContinue setup by installing ${DECODER_NAME}?" 14 78
     if [[ $? -eq 1 ]] ; then
@@ -99,8 +100,64 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     fi
 fi
 
+## CHECK FOR PREREQUISITE PACKAGES
 
-## ASK FOR DEVICE ASSIGNMENTS
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
+echo -e ""
+# Required by install script.
+CheckPackage git
+# Required for USB SDR devices.
+CheckPackage librtlsdr-dev
+CheckPackage libusb-1.0-0-dev
+CheckPackage rtl-sdr
+# Required for Kalibrate.
+CheckPackage autoconf
+CheckPackage automake
+CheckPackage libfftw3-3
+CheckPackage libfftw3-dev
+CheckPackage libtool
+# Required for RTLSDR-OGN.
+CheckPackage curl
+CheckPackage libconfig9
+CheckPackage libconfig-dev
+CheckPackage libcurl3
+CheckPackage libfftw3-3
+CheckPackage libfftw3-dev
+CheckPackage libjpeg8
+CheckPackage libjpeg-dev
+CheckPackage lynx
+CheckPackage procserv
+CheckPackage telnet
+
+echo -e ""
+echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
+echo -e ""
+
+## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+
+if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
+    echo -en "\e[33m  Stopping unwanted kernel modules from being loaded...\e[97m"
+    sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_v2
+blacklist rtl_2830
+blacklist rtl_2832
+blacklist r820t
+blacklist rtl2830
+blacklist rtl2832
+EOF
+    CheckReturnCode
+fi
+
+## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+
+if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
+    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
+    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
+    CheckReturnCode
+fi
+
+### ASSIGN RTL-SDR DONGLES
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[95m  Checking for existing decoders...\e[97m"
@@ -121,6 +178,51 @@ if [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978 ]] && [[ -f ${RECEIVER_BUIL
 else
     DUMP978_IS_INSTALLED="false"
 fi
+
+# Check for multiple tuners...
+TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
+
+# Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
+if [[ ${TUNER_COUNT} -gt 1 ]] ; then
+    # If a device has been specified by serial number then try to match that with the currently detected tuners.
+    if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
+        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
+            if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
+                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m"
+                OGN_DEVICE_ID=${DEVICE_ID}
+            fi
+        done
+        # If no match for this serial then assume the highest numbered tuner will be used.
+        if [[ -z ${OGN_DEVICE_ID} ]] ; then
+            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
+            OGN_DEVICE_ID=${TUNER_COUNT}
+        fi
+    # Or if a device has been specified by device ID then confirm this is currently detected.
+    elif [[ -n ${OGN_DEVICE_ID} ]] ; then
+        if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m"
+        # If no match for this serial then assume the highest numbered tuner will be used.
+        else
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
+            OGN_DEVICE_ID=${TUNER_COUNT}
+        fi
+    # Failing that configure it with device ID 0.
+    else
+        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e[97m"
+        OGN_DEVICE_ID=${TUNER_COUNT}
+    fi
+# Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
+elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
+    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m"
+    OGN_DEVICE_ID="0"
+    ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
+# No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
+elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
+    echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m"
+    OGN_DEVICE_ID="0"
+    ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
+fi
+CheckReturnCode
 
 # If either dump1090 or dump978 is installed we must assign RTL-SDR dongles for each of these decoders.
 if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true" ]] ; then
@@ -184,111 +286,6 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
     fi
 fi
 
-
-## CHECK FOR PREREQUISITE PACKAGES
-
-echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
-echo -e ""
-# Required by install script.
-CheckPackage git
-# Required for USB SDR devices.
-CheckPackage librtlsdr-dev
-CheckPackage libusb-1.0-0-dev
-CheckPackage rtl-sdr
-# Required for Kalibrate.
-CheckPackage autoconf
-CheckPackage automake
-CheckPackage libfftw3-3
-CheckPackage libfftw3-dev
-CheckPackage libtool
-# Required for RTLSDR-OGN.
-CheckPackage curl
-CheckPackage libconfig9
-CheckPackage libconfig-dev
-CheckPackage libcurl3
-CheckPackage libfftw3-3
-CheckPackage libfftw3-dev
-CheckPackage libjpeg8
-CheckPackage libjpeg-dev
-CheckPackage lynx
-CheckPackage procserv
-CheckPackage telnet
-
-echo -e ""
-echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
-echo -e ""
-
-## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
-
-if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
-    echo -en "\e[33m  Stopping unwanted kernel modules from being loaded...\e[97m"
-    sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
-blacklist dvb_usb_rtl28xxu
-blacklist dvb_usb_v2
-blacklist rtl_2830
-blacklist rtl_2832
-blacklist r820t
-blacklist rtl2830
-blacklist rtl2832
-EOF
-    CheckReturnCode
-fi
-
-## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
-
-if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop)
-    CheckReturnCode
-fi
-
-### ASSIGN RTL-SDR DONGLES
-# Tuner detection code should be run after dependency checks.
-
-# Check for multiple tuners...
-TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
-
-# Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
-if [[ ${TUNER_COUNT} -gt 1 ]] ; then
-    # If a device has been specified by serial number then try to match that with the currently detected tuners.
-    if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
-        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
-            if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
-                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m"
-                OGN_DEVICE_ID=${DEVICE_ID}
-            fi
-        done
-        # If no match for this serial then assume the highest numbered tuner will be used.
-        if [[ -z ${OGN_DEVICE_ID} ]] ; then
-            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
-            OGN_DEVICE_ID=${TUNER_COUNT}
-        fi
-    # Or if a device has been specified by device ID then confirm this is currently detected.
-    elif [[ -n ${OGN_DEVICE_ID} ]] ; then
-        if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m"
-        # If no match for this serial then assume the highest numbered tuner will be used.
-        else
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
-            OGN_DEVICE_ID=${TUNER_COUNT}
-        fi
-    # Failing that configure it with device ID 0.
-    else
-        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e[97m"
-        OGN_DEVICE_ID=${TUNER_COUNT}
-    fi
-# Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
-    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m"
-    OGN_DEVICE_ID="0"
-    ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
-# No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
-    echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m"
-    OGN_DEVICE_ID="0"
-    ACTION=$(sudo /etc/init.d/dump1090-mutability stop)
-fi
-CheckReturnCode
 
 ### DOWNLOAD AND SET UP THE BINARIES
 
