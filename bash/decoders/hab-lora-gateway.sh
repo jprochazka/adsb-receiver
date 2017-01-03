@@ -436,7 +436,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-ACTION=$(chown pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME})
+ACTION=$(chown -v pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME})
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -480,7 +480,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 #port  user     directory                 command       args
 50100  root ${DECODER_PROJECT_DIRECTORY}  /usr/bin/env TERM="vt220" ./gateway
 EOF
-    ACTION=$(chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG})
+    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG})
 else
     false
 fi

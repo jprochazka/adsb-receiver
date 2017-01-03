@@ -610,7 +610,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-ACTION=$(chown pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME})
+ACTION=$(chown -v pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME})
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -655,7 +655,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 50000  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
 50001  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
-    ACTION=$(chown pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG})
+    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG})
 else
     false
 fi
