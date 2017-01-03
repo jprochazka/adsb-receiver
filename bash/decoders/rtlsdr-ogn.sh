@@ -300,6 +300,7 @@ fi
 if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     cd ${DECODER_BUILD_DIRECTORY}
+    ACTION=${PWD}
     CheckReturnCode
 fi
 
@@ -313,7 +314,7 @@ if [[ true ]] ; then
     if [[ -x `which kal` ]] && [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        (cd ${KALIBRATE_PROJECT_DIRECTORY})
+        cd ${KALIBRATE_PROJECT_DIRECTORY}
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
@@ -689,6 +690,7 @@ CheckReturnCode
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECIEVER_ROOT_DIRECTORY}
+ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"

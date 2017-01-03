@@ -148,6 +148,7 @@ fi
 if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     cd ${DECODER_BUILD_DIRECTORY}
+    ACTION=${PWD}
     CheckReturnCode
 fi
 
@@ -501,6 +502,7 @@ CheckReturnCode
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECIEVER_ROOT_DIRECTORY}
+ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
