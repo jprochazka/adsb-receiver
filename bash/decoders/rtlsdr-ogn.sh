@@ -313,7 +313,7 @@ if [[ true ]] ; then
     if [[ -x `which kal` ]] && [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        (cd ${KALIBRATE_PROJECT_DIRECTORY}
+        (cd ${KALIBRATE_PROJECT_DIRECTORY})
         ACTION=$(git remote update)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
