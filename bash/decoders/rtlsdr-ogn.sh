@@ -153,7 +153,7 @@ fi
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} stop 2>&1)
+    ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_SCRIPT_NAME} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -681,7 +681,7 @@ CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo service ${DECODER_SERVICE_SCRIPT_NAME} start 2>&1)
+ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_SCRIPT_NAME} start 2>&1)
 CheckReturnCode
 
 ## RTL-SDR OGN SETUP COMPLETE
