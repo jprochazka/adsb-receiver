@@ -290,6 +290,12 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     CheckReturnCode
 fi
 
+### ASSIGN RTL-SDR DONGLES
+# Tuner detection code should be run after dependency checks.
+
+# Check for multiple tuners...
+TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
+
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
