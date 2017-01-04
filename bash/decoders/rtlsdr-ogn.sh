@@ -43,7 +43,9 @@ echo -e "\033[31mBEFORE CONTINUING:\033[33m"
 echo "RTLSDR-OGN requires it's own dedicated dongle."
 echo ""
 echo -e "\033[37m"
-read -p "Press enter to continue..." CONTINUE
+if [ ${VERBOSE} ] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 

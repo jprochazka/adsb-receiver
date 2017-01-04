@@ -61,7 +61,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -143,7 +145,9 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [ ${VERBOSE} ] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -215,6 +219,8 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  PiAware setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [ ${VERBOSE} ] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0
