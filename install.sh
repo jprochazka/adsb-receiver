@@ -141,7 +141,7 @@ export RECEIVER_VERBOSE=$VERBOSE
 ## EXECUTE BASH/INIT.SH
 
 chmod +x $RECEIVER_BASH_DIRECTORY/init.sh
-if [[ -z "$ENABLE_LOGGING" ]] && [[ "$ENABLE_LOGGING" = "true" ]] ; then
+if [[ -n "$ENABLE_LOGGING" ]] && [[ "$ENABLE_LOGGING" = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
     LOG_FILE="$RECEIVER_ROOT_DIRECTORY/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
     $RECEIVER_BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
