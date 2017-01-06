@@ -385,11 +385,11 @@ if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
     echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\e[97m"
     DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}'`
-    ACTION=$(curl ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE})
+    ACTION=$(curl ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} 2>&1)
     CheckReturnCode
     # Extract binaries.
     echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\e[97m"
-    ACTION=$(tar xzf ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} -C ${DECODER_BUILD_DIRECTORY})
+    ACTION=$(tar -xzf "${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE}" -C "${DECODER_BUILD_DIRECTORY}" 2>&1)
     CheckReturnCode
 else
     # Unable to download bimary due to invalid URL.
@@ -612,7 +612,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-ACTION=$(chown -v pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME})
+ACTION=$(chown -v pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} 2>&1)
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -622,7 +622,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(cp -v ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
+        ACTION=$(cp -v ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
         ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
@@ -657,7 +657,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 50000  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
 50001  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
-    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG})
+    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} 2>&1)
 else
     false
 fi

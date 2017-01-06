@@ -115,10 +115,20 @@ CheckPackage curl
 CheckPackage libcurl4-openssl-dev
 CheckPackage libncurses5-dev
 CheckPackage wiringpi
+CheckPackage procserv
+CheckPackage telnet
 
 echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
+
+# Check if I2C is enabled, if not use raspi-config to enable it.
+if [[ `sudo raspi-config nonint get_i2c 2>&1` -eq 1 ]] ; then
+    echo -en "\e[33m  Enabling I2C interface used to detect Pi HATs...\e[97m"
+    ACTION=$(sudo raspi-config nonint do_i2c 0 2>&1)
+    CheckReturnCode
+    echo -e ""
+fi
 
 # Check if SPI is enabled, if not use raspi-config to enable it.
 if [[ `sudo raspi-config nonint get_spi 2>&1` -eq 1 ]] ; then
