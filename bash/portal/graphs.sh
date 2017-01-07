@@ -58,25 +58,23 @@ fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
 
-# Check if the file /etc/collectd/collectd.conf exists and if so back it up.
-if [ -f /etc/collectd/collectd.conf ]; then
+COLLECTD_CONFIG="/etc/collectd/collectd.conf"
+
+# Check if the collectd config file exists and if so back it up.
+if [ -f ${COLLECTD_CONFIG} ]; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-    sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back
+    sudo mv ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak
 fi
+
+# Generate new collectd config. 
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
-sudo tee -a /etc/collectd/collectd.conf > /dev/null <<EOF
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 # Config file for collectd(1).
 
 ##############################################################################
 # Global                                                                     #
 ##############################################################################
 Hostname "localhost"
-
-#----------------------------------------------------------------------------#
-# Added types for dump1090.                                                  #
-# Make sure the path to dump1090.db is correct.                              #
-#----------------------------------------------------------------------------#
-TypesDB "$PORTALBUILDDIRECTORY/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 #----------------------------------------------------------------------------#
 # Interval at which to query values. This may be overwritten on a per-plugin #
@@ -89,6 +87,12 @@ Interval 60
 Timeout 2
 ReadThreads 5
 WriteThreads 1
+
+#----------------------------------------------------------------------------#
+# Added types for dump1090.                                                  #
+# Make sure the path to dump1090.db is correct.                              #
+#----------------------------------------------------------------------------#
+TypesDB "$PORTALBUILDDIRECTORY/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 ##############################################################################
 # Logging                                                                    #
