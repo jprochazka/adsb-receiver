@@ -54,7 +54,7 @@ echo -e "\e[93m-----------------------------------------------------------------
 echo ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Plane Finder ADS-B Client Setup" --yesno "The Plane Finder ADS-B Client is an easy and accurate way to share your ADS-B and MLAT data with Plane Finder. It comes with a beautiful user interface that helps you explore and interact with your data in realtime.\n\n  https://planefinder.net/sharing/client\n\nContinue setup by installing the Plane Finder ADS-B Client?" 13 78
 CONTINUESETUP=$?
-if [ $CONTINUESETUP = 1 ]; then
+if [ "$CONTINUESETUP" = 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
@@ -62,7 +62,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Plane Finder ADS-B Client setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -70,7 +72,7 @@ fi
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
-if [[ `uname -m` == "x86_64" ]]; then
+if [[ `uname -m` = "x86_64" ]]; then
     if [ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]; then
         echo -e "\e[94m  Adding the i386 architecture...\e[97m"
         sudo dpkg --add-architecture i386
@@ -96,7 +98,7 @@ if [ ! -d $PLANEFINDERBUILDDIRECTORY ]; then
     mkdir $PLANEFINDERBUILDDIRECTORY
 fi
 # Download the appropriate package depending on the devices architecture.
-if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]]; then
+if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]]; then
     echo -e "\e[94m  Downloading the Plane Finder ADS-B Client v$PFCLIENTVERSIONARM for ARM devices...\e[97m"
     echo ""
     wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONARM}_armhf.deb -O $PLANEFINDERBUILDDIRECTORY/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
@@ -113,13 +115,13 @@ echo ""
 echo -e "\e[94m  Entering the Plane Finder ADS-B Client build directory...\e[97m"
 cd $PLANEFINDERBUILDDIRECTORY
 # Install the proper package depending on the devices architecture.
-if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]] || [[ `uname -m` == "aarch64" ]]; then
+if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` = "aarch64" ]]; then
     echo -e "\e[94m  Installing the Plane Finder ADS-B Client v$PFCLIENTVERSIONARM for ARM devices package...\e[97m"
     echo ""
     sudo dpkg -i $PLANEFINDERBUILDDIRECTORY/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
     echo -e "\e[94m  Installing the Plane Finder ADS-B Client v$PFCLIENTVERSIONI386 for I386 devices package...\e[97m"
-    if [[ `lsb_release -si` == "Debian" ]]; then
+    if [[ `lsb_release -si` = "Debian" ]]; then
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
         echo ""
@@ -144,7 +146,9 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Plane Finder ADS-B Client setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -162,6 +166,8 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Plane Finder ADS-B Client setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ! -z ${VERBOSE} ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0

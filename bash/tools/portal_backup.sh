@@ -4,15 +4,14 @@
 #                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
-#  A set of scripts created to automate the process of installing the software      #
-#  needed to setup a Mode S decoder as well as feeders which are capable of         #
-#  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
-#                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-feeder              #
+#  This script was created to allow users to backup their portal data. At this      #
+#  time this script has not been integrated into the current collection of          #
+#  scripts. However this script, possibly in a modified form, will be integrated    #
+#  for simplified use by those who set up their receivers using this project.       #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -64,19 +63,19 @@ echo -e "\e[94m  Declare whether or not the advnaced portal features were instal
 
 # Decide if the advanced portal features were installed or not.
 echo -e "\e[94m  Declare whether or not the advnaced portal features were installed...\e[97m"
-if [ $DATABASEENGINE = "xml" ]; then
+if [ "$DATABASEENGINE" = "xml" ]; then
     ADVANCED=FALSE
 else
     ADVANCED=TRUE
 fi
 
 # Get the path to the SQLite database if SQLite is used for the database.
-if [ $DATABASEENGINE = "sqlite" ]; then
+if [ "$DATABASEENGINE" = "sqlite" ]; then
     DATABASEPATH=`grep 'db_host' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
 fi
 
 # Assign the MySQL login credentials to variables if a MySQL database is being used.
-if [ $DATABASEENGINE = "mysql" ]; then
+if [ "$DATABASEENGINE" = "mysql" ]; then
     MYSQLDATABASE=`grep 'db_database' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
     MYSQLUSERNAME=`grep 'db_username' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
     MYSQLPASSWORD=`grep 'db_password' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
@@ -110,7 +109,7 @@ sudo cp -R /var/lib/collectd/rrd/ $TEMPORARYDIRECTORY/var/lib/collectd/rrd/
 
 ## BACKUP PORTAL USING LITE FEATURES AND XML FILES
 
-if [ ADVANCED = "FALSE" ]; then
+if [ "$ADVANCED" = "FALSE" ]; then
     # Copy the portal XML data files to the temporary directory.
     echo -e "\e[94m  Checking that the directory $TEMPORARYDIRECTORY/var/www/html/data/ exists...\e[97m"
     if [ ! -d "$TEMPORARYDIRECTORY/var/www/html/data/" ]; then
@@ -122,7 +121,7 @@ else
 
 ## BACKUP PORTAL USING ADVANCED FEATURES AND A SQLITE DATABASE
 
-    if [ $DATABASEENGINE = "sqlite" ]; then
+    if [ "$DATABASEENGINE" = "sqlite" ]; then
         # Copy the portal SQLite database file to the temporary directory.
         echo -e "\e[94m  Backing up the SQLite database file to $TEMPORARYDIRECTORY/var/www/html/data/portal.sqlite...\e[97m"
         sudo cp -R $DATABASEPATH $TEMPORARYDIRECTORY/var/www/html/data/portal.sqlite
@@ -130,7 +129,7 @@ else
 
 ## BACKUP PORTAL USING ADVANCED FEATURES AND A MYSQL DATABASE
 
-    if [ $DATABASEENGINE = "mysql" ]; then
+    if [ "$DATABASEENGINE" = "mysql" ]; then
         # Dump the current MySQL database to a .sql text file.
         echo -e "\e[94m  Dumping the MySQL database $MYSQLDATABASE to the file $TEMPORARYDIRECTORY/$MYSQLDATABASE.sql...\e[97m"
         mysqldump -u$MYSQLUSERNAME -p$MYSQLPASSWORD $MYSQLDATABASE > $TEMPORARYDIRECTORY/$MYSQLDATABASE.sql
@@ -161,6 +160,8 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Finished backing up portal data.\e[39m"
 echo ""
-read -p "Press enter to exit..." CONTINUE
+if [[ ! -z ${VERBOSE} ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0

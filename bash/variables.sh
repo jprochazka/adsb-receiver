@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -34,21 +34,24 @@
 ## SOFTWARE VERSIONS
 
 # The ADS-B Receiver Project
-PROJECTVERSION="2.5.0"
+PROJECT_VERSION="2.6.0"
+
+# RTL-SDR OGN
+RTLSDROGN_VERSION="0.2.5"
 
 # FlightAware PiAware
-PIAWAREVERSION="3.1.0"
+PIAWARE_VERSION="3.1.0"
 
-# PlaneFinder ADS-B Client
-PFCLIENTVERSIONARM="3.5.461"
-PFCLIENTVERSIONI386="3.4.61"
+# PlaneFinder Client
+PLANEFINDER_CLIENT_VERSION_ARM="3.5.461"
+PLANEFINDER_CLIENT_VERSION_I386="3.4.61"
 
-# Flightradar24 Linux Debian package
-FR24CLIENTVERSIONI386="1.0.18-5"
+# Flightradar24 Client
+FLIGHTRADAR24_CLIENT_VERSION_I386="1.0.18-5"
 
 # mlat-client
-MLATCLIENTVERSION="0.2.6"
-MLATCLIENTTAG="v0.2.6"
+MLAT_CLIENT_VERSION="0.2.7"
+MLAT_CLIENT_TAG="v0.2.7"
 
 # PhantomJS
-PHANTOMJSVERSION="2.1.1"
+PHANTOMJS_VERSION="2.1.1"

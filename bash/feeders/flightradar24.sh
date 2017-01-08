@@ -53,7 +53,7 @@ echo -e "\e[93m-----------------------------------------------------------------
 echo ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Flightradar24 Feeder Client Setup" --yesno "The Flightradar24's feeder client can track flights within 200-400 miles and will automatically share data with Flightradar24. You can track flights directly off your device or via Flightradar24.com.\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the Flightradar24 feeder client?" 13 78
 CONTINUESETUP=$?
-if [ $CONTINUESETUP = 1 ]; then
+if [ "$CONTINUESETUP" = 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
@@ -61,7 +61,9 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
     echo ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ ! -z ${VERBOSE} ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -69,7 +71,7 @@ fi
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
-if [[ `uname -m` == "x86_64" ]]; then
+if [[ `uname -m` = "x86_64" ]]; then
     if [ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]; then
         echo -e "\e[94m  Adding the i386 architecture...\e[97m"
         sudo dpkg --add-architecture i386
@@ -104,7 +106,7 @@ if [ ! -d $FR24BUILDDIRECTORY ]; then
 fi
 echo -e "\e[94m  Entering the Flightradar24 feeder client build directory...\e[97m"
 cd $FR24BUILDDIRECTORY
-if [[ `uname -m` == "armv7l" ]] || [[ `uname -m` == "armv6l" ]] || [[ `uname -m` == "aarch64" ]]; then
+if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` = "aarch64" ]]; then
 
     ## ARM INSTALLATION
 
@@ -123,7 +125,7 @@ else
     echo ""
     wget http://feed.flightradar24.com/linux/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb -O $FR24BUILDDIRECTORY/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
     echo -e "\e[94m  Installing the Flightradar24 feeder client package...\e[97m"
-    if [[ `lsb_release -si` == "Debian" ]]; then
+    if [[ `lsb_release -si` = "Debian" ]]; then
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
         echo ""
@@ -146,7 +148,9 @@ else
         echo -e "\e[93m----------------------------------------------------------------------------------------------------"
         echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
         echo ""
-        read -p "Press enter to continue..." CONTINUE
+        if [[ ! -z ${VERBOSE} ]] ; then
+            read -p "Press enter to continue..." CONTINUE
+        fi
         exit 1
     fi
 fi
@@ -161,6 +165,8 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Flightradar24 feeder client setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ! -z ${VERBOSE} ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0
