@@ -127,6 +127,7 @@ if [[ true ]] ; then
 
     # Compile and install from source.
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
+        echo -en "\e[33m  Compiling source for ${BETA_GITHUB_PROJECT}..."        
         # Prepare to build from source.
         cd ${BETA_BUILD_DIRECTORY}
         # And remove previous binaries.
@@ -144,10 +145,12 @@ if [[ true ]] ; then
         # Make.
         if [[ -f "Makefile" ]] ; then
             ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
-        fi
-        # Install.
-        if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} install 2>&1)
+        if [[ -f "Makefile" ]] ; then
+            ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
+            # Install.
+            if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
+                ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} install 2>&1)
+            fi
         fi
     else
         echo -en "\e[33m  ${BETA_GITHUB_PROJECT} is already installed..."
