@@ -53,9 +53,9 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
-echo ""
+echo -e ""
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
@@ -65,9 +65,9 @@ if [[ ${DUMP1090_INSTALLED} = "true" ]] && [[ ${DUMP1090_FORK} = "mutability" ]]
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
     sudo systemctl daemon-reload 2>&1
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-    echo ""
+    echo -e ""
     sudo /etc/init.d/dump1090-mutability force-reload 2>&1
-    echo ""
+    echo -e ""
 fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
@@ -240,9 +240,9 @@ EOF
 ## RELOAD COLLECTD
 
 echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
-echo ""
+echo -e ""
 sudo /etc/init.d/collectd force-reload 2>&1
-echo ""
+echo -e ""
 
 ## EDIT CRONTAB
 
