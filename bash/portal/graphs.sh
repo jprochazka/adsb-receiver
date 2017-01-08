@@ -37,15 +37,44 @@ PROJECTROOTDIRECTORY="${PWD}"
 BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
 PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
+COLLECTD_CONFIG="/etc/collectd/collectd.conf"
+COLLECTD_CRON_FILE="/etc/cron.d/adsb-feeder-performance-graphs"
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e ""
 echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
 echo -e ""
 
+## CONFIRM INSTALLED PACKAGES
+
+if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        DUMP1090_FORK="mutability"
+        DUMP1090_INSTALLED="true"
+    fi
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        DUMP1090_FORK="fa"
+        DUMP1090_INSTALLED="true"
+    fi
+fi
+if [ -f /etc/init.d/rtlsdr-ogn ]; then
+    RTLSDROGN_INSTALLED="true"
+fi
+
+## CONFIRM HARDWARE PLATFORM
+
+if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
+    HARDWARE="RPI"
+elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
+    HARDWARE="CHIP"
+else
+    HARDWARE="unknown"
+fi
+
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+if [[ ${DUMP1090_INSTALLED} = "true" ]] && [[ ${DUMP1090_FORK} = "mutability" ]] ; then
     echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
     sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability 2>&1
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
@@ -58,25 +87,21 @@ fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
 
-# Check if the file /etc/collectd/collectd.conf exists and if so back it up.
-if [ -f /etc/collectd/collectd.conf ]; then
+# Check if the collectd config file exists and if so back it up.
+if [[ -f ${COLLECTD_CONFIG} ]] ; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-    sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back 2>&1
+    sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak 2>&1
 fi
+
+# Generate new collectd config.
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
-sudo tee -a /etc/collectd/collectd.conf > /dev/null <<EOF
+sudo tee ${COLLECTD_CONFIG} > /dev/null <<EOF
 # Config file for collectd(1).
 
 ##############################################################################
 # Global                                                                     #
 ##############################################################################
 Hostname "localhost"
-
-#----------------------------------------------------------------------------#
-# Added types for dump1090.                                                  #
-# Make sure the path to dump1090.db is correct.                              #
-#----------------------------------------------------------------------------#
-TypesDB "$PORTALBUILDDIRECTORY/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 #----------------------------------------------------------------------------#
 # Interval at which to query values. This may be overwritten on a per-plugin #
@@ -90,6 +115,22 @@ Timeout 2
 ReadThreads 5
 WriteThreads 1
 
+EOF
+
+# Dump1090 specific values.
+if [[ ${DUMP1090_INSTALLED} = "true" ]] ; then
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+#----------------------------------------------------------------------------#
+# Added types for dump1090.                                                  #
+# Make sure the path to dump1090.db is correct.                              #
+#----------------------------------------------------------------------------#
+TypesDB "${PORTALBUILDDIRECTORY}/graphs/dump1090.db" "/usr/share/collectd/types.db"
+
+EOF
+fi
+
+# Config for all installations.
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 ##############################################################################
 # Logging                                                                    #
 ##############################################################################
@@ -113,36 +154,16 @@ LoadPlugin aggregation
 LoadPlugin match_regex
 LoadPlugin df
 LoadPlugin disk
+LoadPlugin curl
 <LoadPlugin python>
 	Globals true
 </LoadPlugin>
-LoadPlugin curl
 
 ##############################################################################
 # Plugin configuration                                                       #
 ##############################################################################
 <Plugin rrdtool>
 	DataDir "/var/lib/collectd/rrd"
-</Plugin>
-
-#----------------------------------------------------------------------------#
-# System Graphs                                                              #
-#----------------------------------------------------------------------------#
-<Plugin table>
-        <Table "/sys/class/thermal/thermal_zone0/temp">
-                Instance localhost
-                Separator " "
-                <Result>
-                        Type gauge
-                        InstancePrefix "cpu_temp"
-                        ValuesFrom 0
-                </Result>
-        </Table>
-</Plugin>
-
-<Plugin "interface">
-        Interface "eth0"
-        Interface "wlan0"
 </Plugin>
 
 <Plugin "aggregation">
@@ -162,25 +183,60 @@ LoadPlugin curl
         ReportInodes true
 </Plugin>
 
+<Plugin "interface">
+        Interface "eth0"
+        Interface "wlan0"
+</Plugin>
+
+EOF
+
+# Raspberry Pi specific values.
+if [[ ${HARDWARE} == "RPI" ]] ; then
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+<Plugin table>
+	<Table "/sys/class/thermal/thermal_zone0/temp">
+		Instance localhost
+		Separator " "
+		<Result>
+			Type gauge
+			InstancePrefix "cpu_temp"
+			ValuesFrom 0
+		</Result>
+	</Table>
+</Plugin>
+
 <Plugin "disk">
-        Disk "mmcblk0"
+	Disk "mmcblk0"
+	IgnoreSelected false
+</Plugin>
+
+EOF
+# CHIP specific values.
+elif [[ ${HARDWARE} == "CHIP" ]] ; then
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+<Plugin table>
+        <Table "/sys/class/hwmon/hwmon0/temp1_input">
+                Instance localhost
+                Separator " "
+                <Result>
+                        Type gauge
+                        InstancePrefix "cpu_temp"
+                        ValuesFrom 0
+                </Result>
+        </Table>
+</Plugin>
+
+<Plugin "disk">
+        Disk "ubi0:rootfs"
         IgnoreSelected false
 </Plugin>
 
-<Chain "PostCache">
-        <Rule>
-                <Match regex>
-                Plugin "^cpu\$"
-                        PluginInstance "^[0-9]+\$"
-                </Match>
-                <Target write>
-                        Plugin "aggregation"
-                </Target>
-                Target stop
-        </Rule>
-        Target "write"
-</Chain>
+EOF
+fi
 
+# Dump1090 specific values.
+if [[ ${DUMP1090_INSTALLED} = "true" ]] ; then
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Configure the dump1090 python module.                                      #
 #                                                                            #
@@ -189,16 +245,22 @@ LoadPlugin curl
 # statistics will be loaded from http://localhost/dump1090/data/stats.json   #
 #----------------------------------------------------------------------------#
 <Plugin python>
-	ModulePath "$PORTALBUILDDIRECTORY/graphs"
-	LogTraces true
-	Import "dump1090"
-	<Module dump1090>
-		<Instance localhost>
-			URL "http://localhost/dump1090"
-		</Instance>
-	</Module>
+        ModulePath "${PORTALBUILDDIRECTORY}/graphs"
+        LogTraces true
+        Import "dump1090"
+        <Module dump1090>
+                <Instance localhost>
+                        URL "http://localhost/dump1090"
+                </Instance>
+        </Module>
 </Plugin>
 
+EOF
+fi
+
+# RTLSDR-OGN specific values.
+if [[ ${RTLSDROGN_INSTALLED} = "true" ]] ; then
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # RTLSDR-OGN Graphs                                                          #
 #----------------------------------------------------------------------------#
@@ -251,6 +313,23 @@ LoadPlugin curl
 </Plugin>
 EOF
 
+# Remaining config for all installations.
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+<Chain "PostCache">
+	<Rule>
+		<Match regex>
+		Plugin "^cpu\$"
+			PluginInstance "^[0-9]+\$"
+		</Match>
+		<Target write>
+			Plugin "aggregation"
+		</Target>
+		Target stop
+	</Rule>
+	Target "write"
+</Chain>
+EOF
+
 ## RELOAD COLLECTD
 
 echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
@@ -261,7 +340,7 @@ echo -e ""
 ## EDIT CRONTAB
 
 echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
-chmod +x $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh
+chmod +x ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 2>&1
 
 # The next block is temporary in order to insure this file is
 # deleted on older installation before the project renaming.
@@ -270,13 +349,13 @@ if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs 2>&1
 fi
 
-if [ -f /etc/cron.d/adsb-receiver-performance-graphs ]; then
+if [ -f ${COLLECTD_CRON_FILE} ]; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
-    sudo rm -f /etc/cron.d/adsb-receiver-performance-graphs 2>&1
+    sudo rm -f ${COLLECTD_CRON_FILE} 2>&1
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
-sudo tee -a /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
+sudo tee ${COLLECTD_CRON_FILE} > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
 # Every 5 minutes new hourly graphs are generated.
@@ -288,12 +367,12 @@ sudo tee -a /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
-*/10 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
-2,12,22,32,42,52 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
-4,24,44 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
-6 * * *	* root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
-8 */12 * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
+*/5 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
+*/10 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
+2,12,22,32,42,52 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
+4,24,44 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
+6 * * *	* root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
+8 */12 * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
 
 exit 0
