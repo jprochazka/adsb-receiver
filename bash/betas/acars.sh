@@ -68,13 +68,13 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${BETA_NAME} binaries...\e[97m"
 echo -e ""
 
-# Download and compile Acarsdec.
+# Download from github and compile.
 if [[ true ]] ; then
     BETA_GITHUB_URL_SHORT=`echo ${BETA_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
     BETA_GITHUB_PROJECT=`echo ${BETA_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
     BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${BETA_GITHUB_PROJECT}"
 
-    # Check if Acarsdec is already present and located where we would expect it to be.
+    # Check if already installed and located where we would expect it to be.
     if [[ -d "${BETA_BUILD_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
@@ -82,8 +82,11 @@ if [[ true ]] ; then
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
+            echo -en "\e[33m  Updating ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
             ACTION=$(git pull 2>&1)
             DO_INSTALL_FROM_GIT="true"
+        else
+            echo -en "\e[33m  Local copy of ${BETA_GITHUB_PROJECT} is up to date with \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         fi
     else
         # Otherwise clone from github.
@@ -91,6 +94,9 @@ if [[ true ]] ; then
         ACTION=$(git clone https://${BETA_GITHUB_URL_SHORT} ${BETA_BUILD_DIRECTORY} 2>&1)
         DO_INSTALL_FROM_GIT="true"
     fi
+    CheckReturnCode
+
+    # Compile and install from source.
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
         # Prepare to build from source.
         cd ${BETA_BUILD_DIRECTORY}
@@ -98,20 +104,27 @@ if [[ true ]] ; then
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
             ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} clean 2>&1)
         fi
+        # Run bootstrap.
         if [[ -x "bootstrap" ]] ; then
             ACTION=$(./bootstrap 2>&1)
         fi
+        # Configure with CFLAGS.
         if [[ -x "configure" ]] ; then
             ACTION=$(./configure ${BETA_CFLAGS} 2>&1)
         fi
+        # Make.
         if [[ -f "Makefile" ]] ; then
             ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
         fi
+        # Install.
         if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
             ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} install 2>&1)
         fi
+    else
+        echo -en "\e[33m  ${BETA_GITHUB_PROJECT} is already installed..."
     fi
     CheckReturnCode
+
     unset DO_INSTALL_FROM_GIT
     cd ${BETA_BUILD_DIRECTORY}
 fi

@@ -68,13 +68,13 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${BETA_NAME} binaries...\e[97m"
 echo -e ""
 
-# Download and compile Kalibrate.
+# Download from github and compile.
 if [[ true ]] ; then
     BETA_GITHUB_URL_SHORT=`echo ${BETA_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
     BETA_GITHUB_PROJECT=`echo ${BETA_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
     BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${BETA_GITHUB_PROJECT}"
 
-    # Check if Kalibrate is already present and located where we would expect it to be.
+    # Check if already installed and located where we would expect it to be.
     if [[ -x `which kal` ]] && [[ -d "${BETA_BUILD_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
         echo -en "\e[33m  Updating ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
