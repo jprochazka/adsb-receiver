@@ -40,6 +40,20 @@ PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
 COLLECTD_CRON_FILE="/etc/cron.d/adsb-feeder-performance-graphs"
 
+## FUNCTIONS
+
+#################################################################################
+# Detect Platform.
+function Check_Platform {
+if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
+    HARDWARE_PLATFORM="RPI"
+elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
+    HARDWARE_PLATFORM="CHIP"
+else
+    HARDWARE_PLATFORM="unknown"
+fi
+}
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e ""
@@ -49,6 +63,7 @@ echo -e ""
 ## CONFIRM INSTALLED PACKAGES
 
 if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
+    echo -e "\e[95m  Checking which dump1090 fork is installed...\e[97m"
     if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
         DUMP1090_FORK="mutability"
         DUMP1090_INSTALLED="true"
@@ -57,6 +72,7 @@ if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
         DUMP1090_FORK="fa"
         DUMP1090_INSTALLED="true"
     fi
+    echo -e ""
 fi
 if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
     RTLSDROGN_INSTALLED="true"
@@ -64,12 +80,10 @@ fi
 
 ## CONFIRM HARDWARE PLATFORM
 
-if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
-    HARDWARE="RPI"
-elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
-    HARDWARE="CHIP"
-else
-    HARDWARE="unknown"
+if [[ -z "${HARDWARE_PLATFORM}" ]] ; then
+    echo -e "\e[94m  Confirming hardware platform...\e[97m"
+    Check_Platform
+    echo -e ""
 fi
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
@@ -77,10 +91,11 @@ fi
 if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability" ]] ; then
     echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
     sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability 2>&1
+    #
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
     sudo systemctl daemon-reload 2>&1
+    #
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-    echo -e ""
     sudo /etc/init.d/dump1090-mutability force-reload 2>&1
     echo -e ""
 fi
@@ -91,6 +106,7 @@ fi
 if [[ -f "${COLLECTD_CONFIG}" ]] ; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
     sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak 2>&1
+    echo -e ""
 fi
 
 # Generate new collectd config.
@@ -191,7 +207,7 @@ LoadPlugin curl
 EOF
 
 # Raspberry Pi specific values.
-if [[ "${HARDWARE}" = "RPI" ]] ; then
+if [[ "${HARDWARE_PLATFORM}" = "RPI" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
@@ -212,7 +228,7 @@ if [[ "${HARDWARE}" = "RPI" ]] ; then
 
 EOF
 # CHIP specific values.
-elif [[ "${HARDWARE}" = "CHIP" ]] ; then
+elif [[ "${HARDWARE_PLATFORM}" = "CHIP" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
         <Table "/sys/class/hwmon/hwmon0/temp1_input">
@@ -330,6 +346,7 @@ sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 	Target "write"
 </Chain>
 EOF
+echo -e ""
 
 ## RELOAD COLLECTD
 
@@ -340,19 +357,24 @@ echo -e ""
 
 ## EDIT CRONTAB
 
-echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
-chmod +x ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 2>&1
+if [[ ! -x "${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh" ]] ; then
+    echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
+    chmod +x ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 2>&1
+    echo -e ""
+fi
 
 # The next block is temporary in order to insure this file is
 # deleted on older installation before the project renaming.
 if [[ -f /etc/cron.d/adsb-feeder-performance-graphs ]] ; then
     echo -e "\e[94m  Removing outdated performance graphs cron file...\e[97m"
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs 2>&1
+    echo -e ""
 fi
 
 if [[ -f "${COLLECTD_CRON_FILE}" ]] ; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
     sudo rm -f ${COLLECTD_CRON_FILE} 2>&1
+    echo -e ""
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
@@ -375,5 +397,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 6 * * *	* root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
 8 */12 * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
+echo -e ""
 
 exit 0
