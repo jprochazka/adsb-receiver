@@ -49,7 +49,7 @@ DECODER_RADIO="Please note that a dedicated RTL-SDR dongle is required to use th
 DECODER_SERVICE_SCRIPT_NAME="rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
-DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
+DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -620,7 +620,7 @@ CheckReturnCode
 # Install service script.
 if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
     # Check for local copy of service script.
-    if [[ `grep -c "conf=${DECODER_SERVICE_SCRIPT_CONFIG}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+    if [[ `grep -c "conf=${DECODER_SERVICE_CONFIG_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(cp -v ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
         ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
@@ -646,9 +646,9 @@ fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_SCRIPT_CONFIG}\e[33m\"...\e[97m"
-    sudo tee ${DECODER_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
+if [[ -n ${DECODER_SERVICE_CONFIG_PATH} ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
+    sudo tee ${DECODER_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
@@ -657,7 +657,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 50000  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
 50001  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
-    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG} 2>&1)
+    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_CONFIG_PATH} 2>&1)
 else
     false
 fi
@@ -678,12 +678,12 @@ fi
 
 # Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${DECODER_SERVICE_SCRIPT_NAME} defaults 2>&1)
+ACTION=$(sudo update-rc.d ${DECODER_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_SCRIPT_NAME} start 2>&1)
+ACTION=$(sudo /etc/init.d/${DECODER_NAME} start 2>&1)
 CheckReturnCode
 
 ## RTL-SDR OGN SETUP COMPLETE

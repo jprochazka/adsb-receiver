@@ -42,10 +42,10 @@ BETA_NAME="Acarsdec"
 BETA_GITHUB_URL="https://github.com/TLeconte/acarsdec.git"
 
 # Decoder service script variables.
-BETA_SERVICE_SCRIPT_NAME="acarsdec"
+BETA_SERVICE_SCRIPT_NAME="${BETA_NAME}-service"
 BETA_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/acarsdec/master/acarsdec-service"
-BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_SERVICE_SCRIPT_NAME}"
-BETA_SERVICE_SCRIPT_CONFIG="/etc/${BETA_SERVICE_SCRIPT_NAME}.conf"
+BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_NAME}"
+BETA_SERVICE_CONFIG_PATH="/etc/${BETA_SERVICE_SCRIPT_NAME}.conf"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -170,9 +170,9 @@ fi
 ### INSTALL AS A SERVICE
 
 # Install service script.
-if [[ -f ${BETA_SERVICE_SCRIPT_NAME} ]] ; then
+if [[ -f "${BETA_SERVICE_SCRIPT_NAME}" ]] ; then
     # Check for local copy of service script.
-    if [[ `grep -c "conf=${BETA_SERVICE_SCRIPT_CONFIG}" ${BETA_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+    if [[ `grep -c "conf=${BETA_SERVICE_CONFIG_PATH}" ${BETA_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
         ACTION=$(cp -v ${BETA_SERVICE_SCRIPT_NAME} ${BETA_SERVICE_SCRIPT_PATH})
         ACTION=$(sudo chmod -v +x ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
@@ -198,9 +198,9 @@ fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n ${BETA_SERVICE_SCRIPT_CONFIG} ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${BETA_SERVICE_SCRIPT_CONFIG}\e[33m\"...\e[97m"
-    sudo tee ${BETA_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
+if [[ -n ${BETA_SERVICE_CONFIG_PATH} ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${BETA_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
+    sudo tee ${BETA_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
@@ -208,7 +208,7 @@ if [[ -n ${BETA_SERVICE_SCRIPT_CONFIG} ]] ; then
 #port  user     directory                 command       args
 50600  pi       ${BETA_PROJECT_DIRECTORY} ./acarsdec    -o 2
 EOF
-    ACTION=$(chown -v pi:pi ${BETA_SERVICE_SCRIPT_CONFIG})
+    ACTION=$(chown -v pi:pi ${BETA_SERVICE_CONFIG_PATH})
 else
     echo -en "\e[33m  Unable to create service config file...\e[97m"
     false
@@ -217,12 +217,12 @@ CheckReturnCode
 
 # Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${BETA_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${BETA_SERVICE_SCRIPT_NAME} defaults 2>&1)
+ACTION=$(sudo update-rc.d ${BETA_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${BETA_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${BETA_SERVICE_SCRIPT_NAME} start 2>&1)
+ACTION=$(sudo /etc/init.d/${BETA_NAME} start 2>&1)
 CheckReturnCode
 
 ## SETUP COMPLETE
