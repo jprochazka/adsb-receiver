@@ -107,7 +107,6 @@ if [[ true ]] ; then
     # Check if already installed and located where we would expect it to be.
     if [[ -x `which kal` ]] && [[ -d "${BETA_BUILD_DIRECTORY}" ]] ; then
         # Then perhaps we can update from github.
-        echo -en "\e[33m  Updating ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         cd ${BETA_BUILD_DIRECTORY}
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
