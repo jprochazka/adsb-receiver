@@ -350,7 +350,7 @@ if [[ -f /etc/cron.d/adsb-feeder-performance-graphs ]] ; then
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs 2>&1
 fi
 
-if [[ -f ${COLLECTD_CRON_FILE} ]] ; then
+if [[ -f "${COLLECTD_CRON_FILE}" ]] ; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
     sudo rm -f ${COLLECTD_CRON_FILE} 2>&1
 fi
