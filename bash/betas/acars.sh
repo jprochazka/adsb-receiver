@@ -43,7 +43,7 @@ BETA_GITHUB_URL="https://github.com/TLeconte/acarsdec.git"
 
 # Decoder service script variables.
 BETA_SERVICE_SCRIPT_NAME="acarsdec"
-BETA_SERVICE_SCRIPT_URL=""
+BETA_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/acarsdec/master/acarsdec-service"
 BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_SERVICE_SCRIPT_NAME}"
 BETA_SERVICE_SCRIPT_CONFIG="/etc/${BETA_SERVICE_SCRIPT_NAME}.conf"
 
@@ -206,7 +206,7 @@ if [[ -n ${BETA_SERVICE_SCRIPT_CONFIG} ]] ; then
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50200  root ${BETA_PROJECT_DIRECTORY}  /usr/bin/env  ./acarsdec
+50600  pi       ${BETA_PROJECT_DIRECTORY} ./acarsdec    -o 2
 EOF
     ACTION=$(chown -v pi:pi ${BETA_SERVICE_SCRIPT_CONFIG})
 else
