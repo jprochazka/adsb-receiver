@@ -211,6 +211,7 @@ if [[ ${HARDWARE} == "RPI" ]] ; then
 </Plugin>
 
 EOF
+
 # CHIP specific values.
 elif [[ ${HARDWARE} == "CHIP" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
