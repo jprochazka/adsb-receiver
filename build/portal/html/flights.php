@@ -95,13 +95,7 @@
     $pageData['flights'] = $flights;
 
     // Calculate the number of pagination links to show.
-    $pageData['pageLinks'] = ceil($totalFlights / $itemsPerPage - 1);
-
-    // Pass the current page number being viewed to the template.
-    $pageData['pageNumber'] = 1;
-    if (isset($_GET['page'])) {
-        $pageData['pageNumber'] = $_GET['page'];
-    }
+    $pageData['pageLinks'] = ceil($totalFlights / $itemsPerPage);
 
     $template->display($pageData);
 ?>

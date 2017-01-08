@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015 Joseph A. Prochazka                                            #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -105,15 +105,4 @@ function CommentConfig {
 function UncommentConfig {
     # Use sed to locate the "KEY" then uncomment the line containing it in the specified "FILE".
     sudo sed -i -e "/$1/s/^#//" $2
-}
-
-# The following function is used to clean up the log files by removing
-# any color escaping sequences from the log file so it is easier to read.
-# There are other lines not needed which can be removed as well.
-
-function CleanLogFile {
-    # Use sed to remove any color sequences from the specified "FILE".
-    sed -i "s,\x1B\[[0-9;]*[a-zA-Z],,g" $1
-    # Remove the "Press enter to continue..." lines from the log file.
-    sed -i "/Press enter to continue.../d" $1
 }

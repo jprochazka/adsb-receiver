@@ -74,9 +74,6 @@ if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
     fi
     echo -e ""
 fi
-if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
-    RTLSDROGN_INSTALLED="true"
-fi
 
 ## CONFIRM HARDWARE PLATFORM
 
@@ -170,7 +167,6 @@ LoadPlugin aggregation
 LoadPlugin match_regex
 LoadPlugin df
 LoadPlugin disk
-LoadPlugin curl
 <LoadPlugin python>
 	Globals true
 </LoadPlugin>
@@ -271,62 +267,6 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
         </Module>
 </Plugin>
 
-EOF
-fi
-
-# RTLSDR-OGN specific values.
-if [[ "${RTLSDROGN_INSTALLED}" = "true" ]] ; then
-    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
-#----------------------------------------------------------------------------#
-# RTLSDR-OGN Graphs                                                          #
-#----------------------------------------------------------------------------#
-<Plugin curl>
-  <Page "rtlsdr-ogn">
-    URL "http://localhost:8080/"
-    # OGN center Frequency
-    <Match>
-      Regex "<tr><td>RF.OGN.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency"
-      Instance "Center-Frequency-OGN"
-    </Match>
-    # GSM  center Frequency
-    <Match>
-      Regex "<tr><td>RF.GSM.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency"
-      Instance "Center-Frequency-GSM"
-    </Match>
-    # OGN Frequency Correction
-    <Match>
-      Regex "<tr><td>Frequency correction</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency_offset"
-      Instance "Frequency-Correction-OGN"
-    </Match>
-    # NTP Frequency Correction
-    <Match>
-      Regex "<tr><td>NTP freq. corr.</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency_offset"
-      Instance "Frequency-Correction-NTP"
-    </Match>
-    # OGN Gain
-    <Match>
-      Regex "<tr><td>RF.OGN.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
-      DSType "GaugeLast"
-      Type "gauge"
-      Instance "Gain-OGN"
-    </Match>
-    # GSM Gain
-    <Match>
-      Regex "<tr><td>RF.GSM.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
-      DSType "GaugeLast"
-      Type "gauge"
-      Instance "Gain-GSM"
-    </Match>
-  </Page>
-</Plugin>
 EOF
 fi
 

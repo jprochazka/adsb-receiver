@@ -54,7 +54,7 @@ echo -e "\e[93m-----------------------------------------------------------------
 echo ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
 CONTINUESETUP=$?
-if [ "$CONTINUESETUP" = 1 ]; then
+if [ $CONTINUESETUP = 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
@@ -62,9 +62,7 @@ if [ "$CONTINUESETUP" = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
@@ -128,7 +126,7 @@ fi
 echo ""
 echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
 echo ""
-if [ ! "$PWD" = $MLATCLIENTBUILDDIRECTORY ]; then
+if [ ! $PWD = $MLATCLIENTBUILDDIRECTORY ]; then
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
     cd $MLATCLIENTBUILDDIRECTORY
 fi
@@ -155,9 +153,7 @@ if [ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok instal
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
@@ -280,8 +276,6 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  ADS-B Exchange feed setup is complete.\e[39m"
 echo ""
-if [[ ! -z ${VERBOSE} ]] ; then
-    read -p "Press enter to continue..." CONTINUE
-fi
+read -p "Press enter to continue..." CONTINUE
 
 exit 0

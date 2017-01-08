@@ -4,8 +4,11 @@
 #                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
-#  This script is used to complete the setup of the Raspbian image files made       #
-#  available to the public by the projects maintainer(s).                           # 
+#  A set of scripts created to automate the process of installing the software      #
+#  needed to setup a Mode S decoder as well as feeders which are capable of         #
+#  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
+#                                                                                   #
+#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-receiver            #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
@@ -64,9 +67,7 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    read -p "Press enter to continue..." CONTINUE
 fi
 
 ## CONFIGURE DUMP1090
@@ -147,9 +148,7 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090 configuration complete.\e[39m"
 echo ""
-if [[ ! -z ${VERBOSE} ]] ; then
-    read -p "Press enter to continue..." CONTINUE
-fi
+read -p "Press enter to continue..." CONTINUE
 
 
 # CONFIGURE PIAWARE IF NEEDED
@@ -165,7 +164,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
     # Ask for the users FlightAware login.
     FLIGHTAWARELOGIN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
-    if [ ! "$FLIGHTAWARELOGIN" = "" ]; then
+    if [ ! $FLIGHTAWARELOGIN = "" ]; then
         # If the user supplied their FlightAware login continue with the device claiming process.
         FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
         while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
@@ -213,12 +212,10 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware configuration complete.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    read -p "Press enter to continue..." CONTINUE
 fi
 
-## SETUP THE ADS-B RECEIVER PROJECT WEB PORTAL
+## SETUP THE ADS-B RECIEVER PROJECT WEB PORTAL
 
 chmod +x $BASHDIRECTORY/portal/install.sh
 $BASHDIRECTORY/portal/install.sh
