@@ -71,7 +71,7 @@ fi
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
-if [[ ${DUMP1090_INSTALLED} = "true" ]] && [[ ${DUMP1090_FORK} = "mutability" ]] ; then
+if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability" ]] ; then
     echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
     sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability 2>&1
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
@@ -85,7 +85,7 @@ fi
 ## BACKUP AND REPLACE COLLECTD.CONF
 
 # Check if the collectd config file exists and if so back it up.
-if [[ -f ${COLLECTD_CONFIG} ]] ; then
+if [[ -f "${COLLECTD_CONFIG}" ]] ; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
     sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak 2>&1
 fi
@@ -115,7 +115,7 @@ WriteThreads 1
 EOF
 
 # Dump1090 specific values.
-if [[ ${DUMP1090_INSTALLED} = "true" ]] ; then
+if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Added types for dump1090.                                                  #
@@ -187,7 +187,7 @@ LoadPlugin disk
 EOF
 
 # Raspberry Pi specific values.
-if [[ ${HARDWARE} == "RPI" ]] ; then
+if [[ "${HARDWARE}" = "RPI" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
@@ -208,7 +208,7 @@ if [[ ${HARDWARE} == "RPI" ]] ; then
 
 EOF
 # CHIP specific values.
-elif [[ ${HARDWARE} == "CHIP" ]] ; then
+elif [[ "${HARDWARE}" = "CHIP" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
         <Table "/sys/class/hwmon/hwmon0/temp1_input">
@@ -231,7 +231,7 @@ EOF
 fi
 
 # Dump1090 specific values.
-if [[ ${DUMP1090_INSTALLED} = "true" ]] ; then
+if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Configure the dump1090 python module.                                      #
@@ -285,12 +285,12 @@ chmod +x ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 2>&1
 
 # The next block is temporary in order to insure this file is
 # deleted on older installation before the project renaming.
-if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
+if [[ -f /etc/cron.d/adsb-feeder-performance-graphs ]] ; then
     echo -e "\e[94m  Removing outdated performance graphs cron file...\e[97m"
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs 2>&1
 fi
 
-if [ -f ${COLLECTD_CRON_FILE} ]; then
+if [[ -f "${COLLECTD_CRON_FILE}" ]] ; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
     sudo rm -f ${COLLECTD_CRON_FILE} 2>&1
 fi
