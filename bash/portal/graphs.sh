@@ -88,7 +88,7 @@ fi
 ## BACKUP AND REPLACE COLLECTD.CONF
 
 # Check if the collectd config file exists and if so back it up.
-if [[ -f ${COLLECTD_CONFIG} ]] ; then
+if [[ -f "${COLLECTD_CONFIG}" ]] ; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
     sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak 2>&1
 fi
@@ -352,7 +352,7 @@ fi
 
 if [[ -f ${COLLECTD_CRON_FILE} ]] ; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
-    sudo rm -f ${COLLECTD_CRON_FILE} 2>&1
+    sudo rm -f "${COLLECTD_CRON_FILE}" 2>&1
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
