@@ -37,6 +37,8 @@ PROJECTROOTDIRECTORY="$PWD"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
 
+COLLECTD_CONFIG="/etc/collectd/collectd.conf"
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo ""
@@ -58,17 +60,15 @@ fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
 
-COLLECTD_CONFIG="/etc/collectd/collectd.conf"
-
 # Check if the collectd config file exists and if so back it up.
 if [ -f ${COLLECTD_CONFIG} ]; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-    sudo mv ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak
+    sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak
 fi
 
 # Generate new collectd config. 
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
-sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+sudo tee ${COLLECTD_CONFIG} > /dev/null <<EOF
 # Config file for collectd(1).
 
 ##############################################################################
@@ -88,12 +88,18 @@ Timeout 2
 ReadThreads 5
 WriteThreads 1
 
+EOF
+
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Added types for dump1090.                                                  #
 # Make sure the path to dump1090.db is correct.                              #
 #----------------------------------------------------------------------------#
 TypesDB "$PORTALBUILDDIRECTORY/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
+EOF
+
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 ##############################################################################
 # Logging                                                                    #
 ##############################################################################
@@ -128,6 +134,9 @@ LoadPlugin disk
 	DataDir "/var/lib/collectd/rrd"
 </Plugin>
 
+EOF
+
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Configure the dump1090 python module.                                      #
 #                                                                            #
@@ -225,7 +234,7 @@ if [ -f /etc/cron.d/adsb-receiver-performance-graphs ]; then
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
-sudo tee -a /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
+sudo tee /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
 # Every 5 minutes new hourly graphs are generated.
