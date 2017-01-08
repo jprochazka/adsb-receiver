@@ -38,6 +38,7 @@ BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
 
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
+COLLECTD_CRON_FILE="/etc/cron.d/adsb-feeder-performance-graphs"
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
@@ -51,10 +52,10 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
     sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
-    sudo systemctl daemon-reload
+    sudo systemctl daemon-reload 2>&1
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
     echo ""
-    sudo /etc/init.d/dump1090-mutability force-reload
+    sudo /etc/init.d/dump1090-mutability force-reload 2>&1
     echo ""
 fi
 
@@ -68,6 +69,7 @@ fi
 
 # Generate new collectd config. 
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
+
 sudo tee ${COLLECTD_CONFIG} > /dev/null <<EOF
 # Config file for collectd(1).
 
@@ -213,7 +215,7 @@ EOF
 
 echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
 echo ""
-sudo /etc/init.d/collectd force-reload
+sudo /etc/init.d/collectd force-reload 2>&1
 echo ""
 
 ## EDIT CRONTAB
@@ -228,13 +230,14 @@ if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
 fi
 
-if [ -f /etc/cron.d/adsb-receiver-performance-graphs ]; then
+if [ -f ${COLLECTD_CRON_FILE} ]; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
-    sudo rm -f /etc/cron.d/adsb-receiver-performance-graphs
+    sudo rm -f ${COLLECTD_CRON_FILE}
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
-sudo tee /etc/cron.d/adsb-receiver-performance-graphs > /dev/null <<EOF
+
+sudo tee ${COLLECTD_CRON_FILE} > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
 # Every 5 minutes new hourly graphs are generated.
