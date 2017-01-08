@@ -33,27 +33,27 @@
 
 ## VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+PROJECTROOTDIRECTORY="${PWD}"
+BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
+PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
-echo ""
+echo -e ""
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
-    sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
+    sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability 2>&1
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
-    sudo systemctl daemon-reload
+    sudo systemctl daemon-reload 2>&1
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-    echo ""
-    sudo /etc/init.d/dump1090-mutability force-reload
-    echo ""
+    echo -e ""
+    sudo /etc/init.d/dump1090-mutability force-reload 2>&1
+    echo -e ""
 fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
@@ -61,7 +61,7 @@ fi
 # Check if the file /etc/collectd/collectd.conf exists and if so back it up.
 if [ -f /etc/collectd/collectd.conf ]; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-    sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back
+    sudo mv /etc/collectd/collectd.conf /etc/collectd/collectd.conf.back 2>&1
 fi
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
 sudo tee -a /etc/collectd/collectd.conf > /dev/null <<EOF
@@ -254,9 +254,9 @@ EOF
 ## RELOAD COLLECTD
 
 echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
-echo ""
-sudo /etc/init.d/collectd force-reload
-echo ""
+echo -e ""
+sudo /etc/init.d/collectd force-reload 2>&1
+echo -e ""
 
 ## EDIT CRONTAB
 
@@ -267,12 +267,12 @@ chmod +x $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh
 # deleted on older installation before the project renaming.
 if [ -f /etc/cron.d/adsb-feeder-performance-graphs ]; then
     echo -e "\e[94m  Removing outdated performance graphs cron file...\e[97m"
-    sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
+    sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs 2>&1
 fi
 
 if [ -f /etc/cron.d/adsb-receiver-performance-graphs ]; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
-    sudo rm -f /etc/cron.d/adsb-receiver-performance-graphs
+    sudo rm -f /etc/cron.d/adsb-receiver-performance-graphs 2>&1
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
