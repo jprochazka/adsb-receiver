@@ -150,7 +150,7 @@ while true:
         #SQLite
         if config["database"]["type"] == "sqlite":
             params = (purge_date,)
-             cursor.execute("DELETE FROM adsb_positions WHERE time < ?", params)
+            cursor.execute("DELETE FROM adsb_positions WHERE time < ?", params)
 
     ## Close the database connection.
 
