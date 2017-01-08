@@ -115,11 +115,11 @@ if [[ true ]] ; then
             ACTION=$(git pull 2>&1)
             DO_INSTALL_FROM_GIT="true"
         else
-            echo -en "\e[33m  Local copy of ${BETA_GITHUB_PROJECT} is up to date with \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+            echo -en "\e[33m  Local ${BETA_GITHUB_PROJECT} repository is up to date with \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         fi
     else
         # Otherwise clone from github.
-        echo -en "\e[33m  Building ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+        echo -en "\e[33m  Cloning ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         ACTION=$(git clone https://${BETA_GITHUB_URL_SHORT} ${BETA_BUILD_DIRECTORY} 2>&1)
         DO_INSTALL_FROM_GIT="true"
     fi
@@ -127,7 +127,7 @@ if [[ true ]] ; then
 
     # Compile and install from source.
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
-        echo -en "\e[33m  Compiling source for ${BETA_GITHUB_PROJECT}..."        
+        echo -en "\e[33m  Compiling ${BETA_GITHUB_PROJECT} from source..."
         # Prepare to build from source.
         cd ${BETA_BUILD_DIRECTORY}
         # And remove previous binaries.
