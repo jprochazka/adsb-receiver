@@ -77,7 +77,7 @@ fi
 
 ## CONFIRM HARDWARE PLATFORM
 
-if [[ -z "${HARDWARE_PLATFORM}" ]] ; then 
+if [[ -z "${HARDWARE_PLATFORM}" ]] ; then
     echo -e "\e[94m  Confirming hardware platform...\e[97m"
     Check_Platform
     echo -e ""
