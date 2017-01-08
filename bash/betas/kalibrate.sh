@@ -82,8 +82,11 @@ if [[ true ]] ; then
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
+            echo -en "\e[33m  Updating ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
             ACTION=$(git pull 2>&1)
             DO_INSTALL_FROM_GIT="true"
+        else
+            echo -en "\e[33m  Local copy of ${BETA_GITHUB_PROJECT} is up to date with \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         fi
     else
         # Otherwise clone from github.
