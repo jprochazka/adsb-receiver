@@ -136,6 +136,29 @@ LoadPlugin disk
 	DataDir "/var/lib/collectd/rrd"
 </Plugin>
 
+<Plugin "interface">
+        Interface "eth0"
+        Interface "wlan0"
+</Plugin>
+
+<Plugin "aggregation">
+        <Aggregation>
+                Plugin "cpu"
+                Type "cpu"
+                GroupBy "Host"
+                GroupBy "TypeInstance"
+                CalculateAverage true
+        </Aggregation>
+</Plugin>
+
+<Plugin "df">
+        MountPoint "/"
+        IgnoreSelected false
+        ReportReserved true
+        ReportInodes true
+</Plugin>
+
+
 EOF
 
 sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
@@ -157,6 +180,9 @@ sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 	</Module>
 </Plugin>
 
+EOF
+
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
 		Instance localhost
@@ -169,33 +195,14 @@ sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 	</Table>
 </Plugin>
 
-<Plugin "interface">
-	Interface "eth0"
-        Interface "wlan0"
-</Plugin>
-
-<Plugin "aggregation">
-	<Aggregation>
-		Plugin "cpu"
-		Type "cpu"
-		GroupBy "Host"
-		GroupBy "TypeInstance"
-		CalculateAverage true
-	</Aggregation>
-</Plugin>
-
-<Plugin "df">
-	MountPoint "/"
-	IgnoreSelected false
-	ReportReserved true
-	ReportInodes true
-</Plugin>
-
 <Plugin "disk">
 	Disk "mmcblk0"
 	IgnoreSelected false
 </Plugin>
 
+EOF
+
+sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Chain "PostCache">
 	<Rule>
 		<Match regex>
