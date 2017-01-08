@@ -494,6 +494,7 @@ if [[ -n ${DECODER_SERVICE_SCRIPT_CONFIG} ]] ; then
 EOF
     ACTION=$(chown -v pi:pi ${DECODER_SERVICE_SCRIPT_CONFIG})
 else
+    echo -en "\e[33m  Unable to create service config file...\e[97m"
     false
 fi
 CheckReturnCode

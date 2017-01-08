@@ -41,6 +41,12 @@ RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
 BETA_NAME="Acarsdec"
 BETA_GITHUB_URL="https://github.com/TLeconte/acarsdec.git"
 
+# Decoder service script variables.
+BETA_SERVICE_SCRIPT_NAME="acarsdec"
+BETA_SERVICE_SCRIPT_URL=""
+BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_SERVICE_SCRIPT_NAME}"
+BETA_SERVICE_SCRIPT_CONFIG="/etc/${BETA_SERVICE_SCRIPT_NAME}.conf"
+
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -94,6 +100,8 @@ CheckPackage automake
 CheckPackage libfftw3-3
 CheckPackage libfftw3-dev
 CheckPackage libtool
+CheckPackage procserv
+CheckPackage telnet
 echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${BETA_NAME} binaries...\e[97m"
 echo -e ""
@@ -158,6 +166,64 @@ if [[ true ]] ; then
     unset DO_INSTALL_FROM_GIT
     cd ${BETA_BUILD_DIRECTORY}
 fi
+
+### INSTALL AS A SERVICE
+
+# Install service script.
+if [[ -f ${BETA_SERVICE_SCRIPT_NAME} ]] ; then
+    # Check for local copy of service script.
+    if [[ `grep -c "conf=${BETA_SERVICE_SCRIPT_CONFIG}" ${BETA_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+        echo -en "\e[33m  Installing service script at \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(cp -v ${BETA_SERVICE_SCRIPT_NAME} ${BETA_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo chmod -v +x ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
+    else
+        echo -en "\e[33m  Invalid service script \"\e[37m${BETA_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
+        false
+    fi
+elif [[ -n ${BETA_SERVICE_SCRIPT_URL} ]] ; then
+    # Otherwise attempt to download service script.
+    if [[ `echo ${BETA_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
+        echo -en "\e[33m  Downloading service script to \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(sudo curl ${BETA_SERVICE_SCRIPT_URL} -o ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod -v +x ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
+    else
+        echo -en "\e[33m  Invalid service script url \"\e[37m${BETA_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
+        false
+    fi
+else
+    # Otherwise error if unable to use local or downloaded service script
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+    false
+fi
+CheckReturnCode
+
+# Generate and install service script configuration file.
+if [[ -n ${BETA_SERVICE_SCRIPT_CONFIG} ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${BETA_SERVICE_SCRIPT_CONFIG}\e[33m\"...\e[97m"
+    sudo tee ${BETA_SERVICE_SCRIPT_CONFIG} > /dev/null 2>&1 <<EOF
+#shellbox configuration file
+#Starts commands inside a "box" with a telnet-like server.
+#Contact the shell with: telnet <hostname> <port>
+#Syntax:
+#port  user     directory                 command       args
+50200  root ${BETA_PROJECT_DIRECTORY}  /usr/bin/env  ./acarsdec
+EOF
+    ACTION=$(chown -v pi:pi ${BETA_SERVICE_SCRIPT_CONFIG})
+else
+    echo -en "\e[33m  Unable to create service config file...\e[97m"
+    false
+fi
+CheckReturnCode
+
+# Configure DECODER as a service.
+echo -en "\e[33m  Configuring ${BETA_NAME} as a service...\e[97m"
+ACTION=$(sudo update-rc.d ${BETA_SERVICE_SCRIPT_NAME} defaults 2>&1)
+CheckReturnCode
+
+# Start the DECODER service.
+echo -en "\e[33m  Starting the ${BETA_NAME} service...\e[97m"
+ACTION=$(sudo /etc/init.d/${BETA_SERVICE_SCRIPT_NAME} start 2>&1)
+CheckReturnCode
 
 ## SETUP COMPLETE
 
