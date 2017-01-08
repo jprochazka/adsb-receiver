@@ -40,22 +40,34 @@ PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
 COLLECTD_CRON_FILE="/etc/cron.d/adsb-feeder-performance-graphs"
 
-## CONFIRM INSTALLED PACKAGES
-
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    DUMP1090_FORK="mutability"
-    DUMP1090_INSTALLED="true"
-fi
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    DUMP1090_FORK="fa"
-    DUMP1090_INSTALLED="true"
-fi
-
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e ""
 echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
 echo -e ""
+
+## CONFIRM INSTALLED PACKAGES
+
+if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        DUMP1090_FORK="mutability"
+        DUMP1090_INSTALLED="true"
+    fi
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        DUMP1090_FORK="fa"
+        DUMP1090_INSTALLED="true"
+    fi
+fi
+
+## CONFIRM HARDWARE PLATFORM
+
+if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
+    HARDWARE="RPI"
+elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
+    HARDWARE="CHIP"
+else
+    HARDWARE="unknown"
+fi
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
@@ -150,11 +162,6 @@ LoadPlugin disk
 	DataDir "/var/lib/collectd/rrd"
 </Plugin>
 
-<Plugin "interface">
-        Interface "eth0"
-        Interface "wlan0"
-</Plugin>
-
 <Plugin "aggregation">
         <Aggregation>
                 Plugin "cpu"
@@ -172,34 +179,15 @@ LoadPlugin disk
         ReportInodes true
 </Plugin>
 
-
-EOF
-
-# Dump1090 specific values.
-if [[ ${DUMP1090_INSTALLED} = "true" ]] ; then
-    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
-#----------------------------------------------------------------------------#
-# Configure the dump1090 python module.                                      #
-#                                                                            #
-# Each Instance block collects statistics from a separate named dump1090.    #
-# The URL should be the base URL of the webmap, i.e. in the examples below,  #
-# statistics will be loaded from http://localhost/dump1090/data/stats.json   #
-#----------------------------------------------------------------------------#
-<Plugin python>
-	ModulePath "${PORTALBUILDDIRECTORY}/graphs"
-	LogTraces true
-	Import "dump1090"
-	<Module dump1090>
-		<Instance localhost>
-			URL "http://localhost/dump1090"
-		</Instance>
-	</Module>
+<Plugin "interface">
+        Interface "eth0"
+        Interface "wlan0"
 </Plugin>
 
 EOF
-fi
 
 # Raspberry Pi specific values.
+if [[ ${HARDWARE} == "RPI" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
@@ -219,6 +207,52 @@ fi
 </Plugin>
 
 EOF
+# CHIP specific values.
+elif [[ ${HARDWARE} == "CHIP" ]] ; then
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+<Plugin table>
+        <Table "/sys/class/hwmon/hwmon0/temp1_input">
+                Instance localhost
+                Separator " "
+                <Result>
+                        Type gauge
+                        InstancePrefix "cpu_temp"
+                        ValuesFrom 0
+                </Result>
+        </Table>
+</Plugin>
+
+<Plugin "disk">
+        Disk "ubi0:rootfs"
+        IgnoreSelected false
+</Plugin>
+
+EOF
+fi
+
+# Dump1090 specific values.
+if [[ ${DUMP1090_INSTALLED} = "true" ]] ; then
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+#----------------------------------------------------------------------------#
+# Configure the dump1090 python module.                                      #
+#                                                                            #
+# Each Instance block collects statistics from a separate named dump1090.    #
+# The URL should be the base URL of the webmap, i.e. in the examples below,  #
+# statistics will be loaded from http://localhost/dump1090/data/stats.json   #
+#----------------------------------------------------------------------------#
+<Plugin python>
+        ModulePath "${PORTALBUILDDIRECTORY}/graphs"
+        LogTraces true
+        Import "dump1090"
+        <Module dump1090>
+                <Instance localhost>
+                        URL "http://localhost/dump1090"
+                </Instance>
+        </Module>
+</Plugin>
+
+EOF
+fi
 
 # Remaining config for all installations.
 sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
