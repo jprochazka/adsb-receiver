@@ -102,7 +102,7 @@ if [[ true ]] ; then
             ACTION=$(./bootstrap 2>&1)
         fi
         if [[ -x "configure" ]] ; then
-            ACTION=$(./configure 2>&1)
+            ACTION=$(./configure ${BETA_CFLAGS} 2>&1)
         fi
         if [[ -f "Makefile" ]] ; then
             ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
@@ -113,7 +113,7 @@ if [[ true ]] ; then
     fi
     CheckReturnCode
     unset DO_INSTALL_FROM_GIT
-    cd ${DECODER_BUILD_DIRECTORY}
+    cd ${BETA_BUILD_DIRECTORY}
 fi
 
 ## SETUP COMPLETE
