@@ -33,9 +33,9 @@
 
 ## VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+PROJECTROOTDIRECTORY="${PWD}"
+BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
+PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
 COLLECTD_CRON_FILE="/etc/cron.d/adsb-feeder-performance-graphs"
@@ -48,7 +48,7 @@ echo ""
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
     sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
@@ -62,7 +62,7 @@ fi
 ## BACKUP AND REPLACE COLLECTD.CONF
 
 # Check if the collectd config file exists and if so back it up.
-if [ -f ${COLLECTD_CONFIG} ]; then
+if [[ -f ${COLLECTD_CONFIG} ]] ; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
     sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak
 fi
@@ -92,12 +92,13 @@ WriteThreads 1
 
 EOF
 
-sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+# Dump1090 specific values.
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Added types for dump1090.                                                  #
 # Make sure the path to dump1090.db is correct.                              #
 #----------------------------------------------------------------------------#
-TypesDB "$PORTALBUILDDIRECTORY/graphs/dump1090.db" "/usr/share/collectd/types.db"
+TypesDB "${PORTALBUILDDIRECTORY}/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 EOF
 
@@ -161,7 +162,8 @@ LoadPlugin disk
 
 EOF
 
-sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+# Dump1090 specific values.
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Configure the dump1090 python module.                                      #
 #                                                                            #
@@ -170,7 +172,7 @@ sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 # statistics will be loaded from http://localhost/dump1090/data/stats.json   #
 #----------------------------------------------------------------------------#
 <Plugin python>
-	ModulePath "$PORTALBUILDDIRECTORY/graphs"
+	ModulePath "${PORTALBUILDDIRECTORY}/graphs"
 	LogTraces true
 	Import "dump1090"
 	<Module dump1090>
@@ -182,7 +184,8 @@ sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 
 EOF
 
-sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+# Raspberry Pi specific values.
+    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
 		Instance localhost
@@ -228,7 +231,7 @@ echo ""
 ## EDIT CRONTAB
 
 echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
-chmod +x $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh
+chmod +x ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh
 
 # The next block is temporary in order to insure this file is
 # deleted on older installation before the project renaming.
@@ -256,12 +259,12 @@ sudo tee ${COLLECTD_CRON_FILE} > /dev/null <<EOF
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
-*/10 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
-2,12,22,32,42,52 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
-4,24,44 * * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
-6 * * *	* root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
-8 */12 * * * root bash $PORTALBUILDDIRECTORY/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
+*/5 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
+*/10 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
+2,12,22,32,42,52 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
+4,24,44 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
+6 * * *	* root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
+8 */12 * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
 
 exit 0
