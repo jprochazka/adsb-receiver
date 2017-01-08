@@ -145,8 +145,6 @@ if [[ true ]] ; then
         # Make.
         if [[ -f "Makefile" ]] ; then
             ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
-        if [[ -f "Makefile" ]] ; then
-            ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
             # Install.
             if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
                 ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} install 2>&1)
