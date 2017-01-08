@@ -46,7 +46,7 @@ DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude
 DECODER_RADIO="Please note that a LoRa transceiver connected via SPI is required to use this decoder"
 
 # Decoder service script variables.
-DECODER_SERVICE_SCRIPT_NAME="hab-lora-gateway"
+DECODER_SERVICE_SCRIPT_NAME="lora-gateway-service"
 DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/lora-gateway/master/hab-lora-gateway"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
 DECODER_SERVICE_SCRIPT_CONFIG="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
