@@ -73,7 +73,7 @@ fi
 
 if [[ ${DUMP1090_INSTALLED} = "true" ]] && [[ ${DUMP1090_FORK} = "mutability" ]] ; then
     echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
-    sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability
+    sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability 2>&1
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
     sudo systemctl daemon-reload 2>&1
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
@@ -87,10 +87,10 @@ fi
 # Check if the collectd config file exists and if so back it up.
 if [[ -f ${COLLECTD_CONFIG} ]] ; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-    sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak
+    sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak 2>&1
 fi
 
-# Generate new collectd config. 
+# Generate new collectd config.
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
 sudo tee ${COLLECTD_CONFIG} > /dev/null <<EOF
 # Config file for collectd(1).
