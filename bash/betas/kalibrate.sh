@@ -94,6 +94,9 @@ if [[ true ]] ; then
         ACTION=$(git clone https://${BETA_GITHUB_URL_SHORT} ${BETA_BUILD_DIRECTORY} 2>&1)
         DO_INSTALL_FROM_GIT="true"
     fi
+    CheckReturnCode
+
+    # Compile and install from source.
     if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
         # Prepare to build from source.
         cd ${BETA_BUILD_DIRECTORY}
@@ -101,20 +104,27 @@ if [[ true ]] ; then
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
             ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} clean 2>&1)
         fi
+        # Run bootstrap.
         if [[ -x "bootstrap" ]] ; then
             ACTION=$(./bootstrap 2>&1)
         fi
+        # Configure with CFLAGS.
         if [[ -x "configure" ]] ; then
             ACTION=$(./configure ${BETA_CFLAGS} 2>&1)
         fi
+        # Make.
         if [[ -f "Makefile" ]] ; then
             ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
         fi
+        # Install.
         if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
             ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} install 2>&1)
         fi
+    else
+        echo -en "\e[33m  ${BETA_GITHUB_PROJECT} is already installed..."
     fi
     CheckReturnCode
+
     unset DO_INSTALL_FROM_GIT
     cd ${BETA_BUILD_DIRECTORY}
 fi
