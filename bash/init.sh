@@ -98,7 +98,7 @@ function CheckPrerequisites() {
 # Update The ADS-B Receiver Project Git repository.
 function UpdateRepository() {
     # Update lcoal branches which are set to track remote.
-    git remote update 2>&1
+    ACTION=$(git remote update 2>&1)
     # Check if local branch is behind remote.
     if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] && [[ `git status | grep -c "untracked files present"` -gt 0 ]] ; then
         # Local branch has untracked files.
