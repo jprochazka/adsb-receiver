@@ -153,7 +153,7 @@ fi
 
 ## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
+if [[ -f "${DECODER_SERVICE_SCRIPT_PATH}" ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
     ACTION=$(sudo ${DECODER_SERVICE_SCRIPT_PATH} stop 2>&1)
     CheckReturnCode
@@ -187,7 +187,7 @@ TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
 # Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
 if [[ ${TUNER_COUNT} -gt 1 ]] ; then
     # If a device has been specified by serial number then try to match that with the currently detected tuners.
-    if [[ -n ${OGN_DEVICE_SERIAL} ]] ; then
+    if [[ -n "${OGN_DEVICE_SERIAL}" ]] ; then
         for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
             if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
                 echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m"
@@ -195,12 +195,12 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
             fi
         done
         # If no match for this serial then assume the highest numbered tuner will be used.
-        if [[ -z ${OGN_DEVICE_ID} ]] ; then
+        if [[ -z "${OGN_DEVICE_ID}" ]] ; then
             echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
             OGN_DEVICE_ID=${TUNER_COUNT}
         fi
     # Or if a device has been specified by device ID then confirm this is currently detected.
-    elif [[ -n ${OGN_DEVICE_ID} ]] ; then
+    elif [[ -n "${OGN_DEVICE_ID}" ]] ; then
         if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
             echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m"
         # If no match for this serial then assume the highest numbered tuner will be used.
@@ -234,7 +234,7 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be used for dump1090.
             DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z ${DUMP1090_DEVICE_ID} ]] ; do
+            while [[ -z "${DUMP1090_DEVICE_ID}" ]] ; do
                 DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
@@ -248,7 +248,7 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be use for dump978.
             DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
+            while [[ -z "${DUMP978_DEVICE_ID}" ]] ; do
                 DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
@@ -260,7 +260,7 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Ask the user which USB device is to be use for RTL-SDR OGN.
         RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-        while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
+        while [[ -z "${DUMP978_DEVICE_ID}" ]] ; do
             RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     else
@@ -268,7 +268,7 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
         true
     fi
     # Assign the specified RTL-SDR dongle to dump1090.
-    if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] && [[ -n ${DUMP1090_DEVICE_ID} ]] ; then
+    if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] && [[ -n "${DUMP1090_DEVICE_ID}" ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_DEVICE_ID\" to dump1090-mutability...\e[97m"
         ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
@@ -277,7 +277,7 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
         echo -e ""
     fi
     # Assign the specified RTL-SDR dongle to dump978
-    if [[ "${DUMP978_IS_INSTALLED}" = "true" ]] && [[ -n ${DUMP978_DEVICE_ID} ]] ; then
+    if [[ "${DUMP978_IS_INSTALLED}" = "true" ]] && [[ -n "${DUMP978_DEVICE_ID}" ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP978_DEVICE_ID}\" to dump978...\e[97m"
         ### ADD DEVICE TO MAINTENANCE SCRIPT...
         echo -e "\e[94m  Reloading dump978...\e[97m"
@@ -292,7 +292,7 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
+if [[ ! -d "${DECODER_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     ACTION=$(mkdir -v ${DECODER_BUILD_DIRECTORY} 2>&1)
     CheckReturnCode
@@ -355,7 +355,7 @@ if [[ true ]] ; then
 fi
 
 # Detect CPU Architecture.
-if [[ -z ${CPU_ARCHITECTURE} ]] ; then
+if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
     echo -en "\e[33m  Detecting CPU architecture...\e[97m"
     CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
     CheckReturnCode
@@ -400,7 +400,7 @@ fi
 
 # Change to DECODER work directory for post-build actions.
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn"
-if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
+if [[ -d "${DECODER_PROJECT_DIRECTORY}" ]] ; then
     cd ${DECODER_PROJECT_DIRECTORY}
 else
     echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"...\e[97m"
@@ -424,7 +424,7 @@ for DECODER_SETUID_BINARY in ${DECODER_SETUID_BINARIES} ; do
     ACTION=$(sudo chmod -v a+s  ${DECODER_SETUID_BINARY} 2>&1)
 done
 # And check that the file permissions have been applied.
-if [[ `ls -l ${DECODER_SETUID_BINARIES} | grep -c "\-rwsr-sr-x"` -eq ${DECODER_SETUID_COUNT} ]] ; then
+if [[ `ls -l ${DECODER_SETUID_BINARIES} | grep -c "\-rwsr-sr-x"` -eq "${DECODER_SETUID_COUNT}" ]] ; then
     true
 else
     false
@@ -484,8 +484,8 @@ fi
 # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
 
 # Latitude.
-if [[ -z ${OGN_LATITUDE} ]] ; then
-    if [[ -n ${RECEIVER_LATITUDE} ]] ; then
+if [[ -z "${OGN_LATITUDE}" ]] ; then
+    if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
         OGN_LATITUDE="${RECEIVER_LATITUDE}"
     else
         OGN_LATITUDE="0.000"
@@ -493,8 +493,8 @@ if [[ -z ${OGN_LATITUDE} ]] ; then
 fi
 
 # Longitude.
-if [[ -z ${OGN_LONGITUDE} ]] ; then
-    if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
+if [[ -z "${OGN_LONGITUDE}" ]] ; then
+    if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
         OGN_LONGITUDE="${RECEIVER_LONGITUDE}"
     else
         OGN_LONGITUDE="0.000"
@@ -502,8 +502,8 @@ if [[ -z ${OGN_LONGITUDE} ]] ; then
 fi
 
 # Altitude.
-if [[ -z ${OGN_ALTITUDE} ]] ; then
-    if [[ -n ${RECEIVER_ALTITUDE} ]] ; then
+if [[ -z "${OGN_ALTITUDE}" ]] ; then
+    if [[ -n "${RECEIVER_ALTITUDE}" ]] ; then
         OGN_ALTITUDE="${RECEIVER_ALTITUDE}"
     else
         OGN_ALTITUDE="0"
@@ -513,8 +513,8 @@ fi
 # Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude.
 # To find value you can check: 	http://geographiclib.sourceforge.net/cgi-bin/GeoidEval
 # Need to derive from co-ords but will set to altitude as a placeholders.
-if [[ -z ${OGN_GEOID} ]] ; then
-    if [[ -n ${RECEIVER_ALTITUDE} ]] ; then
+if [[ -z "${OGN_GEOID}" ]] ; then
+    if [[ -n "${RECEIVER_ALTITUDE}" ]] ; then
         OGN_GEOID="${RECEIVER_ALTITUDE}"
     else
         OGN_GEOID="0"
@@ -524,8 +524,8 @@ fi
 # Set receiver callsign for this decoder.
 # This should be between 3 and 9 alphanumeric charactors, with no punctuation.
 # Please see: 	http://wiki.glidernet.org/receiver-naming-convention
-if [[ -z ${OGN_RECEIVER_NAME} ]] ; then
-    if [[ -n ${RECEIVERNAME} ]] ; then
+if [[ -z "${OGN_RECEIVER_NAME}" ]] ; then
+    if [[ -n "${RECEIVERNAME}" ]] ; then
         OGN_RECEIVER_NAME=`echo ${RECEIVERNAME} | tr -cd '[:alnum:]' | cut -c -9`
     else
         OGN_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
@@ -535,7 +535,7 @@ fi
 # Check for decoder specific variable, if not set then populate with dummy values to ensure valid config generation.
 
 # Frequency Correction
-if [[ -z ${OGN_FREQ_CORR} ]] ; then
+if [[ -z "${OGN_FREQ_CORR}" ]] ; then
     if [[ -n "${DERIVED_ERROR}" ]] ; then
         OGN_FREQ_CORR="${DERIVED_ERROR}"
     else
@@ -544,7 +544,7 @@ if [[ -z ${OGN_FREQ_CORR} ]] ; then
 fi
 
 # GSM Reference signal frequency.
-if [[ -z ${OGN_GSM_FREQ} ]] ; then
+if [[ -z "${OGN_GSM_FREQ}" ]] ; then
     if [[ -n "${DERIVED_GSM_FREQ}" ]] ; then
        OGN_GSM_FREQ="${DERIVED_GSM_FREQ}"
     else
@@ -553,7 +553,7 @@ if [[ -z ${OGN_GSM_FREQ} ]] ; then
 fi
 
 # Gain value for RTL-SDR device.
-if [[ -z ${OGN_GSM_GAIN} ]] ; then
+if [[ -z "${OGN_GSM_GAIN}" ]] ; then
     if [[ -n "${DERIVED_GAIN}" ]] ; then
         OGN_GSM_GAIN="${DERIVED_GAIN}"
     else
@@ -562,7 +562,7 @@ if [[ -z ${OGN_GSM_GAIN} ]] ; then
 fi
 
 # Enforce OGN whitelist.
-if [[ -z ${OGN_WHITELIST} ]] ; then
+if [[ -z "${OGN_WHITELIST}" ]] ; then
     OGN_WHITELIST="0"
 fi
 
@@ -619,7 +619,7 @@ CheckReturnCode
 ### INSTALL AS A SERVICE
 
 # Install service script.
-if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
+if [[ -f "${DECODER_SERVICE_SCRIPT_NAME}" ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_CONFIG_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
@@ -629,7 +629,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
     fi
-elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
+elif [[ -n "${DECODER_SERVICE_SCRIPT_URL}" ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
@@ -647,7 +647,7 @@ fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n ${DECODER_SERVICE_CONFIG_PATH} ]] ; then
+if [[ -n "${DECODER_SERVICE_CONFIG_PATH}" ]] ; then
     echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
     sudo tee ${DECODER_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
