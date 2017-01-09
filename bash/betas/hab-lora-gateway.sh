@@ -141,7 +141,7 @@ fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
+if [[ -f "${DECODER_SERVICE_SCRIPT_PATH}" ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
     ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} stop 2>&1)
     CheckReturnCode
@@ -150,7 +150,7 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
+if [[ ! -d "${DECODER_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     ACTION=$(mkdir -v ${DECODER_BUILD_DIRECTORY} 2>&1)
     CheckReturnCode
@@ -169,7 +169,7 @@ SSDV_GITHUB_URL="https://github.com/fsphil/ssdv.git"
 SSDV_GITHUB_URL_SHORT=`echo ${SSDV_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 SSDV_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
-if [[ -d ${SSDV_PROJECT_DIRECTORY} ]] ; then
+if [[ -d "${SSDV_PROJECT_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     cd ${SSDV_PROJECT_DIRECTORY}
     ACTION=$(git remote update 2>&1)
@@ -203,7 +203,7 @@ DECODER_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
 DECODER_GITHUB_URL_SHORT=`echo ${DECODER_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 DECODER_GITHUB_PROJECT=`echo ${DECODER_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
-if [[ -d ${DECODER_PROJECT_DIRECTORY} ]] ; then
+if [[ -d "${DECODER_PROJECT_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     cd ${DECODER_PROJECT_DIRECTORY}
     ACTION=$(git remote update 2>&1)
@@ -237,8 +237,8 @@ cd ${DECODER_PROJECT_DIRECTORY}
 # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
 
 # Latitude.
-if [[ -z ${HAB_LATITUDE} ]] ; then
-    if [[ -n ${RECEIVER_LATITUDE} ]] ; then
+if [[ -z "${HAB_LATITUDE}" ]] ; then
+    if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
         HAB_LATITUDE="${RECEIVER_LATITUDE}"
     else
         HAB_LATITUDE="0.000"
@@ -246,8 +246,8 @@ if [[ -z ${HAB_LATITUDE} ]] ; then
 fi
 
 # Longitude.
-if [[ -z ${HAB_LONGITUDE} ]] ; then
-    if [[ -n ${RECEIVER_LONGITUDE} ]] ; then
+if [[ -z "${HAB_LONGITUDE}" ]] ; then
+    if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
         HAB_LONGITUDE="${RECEIVER_LONGITUDE}"
     else
         HAB_LONGITUDE="0.000"
@@ -259,8 +259,8 @@ fi
 
 # Set receiver callsign for this decoder.
 # Format TBC, for now assume it should be between 3 and 9 alphanumeric charactors, with no punctuation.
-if [[ -z ${HAB_RECEIVER_NAME} ]] ; then
-    if [[ -n ${RECEIVERNAME} ]] ; then
+if [[ -z "${HAB_RECEIVER_NAME}" ]] ; then
+    if [[ -n "${RECEIVERNAME}" ]] ; then
         HAB_RECEIVER_NAME=`echo ${RECEIVERNAME} | tr -cd '[:alnum:]' | cut -c -9`
     else
         HAB_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
@@ -268,7 +268,7 @@ if [[ -z ${HAB_RECEIVER_NAME} ]] ; then
 fi
 
 # In not specified then set to Unknown.
-if [[ -z ${HAB_ANTENNA} ]] ; then
+if [[ -z "${HAB_ANTENNA}" ]] ; then
     HAB_ANTENNA="Unknown"
 fi
 
@@ -455,7 +455,7 @@ CheckReturnCode
 ### INSTALL AS A SERVICE
 
 # Install service script.
-if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
+if [[ -f "${DECODER_SERVICE_SCRIPT_NAME}" ]] ; then
     # Check for local copy of service script.
     if [[ `grep -c "conf=${DECODER_SERVICE_CONFIG_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
         echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
@@ -465,7 +465,7 @@ if [[ -f ${DECODER_SERVICE_SCRIPT_NAME} ]] ; then
         echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
     fi
-elif [[ -n ${DECODER_SERVICE_SCRIPT_URL} ]] ; then
+elif [[ -n "${DECODER_SERVICE_SCRIPT_URL}" ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
@@ -483,7 +483,7 @@ fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n ${DECODER_SERVICE_CONFIG_PATH} ]] ; then
+if [[ -n "${DECODER_SERVICE_CONFIG_PATH}" ]] ; then
     echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
     sudo tee ${DECODER_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file

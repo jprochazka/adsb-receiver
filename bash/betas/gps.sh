@@ -168,7 +168,7 @@ function Service_Disable () {
 # Detect CPU Architecture.
 
 function Check_CPU () {
-    if [[ -z ${CPU_ARCHITECTURE} ]] ; then
+    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
         echo -en "\e[33m  Detecting CPU architecture...\e[97m"
         CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
     fi
@@ -191,7 +191,7 @@ function Check_Platform () {
 # Detect Hardware Revision.
 
 function Check_Hardware () {
-    if [[ -z ${HARDWARE_REVISION} ]] ; then
+    if [[ -z "${HARDWARE_REVISION}" ]] ; then
         echo -en "\e[33m  Detecting Hardware revision...\e[97m"
         HARDWARE_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
     fi
@@ -298,7 +298,7 @@ function Check_GPS_PPS () {
 # Create UDEV Symlink.
 
 function Create_UDEV_Symlink () {
-    if [[ ! -f ${GPS_SYMLINK_RULE} ]] ; then
+    if [[ ! -f "${GPS_SYMLINK_RULE}" ]] ; then
         echo -en "  Creating device symlinks..."
         ACTION=$(echo -en "KERNEL==\"${GPS_TTY_DEV}\", SYMLINK+=\"gps0\"\nKERNEL==\"${GPS_PPS_DEV}\", OWNER=\"root\", GROUP=\"tty\", MODE=\"0660\", SYMLINK+=\"gpspps0\"\n" | tee ${GPS_SYMLINK_RULE})
         ACTION=$(sudo udevadm trigger 2>&1)
@@ -384,7 +384,7 @@ function Verify_Source_NTP () {
     # Requires: ${NTP_SOURCE_DIR} ${NTP_SOURCE_FILE} ${NTP_SOURCE_MD5}
     if [[ -f "${NTP_SOURCE_DIR}/${NTP_SOURCE_FILE}" ]] ; then
          if [[ -n "${NTP_SOURCE_MD5}" ]] ; then
-             if [[ `md5sum "${NTP_SOURCE_DIR}/${NTP_SOURCE_FILE}" | awk '{print $1}'` = ${NTP_SOURCE_MD5} ]] ; then
+             if [[ `md5sum "${NTP_SOURCE_DIR}/${NTP_SOURCE_FILE}" | awk '{print $1}'` = "${NTP_SOURCE_MD5}" ]] ; then
                  echo -en "  MD5 checksum verified for \"${NTP_SOURCE_FILE}\"..."
              else
                  echo -en "  Error: MD5 mismatch..."

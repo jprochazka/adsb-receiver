@@ -109,7 +109,7 @@ echo -e ""
 
 ## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f ${BETA_SERVICE_SCRIPT_PATH} ]] ; then
+if [[ -f "${BETA_SERVICE_SCRIPT_PATH}" ]] ; then
     echo -en "\e[33m  Stopping the ${BETA_NAME} service...\e[97m"
     ACTION=$(sudo ${BETA_SERVICE_SCRIPT_PATH} stop 2>&1)
     CheckReturnCode
@@ -192,7 +192,7 @@ if [[ -f "${BETA_SERVICE_SCRIPT_NAME}" ]] ; then
         echo -en "\e[33m  Invalid service script \"\e[37m${BETA_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
     fi
-elif [[ -n ${BETA_SERVICE_SCRIPT_URL} ]] ; then
+elif [[ -n "${BETA_SERVICE_SCRIPT_URL}" ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${BETA_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
@@ -210,7 +210,7 @@ fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n ${BETA_SERVICE_CONFIG_PATH} ]] ; then
+if [[ -n "${BETA_SERVICE_CONFIG_PATH}" ]] ; then
     echo -en "\e[33m  Creating service config file \"\e[37m${BETA_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
     sudo tee ${BETA_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
