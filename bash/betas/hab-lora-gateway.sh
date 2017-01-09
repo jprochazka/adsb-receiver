@@ -79,6 +79,8 @@ function Enable_I2C () {
     if [[ `sudo raspi-config nonint get_i2c 2>&1` -eq 1 ]] ; then
         echo -en "\e[33m  Enabling I2C interface...\e[97m"
         ACTION=$(sudo raspi-config nonint do_i2c 0 2>&1)
+    else
+        echo -en "\e[33m  I2C interface support already enabled...\e[97m"
     fi
 }
 
@@ -90,6 +92,8 @@ function Enable_SPI () {
         echo -en "\e[33m  Enabling SPI interface...\e[97m"
         ACTION=$(sudo raspi-config nonint do_spi 0 2>&1)
         REBOOT_REQUIRED="true"
+    else
+        echo -en "\e[33m  SPI interface support already enabled...\e[97m"
     fi
 }
 
