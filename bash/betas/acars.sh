@@ -33,9 +33,9 @@
 
 ### VARIABLES
 
-RECIEVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Decoder specific variables.
 BETA_NAME="Acarsdec"
@@ -67,13 +67,13 @@ function CheckReturnCode () {
 }
 
 # Source the automated install configuration file if this is an automated installation.
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "true" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
 ## BEGIN SETUP
 
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
@@ -146,7 +146,7 @@ if [[ true ]] ; then
     CheckReturnCode
 
     # Compile and install from source.
-    if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
+    if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
         echo -en "\e[33m  Compiling ${BETA_GITHUB_PROJECT} from source..."
         # Prepare to build from source.
         cd ${BETA_BUILD_DIRECTORY}
@@ -241,14 +241,14 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECIEVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY}
 ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  ${BETA_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

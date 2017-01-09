@@ -210,8 +210,8 @@ function CleanLogFile {
 #################################################################################
 # Add a pseudo-random delay of between 5 and 59 minutes
 
-function RandomDelay() {
-    if [[ ${DELAY} = "true" ]] ; then
+function RandomDelay () {
+    if [[ "${DELAY}" = "true" ]] ; then
         DELAY_TIME=`echo "(( 300 + ( $RANDOM + $RANDOM )) / 20 )" | bc`
         DATE=`date`
         echo -e ""

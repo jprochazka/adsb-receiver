@@ -187,7 +187,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "
     echo -e "\e[94m  Retrieving the receiver's latitude from /etc/default/dump1090-mutability...\e[97m"
     RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
     echo -e "\e[94m  Retrieving the receiver's longitude from /etc/default/dump1090-mutability...\e[97m"
-    RECIEVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 fi
 
 # If a device has not yet been assigned to ${DECODER_NAME} assign the first available.

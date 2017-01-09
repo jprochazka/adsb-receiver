@@ -72,7 +72,7 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     fi
 fi
 
-### ASK USER TO CONFIRM RECIEVER LATITUDE AND LONGITUDE
+### ASK USER TO CONFIRM RECEIVER LATITUDE AND LONGITUDE
 
 if [ -z $RECEIVERLATITUDE ] || [ -z $RECEIVERLONGITUDE ] ; then
 # Set the receivers latitude and longitude.
@@ -242,7 +242,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     fi
 fi
 
-### SETUP THE ADS-B RECIEVER PROJECT WEB PORTAL
+### SETUP THE ADS-B RECEIVER PROJECT WEB PORTAL
 
 chmod +x $BASHDIRECTORY/portal/install.sh
 $BASHDIRECTORY/portal/install.sh

@@ -33,9 +33,9 @@
 
 ### VARIABLES
 
-RECIEVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Decoder specific variables.
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
@@ -71,13 +71,13 @@ function CheckReturnCode () {
 }
 
 # Source the automated install configuration file if this is an automated installation.
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "true" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
 ### BEGIN SETUP
 
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
@@ -86,7 +86,7 @@ echo -e "\e[92m  Setting up ${DECODER_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}.\n\n${DECODER_RADIO}.\n\n${DECODER_WEBSITE}\n\nContinue setup by installing ${DECODER_NAME}?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -157,7 +157,7 @@ if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Enter the build directory.
-if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
+if [[ ! "${PWD}" = "${DECODER_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     cd ${DECODER_BUILD_DIRECTORY}
     ACTION=${PWD}
@@ -514,14 +514,14 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECIEVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY}
 ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

@@ -33,9 +33,9 @@
 
 ### VARIABLES
 
-RECIEVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECIEVER_ROOT_DIRECTORY}/build"
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Decoder specific variables.
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
@@ -71,13 +71,13 @@ function CheckReturnCode () {
 }
 
 # Source the automated install configuration file if this is an automated installation.
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "true" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
 ## BEGIN SETUP
 
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
@@ -87,7 +87,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 #
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}.\n\n${DECODER_RADIO}.\n\n${DECODER_WEBSITE}\n\nContinue setup by installing ${DECODER_NAME}?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -227,11 +227,11 @@ fi
 CheckReturnCode
 
 # If either dump1090 or dump978 is installed we must assign RTL-SDR dongles for each of these decoders.
-if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true" ]] ; then
+if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "true" ]] ; then
     # Check if Dump1090 is installed.
-    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
+    if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
         # The dump1090-mutability package appear to be installed.
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be used for dump1090.
             DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             while [[ -z ${DUMP1090_DEVICE_ID} ]] ; do
@@ -243,9 +243,9 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         fi
     fi
     # Check if Dump978 is installed.
-    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] ; then
+    if [[ "${DUMP978_IS_INSTALLED}" = "true" ]] ; then
         # The dump978 binaries appear to exist on this device.
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be use for dump978.
             DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
@@ -257,7 +257,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         fi
     fi
     #
-    if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Ask the user which USB device is to be use for RTL-SDR OGN.
         RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
@@ -268,7 +268,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         true
     fi
     # Assign the specified RTL-SDR dongle to dump1090.
-    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP1090_DEVICE_ID} ]] ; then
+    if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] && [[ -n ${DUMP1090_DEVICE_ID} ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_DEVICE_ID\" to dump1090-mutability...\e[97m"
         ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
@@ -277,7 +277,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         echo -e ""
     fi
     # Assign the specified RTL-SDR dongle to dump978
-    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP978_DEVICE_ID} ]] ; then
+    if [[ "${DUMP978_IS_INSTALLED}" = "true" ]] && [[ -n ${DUMP978_DEVICE_ID} ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP978_DEVICE_ID}\" to dump978...\e[97m"
         ### ADD DEVICE TO MAINTENANCE SCRIPT...
         echo -e "\e[94m  Reloading dump978...\e[97m"
@@ -299,7 +299,7 @@ if [[ ! -d ${DECODER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Enter the build directory.
-if [[ ! ${PWD} = ${DECODER_BUILD_DIRECTORY} ]] ; then
+if [[ ! "${PWD}" = "${DECODER_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     cd ${DECODER_BUILD_DIRECTORY}
     ACTION=${PWD}
@@ -329,7 +329,7 @@ if [[ true ]] ; then
         ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${KALIBRATE_PROJECT_DIRECTORY} 2>&1)
         DO_INSTALL_FROM_GIT="true"
     fi
-    if [[ ${DO_INSTALL_FROM_GIT} = "true" ]] ; then
+    if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
         # Prepare to build from source.
         cd ${KALIBRATE_PROJECT_DIRECTORY}
         # And remove previous binaries.
@@ -503,8 +503,8 @@ fi
 
 # Altitude.
 if [[ -z ${OGN_ALTITUDE} ]] ; then
-    if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
-        OGN_ALTITUDE="${RECIEVER_ALTITUDE}"
+    if [[ -n ${RECEIVER_ALTITUDE} ]] ; then
+        OGN_ALTITUDE="${RECEIVER_ALTITUDE}"
     else
         OGN_ALTITUDE="0"
     fi
@@ -514,8 +514,8 @@ fi
 # To find value you can check: 	http://geographiclib.sourceforge.net/cgi-bin/GeoidEval
 # Need to derive from co-ords but will set to altitude as a placeholders.
 if [[ -z ${OGN_GEOID} ]] ; then
-    if [[ -n ${RECIEVER_ALTITUDE} ]] ; then
-        OGN_GEOID="${RECIEVER_ALTITUDE}"
+    if [[ -n ${RECEIVER_ALTITUDE} ]] ; then
+        OGN_GEOID="${RECEIVER_ALTITUDE}"
     else
         OGN_GEOID="0"
     fi
@@ -691,14 +691,14 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECIEVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY}
 ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
