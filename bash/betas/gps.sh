@@ -34,7 +34,7 @@
 #################################################################################
 # Display Done/Error based on return code of last action.
 
-function Check_Return_Code {
+function Check_Return_Code () {
     LINE=$((`stty size | awk '{print $1}'` - 1))
     COL=$((`stty size | awk '{print $2}'` - 8))
     tput cup "${LINE}" "${COL}"
@@ -50,7 +50,7 @@ function Check_Return_Code {
 #################################################################################
 # Apt install function.
 
-function CheckPackage {
+function CheckPackage () {
     if [[ -n $1 ]] ; then
         ACTION=$(sudo apt-get install -y $1 2>&1)
     fi
@@ -59,7 +59,7 @@ function CheckPackage {
 #################################################################################
 # Apt remove function.
 
-function Apt_Remove ntp {
+function Apt_Remove () {
     if [[ -n $1 ]] ; then
         ACTION=$(sudo apt remove $1 2>&1)
     fi
@@ -68,7 +68,7 @@ function Apt_Remove ntp {
 #################################################################################
 # Apt remove function.
 
-function Apt_Hold ntp {
+function Apt_Hold () {
     if [[ -n $1 ]] ; then
         ACTION=$(sudo apt-mark hold $1 2>&1)
     fi
@@ -77,7 +77,7 @@ function Apt_Hold ntp {
 #################################################################################
 # Start a system service.
 
-function Service_Start {
+function Service_Start () {
     if [[ -n $1 ]] ; then
         SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -eq 0 ]] ; then
@@ -99,7 +99,7 @@ function Service_Start {
 #################################################################################
 # Stop a system service.
 
-function Service_Stop {
+function Service_Stop () {
     if [[ -n $1 ]] ; then
         SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
@@ -121,7 +121,7 @@ function Service_Stop {
 #################################################################################
 # Enable a system service.
 
-function Service_Enable {
+function Service_Enable () {
     if [[ -n $1 ]] ; then
         SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -eq 0 ]] ; then
@@ -144,7 +144,7 @@ function Service_Enable {
 #################################################################################
 # Disable a system service.
 
-function Service_Disable {
+function Service_Disable () {
     if [[ -n $1 ]] ; then
         SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -gt 0 ]] ; then
@@ -167,7 +167,7 @@ function Service_Disable {
 #################################################################################
 # Detect CPU Architecture.
 
-function Check_CPU {
+function Check_CPU () {
     if [[ -z ${CPU_ARCHITECTURE} ]] ; then
         echo -en "\e[33m  Detecting CPU architecture...\e[97m"
         CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
@@ -177,7 +177,7 @@ function Check_CPU {
 #################################################################################
 # Detect Platform.
 
-function Check_Platform {
+function Check_Platform () {
     if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
         HARDWARE_PLATFORM="RPI"
     elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
@@ -190,7 +190,7 @@ function Check_Platform {
 #################################################################################
 # Detect Hardware Revision.
 
-function Check_Hardware {
+function Check_Hardware () {
     if [[ -z ${HARDWARE_REVISION} ]] ; then
         echo -en "\e[33m  Detecting Hardware revision...\e[97m"
         HARDWARE_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
@@ -200,7 +200,7 @@ function Check_Hardware {
 #################################################################################
 # Enable serial port on RPi.
 
-function Enable_Serial {
+function Enable_Serial () {
     if [[ `egrep -c "enable_uart=" ${BOOT_CONFIG}` -eq 0 ]] ; then
         echo -en "  Enabling serial port..."
         if [[ `tail -n1 ${BOOT_CONFIG} | egrep -c "[a-z0-9#]"` -gt 0 ]] ; then
@@ -218,7 +218,7 @@ function Enable_Serial {
 #################################################################################
 # Disable Bluetooth on RPi3.
 
-function Disable_Bluetooth {
+function Disable_Bluetooth () {
     if [[ `egrep -c "(dtoverlay=pi3-disable-bt|dtoverlay=pi3-miniuart-bt)" ${BOOT_CONFIG}` -eq 0 ]] ; then
         echo -en "  Disabling Bluetooth on RPi3..."
         if [[ `tail -n1 ${BOOT_CONFIG} | egrep -c "[a-z0-9#]"` -gt 0 ]] ; then
@@ -236,7 +236,7 @@ function Disable_Bluetooth {
 #################################################################################
 # Enable RPi GPIO pin for PPS signal input.
 
-function Enable_PPS {
+function Enable_PPS () {
     if [[ `egrep -c "dtoverlay=pps-gpio,gpiopin" ${BOOT_CONFIG}` -eq 0 ]] ; then
         echo -en "  Enabling GPS PPS from GPIO pin \"${GPS_PPS_PIN}\"..."
         if [[ `tail -n1 ${BOOT_CONFIG} | egrep -c "[a-z0-9#]"` -gt 0 ]] ; then
@@ -253,7 +253,7 @@ function Enable_PPS {
 #################################################################################
 # Check for GPS signals on tty.
 
-function Check_GPS_TTY {
+function Check_GPS_TTY () {
     if [[ `echo ${GPS_TTY_DEV} | egrep -c "tty"` -gt 0 ]] ; then
         echo -en "  Testing for GPS signal from \"${GPS_TTY_DEV}\"..."
         GPS_TTY_TEST=`timelimit -q -t 3 cat /dev/${GPS_TTY_DEV} 2>&1`
@@ -275,7 +275,7 @@ function Check_GPS_TTY {
 #################################################################################
 # Check for PPS signals.
 
-function Check_GPS_PPS {
+function Check_GPS_PPS () {
     if [[ `echo ${GPS_PPS_DEV} | egrep -c "pps"` -gt 0 ]] ; then
         echo -en "  Testing for GPS PPS pulses from \"${GPS_PPS_DEV}\"..."
         GPS_PPS_TEST=`timelimit -q -t 3 ppstest /dev/${GPS_PPS_DEV} 2>&1`
@@ -297,7 +297,7 @@ function Check_GPS_PPS {
 #################################################################################
 # Create UDEV Symlink.
 
-function Create_UDEV_Symlink {
+function Create_UDEV_Symlink () {
     if [[ ! -f ${GPS_SYMLINK_RULE} ]] ; then
         echo -en "  Creating device symlinks..."
         ACTION=$(echo -en "KERNEL==\"${GPS_TTY_DEV}\", SYMLINK+=\"gps0\"\nKERNEL==\"${GPS_PPS_DEV}\", OWNER=\"root\", GROUP=\"tty\", MODE=\"0660\", SYMLINK+=\"gpspps0\"\n" | tee ${GPS_SYMLINK_RULE})
@@ -308,7 +308,7 @@ function Create_UDEV_Symlink {
 #################################################################################
 # Configure GPS service.
 
-function Configure_Service_GPS {
+function Configure_Service_GPS () {
     if [[ -f "${GPS_SERVICE_CONFIG}" ]] ; then
         KEYPAIRS="START_DAEMON=true USBAUTO=false DEVICES=/dev/gps0 GPSD_OPTIONS=-n GPSD_SOCKET=/var/run/gpsd.sock"
         for KEYPAIR in ${KEYPAIRS} ; do
@@ -337,7 +337,7 @@ function Configure_Service_GPS {
 #################################################################################
 # Remove DHCP hooks.
 
-function Remove_DHCP_Hooks {
+function Remove_DHCP_Hooks () {
     if [[ -f "${NTP_DHCP_HOOK}" ]] || [[ -f "${NTP_DHCP_FILES}" ]] ; then
         echo -en "  Prevening DHCP from updating NTP config..."
         ACTION=$(sudo rm -v ${NTP_DHCP_HOOK} ${NTP_DHCP_FILE} 2>&1)
@@ -346,7 +346,7 @@ function Remove_DHCP_Hooks {
 
 #################################################################################
 # Check if a directory exists, if not create it.
-function Make_Dir {
+function Make_Dir () {
     # Requires: a directory
     if [[ -n "$1" ]] ; then
         if [[ ! -d "$1" ]] ; then
@@ -362,7 +362,7 @@ function Make_Dir {
 
 #################################################################################
 # Download latetest source.
-function Download_Source_NTP {
+function Download_Source_NTP () {
     # Requires: ${NTP_SOURCE_DIR} ${NTP_SOURCE_FILE} ${NTP_SOURCE_URL}
     if [[ -n "${NTP_SOURCE_DIR}" ]] && [[ -n "${NTP_SOURCE_FILE}" ]] && [[ -n "${NTP_SOURCE_URL}" ]] ; then
         ACTION=$(curl -s -L "${NTP_SOURCE_URL}" -o "${NTP_SOURCE_DIR}/${NTP_SOURCE_FILE}")
@@ -380,7 +380,7 @@ function Download_Source_NTP {
 
 #################################################################################
 # Verify MD5 of source.
-function Verify_Source_NTP {
+function Verify_Source_NTP () {
     # Requires: ${NTP_SOURCE_DIR} ${NTP_SOURCE_FILE} ${NTP_SOURCE_MD5}
     if [[ -f "${NTP_SOURCE_DIR}/${NTP_SOURCE_FILE}" ]] ; then
          if [[ -n "${NTP_SOURCE_MD5}" ]] ; then
@@ -402,7 +402,7 @@ function Verify_Source_NTP {
 
 #################################################################################
 # Unpack source.
-function Unpack_Source_NTP {
+function Unpack_Source_NTP () {
     # Requires: ${NTP_SOURCE_DIR} ${NTP_SOURCE_FILE} ${NTP_SOURCE_VERSION}
     if [[ -f "${NTP_SOURCE_DIR}/${NTP_SOURCE_FILE}" ]] ; then
         ACTION=$(tar -vxzf "${NTP_SOURCE_DIR}/${NTP_SOURCE_FILE}" -C "${NTP_SOURCE_DIR}")
@@ -421,7 +421,7 @@ function Unpack_Source_NTP {
 
 #################################################################################
 # Compile source.
-function Compile_Source_NTP {
+function Compile_Source_NTP () {
     # Requires: ${NTP_SOURCE_DIR} ${NTP_SOURCE_VERSION} ${NTP_SOURCE_CFLAGS}
     if [[ -d "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}" ]] ; then
         echo -en "  Compiling \"${NTP_SOURCE_VERSION}\" from source..."

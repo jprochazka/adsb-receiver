@@ -47,7 +47,7 @@ source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Should be moved to functions.sh.
-function CheckReturnCode {
+function CheckReturnCode () {
     LINE=$((`stty size | awk '{print $1}'` - 1))
     COL=$((`stty size | awk '{print $2}'` - 8))
     tput cup "${LINE}" "${COL}"
