@@ -69,7 +69,7 @@ fi
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
 echo ""
-if [ -f /usr/bin/phantomjs ] && [ `phantomjs --version` -eq "$PHANTOMJSVERSION" ]; then
+if [ -f "/usr/bin/phantomjs" ] && [ "`phantomjs --version`" = "$PHANTOMJSVERSION" ]; then
     # A PhantomJS binary which is the proper version appears to exist on this device.
     echo -e "\e[94m  PhantomJS is present on this device and is the proper version...\e[97m"
     PHANTOMJS_EXISTS="true"
@@ -79,7 +79,7 @@ else
     echo -e "\e[94m  Detecting CPU architeture...\e[97m"
     CPU_ARCHITECTURE=`uname -m`
     echo -e "\e[94m  CPU architecture detected as $CPUARCHITECTURE...\e[97m"
-    if [ "$CPU_ARCHITECTURE" = "armv7l" ] || [ "$CPU_ARCHITECTURE" = "x86_64" ] || [  "$CPU_ARCHITECTURE" = "i686" ]; then
+    if [ "$CPU_ARCHITECTURE" = "armv7l" ] || [ "$CPU_ARCHITECTURE" = "x86_64" ] || [ "$CPU_ARCHITECTURE" = "i686" ]; then
         # A precompiled binary should be available for this device.
         echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for this CPU's arcitecture...\e[97m"
         BINARY_AVAILABLE="true"
@@ -105,7 +105,7 @@ else
             fi
         else
             # If the user elected to not compile the PhantomJS binary if needed in the installation configuration file exit now.
-            if [ $ABOVETUSTIN_COMPILE_IF_NEEDED -ne "true" ]
+            if [ ! $ABOVETUSTIN_COMPILE_IF_NEEDED = "true" ]
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
                 echo "  A prebuilt PhantomJS binary is not available for this system."
                 echo ""
@@ -207,6 +207,7 @@ CheckPackage libx11-dev
 CheckPackage libxext-dev
 CheckPackage libpng12-dev
 CheckPackage libc6
+CheckPackage wget
 
 if [ "$BINARY_AVAILABLE" = "false" ]; then
     # These packages are only needed if the user decided to build PhantomJS.
@@ -328,7 +329,7 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         echo ""
 
         # Test that the binary was built properly.
-        if [ ! -f bin/pahntomjs ] || [ ! `bin/phantomjs --version` -eq "$PHANTOMJS_VERSION" ]; then
+        if [ ! -f "bin/pahntomjs" ] || [ ! "`bin/phantomjs --version`" = "$PHANTOMJS_VERSION" ]; then
             # If the dump978 binaries could not be found halt setup.
             echo ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -481,7 +482,7 @@ if [ ! -z "$PIDS" ]; then
 fi
 
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
-sudo nohup $RECEIVER_BUILD_DIRECTORY//AboveTustin/run_tracker.sh > /dev/null 2>&1 &
+sudo nohup $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
 
 ## OVERTUSTIN SETUP COMPLETE
 
@@ -493,6 +494,8 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  OverTustin setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0
