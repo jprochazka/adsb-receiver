@@ -97,9 +97,12 @@ function CheckPrerequisites() {
 
 # Update The ADS-B Receiver Project Git repository.
 function UpdateRepository() {
-    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+    # Update lcoal branches which are set to track remote.
+    git remote update 2>&1
+    # Check if local branch is behind remote.
+    if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] && [[ `git status | grep -c "untracked files present"` -gt 0 ]] ; then
+        # Local branch has untracked files.
         clear
-
         # Ask if the user wishes to save any changes made to any core files before resetting them.
         whiptail --backtitle "$TITLE" --title "Backup Current $RECEIVER_PROJECT_BRANCH Branch State" --defaultno --yesno "This script will now reset your local copy of the $RECEIVER_PROJECT_BRANCH branch. Once this has been done any changes to the files making up this project will be replaced by untouched files from the project's repository.\n\nIf you would like to retain a copy of your current branch's state this script can do so now by migrating it to a new branch.\n\nCreate a new branch containing this branch's current state?" 14 78
         case $? in
