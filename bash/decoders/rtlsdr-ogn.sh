@@ -46,9 +46,10 @@ DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircr
 DECODER_RADIO="Please note that a dedicated RTL-SDR dongle is required to use this decoder"
 
 # Decoder service script variables.
-DECODER_SERVICE_SCRIPT_NAME="rtlsdr-ogn"
+DECODER_SERVICE_NAME="rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
-DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_SCRIPT_NAME}"
+DECODER_SERVICE_SCRIPT_NAME="${BETA_SERVICE_NAME}-service"
+DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_NAME}"
 DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -154,7 +155,7 @@ fi
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_SCRIPT_NAME} stop 2>&1)
+    ACTION=$(sudo ${DECODER_SERVICE_SCRIPT_PATH} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -678,12 +679,12 @@ fi
 
 # Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${DECODER_NAME} defaults 2>&1)
+ACTION=$(sudo update-rc.d ${DECODER_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${DECODER_NAME} start 2>&1)
+ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} start 2>&1)
 CheckReturnCode
 
 ## RTL-SDR OGN SETUP COMPLETE

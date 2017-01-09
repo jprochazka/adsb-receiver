@@ -42,9 +42,10 @@ BETA_NAME="Acarsdec"
 BETA_GITHUB_URL="https://github.com/TLeconte/acarsdec.git"
 
 # Decoder service script variables.
-BETA_SERVICE_SCRIPT_NAME="${BETA_NAME}-service"
-BETA_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/acarsdec/master/acarsdec-service"
-BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_NAME}"
+BETA_SERVICE_NAME=$(echo ${BETA_NAME} | tr '[A-Z]' '[a-z]')
+BETA_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-golf/acarsdec/master/acarsdec-service"
+BETA_SERVICE_SCRIPT_NAME="${BETA_SERVICE_NAME}-service"
+BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_SERVICE_NAME}"
 BETA_SERVICE_CONFIG_PATH="/etc/${BETA_SERVICE_SCRIPT_NAME}.conf"
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -105,6 +106,17 @@ CheckPackage telnet
 echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${BETA_NAME} binaries...\e[97m"
 echo -e ""
+
+## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+
+if [[ -f ${BETA_SERVICE_SCRIPT_PATH} ]] ; then
+    echo -en "\e[33m  Stopping the ${BETA_NAME} service...\e[97m"
+    ACTION=$(sudo ${BETA_SERVICE_SCRIPT_PATH} stop 2>&1)
+    CheckReturnCode
+fi
+
+### ASSIGN RTL-SDR DONGLES
+
 
 # Download from github and compile.
 if [[ true ]] ; then
@@ -217,12 +229,12 @@ CheckReturnCode
 
 # Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${BETA_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${BETA_NAME} defaults 2>&1)
+ACTION=$(sudo update-rc.d ${BETA_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${BETA_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${BETA_NAME} start 2>&1)
+ACTION=$(sudo /etc/init.d/${BETA_SERVICE_NAME} start 2>&1)
 CheckReturnCode
 
 ## SETUP COMPLETE

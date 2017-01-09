@@ -46,9 +46,10 @@ DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude
 DECODER_RADIO="Please note that a LoRa transceiver connected via SPI is required to use this decoder"
 
 # Decoder service script variables.
-DECODER_SERVICE_SCRIPT_NAME="lora-gateway-service"
-DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-Golf/lora-gateway/master/hab-lora-gateway"
-DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_NAME}"
+DECODER_SERVICE_NAME="lora-gateway"
+DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/romeo-golf/lora-gateway/master/lora-gateway-service"
+DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}-service"
+DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_NAME}"
 DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 
 ### INCLUDE EXTERNAL SCRIPTS
@@ -142,7 +143,7 @@ fi
 
 if [[ -f ${DECODER_SERVICE_SCRIPT_PATH} ]] ; then
     echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_SCRIPT_NAME} stop 2>&1)
+    ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -501,12 +502,12 @@ CheckReturnCode
 
 # Configure DECODER as a service.
 echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${DECODER_NAME} defaults 2>&1)
+ACTION=$(sudo update-rc.d ${DECODER_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${DECODER_NAME} start 2>&1)
+ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE
