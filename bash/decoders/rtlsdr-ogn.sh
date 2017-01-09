@@ -185,7 +185,7 @@ fi
 TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
 
 # Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
-if [[ ${TUNER_COUNT} -gt 1 ]] ; then
+if [[ "${TUNER_COUNT}" -gt 1 ]] ; then
     # If a device has been specified by serial number then try to match that with the currently detected tuners.
     if [[ -n "${OGN_DEVICE_SERIAL}" ]] ; then
         for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
@@ -214,12 +214,12 @@ if [[ ${TUNER_COUNT} -gt 1 ]] ; then
         OGN_DEVICE_ID=${TUNER_COUNT}
     fi
 # Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ ${TUNER_COUNT} -eq 1 ]] ; then
+elif [[ "${TUNER_COUNT}" -eq 1 ]] ; then
     echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ ${TUNER_COUNT} -lt 1 ]] ; then
+elif [[ "${TUNER_COUNT}" -lt 1 ]] ; then
     echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
@@ -408,7 +408,7 @@ else
 fi
 
 # Create named pipe if required.
-if [[ ! -p ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo ]] ; then
+if [[ ! -p "${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo" ]] ; then
     echo -en "\e[33m  Creating named pipe...\e[97m"
     ACTION=$(sudo mkfifo ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo 2>&1)
     CheckReturnCode
@@ -432,13 +432,13 @@ fi
 CheckReturnCode
 
 # Creat GPU device if required.
-if [[ ! -c ${DECODER_PROJECT_DIRECTORY}/gpu_dev ]] ; then
+if [[ ! -c "${DECODER_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     # Check if kernel v4.1 or higher is being used.
     echo -en "\e[33m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
-    KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
+    KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
     CheckReturnCode
-    if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
+    if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
         ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 100 0 2>&1)
@@ -665,7 +665,7 @@ fi
 CheckReturnCode
 
 # Potentially obselse tuner detection code.
-if [[ ${TUNER_COUNT} -lt 2 ]] ; then
+if [[ "${TUNER_COUNT}" -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
     echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\e[97m"
     SERVICES="dump1090-mutability"
