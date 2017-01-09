@@ -492,7 +492,7 @@ cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-echo -e "\e[92m  OverTustin setup is complete.\e[39m"
+echo -e "\e[92m  AboveTustin setup is complete.\e[39m"
 echo ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
