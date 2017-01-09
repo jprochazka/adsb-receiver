@@ -46,7 +46,7 @@ LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 ## BEGIN THE BACKUP PROCESS
 
 clear
-echo -e "\n\e[91m  ADSB Reciever Project Maintenance"
+echo -e "\n\e[91m  ADSB Receiver Project Maintenance"
 echo ""
 echo -e "\e[92m  Backing up portal data..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
