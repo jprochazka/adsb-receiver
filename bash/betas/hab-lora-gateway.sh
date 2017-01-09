@@ -77,7 +77,7 @@ function CheckReturnCode () {
 
 function Enable_I2C () {
     if [[ `sudo raspi-config nonint get_i2c 2>&1` -eq 1 ]] ; then
-        echo -en "\e[33m  Enabling I2C interface used to detect Pi HATs...\e[97m"
+        echo -en "\e[33m  Enabling I2C interface...\e[97m"
         ACTION=$(sudo raspi-config nonint do_i2c 0 2>&1)
     fi
 }
@@ -87,7 +87,7 @@ function Enable_I2C () {
 
 function Enable_SPI () {
     if [[ `sudo raspi-config nonint get_spi 2>&1` -eq 1 ]] ; then
-        echo -en "\e[33m  Enabling SPI interface used by LoRa radio module...\e[97m"
+        echo -en "\e[33m  Enabling SPI interface...\e[97m"
         ACTION=$(sudo raspi-config nonint do_spi 0 2>&1)
         REBOOT_REQUIRED="true"
     fi

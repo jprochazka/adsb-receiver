@@ -194,6 +194,27 @@ function Check_Hardware () {
 }
 
 #################################################################################
+# Check if I2C is enabled, if not use raspi-config to enable it.
+
+function Enable_I2C () {
+    if [[ `sudo raspi-config nonint get_i2c 2>&1` -eq 1 ]] ; then
+        echo -en "\e[33m  Enabling I2C interface...\e[97m"
+        ACTION=$(sudo raspi-config nonint do_i2c 0 2>&1)
+    fi
+}
+
+#################################################################################
+# Check if SPI is enabled, if not use raspi-config to enable it.
+
+function Enable_SPI () {
+    if [[ `sudo raspi-config nonint get_spi 2>&1` -eq 1 ]] ; then
+        echo -en "\e[33m  Enabling SPI interface...\e[97m"
+        ACTION=$(sudo raspi-config nonint do_spi 0 2>&1)
+        REBOOT_REQUIRED="true"
+    fi
+}
+
+#################################################################################
 # Enable serial port on RPi.
 
 function Enable_Serial () {
@@ -201,6 +222,7 @@ function Enable_Serial () {
         echo -en "  Enabling serial port..."
         if [[ `tail -n1 ${BOOT_CONFIG} | egrep -c "[a-z0-9#]"` -gt 0 ]] ; then
             ACTION=$(echo -en "\n" | tee -a ${BOOT_CONFIG})
+            REBOOT_REQUIRED="true"
         fi
         ACTION=$(echo -en "# Enable UART on RPi3\nenable_uart=1\n\n" | tee -a ${BOOT_CONFIG})
     elif [[ `egrep -c "enable_uart=0" ${BOOT_CONFIG}` -eq 1 ]] ; then
@@ -307,26 +329,27 @@ function Create_UDEV_Symlink () {
 function Configure_Service_GPS () {
     if [[ -f "${GPS_SERVICE_CONFIG}" ]] ; then
         KEYPAIRS="START_DAEMON=true USBAUTO=false DEVICES=/dev/gps0 GPSD_OPTIONS=-n GPSD_SOCKET=/var/run/gpsd.sock"
-        for KEYPAIR in ${KEYPAIRS} ; do
-            local KEY=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $1}'`
-            local VALUE=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $2}'`
-            local VALUE_ESCAPED=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $2}'| sed -e 's/\\//\\\\\//g'`
-            if [[ `grep -c "^${KEY}" ${GPS_SERVICE_CONFIG}` -eq 0 ]] ; then
+        for LOCAL_KEYPAIR in ${KEYPAIRS} ; do
+            local LOCAL_KEY=`echo -E "${LOCAL_KEYPAIR}" | gawk -F "=" '{print $1}'`
+            local LOCAL_VALUE=`echo -E "${LOCAL_KEYPAIR}" | gawk -F "=" '{print $2}'`
+            local LOCAL_VALUE_ESCAPED=`echo -E "${LOCAL_KEYPAIR}" | gawk -F "=" '{print $2}'| sed -e 's/\\//\\\\\//g'`
+            if [[ `grep -c "^${LOCAL_KEY}" ${GPS_SERVICE_CONFIG}` -eq 0 ]] ; then
                 if [[ `tail -n1 ${GPS_SERVICE_CONFIG} | egrep -c "[a-z0-9#]"` -gt 0 ]] ; then
                     ACTION=$(echo -en "\n" | tee -a ${GPS_SERVICE_CONFIG})
                 fi
-                ACTION=$(echo -en "\n# Added by GPS setup.\n${KEY}=\"${VALUE}\"\n\n" | tee -a ${GPS_SERVICE_CONFIG})
+                ACTION=$(echo -en "\n# Added by GPS setup.\n${LOCAL_KEY}=\"${LOCAL_VALUE}\"\n\n" | tee -a ${GPS_SERVICE_CONFIG})
             else
-                CURRENT_VALUE=`egrep "^${KEY} *= *\"" ${GPS_SERVICE_CONFIG} | awk -F "=" '{print $2}' | sed -e 's/"//g' -e 's/^ //g'`
-                if [[ ! "${CURRENT_VALUE}" = "${VALUE}" ]] ; then
-                    if [[ -n "${VALUE}" ]] ; then
-                        ACTION=$(sudo sed -i -e "s/^\(${KEY} *= *\).*/\1\"${VALUE_ESCAPED}\"/" ${GPS_SERVICE_CONFIG} 2>&1)
+                LOCAL_VALUE_CURRENT=`egrep "^${LOCAL_KEY} *= *\"" ${GPS_SERVICE_CONFIG} | awk -F "=" '{print $2}' | sed -e 's/"//g' -e 's/^ //g'`
+                if [[ ! "${LOCAL_VALUE_CURRENT}" = "${VALUE}" ]] ; then
+                    if [[ -n "${LOCAL_VALUE_ESCAPED}" ]] ; then
+                        ACTION=$(sudo sed -i -e "s/^\(${LOCAL_KEY} *= *\).*/\1\"${LOCAL_VALUE_ESCAPED}\"/" ${GPS_SERVICE_CONFIG} 2>&1)
                     fi
                 fi
             fi
-            unset KEY
-            unset VALUE
-            unset VALUE_ESCAPED
+            unset LOCAL_KEY
+            unset LOCAL_VALUE
+            unset LOCAL_VALUE_ESCAPED
+            unset LOCAL_VALUE_CURRENT
         done
     fi
 }
