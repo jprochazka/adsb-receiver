@@ -57,7 +57,9 @@ DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-# Should be moved to functions.sh.
+#################################################################################
+# Checks return code.
+
 function CheckReturnCode () {
     local LINE=$((`stty size | awk '{print $1}'` - 1))
     local COL=$((`stty size | awk '{print $2}'` - 8))
@@ -123,21 +125,36 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
 
+#################################################################################
 # Check if I2C is enabled, if not use raspi-config to enable it.
+
+function Enable_I2C () {
 if [[ `sudo raspi-config nonint get_i2c 2>&1` -eq 1 ]] ; then
     echo -en "\e[33m  Enabling I2C interface used to detect Pi HATs...\e[97m"
     ACTION=$(sudo raspi-config nonint do_i2c 0 2>&1)
-    CheckReturnCode
-    echo -e ""
 fi
+}
 
+# Enable I2C.
+
+Enable_I2C
+CheckReturnCode
+
+#################################################################################
 # Check if SPI is enabled, if not use raspi-config to enable it.
+
+function Enable_SPI () {
 if [[ `sudo raspi-config nonint get_spi 2>&1` -eq 1 ]] ; then
     echo -en "\e[33m  Enabling SPI interface used by LoRa radio module...\e[97m"
     ACTION=$(sudo raspi-config nonint do_spi 0 2>&1)
-    CheckReturnCode
-    echo -e ""
 fi
+}
+
+# Enable SPI.
+
+Enable_SPI
+CheckReturnCode
+
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
