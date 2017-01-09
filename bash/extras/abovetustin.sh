@@ -105,7 +105,7 @@ else
             fi
         else
             # If the user elected to not compile the PhantomJS binary if needed in the installation configuration file exit now.
-            if [ ! $ABOVETUSTIN_COMPILE_IF_NEEDED = "true" ]
+            if [ ! $ABOVETUSTIN_COMPILE_IF_NEEDED = "true" ] ; then
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
                 echo "  A prebuilt PhantomJS binary is not available for this system."
                 echo ""
@@ -115,6 +115,7 @@ else
                 exit 1
             fi
         echo -e "\e[94m  Will attempt to build the PhantomJS binary from source...\e[97m"
+        fi
     fi
 fi
 
@@ -240,6 +241,7 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
                 echo -e "\e[94m  Downloading the armv7l PhantomJS v$PHANTOMJS_VERSION binary for Linux...\e[97m"
                 echo ""
                 wget https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/2.1.1/phantomjs-2.1.1-linux-armv7l.tar.bz2
+                ;;
             "x86_64")
                 # Download the x86_64 version of the PhantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official x86_64 PhantomJS v$PHANTOMJS_VERSION binary for Linux...\e[97m"
