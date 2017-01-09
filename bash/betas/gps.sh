@@ -35,8 +35,8 @@
 # Display Done/Error based on return code of last action.
 
 function Check_Return_Code () {
-    LINE=$((`stty size | awk '{print $1}'` - 1))
-    COL=$((`stty size | awk '{print $2}'` - 8))
+    local LINE=$((`stty size | awk '{print $1}'` - 1))
+    local COL=$((`stty size | awk '{print $2}'` - 8))
     tput cup "${LINE}" "${COL}"
     if [[ $? -eq 0 ]] ; then
         echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
@@ -79,7 +79,7 @@ function Apt_Hold () {
 
 function Service_Start () {
     if [[ -n $1 ]] ; then
-        SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
+        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -eq 0 ]] ; then
             echo -en "  Starting service \"$1\"..."
             ACTION=$(sudo systemctl start $1 2>&1)
@@ -90,7 +90,6 @@ function Service_Start () {
             echo -en "  Error: unable to start service \"$1\"..."
             false
         fi
-        unset SERVICE_STATUS
     else
         echo -en "  Error: no service provided..."
     fi
@@ -101,7 +100,7 @@ function Service_Start () {
 
 function Service_Stop () {
     if [[ -n $1 ]] ; then
-        SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
+        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
             echo -en "  Stopping service \"$1\"..."
             ACTION=$(sudo systemctl stop $1 2>&1)
@@ -112,7 +111,6 @@ function Service_Stop () {
             echo -en "  Error: unable to stop service \"$1\"..."
             false
         fi
-        unset SERVICE_STATUS
     else
         echo -en "  Error: no service provided..."
     fi
@@ -123,7 +121,7 @@ function Service_Stop () {
 
 function Service_Enable () {
     if [[ -n $1 ]] ; then
-        SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
+        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -eq 0 ]] ; then
             echo -en "  Enabling service \"$1\"..."
             ACTION=$(sudo systemctl enable $1 2>&1)
@@ -134,7 +132,6 @@ function Service_Enable () {
             echo -en "  Error: unable to enable service \"$1\"..."
             false
         fi
-        unset SERVICE_STATUS
     else
         echo -en "  Error: no service provided..."
         false
@@ -146,7 +143,7 @@ function Service_Enable () {
 
 function Service_Disable () {
     if [[ -n $1 ]] ; then
-        SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
+        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
         if [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -gt 0 ]] ; then
             echo -en "  Disabling service \"$1\"..."
             ACTION=$(sudo systemctl disable $1 2>&1)
@@ -157,7 +154,6 @@ function Service_Disable () {
             echo -en "  Error: unable to disable service \"$1\"..."
             false
         fi
-        unset SERVICE_STATUS
     else
         echo -en "  Error: no service provided..."
         false
@@ -312,9 +308,9 @@ function Configure_Service_GPS () {
     if [[ -f "${GPS_SERVICE_CONFIG}" ]] ; then
         KEYPAIRS="START_DAEMON=true USBAUTO=false DEVICES=/dev/gps0 GPSD_OPTIONS=-n GPSD_SOCKET=/var/run/gpsd.sock"
         for KEYPAIR in ${KEYPAIRS} ; do
-            KEY=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $1}'`
-            VALUE=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $2}'`
-            VALUE_ESCAPED=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $2}'| sed -e 's/\\//\\\\\//g'`
+            local KEY=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $1}'`
+            local VALUE=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $2}'`
+            local VALUE_ESCAPED=`echo -E "${KEYPAIR}" | gawk -F "=" '{print $2}'| sed -e 's/\\//\\\\\//g'`
             if [[ `grep -c "^${KEY}" ${GPS_SERVICE_CONFIG}` -eq 0 ]] ; then
                 if [[ `tail -n1 ${GPS_SERVICE_CONFIG} | egrep -c "[a-z0-9#]"` -gt 0 ]] ; then
                     ACTION=$(echo -en "\n" | tee -a ${GPS_SERVICE_CONFIG})
@@ -330,6 +326,7 @@ function Configure_Service_GPS () {
             fi
             unset KEY
             unset VALUE
+            unset VALUE_ESCAPED
         done
     fi
 }
