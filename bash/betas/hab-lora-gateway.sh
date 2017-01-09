@@ -69,6 +69,7 @@ function CheckReturnCode () {
     else
         echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
         echo -e "\e[39m  ${ACTION}\n"
+        false
     fi
 }
 

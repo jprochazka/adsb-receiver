@@ -58,6 +58,10 @@ source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Should be moved to functions.sh.
+
+#################################################################################
+# Display Done/Error based on return code of last action.
+
 function CheckReturnCode () {
     local LINE=$((`stty size | awk '{print $1}'` - 1))
     local COL=$((`stty size | awk '{print $2}'` - 8))
@@ -67,6 +71,17 @@ function CheckReturnCode () {
     else
         echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
         echo -e "\e[39m  ${ACTION}\n"
+        false
+    fi
+}
+
+#################################################################################
+# Detect CPU Architecture.
+
+function Check_CPU () {
+    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+        echo -en "\e[33m  Detecting CPU architecture...\e[97m"
+        CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
     fi
 }
 
@@ -307,11 +322,8 @@ if [[ ! "${PWD}" = "${DECODER_BUILD_DIRECTORY}" ]] ; then
 fi
 
 # Detect CPU Architecture.
-if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
-    echo -en "\e[33m  Detecting CPU architecture...\e[97m"
-    CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
-    CheckReturnCode
-fi
+Check_CPU
+CheckReturnCode
 
 # Identify the correct binaries to download.
 case ${CPU_ARCHITECTURE} in

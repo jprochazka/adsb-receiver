@@ -47,6 +47,10 @@ source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Should be moved to functions.sh.
+
+#################################################################################
+# Checks return code.
+
 function CheckReturnCode () {
     local LINE=$((`stty size | awk '{print $1}'` - 1))
     local COL=$((`stty size | awk '{print $2}'` - 8))
@@ -56,6 +60,7 @@ function CheckReturnCode () {
     else
         echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
         echo -e "\e[39m  ${ACTION}\n"
+        false
     fi
 }
 
