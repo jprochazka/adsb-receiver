@@ -306,54 +306,6 @@ if [[ ! "${PWD}" = "${DECODER_BUILD_DIRECTORY}" ]] ; then
     CheckReturnCode
 fi
 
-# Download and compile Kalibrate.
-if [[ true ]] ; then
-    KALIBRATE_GITHUB_URL="https://github.com/steve-m/kalibrate-rtl.git"
-    KALIBRATE_GITHUB_URL_SHORT=`echo ${KALIBRATE_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-    KALIBRATE_GITHUB_PROJECT=`echo ${KALIBRATE_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-    KALIBRATE_PROJECT_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${KALIBRATE_GITHUB_PROJECT}"
-    # Check if Kalibrate is already present and located where we would expect it to be.
-    if [[ -x `which kal` ]] && [[ -d "${KALIBRATE_PROJECT_DIRECTORY}" ]] ; then
-        # Then perhaps we can update from github.
-        echo -en "\e[33m  Updating ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        cd ${KALIBRATE_PROJECT_DIRECTORY}
-        ACTION=$(git remote update 2>&1)
-        if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
-            # Local branch is behind remote so update.
-            ACTION=$(git pull 2>&1)
-            DO_INSTALL_FROM_GIT="true"
-        fi
-    else
-        # Otherwise clone from github.
-        echo -en "\e[33m  Building ${KALIBRATE_GITHUB_PROJECT} from \"\e[37m${KALIBRATE_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        ACTION=$(git clone https://${KALIBRATE_GITHUB_URL_SHORT} ${KALIBRATE_PROJECT_DIRECTORY} 2>&1)
-        DO_INSTALL_FROM_GIT="true"
-    fi
-    if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
-        # Prepare to build from source.
-        cd ${KALIBRATE_PROJECT_DIRECTORY}
-        # And remove previous binaries.
-        if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} clean 2>&1)
-        fi
-        if [[ -x "bootstrap" ]] ; then
-            ACTION=$(./bootstrap 2>&1)
-        fi
-        if [[ -x "configure" ]] ; then
-            ACTION=$(./configure 2>&1)
-        fi
-        if [[ -f "Makefile" ]] ; then
-            ACTION=$(make -C ${KALIBRATE_PROJECT_DIRECTORY} 2>&1)
-        fi
-        if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${KALIBRATE_PROJECT_DIRECTORY} install 2>&1)
-        fi
-    fi
-    CheckReturnCode
-    unset DO_INSTALL_FROM_GIT
-    cd ${DECODER_BUILD_DIRECTORY}
-fi
-
 # Detect CPU Architecture.
 if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
     echo -en "\e[33m  Detecting CPU architecture...\e[97m"
