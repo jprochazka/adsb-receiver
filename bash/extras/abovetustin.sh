@@ -273,14 +273,14 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
         echo ""
         tar -vxfj phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
-        rm -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
+        rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
 
         # Move the binary into the /usr/bin directory and make it executable.
         echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
-        sudo cp phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin
+        sudo cp -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin
         echo ""
         echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
-        sudo chmod +x /usr/bin/phantomjs
+        sudo chmod -v +x /usr/bin/phantomjs
         echo ""
 
     else
@@ -363,9 +363,9 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
 
         # Move the binary into the /usr/bin directory and make it executable.
         echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
-        sudo cp bin/phantomjs /usr/bin
+        sudo cp -v bin/phantomjs /usr/bin
         echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
-        sudo chmod +x /usr/bin/phantomjs
+        sudo chmod -v +x /usr/bin/phantomjs
 
     fi
 fi
