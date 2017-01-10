@@ -133,6 +133,7 @@ function Check_CPU () {
 
 function Check_Platform () {
     if [[ -z "${HARDWARE_PLATFORM}" ]] ; then
+        echo -en "\e[33m  Detecting hardware platform...\e[97m"
         if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
             HARDWARE_PLATFORM="RPI"
         elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then

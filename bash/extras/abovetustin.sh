@@ -36,19 +36,9 @@
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
-
-#################################################################################
-# Detect CPU Architecture.
-
-function Check_CPU () {
-    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
-        echo -en "\e[94m  Detecting CPU architecture...\e[97m"
-        CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
-    fi
-}
 
 ### BEGIN SETUP
 
@@ -91,16 +81,18 @@ else
     PHANTOMJS_EXISTS="false"
 
     # Use function to detect cpu architecture.
-    Check_CPU
-    echo -e "\e[94m  \"${CPU_ARCHITECTURE}\"...\e[97m"
+    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+        Check_CPU
+        echo -e ""
+    fi
 
     if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "x86_64" ]] || [[ "${CPU_ARCHITECTURE}" = "i686" ]] ; then
         # A precompiled binary should be available for this device.
-        echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for this CPU's arcitecture...\e[97m"
+        echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for the \"${CPU_ARCHITECTURE}\" CPU arcitecture...\e[97m"
         BINARY_AVAILABLE="true"
     else
         # A precompiled binary does not appear to be available for this device.
-        echo -e "\e[94m  A precompiled PhantomJS binary does not appear to be available for this CPU's arcitecture...\e[97m"
+        echo -e "\e[94m  A precompiled PhantomJS binary does is not available for the \"${CPU_ARCHITECTURE}\" CPU's arcitecture...\e[97m"
         BINARY_AVAILABLE="false"
 
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
