@@ -196,9 +196,9 @@ echo ""
 # The contrib flag does not need to be added for Raspbian Jessie and Ubuntu only Debian so far.
 if [ `lsb_release -si` = "Debian" ]; then
     echo -e "\e[94m  Adding the contrib component to the repositories contained sources.list...\e[97m"
-    sudo sed -i 's/main/main contrib/g' /etc/apt/sources.list
+    sudo sed -i 's/main/main contrib/g' /etc/apt/sources.list 2>&1
     echo -e "\e[94m  Updating the repository package lists...\e[97m"
-    sudo apt-get update
+    sudo apt-get update 2>&1
 fi
 
 CheckPackage ttf-mscorefonts-installer
@@ -245,7 +245,7 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
 
         # Enter the root of the project build directory.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-        cd $RECEIVER_BUILD_DIRECTORY
+        cd $RECEIVER_BUILD_DIRECTORY 2>&1
 
         # Download the proper PhantomJS binary.
         case ${CPU_ARCHITECTURE} in
@@ -253,34 +253,34 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
                 # Download the armv7l version of the PhantomJS binary from https://github.com/jprochazka/phantomjs-linux-armv7l.
                 echo -e "\e[94m  Downloading the ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                curl -L https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/2.1.1/phantomjs-2.1.1-linux-armv7l.tar.bz2
+                curl -L "https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/2.1.1/phantomjs-2.1.1-linux-armv7l.tar.bz2" 2>&1
                 ;;
             "x86_64")
                 # Download the x86_64 version of the PhantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                curl -L https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
+                curl -L "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" 2>&1
                 ;;
             "i686")
                 # Download the i686 version of the PantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                curl -L https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-i686.tar.bz2
+                curl -L "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-i686.tar.bz2" 2>&1
                 ;;
         esac
 
         # Extract the files from the PhantomJS archive which was just downloaded.
         echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
         echo ""
-        tar -vxfj phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
-        rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
+        tar -vxfj phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
+        rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
 
         # Move the binary into the /usr/bin directory and make it executable.
         echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
-        sudo cp -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin
+        sudo cp -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin 2>&1
         echo ""
         echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
-        sudo chmod -v +x /usr/bin/phantomjs
+        sudo chmod -v +x /usr/bin/phantomjs 2>&1
         echo ""
 
     else
@@ -298,38 +298,38 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         if [ -d $RECEIVER_BUILD_DIRECTORY/phantomjs ] && [ -d $RECEIVER_BUILD_DIRECTORY/phantomjs/.git ]; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
-            cd $RECEIVER_BUILD_DIRECTORY/phantomjs
+            cd $RECEIVER_BUILD_DIRECTORY/phantomjs 2>&1
             echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
             echo ""
-            git pull --all
+            git pull --all 2>&1
         else
             # A directory containing the source code does not exist in the build directory.
             echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-            cd $RECEIVER_BUILD_DIRECTORY
+            cd $RECEIVER_BUILD_DIRECTORY 2>&1
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
             echo ""
-            git clone git://github.com/ariya/phantomjs.git
+            git clone git://github.com/ariya/phantomjs.git 2>&1
             echo ""
         fi
 
         # Enter the PhantomJS build directory if not already there.
         if [ ! "$PWD" = $RECEIVER_BUILD_DIRECTORY/phantomjs ]; then
             echo -e "\e[94m  Entering the PhantomJS Git repository directory...\e[97m"
-            cd $RECEIVER_BUILD_DIRECTORY/phantomjs
+            cd $RECEIVER_BUILD_DIRECTORY/phantomjs 2>&1
         fi
 
         # Checkout the proper branch then init and update the submodules.
         echo -e "\e[94m  Checking out the branch $PHANTOMJS_VERSION...\e[97m"
         echo ""
-        git checkout $PHANTOMJS_VERSION
+        git checkout $PHANTOMJS_VERSION 2>&1
         echo ""
         echo -e "\e[94m  Initializing Git submodules...\e[97m"
         echo ""
-        git submodule init
+        git submodule init 2>&1
         echo ""
         echo -e "\e[94m  Updating Git submodules...\e[97m"
         echo ""
-        git submodule update
+        git submodule update 2>&1
         echo ""
 
         # Compile and link the code.
@@ -337,10 +337,10 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
             # Limit the amount of processors being used on Raspberry Pi devices.
             # Not doing will very likely cause the compile to fail due to an out of memory error.
             echo -e "\e[94m  Building PhantomJS... (Job will be limited to using 1 processor.)\e[97m"
-            python build.py -j 1
+            python build.py -j 1 2>&1
         else
             echo -e "\e[94m  Building PhantomJS...\e[97m"
-            python build.py
+            python build.py 2>&1
         fi
         echo ""
 
@@ -363,9 +363,9 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
 
         # Move the binary into the /usr/bin directory and make it executable.
         echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
-        sudo cp -v bin/phantomjs /usr/bin
+        sudo cp -v bin/phantomjs /usr/bin 2>&1
         echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
-        sudo chmod -v +x /usr/bin/phantomjs
+        sudo chmod -v +x /usr/bin/phantomjs 2>&1
 
     fi
 fi
@@ -379,25 +379,25 @@ echo ""
 # Upgrade pip.
 echo -e "\e[94m  Upgrading pip...\e[97m"
 echo ""
-sudo pip3 install --upgrade pip
+sudo pip3 install --upgrade pip 2>&1
 echo ""
 echo -e "\e[94m  Upgrading virtualenv...\e[97m"
 echo ""
-sudo pip3 install --upgrade virtualenv
+sudo pip3 install --upgrade virtualenv 2>&1
 echo ""
 
 # Install Python modules.
 echo -e "\e[94m  Installing the selenium Python module...\e[97m"
 echo ""
-sudo pip3 install selenium
+sudo pip3 install selenium 2>&1
 echo ""
 echo -e "\e[94m  Installing the twitter Python module...\e[97m"
 echo ""
-sudo pip3 install twitter
+sudo pip3 install twitter 2>&1
 echo ""
 echo -e "\e[94m  Installing the python-dateutil Python module...\e[97m"
 echo ""
-sudo pip3 install python-dateutil
+sudo pip3 install python-dateutil 2>&1
 echo ""
 
 ## SETUP ABOVETUSTIN
@@ -407,31 +407,31 @@ echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
 echo ""
 
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd $RECEIVER_BUILD_DIRECTORY
+cd $RECEIVER_BUILD_DIRECTORY 2>&1
 
 echo -e "\e[94m  Checking if the AboveTustin Git repository has been cloned...\e[97m"
 if [ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin ] && [ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin/.git ]; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the AboveTustin git repository directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY/AboveTustin
+    cd $RECEIVER_BUILD_DIRECTORY/AboveTustin 2>&1
     echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     echo ""
-    git pull
+    git pull 2>&1
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -p $RECEIVER_BUILD_DIRECTORY
-    cd $RECEIVER_BUILD_DIRECTORY
+    mkdir -v -p $RECEIVER_BUILD_DIRECTORY 2>&1
+    cd $RECEIVER_BUILD_DIRECTORY 2>&1
     echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
     echo ""
-    git clone https://github.com/kevinabrandon/AboveTustin.git
+    git clone https://github.com/kevinabrandon/AboveTustin.git 2>&1
     echo ""
 fi
 
 # Copy the file config.sample.ini to config.ini
 if [[ ! -f "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini" ]] ; then
     echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
-    cp -v $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini
+    cp -v $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini 2>&1
 else
     echo -e "\e[94m  Found existing configuration file config.ini...\e[97m"
 fi
@@ -499,8 +499,8 @@ for PROC in ${PROCS} ; do
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [ ! -z "$PIDS" ]; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
-        sudo kill $PIDS
-        sudo kill -9 $PIDS
+        sudo kill $PIDS 2>&1
+        sudo kill -9 $PIDS 2>&1
     fi
     unset PIDS
 done
@@ -513,7 +513,7 @@ sudo nohup $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh > /dev/null 2>&1
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY
+cd $RECEIVER_ROOT_DIRECTORY 2>&1
 
 echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
