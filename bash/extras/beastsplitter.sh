@@ -83,7 +83,7 @@ CheckPackage dh-systemd
 ### CONFIRM SETTINGS
 
 # Confirm settings with user.
-
+if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Ask the beast-splitter listen port.
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
@@ -101,6 +101,7 @@ CheckPackage dh-systemd
             BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port (REQUIRED)"
         done
     fi
+fi
 
 # DOWNLOAD OR UPDATE THE BEAST-SPLITTER SOURCE
 
