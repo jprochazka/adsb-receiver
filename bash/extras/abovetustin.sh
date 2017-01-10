@@ -429,12 +429,18 @@ else
 fi
 
 # Copy the file config.sample.ini to config.ini
-echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
-cp $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini
+if [[ ! -f "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini" ]] ; then
+    echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
+    cp -v $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini
+else
+    echo -e "\e[94m  Found existing configuration file config.ini...\e[97m"
+fi
 
 # Establish timezone.
-echo -e "\e[94m  Establishing time zone...\e[97m"
-TIME_ZONE=`cat /etc/timezone`
+if [[ -z ${TIME_ZONE} ]] ; then
+    echo -e "\e[94m  Establishing time zone...\e[97m"
+    TIME_ZONE=`cat /etc/timezone`
+fi
 
 # Write out the supplied values to the file config.ini.
 if [[ -n "$TWITTER_ACCESS_TOKEN" ]] ; then
