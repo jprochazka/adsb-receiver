@@ -170,22 +170,18 @@ echo ""
 echo -e "\e[95m  Starting beast-splitter...\e[97m"
 echo ""
 
-# Kill any currently running instances of the beast-splitter_maint.sh script.
-echo -e "\e[94m  Checking for any running beast-splitter_maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "beast-splitter_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m  Killing any running beast-splitter_maint.sh processes...\e[97m"
-    sudo kill ${PIDS}
-    sudo kill -9 ${PIDS}
-fi
-# Kill any currently running instances beast-splitter.
-echo -e "\e[94m  Checking for any running beast-splitter processes...\e[97m"
-PIDS=`ps -efww | grep -w "beast-splitter" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m  Killing any running beast-splitter processes...\e[97m"
-    sudo kill ${PIDS}
-    sudo kill -9 ${PIDS}
-fi
+# Kill any currently running instances of the beast-splitter_maint.sh and beast-splitter scripts.
+PROCS="beast-splitter_maint.sh beast-splitter"
+for PROC in ${PROCS} ; do
+    echo -e "\e[94m  Checking for any running ${PROC} processes...\e[97m"
+    PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [[ ! -z "$PIDS" ]] ; then
+        echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
+        sudo kill $PIDS 2>&1
+        sudo kill -9 $PIDS 2>&1
+    fi
+    unset PIDS
+done
 
 echo -e "\e[94m  Executing the beast-splitter_maint.sh script...\e[97m"
 echo ""
