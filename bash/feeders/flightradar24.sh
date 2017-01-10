@@ -155,17 +155,17 @@ else
     fi
 fi
 
-## FLIGHTRADAR24 FEEDER CLIENT SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $PROJECTROOTDIRECTORY
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Flightradar24 feeder client setup is complete.\e[39m"
 echo ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

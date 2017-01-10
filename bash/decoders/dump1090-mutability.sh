@@ -260,17 +260,18 @@ echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
 echo ""
 sudo /etc/init.d/dump1090-mutability force-reload
 
-## DUMP1090-MUTABILITY SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
-echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090-mutability setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0

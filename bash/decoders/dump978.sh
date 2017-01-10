@@ -255,16 +255,18 @@ echo ""
 echo -e "\e[94m  Starting dump978 by executing the dump978 maintenance script...\e[97m"
 sudo nohup $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null 2>&1 &
 
-## DUMP978 SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump978 setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0

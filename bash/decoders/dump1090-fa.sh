@@ -203,16 +203,18 @@ if [ ! -f /usr/share/dump1090-fa/html/upintheair.json ]; then
     fi
 fi
 
-## DUMP1090-FA SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090-fa setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0

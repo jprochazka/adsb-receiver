@@ -156,17 +156,17 @@ fi
 
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Plane Finder ADS-B Client Setup Instructions" --msgbox "At this point the Plane Finder ADS-B Client should be installed and running howeverThis script is only capable of installing the Plane Finder ADS-B Client. There are stilla few steps left which you must manually do through the Plane Finder ADS-B Client itself.\n\nVisit the following URL: http://${DEVICEIPADDRESS}:30053\n\nThe follow the instructions supplied by the Plane Finder ADS-B Client.\n\nUse the following settings when asked for them.\n\nData Format: Beast\nTcp Address: 127.0.0.1\nTcp Port: 30005" 20 78
 
-## PLANE FINDER ADS-B CLIENT SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $PROJECTROOTDIRECTORY
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Plane Finder ADS-B Client setup is complete.\e[39m"
 echo ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

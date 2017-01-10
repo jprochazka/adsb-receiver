@@ -149,7 +149,7 @@ echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Duck DNS dynamic DNS setup is complete.\e[39m"
 echo ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then

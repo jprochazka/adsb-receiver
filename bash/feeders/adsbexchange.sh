@@ -270,17 +270,17 @@ sudo nohup $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh > /dev/null 
 echo -e "\e[94m  Executing the adsbexchange-mlat_maint.sh script...\e[97m"
 sudo nohup $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh > /dev/null 2>&1 &
 
-## ADS-B EXCHANGE FEED SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $PROJECTROOTDIRECTORY
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  ADS-B Exchange feed setup is complete.\e[39m"
 echo ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

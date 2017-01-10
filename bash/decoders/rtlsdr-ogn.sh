@@ -333,7 +333,7 @@ echo -e "\e[94m  Starting the rtlsdr-ogn service...\e[97m"
 echo -e ""
 sudo service rtlsdr-ogn start
 
-### RTL-SDR OGN SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"

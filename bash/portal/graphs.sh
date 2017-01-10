@@ -393,4 +393,18 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 EOF
 echo -e ""
 
+### SETUP COMPLETE
+
+# Enter into the project root directory.
+echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
+
+echo ""
+echo -e "\e[93m  ------------------------------------------------------------------------------"
+echo -e "\e[92m  Graphing setup is complete.\e[39m"
+echo ""
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
+
 exit 0
