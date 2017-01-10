@@ -69,7 +69,7 @@ fi
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
 echo ""
-if [ -f "/usr/bin/phantomjs" ] && [ "`phantomjs --version`" = "$PHANTOMJSVERSION" ]; then
+if [ -f "/usr/bin/phantomjs" ] && [ "`phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]; then
     # A PhantomJS binary which is the proper version appears to exist on this device.
     echo -e "\e[94m  PhantomJS is present on this device and is the proper version...\e[97m"
     PHANTOMJS_EXISTS="true"
@@ -331,7 +331,7 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         echo ""
 
         # Test that the binary was built properly.
-        if [ ! -f "bin/pahntomjs" ] || [ ! "`bin/phantomjs --version`" = "$PHANTOMJS_VERSION" ]; then
+        if [ ! -f "bin/pahntomjs" ] || [ ! "`bin/phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]; then
             # If the dump978 binaries could not be found halt setup.
             echo ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
