@@ -191,7 +191,7 @@ SSDV_GITHUB_URL="https://github.com/fsphil/ssdv.git"
 SSDV_GITHUB_URL_SHORT=`echo ${SSDV_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 SSDV_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
-if [[ -d "${SSDV_PROJECT_DIRECTORY}" ]] ; then
+if [[ -d "${SSDV_PROJECT_DIRECTORY}/.git/" ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     cd ${SSDV_PROJECT_DIRECTORY}
     ACTION=$(git remote update 2>&1)
@@ -225,7 +225,7 @@ DECODER_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
 DECODER_GITHUB_URL_SHORT=`echo ${DECODER_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 DECODER_GITHUB_PROJECT=`echo ${DECODER_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
-if [[ -d "${DECODER_PROJECT_DIRECTORY}" ]] ; then
+if [[ -d "${DECODER_PROJECT_DIRECTORY}/.git/" ]] ; then
     echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     cd ${DECODER_PROJECT_DIRECTORY}
     ACTION=$(git remote update 2>&1)

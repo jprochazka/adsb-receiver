@@ -110,7 +110,7 @@ if [[ true ]] ; then
     BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${BETA_GITHUB_PROJECT}"
 
     # Check if already installed and located where we would expect it to be.
-    if [[ -x `which kal` ]] && [[ -d "${BETA_BUILD_DIRECTORY}" ]] ; then
+    if [[ -x `which kal` ]] && [[ -d "${BETA_BUILD_DIRECTORY}/.git/" ]] ; then
         # Then perhaps we can update from github.
         cd ${BETA_BUILD_DIRECTORY}
         ACTION=$(git remote update 2>&1)
