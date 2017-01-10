@@ -75,6 +75,9 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     fi
 fi
 
+echo -e "\e[95m  Setting up AboveTustin on this device...\e[97m"
+echo ""
+
 ### CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
@@ -201,6 +204,7 @@ if [[ `lsb_release -si` = "Debian" ]] ; then
     sudo apt-get update 2>&1
 fi
 
+# Check that the required packages are installed.
 CheckPackage ttf-mscorefonts-installer
 CheckPackage python3-pip
 CheckPackage libstdc++6
@@ -400,33 +404,40 @@ echo ""
 sudo pip3 install python-dateutil 2>&1
 echo ""
 
-### SETUP ABOVETUSTIN
+### PROJECT BUILD DIRECTORY
+
+# Create the build directory if it does not already exist.
+if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
+    echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
+fi
+
+### DOWNLOAD SOURCE
 
 echo ""
 echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
 echo ""
 
-echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-
-echo -e "\e[94m  Checking if the AboveTustin Git repository has been cloned...\e[97m"
+echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
 if [[ -d ${RECEIVER_BUILD_DIRECTORY}/AboveTustin ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the AboveTustin git repository directory...\e[97m"
+    echo -e "\e[94m  Entering the local AboveTustin git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/AboveTustin 2>&1
     echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     echo ""
     git pull 2>&1
+    echo ""
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
     cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
     echo ""
     git clone https://github.com/kevinabrandon/AboveTustin.git 2>&1
     echo ""
 fi
+
+### APPLY CONFIGURATION
 
 # Copy the file config.sample.ini to config.ini
 if [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" ]] ; then
@@ -484,6 +495,8 @@ ChangeConfig "latitude" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/Abov
 echo -e "\e[94m  Writing the receiver's longitude to the config.ini file...\e[97m"
 ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 
+### BUILD AND INSTALL
+
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
 echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
 if [[ ! grep -Fxq "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &" /etc/rc.local ]] ; then
@@ -491,6 +504,12 @@ if [[ ! grep -Fxq "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &" /et
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &\n" /etc/rc.local
 fi
+
+### START SCRIPTS
+
+echo ""
+echo -e "\e[95m  Starting AboveTustin...\e[97m"
+echo ""
 
 # Kill any currently running instances of run_tracker.sh, tracker.py or phantomjs.
 PROCS="run_tracker.sh tracker.py phantomjs"
@@ -505,11 +524,13 @@ for PROC in ${PROCS} ; do
     unset PIDS
 done
 
-# Start the run_tracker.sh script
+# Start the run_tracker.sh script.
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
+echo ""
 sudo nohup ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
+echo ""
 
-### ABOVETUSTIN SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"

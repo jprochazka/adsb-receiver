@@ -47,7 +47,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo ""
-echo -e "\e[92m  Setting up beast-splitter..."
+echo -e "\e[92m  Setting up Beast-Splitter..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -58,7 +58,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e "  Setup has been halted at the request of the user."
         echo ""
         echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-        echo -e "\e[92m  beast-splitter setup halted.\e[39m"
+        echo -e "\e[92m  Beast-Splitter setup halted.\e[39m"
         echo ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
@@ -88,7 +88,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
         while [[ -z ${BEASTSPLITTER_LISTEN_PORT} ]]; do
-            BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_LISTEN_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
+            BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_LISTEN_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port Beast-Splitter will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
             BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port (REQUIRED)"
         done
     fi
@@ -96,52 +96,64 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"
         while [[ -z ${BEASTSPLITTER_CONNECT_PORT} ]]; do
-            BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_CONNECT_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
+            BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_CONNECT_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port Beast-Splitter will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
             BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port (REQUIRED)"
         done
     fi
 fi
 
-# DOWNLOAD OR UPDATE THE BEAST-SPLITTER SOURCE
+### PROJECT BUILD DIRECTORY
+
+# Create the build directory if it does not already exist.
+if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
+    echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
+fi
+
+### DOWNLOAD SOURCE
 
 echo ""
-echo -e "\e[95m  Preparing the beast-splitter Git repository...\e[97m"
+echo -e "\e[95m  Downloading and configuring Beast-Splitter...\e[97m"
 echo ""
+
+echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
 if [[ -d ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the beast-splitter git repository directory...\e[97m"
+    echo -e "\e[94m  Entering the local Beast-Splitter git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter
-    echo -e "\e[94m  Updating the local beast-splitter git repository...\e[97m"
+    echo -e "\e[94m  Updating the local Beast-Splitter git repository...\e[97m"
     echo ""
     git pull
+    echo ""
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter
-    echo -e "\e[94m  Cloning the beast-splitter git repository locally...\e[97m"
+    echo -e "\e[94m  Cloning the Beast-Splitter git repository locally...\e[97m"
     echo ""
     git clone https://github.com/flightaware/beast-splitter.git
+    echo ""
 fi
 
-## BUILD AND INSTALL THE BEAST-SPLITTER PACKAGE
+### BUILD AND INSTALL
 
 echo ""
-echo -e "\e[95m  Building and installing the beast-splitter package...\e[97m"
+echo -e "\e[95m  Building and installing the Beast-Splitter package...\e[97m"
 echo ""
 if [[ ! "${PWD}" = ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter ]] ; then
-    echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
+    echo -e "\e[94m  Entering the Beast-Splitter git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter
 fi
-echo -e "\e[94m  Executing the beast-splitter build script...\e[97m"
+echo -e "\e[94m  Executing the Beast-Splitter build script...\e[97m"
 echo ""
 dpkg-buildpackage -b
 echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter
-echo -e "\e[94m  Installing the beast-splitter package...\e[97m"
+echo -e "\e[94m  Installing the Beast-Splitter package...\e[97m"
 sudo dpkg -i beast-splitter_*.deb
 
-## CREATE THE SCRIPT TO BE USED TO EXECUTE BEAST-SPLITTER
+### CREATE SCRIPTS
 
 echo -e "\e[94m  Creating the file beast-splitter_maint.sh...\e[97m"
 tee ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh > /dev/null <<EOF
@@ -156,17 +168,17 @@ EOF
 echo -e "\e[94m  Setting file permissions for beast-splitter_maint.sh...\e[97m"
 sudo chmod +x ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh
 
-echo -e "\e[94m  Checking if the beast-splitter startup line is contained within the file /etc/rc.local...\e[97m"
+echo -e "\e[94m  Checking if the Beast-Splitter startup line is contained within the file /etc/rc.local...\e[97m"
 if ! grep -Fxq "${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local; then
-    echo -e "\e[94m  Adding the beast-splitter startup line to the file /etc/rc.local...\e[97m"
+    echo -e "\e[94m  Adding the Beast-Splitter startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &\n" /etc/rc.local
 fi
 
-## START BEAST-SPLITTER
+### START SCRIPTS
 
 echo ""
-echo -e "\e[95m  Starting beast-splitter...\e[97m"
+echo -e "\e[95m  Starting Beast-Splitter...\e[97m"
 echo ""
 
 # Kill any currently running instances of the beast-splitter_maint.sh and beast-splitter scripts.
@@ -174,14 +186,15 @@ PROCS="beast-splitter_maint.sh beast-splitter"
 for PROC in ${PROCS} ; do
     echo -e "\e[94m  Checking for any running ${PROC} processes...\e[97m"
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [[ ! -z "$PIDS" ]] ; then
+    if [[ ! -z "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
-        sudo kill $PIDS 2>&1
-        sudo kill -9 $PIDS 2>&1
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
     fi
     unset PIDS
 done
 
+# Start the beast-splitter_maint.sh script.
 echo -e "\e[94m  Executing the beast-splitter_maint.sh script...\e[97m"
 echo ""
 sudo nohup ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh > /dev/null 2>&1 &
@@ -191,11 +204,11 @@ echo ""
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
-echo -e "\e[92m  beast-splitter setup is complete.\e[39m"
+echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  Beast-Splitter setup is complete.\e[39m"
 echo ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE

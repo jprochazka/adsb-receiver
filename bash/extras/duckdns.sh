@@ -94,11 +94,23 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
+### PROJECT BUILD DIRECTORY
+
+# Create the build directory if it does not already exist.
+if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
+    echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
+fi
+
 # Create a duckdns directory within the build directory if it does not already exist.
 if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/duckdns ]] ; then
     echo -e "\e[94m  Creating the directory ${RECEIVER_BUILD_DIRECTORY}/duckdns...\e[97m"
     mkdir ${RECEIVER_BUILD_DIRECTORY}/duckdns
 fi
+
+### DOWNLOAD SOURCE
+
+### BUILD AND INSTALL
 
 # Create then set permissions on the file duck.sh.
 echo -e "\e[94m  Creating the Duck DNS update script...\e[97m"
@@ -109,16 +121,20 @@ EOF
 echo -e "\e[94m  Setting execute permissions for only this user on the Duck DNS update script...\e[97m"
 chmod 700 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh
 
+### CREATE SCRIPTS
+
 # Add job to the users crontab if it does not exist.
 echo -e "\e[94m  Adding the Duck DNS update command to your crontab if it does not exist already...\e[97m"
 COMMAND="${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh >/dev/null 2>&1"
-JOB="*/5 * * * * ${COMMAND}
+JOB="*/5 * * * * ${COMMAND}"
 
 # Should only add the job if the COMMAND does not already exist in the users crontab.
 (crontab -l | grep -v -F "${COMMAND}" ; echo "${JOB}") | crontab -
 
 # The following command should remove the job from the users crontab.
 #(crontab -l | grep -v -F "${COMMAND}" ) | crontab -
+
+### START SCRIPTS
 
 # Run the Duck DNS update script for the first time..
 echo -e "\e[94m  Executing the Duck DNS update script...\e[97m"
@@ -130,10 +146,10 @@ echo ""
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Duck DNS dynamic DNS setup is complete.\e[39m"
 echo ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
