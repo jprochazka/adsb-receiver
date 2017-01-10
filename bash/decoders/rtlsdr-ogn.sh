@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
@@ -41,7 +41,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     clear
@@ -68,7 +68,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
 fi
 
 
-## ASK FOR DEVICE ASSIGNMENTS
+### ASK FOR DEVICE ASSIGNMENTS
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[95m  Checking for existing decoders...\e[97m"
@@ -155,7 +155,7 @@ fi
 ### ASSIGN RTL-SDR DONGLE FOR RTL-SDR OGN...
 
 
-## CHECK FOR PREREQUISITE PACKAGES
+### CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
 echo -e ""
@@ -176,7 +176,7 @@ CheckPackage lynx
 echo -e "\e[95m  Configuring this device to run the RTL-SDR OGN binaries...\e[97m"
 echo -e ""
 
-## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
 if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
     echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
@@ -192,7 +192,7 @@ if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
 EOF
 fi
 
-## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
     echo -e "\e[94m  Stopping the RTL-SDR OGN service...\e[97m"
@@ -293,7 +293,7 @@ if [[ ! -c gpu_dev ]] ; then
     fi
 fi
 
-## CREATE THE CONFIGURATION FILE
+### CREATE THE CONFIGURATION FILE
 
 
 #######################################################
@@ -333,7 +333,7 @@ echo -e "\e[94m  Starting the rtlsdr-ogn service...\e[97m"
 echo -e ""
 sudo service rtlsdr-ogn start
 
-## RTL-SDR OGN SETUP COMPLETE
+### RTL-SDR OGN SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"

@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
@@ -50,7 +50,7 @@ function Check_CPU () {
     fi
 }
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     clear
@@ -75,7 +75,7 @@ if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     fi
 fi
 
-## CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
+### CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
 echo ""
@@ -131,7 +131,7 @@ else
     fi
 fi
 
-## GATHER TWITTER API INFORMATION FROM THE USER
+### GATHER TWITTER API INFORMATION FROM THE USER
 
 if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
@@ -187,7 +187,7 @@ if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     done
 fi
 
-## CHECK FOR PREREQUISITE PACKAGES
+### CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
@@ -232,7 +232,7 @@ else
     CheckPackage bzip2
 fi
 
-## SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
+### SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
 
 if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
     if [[ "$BINARY_AVAILABLE" = "true" ]] ; then
@@ -370,7 +370,7 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
     fi
 fi
 
-## INSTALL THE NEEDED PYTHON MODULES
+### INSTALL THE NEEDED PYTHON MODULES
 
 echo ""
 echo -e "\e[95m  Setting up the required Python modules...\e[97m"
@@ -400,7 +400,7 @@ echo ""
 sudo pip3 install python-dateutil 2>&1
 echo ""
 
-## SETUP ABOVETUSTIN
+### SETUP ABOVETUSTIN
 
 echo ""
 echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
@@ -509,7 +509,7 @@ done
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
 sudo nohup $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
 
-## OVERTUSTIN SETUP COMPLETE
+### ABOVETUSTIN SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
