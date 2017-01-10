@@ -37,7 +37,7 @@ source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Source the automated install configuration file if this is an automated installation.
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "true" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 

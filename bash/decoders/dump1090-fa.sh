@@ -39,7 +39,7 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 ## SET INSTALLATION VARIABLES
 
 # Source the automated install configuration file if this is an automated installation.
-if [ "$RECEIVER_AUTOMATED_INSTALL" = "true" ]; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source $RECEIVER_CONFIGURATION_FILE
 else
     DUMP1090_BING_MAPS_KEY=`GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
