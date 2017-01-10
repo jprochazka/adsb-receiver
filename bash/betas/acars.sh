@@ -197,7 +197,7 @@ elif [[ -n "${BETA_SERVICE_SCRIPT_URL}" ]] ; then
     # Otherwise attempt to download service script.
     if [[ `echo ${BETA_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
         echo -en "\e[33m  Downloading service script to \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl ${BETA_SERVICE_SCRIPT_URL} -o ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo curl -L ${BETA_SERVICE_SCRIPT_URL} -o ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
         ACTION=$(sudo chmod -v +x ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
     else
         echo -en "\e[33m  Invalid service script url \"\e[37m${BETA_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
