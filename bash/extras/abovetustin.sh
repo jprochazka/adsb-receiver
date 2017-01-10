@@ -271,15 +271,16 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         # Extract the files from the PhantomJS archive which was just downloaded.
         echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
         echo ""
-        bunzip2 -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2
-        tar -vxf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
+        tar -vxfj phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
         rm -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
 
         # Move the binary into the /usr/bin directory and make it executable.
         echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
         sudo cp phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin
+        echo ""
         echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
         sudo chmod +x /usr/bin/phantomjs
+        echo ""
 
     else
 
