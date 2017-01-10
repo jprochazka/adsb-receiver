@@ -77,7 +77,8 @@ function CheckReturnCode () {
 # Check if I2C is enabled, if not use raspi-config to enable it.
 
 function Enable_I2C () {
-    if [[ `sudo raspi-config nonint get_i2c 2>&1` -eq 1 ]] ; then
+    local LOCAL_STATUS_I2C=$(sudo raspi-config nonint get_i2c 2>&1)
+    if [[ "${LOCAL_STATUS_I2C}" -eq 1 ]] ; then
         echo -en "\e[33m  Enabling I2C interface...\e[97m"
         ACTION=$(sudo raspi-config nonint do_i2c 0 2>&1)
     else
@@ -89,7 +90,8 @@ function Enable_I2C () {
 # Check if SPI is enabled, if not use raspi-config to enable it.
 
 function Enable_SPI () {
-    if [[ `sudo raspi-config nonint get_spi 2>&1` -eq 1 ]] ; then
+    local LOCAL_STATUS_SPI=$(sudo raspi-config nonint get_spi 2>&1)
+    if [[ "${LOCAL_STATUS_SPI}" -eq 1 ]] ; then
         echo -en "\e[33m  Enabling SPI interface...\e[97m"
         ACTION=$(sudo raspi-config nonint do_spi 0 2>&1)
         REBOOT_REQUIRED="true"
