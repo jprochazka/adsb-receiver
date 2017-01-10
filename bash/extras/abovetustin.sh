@@ -200,6 +200,7 @@ if [ `lsb_release -si` = "Debian" ]; then
     echo -e "\e[94m  Updating the repository package lists...\e[97m"
     sudo apt-get update
 fi
+
 CheckPackage ttf-mscorefonts-installer
 CheckPackage python3-pip
 CheckPackage libstdc++6
@@ -220,7 +221,7 @@ CheckPackage libx11-dev
 CheckPackage libxext-dev
 CheckPackage libpng12-dev
 CheckPackage libc6
-CheckPackage wget
+CheckPackage curl
 
 if [ "$BINARY_AVAILABLE" = "false" ]; then
     # These packages are only needed if the user decided to build PhantomJS.
@@ -250,21 +251,21 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         case ${CPU_ARCHITECTURE} in
             "armv7l")
                 # Download the armv7l version of the PhantomJS binary from https://github.com/jprochazka/phantomjs-linux-armv7l.
-                echo -e "\e[94m  Downloading the armv7l PhantomJS v$PHANTOMJS_VERSION binary for Linux...\e[97m"
+                echo -e "\e[94m  Downloading the ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                wget https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/2.1.1/phantomjs-2.1.1-linux-armv7l.tar.bz2
+                curl -L https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/2.1.1/phantomjs-2.1.1-linux-armv7l.tar.bz2
                 ;;
             "x86_64")
                 # Download the x86_64 version of the PhantomJS binary from the PhantomJS web site.
-                echo -e "\e[94m  Downloading the official x86_64 PhantomJS v$PHANTOMJS_VERSION binary for Linux...\e[97m"
+                echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
+                curl -L https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
                 ;;
             "i686")
                 # Download the i686 version of the PantomJS binary from the PhantomJS web site.
-                echo -e "\e[94m  Downloading the official i686 PhantomJS v$PHANTOMJS_VERSION binary for Linux...\e[97m"
+                echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-i686.tar.bz2
+                curl -L https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-i686.tar.bz2
                 ;;
         esac
 
