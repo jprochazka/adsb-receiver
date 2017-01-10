@@ -79,7 +79,7 @@ fi
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
 echo ""
-if [[ -f "/usr/bin/phantomjs" ] && [ "`phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]] ; then
+if [[ -f "/usr/bin/phantomjs" ]] && [[ "`phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]] ; then
     # A PhantomJS binary which is the proper version appears to exist on this device.
     echo -e "\e[94m  PhantomJS is present on this device and is the proper version...\e[97m"
     PHANTOMJS_EXISTS="true"
@@ -91,7 +91,7 @@ else
     Check_CPU
     echo -e "\e[94m  \"${CPU_ARCHITECTURE}\"...\e[97m"
 
-    if [[ "${CPU_ARCHITECTURE}" = "armv7l" ] || [ "${CPU_ARCHITECTURE}" = "x86_64" ] || [ "${CPU_ARCHITECTURE}" = "i686" ]] ; then
+    if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "x86_64" ]] || [[ "${CPU_ARCHITECTURE}" = "i686" ]] ; then
         # A precompiled binary should be available for this device.
         echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for this CPU's arcitecture...\e[97m"
         BINARY_AVAILABLE="true"
@@ -151,7 +151,7 @@ fi
 # If any exist assign the current Twitter keys and access tokens to variables.
 if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token"
-    while [ -z $TWITTER_ACCESS_TOKEN ]] ; do
+    while [[ -z $TWITTER_ACCESS_TOKEN ]] ; do
         if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
             TWITTER_ACCESS_TOKEN=`GetConfig "access_token" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
@@ -160,7 +160,7 @@ if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     done
 
     TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret"
-    while [ -z $TWITTER_ACCESS_TOKEN_SECRET ]] ; do
+    while [[ -z $TWITTER_ACCESS_TOKEN_SECRET ]] ; do
         if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
             TWITTER_ACCESS_TOKEN_SECRET=`GetConfig "access_token_secret" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
@@ -169,7 +169,7 @@ if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     done
 
     TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key"
-    while [ -z $TWITTER_CONSUMER_KEY ]] ; do
+    while [[ -z $TWITTER_CONSUMER_KEY ]] ; do
         if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
             TWITTER_CONSUMER_KEY=`GetConfig "consumer_key" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
@@ -178,7 +178,7 @@ if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     done
 
     TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret"
-    while [ -z $TWITTER_CONSUMER_SECRET ]] ; do
+    while [[ -z $TWITTER_CONSUMER_SECRET ]] ; do
         if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
             TWITTER_CONSUMER_SECRET=`GetConfig "consumer_secret" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
         fi
@@ -295,7 +295,7 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
         echo ""
         echo -e "\e[95m  Preparing the PhantomJS Git repository...\e[97m"
         echo ""
-        if [[ -d $RECEIVER_BUILD_DIRECTORY/phantomjs ] && [ -d $RECEIVER_BUILD_DIRECTORY/phantomjs/.git ]] ; then
+        if [[ -d $RECEIVER_BUILD_DIRECTORY/phantomjs ]] && [[ -d $RECEIVER_BUILD_DIRECTORY/phantomjs/.git ]] ; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
             cd $RECEIVER_BUILD_DIRECTORY/phantomjs 2>&1
@@ -333,7 +333,7 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
         echo ""
 
         # Compile and link the code.
-        if [[ "${CPU_ARCHITECTURE}" = "armv7l" ] || [ "${CPU_ARCHITECTURE}" = "armv6l" ] || [ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
+        if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
             # Limit the amount of processors being used on Raspberry Pi devices.
             # Not doing will very likely cause the compile to fail due to an out of memory error.
             echo -e "\e[94m  Building PhantomJS... (Job will be limited to using 1 processor.)\e[97m"
@@ -345,7 +345,7 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
         echo ""
 
         # Test that the binary was built properly.
-        if [[ ! -f "bin/pahntomjs" ] || [ ! "`bin/phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]] ; then
+        if [[ ! -f "bin/pahntomjs" ]] || [[ ! "`bin/phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]] ; then
             # If the dump978 binaries could not be found halt setup.
             echo ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -410,7 +410,7 @@ echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd $RECEIVER_BUILD_DIRECTORY 2>&1
 
 echo -e "\e[94m  Checking if the AboveTustin Git repository has been cloned...\e[97m"
-if [[ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin ] && [ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin/.git ]] ; then
+if [[ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin ]] && [[ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the AboveTustin git repository directory...\e[97m"
     cd $RECEIVER_BUILD_DIRECTORY/AboveTustin 2>&1
@@ -470,12 +470,12 @@ if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     # Ask the user for the receiver's latitude.
     RECEIVER_LATITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [ -z $RECEIVER_LATITUDE ]] ; do
+    while [[ -z $RECEIVER_LATITUDE ]] ; do
         RECEIVER_LATITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude (REQUIRED)" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
     done
     # Ask the user for the receiver's longitude.
     RECEIVER_LONGITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [ -z $RECEIVER_LONGITUDE ]] ; do
+    while [[ -z $RECEIVER_LONGITUDE ]] ; do
         RECEIVER_LONGITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Longitude (REQUIRED)" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
     done
 fi
