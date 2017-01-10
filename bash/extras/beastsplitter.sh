@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
@@ -40,7 +40,7 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "true" ]; then
     source $RECEIVER_CONFIGURATION_FILE
 fi
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     clear
@@ -68,7 +68,7 @@ fi
 echo -e "\e[95m  Setting up Beast-Splitter on this device...\e[97m"
 echo ""
 
-## CHECK FOR PREREQUISITE PACKAGES
+### CHECK FOR PREREQUISITE PACKAGES
 
 # Check that the required packages are installed.
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
@@ -192,7 +192,7 @@ echo ""
 sudo nohup $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh > /dev/null 2>&1 &
 echo ""
 
-## SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
