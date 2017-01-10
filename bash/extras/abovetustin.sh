@@ -40,6 +40,16 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "true" ]; then
     source $RECEIVER_CONFIGURATION_FILE
 fi
 
+#################################################################################
+# Detect CPU Architecture.
+
+function Check_CPU () {
+    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+        echo -en "\e[94m  Detecting CPU architecture...\e[97m"
+        CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
+    fi
+}
+
 ## BEGIN SETUP
 
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
@@ -76,10 +86,12 @@ if [ -f "/usr/bin/phantomjs" ] && [ "`phantomjs --version`" -eq "$PHANTOMJS_VERS
 else
     echo -e "\e[91m  PhantomJS is not present on this device or is not the proper version...\e[97m"
     PHANTOMJS_EXISTS="false"
-    echo -e "\e[94m  Detecting CPU architeture...\e[97m"
-    CPU_ARCHITECTURE=`uname -m`
-    echo -e "\e[94m  CPU architecture detected as $CPUARCHITECTURE...\e[97m"
-    if [ "$CPU_ARCHITECTURE" = "armv7l" ] || [ "$CPU_ARCHITECTURE" = "x86_64" ] || [ "$CPU_ARCHITECTURE" = "i686" ]; then
+
+    # Use function to detect cpu architecture.
+    Check_CPU
+    echo -e "\e[94m  \"${CPU_ARCHITECTURE}\"...\e[97m"
+
+    if [ "${CPU_ARCHITECTURE}" = "armv7l" ] || [ "${CPU_ARCHITECTURE}" = "x86_64" ] || [ "${CPU_ARCHITECTURE}" = "i686" ]; then
         # A precompiled binary should be available for this device.
         echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for this CPU's arcitecture...\e[97m"
         BINARY_AVAILABLE="true"
@@ -235,7 +247,7 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         cd $RECEIVER_BUILD_DIRECTORY
 
         # Download the proper PhantomJS binary.
-        case $CPU_ARCHITECTURE in
+        case ${CPU_ARCHITECTURE} in
             "armv7l")
                 # Download the armv7l version of the PhantomJS binary from https://github.com/jprochazka/phantomjs-linux-armv7l.
                 echo -e "\e[94m  Downloading the armv7l PhantomJS v$PHANTOMJS_VERSION binary for Linux...\e[97m"
@@ -259,13 +271,13 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         # Extract the files from the PhantomJS archive which was just downloaded.
         echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
         echo ""
-        bunzip2 -v phantomjs-${PHANTOMJS_VERSION}-linux-$CPU_ARCHITECTURE.tar.bz2
-        tar -vxf phantomjs-${PHANTOMJS_VERSION}-linux-$CPU_ARCHITECTURE.tar
-        rm -f phantomjs-${PHANTOMJS_VERSION}-linux-$CPU_ARCHITECTURE.tar
+        bunzip2 -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2
+        tar -vxf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
+        rm -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar
 
         # Move the binary into the /usr/bin directory and make it executable.
         echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
-        sudo cp phantomjs-${PHANTOMJS_VERSION}-linux-$CPU_ARCHITECTURE/bin/phantomjs /usr/bin
+        sudo cp phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin
         echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
         sudo chmod +x /usr/bin/phantomjs
 
@@ -319,7 +331,7 @@ if [ "$PHANTOMJS_EXISTS" = "false" ]; then
         echo ""
 
         # Compile and link the code.
-        if [ `uname -m` = "armv7l" ] || [ `uname -m` = "armv6l" ] || [ `uname -m` = "aarch64" ]; then
+        if [ "${CPU_ARCHITECTURE}" = "armv7l" ] || [ "${CPU_ARCHITECTURE}" = "armv6l" ] || [ "${CPU_ARCHITECTURE}" = "aarch64" ]; then
             # Limit the amount of processors being used on Raspberry Pi devices.
             # Not doing will very likely cause the compile to fail due to an out of memory error.
             echo -e "\e[94m  Building PhantomJS... (Job will be limited to using 1 processor.)\e[97m"
