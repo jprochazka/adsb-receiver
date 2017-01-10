@@ -44,7 +44,7 @@ fi
 
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     clear
-    echo -e "\n\e[91m  $RECEIVER_PROJECT_TITLE"
+    echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
 fi
 echo ""
 echo -e "\e[92m  Setting up the Duck DNS dynamic DNS update script..."
@@ -68,24 +68,31 @@ fi
 echo -e "\e[95m  Setting up Duck DNS dynamic DNS on this device...\e[97m"
 echo ""
 
+## CHECK FOR PREREQUISITE PACKAGES
+
+# Check that the required packages are installed.
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
+echo ""
+CheckPackage cron
+CheckPackage curl
+
+### CONFIRM SETTINGS
+
+# Confirm settings with user.
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-    # Ask the user for the user sub domain to be assigned to this device.
+    # Ask for the user sub domain to be assigned to this device.
     DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain"
     while [[ -z $DOMAIN ]]; do
         DUCKDNS_DOMAIN=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$DUCKDNS_DOMAIN_TITLE" --nocancel --inputbox "\nPlease enter the Duck DNS sub domain you selected after registering.\nIf you do not have one yet visit http://www.ducknds.org to obtain one." 9 78 3>&1 1>&2 2>&3)
         DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain (REQUIRED)"
     done
-    # Ask the user for the Duck DNS token to be assigned to this receiver.
+    # Ask for the Duck DNS token to be assigned to this receiver.
     DUCKDNS_TOKEN_TITLE="Duck DNS Token"
     while [[ -z $TOKEN ]]; do
         DUCKDNS_TOKEN=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$DUCKDNS_TOKEN_TITLE" --nocancel --inputbox "\nPlease enter your Duck DNS token." 8 78 3>&1 1>&2 2>&3)
         DUCKDNS_TOKEN_TITLE="Duck DNS Token (REQUIRED)"
     done
 fi
-
-# Check that the required packages are installed.
-CheckPackage cron
-CheckPackage curl
 
 # Create a duckdns directory within the build directory if it does not already exist.
 if [ ! -d $RECEIVER_BUILD_DIRECTORY/duckdns ]; then
@@ -119,7 +126,7 @@ echo ""
 $RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh
 echo ""
 
-## DUCK DNS SETUP COMPLETE
+## SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
@@ -129,6 +136,8 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Duck DNS dynamic DNS setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 #exit 0

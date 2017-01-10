@@ -46,6 +46,7 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     clear
     echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
 fi
+echo ""
 echo -e "\e[92m  Setting up beast-splitter..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
@@ -64,26 +65,12 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     fi
 fi
 
+echo -e "\e[95m  Setting up Beast-Splitter on this device...\e[97m"
+echo ""
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
-# Ask the beast-splitter listen port.
-if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-    BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
-    while [[ -z $BEASTSPLITTER_LISTEN_PORT ]]; do
-        BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$BEASTSPLITTER_LISTEN_PORT_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
-        BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port (REQUIRED)"
-    done
-fi
-
-# Ask the beast-splitter connect port.
-if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-    BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"
-    while [[ -z $BEASTSPLITTER_CONNECT_PORT ]]; do
-        BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$BEASTSPLITTER_CONNECT_PORT_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
-        BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port (REQUIRED)"
-    done
-fi
-
+# Check that the required packages are installed.
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
 CheckPackage build-essential
@@ -93,7 +80,29 @@ CheckPackage libboost-program-options-dev
 CheckPackage libboost-regex-dev
 CheckPackage dh-systemd
 
-## DOWNLOAD OR UPDATE THE BEAST-SPLITTER SOURCE
+### CONFIRM SETTINGS
+
+# Confirm settings with user.
+
+    # Ask the beast-splitter listen port.
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+        BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
+        while [[ -z $BEASTSPLITTER_LISTEN_PORT ]]; do
+            BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$BEASTSPLITTER_LISTEN_PORT_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
+            BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port (REQUIRED)"
+        done
+    fi
+
+    # Ask the beast-splitter connect port.
+    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+        BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"
+        while [[ -z $BEASTSPLITTER_CONNECT_PORT ]]; do
+            BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$BEASTSPLITTER_CONNECT_PORT_TITLE" --nocancel --inputbox "\nPlease enter the port beast-splitter will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
+            BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port (REQUIRED)"
+        done
+    fi
+
+# DOWNLOAD OR UPDATE THE BEAST-SPLITTER SOURCE
 
 echo ""
 echo -e "\e[95m  Preparing the beast-splitter Git repository...\e[97m"
@@ -178,9 +187,11 @@ if [ ! -z "$PIDS" ]; then
 fi
 
 echo -e "\e[94m  Executing the beast-splitter_maint.sh script...\e[97m"
+echo ""
 sudo nohup $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_maint.sh > /dev/null 2>&1 &
+echo ""
 
-## BEAST-SPLITTER SETUP COMPLETE
+## SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
@@ -190,6 +201,8 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  beast-splitter setup is complete.\e[39m"
 echo ""
-read -p "Press enter to continue..." CONTINUE
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0
