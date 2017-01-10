@@ -485,31 +485,20 @@ if [[ ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &" /etc/
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &\n" /etc/rc.local
 fi
 
-# Kill any currently running instances of the run_tracker.sh script.
-echo -e "\e[94m  Checking for any running run_tracker.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "run_tracker.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running run_tracker.sh processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
-fi
+# Kill any currently running instances of run_tracker.sh, tracker.py or phantomjs.
+PROCS="run_tracker.sh tracker.py phantomjs"
+for PROC in ${PROCS} ; do
+    echo -e "\e[94m  Checking for any running ${PROC} processes...\e[97m"
+    PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [ ! -z "$PIDS" ]; then
+        echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
+        sudo kill $PIDS
+        sudo kill -9 $PIDS
+    fi
+    unset PIDS
+done
 
-echo -e "\e[94m  Checking for any running tracker.py processes...\e[97m"
-PIDS=`ps -efww | grep -w "tracker.py" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running tracker.py processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
-fi
-
-echo -e "\e[94m  Checking for any running phantomjs processes...\e[97m"
-PIDS=`ps -efww | grep -w "phantomjs" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running phantomjs processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
-fi
-
+# Start the run_tracker.sh script
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
 sudo nohup $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
 
