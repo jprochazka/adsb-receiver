@@ -38,7 +38,7 @@ BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
 PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
-COLLECTD_CRON_FILE="/etc/cron.d/adsb-feeder-performance-graphs"
+COLLECTD_CRON_FILE="/etc/cron.d/adsb-receiver-performance-graphs"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
