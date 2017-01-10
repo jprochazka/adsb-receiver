@@ -92,7 +92,6 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port (REQUIRED)"
         done
     fi
-
     # Ask the beast-splitter connect port.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"

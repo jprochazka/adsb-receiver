@@ -33,11 +33,11 @@
 
 ### INCLUDE EXTERNAL SCRIPTS
 
-source $RECEIVER_BASH_DIRECTORY/variables.sh
-source $RECEIVER_BASH_DIRECTORY/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-if [[ "$RECEIVER_AUTOMATED_INSTALL" = "true" ]] ; then
-    source $RECEIVER_CONFIGURATION_FILE
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
 #################################################################################
@@ -52,16 +52,16 @@ function Check_CPU () {
 
 ### BEGIN SETUP
 
-if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
-    echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo ""
 echo -e "\e[92m  Setting up AboveTustin..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
-    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -79,7 +79,7 @@ fi
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
 echo ""
-if [[ -f "/usr/bin/phantomjs" ]] && [[ "`phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]] ; then
+if [[ -f "/usr/bin/phantomjs" ]] && [[ "`phantomjs --version`" -eq "${PHANTOMJS_VERSION}" ]] ; then
     # A PhantomJS binary which is the proper version appears to exist on this device.
     echo -e "\e[94m  PhantomJS is present on this device and is the proper version...\e[97m"
     PHANTOMJS_EXISTS="true"
@@ -100,10 +100,10 @@ else
         echo -e "\e[94m  A precompiled PhantomJS binary does not appear to be available for this CPU's arcitecture...\e[97m"
         BINARY_AVAILABLE="false"
 
-        if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Warn the user of the build time if there is no binary available for download.
             # The user should be allowed to cancel out of the setup process at this time.
-            whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "PhantomJS Binary Not Available" --yesno "It appears there is not a precompiled PhantomJS binary available for your devices architecture.\n\nThis script is capable of downloading and compiling the PhantomJS source but THIS MAY TAKE AN EXTREMELY LONG TO TO COMPLETE. Expect the build process to range anywhere from a half our to literally hours.\n\nDo you wish to compile PhantomJS from source?" 13 78
+            whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PhantomJS Binary Not Available" --yesno "It appears there is not a precompiled PhantomJS binary available for your devices architecture.\n\nThis script is capable of downloading and compiling the PhantomJS source but THIS MAY TAKE AN EXTREMELY LONG TO TO COMPLETE. Expect the build process to range anywhere from a half our to literally hours.\n\nDo you wish to compile PhantomJS from source?" 13 78
             if [[ $? -eq 1 ]] ; then
                 # Setup has been halted by the user.
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -117,7 +117,7 @@ else
             fi
         else
             # If the user elected to not compile the PhantomJS binary if needed in the installation configuration file exit now.
-            if [[ ! $ABOVETUSTIN_COMPILE_IF_NEEDED = "true" ]] ; then
+            if [[ ! ${ABOVETUSTIN_COMPILE_IF_NEEDED} = "true" ]] ; then
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
                 echo "  A prebuilt PhantomJS binary is not available for this system."
                 echo ""
@@ -133,8 +133,8 @@ fi
 
 ### GATHER TWITTER API INFORMATION FROM THE USER
 
-if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
-    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -149,40 +149,40 @@ if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
 fi
 
 # If any exist assign the current Twitter keys and access tokens to variables.
-if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token"
-    while [[ -z $TWITTER_ACCESS_TOKEN ]] ; do
-        if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
-            TWITTER_ACCESS_TOKEN=`GetConfig "access_token" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+    while [[ -z ${TWITTER_ACCESS_TOKEN} ]] ; do
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
+            TWITTER_ACCESS_TOKEN=`GetConfig "access_token" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
         fi
-        TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_ACCESS_TOKEN_TITLE" --nocancel --inputbox "\nEnter your Twitter Access Token." 7 78 "$TWITTER_ACCESS_TOKEN" 3>&1 1>&2 2>&3)
+        TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token." 7 78 "${TWITTER_ACCESS_TOKEN}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token (REQUIRED)"
     done
 
     TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret"
-    while [[ -z $TWITTER_ACCESS_TOKEN_SECRET ]] ; do
-        if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
-            TWITTER_ACCESS_TOKEN_SECRET=`GetConfig "access_token_secret" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+    while [[ -z ${TWITTER_ACCESS_TOKEN_SECRET} ]] ; do
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
+            TWITTER_ACCESS_TOKEN_SECRET=`GetConfig "access_token_secret" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
         fi
-        TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_ACCESS_TOKEN_SECRET_TITLE" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 7 78 " $TWITTER_ACCESS_TOKEN_SECRET" 3>&1 1>&2 2>&3)
+        TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 7 78 "${TWITTER_ACCESS_TOKEN_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret (REQUIRED)"
     done
 
     TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key"
-    while [[ -z $TWITTER_CONSUMER_KEY ]] ; do
-        if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
-            TWITTER_CONSUMER_KEY=`GetConfig "consumer_key" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+    while [[ -z ${TWITTER_CONSUMER_KEY} ]] ; do
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
+            TWITTER_CONSUMER_KEY=`GetConfig "consumer_key" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
         fi
-        TWITTER_CONSUMER_KEY=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_CONSUMER_KEY_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "$TWITTER_CONSUMER_KEY" 3>&1 1>&2 2>&3)
+        TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY}_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key (REQUIRED)"
     done
 
     TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret"
-    while [[ -z $TWITTER_CONSUMER_SECRET ]] ; do
-        if [[ -f $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini ]] ; then
-            TWITTER_CONSUMER_SECRET=`GetConfig "consumer_secret" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"`
+    while [[ -z ${TWITTER_CONSUMER_SECRET} ]] ; do
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
+            TWITTER_CONSUMER_SECRET=`GetConfig "consumer_secret" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
         fi
-        TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$TWITTER_CONSUMER_SECRET_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "$TWITTER_CONSUMER_SECRET" 3>&1 1>&2 2>&3)
+        TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_SECRET}_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "${TWITTER_CONSUMER_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret (REQUIRED)"
     done
 fi
@@ -223,7 +223,7 @@ CheckPackage libpng12-dev
 CheckPackage libc6
 CheckPackage curl
 
-if [[ "$BINARY_AVAILABLE" = "false" ]] ; then
+if [[ "${BINARY_AVAILABLE}" = "false" ]] ; then
     # These packages are only needed if the user decided to build PhantomJS.
     CheckPackage build-essential
     CheckPackage g++
@@ -234,8 +234,8 @@ fi
 
 ### SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
 
-if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
-    if [[ "$BINARY_AVAILABLE" = "true" ]] ; then
+if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
+    if [[ "${BINARY_AVAILABLE}" = "true" ]] ; then
 
         # DOWNLOAD THE PHANTOMJS BINARY
 
@@ -245,7 +245,7 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
 
         # Enter the root of the project build directory.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-        cd $RECEIVER_BUILD_DIRECTORY 2>&1
+        cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
 
         # Download the proper PhantomJS binary.
         case ${CPU_ARCHITECTURE} in
@@ -295,17 +295,17 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
         echo ""
         echo -e "\e[95m  Preparing the PhantomJS Git repository...\e[97m"
         echo ""
-        if [[ -d $RECEIVER_BUILD_DIRECTORY/phantomjs ]] && [[ -d $RECEIVER_BUILD_DIRECTORY/phantomjs/.git ]] ; then
+        if [[ -d ${RECEIVER_BUILD_DIRECTORY}/phantomjs ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/phantomjs/.git ]] ; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
-            cd $RECEIVER_BUILD_DIRECTORY/phantomjs 2>&1
+            cd ${RECEIVER_BUILD_DIRECTORY}/phantomjs 2>&1
             echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
             echo ""
             git pull --all 2>&1
         else
             # A directory containing the source code does not exist in the build directory.
             echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-            cd $RECEIVER_BUILD_DIRECTORY 2>&1
+            cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
             echo ""
             git clone git://github.com/ariya/phantomjs.git 2>&1
@@ -313,15 +313,15 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
         fi
 
         # Enter the PhantomJS build directory if not already there.
-        if [[ ! "$PWD" = $RECEIVER_BUILD_DIRECTORY/phantomjs ]] ; then
+        if [[ ! "${PWD}" = ${RECEIVER_BUILD_DIRECTORY}/phantomjs ]] ; then
             echo -e "\e[94m  Entering the PhantomJS Git repository directory...\e[97m"
-            cd $RECEIVER_BUILD_DIRECTORY/phantomjs 2>&1
+            cd ${RECEIVER_BUILD_DIRECTORY}/phantomjs 2>&1
         fi
 
         # Checkout the proper branch then init and update the submodules.
-        echo -e "\e[94m  Checking out the branch $PHANTOMJS_VERSION...\e[97m"
+        echo -e "\e[94m  Checking out the branch ${PHANTOMJS_VERSION}...\e[97m"
         echo ""
-        git checkout $PHANTOMJS_VERSION 2>&1
+        git checkout ${PHANTOMJS_VERSION} 2>&1
         echo ""
         echo -e "\e[94m  Initializing Git submodules...\e[97m"
         echo ""
@@ -345,7 +345,7 @@ if [[ "$PHANTOMJS_EXISTS" = "false" ]] ; then
         echo ""
 
         # Test that the binary was built properly.
-        if [[ ! -f "bin/pahntomjs" ]] || [[ ! "`bin/phantomjs --version`" -eq "$PHANTOMJS_VERSION" ]] ; then
+        if [[ ! -f "bin/pahntomjs" ]] || [[ ! "`bin/phantomjs --version`" -eq "${PHANTOMJS_VERSION}" ]] ; then
             # If the dump978 binaries could not be found halt setup.
             echo ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -407,21 +407,21 @@ echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
 echo ""
 
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd $RECEIVER_BUILD_DIRECTORY 2>&1
+cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
 
 echo -e "\e[94m  Checking if the AboveTustin Git repository has been cloned...\e[97m"
-if [[ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin ]] && [[ -d $RECEIVER_BUILD_DIRECTORY/AboveTustin/.git ]] ; then
+if [[ -d ${RECEIVER_BUILD_DIRECTORY}/AboveTustin ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the AboveTustin git repository directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY/AboveTustin 2>&1
+    cd ${RECEIVER_BUILD_DIRECTORY}/AboveTustin 2>&1
     echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     echo ""
     git pull 2>&1
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -v -p $RECEIVER_BUILD_DIRECTORY 2>&1
-    cd $RECEIVER_BUILD_DIRECTORY 2>&1
+    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
+    cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
     echo ""
     git clone https://github.com/kevinabrandon/AboveTustin.git 2>&1
@@ -429,9 +429,9 @@ else
 fi
 
 # Copy the file config.sample.ini to config.ini
-if [[ ! -f "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini" ]] ; then
+if [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" ]] ; then
     echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
-    cp -v $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini 2>&1
+    cp -v ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.sample.ini ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini 2>&1
 else
     echo -e "\e[94m  Found existing configuration file config.ini...\e[97m"
 fi
@@ -443,53 +443,53 @@ if [[ -z ${TIME_ZONE} ]] ; then
 fi
 
 # Write out the supplied values to the file config.ini.
-if [[ -n "$TWITTER_ACCESS_TOKEN" ]] ; then
+if [[ -n "${TWITTER_ACCESS_TOKEN}" ]] ; then
     echo -e "\e[94m  Writing the Twitter token value to the config.ini file...\e[97m"
-    ChangeConfig "access_token" "$TWITTER_ACCESS_TOKEN" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+    ChangeConfig "access_token" "${TWITTER_ACCESS_TOKEN}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
-if [[ -n "$TWITTER_ACCESS_TOKEN_SECRET" ]] ; then
+if [[ -n "${TWITTER_ACCESS_TOKEN_SECRET}" ]] ; then
     echo -e "\e[94m  Writing the Twitter token secret value to the config.ini file...\e[97m"
-    ChangeConfig "access_token_secret" "$TWITTER_ACCESS_TOKEN_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+    ChangeConfig "access_token_secret" "${TWITTER_ACCESS_TOKEN_SECRET}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
-if [[ -n "$TWITTER_CONSUMER_KEY" ]] ; then
+if [[ -n "${TWITTER_CONSUMER_KEY}" ]] ; then
     echo -e "\e[94m  Writing the Twitter consumer key value to the config.ini file...\e[97m"
-    ChangeConfig "consumer_key" "$TWITTER_CONSUMER_KEY" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+    ChangeConfig "consumer_key" "${TWITTER_CONSUMER_KEY}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
-if [[ -n "$TWITTER_CONSUMER_SECRET" ]] ; then
+if [[ -n "${TWITTER_CONSUMER_SECRET}" ]] ; then
     echo -e "\e[94m  Writing the Twitter consumer secret to the config.ini file...\e[97m"
-    ChangeConfig "consumer_secret" "$TWITTER_CONSUMER_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+    ChangeConfig "consumer_secret" "${TWITTER_CONSUMER_SECRET}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
-if [[ -n "$TIME_ZONE" ]] ; then
+if [[ -n "${TIME_ZONE}" ]] ; then
     echo -e "\e[94m  Writing the receiver's timezone to the config.ini file...\e[97m"
-    ChangeConfig "time_zone" "$TIME_ZONE" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+    ChangeConfig "time_zone" "${TIME_ZONE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 
 # Ask for the receivers latitude and longitude.
-if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
-    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     # Ask the user for the receiver's latitude.
-    RECEIVER_LATITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [[ -z $RECEIVER_LATITUDE ]] ; do
-        RECEIVER_LATITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude (REQUIRED)" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    while [[ -z ${RECEIVER_LATITUDE} ]] ; do
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude (REQUIRED)" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
     done
     # Ask the user for the receiver's longitude.
-    RECEIVER_LONGITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [[ -z $RECEIVER_LONGITUDE ]] ; do
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Longitude (REQUIRED)" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    while [[ -z ${RECEIVER_LONGITUDE} ]] ; do
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude (REQUIRED)" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
     done
 fi
 echo -e "\e[94m  Writing the receiver's latitude to the config.ini file...\e[97m"
-ChangeConfig "latitude" "$RECEIVER_LATITUDE" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "latitude" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 echo -e "\e[94m  Writing the receiver's longitude to the config.ini file...\e[97m"
-ChangeConfig "longitude" "$RECEIVER_LONGITUDE" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
 echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
-if [[ ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &" /etc/rc.local ]] ; then
+if [[ ! grep -Fxq "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &" /etc/rc.local ]] ; then
     echo -e "\e[94m  Adding the AboveTustin startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &\n" /etc/rc.local
 fi
 
 # Kill any currently running instances of run_tracker.sh, tracker.py or phantomjs.
@@ -497,23 +497,23 @@ PROCS="run_tracker.sh tracker.py phantomjs"
 for PROC in ${PROCS} ; do
     echo -e "\e[94m  Checking for any running ${PROC} processes...\e[97m"
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [[ ! -z "$PIDS" ]] ; then
+    if [[ ! -z "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
-        sudo kill $PIDS 2>&1
-        sudo kill -9 $PIDS 2>&1
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
     fi
     unset PIDS
 done
 
 # Start the run_tracker.sh script
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
-sudo nohup $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
+sudo nohup ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
 
 ### ABOVETUSTIN SETUP COMPLETE
 
 # Enter into the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY 2>&1
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
