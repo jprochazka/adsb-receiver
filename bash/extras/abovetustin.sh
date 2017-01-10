@@ -418,17 +418,31 @@ fi
 echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
 cp $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.sample.ini $RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini
 
+# Establish timezone.
+echo -e "\e[94m  Establishing time zone...\e[97m"
+TIME_ZONE=`cat /etc/timezone`
+
 # Write out the supplied values to the file config.ini.
-echo -e "\e[94m  Writing the Twitter token value to the config.ini file...\e[97m"
-ChangeConfig "access_token" "$TWITTER_ACCESS_TOKEN" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
-echo -e "\e[94m  Writing the Twitter token secret value to the config.ini file...\e[97m"
-ChangeConfig "access_token_secret" "$TWITTER_ACCESS_TOKEN_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
-echo -e "\e[94m  Writing the Twitter consumer key value to the config.ini file...\e[97m"
-ChangeConfig "consumer_key" "$TWITTER_CONSUMER_KEY" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
-echo -e "\e[94m  Writing the Twitter consumer secret to the config.ini file...\e[97m"
-ChangeConfig "consumer_secret" "$TWITTER_CONSUMER_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
-echo -e "\e[94m  Writing the receiver's timezone to the config.ini file...\e[97m"
-ChangeConfig "time_zone" "`cat /etc/timezone`" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+if [[ -n "$TWITTER_ACCESS_TOKEN" ]] ; then
+    echo -e "\e[94m  Writing the Twitter token value to the config.ini file...\e[97m"
+    ChangeConfig "access_token" "$TWITTER_ACCESS_TOKEN" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+fi
+if [[ -n "$TWITTER_ACCESS_TOKEN_SECRET" ]] ; then
+    echo -e "\e[94m  Writing the Twitter token secret value to the config.ini file...\e[97m"
+    ChangeConfig "access_token_secret" "$TWITTER_ACCESS_TOKEN_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+fi
+if [[ -n "$TWITTER_CONSUMER_KEY" ]] ; then
+    echo -e "\e[94m  Writing the Twitter consumer key value to the config.ini file...\e[97m"
+    ChangeConfig "consumer_key" "$TWITTER_CONSUMER_KEY" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+fi
+if [[ -n "$TWITTER_CONSUMER_SECRET" ]] ; then
+    echo -e "\e[94m  Writing the Twitter consumer secret to the config.ini file...\e[97m"
+    ChangeConfig "consumer_secret" "$TWITTER_CONSUMER_SECRET" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+fi
+if [[ -n "$TIME_ZONE" ]] ; then
+    echo -e "\e[94m  Writing the receiver's timezone to the config.ini file...\e[97m"
+    ChangeConfig "time_zone" "$TIME_ZONE" "$RECEIVER_BUILD_DIRECTORY/AboveTustin/config.ini"
+fi
 
 # Ask for the receivers latitude and longitude.
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
@@ -452,7 +466,7 @@ ChangeConfig "longitude" "$RECEIVER_LONGITUDE" "$RECEIVER_BUILD_DIRECTORY/AboveT
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
 echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &" /etc/rc.local; then
+if [[ ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &" /etc/rc.local ]] ; then
     echo -e "\e[94m  Adding the AboveTustin startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/AboveTustin/run_tracker.sh &\n" /etc/rc.local
