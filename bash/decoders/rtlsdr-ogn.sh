@@ -364,7 +364,7 @@ if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     CheckReturnCode
     # Extract binaries.
     echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\e[97m"
-    ACTION=$(tar -xzf "${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE}" -C "${DECODER_BUILD_DIRECTORY}" 2>&1)
+    ACTION=$(tar -vxzf "${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE}" -C "${DECODER_BUILD_DIRECTORY}" 2>&1)
     CheckReturnCode
 else
     # Unable to download bimary due to invalid URL.
