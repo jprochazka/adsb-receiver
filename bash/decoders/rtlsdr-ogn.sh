@@ -449,6 +449,7 @@ if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
         DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
     else
         echo -en "\e[33m  Unable to calibrate RTL-SDR device...\e[97m"
+        false
     fi
     CheckReturnCode
 fi
@@ -634,6 +635,7 @@ if [[ -n "${DECODER_SERVICE_CONFIG_PATH}" ]] ; then
 EOF
     ACTION=$(chown -v pi:pi ${DECODER_SERVICE_CONFIG_PATH} 2>&1)
 else
+    echo -en "\e[33m  Unable to create service config file \"\e[37m${DECODER_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
     false
 fi
 CheckReturnCode
@@ -642,8 +644,8 @@ CheckReturnCode
 if [[ "${TUNER_COUNT}" -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
     echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\e[97m"
-    SERVICES="dump1090-mutability"
-    for SERVICE in ${SERVICES} ; do
+    SERVICES_DISABLE="dump1090-mutability"
+    for SERVICE in ${SERVICES_DISABLE} ; do
         if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
             ACTION=$(sudo update-rc.d ${SERVICE} disable 2>&1)
         fi
