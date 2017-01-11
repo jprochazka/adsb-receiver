@@ -168,7 +168,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
             TWITTER_CONSUMER_KEY=`GetConfig "consumer_key" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
         fi
-        TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY}_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
+        TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key (REQUIRED)"
     done
 
@@ -177,7 +177,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
             TWITTER_CONSUMER_SECRET=`GetConfig "consumer_secret" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
         fi
-        TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_SECRET}_TITLE" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "${TWITTER_CONSUMER_SECRET}" 3>&1 1>&2 2>&3)
+        TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "${TWITTER_CONSUMER_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret (REQUIRED)"
     done
 fi
