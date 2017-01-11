@@ -174,6 +174,15 @@ if [[ -f "${DECODER_SERVICE_SCRIPT_PATH}" ]] ; then
     CheckReturnCode
 fi
 
+## FAILSAFE KILL
+
+local PIDS=`ps -efww | egrep "(\./ogn-rf\ |\./ogn-decode\ )" | awk -vpid=$$ '$2 != pid { print $2 }'`
+if [ ! -z "${PIDS}" ]; then
+    echo -en "\e[33m  Killing any running ${DECODER_NAME} processes...\e[97m"
+    ACTION=$(sudo kill -9 "${PIDS}")
+    CheckReturnCode
+fi
+
 ### ASSIGN RTL-SDR DONGLES
 
 # Check if the dump1090-mutability package is installed.
