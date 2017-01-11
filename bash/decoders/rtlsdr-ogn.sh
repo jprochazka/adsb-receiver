@@ -176,7 +176,7 @@ fi
 
 ## FAILSAFE KILL
 
-PIDS=`ps -efww | egrep "(\./ogn-rf\ |\./ogn-decode\ )" | awk -vpid=$$ '$2 != pid { print $2 }'`
+PIDS=`ps -efww | egrep "(\./ogn-rf\ |\./ogn-decode\ )" | grep -v "grep" | awk -vpid=$$ '$2 != pid { print $2 }' | tr -d "\n\r"`
 if [ ! -z "${PIDS}" ]; then
     echo -en "\e[33m  Killing any running ${DECODER_NAME} processes...\e[97m"
     ACTION=$(sudo kill -9 "${PIDS}")
