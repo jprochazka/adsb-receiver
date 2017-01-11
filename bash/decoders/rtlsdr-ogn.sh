@@ -176,12 +176,13 @@ fi
 
 ## FAILSAFE KILL
 
-local PIDS=`ps -efww | egrep "(\./ogn-rf\ |\./ogn-decode\ )" | awk -vpid=$$ '$2 != pid { print $2 }'`
+PIDS=`ps -efww | egrep "(\./ogn-rf\ |\./ogn-decode\ )" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [ ! -z "${PIDS}" ]; then
     echo -en "\e[33m  Killing any running ${DECODER_NAME} processes...\e[97m"
     ACTION=$(sudo kill -9 "${PIDS}")
     CheckReturnCode
 fi
+unset PIDS
 
 ### ASSIGN RTL-SDR DONGLES
 
