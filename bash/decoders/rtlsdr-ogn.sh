@@ -48,7 +48,7 @@ DECODER_RADIO="Please note that a dedicated RTL-SDR dongle is required to use th
 # Decoder service script variables.
 DECODER_SERVICE_NAME="rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
-DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}-service"
+DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_NAME}"
 DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 
