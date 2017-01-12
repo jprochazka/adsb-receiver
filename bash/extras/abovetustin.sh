@@ -477,7 +477,7 @@ fi
 if [[ -z ${TIME_ZONE} ]] ; then
     echo -e "\e[94m  Establishing time zone...\e[97m"
     TIME_ZONE=`cat /etc/timezone`
-    TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\//\\\//g'`
+    TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\\//\\\\\//g'`
 fi
 
 # Write out the supplied values to the file config.ini.
