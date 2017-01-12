@@ -491,7 +491,7 @@ ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/Ab
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
 echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
-if [[ ! grep -Fxq "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &" /etc/rc.local ]] ; then
+if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding the AboveTustin startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &\n" /etc/rc.local
