@@ -271,11 +271,11 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         fi
 
         # Extract the files from the PhantomJS archive which was just downloaded.
-        if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz" ]] ; then
+        if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2" ]] ; then
             echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
             echo ""
-            tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz 2>&1
-            rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz 2>&1
+            tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2 2>&1
+            rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2 2>&1
         else
             echo -e "\e[94m  Unable to extract the PhantomJS binary archive...\e[97m"
         fi
