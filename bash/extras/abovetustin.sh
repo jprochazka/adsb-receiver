@@ -482,23 +482,23 @@ fi
 
 # Write out the supplied values to the file config.ini.
 if [[ -n "${TWITTER_ACCESS_TOKEN}" ]] ; then
-    echo -e "\e[94m  Writing the Twitter token value to the config.ini file...\e[97m"
+    echo -e "\e[94m  Writing Twitter token value to the config.ini file...\e[97m"
     ChangeConfig "access_token" "${TWITTER_ACCESS_TOKEN}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_ACCESS_TOKEN_SECRET}" ]] ; then
-    echo -e "\e[94m  Writing the Twitter token secret value to the config.ini file...\e[97m"
+    echo -e "\e[94m  Writing Twitter token secret value to the config.ini file...\e[97m"
     ChangeConfig "access_token_secret" "${TWITTER_ACCESS_TOKEN_SECRET}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_CONSUMER_KEY}" ]] ; then
-    echo -e "\e[94m  Writing the Twitter consumer key value to the config.ini file...\e[97m"
+    echo -e "\e[94m  Writing Twitter consumer key value to the config.ini file...\e[97m"
     ChangeConfig "consumer_key" "${TWITTER_CONSUMER_KEY}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_CONSUMER_SECRET}" ]] ; then
-    echo -e "\e[94m  Writing the Twitter consumer secret to the config.ini file...\e[97m"
+    echo -e "\e[94m  Writing Twitter consumer secret to the config.ini file...\e[97m"
     ChangeConfig "consumer_secret" "${TWITTER_CONSUMER_SECRET}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
-if [[ -n "${TIME_ZONE}" ]] ; then
-    echo -e "\e[94m  Writing the receiver's timezone to the config.ini file...\e[97m"
+if [[ -n "${TIME_ZONE_ESCAPED}" ]] ; then
+    echo -e "\e[94m  Writing receiver timezone to the config.ini file...\e[97m"
     ChangeConfig "time_zone" "${TIME_ZONE_ESCAPED}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 
@@ -517,9 +517,9 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude (REQUIRED)" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
     done
 fi
-echo -e "\e[94m  Writing the receiver's latitude to the config.ini file...\e[97m"
+echo -e "\e[94m  Writing receiver latitude to the config.ini file...\e[97m"
 ChangeConfig "latitude" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
-echo -e "\e[94m  Writing the receiver's longitude to the config.ini file...\e[97m"
+echo -e "\e[94m  Writing receiver longitude to the config.ini file...\e[97m"
 ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 
 ### BUILD AND INSTALL
@@ -541,7 +541,6 @@ echo ""
 # Kill any currently running instances of run_tracker.sh, tracker.py or phantomjs.
 PROCS="run_tracker.sh tracker.py phantomjs"
 for PROC in ${PROCS} ; do
-    echo -e "\e[94m  Checking for any running ${PROC} processes...\e[97m"
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ ! -z "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
