@@ -477,6 +477,7 @@ fi
 if [[ -z ${TIME_ZONE} ]] ; then
     echo -e "\e[94m  Establishing time zone...\e[97m"
     TIME_ZONE=`cat /etc/timezone`
+    TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\//\\\//g'`
 fi
 
 # Write out the supplied values to the file config.ini.
@@ -498,7 +499,7 @@ if [[ -n "${TWITTER_CONSUMER_SECRET}" ]] ; then
 fi
 if [[ -n "${TIME_ZONE}" ]] ; then
     echo -e "\e[94m  Writing the receiver's timezone to the config.ini file...\e[97m"
-    ChangeConfig "time_zone" "${TIME_ZONE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig "time_zone" "${TIME_ZONE_ESCAPED}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 
 # Ask for the receivers latitude and longitude.
