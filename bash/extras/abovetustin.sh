@@ -243,27 +243,32 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
 
-        # Download the proper PhantomJS binary.
+        # Select the relevant PhantomJS binary.
         case ${CPU_ARCHITECTURE} in
             "armv7l")
-                # Download the armv7l version of the PhantomJS binary from https://github.com/jprochazka/phantomjs-linux-armv7l.
+                # Use the armv7l version of the PhantomJS binary from https://github.com/jprochazka/phantomjs-linux-armv7l.
                 echo -e "\e[94m  Downloading the ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                curl -L "https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/${PHANTOMJS_VERSION}/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2" -O 2>&1
+                PHANTOMJS_BINARY_URL="https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/${PHANTOMJS_VERSION}/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2"
                 ;;
             "x86_64")
-                # Download the x86_64 version of the PhantomJS binary from the PhantomJS web site.
+                # Use the x86_64 version of the PhantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                curl -L "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2" -O 2>&1
+                PHANTOMJS_BINARY_URL="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2"
                 ;;
             "i686")
-                # Download the i686 version of the PantomJS binary from the PhantomJS web site.
+                # Use the i686 version of the PantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
                 echo ""
-                curl -L "https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2" -O 2>&1
+                PHANTOMJS_BINARY_URL="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2"
                 ;;
         esac
+
+        # Download the PantomJS binary.
+        if [[ -n "${PHANTOMJS_BINARY_URL}" ]] ; then
+            curl -L "${PHANTOMJS_BINARY_URL}" -O 2>&1
+        fi
 
         # Extract the files from the PhantomJS archive which was just downloaded.
         if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar" ]] ; then
