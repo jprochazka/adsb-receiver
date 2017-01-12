@@ -274,8 +274,8 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar" ]] ; then
             echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
             echo ""
-            tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
-            rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
+            tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz 2>&1
+            rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz 2>&1
         else
             echo -e "\e[94m  Unable to extract the PhantomJS binary archive...\e[97m"
         fi
@@ -314,16 +314,22 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
             cd ${RECEIVER_BUILD_DIRECTORY}/phantomjs 2>&1
-            echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
             echo ""
+            echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
             git pull --all 2>&1
+            echo ""
         else
             # A directory containing the source code does not exist in the build directory.
             echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
             cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-            echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
             echo ""
-            git clone git://github.com/ariya/phantomjs.git 2>&1
+            if [[ -d "${RECEIVER_BUILD_DIRECTORY}/phantomjs" ]] ; then
+                echo -e "\e[94m  Removing old PhantomJS build directory...\e[97m"
+                rm -vrf "${RECEIVER_BUILD_DIRECTORY}/phantomjs" 2>&1
+                echo ""
+            fi
+            echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
+            git clone git://github.com/ariya/phantomjs.git ${RECEIVER_BUILD_DIRECTORY} 2>&1
             echo ""
         fi
 
@@ -434,17 +440,22 @@ if [[ -d ${RECEIVER_BUILD_DIRECTORY}/AboveTustin ]] && [[ -d ${RECEIVER_BUILD_DI
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the local AboveTustin git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/AboveTustin 2>&1
-    echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     echo ""
+    echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     git pull 2>&1
     echo ""
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-    echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
     echo ""
-    git clone https://github.com/kevinabrandon/AboveTustin.git 2>&1
+    if [[ -d "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" ]] ; then
+        echo -e "\e[94m  Removing old build directory...\e[97m"
+        rm -vrf "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" 2>&1
+        echo ""
+    fi
+    echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
+    git clone https://github.com/kevinabrandon/AboveTustin.git ${RECEIVER_BUILD_DIRECTORY} 2>&1
     echo ""
 fi
 
