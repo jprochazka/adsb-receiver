@@ -267,28 +267,28 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
 
         # Extract the files from the PhantomJS archive which was just downloaded.
         if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar" ]] ; then
-        echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
-        echo ""
-        tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
-        rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
+            echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
+            echo ""
+            tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
+            rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar 2>&1
         else
             echo -e "\e[94m  Unable to extract the PhantomJS binary archive...\e[97m"
         fi
 
         # Move the binary into the /usr/bin directory and make it executable.
         if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs" ]] ; then
-        echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
-        sudo cp -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin 2>&1
-        echo ""
+            echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
+            echo ""
+            sudo cp -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin 2>&1
         else
             echo -e "\e[94m  Unable to copying the PhantomJS binary into the directory /usr/bin...\e[97m"
         fi
 
         # Make the binary in /usr/bin executable.
         if [[ -f "/usr/bin/phantomjs" ]] ; then
-        echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
-        sudo chmod -v +x /usr/bin/phantomjs 2>&1
-        echo ""
+            echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
+            echo ""
+            sudo chmod -v +x /usr/bin/phantomjs 2>&1
         else
             echo -e "\e[94m  Unable to make the file /usr/bin/phantomjs executable...\e[97m"
         fi
