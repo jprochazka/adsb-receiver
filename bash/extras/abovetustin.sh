@@ -331,7 +331,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
                 echo ""
             fi
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
-            git clone git://github.com/ariya/phantomjs.git ${RECEIVER_BUILD_DIRECTORY} 2>&1
+            git clone git://github.com/ariya/phantomjs.git "${RECEIVER_BUILD_DIRECTORY}/phantomjs" 2>&1
             echo ""
         fi
 
@@ -457,7 +457,7 @@ else
         echo ""
     fi
     echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
-    git clone https://github.com/kevinabrandon/AboveTustin.git ${RECEIVER_BUILD_DIRECTORY} 2>&1
+    git clone https://github.com/kevinabrandon/AboveTustin.git "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" 2>&1
     echo ""
 fi
 
