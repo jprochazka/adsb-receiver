@@ -184,6 +184,7 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
+echo ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
 
@@ -476,7 +477,7 @@ fi
 # Establish timezone.
 if [[ -z ${TIME_ZONE} ]] ; then
     echo -e "\e[94m  Establishing time zone...\e[97m"
-    TIME_ZONE=`cat /etc/timezone`
+    TIME_ZONE=`cat /etc/timezone 2>&1`
     TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\\//\\\\\//g'`
 fi
 
