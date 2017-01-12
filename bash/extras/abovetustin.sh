@@ -462,11 +462,13 @@ fi
 ### APPLY CONFIGURATION
 
 # Copy the file config.sample.ini to config.ini
-if [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" ]] ; then
+if [[ -s "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" ]] ; then
+    echo -e "\e[94m  Found existing configuration file config.ini...\e[97m"
+elif [[ -s "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.sample.ini" ]]; then
     echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
     cp -v ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.sample.ini ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini 2>&1
 else
-    echo -e "\e[94m  Found existing configuration file config.ini...\e[97m"
+    echo -e "\e[94m  Unable to install configuration file config.ini...\e[97m"
 fi
 
 # Establish timezone.
