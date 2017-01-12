@@ -474,9 +474,9 @@ else
     echo -e "\e[94m  Unable to install configuration file config.ini...\e[97m"
 fi
 
-# Establish timezone.
+# Confirm timezone.
 if [[ -z ${TIME_ZONE} ]] ; then
-    echo -e "\e[94m  Establishing time zone...\e[97m"
+    echo -e "\e[94m  Confirming time zone...\e[97m"
     TIME_ZONE=`cat /etc/timezone 2>&1`
     TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\\//\\\\\//g'`
 fi
