@@ -36,6 +36,8 @@
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+
+# Decoder specific variables.
 MLATCLIENTBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/mlat-client"
 ADSBEXCHANGEBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/adsbexchange"
 
@@ -87,7 +89,7 @@ if grep -Fxq "$ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-maint.sh &" /etc/rc.local
     fi
     # Remove the old line from /etc/rc.local.
     echo -e "\e[94m  Removing the old adsbexchange-maint.sh startup line from /etc/rc.local...\e[97m"
-    sudo sed -i /$$ADSBEXCHANGEDIR\/adsbexchange-maint.sh &/d /etc/rc.local
+    sudo sed -i /$$ADSBEXCHANGEBUILDDIRECTORY\/adsbexchange-maint.sh &/d /etc/rc.local
 fi
 echo ""
 
