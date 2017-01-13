@@ -39,8 +39,10 @@ RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
 # Feeder specific variables.
+
+FEEDER_NAME="adsbexchange"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
-ADSB_EXCHANGE_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/adsbexchange"
+ADSB_EXCHANGE_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
 
 ADSB_EXCHANGE_BEAST_SRC_HOST="127.0.0.1"
 ADSB_EXCHANGE_BEAST_SRC_PORT="30005"
@@ -86,22 +88,22 @@ fi
 
 echo -e "\e[95m  Checking for and removing any old style ADS-B Exchange setups if any exist...\e[97m"
 echo ""
-# Check if the old adsbexchange-maint.sh line exists in /etc/rc.local.
+# Check if the old style ${FEEDER_NAME}-maint.sh line exists in /etc/rc.local.
 echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
-if grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-maint.sh &" /etc/rc.local; then
-    # Kill any currently running instances of the adsbexchange_maint.sh script.
-    echo -e "\e[94m  Checking for any running adsbexchange-maint.sh processes...\e[97m"
-    PIDS=`ps -efww | grep -w "${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
+if grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local; then
+    # Kill any currently running instances of the ${FEEDER_NAME}-maint.sh script.
+    echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
+    PIDS=`ps -efww | grep -w "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ ! -z "${PIDS}" ]] ; then
-        echo -e "\e[94m  Killing any running adsbexchange-maint.sh processes...\e[97m"
+        echo -e "\e[94m  Killing any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
         echo ""
         sudo kill ${PIDS}
         sudo kill -9 ${PIDS}
         echo ""
     fi
     # Remove the old line from /etc/rc.local.
-    echo -e "\e[94m  Removing the old adsbexchange-maint.sh startup line from /etc/rc.local...\e[97m"
-    sudo sed -i /$${ADSB_EXCHANGE_BUILD_DIRECTORY}\/adsbexchange-maint.sh &/d /etc/rc.local
+    echo -e "\e[94m  Removing the old ${FEEDER_NAME}-maint.sh startup line from /etc/rc.local...\e[97m"
+    sudo sed -i /$${ADSB_EXCHANGE_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local
 fi
 echo ""
 
@@ -221,16 +223,16 @@ while [[ -z ${RECEIVER_ALTITUDE} ]] ; do
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
 done
 
-# Create the adsbexchange directory in the build directory if it does not exist.
-echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"
+# Create the feeder directory in the build directory if it does not exist.
+echo -e "\e[94m  Checking for the ${FEEDER_NAME} build directory...\e[97m"
 if [[ ! -d "${ADSB_EXCHANGE_BUILD_DIRECTORY}" ]] ; then
-    echo -e "\e[94m  Creating the adsbexchange build directory...\e[97m"
+    echo -e "\e[94m  Creating the ${FEEDER_NAME} build directory...\e[97m"
     mkdir ${ADSB_EXCHANGE_BUILD_DIRECTORY}
     echo -e ""
 fi
 
-echo -e "\e[94m  Creating the file adsbexchange-netcat_maint.sh...\e[97m"
-tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-netcat_maint.sh > /dev/null <<EOF
+echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
+tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
@@ -239,8 +241,8 @@ while true
   done
 EOF
 
-echo -e "\e[94m  Creating the file adsbexchange-mlat_maint.sh...\e[97m"
-tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-mlat_maint.sh > /dev/null <<EOF
+echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
+tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
@@ -249,37 +251,37 @@ while true
   done
 EOF
 
-echo -e "\e[94m  Setting file permissions for adsbexchange-netcat_maint.sh...\e[97m"
-sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-netcat_maint.sh
+echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
+sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh
 
-echo -e "\e[94m  Setting file permissions for adsbexchange-mlat_maint.sh...\e[97m"
-sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-mlat_maint.sh
+echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
+sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh
 
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
 fi
 
 echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
 fi
 
-## START THE MLAT-CLIENT AND NETCAT FEED
+## START THE NETCAT FEED AND MLAT-CLIENT
 
 echo ""
 echo -e "\e[95m  Starting both the netcat and mlat-client feeds...\e[97m"
 echo ""
 
-# Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
-echo -e "\e[94m  Checking for any running adsbexchange-netcat_maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "adsbexchange-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
+# Kill any currently running instances of the feeder netcat_maint.sh script.
+echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
+PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m  Killing any running adsbexchange-netcat_maint.sh processes...\e[97m"
+    echo -e "\e[94m  Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
     sudo kill ${PIDS}
     sudo kill -9 ${PIDS}
 fi
@@ -290,11 +292,11 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill -9 ${PIDS}
 fi
 
-# Kill any currently running instances of the adsbexchange-mlat_maint.sh script.
-echo -e "\e[94m  Checking for any running adsbexchange-mlat_maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "adsbexchange-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
+# Kill any currently running instances of the feeder mlat_maint.sh script.
+echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
+PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m  Killing any running adsbexchange-mlat_maint.sh processes...\e[97m"
+    echo -e "\e[94m  Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
     sudo kill ${PIDS}
     sudo kill -9 ${PIDS}
 fi
@@ -305,11 +307,11 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill -9 ${PIDS}
 fi
 
-echo -e "\e[94m  Executing the adsbexchange-netcat_maint.sh script...\e[97m"
-sudo nohup ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-netcat_maint.sh > /dev/null 2>&1 &
+echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
+sudo nohup ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
 
-echo -e "\e[94m  Executing the adsbexchange-mlat_maint.sh script...\e[97m"
-sudo nohup ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-mlat_maint.sh > /dev/null 2>&1 &
+echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
+sudo nohup ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
 
 ### SETUP COMPLETE
 
