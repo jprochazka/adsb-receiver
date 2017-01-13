@@ -226,6 +226,7 @@ echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"
 if [[ ! -d "${ADSB_EXCHANGE_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the adsbexchange build directory...\e[97m"
     mkdir ${ADSB_EXCHANGE_BUILD_DIRECTORY}
+    echo -e ""
 fi
 
 echo -e "\e[94m  Creating the file adsbexchange-netcat_maint.sh...\e[97m"
@@ -271,7 +272,7 @@ fi
 ## START THE MLAT-CLIENT AND NETCAT FEED
 
 echo ""
-echo -e "\e[95m  Starting both the mlat-client and netcat feeds...\e[97m"
+echo -e "\e[95m  Starting both the netcat and mlat-client feeds...\e[97m"
 echo ""
 
 # Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
@@ -297,7 +298,7 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS}
     sudo kill -9 ${PIDS}
 fi
-PIDS=`ps -efww | grep -w "mlat-client" | awk -vpid=$$ '$2 != pid { print $2 }'`
+PIDS=`ps -efww | grep -w "mlat-client --input-type" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
     sudo kill ${PIDS}
