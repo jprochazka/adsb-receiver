@@ -42,6 +42,11 @@ BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 ADSB_EXCHANGE_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/adsbexchange"
 
+ADSB_EXCHANGE_BEAST_SRC_HOST="127.0.0.1"
+ADSB_EXCHANGE_BEAST_SRC_PORT="30005"
+ADSB_EXCHANGE_BEAST_DST_HOST="feed.adsbexchange.com"
+ADSB_EXCHANGE_BEAST_DST_PORT="30005"
+
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -222,7 +227,7 @@ tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-netcat_maint.sh > /dev/null <<
 #! /bin/sh
 while true
   do
-    /bin/nc 127.0.0.1 30005 | /bin/nc feed.adsbexchange.com 30005
+    /bin/nc ${ADSB_EXCHANGE_BEAST_SRC_HOST} ${ADSB_EXCHANGE_BEAST_SRC_PORT} | /bin/nc ${ADSB_EXCHANGE_BEAST_DST_HOST} ${ADSB_EXCHANGE_BEAST_DST_PORT}
     sleep 30
   done
 EOF
@@ -271,7 +276,7 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS}
     sudo kill -9 ${PIDS}
 fi
-PIDS=`ps -efww | grep -w "/bin/nc feed.adsbexchange.com" | awk -vpid=$$ '$2 != pid { print $2 }'`
+PIDS=`ps -efww | grep -w "/bin/nc ${ADSB_EXCHANGE_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running netcat processes...\e[97m"
     sudo kill ${PIDS}
