@@ -36,8 +36,9 @@
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+BINARIES_DIRECTORY="$BUILDDIRECTORY/binaries"
 
-# Decoder specific variables.
+# Feeder specific variables.
 MLATCLIENTBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/mlat-client"
 ADSBEXCHANGEBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/adsbexchange"
 
@@ -132,6 +133,7 @@ echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
 echo ""
 if [ ! "$PWD" = $MLATCLIENTBUILDDIRECTORY ]; then
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
+    echo ""
     cd $MLATCLIENTBUILDDIRECTORY
 fi
 echo -e "\e[94m  Building the mlat-client package...\e[97m"
@@ -141,6 +143,17 @@ echo ""
 echo -e "\e[94m  Installing the mlat-client package...\e[97m"
 echo ""
 sudo dpkg -i $BUILDDIRECTORY/mlat-client_${MLATCLIENTVERSION}*.deb
+echo ""
+if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
+    echo -e "\e[94m  Creating archive directory...\e[97m"
+    echo ""
+    mkdir -v ${BINARIES_DIRECTORY} 2>&1
+    echo ""
+fi
+echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
+echo ""
+mv -v -f $BUILDDIRECTORY/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
+echo ""
 
 # Check that the mlat-client package was installed successfully.
 echo ""
@@ -157,7 +170,7 @@ if [ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok instal
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
