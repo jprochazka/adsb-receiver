@@ -202,7 +202,7 @@ done
 
 # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
 RECEIVER_LATITUDE_TITLE="Receiver Latitude"
-while [[ -z ${RECEIVER_LATITUDE_TITLE} ]] ; do
+while [[ -z ${RECEIVER_LATITUDE} ]] ; do
     RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude." 9 78 "`GetConfig "LAT" "/etc/default/dump1090-mutability"`" 3>&1 1>&2 2>&3)
     RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
