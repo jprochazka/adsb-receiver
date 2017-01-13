@@ -298,7 +298,7 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS}
     sudo kill -9 ${PIDS}
 fi
-PIDS=`ps -efww | grep -w "mlat-client --input-type" | awk -vpid=$$ '$2 != pid { print $2 }'`
+PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${ADSB_EXCHANGE_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
     sudo kill ${PIDS}
