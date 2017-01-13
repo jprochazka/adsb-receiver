@@ -199,22 +199,22 @@ echo ""
 
 # Ask the user for the user name for this receiver.
 RECEIVER_NAME_TITLE="Receiver Name"
-while [[ -z ${RECEIVER_NAME} ]] ; do
+while [[ -z "${RECEIVER_NAME}" ]] ; do
     RECEIVER_NAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
     RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
 done
 
 # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
 RECEIVER_LATITUDE_TITLE="Receiver Latitude"
-while [[ -z ${RECEIVER_LATITUDE} ]] ; do
+while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
     DUMP1090_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
-    RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude." 9 78 "${DUMP1090_LATITUDE=}" 3>&1 1>&2 2>&3)
+    RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude." 9 78 "${DUMP1090_LATITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
 
 # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
 RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
-while [[ -z ${RECEIVER_LONGITUDE} ]] ; do
+while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
     DUMP1090_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
     RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude." 9 78 "${DUMP1090_LONGITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
@@ -222,7 +222,7 @@ done
 
 # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
 RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
-while [[ -z ${RECEIVER_ALTITUDE} ]] ; do
+while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
     DERIVED_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];")
     RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "${DERIVED_ALTITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
