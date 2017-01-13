@@ -212,7 +212,7 @@ done
 # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
 RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
 while [[ -z ${RECEIVER_LONGITUDE} ]] ; do
-    RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's logitude." 9 78 "`GetConfig "LON" "/etc/default/dump1090-mutability"`" 3>&1 1>&2 2>&3)
+    RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude." 9 78 "`GetConfig "LON" "/etc/default/dump1090-mutability"`" 3>&1 1>&2 2>&3)
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
 done
 
