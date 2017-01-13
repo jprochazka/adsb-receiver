@@ -189,12 +189,17 @@ while [[ -z ${RECEIVERNAME} ]]; do
     RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
 done
 
-# Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability.
-RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+# Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
+RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
 
-# Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
-RECEIVERALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVERLATITUDE},${RECEIVERLONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
+# Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
+RECEIVER_LONGITUDE_TITLE="Receiver Altitude"
+RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+
+# Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
+RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
+RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
 
 # Create the adsbexchange directory in the build directory if it does not exist.
 echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"
