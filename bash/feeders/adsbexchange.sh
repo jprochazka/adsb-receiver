@@ -47,6 +47,12 @@ ADSB_EXCHANGE_BEAST_SRC_PORT="30005"
 ADSB_EXCHANGE_BEAST_DST_HOST="feed.adsbexchange.com"
 ADSB_EXCHANGE_BEAST_DST_PORT="30005"
 
+ADSB_EXCHANGE_MLAT_SRC_HOST="127.0.0.1"
+ADSB_EXCHANGE_MLAT_SRC_PORT="30005"
+ADSB_EXCHANGE_MLAT_DST_HOST="feed.adsbexchange.com"
+ADSB_EXCHANGE_MLAT_DST_PORT="31090"
+ADSB_EXCHANGE_MLAT_RETURN_PORT="30104"
+
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -237,7 +243,7 @@ tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/adsbexchange-mlat_maint.sh > /dev/null <<EO
 #! /bin/sh
 while true
   do
-    /usr/bin/mlat-client --input-type dump1090 --input-connect 127.0.0.1:30005 --lat ${RECEIVER_LATITUDE} --lon ${RECEIVER_LONGITUDE} --alt ${RECEIVER_ALTITUDE} --user ${RECEIVERNAME} --server feed.adsbexchange.com:31090 --no-udp --results beast,connect,127.0.0.1:30104
+    /usr/bin/mlat-client --input-type dump1090 --input-connect ${ADSB_EXCHANGE_MLAT_SRC_HOST}:${ADSB_EXCHANGE_MLAT_SRC_PORT} --lat ${RECEIVER_LATITUDE} --lon ${RECEIVER_LONGITUDE} --alt ${RECEIVER_ALTITUDE} --user ${RECEIVERNAME} --server ${ADSB_EXCHANGE_MLAT_DST_HOST}:${ADSB_EXCHANGE_MLAT_DST_PORT} --no-udp --results beast,connect,${ADSB_EXCHANGE_MLAT_SRC_HOST}:${ADSB_EXCHANGE_MLAT_RETURN_PORT}
     sleep 30
   done
 EOF
