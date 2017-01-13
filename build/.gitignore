@@ -1,4 +1,5 @@
 # exclude build directories
+AboveTustin/
 adsbexchange/
 acarsdec/
 dump1090-mutability/
@@ -7,6 +8,7 @@ hab/
 mlat-client/
 mlat-client*
 ogn/
+phantomjs*
 piaware_builder/
 planefinder/
 portal/graphs/dump1090.pyc
