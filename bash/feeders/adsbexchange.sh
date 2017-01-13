@@ -62,26 +62,28 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## BEGIN SETUP
 
-clear
-echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    clear
+    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+fi
 echo ""
 echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
+echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo ""
-whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
-CONTINUESETUP=$?
-if [[ "${CONTINUESETUP}" = 1 ]] ; then
-    # Setup has been halted by the user.
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
-    echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
+    if [[ $? -eq 1 ]] ; then
+        # Setup has been halted by the user.
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  Setup has been halted at the request of the user."
+        echo ""
+        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
+        echo ""
         read -p "Press enter to continue..." CONTINUE
+        exit 1
     fi
-    exit 1
 fi
 
 ## CHECK FOR AND REMOVE  ANY OLD STYLE ADB-B EXCHANGE SETUPS IF ANY EXIST
