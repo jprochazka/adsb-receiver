@@ -127,10 +127,10 @@ echo -e "\e[95m  Confirming information required by the netcat and mlat-client f
 echo -e ""
 
 # Ask the user for the user name for this receiver.
-RECEIVER_NAME_TITLE="Receiver Name"
-while [[ -z "${RECEIVER_NAME}" ]] ; do
-    RECEIVER_NAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
-    RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
+FEEDER_USERNAME_TITLE="Receiver Username"
+while [[ -z "${FEEDER_USERNAME}" ]] ; do
+    FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
+    FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
 done
 
 # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
@@ -265,7 +265,7 @@ tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
-    /usr/bin/mlat-client --input-type dump1090 --input-connect ${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_SRC_PORT} --lat ${RECEIVER_LATITUDE} --lon ${RECEIVER_LONGITUDE} --alt ${RECEIVER_ALTITUDE} --user ${RECEIVER_NAME} --server ${FEEDER_MLAT_DST_HOST}:${FEEDER_MLAT_DST_PORT} --no-udp --results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}
+    /usr/bin/mlat-client --input-type dump1090 --input-connect ${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_SRC_PORT} --lat ${RECEIVER_LATITUDE} --lon ${RECEIVER_LONGITUDE} --alt ${RECEIVER_ALTITUDE} --user ${FEEDER_USERNAME} --server ${FEEDER_MLAT_DST_HOST}:${FEEDER_MLAT_DST_PORT} --no-udp --results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}
     sleep 30
   done
 EOF
