@@ -522,31 +522,31 @@ fi
 # Write out the supplied values to the file config.ini.
 if [[ -n "${TWITTER_ACCESS_TOKEN}" ]] ; then
     echo -e "\e[94m  Writing Twitter token value to the config.ini file...\e[97m"
-    ChangeConfig "access_token" "${TWITTER_ACCESS_TOKEN}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig access_token ${TWITTER_ACCESS_TOKEN} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_ACCESS_TOKEN_SECRET}" ]] ; then
     echo -e "\e[94m  Writing Twitter token secret value to the config.ini file...\e[97m"
-    ChangeConfig "access_token_secret" "${TWITTER_ACCESS_TOKEN_SECRET}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig access_token_secret ${TWITTER_ACCESS_TOKEN_SECRET} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_CONSUMER_KEY}" ]] ; then
     echo -e "\e[94m  Writing Twitter consumer key value to the config.ini file...\e[97m"
-    ChangeConfig "consumer_key" "${TWITTER_CONSUMER_KEY}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig consumer_key ${TWITTER_CONSUMER_KEY} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_CONSUMER_SECRET}" ]] ; then
     echo -e "\e[94m  Writing Twitter consumer secret to the config.ini file...\e[97m"
-    ChangeConfig "consumer_secret" "${TWITTER_CONSUMER_SECRET}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig consumer_secret ${TWITTER_CONSUMER_SECRET} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${TIME_ZONE_ESCAPED}" ]] ; then
     echo -e "\e[94m  Writing receiver timezone to the config.ini file...\e[97m"
-    ChangeConfig "time_zone" "${TIME_ZONE_ESCAPED}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig time_zone ${TIME_ZONE_ESCAPED} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
     echo -e "\e[94m  Writing receiver latitude to the config.ini file...\e[97m"
-    ChangeConfig "latitude" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig latitude ${RECEIVER_LATITUDE} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
     echo -e "\e[94m  Writing receiver longitude to the config.ini file...\e[97m"
-    ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig longitude ${RECEIVER_LONGITUDE} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 
 ### BUILD AND INSTALL
