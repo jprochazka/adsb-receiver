@@ -42,18 +42,18 @@ BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
 FEEDER_NAME="adsbexchange"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
-ADSB_EXCHANGE_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
+FEEDER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
 
-ADSB_EXCHANGE_BEAST_SRC_HOST="127.0.0.1"
-ADSB_EXCHANGE_BEAST_SRC_PORT="30005"
-ADSB_EXCHANGE_BEAST_DST_HOST="feed.adsbexchange.com"
-ADSB_EXCHANGE_BEAST_DST_PORT="30005"
+FEEDER_BEAST_SRC_HOST="127.0.0.1"
+FEEDER_BEAST_SRC_PORT="30005"
+FEEDER_BEAST_DST_HOST="feed.adsbexchange.com"
+FEEDER_BEAST_DST_PORT="30005"
 
-ADSB_EXCHANGE_MLAT_SRC_HOST="127.0.0.1"
-ADSB_EXCHANGE_MLAT_SRC_PORT="30005"
-ADSB_EXCHANGE_MLAT_DST_HOST="feed.adsbexchange.com"
-ADSB_EXCHANGE_MLAT_DST_PORT="31090"
-ADSB_EXCHANGE_MLAT_RETURN_PORT="30104"
+FEEDER_MLAT_SRC_HOST="127.0.0.1"
+FEEDER_MLAT_SRC_PORT="30005"
+FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
+FEEDER_MLAT_DST_PORT="31090"
+FEEDER_MLAT_RETURN_PORT="30104"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -92,10 +92,10 @@ echo -e "\e[95m  Checking for and removing any old style ADS-B Exchange setups i
 echo -e ""
 # Check if the old style ${FEEDER_NAME}-maint.sh line exists in /etc/rc.local.
 echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
-if grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local; then
+if grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local; then
     # Kill any currently running instances of the ${FEEDER_NAME}-maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
-    PIDS=`ps -efww | grep -w "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
+    PIDS=`ps -efww | grep -w "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ ! -z "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
         echo -e ""
@@ -105,7 +105,7 @@ if grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/r
     fi
     # Remove the old line from /etc/rc.local.
     echo -e "\e[94m  Removing the old ${FEEDER_NAME}-maint.sh startup line from /etc/rc.local...\e[97m"
-    sudo sed -i /$${ADSB_EXCHANGE_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local 2>&1
+    sudo sed -i /$${FEEDER_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local 2>&1
 fi
 echo -e ""
 
@@ -241,20 +241,20 @@ echo -e ""
 
 # Create the feeder directory in the build directory if it does not exist.
 echo -e "\e[94m  Checking for the ${FEEDER_NAME} build directory...\e[97m"
-if [[ ! -d "${ADSB_EXCHANGE_BUILD_DIRECTORY}" ]] ; then
+if [[ ! -d "${FEEDER_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ${FEEDER_NAME} build directory...\e[97m"
-    mkdir -v ${ADSB_EXCHANGE_BUILD_DIRECTORY} 2>&1
+    mkdir -v ${FEEDER_BUILD_DIRECTORY} 2>&1
     echo -e ""
 fi
 
 # Create netcat maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 echo -e ""
-tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
+tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
-    /bin/nc ${ADSB_EXCHANGE_BEAST_SRC_HOST} ${ADSB_EXCHANGE_BEAST_SRC_PORT} | /bin/nc ${ADSB_EXCHANGE_BEAST_DST_HOST} ${ADSB_EXCHANGE_BEAST_DST_PORT}
+    /bin/nc ${FEEDER_BEAST_SRC_HOST} ${FEEDER_BEAST_SRC_PORT} | /bin/nc ${FEEDER_BEAST_DST_HOST} ${FEEDER_BEAST_DST_PORT}
     sleep 30
   done
 EOF
@@ -262,45 +262,45 @@ EOF
 # Create MLAT maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 echo -e ""
-tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
+tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
-    /usr/bin/mlat-client --input-type dump1090 --input-connect ${ADSB_EXCHANGE_MLAT_SRC_HOST}:${ADSB_EXCHANGE_MLAT_SRC_PORT} --lat ${RECEIVER_LATITUDE} --lon ${RECEIVER_LONGITUDE} --alt ${RECEIVER_ALTITUDE} --user ${RECEIVER_NAME} --server ${ADSB_EXCHANGE_MLAT_DST_HOST}:${ADSB_EXCHANGE_MLAT_DST_PORT} --no-udp --results beast,connect,${ADSB_EXCHANGE_MLAT_SRC_HOST}:${ADSB_EXCHANGE_MLAT_RETURN_PORT}
+    /usr/bin/mlat-client --input-type dump1090 --input-connect ${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_SRC_PORT} --lat ${RECEIVER_LATITUDE} --lon ${RECEIVER_LONGITUDE} --alt ${RECEIVER_ALTITUDE} --user ${RECEIVER_NAME} --server ${FEEDER_MLAT_DST_HOST}:${FEEDER_MLAT_DST_PORT} --no-udp --results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}
     sleep 30
   done
 EOF
 
 # Set permissions on netcat script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
-sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
+sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 
 # Set permissions on MLAT script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
-sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
+sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
 
 # Add netcat script to startup.
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
     echo -e ""
 fi
 
 # Add MLAT script to startup.
 echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
+if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
     echo -e ""
 fi
 
 ## START THE NETCAT FEED AND MLAT-CLIENT
 
 echo -e ""
-echo -e "\e[95m  Starting the netcat (${ADSB_EXCHANGE_BEAST_DST_HOST}:${ADSB_EXCHANGE_BEAST_DST_PORT}) and mlat-client (${ADSB_EXCHANGE_MLAT_DST_HOST}:${ADSB_EXCHANGE_MLAT_DST_PORT}) feeds...\e[97m"
+echo -e "\e[95m  Starting the netcat (${FEEDER_BEAST_DST_HOST}:${FEEDER_BEAST_DST_PORT}) and mlat-client (${FEEDER_MLAT_DST_HOST}:${FEEDER_MLAT_DST_PORT}) feeds...\e[97m"
 echo -e ""
 
 # Kill any currently running instances of the feeder netcat_maint.sh script.
@@ -311,7 +311,7 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
-PIDS=`ps -efww | grep -w "/bin/nc ${ADSB_EXCHANGE_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
+PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running netcat processes...\e[97m"
     sudo kill ${PIDS} 2>&1
@@ -326,7 +326,7 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
-PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${ADSB_EXCHANGE_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
+PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
     sudo kill ${PIDS} 2>&1
@@ -334,10 +334,10 @@ if [[ ! -z "${PIDS}" ]] ; then
 fi
 
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
-sudo nohup ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
+sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
 
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
-sudo nohup ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
+sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
 
 ### SETUP COMPLETE
 
