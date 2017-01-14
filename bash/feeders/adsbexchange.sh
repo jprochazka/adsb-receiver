@@ -137,7 +137,7 @@ done
 RECEIVER_LATITUDE_TITLE="Receiver Latitude"
 while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
     DUMP1090_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
-    RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude, the following values is configured in dump1090:" 10 78 -- "${DUMP1090_LATITUDE}" 3>&1 1>&2 2>&3)
+    RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude, the following value is configured in dump1090:" 10 78 -- "${DUMP1090_LATITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
 
@@ -145,7 +145,7 @@ done
 RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
 while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
     DUMP1090_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
-    RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude, the following values is configured in dump1090:" 10 78 -- "${DUMP1090_LONGITUDE}" 3>&1 1>&2 2>&3)
+    RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude, the following value is configured in dump1090:" 10 78 -- "${DUMP1090_LONGITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
 done
 
@@ -153,7 +153,7 @@ done
 RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
 while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
     DERIVED_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
-    RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude, the following values is obtained from google but should be increased to reflect your antennas height above ground level:" 11 78 -- "${DERIVED_ALTITUDE}" 3>&1 1>&2 2>&3)
+    RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude, the following value is obtained from google but should be increased to reflect your antennas height above ground level:" 11 78 -- "${DERIVED_ALTITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
 done
 
