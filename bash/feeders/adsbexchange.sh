@@ -99,13 +99,13 @@ if grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/r
     if [[ ! -z "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
         echo -e ""
-        sudo kill ${PIDS}
-        sudo kill -9 ${PIDS}
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
         echo -e ""
     fi
     # Remove the old line from /etc/rc.local.
     echo -e "\e[94m  Removing the old ${FEEDER_NAME}-maint.sh startup line from /etc/rc.local...\e[97m"
-    sudo sed -i /$${ADSB_EXCHANGE_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local
+    sudo sed -i /$${ADSB_EXCHANGE_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local 2>&1
 fi
 echo -e ""
 
@@ -168,14 +168,14 @@ if [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY} ]] && [[ -d ${MLAT_CLIENT_BUILD_DIRECTOR
     cd ${MLAT_CLIENT_BUILD_DIRECTORY}
     echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
     echo -e ""
-    git pull
+    git pull 2>&1
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}
     echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
     echo -e ""
-    git clone https://github.com/mutability/mlat-client.git
+    git clone https://github.com/mutability/mlat-client.git 2>&1
 fi
 
 ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
@@ -191,12 +191,12 @@ fi
 # Build binary package.
 echo -e "\e[94m  Building the mlat-client package...\e[97m"
 echo -e ""
-dpkg-buildpackage -b -uc
+dpkg-buildpackage -b -uc 2>&1
 echo -e ""
 # Install binary package.
 echo -e "\e[94m  Installing the mlat-client package...\e[97m"
 echo -e ""
-sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb
+sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
 echo -e ""
 # Create binary archive directory.
 if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
@@ -243,7 +243,7 @@ echo -e ""
 echo -e "\e[94m  Checking for the ${FEEDER_NAME} build directory...\e[97m"
 if [[ ! -d "${ADSB_EXCHANGE_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ${FEEDER_NAME} build directory...\e[97m"
-    mkdir ${ADSB_EXCHANGE_BUILD_DIRECTORY}
+    mkdir -v ${ADSB_EXCHANGE_BUILD_DIRECTORY} 2>&1
     echo -e ""
 fi
 
@@ -273,11 +273,11 @@ EOF
 
 # Set permissions on netcat script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
-sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh
+sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 
 # Set permissions on MLAT script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
-sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh
+sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
 
 # Add netcat script to startup.
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
@@ -308,14 +308,14 @@ echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh process
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
-    sudo kill ${PIDS}
-    sudo kill -9 ${PIDS}
+    sudo kill ${PIDS} 2>&1
+    sudo kill -9 ${PIDS} 2>&1
 fi
 PIDS=`ps -efww | grep -w "/bin/nc ${ADSB_EXCHANGE_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running netcat processes...\e[97m"
-    sudo kill ${PIDS}
-    sudo kill -9 ${PIDS}
+    sudo kill ${PIDS} 2>&1
+    sudo kill -9 ${PIDS} 2>&1
 fi
 
 # Kill any currently running instances of the feeder mlat_maint.sh script.
@@ -323,14 +323,14 @@ echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
-    sudo kill ${PIDS}
-    sudo kill -9 ${PIDS}
+    sudo kill ${PIDS} 2>&1
+    sudo kill -9 ${PIDS} 2>&1
 fi
 PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${ADSB_EXCHANGE_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
-    sudo kill ${PIDS}
-    sudo kill -9 ${PIDS}
+    sudo kill ${PIDS} 2>&1
+    sudo kill -9 ${PIDS} 2>&1
 fi
 
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
