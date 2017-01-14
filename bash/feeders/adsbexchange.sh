@@ -244,8 +244,8 @@ echo -e "\e[94m  Checking for the ${FEEDER_NAME} build directory...\e[97m"
 if [[ ! -d "${FEEDER_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ${FEEDER_NAME} build directory...\e[97m"
     mkdir -v ${FEEDER_BUILD_DIRECTORY} 2>&1
-    echo -e ""
 fi
+echo -e ""
 
 # Create netcat maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
@@ -261,7 +261,6 @@ EOF
 
 # Create MLAT maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
-echo -e ""
 tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
@@ -274,7 +273,6 @@ EOF
 # Set permissions on netcat script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
-echo -e ""
 
 # Set permissions on MLAT script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
@@ -314,8 +312,6 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
-echo -e ""
-
 PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running netcat processes...\e[97m"
@@ -332,8 +328,6 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
-echo -e ""
-
 PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
@@ -345,7 +339,6 @@ echo -e ""
 # Start netcat script.
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
 sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
-echo -e ""
 
 # Start MLAT script.
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
