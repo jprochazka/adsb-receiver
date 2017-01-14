@@ -153,7 +153,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token." 7 78 "${TWITTER_ACCESS_TOKEN}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token (REQUIRED)"
     done
-
+    #
     TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret"
     while [[ -z ${TWITTER_ACCESS_TOKEN_SECRET} ]] ; do
         if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
@@ -162,7 +162,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 7 78 "${TWITTER_ACCESS_TOKEN_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret (REQUIRED)"
     done
-
+    #
     TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key"
     while [[ -z ${TWITTER_CONSUMER_KEY} ]] ; do
         if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
@@ -171,7 +171,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key (REQUIRED)"
     done
-
+    #
     TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret"
     while [[ -z ${TWITTER_CONSUMER_SECRET} ]] ; do
         if [[ -f ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini ]] ; then
@@ -521,12 +521,12 @@ if [[ -n "${TIME_ZONE_ESCAPED}" ]] ; then
     ChangeConfig "time_zone" "${TIME_ZONE_ESCAPED}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
-echo -e "\e[94m  Writing receiver latitude to the config.ini file...\e[97m"
-ChangeConfig "latitude" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    echo -e "\e[94m  Writing receiver latitude to the config.ini file...\e[97m"
+    ChangeConfig "latitude" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
-echo -e "\e[94m  Writing receiver longitude to the config.ini file...\e[97m"
-ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    echo -e "\e[94m  Writing receiver longitude to the config.ini file...\e[97m"
+    ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 
 ### BUILD AND INSTALL
