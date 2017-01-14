@@ -120,6 +120,9 @@ CheckPackage python-dev
 CheckPackage python3-dev
 CheckPackage netcat
 
+## CONFIRM DERIVED VALUES
+
+
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
 echo ""
@@ -209,7 +212,7 @@ done
 RECEIVER_LATITUDE_TITLE="Receiver Latitude"
 while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
     DUMP1090_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
-    RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude, the following values is configured in dump1090:" 9 78 -- "${DUMP1090_LATITUDE}" 3>&1 1>&2 2>&3)
+    RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude, the following values is configured in dump1090:" 10 78 -- "${DUMP1090_LATITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
 
@@ -217,7 +220,7 @@ done
 RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
 while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
     DUMP1090_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
-    RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude, the following values is configured in dump1090:" 9 78 -- "${DUMP1090_LONGITUDE}" 3>&1 1>&2 2>&3)
+    RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude, the following values is configured in dump1090:" 10 78 -- "${DUMP1090_LONGITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
 done
 
@@ -225,7 +228,7 @@ done
 RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
 while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
     DERIVED_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];")
-    RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude, the following values is obtained from google but should be increased to reflect your antennas height above ground level:" 10 78 -- "${DERIVED_ALTITUDE}" 3>&1 1>&2 2>&3)
+    RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude, the following values is obtained from google but should be increased to reflect your antennas height above ground level:" 11 78 -- "${DERIVED_ALTITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
 done
 
@@ -237,7 +240,9 @@ if [[ ! -d "${ADSB_EXCHANGE_BUILD_DIRECTORY}" ]] ; then
     echo -e ""
 fi
 
+# Create netcat maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
+echo ""
 tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
@@ -247,7 +252,9 @@ while true
   done
 EOF
 
+# Create MLAT maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
+echo ""
 tee ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
@@ -257,30 +264,36 @@ while true
   done
 EOF
 
+# Set permissions on netcat script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh
 
+# Set permissions on MLAT script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 sudo chmod +x ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh
 
+# Add netcat script to startup.
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
 if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
+    echo ""
 fi
 
+# Add MLAT script to startup.
 echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
 if ! grep -Fxq "${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
     echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${ADSB_EXCHANGE_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
+    echo ""
 fi
 
 ## START THE NETCAT FEED AND MLAT-CLIENT
 
 echo ""
-echo -e "\e[95m  Starting both the netcat and mlat-client feeds...\e[97m"
+echo -e "\e[95m  Starting the netcat (${ADSB_EXCHANGE_BEAST_DST_HOST}:${ADSB_EXCHANGE_BEAST_DST_PORT}) and mlat-client (${ADSB_EXCHANGE_MLAT_DST_HOST}:${ADSB_EXCHANGE_MLAT_DST_PORT}) feeds...\e[97m"
 echo ""
 
 # Kill any currently running instances of the feeder netcat_maint.sh script.
