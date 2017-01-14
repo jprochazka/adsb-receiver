@@ -97,7 +97,7 @@ if grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ ! -z "${PIDS}" ]] ; then
-        echo -e "\e[94m   Killing any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
+        echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
         echo -e ""
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
@@ -271,11 +271,11 @@ while true
 EOF
 
 # Set permissions on netcat script.
-echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
+echo -e "\e[94m  -Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 
 # Set permissions on MLAT script.
-echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
+echo -e "\e[94m  -Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
 echo -e ""
 
@@ -308,13 +308,13 @@ echo -e ""
 echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m   Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
+    echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
 PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m   Killing any running netcat processes...\e[97m"
+    echo -e "\e[94m  -Killing any running netcat processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
@@ -324,13 +324,13 @@ echo -e ""
 echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m   Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
+    echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
 PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
-    echo -e "\e[94m   Killing any running mlat-client processes...\e[97m"
+    echo -e "\e[94m  -Killing any running mlat-client processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
