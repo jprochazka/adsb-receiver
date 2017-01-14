@@ -549,6 +549,9 @@ if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
     ChangeConfig longitude ${RECEIVER_LONGITUDE} "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
 
+# Quick fix to remove quotes from config.
+sed -e 's/= "/= /g' -e 's/"$//g' -i "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" 2>&1
+
 ### BUILD AND INSTALL
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
