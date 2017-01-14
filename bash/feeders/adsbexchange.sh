@@ -274,10 +274,12 @@ EOF
 # Set permissions on netcat script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
+echo -e ""
 
 # Set permissions on MLAT script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
+echo -e ""
 
 # Add netcat script to startup.
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
@@ -296,11 +298,12 @@ if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/r
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
     echo -e ""
 fi
+echo -e ""
 
 ## START THE NETCAT FEED AND MLAT-CLIENT
 
 echo -e ""
-echo -e "\e[95m  Starting the netcat (${FEEDER_BEAST_DST_HOST}:${FEEDER_BEAST_DST_PORT}) and mlat-client (${FEEDER_MLAT_DST_HOST}:${FEEDER_MLAT_DST_PORT}) feeds...\e[97m"
+echo -e "\e[95m  Starting the netcat and mlat-client feeds...\e[97m"
 echo -e ""
 
 # Kill any currently running instances of the feeder netcat_maint.sh script.
@@ -311,12 +314,15 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
+echo -e ""
+
 PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running netcat processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
+echo -e ""
 
 # Kill any currently running instances of the feeder mlat_maint.sh script.
 echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
@@ -326,18 +332,25 @@ if [[ ! -z "${PIDS}" ]] ; then
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
+echo -e ""
+
 PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ ! -z "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
+echo -e ""
 
+# Start netcat script.
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
 sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
+echo -e ""
 
+# Start MLAT script.
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
 sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
+echo -e ""
 
 ### SETUP COMPLETE
 
