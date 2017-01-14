@@ -249,7 +249,6 @@ echo -e ""
 
 # Create netcat maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
-echo -e ""
 tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
@@ -269,13 +268,14 @@ while true
     sleep 30
   done
 EOF
+echo -e ""
 
 # Set permissions on netcat script.
-echo -e "\e[94m  -Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
+echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 
 # Set permissions on MLAT script.
-echo -e "\e[94m  -Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
+echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
 echo -e ""
 
