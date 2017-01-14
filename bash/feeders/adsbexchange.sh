@@ -152,7 +152,7 @@ done
 # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
 RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
 while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
-    DERIVED_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];")
+    DERIVED_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
     RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude, the following values is obtained from google but should be increased to reflect your antennas height above ground level:" 11 78 -- "${DERIVED_ALTITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
 done
