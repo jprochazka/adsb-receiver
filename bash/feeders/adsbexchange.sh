@@ -136,7 +136,9 @@ done
 # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
 RECEIVER_LATITUDE_TITLE="Receiver Latitude"
 while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
-    DUMP1090_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
+    if [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+        DUMP1090_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
+    fi
     RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude, the below value is configured in dump1090:" 10 78 -- "${DUMP1090_LATITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
@@ -144,7 +146,9 @@ done
 # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
 RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
 while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
-    DUMP1090_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
+    if [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+        DUMP1090_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
+    fi
     RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude, the below value is configured in dump1090:" 10 78 -- "${DUMP1090_LONGITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
 done
