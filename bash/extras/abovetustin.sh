@@ -89,11 +89,11 @@ else
     if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "x86_64" ]] || [[ "${CPU_ARCHITECTURE}" = "i686" ]] ; then
         # A precompiled binary should be available for this device.
         echo -e "\e[94m  A precompiled PhantomJS binary appears to be available for the \"${CPU_ARCHITECTURE}\" CPU arcitecture...\e[97m"
-        BINARY_AVAILABLE="true"
+        PHANTOMJS_BINARY_AVAILABLE="true"
     else
         # A precompiled binary does not appear to be available for this device.
         echo -e "\e[94m  A precompiled PhantomJS binary does is not available for the \"${CPU_ARCHITECTURE}\" CPU's arcitecture...\e[97m"
-        BINARY_AVAILABLE="false"
+        PHANTOMJS_BINARY_AVAILABLE="false"
 
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Warn the user of the build time if there is no binary available for download.
@@ -164,7 +164,7 @@ CheckPackage libpng12-dev
 CheckPackage libc6
 CheckPackage curl
 
-if [[ "${BINARY_AVAILABLE}" = "false" ]] ; then
+if [[ "${PHANTOMJS_BINARY_AVAILABLE}" = "false" ]] ; then
     # These packages are only needed if the user decided to build PhantomJS.
     CheckPackage build-essential
     CheckPackage g++
@@ -229,7 +229,6 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
-
 ## CONFIRM DERIVED VALUES
 
 # Ask for the receivers latitude and longitude.
@@ -254,6 +253,12 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
+## START INSTALLATION
+
+echo ""
+echo -e "\e[95m  Commencing installation...\e[97m"
+echo ""
+
 # Confirm timezone.
 if [[ -z ${TIME_ZONE} ]] ; then
     echo -e "\e[94m  Confirming time zone...\e[97m"
@@ -264,12 +269,12 @@ fi
 ### SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
 
 if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
-    if [[ "${BINARY_AVAILABLE}" = "true" ]] ; then
+    if [[ "${PHANTOMJS_BINARY_AVAILABLE}" = "true" ]] ; then
 
         # DOWNLOAD THE PHANTOMJS BINARY
 
         echo ""
-        echo -e "\e[95m  Downloading then placing the PhantomJS binary...\e[97m"
+        echo -e "\e[95m  Downloading and installing the PhantomJS binary...\e[97m"
         echo ""
 
         # Enter the root of the project build directory.
