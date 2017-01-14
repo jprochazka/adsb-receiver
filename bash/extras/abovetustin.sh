@@ -229,6 +229,31 @@ else
     CheckPackage bzip2
 fi
 
+## CONFIRM DERIVED VALUES
+
+# Ask for the receivers latitude and longitude.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Explain to the user that the receiver's latitude and longitude is required.
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    # Ask the user for the receiver's latitude.
+    RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    while [[ -z ${RECEIVER_LATITUDE} ]] ; do
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude (REQUIRED)" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    done
+    # Ask the user for the receiver's longitude.
+    RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    while [[ -z ${RECEIVER_LONGITUDE} ]] ; do
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude (REQUIRED)" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    done
+fi
+
+# Confirm timezone.
+if [[ -z ${TIME_ZONE} ]] ; then
+    echo -e "\e[94m  Confirming time zone...\e[97m"
+    TIME_ZONE=`cat /etc/timezone 2>&1`
+    TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\\//\\\\\//g'`
+fi
+
 ### SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
 
 if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
@@ -474,13 +499,6 @@ else
     echo -e "\e[94m  Unable to install configuration file config.ini...\e[97m"
 fi
 
-# Confirm timezone.
-if [[ -z ${TIME_ZONE} ]] ; then
-    echo -e "\e[94m  Confirming time zone...\e[97m"
-    TIME_ZONE=`cat /etc/timezone 2>&1`
-    TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\\//\\\\\//g'`
-fi
-
 # Write out the supplied values to the file config.ini.
 if [[ -n "${TWITTER_ACCESS_TOKEN}" ]] ; then
     echo -e "\e[94m  Writing Twitter token value to the config.ini file...\e[97m"
@@ -502,26 +520,14 @@ if [[ -n "${TIME_ZONE_ESCAPED}" ]] ; then
     echo -e "\e[94m  Writing receiver timezone to the config.ini file...\e[97m"
     ChangeConfig "time_zone" "${TIME_ZONE_ESCAPED}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
 fi
-
-# Ask for the receivers latitude and longitude.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Explain to the user that the receiver's latitude and longitude is required.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-    # Ask the user for the receiver's latitude.
-    RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [[ -z ${RECEIVER_LATITUDE} ]] ; do
-        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude (REQUIRED)" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    done
-    # Ask the user for the receiver's longitude.
-    RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [[ -z ${RECEIVER_LONGITUDE} ]] ; do
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude (REQUIRED)" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    done
-fi
+if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
 echo -e "\e[94m  Writing receiver latitude to the config.ini file...\e[97m"
 ChangeConfig "latitude" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+fi
+if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
 echo -e "\e[94m  Writing receiver longitude to the config.ini file...\e[97m"
 ChangeConfig "longitude" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"
+fi
 
 ### BUILD AND INSTALL
 
