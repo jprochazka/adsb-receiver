@@ -237,14 +237,20 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     # Ask the user for the receiver's latitude.
-    RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [[ -z ${RECEIVER_LATITUDE} ]] ; do
-        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude (REQUIRED)" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
+    RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+    while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+        DUMP1090_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude, the following value is configured in dump1090:" 10 78 -- "${DUMP1090_LATITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
     # Ask the user for the receiver's longitude.
-    RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-    while [[ -z ${RECEIVER_LONGITUDE} ]] ; do
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Longitude (REQUIRED)" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
+    RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+        DUMP1090_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude, the following value is configured in dump1090:" 10 78 -- "${DUMP1090_LONGITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 fi
 
