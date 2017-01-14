@@ -154,20 +154,24 @@ if [[ ! "${PWD}" = ${MLAT_CLIENT_BUILD_DIRECTORY} ]] ; then
     echo -e ""
     cd ${MLAT_CLIENT_BUILD_DIRECTORY}
 fi
+# Build binary package.
 echo -e "\e[94m  Building the mlat-client package...\e[97m"
 echo -e ""
 dpkg-buildpackage -b -uc
 echo -e ""
+# Install binary package.
 echo -e "\e[94m  Installing the mlat-client package...\e[97m"
 echo -e ""
 sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb
 echo -e ""
+# Create binary archive directory.
 if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating archive directory...\e[97m"
     echo -e ""
     mkdir -v ${BINARIES_DIRECTORY} 2>&1
     echo -e ""
 fi
+# Archive binary package.
 echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
 echo -e ""
 mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
