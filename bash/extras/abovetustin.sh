@@ -126,6 +126,53 @@ else
     fi
 fi
 
+### CHECK FOR PREREQUISITE PACKAGES
+
+echo ""
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
+echo ""
+
+# The package ttf-mscorefonts-installer requires contrib be added to the Debian repositories contained in /etc/apt/sources.list.
+# The contrib flag does not need to be added for Raspbian Jessie and Ubuntu only Debian so far.
+if [[ `lsb_release -si` = "Debian" ]] ; then
+    echo -e "\e[94m  Adding the contrib component to the repositories contained sources.list...\e[97m"
+    sudo sed -i 's/main/main contrib/g' /etc/apt/sources.list 2>&1
+    echo -e "\e[94m  Updating the repository package lists...\e[97m"
+    sudo apt-get update 2>&1
+fi
+
+# Check that the required packages are installed.
+CheckPackage ttf-mscorefonts-installer
+CheckPackage python3-pip
+CheckPackage libstdc++6
+CheckPackage flex
+CheckPackage bison
+CheckPackage gperf
+CheckPackage ruby
+CheckPackage perl
+CheckPackage libsqlite3-dev
+CheckPackage libfontconfig1
+CheckPackage libfontconfig1-dev
+CheckPackage libicu-dev
+CheckPackage libfreetype6
+CheckPackage libssl-dev
+CheckPackage libjpeg-dev
+CheckPackage python
+CheckPackage libx11-dev
+CheckPackage libxext-dev
+CheckPackage libpng12-dev
+CheckPackage libc6
+CheckPackage curl
+
+if [[ "${BINARY_AVAILABLE}" = "false" ]] ; then
+    # These packages are only needed if the user decided to build PhantomJS.
+    CheckPackage build-essential
+    CheckPackage g++
+else
+    # Package needed if the prebuilt PhantomJS binary is to be downloaded.
+    CheckPackage bzip2
+fi
+
 ### GATHER TWITTER API INFORMATION FROM THE USER
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -182,52 +229,6 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
-### CHECK FOR PREREQUISITE PACKAGES
-
-echo ""
-echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
-
-# The package ttf-mscorefonts-installer requires contrib be added to the Debian repositories contained in /etc/apt/sources.list.
-# The contrib flag does not need to be added for Raspbian Jessie and Ubuntu only Debian so far.
-if [[ `lsb_release -si` = "Debian" ]] ; then
-    echo -e "\e[94m  Adding the contrib component to the repositories contained sources.list...\e[97m"
-    sudo sed -i 's/main/main contrib/g' /etc/apt/sources.list 2>&1
-    echo -e "\e[94m  Updating the repository package lists...\e[97m"
-    sudo apt-get update 2>&1
-fi
-
-# Check that the required packages are installed.
-CheckPackage ttf-mscorefonts-installer
-CheckPackage python3-pip
-CheckPackage libstdc++6
-CheckPackage flex
-CheckPackage bison
-CheckPackage gperf
-CheckPackage ruby
-CheckPackage perl
-CheckPackage libsqlite3-dev
-CheckPackage libfontconfig1
-CheckPackage libfontconfig1-dev
-CheckPackage libicu-dev
-CheckPackage libfreetype6
-CheckPackage libssl-dev
-CheckPackage libjpeg-dev
-CheckPackage python
-CheckPackage libx11-dev
-CheckPackage libxext-dev
-CheckPackage libpng12-dev
-CheckPackage libc6
-CheckPackage curl
-
-if [[ "${BINARY_AVAILABLE}" = "false" ]] ; then
-    # These packages are only needed if the user decided to build PhantomJS.
-    CheckPackage build-essential
-    CheckPackage g++
-else
-    # Package needed if the prebuilt PhantomJS binary is to be downloaded.
-    CheckPackage bzip2
-fi
 
 ## CONFIRM DERIVED VALUES
 
