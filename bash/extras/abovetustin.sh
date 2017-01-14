@@ -195,7 +195,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token"
     while [[ -z ${TWITTER_ACCESS_TOKEN} ]] ; do
         if [[ `grep -c "^access_token =" ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_ACCESS_TOKEN=`GetConfig "access_token" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
+            TWITTER_ACCESS_TOKEN=$(grep "^access_token =" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
         TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token." 7 78 "${TWITTER_ACCESS_TOKEN}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token (REQUIRED)"
@@ -204,7 +204,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret"
     while [[ -z ${TWITTER_ACCESS_TOKEN_SECRET} ]] ; do
         if [[ `grep -c "^access_token_secret =" ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_ACCESS_TOKEN_SECRET=`GetConfig "access_token_secret" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
+            TWITTER_ACCESS_TOKEN_SECRET=$(grep "^access_token_secret =" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
         TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 7 78 "${TWITTER_ACCESS_TOKEN_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret (REQUIRED)"
@@ -213,7 +213,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key"
     while [[ -z ${TWITTER_CONSUMER_KEY} ]] ; do
         if [[ `grep -c "^consumer_key =" ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_CONSUMER_KEY=`GetConfig "consumer_key" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
+            TWITTER_CONSUMER_KEY=$(grep "^consumer_key =" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
         TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key (REQUIRED)"
@@ -222,7 +222,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret"
     while [[ -z ${TWITTER_CONSUMER_SECRET} ]] ; do
         if [[ `grep -c "^consumer_secret =" ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_CONSUMER_SECRET=`GetConfig "consumer_secret" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini"`
+            TWITTER_CONSUMER_SECRET=$(grep "^consumer_secret =" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
         TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "${TWITTER_CONSUMER_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret (REQUIRED)"
@@ -240,7 +240,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
         if [[ `grep -c "^latitude =" ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            RECEIVER_LATITUDE=$(GetConfig "latitude" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini")
+            RECEIVER_LATITUDE=$(grep "^latitude =" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         else
             RECEIVER_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
         fi
@@ -252,7 +252,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
         if [[ `grep -c "^longitude =" ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            RECEIVER_LONGITUDE=$(GetConfig "longitude" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini")
+            RECEIVER_LONGITUDE=$(grep "^longitude =" "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         else
             RECEIVER_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
         fi
