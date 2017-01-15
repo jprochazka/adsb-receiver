@@ -137,19 +137,19 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
-        if [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
-            RECEIVER_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
+        if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+            RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk '{print $3}')
             RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
-        RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
 
     # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
-        if [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
-            RECEIVER_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
+        if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+            RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk '{print $3}')
             RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
         RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
@@ -160,8 +160,8 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
         if [[ -n ${RECEIVER_LATITUDE} ]] && [[ -n ${RECEIVER_LONGITUDE} ]] ; then
-        RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
-        RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
+            RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
+            RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
         fi
         RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
