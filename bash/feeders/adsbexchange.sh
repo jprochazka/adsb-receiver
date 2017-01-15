@@ -274,7 +274,7 @@ echo -e ""
 # Create netcat maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
-#! /bin/sh
+#! /bin/bash
 while true
   do
     /bin/nc ${FEEDER_BEAST_SRC_HOST} ${FEEDER_BEAST_SRC_PORT} | /bin/nc ${FEEDER_BEAST_DST_HOST} ${FEEDER_BEAST_DST_PORT}
@@ -285,7 +285,7 @@ EOF
 # Create MLAT maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
-#! /bin/sh
+#! /bin/bash
 while true
   do
     /usr/bin/mlat-client --input-type dump1090 --input-connect ${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_SRC_PORT} --lat ${RECEIVER_LATITUDE} --lon ${RECEIVER_LONGITUDE} --alt ${RECEIVER_ALTITUDE} --user ${FEEDER_USERNAME} --server ${FEEDER_MLAT_DST_HOST}:${FEEDER_MLAT_DST_PORT} --no-udp ${FEEDER_MLAT_RETURN_RESULTS}

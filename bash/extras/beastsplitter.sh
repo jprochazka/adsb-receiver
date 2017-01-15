@@ -157,7 +157,7 @@ sudo dpkg -i beast-splitter_*.deb
 
 echo -e "\e[94m  Creating the file beast-splitter_maint.sh...\e[97m"
 tee ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh > /dev/null <<EOF
-#! /bin/sh
+#! /bin/bash
 while true
   do
     sleep 30

@@ -48,7 +48,7 @@ echo -e ""
 # Create and set permissions on the flight logging and maintenance maintenance scripts.
 echo -e "\e[94m  Creating the flight logging maintenance script...\e[97m"
 tee $PORTALPYTHONDIRECTORY/flights-maint.sh > /dev/null <<EOF
-#!/bin/sh
+#!/bin/bash
 while true
   do
     sleep 30
@@ -58,7 +58,7 @@ EOF
 
 echo -e "\e[94m  Creating the maintenance maintenance script...\e[97m"
 tee $PORTALPYTHONDIRECTORY/maintenance-maint.sh > /dev/null <<EOF
-#!/bin/sh
+#!/bin/bash
 while true
   do
     sleep 30
