@@ -46,33 +46,33 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
-echo ""
+echo -e ""
 echo -e "\e[92m  Setting up the Duck DNS dynamic DNS update script..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Duck DNS Dynamic DNS" --yesno "Duck DNS is a free dynamic DNS service hosted on Amazon VPC.\n\nPLEASE NOTE:\n\nBefore continuing this setup it is recommended that you visit the Duck DNS website and signup for then setup a sub domain which will be used by this device. You will need both the domain and token supplied to you after setting up your account.\n\nhttp://www.duckdns.org\n\nContinue with Duck DNS update script setup?" 18 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo ""
+        echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Duck DNS dynamic DNS setup halted.\e[39m"
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
 fi
 
 echo -e "\e[95m  Setting up Duck DNS dynamic DNS on this device...\e[97m"
-echo ""
+echo -e ""
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
 # Check that the required packages are installed.
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
+echo -e ""
 CheckPackage cron
 CheckPackage curl
 
@@ -138,9 +138,9 @@ JOB="*/5 * * * * ${COMMAND}"
 
 # Run the Duck DNS update script for the first time..
 echo -e "\e[94m  Executing the Duck DNS update script...\e[97m"
-echo ""
+echo -e ""
 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh
-echo ""
+echo -e ""
 
 ### SETUP COMPLETE
 
@@ -148,10 +148,10 @@ echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo ""
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Duck DNS dynamic DNS setup is complete.\e[39m"
-echo ""
+echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi

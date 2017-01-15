@@ -49,20 +49,20 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m  $RECEIVER_PROJECT_TITLE"
 fi
-echo ""
+echo -e ""
 echo -e "\e[92m  Setting up dump978..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Setup" --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  https://github.com/mutability/dump978\n\nWould you like to continue setup by installing dump978?" 9 78
     if [ $? -eq 1 ]; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo ""
+        echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Dump978 setup halted.\e[39m"
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
@@ -71,7 +71,7 @@ fi
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
+echo -e ""
 CheckPackage git
 CheckPackage make
 CheckPackage rtl-sdr
@@ -83,9 +83,9 @@ CheckPackage lighttpd
 
 ## DOWNLOAD THE DUMP978 SOURCE CODE
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Preparing the dump978 Git repository...\e[97m"
-echo ""
+echo -e ""
 
 # Remove the existing dumpp978 build directory if it exists.
 if [ -d $RECEIVER_BUILD_DIRECTORY/dump978 ]; then
@@ -98,14 +98,14 @@ fi
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd $RECEIVER_BUILD_DIRECTORY
 echo -e "\e[94m  Cloning the dump978 Git repository locally...\e[97m"
-echo ""
+echo -e ""
 git clone https://github.com/mutability/dump978.git
 
 ## BUILD THE DUMP978 BINARIES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Building the dump978 binaries...\e[97m"
-echo ""
+echo -e ""
 # Enter the dump978 repository if we are not already in it.
 if [ ! "$PWD" = $RECEIVER_BUILD_DIRECTORY/dump978 ]; then
     echo -e "\e[94m  Entering the dump978 Git repository directory...\e[97m"
@@ -113,33 +113,33 @@ if [ ! "$PWD" = $RECEIVER_BUILD_DIRECTORY/dump978 ]; then
 fi
 # Build the dump978 binaries from source.
 echo -e "\e[94m  Building the dump978 binaries...\e[97m"
-echo ""
+echo -e ""
 make all
-echo ""
+echo -e ""
 
 # Check that the dump978 binaries were built.
 echo -e "\e[94m  Checking that the dump978 binaries were built...\e[97m"
 if [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] || [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2esnt ] || [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2json ] || [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2text ]; then
     # If the dump978 binaries could not be found halt setup.
-    echo ""
+    echo -e ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  UNABLE TO LOCATE THE DUMP978 BINARIES."
     echo -e "  SETUP HAS BEEN TERMINATED!"
-    echo ""
+    echo -e ""
     echo -e "\e[93mThe dump978 binaries appear to have not been built successfully..\e[39m"
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump978 setup halted.\e[39m"
-    echo ""
+    echo -e ""
     read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
 ## SETUP AND CONFIGURE THE DEVICE TO UTILIZE THE DDUMP978 BINARIES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Configuring the device to utilize the dump978 binaries...\e[97m"
-echo ""
+echo -e ""
 
 # Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
 echo -e "\e[94m  Creating an RTL-SDR kernel module blacklist file...\e[97m"
@@ -151,9 +151,9 @@ blacklist rtl_2832
 blacklist r820t
 EOF
 echo -e "\e[94m  Removing the kernel module dvb_usb_rtl28xxu...\e[97m"
-echo ""
+echo -e ""
 sudo rmmod dvb_usb_rtl28xxu
-echo ""
+echo -e ""
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
@@ -176,9 +176,9 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     echo -e "\e[94m  Assigning RTL-SDR dongle \"$DUMP1090DEVICE\" to dump1090-mutability...\e[97m"
     ChangeConfig "DEVICE" $DUMP1090_DEVICE_ID "/etc/default/dump1090-mutability"
     echo -e "\e[94m  Restarting dump1090-mutability...\e[97m"
-    echo ""
+    echo -e ""
     sudo /etc/init.d/dump1090-mutability restart
-    echo ""
+    echo -e ""
 
     # Get the latitude and longitude set in the dump1090-mutability configuration file to be used later.
     echo -e "\e[94m  Retrieving the receiver's latitude from /etc/default/dump1090-mutability...\e[97m"
@@ -251,9 +251,9 @@ fi
 
 ## EXECUTE THE MAINTAINANCE SCRIPT TO START DUMP978
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Starting dump978...\e[97m"
-echo ""
+echo -e ""
 echo -e "\e[94m  Starting dump978 by executing the dump978 maintenance script...\e[97m"
 sudo nohup $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null 2>&1 &
 
@@ -263,10 +263,10 @@ sudo nohup $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null 2>&1 &
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo ""
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump978 setup is complete.\e[39m"
-echo ""
+echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi

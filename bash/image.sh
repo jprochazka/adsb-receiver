@@ -54,16 +54,16 @@ whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image 
 if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --yesno "The image comes with the latest updates to Raspbian as of it's release. However updates may have been released for the operating system since the image was released. This being said it is highly recommended you allow the script to check for additional updates now in order to ensure you are in fact running the latest software available.\n\nWould you like the script to check for and install updates now?" 13 78) then
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
+    echo -e ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     sudo apt-get update
     sudo apt-get -y dist-upgrade
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
-    echo ""
+    echo -e ""
     if [[ -n ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -73,10 +73,10 @@ fi
 
 clear
 echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
-echo ""
+echo -e ""
 echo -e "\e[92m  Configure dump1090..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 
 # If dump1090-mutability is installed...
 
@@ -109,7 +109,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
 
     # Reload dump1090-mutability to ensure all changes take effect.
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-    echo ""
+    echo -e ""
     sudo /etc/init.d/dump1090-mutability force-reload
 fi
 
@@ -132,7 +132,7 @@ if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] || [ ! -f /usr/s
             HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
         done
         echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
-        echo ""
+        echo -e ""
         if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
             HTMLPATH="/usr/share/dump1090-mutability/html/upintheair.json"
         else
@@ -143,10 +143,10 @@ if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] || [ ! -f /usr/s
 fi
 
 # Dump1090 configuration is now complete.
-echo ""
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090 configuration complete.\e[39m"
-echo ""
+echo -e ""
 if [[ -n ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
@@ -157,10 +157,10 @@ fi
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     clear
     echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
-    echo ""
+    echo -e ""
     echo -e "\e[92m  Configure PiAware..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-    echo ""
+    echo -e ""
 
     whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
     # Ask for the users FlightAware login.
@@ -192,27 +192,27 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
 
         # Set the supplied user name and password in the configuration.
         echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
-        echo ""
+        echo -e ""
         sudo piaware-config flightaware-user $FLIGHTAWARELOGIN
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
-        echo ""
+        echo -e ""
         sudo piaware-config flightaware-password $FLIGHTAWAREPASSWORD1
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
-        echo ""
+        echo -e ""
         sudo /etc/init.d/piaware restart
-        echo ""
+        echo -e ""
     else
         # Display a message to the user stating they need to manually claim their device.
         whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
     fi
 
     # PiAware configuration is now complete.
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware configuration complete.\e[39m"
-    echo ""
+    echo -e ""
     if [[ -n ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi

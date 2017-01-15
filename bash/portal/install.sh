@@ -47,20 +47,20 @@ source $BASHDIRECTORY/functions.sh
 
 clear
 echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-echo ""
+echo -e ""
 echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
 CONTINUESETUP=$?
 if [ "$CONTINUESETUP" = 1 ]; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  ADS-B Receiver Project Portal setup halted.\e[39m"
-    echo ""
+    echo -e ""
     if [[ -n ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -71,7 +71,7 @@ fi
 
 # We will need to make sure Lighttpd is installed first before we go any further.
 echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
-echo ""
+echo -e ""
 CheckPackage lighttpd
 
 # Assign the Lighthttpd document root directory to a variable.
@@ -301,14 +301,14 @@ fi
 
 # Reload Lighttpd after installing the prerequisite packages.
 echo -e "\e[94m  Reloading Lighttpd...\e[97m"
-echo ""
+echo -e ""
 sudo /etc/init.d/lighttpd force-reload
 
 ## SETUP THE PORTAL WEBSITE
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting up the web portal...\e[97m"
-echo ""
+echo -e ""
 
 # If this is an existing Lite installation being upgraded backup the XML data files.
 if [ "$PORTALINSTALLED" = "true" ] && [ "$ADVANCED" = "false" ]; then
@@ -411,19 +411,19 @@ fi
 
 if [ "$PORTALINSTALLED" = "false" ]; then
     echo -e "\e[94m  Enabling the Lighttpd fastcgi-php module...\e[97m"
-    echo ""
+    echo -e ""
     sudo lighty-enable-mod fastcgi-php
-    echo ""
+    echo -e ""
 fi
 
 # Reload or start Lighttpd.
 if pgrep "lighttpd" > /dev/null; then
     echo -e "\e[94m  Reloading Lighttpd...\e[97m"
-    echo ""
+    echo -e ""
     sudo /etc/init.d/lighttpd force-reload
 else
     echo -e "\e[94m  Starting Lighttpd...\e[97m"
-    echo ""
+    echo -e ""
     sudo /etc/init.d/lighttpd start
 fi
 
@@ -489,9 +489,9 @@ fi
 chmod +x $BASHDIRECTORY/portal/graphs.sh
 $BASHDIRECTORY/portal/graphs.sh
 if [ $? -ne 0 ]; then
-    echo ""
+    echo -e ""
     echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AN ERROR"
-    echo ""
+    echo -e ""
     exit 1
 fi
 
@@ -516,9 +516,9 @@ fi
 chmod +x $BASHDIRECTORY/portal/core.sh
 $BASHDIRECTORY/portal/core.sh
 if [ $? -ne 0 ]; then
-    echo ""
+    echo -e ""
     echo -e "  \e[91m  THE SCRIPT CORE.SH ENCOUNTERED AN ERROR"
-    echo ""
+    echo -e ""
     exit 1
 fi
 
@@ -533,9 +533,9 @@ if [ "$ADVANCED" = "true" ]; then
     chmod +x $BASHDIRECTORY/portal/logging.sh
     $BASHDIRECTORY/portal/logging.sh
     if [ $? -ne 0 ]; then
-        echo ""
+        echo -e ""
         echo -e "  \e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AN ERROR"
-        echo ""
+        echo -e ""
         exit 1
     fi
 fi
@@ -561,10 +561,10 @@ whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Portal
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo ""
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  ADS-B Receiver Project Portal setup is complete.\e[39m"
-echo ""
+echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi

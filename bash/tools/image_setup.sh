@@ -55,22 +55,22 @@ BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
-echo ""
+echo -e ""
 echo -e "\e[91m  The ADS-B Receiver Project Image Preparation Script\e[97m"
-echo ""
+echo -e ""
 
 ## UPDATE REPOSITORY LISTS AND OPERATING SYSTEM
 
 echo -e "\e[95m  Updating repository lists and operating system...\e[97m"
-echo ""
+echo -e ""
 sudo apt-get update
 sudo apt-get -y dist-upgrade
 
 ## INSTALL DUMP1090
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Installing prerequisite packages...\e[97m"
-echo ""
+echo -e ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
@@ -89,12 +89,12 @@ DUMP1090OPTION=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Choose Dump1
 case $DUMP1090OPTION in
     "dump1090-mutability")
         echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
-        echo ""
+        echo -e ""
 
         # Dump1090-mutability
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
-        echo ""
+        echo -e ""
         mkdir -p $BUILDDIRECTORY/dump1090-mutability
         cd $BUILDDIRECTORY/dump1090-mutability
         git clone https://github.com/mutability/dump1090.git
@@ -105,11 +105,11 @@ case $DUMP1090OPTION in
         ;;
     "dump1090-fa")
         echo -e "\e[95m  Installing dump1090-fa and PiAware...\e[97m"
-        echo ""
+        echo -e ""
 
         # Install prerequisite packages.
         echo -e "\e[95m  Installing additional dump1090-fa and PiAware prerequisite packages...\e[97m"
-        echo ""
+        echo -e ""
         CheckPackage tcl8.6-dev
         CheckPackage autoconf
         CheckPackage python3-dev
@@ -123,9 +123,9 @@ case $DUMP1090OPTION in
         CheckPackage itcl3
 
         # Dump1090-fa
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Installing dump1090-fa...\e[97m"
-        echo ""
+        echo -e ""
         mkdir -p $BUILDDIRECTORY/dump1090-fa
         cd $BUILDDIRECTORY/dump1090-fa
         git clone https://github.com/flightaware/dump1090.git
@@ -151,9 +151,9 @@ esac
 
 ## INSTALL THE BASE PORTAL PREREQUISITES PACKAGES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Installing packages needed by the ADS-B Receiver Project Web Portal...\e[97m"
-echo ""
+echo -e ""
 CheckPackage lighttpd
 CheckPackage collectd-core
 CheckPackage rrdtool
@@ -163,9 +163,9 @@ CheckPackage php5-json
 
 ## SET LOCALE
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting the locale to en_US.UTF-8...\e[97m"
-echo ""
+echo -e ""
 sudo su -c "sed --regexp-extended --expression='
 
    1  {
@@ -202,7 +202,7 @@ sudo update-locale LC_IDENTIFICATION='en_US.UTF-8'
 
 ## CHANGE THE KEYBOARD LAYOUT
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Changing the default keyboard layout to US/PC105...\e[97m"
 ChangeConfig "XKBMODEL" "pc105" "/etc/default/keyboard"
 ChangeConfig "XKBLAYOUT" "us" "/etc/default/keyboard"
@@ -229,11 +229,11 @@ echo "pi:adsbreceiver" | sudo chpasswd
 ## CLEAN UP THE SYSTEM TO MAKE THE IMAGE SMALLER
 
 echo -e "\e[95m  Removing packages which are no longer needed...\e[97m"
-echo ""
+echo -e ""
 sudo apt-get -y clean
 sudo apt-get -y autoclean
 sudo apt-get -y autoremove
-echo ""
+echo -e ""
 
 ## TOUCH THE IMAGE FILE
 
@@ -247,10 +247,10 @@ history -c && history -w
 
 ## DONE
 
-echo ""
+echo -e ""
 echo -e "\e[91m  Image preparation completed.)\e[39m"
 echo -e "\e[91m  Device will be shut down in 5 seconds.\e[39m"
-echo ""
+echo -e ""
 
 sleep 5
 sudo halt

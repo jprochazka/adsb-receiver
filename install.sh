@@ -53,17 +53,17 @@ source $RECEIVER_ROOT_DIRECTORY/bash/functions.sh
 
 # Display the help message.
 function DisplayHelp() {
-    echo ""
-    echo "Usage: $0 [OPTIONS] [ARGUMENTS]"
-    echo ""
-    echo "Option        GNU long option        Meaning"
-    echo "-a            --automated-install    Use a configuration file to automate the install process somewhat."
-    echo "-b <BRANCH>   --branch=<BRANCH>      Specifies the repository branch to be used."
-    echo "-c <FILE>     --config-file=<FILE>   The configuration file to be use for an unattended installation."
-    echo "-h            --help                 Shows this message."
-    echo "-l            --log-output           Logs all output to a file in the logs directory."
-    echo "-v            --verbose              Provides extra confirmation at each stage of the install."
-    echo ""
+    echo -e ""
+    echo -e "Usage: $0 [OPTIONS] [ARGUMENTS]"
+    echo -e ""
+    echo -e "Option        GNU long option        Meaning"
+    echo -e "-a            --automated-install    Use a configuration file to automate the install process somewhat."
+    echo -e "-b <BRANCH>   --branch=<BRANCH>      Specifies the repository branch to be used."
+    echo -e "-c <FILE>     --config-file=<FILE>   The configuration file to be use for an unattended installation."
+    echo -e "-h            --help                 Shows this message."
+    echo -e "-l            --log-output           Logs all output to a file in the logs directory."
+    echo -e "-v            --verbose              Provides extra confirmation at each stage of the install."
+    echo -e ""
 }
 
 ## CHECK FOR OPTIONS AND ARGUMENTS

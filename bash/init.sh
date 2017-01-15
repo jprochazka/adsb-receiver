@@ -38,9 +38,9 @@ if [ -f $RECEIVER_ROOT_DIRECTORY/image ]; then
     chmod +x $RECEIVER_BASH_DIRECTORY/image.sh
     $RECEIVER_BASH_DIRECTORY/image.sh
     if [ $? -ne 0 ]; then
-        echo ""
+        echo -e ""
         echo -e "  \e[91m  IMAGE SETUP HAS BEEN TERMINISTED.\e[39m"
-        echo ""
+        echo -e ""
         exit 1
     fi
     exit 0
@@ -60,16 +60,16 @@ TITLE="\e[1mThe ADS-B Receiver Project Preliminary Setup Process\e[0m"
 function AptUpdate() {
     clear
     echo -e "\n\e[91m  $TITLE"
-    echo ""
+    echo -e ""
     echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     sudo apt-get update
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
     fi
 }
@@ -80,17 +80,17 @@ function CheckPrerequisites() {
         clear
         echo -e "\n\e[91m  $TITLE"
     fi
-    echo ""
+    echo -e ""
     echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     CheckPackage whiptail
     CheckPackage git
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
     fi
 }
@@ -121,36 +121,36 @@ function UpdateRepository() {
     fi
 
     echo -e "\n\e[91m  $TITLE"
-    echo ""
+    echo -e ""
     echo -e "\e[92m  Pulling the latest version of the ADS-B Receiver Project repository..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     echo -e "\e[94m  Switching to branch $RECEIVER_PROJECT_BRANCH...\e[97m"
-    echo ""
+    echo -e ""
     git checkout $RECEIVER_PROJECT_BRANCH
-    echo ""
+    echo -e ""
 
     # Save the current branch state if the user wished to do so.
     if [ "$BACKUP_BRANCH_STATE" = "true" ]; then
         echo -e "\e[94m  Creating a new branch named $NEW_BRANCH_NAME containing the current state of the $RECEIVER_PROJECT_BRANCH branch...\e[97m"
-        echo ""
+        echo -e ""
         git commit -a -m "Saving current branch state."
         git branch $BACKUP_BRANCH_NAME
-        echo ""
+        echo -e ""
     fi
 
     echo -e "\e[94m  Fetching branch $RECEIVER_PROJECT_BRANCH from origin...\e[97m"
-    echo ""
+    echo -e ""
     git fetch origin
-    echo ""
+    echo -e ""
     echo -e "\e[94m  Performing hard reset of branch $RECEIVER_PROJECT_BRANCH so it matches origin/$RECEIVER_PROJECT_BRANCH...\e[97m"
-    echo ""
+    echo -e ""
     git reset --hard origin/$RECEIVER_PROJECT_BRANCH
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
     fi
 }
@@ -161,16 +161,16 @@ function UpdateOperatingSystem() {
         clear
         echo -e "\n\e[91m  $TITLE"
     fi
-    echo ""
+    echo -e ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     sudo apt-get -y dist-upgrade
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
     fi
 }
@@ -195,10 +195,10 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     CONTINUE_SETUP=$?
     if [ "$CONTINUE_SETUP" = 1 ]; then
     # Setup has been halted by the user.
-        echo ""
+        echo -e ""
         echo -e "\e[91m  \e[5mSETUP HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
@@ -227,7 +227,7 @@ chmod +x $RECEIVER_BASH_DIRECTORY/main.sh
 $RECEIVER_BASH_DIRECTORY/main.sh
 if [ $? -ne 0 ]; then
     echo -e "  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
-    echo ""
+    echo -e ""
     exit 1
 fi
 

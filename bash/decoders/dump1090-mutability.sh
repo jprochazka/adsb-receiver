@@ -54,20 +54,20 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
 fi
-echo ""
+echo -e ""
 echo -e "\e[92m  Setting up dump1090-mutability..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  https://github.com/mutability/dump1090\n\nContinue setup by installing dump1090-mutability?" 14 78
     if [ $? -eq 1 ]; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo ""
+        echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
-        echo ""
+        echo -e ""
         exit 1
     fi
 fi
@@ -75,7 +75,7 @@ fi
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
+echo -e ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
@@ -90,15 +90,15 @@ CheckPackage fakeroot
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Preparing the dump1090-mutability Git repository...\e[97m"
-echo ""
+echo -e ""
 if [ -d $RECEIVER_BUILD_DIRECTORY/dump1090/dump1090 ] && [ -d $RECEIVER_BUILD_DIRECTORY/dump1090/dump1090/.git ]; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the dump1090-mutability git repository directory...\e[97m"
     cd $RECEIVER_BUILD_DIRECTORY/dump1090/dump1090
     echo -e "\e[94m  Updating the local dump1090-mutability git repository...\e[97m"
-    echo ""
+    echo -e ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
@@ -106,44 +106,44 @@ else
     mkdir -p $RECEIVER_BUILD_DIRECTORY/dump1090
     cd $RECEIVER_BUILD_DIRECTORY/dump1090
     echo -e "\e[94m  Cloning the dump1090-mutability git repository locally...\e[97m"
-    echo ""
+    echo -e ""
     git clone https://github.com/mutability/dump1090.git
 fi
 
 ## BUILD AND INSTALL THE DUMP1090-MUTABILITY PACKAGE
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Building and installing the dump1090-mutability package...\e[97m"
-echo ""
+echo -e ""
 if [ ! "$PWD" = $RECEIVER_BUILD_DIRECTORY/dump1090/dump1090 ]; then
     echo -e "\e[94m  Entering the dump1090-mutability git repository directory...\e[97m"
     cd $RECEIVER_BUILD_DIRECTORY/dump1090/dump1090
 fi
 echo -e "\e[94m  Building the dump1090-mutability package...\e[97m"
-echo ""
+echo -e ""
 dpkg-buildpackage -b
-echo ""
+echo -e ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd $RECEIVER_BUILD_DIRECTORY/dump1090
 echo -e "\e[94m  Installing the dump1090-mutability package...\e[97m"
-echo ""
+echo -e ""
 sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
 
 # Check that the package was installed.
-echo ""
+echo -e ""
 echo -e "\e[94m  Checking that the dump1090-mutability package was installed properly...\e[97m"
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # If the dump1090-mutability package could not be installed halt setup.
-    echo ""
+    echo -e ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
     echo -e "  SETUP HAS BEEN TERMINATED!"
-    echo ""
+    echo -e ""
     echo -e "\e[93mThe package \"dump1090-mutability\" could not be installed.\e[39m"
-    echo ""
+    echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
-    echo ""
+    echo -e ""
     read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
@@ -151,9 +151,9 @@ fi
 ## DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
 
 # Set the receiver's latitude and longitude if it is not already set in the dump1090-mutibility configuration file.
-echo ""
+echo -e ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
-echo ""
+echo -e ""
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Explain to the user that the receiver's latitude and longitude is required.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
@@ -261,14 +261,14 @@ if [ ! -f /usr/share/dump1090-fa/html/upintheair.json ]; then
     # If the Heywhatsthat.com maximum range rings are to be added download them now.
     if [ "$DUMP1090_HEYWHATSTHAT_INSTALL" = "true" ]; then
         echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
-        echo ""
+        echo -e ""
         sudo wget -O /usr/share/dump1090-fa/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${DUMP1090_HEYWHATSTHAT_ID}&refraction=0.25&alts=$DUMP1090_HEYWHATSTHAT_RING_ONE,$DUMP1090_HEYWHATSTHAT_RING_TWO"
     fi
 fi
 
 # Reload dump1090-mutability to ensure all changes take effect.
 echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-echo ""
+echo -e ""
 sudo /etc/init.d/dump1090-mutability force-reload
 
 ### SETUP COMPLETE
@@ -277,10 +277,10 @@ sudo /etc/init.d/dump1090-mutability force-reload
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo ""
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090-mutability setup is complete.\e[39m"
-echo ""
+echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi

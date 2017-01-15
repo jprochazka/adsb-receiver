@@ -46,9 +46,9 @@ DATABASENAME=$ADSB_DATABASENAME
 
 ## SETUP FLIGHT LOGGING
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting up core advanced portal features...\e[97m"
-echo ""
+echo -e ""
 
 case $DATABASEENGINE in
     "MySQL")

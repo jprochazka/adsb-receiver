@@ -43,13 +43,13 @@ function CheckPackage {
 
         # If the maximum attempts has been reached...
         if [ $ATTEMPT -gt $MAXATTEMPTS ]; then
-            echo ""
+            echo -e ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
             echo -e "  SETUP HAS BEEN TERMINATED!"
-            echo ""
+            echo -e ""
             echo -e "\e[93mThe package \"$1\" could not be installed in $MAXATTEMPTS attempts.\e[39m"
-            echo ""
+            echo -e ""
             exit 1
         fi
 

@@ -46,13 +46,13 @@ LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
 
 clear
 echo -e "\n\e[91m  ADSB Receiver Project Maintenance"
-echo ""
+echo -e ""
 echo -e "\e[92m  Backing up portal data..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Backing up current portal data...\e[97m"
-echo ""
+echo -e ""
 
 ## PREPARE TO BEGIN CREATING BACKUPS
 
@@ -140,9 +140,9 @@ fi
 
 # Create the backup archive.
 echo -e "\e[94m  Compressing the backed up files...\e[97m"
-echo ""
+echo -e ""
 tar -zcvf $BACKUPSDIRECTORY/adsb-receiver_data_$BACKUPDATE.tar.gz $TEMPORARYDIRECTORY
-echo ""
+echo -e ""
 
 # Remove the temporary directory.
 echo -e "\e[94m  Removing the temporary backup directory...\e[97m"
@@ -152,14 +152,14 @@ sudo rm -rf $TEMPORARYDIRECTORY
 
 echo -e "\e[32m"
 echo -e "  BACKUP PROCESS COMPLETE\e[93m"
-echo ""
+echo -e ""
 echo -e "  An archive containing the data just backed up can be found at:"
 echo -e "  $TEMPORARYDIRECTORY/adsb-receiver_data_$BACKUPDATE.tar.gz\e[97m"
-echo ""
+echo -e ""
 
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Finished backing up portal data.\e[39m"
-echo ""
+echo -e ""
 if [[ -n ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi

@@ -41,9 +41,9 @@ PYTHONPATH=`which python`
 
 ## SETUP FLIGHT LOGGING
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting up flight logging...\e[97m"
-echo ""
+echo -e ""
 
 # Create and set permissions on the flight logging and maintenance maintenance scripts.
 echo -e "\e[94m  Creating the flight logging maintenance script...\e[97m"
