@@ -487,8 +487,12 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Ask if the web portal should be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal on this device?" 8 78
     case $? in
-        0) WEBPORTAL_INSTALL="true" ;;
-        1) WEBPORTAL_INSTALL="false" ;;
+        0)
+            WEBPORTAL_INSTALL="true"
+            ;;
+        1)
+            WEBPORTAL_INSTALL="false"
+            ;;
     esac
 fi
 
@@ -609,13 +613,21 @@ else
     if [ "$DUMP1090_INSTALL" = "true" ] || [ "$DUMP1090_UPGRADE" = "true" ]; then
         if [ "$DUMP1090_DO_UPGRADE" = "true" ]; then
             case $DUMP1090_FORK in
-                "mutability") CONFIRMATION="$CONFIRMATION\n  * dump1090-mutability (reinstall)" ;;
-                "fa") CONFIRMATION="$CONFIRMATION\n  * dump1090-fa (upgrade)" ;;
+                "mutability")
+                    CONFIRMATION="$CONFIRMATION\n  * dump1090-mutability (reinstall)"
+                    ;;
+                "fa")
+                    CONFIRMATION="$CONFIRMATION\n  * dump1090-fa (upgrade)"
+                    ;;
             esac
         else
             case $DUMP1090_FORK in
-                "mutability") CONFIRMATION="$CONFIRMATION\n  * dump1090-mutability" ;;
-                "fa") CONFIRMATION="$CONFIRMATION\n  * dump1090-fa" ;;
+                "mutability")
+                    CONFIRMATION="$CONFIRMATION\n  * dump1090-mutability"
+                    ;;
+                "fa")
+                    CONFIRMATION="$CONFIRMATION\n  * dump1090-fa"
+                    ;;
             esac
         fi
     fi
@@ -725,8 +737,12 @@ fi
 
 if [ "$DUMP1090_INSTALL" = "true" ] || [ "$DUMP1090_UPGRADE" = "true" ]; then
     case $DUMP1090_FORK in
-        "mutability") InstallDump1090Mutability ;;
-        "fa") InstallDump1090Fa ;;
+        "mutability")
+            InstallDump1090Mutability
+            ;;
+        "fa")
+             InstallDump1090Fa
+             ;;
     esac
 fi
 
