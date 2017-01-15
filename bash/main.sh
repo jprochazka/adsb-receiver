@@ -177,8 +177,12 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
         # Ask if dump1090-mutability should be reinstalled.
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Installed" --defaultno --yesno "The dump1090-mutability package appears to be installed on your device, however...\n\nThe dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering. To ensure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.\n\nDownload, build, and reinstall this package?" 16 65
         case $? in
-            0) DUMP1090_DO_UPGRADE="true" ;;
-            1) DUMP1090_DO_UPGRADE="false" ;;
+            0)
+                DUMP1090_DO_UPGRADE="true"
+                ;;
+            1)
+                DUMP1090_DO_UPGRADE="false"
+                ;;
         esac
     else
         # Refer to the installation configuration to decide if dump1090-mutability is to be reinstalled or not.
@@ -199,8 +203,12 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
         if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
             whiptail  --backtitle "RECEIVER_PROJECT_TITLE" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
             case $? in
-                0) DUMP1090_DO_UPGRADE="true" ;;
-                1) DUMP1090_DO_UPGRADE="false" ;;
+                0)
+                    DUMP1090_DO_UPGRADE="true"
+                    ;;
+                1)
+                    DUMP1090_DO_UPGRADE="false"
+                    ;;
             esac
         else
             # If a newer version of dump1090-fa is available refer to the installation configuration to decide if it should be upgraded or not.
@@ -221,22 +229,22 @@ if [[ ! "$DUMP1090_INSTALLED" = "true" ]] ; then
         case $? in
             "dump1090-mutability")
                 DUMP1090_FORK="mutability"
-                DUMP1090_DO_UPGRADE="true"
+                DUMP1090_INSTALL="true"
                 ;;
             "dump1090-fa")
                 DUMP1090_FORK="fa"
-                DUMP1090_DO_UPGRADE="true"
+                DUMP1090_INSTALL="true"
                 ;;
             *)
-                DUMP1090_DO_UPGRADE="false"
+                DUMP1090_INSTALL="false"
                 ;;
         esac
     else
         # Refer to the installation configuration to check if a dump1090 fork has been specified
         if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] ; then
-            DUMP1090_DO_UPGRADE="true"
+            DUMP1090_INSTALL="true"
         else
-            DUMP1090_DO_UPGRADE="false"
+            DUMP1090_INSTALL="false"
         fi
     fi
 fi
@@ -252,8 +260,12 @@ if [ -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] && [ -f $RECEIVER_BUILD_DIRE
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "Dump978 appears to be installed on your device, however...\n\nThe dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.\n\nDownload and rebuild the dump978 binaries?" 14 65
         case $? in
-            0) DUMP978_DO_UPGRADE="true" ;;
-            1) DUMP978_DO_UPGRADE="false" ;;
+            0)
+                DUMP978_DO_UPGRADE="true"
+                ;;
+            1)
+                DUMP978_DO_UPGRADE="false"
+                ;;
         esac
     else
         # Refer to the installation configuration to decide if dump978 is to be rebuilt from source or not.
@@ -268,8 +280,12 @@ else
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Not Installed" --defaultno --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.\n\nDo you wish to install dump978?" 10 65
         case $? in
-            0) DUMP978_INSTALL="true" ;;
-            1) DUMP978_INSTALL="false" ;;
+            0)
+                DUMP978_INSTALL="true"
+                ;;
+            1)
+                DUMP978_INSTALL="false"
+                ;;
         esac
     fi
 fi
@@ -282,8 +298,12 @@ if [ -f /etc/init.d/rtlsdr-ogn ]; then
         if [ ! -d $RECEIVER_BUILD_DIRECTORY/rtlsdr-ogn/rtlsdr-ogn-$RTLSDROGN_VERSION ]; then
             whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "RTL-SDR OGN Installed" --defaultno --yesno "A newer version of the RTL-SDR OGN binaries is available.\n\nWould you like to setup the newer binaries on this device?" 14 65
             case $? in
-                0) RTLSDROGN_DO_UPGRADE="true" ;;
-                1) RTLSDROGN_DO_UPGRADE="false" ;;
+                0)
+                    RTLSDROGN_DO_UPGRADE="true"
+                    ;;
+                1)
+                    RTLSDROGN_DO_UPGRADE="false"
+                    ;;
             esac
         else
             # Refer to the installation configuration to decide if RTL-SDR OGN is to be rebuilt from source or not.
@@ -299,8 +319,12 @@ else
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "RTL-SDR OGN Not Installed" --defaultno --yesno "The goal the OGN project is to create a unified platform for tracking aircraft equipped with FLARM (or FLARM-compatible) emitters and OGN trackers.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is generally only used within Europe.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
         case $? in
-            0) RTLSDROGN_INSTALL="true" ;;
-            1) RTLSDROGN_INSTALL="false" ;;
+            0)
+                RTLSDROGN_INSTALL="true"
+                ;;
+            1)
+                RTLSDROGN_INSTALL="false"
+                ;;
         esac
     fi
 fi
