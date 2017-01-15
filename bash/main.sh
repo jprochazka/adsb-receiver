@@ -335,6 +335,12 @@ fi
 declare array FEEDER_LIST
 touch $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
 
+# Use function to detect cpu architecture.
+if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+    Check_CPU
+    echo -e ""
+fi
+
 # Check for the PiAware package.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
@@ -382,7 +388,7 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
     fi
 else
     # Check if a newer version can be installed.
-    if [ `uname -m` = "armv7l" ]; then
+    if [ "${CPU_ARCHITECTURE}" = "armv7l" ]; then
         if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: $PLANEFINDER_CLIENT_VERSION_ARM") -eq 0 ]; then
             if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
                 # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
@@ -426,7 +432,7 @@ if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed
     fi
 else
     # Check if a newer version can be installed if this is not a Raspberry Pi device.
-    if [ `uname -m` != "armv7l" ]; then
+    if [ "${CPU_ARCHITECTURE}" != "armv7l" ]; then
         if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]; then
             if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
                 # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
