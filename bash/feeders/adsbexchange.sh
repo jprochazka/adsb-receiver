@@ -122,12 +122,13 @@ CheckPackage netcat
 
 ## CONFIRM DERIVED VALUES
 
-echo -e ""
-echo -e "\e[95m  Confirming information required by the netcat and mlat-client feeds...\e[97m"
-echo -e ""
+# Ask for the receivers latitude and longitude.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Explain to the user that the receiver's latitude and longitude is required.
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
 
-# Ask the user for the user name for this receiver.
-FEEDER_USERNAME_TITLE="Receiver Username"
+# Ask the user for the mlat user name for this receiver.
+FEEDER_USERNAME_TITLE="Receiver MLAT Username"
 while [[ -z "${FEEDER_USERNAME}" ]] ; do
     FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
     FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
@@ -165,6 +166,12 @@ while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
     RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
 done
+else
+        echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
+        echo ""
+        read -p "Press enter to continue..." CONTINUE
+        exit 1
+fi
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
