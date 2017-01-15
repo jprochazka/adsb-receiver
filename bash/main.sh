@@ -213,14 +213,22 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     fi
 fi
 
-# If no dump1090 fork is installed and this is not an automated installation ask the user which one to install.
+# If no dump1090 fork is installed then attempt to install one.
 if [[ ! "$DUMP1090_INSTALLED" = "true" ]] ; then
+    # If this is not an automated installation ask the user which one to install.
     if [[ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]] ; then
         whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Choose Dump1090 Version To Install" --menu "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of these two packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)"
         case $? in
             "dump1090-mutability") DUMP1090_FORK="mutability" ;;
             "dump1090-fa") DUMP1090_FORK="fa" ;;
         esac
+    else
+        # Refer to the installation configuration to check if a dump1090 fork has been specified
+        if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] ; then
+            DUMP1090_DO_UPGRADE="true"
+        else
+            DUMP1090_DO_UPGRADE="false"
+        fi
     fi
 fi
 
