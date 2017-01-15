@@ -192,8 +192,12 @@ fi
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Bind Dump1090-mutability To All IP Addresses" --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78
     case $? in
-        0) DUMP1090_BIND_TO_ALL_IPS="true" ;;
-        1) DUMP1090_BIND_TO_ALL_IPS="false" ;;
+        0)
+            DUMP1090_BIND_TO_ALL_IPS="true"
+            ;;
+        1)
+            DUMP1090_BIND_TO_ALL_IPS="false"
+            ;;
     esac
 fi
 if [ "$DUMP1090_BIND_TO_ALL_IPS" = "true" ]; then
@@ -209,8 +213,12 @@ fi
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by dump1090-mutbility." 11 78 2 "Imperial" "" "Metric" ""
     case $? in
-        "Imperial") DUMP1090_UNIT_OF_MEASURMENT="imperial" ;;
-        "Metric") DUMP1090_UNIT_OF_MEASURMENT="metric" ;;
+        "Imperial")
+            DUMP1090_UNIT_OF_MEASURMENT="imperial"
+            ;;
+        "Metric")
+            DUMP1090_UNIT_OF_MEASURMENT="metric"
+            ;;
     esac
 fi
 if [ "$DUMP1090_UNIT_OF_MEASURMENT" = "metric" ]; then
