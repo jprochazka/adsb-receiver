@@ -46,32 +46,32 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
-echo ""
+echo -e ""
 echo -e "\e[92m  Setting up AboveTustin..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo ""
+        echo -e ""
         echo -e "\e[93m----------------------------------------------------------------------------------------------------"
         echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
 fi
 
 echo -e "\e[95m  Setting up AboveTustin on this device...\e[97m"
-echo ""
+echo -e ""
 
 ### CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
-echo ""
+echo -e ""
 if [[ -f "/usr/bin/phantomjs" ]] && [[ "`phantomjs --version`" == "${PHANTOMJS_VERSION}" ]] ; then
     # A PhantomJS binary which is the proper version appears to exist on this device.
     echo -e "\e[94m  PhantomJS is present on this device and is the proper version...\e[97m"
@@ -103,10 +103,10 @@ else
                 # Setup has been halted by the user.
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
                 echo "  Setup has been halted at the request of the user."
-                echo ""
+                echo -e ""
                 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
                 echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-                echo ""
+                echo -e ""
                 read -p "Press enter to continue..." CONTINUE
                 exit 1
             fi
@@ -115,10 +115,10 @@ else
             if [[ ! ${ABOVETUSTIN_COMPILE_IF_NEEDED} = "true" ]] ; then
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
                 echo "  A prebuilt PhantomJS binary is not available for this system."
-                echo ""
+                echo -e ""
                 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
                 echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-                echo ""
+                echo -e ""
                 exit 1
             fi
         echo -e "\e[94m  Will attempt to build the PhantomJS binary from source...\e[97m"
@@ -128,9 +128,9 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
+echo -e ""
 
 # The package ttf-mscorefonts-installer requires contrib be added to the Debian repositories contained in /etc/apt/sources.list.
 # The contrib flag does not need to be added for Raspbian Jessie and Ubuntu only Debian so far.
@@ -181,10 +181,10 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo ""
+        echo -e ""
         echo -e "\e[93m----------------------------------------------------------------------------------------------------"
         echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-        echo ""
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
@@ -267,9 +267,9 @@ fi
 
 ## START INSTALLATION
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Commencing installation...\e[97m"
-echo ""
+echo -e ""
 
 # Confirm timezone.
 if [[ -z ${TIME_ZONE} ]] ; then
@@ -285,9 +285,9 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
 
         # DOWNLOAD THE PHANTOMJS BINARY
 
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Downloading and installing the PhantomJS binary...\e[97m"
-        echo ""
+        echo -e ""
 
         # Enter the root of the project build directory.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
@@ -298,19 +298,19 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             "armv7l")
                 # Use the armv7l version of the PhantomJS binary from https://github.com/jprochazka/phantomjs-linux-armv7l.
                 echo -e "\e[94m  Downloading the ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
-                echo ""
+                echo -e ""
                 PHANTOMJS_BINARY_URL="https://github.com/jprochazka/phantomjs-linux-armv7l/releases/download/${PHANTOMJS_VERSION}/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2"
                 ;;
             "x86_64")
                 # Use the x86_64 version of the PhantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
-                echo ""
+                echo -e ""
                 PHANTOMJS_BINARY_URL="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2"
                 ;;
             "i686")
                 # Use the i686 version of the PantomJS binary from the PhantomJS web site.
                 echo -e "\e[94m  Downloading the official ${CPU_ARCHITECTURE} PhantomJS v${PHANTOMJS_VERSION} binary for Linux...\e[97m"
-                echo ""
+                echo -e ""
                 PHANTOMJS_BINARY_URL="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2"
                 ;;
         esac
@@ -324,10 +324,10 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2" ]] ; then
             echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
             tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2 2>&1
-            echo ""
+            echo -e ""
             echo -e "\e[94m  Removing the PhantomJS binary archive...\e[97m"
             rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2 2>&1
-            echo ""
+            echo -e ""
         else
             echo -e "\e[94m  Unable to extract the PhantomJS binary archive...\e[97m"
         fi
@@ -335,7 +335,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         # Move the binary into the /usr/bin directory and make it executable.
         if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs" ]] ; then
             echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
-            echo ""
+            echo -e ""
             sudo cp -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin 2>&1
         else
             echo -e "\e[94m  Unable to copying the PhantomJS binary into the directory /usr/bin...\e[97m"
@@ -344,7 +344,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         # Make the binary in /usr/bin executable.
         if [[ -f "/usr/bin/phantomjs" ]] ; then
             echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
-            echo ""
+            echo -e ""
             sudo chmod -v +x /usr/bin/phantomjs 2>&1
         else
             echo -e "\e[94m  Unable to make the file /usr/bin/phantomjs executable...\e[97m"
@@ -354,35 +354,35 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
 
         # BUILD PHANTOMJS
 
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Building then placing the PhantomJS binary...\e[97m"
-        echo ""
+        echo -e ""
 
         # Download the source code.
-        echo ""
+        echo -e ""
         echo -e "\e[95m  Preparing the PhantomJS Git repository...\e[97m"
-        echo ""
+        echo -e ""
         if [[ -d ${RECEIVER_BUILD_DIRECTORY}/phantomjs ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/phantomjs/.git ]] ; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
             cd ${RECEIVER_BUILD_DIRECTORY}/phantomjs 2>&1
-            echo ""
+            echo -e ""
             echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
             git pull --all 2>&1
-            echo ""
+            echo -e ""
         else
             # A directory containing the source code does not exist in the build directory.
             echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
             cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-            echo ""
+            echo -e ""
             if [[ -d "${RECEIVER_BUILD_DIRECTORY}/phantomjs" ]] ; then
                 echo -e "\e[94m  Removing old PhantomJS build directory...\e[97m"
                 rm -vrf "${RECEIVER_BUILD_DIRECTORY}/phantomjs" 2>&1
-                echo ""
+                echo -e ""
             fi
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
             git clone git://github.com/ariya/phantomjs.git "${RECEIVER_BUILD_DIRECTORY}/phantomjs" 2>&1
-            echo ""
+            echo -e ""
         fi
 
         # Enter the PhantomJS build directory if not already there.
@@ -393,17 +393,17 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
 
         # Checkout the proper branch then init and update the submodules.
         echo -e "\e[94m  Checking out the branch ${PHANTOMJS_VERSION}...\e[97m"
-        echo ""
+        echo -e ""
         git checkout ${PHANTOMJS_VERSION} 2>&1
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Initializing Git submodules...\e[97m"
-        echo ""
+        echo -e ""
         git submodule init 2>&1
-        echo ""
+        echo -e ""
         echo -e "\e[94m  Updating Git submodules...\e[97m"
-        echo ""
+        echo -e ""
         git submodule update 2>&1
-        echo ""
+        echo -e ""
 
         # Compile and link the code.
         if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
@@ -415,21 +415,21 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             echo -e "\e[94m  Building PhantomJS...\e[97m"
             python build.py 2>&1
         fi
-        echo ""
+        echo -e ""
 
         # Test that the binary was built properly.
         if [[ ! -f "bin/pahntomjs" ]] || [[ ! "`bin/phantomjs --version`" = "${PHANTOMJS_VERSION}" ]] ; then
             # If the dump978 binaries could not be found halt setup.
-            echo ""
+            echo -e ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  THE PHANTOMJS BINARIES BUILD APPEARS TO HAVE FAILED."
             echo -e "  SETUP HAS BEEN TERMINATED!"
-            echo ""
+            echo -e ""
             echo -e "\e[93mThe PhantomJS binary appear to have not been built successfully..\e[39m"
-            echo ""
+            echo -e ""
             echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
-            echo ""
+            echo -e ""
             read -p "Press enter to continue..." CONTINUE
             exit 1
         fi
@@ -445,33 +445,33 @@ fi
 
 ### INSTALL THE NEEDED PYTHON MODULES
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Setting up the required Python modules...\e[97m"
-echo ""
+echo -e ""
 
 # Upgrade pip.
 echo -e "\e[94m  Upgrading pip...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install --upgrade pip 2>&1
-echo ""
+echo -e ""
 echo -e "\e[94m  Upgrading virtualenv...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install --upgrade virtualenv 2>&1
-echo ""
+echo -e ""
 
 # Install Python modules.
 echo -e "\e[94m  Installing the selenium Python module...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install selenium 2>&1
-echo ""
+echo -e ""
 echo -e "\e[94m  Installing the twitter Python module...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install twitter 2>&1
-echo ""
+echo -e ""
 echo -e "\e[94m  Installing the python-dateutil Python module...\e[97m"
-echo ""
+echo -e ""
 sudo pip3 install python-dateutil 2>&1
-echo ""
+echo -e ""
 
 ### PROJECT BUILD DIRECTORY
 
@@ -483,32 +483,32 @@ fi
 
 ### DOWNLOAD SOURCE
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
-echo ""
+echo -e ""
 
 echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
 if [[ -d ${RECEIVER_BUILD_DIRECTORY}/AboveTustin ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the local AboveTustin git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/AboveTustin 2>&1
-    echo ""
+    echo -e ""
     echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     git pull 2>&1
-    echo ""
+    echo -e ""
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-    echo ""
+    echo -e ""
     if [[ -d "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" ]] ; then
         echo -e "\e[94m  Removing old build directory...\e[97m"
         rm -vrf "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" 2>&1
-        echo ""
+        echo -e ""
     fi
     echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
     git clone https://github.com/kevinabrandon/AboveTustin.git "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" 2>&1
-    echo ""
+    echo -e ""
 fi
 
 ### APPLY CONFIGURATION
@@ -568,9 +568,9 @@ fi
 
 ### START SCRIPTS
 
-echo ""
+echo -e ""
 echo -e "\e[95m  Starting AboveTustin...\e[97m"
-echo ""
+echo -e ""
 
 # Kill any currently running instances of run_tracker.sh, tracker.py or phantomjs.
 PROCS="run_tracker.sh tracker.py phantomjs"
@@ -586,9 +586,9 @@ done
 
 # Start the run_tracker.sh script.
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
-echo ""
+echo -e ""
 sudo nohup ${RECEIVER_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
-echo ""
+echo -e ""
 
 ### SETUP COMPLETE
 
@@ -596,10 +596,10 @@ echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo ""
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  AboveTustin setup is complete.\e[39m"
-echo ""
+echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
