@@ -40,19 +40,20 @@ BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
 # Feeder specific variables.
 
-FEEDER_NAME="adsbexchange"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
+
+FEEDER_NAME="adsbexchange"
 FEEDER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
 
-FEEDER_BEAST_SRC_HOST="127.0.0.1"
-FEEDER_BEAST_SRC_PORT="30005"
 FEEDER_BEAST_DST_HOST="feed.adsbexchange.com"
 FEEDER_BEAST_DST_PORT="30005"
+FEEDER_BEAST_SRC_HOST="127.0.0.1"
+FEEDER_BEAST_SRC_PORT="30005"
 
-FEEDER_MLAT_SRC_HOST="127.0.0.1"
-FEEDER_MLAT_SRC_PORT="30005"
 FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
 FEEDER_MLAT_DST_PORT="31090"
+FEEDER_MLAT_SRC_HOST="127.0.0.1"
+FEEDER_MLAT_SRC_PORT="30005"
 FEEDER_MLAT_RETURN_PORT="30104"
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -168,9 +169,16 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 else
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
-    echo ""
+    echo -e ""
     read -p "Press enter to continue..." CONTINUE
     exit 1
+fi
+
+# Establish if MLAT results should be fed back into local dump1090 instance.
+if  [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
+    FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
+else
+    FEEDER_MLAT_RETURN_RESULTS=""
 fi
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
@@ -181,14 +189,14 @@ echo -e ""
 if [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY} ]] && [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY}/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
-    cd ${MLAT_CLIENT_BUILD_DIRECTORY}
+    cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
     echo -e ""
     git pull 2>&1
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}
+    cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
     echo -e ""
     git clone https://github.com/mutability/mlat-client.git 2>&1
@@ -202,7 +210,7 @@ echo -e ""
 if [[ ! "${PWD}" = ${MLAT_CLIENT_BUILD_DIRECTORY} ]] ; then
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
     echo -e ""
-    cd ${MLAT_CLIENT_BUILD_DIRECTORY}
+    cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
 fi
 # Build binary package.
 echo -e "\e[94m  Building the mlat-client package...\e[97m"
@@ -273,13 +281,6 @@ while true
     sleep 30
   done
 EOF
-
-# Establish if MLAT results should be fed back into local dump1090 instance.
-if  [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
-    FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
-else
-    FEEDER_MLAT_RETURN_RESULTS=""
-fi
 
 # Create MLAT maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
