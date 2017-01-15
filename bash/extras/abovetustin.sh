@@ -576,7 +576,7 @@ echo ""
 PROCS="run_tracker.sh tracker.py phantomjs"
 for PROC in ${PROCS} ; do
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [[ ! -z "${PIDS}" ]] ; then
+    if [[ -n "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1

@@ -96,7 +96,7 @@ if grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local
     # Kill any currently running instances of the ${FEEDER_NAME}-maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [[ ! -z "${PIDS}" ]] ; then
+    if [[ -n "${PIDS}" ]] ; then
         echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
         echo -e ""
         sudo kill ${PIDS} 2>&1
@@ -318,13 +318,13 @@ echo -e ""
 # Kill any currently running instances of the feeder netcat_maint.sh script.
 echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ ! -z "${PIDS}" ]] ; then
+if [[ -n "${PIDS}" ]] ; then
     echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
 PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ ! -z "${PIDS}" ]] ; then
+if [[ -n "${PIDS}" ]] ; then
     echo -e "\e[94m  -Killing any running netcat processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
@@ -334,13 +334,13 @@ echo -e ""
 # Kill any currently running instances of the feeder mlat_maint.sh script.
 echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ ! -z "${PIDS}" ]] ; then
+if [[ -n "${PIDS}" ]] ; then
     echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1
 fi
 PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ ! -z "${PIDS}" ]] ; then
+if [[ -n "${PIDS}" ]] ; then
     echo -e "\e[94m  -Killing any running mlat-client processes...\e[97m"
     sudo kill ${PIDS} 2>&1
     sudo kill -9 ${PIDS} 2>&1

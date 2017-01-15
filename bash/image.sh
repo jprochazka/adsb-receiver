@@ -64,7 +64,7 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ -n ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
 fi
@@ -147,7 +147,7 @@ echo ""
 echo -e "\e[93m----------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090 configuration complete.\e[39m"
 echo ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ -n ${VERBOSE} ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
@@ -213,7 +213,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware configuration complete.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ -n ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
 fi

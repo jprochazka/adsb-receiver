@@ -94,13 +94,13 @@ fi
 # Kill any previously running maintenance scripts.
 echo -e "\e[94m  Checking for any running flights-maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "flights-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
+if [ -n "$PIDS" ]; then
     echo -e "\e[94m  Killing any running flights-maint.sh processes...\e[97m"
     sudo kill $PIDS
     sudo kill -9 $PIDS
 fi
 PIDS=`ps -efww | grep -w "maintenance-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
+if [ -n "$PIDS" ]; then
     echo -e "\e[94m  Killing any running maintenance-maint.sh processes...\e[97m"
     sudo kill $PIDS
     sudo kill -9 $PIDS

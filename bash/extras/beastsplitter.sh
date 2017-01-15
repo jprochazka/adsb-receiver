@@ -186,7 +186,7 @@ PROCS="beast-splitter_maint.sh beast-splitter"
 for PROC in ${PROCS} ; do
     echo -e "\e[94m  Checking for any running ${PROC} processes...\e[97m"
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [[ ! -z "${PIDS}" ]] ; then
+    if [[ -n "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1

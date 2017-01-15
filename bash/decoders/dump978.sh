@@ -212,7 +212,7 @@ if [ -z $RECEIVER_LATITUDE ] && [ -z $RECEIVER_LONGITUDE ] && [ "$RECEIVER_AUTOM
     done
 fi
 # Finally set the reciver's latitude and longitude if these variables were supplied.
-if [ ! -z $RECEIVER_LATITUDE ] && [ ! -z $RECEIVER_LONGITUDE ]; then
+if [ -n $RECEIVER_LATITUDE ] && [ -n $RECEIVER_LONGITUDE ]; then
     echo -e "\e[94m  Setting the receiver's latitude to $RECEIVER_LATITUDE...\e[97m"
     ChangeConfig "SiteLat" "$RECEIVER_LATITUDE" "$LIGHTTPD_DOCUMENT_ROOT_DIRECTORY/dump978/config.js"
     echo -e "\e[94m  Setting the receiver's longitude to $RECEIVER_LONGITUDE...\e[97m"

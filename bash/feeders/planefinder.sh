@@ -62,7 +62,7 @@ if [ "$CONTINUESETUP" = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Plane Finder ADS-B Client setup halted.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ -n ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -146,7 +146,7 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Plane Finder ADS-B Client setup halted.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ -n ${VERBOSE} ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1

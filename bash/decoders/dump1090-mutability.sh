@@ -174,7 +174,7 @@ echo -e "\e[94m  Setting the receiver's longitude to $RECEIVER_LONGITUDE...\e[97
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     DUMP1090_BING_MAPS_KEY=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 11 78 "$DUMP1090_BING_MAPS_KEY" 3>&1 1>&2 2>&3)
 fi
-if [ ! -z $DUMP1090_BING_MAPS_KEY ]; then
+if [ -n $DUMP1090_BING_MAPS_KEY ]; then
     echo -e "\e[94m  Setting the Bing Maps API Key to $DUMP1090_BING_MAPS_KEY...\e[97m"
     ChangeConfig "BingMapsAPIKey" "$DUMP1090_BING_MAPS_KEY" "/usr/share/dump1090-fa/html/config.js"
 fi
@@ -183,7 +183,7 @@ fi
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     DUMP1090_MAPZEN_KEY=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the dump1090-mutability map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 $DUMP1090_MAPZEN_KEY 3>&1 1>&2 2>&3)
 fi
-if [ ! -z $DUMP1090_MAPZEN_KEY ]; then
+if [ -n $DUMP1090_MAPZEN_KEY ]; then
     echo -e "\e[94m  Setting the Mapzen API Key to $DUMP1090_MAPZEN_KEY...\e[97m"
     ChangeConfig "MapzenAPIKey" "$DUMP1090_MAPZEN_KEY" "/usr/share/dump1090-fa/html/config.js"
 fi
