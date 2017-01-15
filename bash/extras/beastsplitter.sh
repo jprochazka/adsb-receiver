@@ -123,7 +123,7 @@ if [[ -d ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter ]] && [[ -d $
     cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter
     echo -e "\e[94m  Updating the local Beast-Splitter git repository...\e[97m"
     echo -e ""
-    git pull
+    git pull 2>&1
     echo -e ""
 else
     # A directory containing the source code does not exist in the build directory.
@@ -131,7 +131,7 @@ else
     cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter
     echo -e "\e[94m  Cloning the Beast-Splitter git repository locally...\e[97m"
     echo -e ""
-    git clone https://github.com/flightaware/beast-splitter.git
+    git clone https://github.com/flightaware/beast-splitter.git 2>&1
     echo -e ""
 fi
 
@@ -142,16 +142,16 @@ echo -e "\e[95m  Building and installing the Beast-Splitter package...\e[97m"
 echo -e ""
 if [[ ! "${PWD}" = ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter ]] ; then
     echo -e "\e[94m  Entering the Beast-Splitter git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter
+    cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter 2>&1
 fi
 echo -e "\e[94m  Executing the Beast-Splitter build script...\e[97m"
 echo -e ""
-dpkg-buildpackage -b
+dpkg-buildpackage -b 2>&1
 echo -e ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter
+cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter 2>&1
 echo -e "\e[94m  Installing the Beast-Splitter package...\e[97m"
-sudo dpkg -i beast-splitter_*.deb
+sudo dpkg -i beast-splitter_*.deb 2>&1
 
 ### CREATE SCRIPTS
 
@@ -166,7 +166,7 @@ while true
 EOF
 
 echo -e "\e[94m  Setting file permissions for beast-splitter_maint.sh...\e[97m"
-sudo chmod +x ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh
+sudo chmod +x ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh 2>&1
 
 echo -e "\e[94m  Checking if the Beast-Splitter startup line is contained within the file /etc/rc.local...\e[97m"
 if ! grep -Fxq "${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local; then

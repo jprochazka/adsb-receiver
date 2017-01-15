@@ -99,13 +99,13 @@ fi
 # Create the build directory if it does not already exist.
 if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
     echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
+    mkdir -v ${RECEIVER_BUILD_DIRECTORY} 2>&1
 fi
 
 # Create a duckdns directory within the build directory if it does not already exist.
 if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/duckdns ]] ; then
     echo -e "\e[94m  Creating the directory ${RECEIVER_BUILD_DIRECTORY}/duckdns...\e[97m"
-    mkdir ${RECEIVER_BUILD_DIRECTORY}/duckdns
+    mkdir -v ${RECEIVER_BUILD_DIRECTORY}/duckdns 2>&1
 fi
 
 ### DOWNLOAD SOURCE
@@ -119,7 +119,7 @@ echo url="https://www.duckdns.org/update?domains=${DOMAIN}&token=${TOKEN}&ip=" |
 EOF
 
 echo -e "\e[94m  Setting execute permissions for only this user on the Duck DNS update script...\e[97m"
-chmod 700 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh
+chmod -v 700 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
 
 ### CREATE SCRIPTS
 
@@ -139,7 +139,7 @@ JOB="*/5 * * * * ${COMMAND}"
 # Run the Duck DNS update script for the first time..
 echo -e "\e[94m  Executing the Duck DNS update script...\e[97m"
 echo -e ""
-${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh
+${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
 echo -e ""
 
 ### SETUP COMPLETE
