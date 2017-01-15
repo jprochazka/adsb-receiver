@@ -33,11 +33,14 @@
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $RECEIVER_BASH_DIRECTORY/variables.sh
-source $RECEIVER_BASH_DIRECTORY/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+## SET INSTALLATION VARIABLES
+
+# Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
-    source $RECEIVER_CONFIGURATION_FILE
+    source ${RECEIVER_CONFIGURATION_FILE}
 else
     RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
     RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
@@ -47,13 +50,13 @@ fi
 
 ## BEGIN SETUP
 
-if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
 fi
 echo ""
 echo -e "\e[92m  Setting up dump1090-mutability..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  https://github.com/mutability/dump1090\n\nContinue setup by installing dump1090-mutability?" 14 78
@@ -62,7 +65,7 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
         echo ""
         exit 1
@@ -138,7 +141,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
     echo ""
     echo -e "\e[93mThe package \"dump1090-mutability\" could not be installed.\e[39m"
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE

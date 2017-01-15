@@ -48,7 +48,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 fi
 echo ""
 echo -e "\e[92m  Setting up Beast-Splitter..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Beast-Splitter Setup" --yesno "This is a helper utility for the Mode-S Beast.\n\nThe Beast provides a single data stream over a (USB) serial port. If you have more than one thing that wants to read that data stream, you need something to redistribute the data. This is what beast-splitter does.\n\n  https://github.com/flightaware/beast-splitter\n\nContinue beast-splitter setup?" 15 78
@@ -57,7 +57,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Beast-Splitter setup halted.\e[39m"
         echo ""
         read -p "Press enter to continue..." CONTINUE

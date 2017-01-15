@@ -36,6 +36,8 @@
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+## SET INSTALLATION VARIABLES
+
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
@@ -43,13 +45,13 @@ fi
 
 ### BEGIN SETUP
 
-if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m  $RECEIVER_PROJECT_TITLE"
 fi
 echo ""
 echo -e "\e[92m  Setting up dump978..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Setup" --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  https://github.com/mutability/dump978\n\nWould you like to continue setup by installing dump978?" 9 78
@@ -58,7 +60,7 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo ""
-        echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Dump978 setup halted.\e[39m"
         echo ""
         read -p "Press enter to continue..." CONTINUE
@@ -126,7 +128,7 @@ if [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] || [ ! -f $RECEIVER_BUILD_
     echo ""
     echo -e "\e[93mThe dump978 binaries appear to have not been built successfully..\e[39m"
     echo ""
-    echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump978 setup halted.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE

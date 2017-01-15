@@ -48,7 +48,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 fi
 echo -e ""
 echo -e "\e[92m  Setting up AboveTustin..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
@@ -57,7 +57,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
         echo -e "\e[92m  AboveTustin setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
@@ -104,7 +104,7 @@ else
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
                 echo "  Setup has been halted at the request of the user."
                 echo -e ""
-                echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+                echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
                 echo -e "\e[92m  AboveTustin setup halted.\e[39m"
                 echo -e ""
                 read -p "Press enter to continue..." CONTINUE
@@ -116,7 +116,7 @@ else
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
                 echo "  A prebuilt PhantomJS binary is not available for this system."
                 echo -e ""
-                echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+                echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
                 echo -e "\e[92m  AboveTustin setup halted.\e[39m"
                 echo -e ""
                 exit 1
@@ -182,7 +182,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
         echo -e "\e[92m  AboveTustin setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
@@ -427,7 +427,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             echo -e ""
             echo -e "\e[93mThe PhantomJS binary appear to have not been built successfully..\e[39m"
             echo -e ""
-            echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+            echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
             echo -e "\e[92m  AboveTustin setup halted.\e[39m"
             echo -e ""
             read -p "Press enter to continue..." CONTINUE

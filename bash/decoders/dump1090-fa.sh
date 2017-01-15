@@ -33,14 +33,14 @@
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $RECEIVER_BASH_DIRECTORY/variables.sh
-source $RECEIVER_BASH_DIRECTORY/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## SET INSTALLATION VARIABLES
 
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
-    source $RECEIVER_CONFIGURATION_FILE
+    source ${RECEIVER_CONFIGURATION_FILE}
 else
     DUMP1090_BING_MAPS_KEY=`GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
     DUMP1090_MAPZEN_KEY=`GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
@@ -48,13 +48,13 @@ fi
 
 ## BEGIN SETUP
 
-if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   $RECEIVER_PROJECT_TITLE"
 fi
 echo ""
 echo -e "\e[92m  Setting up dump1090-fa..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-fa Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-fa is a fork of the dump1090-mutability version of dump1090 that is specifically designed for FlightAware's PiAware software.\n\nIn order to use this version of dump1090 FlightAware's PiAware software must be installed as well.\n\n  https://github.com/flightaware/dump1090\n\nContinue setup by installing dump1090-fa?" 14 78
@@ -63,7 +63,7 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
         echo ""
         read -p "Press enter to continue..." CONTINUE
@@ -142,7 +142,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     echo ""
     echo -e "\e[93mThe package \"dump1090-fa\" could not be installed.\e[39m"
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
     echo ""
     read -p "Press enter to continue..." CONTINUE

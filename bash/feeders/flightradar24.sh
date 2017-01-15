@@ -49,7 +49,7 @@ clear
 echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
 echo ""
 echo -e "\e[92m  Setting up the Flightradar24 feeder client..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Flightradar24 Feeder Client Setup" --yesno "The Flightradar24's feeder client can track flights within 200-400 miles and will automatically share data with Flightradar24. You can track flights directly off your device or via Flightradar24.com.\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the Flightradar24 feeder client?" 13 78
 CONTINUESETUP=$?
@@ -58,7 +58,7 @@ if [ "$CONTINUESETUP" = 1 ]; then
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
     echo ""
     if [[ -n ${VERBOSE} ]] ; then
@@ -145,7 +145,7 @@ else
         echo ""
         echo -e "\e[93mThe package \"fr24feed\" could not be installed.\e[39m"
         echo ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
         echo ""
         if [[ -n ${VERBOSE} ]] ; then

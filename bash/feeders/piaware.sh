@@ -49,7 +49,7 @@ clear
 echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
 echo ""
 echo -e "\e[92m  Setting up FlightAware's PiAware..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
 whiptail --backtitle "$ADSB_PROJECTTITLE" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78
 CONTINUESETUP=$?
@@ -58,7 +58,7 @@ if [ "$CONTINUESETUP" = 1 ]; then
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
     echo ""
     if [[ -n ${VERBOSE} ]] ; then
@@ -142,7 +142,7 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
     echo ""
     echo -e "\e[93mThe package \"piaware\" could not be installed.\e[39m"
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware setup halted.\e[39m"
     echo ""
     if [[ -n ${VERBOSE} ]] ; then

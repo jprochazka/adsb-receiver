@@ -56,12 +56,12 @@ if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Im
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
     echo ""
     sudo apt-get update
     sudo apt-get -y dist-upgrade
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
     if [[ -n ${VERBOSE} ]] ; then
@@ -75,7 +75,7 @@ clear
 echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
 echo ""
 echo -e "\e[92m  Configure dump1090..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
 
 # If dump1090-mutability is installed...
@@ -144,7 +144,7 @@ fi
 
 # Dump1090 configuration is now complete.
 echo ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090 configuration complete.\e[39m"
 echo ""
 if [[ -n ${VERBOSE} ]] ; then
@@ -159,7 +159,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
     echo ""
     echo -e "\e[92m  Configure PiAware..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
     echo ""
 
     whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
@@ -210,7 +210,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
 
     # PiAware configuration is now complete.
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware configuration complete.\e[39m"
     echo ""
     if [[ -n ${VERBOSE} ]] ; then

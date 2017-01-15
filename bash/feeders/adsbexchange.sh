@@ -70,7 +70,7 @@ fi
 echo -e ""
 echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
 echo -e ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
@@ -79,7 +79,7 @@ if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
-        echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
@@ -248,7 +248,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok insta
     echo -e ""
     echo -e "\e[93mThe package \"mlat-client\" could not be installed.\e[39m"
     echo -e ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
     echo -e ""
     if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then

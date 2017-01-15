@@ -62,11 +62,11 @@ function AptUpdate() {
     echo -e "\n\e[91m  $TITLE"
     echo ""
     echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
     echo ""
     sudo apt-get update
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
@@ -82,12 +82,12 @@ function CheckPrerequisites() {
     fi
     echo ""
     echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
     echo ""
     CheckPackage whiptail
     CheckPackage git
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
@@ -123,7 +123,7 @@ function UpdateRepository() {
     echo -e "\n\e[91m  $TITLE"
     echo ""
     echo -e "\e[92m  Pulling the latest version of the ADS-B Receiver Project repository..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
     echo ""
     echo -e "\e[94m  Switching to branch $RECEIVER_PROJECT_BRANCH...\e[97m"
     echo ""
@@ -147,7 +147,7 @@ function UpdateRepository() {
     echo ""
     git reset --hard origin/$RECEIVER_PROJECT_BRANCH
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
@@ -163,11 +163,11 @@ function UpdateOperatingSystem() {
     fi
     echo ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
     echo ""
     sudo apt-get -y dist-upgrade
     echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
         echo ""
