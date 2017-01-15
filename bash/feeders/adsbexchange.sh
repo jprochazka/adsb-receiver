@@ -190,21 +190,21 @@ fi
 
 echo -e "\e[94m  Creating the file adsbexchange-netcat_maint.sh...\e[97m"
 tee $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-netcat_maint.sh > /dev/null <<EOF
-#! /bin/sh
+#! /bin/bash
 while true
   do
-    sleep 30
     /bin/nc 127.0.0.1 30005 | /bin/nc feed.adsbexchange.com 30005
+    sleep 30
   done
 EOF
 
 echo -e "\e[94m  Creating the file adsbexchange-mlat_maint.sh...\e[97m"
 tee $ADSBEXCHANGEBUILDDIRECTORY/adsbexchange-mlat_maint.sh > /dev/null <<EOF
-#! /bin/sh
+#! /bin/bash
 while true
   do
-    sleep 30
     /usr/bin/mlat-client --input-type dump1090 --input-connect 127.0.0.1:30005 --lat $RECEIVER_LATITUDE --lon $RECEIVER_LONGITUDE --alt $RECEIVER_ALTITUDE --user $RECEIVERNAME --server feed.adsbexchange.com:31090 --no-udp --results beast,connect,127.0.0.1:30104
+    sleep 30
   done
 EOF
 

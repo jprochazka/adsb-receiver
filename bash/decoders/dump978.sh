@@ -232,7 +232,7 @@ sudo chmod +w $LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/data
 # Create the dump978 maintenance script.
 echo -e "\e[94m  Creating the ${DECODER_NAME} maintenance script...\e[97m"
 tee $BUILDDIRECTORY_DUMP978/dump978-maint.sh > /dev/null <<EOF
-#! /bin/sh
+#! /bin/bash
 
 # Start dump978 without logging.
 while true; do
