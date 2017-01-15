@@ -41,13 +41,13 @@ PROJECT_BRANCH="master"
 CONFIGURATION_FILE="default"
 ENABLE_LOGGING="false"
 
-export RECEIVER_ROOT_DIRECTORY="$PWD"
-export RECEIVER_BASH_DIRECTORY="$PWD/bash"
-export RECEIVER_BUILD_DIRECTORY="$PWD/build"
+export RECEIVER_ROOT_DIRECTORY="${PWD}"
+export RECEIVER_BASH_DIRECTORY="${PWD}/bash"
+export RECEIVER_BUILD_DIRECTORY="${PWD}/build"
 
 ## SOURCE EXTERNAL SCRIPTS
 
-source $RECEIVER_ROOT_DIRECTORY/bash/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## FUNCTIONS
 
@@ -76,16 +76,17 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         -a|--automated-install)
+            # Automated install.
             AUTOMATED_INSTALL="true"
             shift 1
             ;;
         -b)
-            # The specified installation configuration file.
+            # The specified branch of github.
             PROJECT_BRANCH="$2"
             shift 2
             ;;
         --branch*)
-            # The specified installation configuration file.
+            # The specified branch of github.
             PROJECT_BRANCH=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift 1
             ;;
@@ -121,41 +122,41 @@ done
 ## AUTOMATED INSTALL
 
 # If the automated installation option was selected set the needed environmental variables.
-if [ "$AUTOMATED_INSTALL" = "true" ]; then
+if [ "${AUTOMATED_INSTALL}" = "true" ]; then
     # If no configuration file was specified use the default configuration file path and name.
-   if [ -n "$CONFIGURATION_FILE" ] || [ "$CONFIGURATION_FILE" = "default" ]; then
-        CONFIGURATION_FILE="$RECEIVER_ROOT_DIRECTORY/install.config"
+    if [ -n "${CONFIGURATION_FILE}" ] || [ "${CONFIGURATION_FILE}" = "default" ]; then
+        CONFIGURATION_FILE="${RECEIVER_ROOT_DIRECTORY}/install.config"
     # If either the -c or --config-file= flags were set a valid file must reside there.
-    elif [ ! -f $CONFIGURATION_FILE ]; then
+    elif [ ! -f "${CONFIGURATION_FILE}" ]; then
         echo "Unable to locate the installation configuration file."
         exit 1
     fi
 fi
 
 # Add any environmental variables needed by any child scripts.
-export RECEIVER_AUTOMATED_INSTALL=$AUTOMATED_INSTALL
-export RECEIVER_PROJECT_BRANCH=$PROJECT_BRANCH
-export RECEIVER_CONFIGURATION_FILE=$CONFIGURATION_FILE
-export RECEIVER_VERBOSE=$VERBOSE
+export RECEIVER_AUTOMATED_INSTALL=${AUTOMATED_INSTALL}
+export RECEIVER_PROJECT_BRANCH=${PROJECT_BRANCH}
+export RECEIVER_CONFIGURATION_FILE=${CONFIGURATION_FILE}
+export RECEIVER_VERBOSE=${VERBOSE}
 
 ## EXECUTE BASH/INIT.SH
 
-chmod +x $RECEIVER_BASH_DIRECTORY/init.sh
-if [[ -n "$ENABLE_LOGGING" ]] && [[ "$ENABLE_LOGGING" = "true" ]] ; then
+chmod +x ${RECEIVER_BASH_DIRECTORY}/init.sh
+if [[ -n "${ENABLE_LOGGING}" ]] && [[ "${ENABLE_LOGGING}" = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
-    LOG_FILE="$RECEIVER_ROOT_DIRECTORY/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
-    $RECEIVER_BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
-    CleanLogFile "$LOG_FILE"
+    LOG_FILE="${RECEIVER_ROOT_DIRECTORY}/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    ${RECEIVER_BASH_DIRECTORY}/init.sh 2>&1 | tee -a "${LOG_FILE}"
+    CleanLogFile "${LOG_FILE}"
 else
     # Execute init.sh without logging any output to the log directory.
-    $RECEIVER_BASH_DIRECTORY/init.sh
+    ${RECEIVER_BASH_DIRECTORY}/init.sh
 fi
 
 ## CLEAN UP
 
 # Remove any files created by whiptail.
-rm -f $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
-rm -f $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES
+rm -f ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+rm -f ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
 
 # Remove any global variables assigned by this script.
 unset RECEIVER_ROOT_DIRECTORY
