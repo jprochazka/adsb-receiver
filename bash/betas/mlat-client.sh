@@ -48,9 +48,26 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
 fi
 
 # Component specific variables.
-BETA_NAME="MLAT Client"
-BETA_GITHUB_URL="https://github.com/mutability/mlat-client.git"
-BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
+COMPONENT_NAME="MLAT Client"
+COMPONENT_GITHUB_URL="https://github.com/mutability/mlat-client.git"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
+
+#################################################################################
+# Checks return code.
+# Should be moved to functions.sh.
+
+function CheckReturnCode () {
+    local LINE=$((`stty size | awk '{print $1}'` - 1))
+    local COL=$((`stty size | awk '{print $2}'` - 8))
+    tput cup "${LINE}" "${COL}"
+    if [[ $? -eq 0 ]] ; then
+        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
+    else
+        echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
+        echo -e "\e[39m  ${ACTION}\n"
+        false
+    fi
+}
 
 ## BEGIN SETUP
 
@@ -59,7 +76,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${BETA_NAME}...\e[97m"
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
@@ -67,54 +84,57 @@ echo -e ""
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${BETA_NAME}...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 # Required by install script.
 CheckPackage git
 CheckPackage curl
+# Required by component.
+CheckPackage build-essential
+CheckPackage debhelper
 echo -e ""
-echo -e "\e[95m  Configuring this device to run the ${BETA_NAME} binaries...\e[97m"
+echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
 if [[ `true` ]] ; then
     echo -e ""
-    echo -e "\e[95m  Preparing the ${BETA_NAME} Git repository...\e[97m"
+    echo -e "\e[95m  Preparing the ${COMPONENT_NAME} Git repository...\e[97m"
     echo -e ""
-    if [[ -d ${BETA_BUILD_DIRECTORY} ]] && [[ -d ${BETA_BUILD_DIRECTORY}/.git ]] ; then
+    if [[ -d ${COMPONENT_BUILD_DIRECTORY} ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/.git ]] ; then
         # A directory with a git repository containing the source code already exists.
-        echo -e "\e[94m  Entering the ${BETA_NAME} git repository directory...\e[97m"
-        cd ${BETA_BUILD_DIRECTORY} 2>&1
-        echo -e "\e[94m  Updating the local ${BETA_NAME} git repository...\e[97m"
+        echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
+        cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
+        echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
         echo -e ""
         git pull 2>&1
     else
         # A directory containing the source code does not exist in the build directory.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-        echo -e "\e[94m  Cloning the ${BETA_NAME} git repository locally...\e[97m"
+        echo -e "\e[94m  Cloning the ${COMPONENT_NAME} git repository locally...\e[97m"
         echo -e ""
-        git clone ${BETA_GITHUB_URL} 2>&1
+        git clone ${COMPONENT_GITHUB_URL} 2>&1
     fi
 
     ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
 
     echo -e ""
-    echo -e "\e[95m  Building and installing the ${BETA_NAME} package...\e[97m"
+    echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
     echo -e ""
-    if [[ ! "${PWD}" = ${BETA_BUILD_DIRECTORY} ]] ; then
-        echo -e "\e[94m  Entering the ${BETA_NAME} git repository directory...\e[97m"
+    if [[ ! "${PWD}" = ${COMPONENT_BUILD_DIRECTORY} ]] ; then
+        echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
         echo -e ""
-        cd ${BETA_BUILD_DIRECTORY} 2>&1
+        cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
     fi
     # Build binary package.
-    echo -e "\e[94m  Building the ${BETA_NAME} package...\e[97m"
+    echo -e "\e[94m  Building the ${COMPONENT_NAME} package...\e[97m"
     echo -e ""
     dpkg-buildpackage -b -uc 2>&1
     echo -e ""
     # Install binary package.
-    echo -e "\e[94m  Installing the ${BETA_NAME} package...\e[97m"
+    echo -e "\e[94m  Installing the ${COMPONENT_NAME} package...\e[97m"
     echo -e ""
     sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
     echo -e ""
@@ -126,14 +146,14 @@ if [[ `true` ]] ; then
         echo -e ""
     fi
     # Archive binary package.
-    echo -e "\e[94m  Archiving the ${BETA_NAME} package...\e[97m"
+    echo -e "\e[94m  Archiving the ${COMPONENT_NAME} package...\e[97m"
     echo -e ""
     mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
     echo -e ""
 
     # Check that the mlat-client package was installed successfully.
     echo -e ""
-    echo -e "\e[94m  Checking that the ${BETA_NAME} package was installed properly...\e[97m"
+    echo -e "\e[94m  Checking that the ${COMPONENT_NAME} package was installed properly...\e[97m"
     echo -e ""
     if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
         # If the mlat-client package could not be installed halt setup.
@@ -142,7 +162,7 @@ if [[ `true` ]] ; then
         echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
         echo -e "  SETUP HAS BEEN TERMINATED!"
         echo -e ""
-        echo -e "\e[93mThe package \"${BETA_NAME}\" could not be installed.\e[39m"
+        echo -e "\e[93mThe package \"${COMPONENT_NAME}\" could not be installed.\e[39m"
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
@@ -163,7 +183,7 @@ ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
-echo -e "\e[92m  ${BETA_NAME} setup is complete.\e[39m"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE

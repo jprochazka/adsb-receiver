@@ -50,11 +50,11 @@ fi
 # Component specific variables.
 COMPONENT_NAME="Kalibrate"
 COMPONENT_GITHUB_URL="https://github.com/steve-m/kalibrate-rtl.git"
-
-# Should be moved to functions.sh.
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/Kalibrate"
 
 #################################################################################
 # Checks return code.
+# Should be moved to functions.sh.
 
 function CheckReturnCode () {
     local LINE=$((`stty size | awk '{print $1}'` - 1))
@@ -93,7 +93,7 @@ CheckPackage curl
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage rtl-sdr
-# Required for Kalibrate.
+# Required by component.
 CheckPackage autoconf
 CheckPackage automake
 CheckPackage libfftw3-3
@@ -106,38 +106,38 @@ echo -e ""
 # Download from github and compile.
 if [[ true ]] ; then
     COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-    BETA_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-    BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${BETA_GITHUB_PROJECT}"
+    COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+    COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
 
     # Check if already installed and located where we would expect it to be.
-    if [[ -x `which kal` ]] && [[ -d "${BETA_BUILD_DIRECTORY}/.git/" ]] ; then
+    if [[ -x `which kal` ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git/" ]] ; then
         # Then perhaps we can update from github.
-        cd ${BETA_BUILD_DIRECTORY}
+        cd ${COMPONENT_BUILD_DIRECTORY}
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
-            echo -en "\e[33m  Updating ${BETA_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+            echo -en "\e[33m  Updating ${COMPONENT_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
             ACTION=$(git pull 2>&1)
             DO_INSTALL_FROM_GIT="true"
         else
-            echo -en "\e[33m  Local ${BETA_GITHUB_PROJECT} repository is up to date with \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+            echo -en "\e[33m  Local ${COMPONENT_GITHUB_PROJECT} repository is up to date with \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         fi
     else
         # Otherwise clone from github.
-        echo -en "\e[33m  Cloning ${BETA_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        ACTION=$(git clone https://${COMPONENT_GITHUB_URL_SHORT} ${BETA_BUILD_DIRECTORY} 2>&1)
+        echo -en "\e[33m  Cloning ${COMPONENT_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+        ACTION=$(git clone https://${COMPONENT_GITHUB_URL_SHORT} ${COMPONENT_BUILD_DIRECTORY} 2>&1)
         DO_INSTALL_FROM_GIT="true"
     fi
     CheckReturnCode
 
     # Compile and install from source.
     if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
-        echo -en "\e[33m  Compiling ${BETA_GITHUB_PROJECT} from source..."
+        echo -en "\e[33m  Compiling ${COMPONENT_GITHUB_PROJECT} from source..."
         # Prepare to build from source.
-        cd ${BETA_BUILD_DIRECTORY}
+        cd ${COMPONENT_BUILD_DIRECTORY}
         # And remove previous binaries.
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} clean 2>&1)
+            ACTION=$(sudo make -C ${COMPONENT_BUILD_DIRECTORY} clean 2>&1)
         fi
         # Run bootstrap.
         if [[ -x "bootstrap" ]] ; then
@@ -145,23 +145,23 @@ if [[ true ]] ; then
         fi
         # Configure with CFLAGS.
         if [[ -x "configure" ]] ; then
-            ACTION=$(./configure ${BETA_CFLAGS} 2>&1)
+            ACTION=$(./configure ${COMPONENT_CFLAGS} 2>&1)
         fi
         # Make.
         if [[ -f "Makefile" ]] ; then
-            ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
+            ACTION=$(make -C ${COMPONENT_BUILD_DIRECTORY} 2>&1)
             # Install.
             if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
-                ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} install 2>&1)
+                ACTION=$(sudo make -C ${COMPONENT_BUILD_DIRECTORY} install 2>&1)
             fi
         fi
     else
-        echo -en "\e[33m  ${BETA_GITHUB_PROJECT} is already installed..."
+        echo -en "\e[33m  ${COMPONENT_GITHUB_PROJECT} is already installed..."
     fi
     CheckReturnCode
 
     unset DO_INSTALL_FROM_GIT
-    cd ${BETA_BUILD_DIRECTORY}
+    cd ${COMPONENT_BUILD_DIRECTORY}
 fi
 
 ## SETUP COMPLETE
