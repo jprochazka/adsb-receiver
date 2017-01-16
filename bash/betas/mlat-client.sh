@@ -37,13 +37,6 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Feeder specific variables.
-
-BETA_NAME="MLAT Client"
-BETA_GITHUB_URL="https://github.com/mutability/mlat-client.git"
-BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
-
-
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -53,6 +46,11 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
+
+# Component specific variables.
+BETA_NAME="MLAT Client"
+BETA_GITHUB_URL="https://github.com/mutability/mlat-client.git"
+BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 
 ## BEGIN SETUP
 
