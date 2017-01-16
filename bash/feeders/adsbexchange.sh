@@ -313,9 +313,11 @@ EOF
 echo -e ""
 fi
 
+if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
 # Set permissions on netcat script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
+fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Set permissions on MLAT script.
@@ -324,6 +326,7 @@ sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
 echo -e ""
 fi
 
+if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
 # Add netcat script to startup.
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
 if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
@@ -331,6 +334,7 @@ if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
     echo -e ""
+fi
 fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
@@ -351,6 +355,7 @@ echo -e ""
 echo -e "\e[95m  Starting the netcat and mlat-client feeds...\e[97m"
 echo -e ""
 
+if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
 # Kill any currently running instances of the feeder netcat_maint.sh script.
 echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
@@ -366,6 +371,7 @@ if [[ -n "${PIDS}" ]] ; then
     sudo kill -9 ${PIDS} 2>&1
 fi
 echo -e ""
+fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Kill any currently running instances of the feeder mlat_maint.sh script.
@@ -385,9 +391,11 @@ fi
 echo -e ""
 fi
 
+if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
 # Start netcat script.
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
 sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
+fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Start MLAT script.
