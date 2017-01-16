@@ -38,7 +38,7 @@ RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Decoder specific variables.
-BETA_NAME=""
+COMPONENT_NAME=""
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -57,7 +57,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${BETA_NAME}...\e[97m"
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
@@ -65,13 +65,13 @@ echo -e ""
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${BETA_NAME}...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 # Required by install script.
 CheckPackage git
 CheckPackage curl
 echo -e ""
-echo -e "\e[95m  Configuring this device to run the ${BETA_NAME} binaries...\e[97m"
+echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
 ## SETUP COMPLETE
@@ -83,7 +83,7 @@ ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
-echo -e "\e[92m  ${BETA_NAME} setup is complete.\e[39m"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
