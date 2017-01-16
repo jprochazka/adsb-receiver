@@ -40,6 +40,7 @@ BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
 # Feeder specific variables.
 
+MLAT_CLIENT_GITBHUB_URL="https://github.com/mutability/mlat-client.git"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 
 FEEDER_NAME="adsbexchange"
@@ -215,7 +216,7 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
         echo -e ""
-        git clone https://github.com/mutability/mlat-client.git 2>&1
+        git clone ${MLAT_CLIENT_GITBHUB_URL} 2>&1
     fi
 
     ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
