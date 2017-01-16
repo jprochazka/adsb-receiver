@@ -40,6 +40,12 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURA
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
+# Component specific variables.
+
+COMPONENT_NAME="Beast-Splitter"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/beastsplitter"
+
+
 ### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -180,7 +186,7 @@ echo -e ""
 echo -e "\e[95m  Starting Beast-Splitter...\e[97m"
 echo -e ""
 
-# Kill any currently running instances of the beast-splitter_maint.sh and beast-splitter scripts.
+# Kill any currently running instances.
 PROCS="beast-splitter_maint.sh beast-splitter"
 for PROC in ${PROCS} ; do
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`

@@ -40,6 +40,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURA
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
+# Component specific variables.
+
+COMPONENT_NAME="Duck DNS"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/duckdns"
+
 ### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -141,7 +146,7 @@ echo -e ""
 echo -e "\e[95m  Starting Duck DNS...\e[97m"
 echo -e ""
 
-# Kill any currently running instances of the Duck DN DNS script.
+# Kill any currently running instances.
 PROCS="duck.sh"
 for PROC in ${PROCS} ; do
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`

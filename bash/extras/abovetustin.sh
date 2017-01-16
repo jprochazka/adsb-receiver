@@ -40,6 +40,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURA
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
+# Component specific variables.
+
+COMPONENT_NAME="AboveTustin"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/abovetustin"
+
 ### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -575,7 +580,7 @@ echo -e ""
 echo -e "\e[95m  Starting AboveTustin...\e[97m"
 echo -e ""
 
-# Kill any currently running instances of run_tracker.sh, tracker.py or phantomjs.
+# Kill any currently running instances.
 PROCS="run_tracker.sh tracker.py phantomjs"
 for PROC in ${PROCS} ; do
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
