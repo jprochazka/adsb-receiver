@@ -146,6 +146,7 @@ if [[ -n "${ENABLE_LOGGING}" ]] && [[ "${ENABLE_LOGGING}" = "true" ]] ; then
     # Execute init.sh logging all output to the log drectory as the file name specified.
     LOG_FILE="${RECEIVER_ROOT_DIRECTORY}/logs/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
     ${RECEIVER_BASH_DIRECTORY}/init.sh 2>&1 | tee -a "${LOG_FILE}"
+    echo -e "\e[95m  Cleaning up log file...\e[97m"
     CleanLogFile "${LOG_FILE}"
 else
     # Execute init.sh without logging any output to the log directory.
@@ -155,8 +156,11 @@ fi
 ## CLEAN UP
 
 # Remove any files created by whiptail.
-rm -f ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-rm -f ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
+for WHIPTAIL in FEEDER_CHOICES EXTRAS_CHOICES ; do
+    if [[ -f "${RECEIVER_ROOT_DIRECTORY}/${WHIPTAIL}" ]] ; then
+        rm -f ${RECEIVER_ROOT_DIRECTORY}/${WHIPTAIL}
+    fi
+done
 
 # Remove any global variables assigned by this script.
 unset RECEIVER_ROOT_DIRECTORY
