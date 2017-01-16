@@ -103,11 +103,17 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
-# Download from github and compile.
+## DOWNLOAD OR UPDATE THE COMPONENT SOURCE
+
 if [[ true ]] ; then
+    # Download from github and compile.
     COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
     COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
     COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
+
+    echo -e ""
+    echo -e "\e[95m  Preparing the ${COMPONENT_NAME} Git repository...\e[97m"
+    echo -e ""
 
     # Check if already installed and located where we would expect it to be.
     if [[ -x `which kal` ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git/" ]] ; then

@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2016-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2016-2017, Joseph A. Prochazka & Romeo Golf                         #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -96,12 +96,19 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
-## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
+## DOWNLOAD OR UPDATE THE COMPONENT SOURCE
 
-if [[ `true` ]] ; then
+if [[ true ]] ; then
+    # Download from github and compile.
+    COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+    COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+    COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
+
     echo -e ""
     echo -e "\e[95m  Preparing the ${COMPONENT_NAME} Git repository...\e[97m"
     echo -e ""
+
+    # Check if already installed and located where we would expect it to be.
     if [[ -d ${COMPONENT_BUILD_DIRECTORY} ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/.git ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
