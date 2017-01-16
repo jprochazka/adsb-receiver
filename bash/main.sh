@@ -607,9 +607,9 @@ declare CONFIRMATION
 if [ "$DUMP1090_INSTALL" = "false" ] && [ "$DUMP1090_UPGRADE" = "false" ] && [ "$DUMP978_INSTALL" = "false" ] && [ "$DUMP978_UPGRADE" = "false" ] && [ "$WEBPORTAL_INSTALL" = "false" ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES ] && [ ! -s $RECEIVER_ROOT_DIRECTORY/EXTRAS_CHOICES ]; then
     # Nothing was chosen to be installed.
     whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
-    echo -e "\033[31m"
-    echo "Nothing was selected to do or be installed."
-    echo -e "\033[37m"
+    echo -e "\e[31m"
+    echo -e "  Nothing was selected to do or be installed."
+    echo -e "\e[37m"
     exit 1
 else
     # The user decided to install software.
@@ -730,7 +730,7 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     # Ask for confirmation before moving on.
     CONFIRMATION="${CONFIRMATION}Do you wish to continue setup?"
     if ! (whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 21 78) then
-        echo -e "\033[31m"
+        echo -e "\e[31m"
         echo "  Installation canceled by user."
         exit 1
     fi
