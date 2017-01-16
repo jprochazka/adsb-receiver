@@ -54,6 +54,7 @@ FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
 FEEDER_MLAT_DST_PORT="31090"
 FEEDER_MLAT_SRC_HOST="127.0.0.1"
 FEEDER_MLAT_SRC_PORT="30005"
+
 FEEDER_MLAT_RETURN_PORT="30104"
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -174,6 +175,20 @@ else
     exit 1
 fi
 
+# Confirm that all required information has been obtained for BEAST feed.
+if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
+    FEEDER_BEAST_ENABLED="true"
+else
+    FEEDER_BEAST_ENABLED="false"
+fi
+
+# Confirm that all required information has been obtained for MLAT feed.
+if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
+    FEEDER_MLAT_ENABLED="true"
+else
+    FEEDER_MLAT_ENABLED="false"
+fi
+
 # Establish if MLAT results should be fed back into local dump1090 instance.
 if  [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
     FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
@@ -183,6 +198,7 @@ fi
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
+if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 echo -e ""
 echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
 echo -e ""
@@ -256,6 +272,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok insta
     fi
     exit 1
 fi
+fi
 
 ## CREATE THE SCRIPT TO EXECUTE AND MAINTAIN NETCAT AND MLAT-CLIENT FEEDS ADS-B EXCHANGE
 
@@ -282,6 +299,7 @@ while true
   done
 EOF
 
+if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Create MLAT maint script.
 echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
@@ -293,15 +311,18 @@ while true
   done
 EOF
 echo -e ""
+fi
 
 # Set permissions on netcat script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 
+if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Set permissions on MLAT script.
 echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
 sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
 echo -e ""
+fi
 
 # Add netcat script to startup.
 echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
@@ -312,6 +333,7 @@ if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc
     echo -e ""
 fi
 
+if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Add MLAT script to startup.
 echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
 if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
@@ -321,6 +343,7 @@ if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/r
     echo -e ""
 fi
 echo -e ""
+fi
 
 ## START THE NETCAT FEED AND MLAT-CLIENT
 
@@ -344,6 +367,7 @@ if [[ -n "${PIDS}" ]] ; then
 fi
 echo -e ""
 
+if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Kill any currently running instances of the feeder mlat_maint.sh script.
 echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
@@ -359,15 +383,18 @@ if [[ -n "${PIDS}" ]] ; then
     sudo kill -9 ${PIDS} 2>&1
 fi
 echo -e ""
+fi
 
 # Start netcat script.
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
 sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
 
+if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
 # Start MLAT script.
 echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
 sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
 echo -e ""
+fi
 
 ### SETUP COMPLETE
 
