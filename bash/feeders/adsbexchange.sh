@@ -94,7 +94,7 @@ echo -e "\e[95m  Checking for and removing any old style ADS-B Exchange setups i
 echo -e ""
 # Check if the old style ${FEEDER_NAME}-maint.sh line exists in /etc/rc.local.
 echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
-if grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local; then
+if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local` -gt 0 ]] ; then
     # Kill any currently running instances of the ${FEEDER_NAME}-maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
@@ -331,7 +331,7 @@ fi
 if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
     # Add netcat script to startup.
     echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-    if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
+    if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
         lnum=($(sed -n '/exit 0/=' /etc/rc.local))
         ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
@@ -342,7 +342,7 @@ fi
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     # Add MLAT script to startup.
     echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
-    if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
+    if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
         lnum=($(sed -n '/exit 0/=' /etc/rc.local))
         ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local

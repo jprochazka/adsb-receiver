@@ -243,7 +243,7 @@ chmod +x $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh
 
 # Add the dump978 maintenance script to /etc/rc.local.
 echo -e "\e[94m  Checking if the file /etc/rc.local is already set to execute the dump978 maintenance script...\e[97m"
-if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh &" /etc/rc.local; then
+if [[ `grep -cFx "$RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding a line to execute the dump978 maintenance script to the file /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
     ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &\n" /etc/rc.local

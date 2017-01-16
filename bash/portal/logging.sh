@@ -75,7 +75,7 @@ chmod +x $PORTALPYTHONDIRECTORY/maintenance-maint.sh
 sudo sed -i '/build\/portal\/logging\/flights-maint.sh/d' /etc/rc.local
 
 # Add flight logging maintenance script to rc.local.
-if ! grep -Fxq "$PORTALPYTHONDIRECTORY/flights-maint.sh &" /etc/rc.local; then
+if [[ `grep -cFx "$PORTALPYTHONDIRECTORY/flights-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding the flight logging maintenance script startup line to /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
     ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALPYTHONDIRECTORY/flights-maint.sh &\n" /etc/rc.local
@@ -85,7 +85,7 @@ fi
 sudo sed -i '/build\/portal\/logging\/maintenance-maint.sh/d' /etc/rc.local
 
 # Add maintenance maintenance script to rc.local.
-if ! grep -Fxq "$PORTALPYTHONDIRECTORY/maintenance-maint.sh &" /etc/rc.local; then
+if [[ `grep -cFx "$PORTALPYTHONDIRECTORY/maintenance-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding the maintenance maintenance script startup line to /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
     ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i $PORTALPYTHONDIRECTORY/maintenance-maint.sh &\n" /etc/rc.local
