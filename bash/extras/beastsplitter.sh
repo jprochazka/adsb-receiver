@@ -57,7 +57,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
         echo -e "\e[92m  Beast-Splitter setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
@@ -71,6 +71,7 @@ echo -e ""
 ### CHECK FOR PREREQUISITE PACKAGES
 
 # Check that the required packages are installed.
+echo -e ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo -e ""
 CheckPackage build-essential
@@ -85,27 +86,25 @@ CheckPackage dh-systemd
 # Confirm settings with user.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the beast-splitter listen port.
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
-        while [[ -z ${BEASTSPLITTER_LISTEN_PORT} ]]; do
-            BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_LISTEN_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port Beast-Splitter will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
-            BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port (REQUIRED)"
-        done
-    fi
+    BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
+    while [[ -z "${BEASTSPLITTER_LISTEN_PORT}" ]] ; do
+        BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_LISTEN_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port Beast-Splitter will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
+        BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port (REQUIRED)"
+    done
     # Ask the beast-splitter connect port.
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"
-        while [[ -z ${BEASTSPLITTER_CONNECT_PORT} ]]; do
-            BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_CONNECT_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port Beast-Splitter will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
-            BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port (REQUIRED)"
-        done
-    fi
+    BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"
+    while [[ -z "${BEASTSPLITTER_CONNECT_PORT}" ]] ; do
+        BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_CONNECT_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port Beast-Splitter will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
+       BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port (REQUIRED)"
+   done
 fi
+
+### START INSTALLATION
 
 ### PROJECT BUILD DIRECTORY
 
 # Create the build directory if it does not already exist.
-if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
     mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
 fi
@@ -166,10 +165,10 @@ while true
 EOF
 
 echo -e "\e[94m  Setting file permissions for beast-splitter_maint.sh...\e[97m"
-sudo chmod +x ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh 2>&1
+sudo chmod -v +x ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh 2>&1
 
 echo -e "\e[94m  Checking if the Beast-Splitter startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local; then
+if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding the Beast-Splitter startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &\n" /etc/rc.local
@@ -184,7 +183,6 @@ echo -e ""
 # Kill any currently running instances of the beast-splitter_maint.sh and beast-splitter scripts.
 PROCS="beast-splitter_maint.sh beast-splitter"
 for PROC in ${PROCS} ; do
-    echo -e "\e[94m  Checking for any running ${PROC} processes...\e[97m"
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"

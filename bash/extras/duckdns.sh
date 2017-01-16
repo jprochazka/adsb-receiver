@@ -57,7 +57,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
+        echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
         echo -e "\e[92m  Duck DNS dynamic DNS setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
@@ -71,6 +71,7 @@ echo -e ""
 ### CHECK FOR PREREQUISITE PACKAGES
 
 # Check that the required packages are installed.
+echo -e ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo -e ""
 CheckPackage cron
@@ -135,6 +136,22 @@ JOB="*/5 * * * * ${COMMAND}"
 #(crontab -l | grep -v -F "${COMMAND}" ) | crontab -
 
 ### START SCRIPTS
+
+echo -e ""
+echo -e "\e[95m  Starting Duck DNS...\e[97m"
+echo -e ""
+
+# Kill any currently running instances of the Duck DN DNS script.
+PROCS="duck.sh"
+for PROC in ${PROCS} ; do
+    PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [[ -n "${PIDS}" ]] ; then
+        echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
+    fi
+    unset PIDS
+done
 
 # Run the Duck DNS update script for the first time..
 echo -e "\e[94m  Executing the Duck DNS update script...\e[97m"

@@ -122,6 +122,7 @@ else
                 exit 1
             fi
         echo -e "\e[94m  Will attempt to build the PhantomJS binary from source...\e[97m"
+        echo -e ""
         fi
     fi
 fi
@@ -173,7 +174,9 @@ else
     CheckPackage bzip2
 fi
 
-### GATHER TWITTER API INFORMATION FROM THE USER
+### CONFIRM SETTINGS
+
+# GATHER TWITTER API INFORMATION FROM THE USER
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
@@ -229,8 +232,6 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
-## CONFIRM DERIVED VALUES
-
 # Ask for the receivers latitude and longitude.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
@@ -265,7 +266,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
-## START INSTALLATION
+### START INSTALLATION
 
 echo -e ""
 echo -e "\e[95m  Commencing installation...\e[97m"
@@ -478,7 +479,7 @@ echo -e ""
 # Create the build directory if it does not already exist.
 if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
     echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
+    mkdir -v ${RECEIVER_BUILD_DIRECTORY} 2>&1
 fi
 
 ### DOWNLOAD SOURCE
@@ -510,6 +511,8 @@ else
     git clone https://github.com/kevinabrandon/AboveTustin.git "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" 2>&1
     echo -e ""
 fi
+
+### BUILD AND INSTALL
 
 ### APPLY CONFIGURATION
 
@@ -556,7 +559,7 @@ fi
 # Quick fix to remove quotes from config.
 sed -e 's/= "/= /g' -e 's/"$//g' -i "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/config.ini" 2>&1
 
-### BUILD AND INSTALL
+### CREATE SCRIPTS
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
 echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
