@@ -83,13 +83,13 @@ CheckPackage curl
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask for the user sub domain to be assigned to this device.
     DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain"
-    while [[ -z ${DOMAIN} ]]; do
+    while [[ -z ${DUCKDNS_DOMAIN} ]]; do
         DUCKDNS_DOMAIN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_DOMAIN_TITLE}" --nocancel --inputbox "\nPlease enter the Duck DNS sub domain you selected after registering.\nIf you do not have one yet visit http://www.ducknds.org to obtain one." 9 78 3>&1 1>&2 2>&3)
         DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain (REQUIRED)"
     done
     # Ask for the Duck DNS token to be assigned to this receiver.
     DUCKDNS_TOKEN_TITLE="Duck DNS Token"
-    while [[ -z ${TOKEN} ]]; do
+    while [[ -z ${DUCKDNS_TOKEN} ]]; do
         DUCKDNS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_TOKEN_TITLE}" --nocancel --inputbox "\nPlease enter your Duck DNS token." 8 78 3>&1 1>&2 2>&3)
         DUCKDNS_TOKEN_TITLE="Duck DNS Token (REQUIRED)"
     done
@@ -116,7 +116,7 @@ fi
 # Create then set permissions on the file duck.sh.
 echo -e "\e[94m  Creating the Duck DNS update script...\e[97m"
 tee ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh > /dev/null <<EOF
-echo url="https://www.duckdns.org/update?domains=${DOMAIN}&token=${TOKEN}&ip=" | curl -k -o ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.log -K -
+echo url="https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip=" | curl -k -o ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.log -K -
 EOF
 
 echo -e "\e[94m  Setting execute permissions for only this user on the Duck DNS update script...\e[97m"
