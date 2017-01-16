@@ -112,7 +112,13 @@ fi
 # Create the build directory if it does not already exist.
 if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -v -p ${RECEIVER_BUILD_DIRECTORY} 2>&1
+    mkdir -v ${RECEIVER_BUILD_DIRECTORY} 2>&1
+fi
+
+# Create a component directory within the build directory if it does not already exist.
+if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
+    echo -e "\e[94m  Creating the directory ${COMPONENT_BUILD_DIRECTORY}...\e[97m"
+    mkdir -v ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 
 ### DOWNLOAD SOURCE
@@ -122,10 +128,10 @@ echo -e "\e[95m  Downloading and configuring Beast-Splitter...\e[97m"
 echo -e ""
 
 echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
-if [[ -d ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter/.git ]] ; then
+if [[ -d ${COMPONENT_BUILD_DIRECTORY}/beast-splitter ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/beast-splitter/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the local Beast-Splitter git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter
+    cd ${COMPONENT_BUILD_DIRECTORY}/beast-splitter 2>&1
     echo -e "\e[94m  Updating the local Beast-Splitter git repository...\e[97m"
     echo -e ""
     git pull 2>&1
@@ -133,7 +139,7 @@ if [[ -d ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter ]] && [[ -d $
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter
+    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Cloning the Beast-Splitter git repository locally...\e[97m"
     echo -e ""
     git clone https://github.com/flightaware/beast-splitter.git 2>&1
@@ -145,23 +151,23 @@ fi
 echo -e ""
 echo -e "\e[95m  Building and installing the Beast-Splitter package...\e[97m"
 echo -e ""
-if [[ ! "${PWD}" = ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter ]] ; then
+if [[ ! "${PWD}" = ${COMPONENT_BUILD_DIRECTORY}/beast-splitter ]] ; then
     echo -e "\e[94m  Entering the Beast-Splitter git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter 2>&1
+    cd ${COMPONENT_BUILD_DIRECTORY}/beast-splitter 2>&1
 fi
 echo -e "\e[94m  Executing the Beast-Splitter build script...\e[97m"
 echo -e ""
 dpkg-buildpackage -b 2>&1
 echo -e ""
-echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter 2>&1
+echo -e "\e[94m  Entering the build directory...\e[97m"
+cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 echo -e "\e[94m  Installing the Beast-Splitter package...\e[97m"
 sudo dpkg -i beast-splitter_*.deb 2>&1
 
 ### CREATE SCRIPTS
 
 echo -e "\e[94m  Creating the file beast-splitter_maint.sh...\e[97m"
-tee ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh > /dev/null <<EOF
+tee ${COMPONENT_BUILD_DIRECTORY}/beast-splitter_maint.sh > /dev/null <<EOF
 #! /bin/bash
 while true
   do
@@ -171,13 +177,13 @@ while true
 EOF
 
 echo -e "\e[94m  Setting file permissions for beast-splitter_maint.sh...\e[97m"
-sudo chmod -v +x ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh 2>&1
+sudo chmod -v +x ${COMPONENT_BUILD_DIRECTORY}/beast-splitter_maint.sh 2>&1
 
 echo -e "\e[94m  Checking if the Beast-Splitter startup line is contained within the file /etc/rc.local...\e[97m"
-if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/beast-splitter_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding the Beast-Splitter startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${COMPONENT_BUILD_DIRECTORY}/beast-splitter_maint.sh &\n" /etc/rc.local
 fi
 
 ### START SCRIPTS
@@ -201,7 +207,7 @@ done
 # Start the beast-splitter_maint.sh script.
 echo -e "\e[94m  Executing the beast-splitter_maint.sh script...\e[97m"
 echo -e ""
-sudo nohup ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh > /dev/null 2>&1 &
+sudo nohup ${COMPONENT_BUILD_DIRECTORY}/beast-splitter_maint.sh > /dev/null 2>&1 &
 echo -e ""
 
 ### SETUP COMPLETE

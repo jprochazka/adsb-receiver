@@ -109,9 +109,9 @@ if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
 fi
 
 # Create a duckdns directory within the build directory if it does not already exist.
-if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/duckdns ]] ; then
-    echo -e "\e[94m  Creating the directory ${RECEIVER_BUILD_DIRECTORY}/duckdns...\e[97m"
-    mkdir -v ${RECEIVER_BUILD_DIRECTORY}/duckdns 2>&1
+if [[ ! -d ${COMPONENT_BUILD_DIRECTORY} ]] ; then
+    echo -e "\e[94m  Creating the directory ${COMPONENT_BUILD_DIRECTORY}...\e[97m"
+    mkdir -v ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 
 ### DOWNLOAD SOURCE
@@ -120,18 +120,18 @@ fi
 
 # Create then set permissions on the file duck.sh.
 echo -e "\e[94m  Creating the Duck DNS update script...\e[97m"
-tee ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh > /dev/null <<EOF
-echo url="https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip=" | curl -k -o ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.log -K -
+tee ${COMPONENT_BUILD_DIRECTORY}/duck.sh > /dev/null <<EOF
+echo url="https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip=" | curl -k -o ${COMPONENT_BUILD_DIRECTORY}/duck.log -K -
 EOF
 
 echo -e "\e[94m  Setting execute permissions for only this user on the Duck DNS update script...\e[97m"
-chmod -v 700 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
+chmod -v 700 ${COMPONENT_BUILD_DIRECTORY}/duck.sh 2>&1
 
 ### CREATE SCRIPTS
 
 # Add job to the users crontab if it does not exist.
 echo -e "\e[94m  Adding the Duck DNS update command to your crontab if it does not exist already...\e[97m"
-COMMAND="${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh >/dev/null 2>&1"
+COMMAND="${COMPONENT_BUILD_DIRECTORY}/duck.sh >/dev/null 2>&1"
 JOB="*/5 * * * * ${COMMAND}"
 
 # Should only add the job if the COMMAND does not already exist in the users crontab.
@@ -161,7 +161,7 @@ done
 # Run the Duck DNS update script for the first time..
 echo -e "\e[94m  Executing the Duck DNS update script...\e[97m"
 echo -e ""
-${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
+${COMPONENT_BUILD_DIRECTORY}/duck.sh 2>&1
 echo -e ""
 
 ### SETUP COMPLETE
