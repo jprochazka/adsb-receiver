@@ -199,79 +199,79 @@ fi
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-echo -e ""
-echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
-echo -e ""
-if [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY} ]] && [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY}/.git ]] ; then
-    # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
-    cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
-    echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
     echo -e ""
-    git pull 2>&1
-else
-    # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-    echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
+    echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
-    git clone https://github.com/mutability/mlat-client.git 2>&1
-fi
-
-## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
-
-echo -e ""
-echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
-echo -e ""
-if [[ ! "${PWD}" = ${MLAT_CLIENT_BUILD_DIRECTORY} ]] ; then
-    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
-    echo -e ""
-    cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
-fi
-# Build binary package.
-echo -e "\e[94m  Building the mlat-client package...\e[97m"
-echo -e ""
-dpkg-buildpackage -b -uc 2>&1
-echo -e ""
-# Install binary package.
-echo -e "\e[94m  Installing the mlat-client package...\e[97m"
-echo -e ""
-sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
-echo -e ""
-# Create binary archive directory.
-if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
-    echo -e "\e[94m  Creating archive directory...\e[97m"
-    echo -e ""
-    mkdir -v ${BINARIES_DIRECTORY} 2>&1
-    echo -e ""
-fi
-# Archive binary package.
-echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
-echo -e ""
-mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
-echo -e ""
-
-# Check that the mlat-client package was installed successfully.
-echo -e ""
-echo -e "\e[94m  Checking that the mlat-client package was installed properly...\e[97m"
-echo -e ""
-if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-    # If the mlat-client package could not be installed halt setup.
-    echo -e ""
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-    echo -e "  SETUP HAS BEEN TERMINATED!"
-    echo -e ""
-    echo -e "\e[93mThe package \"mlat-client\" could not be installed.\e[39m"
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
-    echo -e ""
-    if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
-        read -p "Press enter to continue..." CONTINUE
+    if [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY} ]] && [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY}/.git ]] ; then
+        # A directory with a git repository containing the source code already exists.
+        echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
+        cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
+        echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
+        echo -e ""
+        git pull 2>&1
+    else
+        # A directory containing the source code does not exist in the build directory.
+        echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+        cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
+        echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
+        echo -e ""
+        git clone https://github.com/mutability/mlat-client.git 2>&1
     fi
-    exit 1
-fi
+
+    ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
+
+    echo -e ""
+    echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
+    echo -e ""
+    if [[ ! "${PWD}" = ${MLAT_CLIENT_BUILD_DIRECTORY} ]] ; then
+        echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
+        echo -e ""
+        cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
+    fi
+    # Build binary package.
+    echo -e "\e[94m  Building the mlat-client package...\e[97m"
+    echo -e ""
+    dpkg-buildpackage -b -uc 2>&1
+    echo -e ""
+    # Install binary package.
+    echo -e "\e[94m  Installing the mlat-client package...\e[97m"
+    echo -e ""
+    sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
+    echo -e ""
+    # Create binary archive directory.
+    if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
+        echo -e "\e[94m  Creating archive directory...\e[97m"
+        echo -e ""
+        mkdir -v ${BINARIES_DIRECTORY} 2>&1
+        echo -e ""
+    fi
+    # Archive binary package.
+    echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
+    echo -e ""
+    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
+    echo -e ""
+
+    # Check that the mlat-client package was installed successfully.
+    echo -e ""
+    echo -e "\e[94m  Checking that the mlat-client package was installed properly...\e[97m"
+    echo -e ""
+    if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+        # If the mlat-client package could not be installed halt setup.
+        echo -e ""
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
+        echo -e "  SETUP HAS BEEN TERMINATED!"
+        echo -e ""
+        echo -e "\e[93mThe package \"mlat-client\" could not be installed.\e[39m"
+        echo -e ""
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
+        echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
+        echo -e ""
+        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+            read -p "Press enter to continue..." CONTINUE
+        fi
+        exit 1
+    fi
 fi
 
 ## CREATE THE SCRIPT TO EXECUTE AND MAINTAIN NETCAT AND MLAT-CLIENT FEEDS ADS-B EXCHANGE
@@ -288,9 +288,9 @@ if [[ ! -d "${FEEDER_BUILD_DIRECTORY}" ]] ; then
 fi
 echo -e ""
 
-# Create netcat maint script.
-echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
-tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
+    # Create netcat maint script.
+    echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
+    tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
 #! /bin/bash
 while true
   do
@@ -300,9 +300,9 @@ while true
 EOF
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-# Create MLAT maint script.
-echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
-tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
+    # Create MLAT maint script.
+    echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
+    tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/bash
 while true
   do
@@ -310,43 +310,43 @@ while true
     sleep 30
   done
 EOF
-echo -e ""
+    echo -e ""
 fi
 
 if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-# Set permissions on netcat script.
-echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
-sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
+    # Set permissions on netcat script.
+    echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
+    sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-# Set permissions on MLAT script.
-echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
-sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
-echo -e ""
+    # Set permissions on MLAT script.
+    echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
+    sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
+    echo -e ""
 fi
 
 if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-# Add netcat script to startup.
-echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
-    echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
-    lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
-    echo -e ""
-fi
+    # Add netcat script to startup.
+    echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
+    if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local; then
+        echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
+        lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
+        echo -e ""
+    fi
 fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-# Add MLAT script to startup.
-echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
-    echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
-    lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
+    # Add MLAT script to startup.
+    echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
+    if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local; then
+        echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
+        lnum=($(sed -n '/exit 0/=' /etc/rc.local))
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
+        echo -e ""
+    fi
     echo -e ""
-fi
-echo -e ""
 fi
 
 ## START THE NETCAT FEED AND MLAT-CLIENT
@@ -356,52 +356,52 @@ echo -e "\e[95m  Starting the netcat and mlat-client feeds...\e[97m"
 echo -e ""
 
 if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-# Kill any currently running instances of the feeder netcat_maint.sh script.
-echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ -n "${PIDS}" ]] ; then
-    echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
-    sudo kill ${PIDS} 2>&1
-    sudo kill -9 ${PIDS} 2>&1
-fi
-PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ -n "${PIDS}" ]] ; then
-    echo -e "\e[94m  -Killing any running netcat processes...\e[97m"
-    sudo kill ${PIDS} 2>&1
-    sudo kill -9 ${PIDS} 2>&1
-fi
-echo -e ""
+    # Kill any currently running instances of the feeder netcat_maint.sh script.
+    echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
+    PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [[ -n "${PIDS}" ]] ; then
+        echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
+    fi
+    PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [[ -n "${PIDS}" ]] ; then
+        echo -e "\e[94m  -Killing any running netcat processes...\e[97m"
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
+    fi
+    echo -e ""
 fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-# Kill any currently running instances of the feeder mlat_maint.sh script.
-echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ -n "${PIDS}" ]] ; then
-    echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
-    sudo kill ${PIDS} 2>&1
-    sudo kill -9 ${PIDS} 2>&1
-fi
-PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [[ -n "${PIDS}" ]] ; then
-    echo -e "\e[94m  -Killing any running mlat-client processes...\e[97m"
-    sudo kill ${PIDS} 2>&1
-    sudo kill -9 ${PIDS} 2>&1
-fi
-echo -e ""
+    # Kill any currently running instances of the feeder mlat_maint.sh script.
+    echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
+    PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [[ -n "${PIDS}" ]] ; then
+        echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
+    fi
+    PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
+    if [[ -n "${PIDS}" ]] ; then
+        echo -e "\e[94m  -Killing any running mlat-client processes...\e[97m"
+        sudo kill ${PIDS} 2>&1
+        sudo kill -9 ${PIDS} 2>&1
+    fi
+    echo -e ""
 fi
 
 if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-# Start netcat script.
-echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
-sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
+    # Start netcat script.
+    echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
+    sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
 fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-# Start MLAT script.
-echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
-sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
-echo -e ""
+    # Start MLAT script.
+    echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
+    sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
+    echo -e ""
 fi
 
 ### SETUP COMPLETE
