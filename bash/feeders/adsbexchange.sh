@@ -288,6 +288,7 @@ if [[ ! -d "${FEEDER_BUILD_DIRECTORY}" ]] ; then
 fi
 echo -e ""
 
+if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
     # Create netcat maint script.
     echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
     tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
@@ -298,6 +299,7 @@ while true
     sleep 30
   done
 EOF
+fi
 
 if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     # Create MLAT maint script.
@@ -360,13 +362,13 @@ if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
+        echo -e "\e[94m   Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
     PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m  -Killing any running netcat processes...\e[97m"
+        echo -e "\e[94m   Killing any running netcat processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
@@ -378,13 +380,13 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
+        echo -e "\e[94m   Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
     PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m  -Killing any running mlat-client processes...\e[97m"
+        echo -e "\e[94m   Killing any running mlat-client processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
