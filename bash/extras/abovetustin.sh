@@ -52,25 +52,25 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up AboveTustin..."
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up ${COMPONENT_NAME}?" 13 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-        echo -e "\e[92m  AboveTustin setup halted.\e[39m"
+        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
 fi
 
-echo -e "\e[95m  Setting up AboveTustin on this device...\e[97m"
+echo -e "\e[95m  Setting up ${COMPONENT_NAME} on this device...\e[97m"
 echo -e ""
 
 ### CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
@@ -110,7 +110,7 @@ else
                 echo "  Setup has been halted at the request of the user."
                 echo -e ""
                 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-                echo -e "\e[92m  AboveTustin setup halted.\e[39m"
+                echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
                 echo -e ""
                 read -p "Press enter to continue..." CONTINUE
                 exit 1
@@ -122,7 +122,7 @@ else
                 echo "  A prebuilt PhantomJS binary is not available for this system."
                 echo -e ""
                 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-                echo -e "\e[92m  AboveTustin setup halted.\e[39m"
+                echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
                 echo -e ""
                 exit 1
             fi
@@ -184,14 +184,14 @@ fi
 # GATHER TWITTER API INFORMATION FROM THE USER
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 20 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using ${COMPONENT_NAME} you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\nhttps://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the ${COMPONENT_NAME} setup?" 20 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-        echo -e "\e[92m  AboveTustin setup halted.\e[39m"
+        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
@@ -392,7 +392,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             echo -e ""
         else
             # A directory containing the source code does not exist in the build directory.
-            echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+            echo -e "\e[94m  Entering the build directory...\e[97m"
             cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
             echo -e ""
             if [[ -d "${COMPONENT_BUILD_DIRECTORY}/phantomjs" ]] ; then
@@ -401,6 +401,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
                 echo -e ""
             fi
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
+            echo -e ""
             git clone git://github.com/ariya/phantomjs.git "${COMPONENT_BUILD_DIRECTORY}/phantomjs" 2>&1
             echo -e ""
         fi
@@ -448,7 +449,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             echo -e "\e[93mThe PhantomJS binary appear to have not been built successfully..\e[39m"
             echo -e ""
             echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-            echo -e "\e[92m  AboveTustin setup halted.\e[39m"
+            echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
             echo -e ""
             read -p "Press enter to continue..." CONTINUE
             exit 1
@@ -496,21 +497,21 @@ echo -e ""
 ### DOWNLOAD SOURCE
 
 echo -e ""
-echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
+echo -e "\e[95m  Downloading and configuring ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 
 echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
 if [[ -d ${COMPONENT_BUILD_DIRECTORY}/AboveTustin ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the local AboveTustin git repository directory...\e[97m"
+    echo -e "\e[94m  Entering the local ${COMPONENT_NAME} git repository directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY}/AboveTustin 2>&1
     echo -e ""
-    echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
+    echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
     git pull 2>&1
     echo -e ""
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Entering the AboveTustin build directory...\e[97m"
+    echo -e "\e[94m  Entering the ${COMPONENT_NAME} build directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
     echo -e ""
     if [[ -d "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" ]] ; then
@@ -518,7 +519,8 @@ else
         rm -vrf "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" 2>&1
         echo -e ""
     fi
-    echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
+    echo -e "\e[94m  Cloning the ${COMPONENT_NAME} git repository locally...\e[97m"
+    echo -e ""
     git clone https://github.com/kevinabrandon/AboveTustin.git "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" 2>&1
     echo -e ""
 fi
@@ -573,9 +575,9 @@ sed -e 's/= "/= /g' -e 's/"$//g' -i "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/co
 ### CREATE SCRIPTS
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
-echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
+echo -e "\e[94m  Checking if the ${COMPONENT_NAME} startup line is contained within the file /etc/rc.local...\e[97m"
 if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &" /etc/rc.local` -eq 0 ]] ; then
-    echo -e "\e[94m  Adding the AboveTustin startup line to the file /etc/rc.local...\e[97m"
+    echo -e "\e[94m  Adding the ${COMPONENT_NAME} startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &\n" /etc/rc.local
 fi
@@ -583,7 +585,7 @@ fi
 ### START SCRIPTS
 
 echo -e ""
-echo -e "\e[95m  Starting AboveTustin...\e[97m"
+echo -e "\e[95m  Starting ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 
 # Kill any currently running instances.
@@ -612,7 +614,7 @@ cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  AboveTustin setup is complete.\e[39m"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
