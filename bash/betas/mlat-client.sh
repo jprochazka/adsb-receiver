@@ -196,6 +196,7 @@ if [[ true ]] ; then
     else
         echo -en "\e[33m  ${COMPONENT_GITHUB_PROJECT} is already installed..."
     fi
+    CheckReturnCode
     unset DO_INSTALL_FROM_GIT
 fi
 
