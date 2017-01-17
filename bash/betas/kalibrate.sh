@@ -118,7 +118,7 @@ if [[ true ]] ; then
     # Check if already installed and located where we would expect it to be.
     if [[ -x `which kal` ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git/" ]] ; then
         # Then perhaps we can update from github.
-        cd ${COMPONENT_BUILD_DIRECTORY}
+        cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
@@ -140,7 +140,7 @@ if [[ true ]] ; then
     if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
         echo -en "\e[33m  Compiling ${COMPONENT_GITHUB_PROJECT} from source..."
         # Prepare to build from source.
-        cd ${COMPONENT_BUILD_DIRECTORY}
+        cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
         # And remove previous binaries.
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
             ACTION=$(sudo make -C ${COMPONENT_BUILD_DIRECTORY} clean 2>&1)
@@ -167,14 +167,14 @@ if [[ true ]] ; then
     CheckReturnCode
 
     unset DO_INSTALL_FROM_GIT
-    cd ${COMPONENT_BUILD_DIRECTORY}
+    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 
 ## SETUP COMPLETE
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 ACTION=${PWD}
 CheckReturnCode
 
