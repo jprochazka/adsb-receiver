@@ -92,6 +92,8 @@ CheckPackage curl
 # Required by component.
 CheckPackage build-essential
 CheckPackage debhelper
+CheckPackage python-dev
+CheckPackage python3-dev
 echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
