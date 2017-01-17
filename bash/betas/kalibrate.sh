@@ -106,7 +106,7 @@ echo -e ""
 ## DOWNLOAD OR UPDATE THE COMPONENT SOURCE
 
 if [[ true ]] ; then
-    # Download from github and compile.
+    # Download from github.
     COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
     COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
     COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
@@ -138,7 +138,7 @@ if [[ true ]] ; then
     fi
     CheckReturnCode
 
-    # Compile and install from source.
+    # Compile and install.
     if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
         echo -en "\e[33m  Compiling ${COMPONENT_GITHUB_PROJECT} from source..."
         # Prepare to build from source.

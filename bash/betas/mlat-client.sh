@@ -105,7 +105,7 @@ echo -e ""
 ## DOWNLOAD OR UPDATE THE COMPONENT SOURCE
 
 if [[ true ]] ; then
-    # Download from github and compile.
+    # Download from github.
     COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
     COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
     COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
@@ -131,8 +131,7 @@ if [[ true ]] ; then
         git clone ${COMPONENT_GITHUB_URL} 2>&1
     fi
 
-    ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
-
+    # Compile and install.
     echo -e ""
     echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
     echo -e ""
