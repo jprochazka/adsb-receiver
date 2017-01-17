@@ -132,59 +132,60 @@ if [[ true ]] ; then
     fi
 
     # Compile and install.
-    echo -e ""
-    echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
-    echo -e ""
-    if [[ ! "${PWD}" = ${COMPONENT_BUILD_DIRECTORY} ]] ; then
-        echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
         echo -e ""
-        cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
-    fi
-    # Build binary package.
-    echo -e "\e[94m  Building the ${COMPONENT_NAME} package...\e[97m"
-    echo -e ""
-    dpkg-buildpackage -b -uc 2>&1
-    echo -e ""
-    # Install binary package.
-    echo -e "\e[94m  Installing the ${COMPONENT_NAME} package...\e[97m"
-    echo -e ""
-    sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
-    echo -e ""
-    # Create binary archive directory.
-    if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
-        echo -e "\e[94m  Creating archive directory...\e[97m"
+        echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
         echo -e ""
-        mkdir -v ${BINARIES_DIRECTORY} 2>&1
-        echo -e ""
-    fi
-    # Archive binary package.
-    echo -e "\e[94m  Archiving the ${COMPONENT_NAME} package...\e[97m"
-    echo -e ""
-    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
-    echo -e ""
-
-    # Check that the mlat-client package was installed successfully.
-    echo -e ""
-    echo -e "\e[94m  Checking that the ${COMPONENT_NAME} package was installed properly...\e[97m"
-    echo -e ""
-    if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-        # If the mlat-client package could not be installed halt setup.
-        echo -e ""
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-        echo -e "  SETUP HAS BEEN TERMINATED!"
-        echo -e ""
-        echo -e "\e[93mThe package \"${COMPONENT_NAME}\" could not be installed.\e[39m"
-        echo -e ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
-        echo -e ""
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
-            read -p "Press enter to continue..." CONTINUE
+        if [[ ! "${PWD}" = ${COMPONENT_BUILD_DIRECTORY} ]] ; then
+            echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
+            echo -e ""
+            cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
         fi
-        exit 1
-    fi
-    unset DO_INSTALL_FROM_GIT
+        # Build binary package.
+        echo -e "\e[94m  Building the ${COMPONENT_NAME} package...\e[97m"
+        echo -e ""
+        dpkg-buildpackage -b -uc 2>&1
+        echo -e ""
+        # Install binary package.
+        echo -e "\e[94m  Installing the ${COMPONENT_NAME} package...\e[97m"
+        echo -e ""
+        sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
+        echo -e ""
+        # Create binary archive directory.
+        if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
+            echo -e "\e[94m  Creating archive directory...\e[97m"
+            echo -e ""
+            mkdir -v ${BINARIES_DIRECTORY} 2>&1
+            echo -e ""
+        fi
+        # Archive binary package.
+        echo -e "\e[94m  Archiving the ${COMPONENT_NAME} package...\e[97m"
+        echo -e ""
+        mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
+        echo -e ""
+
+        # Check that the mlat-client package was installed successfully.
+        echo -e ""
+        echo -e "\e[94m  Checking that the ${COMPONENT_NAME} package was installed properly...\e[97m"
+        echo -e ""
+        if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+            # If the mlat-client package could not be installed halt setup.
+            echo -e ""
+            echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+            echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
+            echo -e "  SETUP HAS BEEN TERMINATED!"
+            echo -e ""
+            echo -e "\e[93mThe package \"${COMPONENT_NAME}\" could not be installed.\e[39m"
+            echo -e ""
+            echo -e "\e[93m  ------------------------------------------------------------------------------"
+            echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
+            echo -e ""
+            if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+                read -p "Press enter to continue..." CONTINUE
+            fi
+            exit 1
+        fi
+        unset DO_INSTALL_FROM_GIT
+
 fi
 
 ## SETUP COMPLETE
