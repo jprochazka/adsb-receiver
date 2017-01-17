@@ -119,20 +119,26 @@ if [[ true ]] ; then
         # A directory containing the source code exists, checking if this can be update from github.
         echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
         cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
-        echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
-        echo -e ""
-        ACTION=$(git pull 2>&1)
+        CheckReturnCode
+        ACTION=$(git remote update 2>&1)
+        if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
+            # Local branch is behind remote so update.
+            echo -en "\e[33m  Updating ${COMPONENT_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+            ACTION=$(git pull 2>&1)
+            DO_INSTALL_FROM_GIT="true"
+        else
+            echo -en "\e[33m  Local ${COMPONENT_GITHUB_PROJECT} repository is up to date with \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+        fi
     else
         # A directory containing the source code does not exist in the build directory.
-        echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-        cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
-        echo -e "\e[94m  Cloning the ${COMPONENT_NAME} git repository locally...\e[97m"
-        echo -e ""
-        ACTION=$(git clone ${COMPONENT_GITHUB_URL} 2>&1}
+        echo -en "\e[33m  Cloning ${COMPONENT_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+        ACTION=$(git clone https://${COMPONENT_GITHUB_URL_SHORT} ${COMPONENT_BUILD_DIRECTORY} 2>&1)
+        DO_INSTALL_FROM_GIT="true"
     fi
+    CheckReturnCode
 
     # Compile and install.
-    if [[ true ]] ; then
+    if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
         echo -e ""
         echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
         echo -e ""
@@ -161,7 +167,9 @@ if [[ true ]] ; then
         # Archive binary package.
         echo -e "\e[94m  Archiving the ${COMPONENT_NAME} package...\e[97m"
         echo -e ""
-        mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
+        for LOCAL_FILE in `ls ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY}
+            mv -v -f ${LOCAL_FILE} ${BINARIES_DIRECTORY} 2>&1
+        done
         echo -e ""
 
         # Check that the mlat-client package was installed successfully.
