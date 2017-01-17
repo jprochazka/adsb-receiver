@@ -89,6 +89,10 @@ echo -e ""
 # Required by install script.
 CheckPackage git
 CheckPackage curl
+# Required for USB SDR devices.
+CheckPackage librtlsdr-dev
+CheckPackage libusb-1.0-0-dev
+CheckPackage rtl-sdr
 # Required by component.
 CheckPackage build-essential
 CheckPackage debhelper
@@ -111,8 +115,8 @@ if [[ true ]] ; then
     echo -e ""
 
     # Check if already installed and located where we would expect it to be.
-    if [[ -d ${COMPONENT_BUILD_DIRECTORY} ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/.git ]] ; then
-        # A directory with a git repository containing the source code already exists.
+    if [[ -x `which mlat-client` ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/.git ]] ; then
+        # Then perhaps we can update from github.
         echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
         cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
@@ -181,13 +185,14 @@ if [[ true ]] ; then
         fi
         exit 1
     fi
+    unset DO_INSTALL_FROM_GIT
 fi
 
 ## SETUP COMPLETE
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 ACTION=${PWD}
 CheckReturnCode
 

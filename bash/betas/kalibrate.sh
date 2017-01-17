@@ -118,7 +118,9 @@ if [[ true ]] ; then
     # Check if already installed and located where we would expect it to be.
     if [[ -x `which kal` ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git/" ]] ; then
         # Then perhaps we can update from github.
+        echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
         cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
+        CheckReturnCode
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
@@ -165,9 +167,7 @@ if [[ true ]] ; then
         echo -en "\e[33m  ${COMPONENT_GITHUB_PROJECT} is already installed..."
     fi
     CheckReturnCode
-
     unset DO_INSTALL_FROM_GIT
-    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 
 ## SETUP COMPLETE
