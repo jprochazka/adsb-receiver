@@ -116,22 +116,23 @@ if [[ true ]] ; then
 
     # Check if already installed and located where we would expect it to be.
     if [[ -x `which mlat-client` ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/.git ]] ; then
-        # Then perhaps we can update from github.
+        # A directory containing the source code exists, checking if this can be update from github.
         echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
         cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
         echo -e ""
-        git pull 2>&1
+        ACTION=$(git pull 2>&1)
     else
         # A directory containing the source code does not exist in the build directory.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Cloning the ${COMPONENT_NAME} git repository locally...\e[97m"
         echo -e ""
-        git clone ${COMPONENT_GITHUB_URL} 2>&1
+        ACTION=$(git clone ${COMPONENT_GITHUB_URL} 2>&1}
     fi
 
     # Compile and install.
+    if [[ true ]] ; then
         echo -e ""
         echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
         echo -e ""
@@ -184,8 +185,10 @@ if [[ true ]] ; then
             fi
             exit 1
         fi
-        unset DO_INSTALL_FROM_GIT
-
+    else
+        echo -en "\e[33m  ${COMPONENT_GITHUB_PROJECT} is already installed..."
+    fi
+    unset DO_INSTALL_FROM_GIT
 fi
 
 ## SETUP COMPLETE

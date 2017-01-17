@@ -117,7 +117,7 @@ if [[ true ]] ; then
 
     # Check if already installed and located where we would expect it to be.
     if [[ -x `which kal` ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git/" ]] ; then
-        # Then perhaps we can update from github.
+        # A directory containing the source code exists, checking if this can be update from github.
         echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
         cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
         CheckReturnCode
