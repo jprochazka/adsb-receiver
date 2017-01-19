@@ -498,6 +498,7 @@ elif [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[95m  Starting the netcat feed...\e[97m"
 elif [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[95m  Starting the mlat-client feed...\e[97m"
+fi
 echo -e ""
 
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
