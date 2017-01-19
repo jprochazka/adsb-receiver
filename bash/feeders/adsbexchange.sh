@@ -44,19 +44,26 @@ MLAT_CLIENT_GITBHUB_URL="https://github.com/mutability/mlat-client.git"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 
 FEEDER_NAME="adsbexchange"
-FEEDER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
 
+#FEEDER_BEAST_DST_HOST=""
 FEEDER_BEAST_DST_HOST="feed.adsbexchange.com"
+#FEEDER_BEAST_DST_PORT=""
 FEEDER_BEAST_DST_PORT="30005"
+#FEEDER_MLAT_DST_HOST=""
+FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
+#FEEDER_MLAT_DST_PORT=""
+FEEDER_MLAT_DST_PORT="31090"
+
 FEEDER_BEAST_SRC_HOST="127.0.0.1"
 FEEDER_BEAST_SRC_PORT="30005"
-
-FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
-FEEDER_MLAT_DST_PORT="31090"
 FEEDER_MLAT_SRC_HOST="127.0.0.1"
 FEEDER_MLAT_SRC_PORT="30005"
 
+FEEDER_MLAT_RETURN_HOST=""
 FEEDER_MLAT_RETURN_PORT="30104"
+
+FEEDER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
+
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -130,8 +137,37 @@ CheckPackage netcat
 
 ## CONFIRM DERIVED VALUES
 
-# Ask for the receivers latitude and longitude.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Fist we assign a name to this instance:
+    while [[ -z ${FEEDER_NAME} ]] ; do
+        FEEDER_NAME_TITLE="Receiver name"
+        FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
+        FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
+    done
+
+    # Confirm that all required information has been obtained for BEAST feed.
+if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
+    FEEDER_BEAST_ENABLED="true"
+else
+    FEEDER_BEAST_ENABLED="false"
+fi
+
+    # Confirm that all required information has been obtained for MLAT feed.
+if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
+    FEEDER_MLAT_ENABLED="true"
+else
+    FEEDER_MLAT_ENABLED="false"
+fi
+
+    # Establish if MLAT results should be fed back into local dump1090 instance.
+if  [[ -n ${FEEDER_MLAT_RETURN_HOST} ]] && [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
+    FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
+else
+    FEEDER_MLAT_RETURN_RESULTS=""
+fi
+
+# Ask for the receivers latitude and longitude.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] && [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
 
@@ -179,27 +215,6 @@ else
     echo -e ""
     read -p "Press enter to continue..." CONTINUE
     exit 1
-fi
-
-# Confirm that all required information has been obtained for BEAST feed.
-if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
-    FEEDER_BEAST_ENABLED="true"
-else
-    FEEDER_BEAST_ENABLED="false"
-fi
-
-# Confirm that all required information has been obtained for MLAT feed.
-if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
-    FEEDER_MLAT_ENABLED="true"
-else
-    FEEDER_MLAT_ENABLED="false"
-fi
-
-# Establish if MLAT results should be fed back into local dump1090 instance.
-if  [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
-    FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
-else
-    FEEDER_MLAT_RETURN_RESULTS=""
 fi
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
