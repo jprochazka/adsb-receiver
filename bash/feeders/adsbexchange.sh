@@ -107,7 +107,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-   CONTINUE_SETUP=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78)
+   CONTINUE_SETUP=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -171,7 +171,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Unless all of the information required to export BEAST format data is configured then prompt the user to confirm.
     if [[ -z "${FEEDER_BEAST_DST_HOST}" ]] && [[ -z "${FEEDER_BEAST_DST_HOST}" ]] && [[ -z "${FEEDER_BEAST_DST_HOST}" ]] && [[ -z "${FEEDER_BEAST_DST_HOST}" ]] ; then
         # Confirm if user wants to export BEAST format data.
-        FEEDER_BEAST_CONTINUE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm BEAST data export" --yesno "$CONFIRMATION" 17 78)
+        FEEDER_BEAST_CONTINUE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm BEAST data export" --yesno "$CONFIRMATION" 17 78 3>&1 1>&2 2>&3)
         if [[ "${FEEDER_BEAST_CONTINUE}" -eq 0 ]] ; then
             # Configure the local BEAST source.
             if [[ -z "${FEEDER_BEAST_SRC_HOST}" ]] || [[ -z "${FEEDER_BEAST_SRC_PORT}" ]]; then
@@ -197,7 +197,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Unless all of the information required to export MLAT format data is configured then prompt the user to confirm.
     if [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] ; then
         # Confirm if user wants to export MLAT format data.
-        FEEDER_MLAT_CONTINUE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm MLAT data export" --yesno "$CONFIRMATION" 17 78)
+        FEEDER_MLAT_CONTINUE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm MLAT data export" --yesno "$CONFIRMATION" 17 78 3>&1 1>&2 2>&3)
         if [[ "${FEEDER_MLAT_CONTINUE}" -eq 0 ]] ; then
             # Configure the local MLAT source.
             if [[ -z "${FEEDER_MLAT_SRC_HOST}" ]] || [[ -z "${FEEDER_MLAT_SRC_PORT}" ]]; then
@@ -221,7 +221,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Unless all of the information required to return MLAT data is configured then prompt the user to confirm.
             if [[ -z ${FEEDER_MLAT_RETURN_HOST} ]] || [[ -z ${FEEDER_MLAT_RETURN_PORT} ]] ; then
                 # Confirm if user wants to return MLAT data.
-                FEEDER_MLAT_RETURN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm MLAT data return" --yesno --defaultno "$CONFIRMATION" 17 78)
+                FEEDER_MLAT_RETURN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm MLAT data return" --yesno --defaultno "$CONFIRMATION" 17 78 3>&1 1>&2 2>&3)
                 if [[ "${FEEDER_BEAST_DO_INSTALL}" -eq 0 ]] ; then
                     # Confirm the MLAT return destination.
                     FEEDER_MLAT_RETURN_TITLE="Feeder MLAT Return Destination"
@@ -286,7 +286,7 @@ fi
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] && [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
 
     # Explain to the user that the receiver's latitude and longitude is required.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    FEEDER_LATLON=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
 
     # Ask the user for the mlat user name for this receiver.
     FEEDER_USERNAME_TITLE="Receiver MLAT Username"
