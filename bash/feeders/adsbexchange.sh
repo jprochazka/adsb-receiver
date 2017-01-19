@@ -54,9 +54,13 @@ FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
 #FEEDER_MLAT_DST_PORT=""
 FEEDER_MLAT_DST_PORT="31090"
 
+#FEEDER_BEAST_SRC_HOST=""
 FEEDER_BEAST_SRC_HOST="127.0.0.1"
+#FEEDER_BEAST_SRC_PORT=
 FEEDER_BEAST_SRC_PORT="30005"
+#FEEDER_MLAT_SRC_HOST=""
 FEEDER_MLAT_SRC_HOST="127.0.0.1"
+#FEEDER_MLAT_SRC_PORT=""
 FEEDER_MLAT_SRC_PORT="30005"
 
 FEEDER_MLAT_RETURN_HOST=""
@@ -138,12 +142,69 @@ CheckPackage netcat
 ## CONFIRM DERIVED VALUES
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Fist we assign a name to this instance:
-    while [[ -z ${FEEDER_NAME} ]] ; do
-        FEEDER_NAME_TITLE="Receiver name"
-        FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
-        FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
+    # Fist we assign a name to this instance.
+    FEEDER_NAME_TITLE="Generic Feeder Name"
+    while [[ -z "${FEEDER_NAME}" ]] ; do
+        FEEDER_NAME_TITLE="Generic Feeder Name (REQUIRED)"
+        FEEDER_NAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a unique name for this feeder which will be used to save the configuration.\n\nPlease note that in order to change an existing feeder configuration you must enter the previously supplied name in order to update the saved values:" 12 78 -- "${FEEDER_NAME}" 3>&1 1>&2 2>&3)
     done
+
+    # Confirm if user wants to export BEAST format data.
+    if true ; then
+        # Configure the local BEAST source.
+        if [[ -z "${FEEDER_BEAST_SRC_HOST}" ]] || [[ -z "${FEEDER_BEAST_SRC_PORT}" ]]; then
+           FEEDER_BEAST_SRC_HOST="${FEEDER_BEAST_SRC_HOST_DEFAULT}" 
+           FEEDER_BEAST_SRC_PORT="${FEEDER_BEAST_SRC_PORT_DEFAULT}"
+        fi
+        # Confirm the BEAST export destination.
+        FEEDER_BEAST_DST_TITLE="Generic Feeder BEAST Destination"
+        while [[ -z "${FEEDER_BEAST_DST_HOST}" ]] || [[ -z "${FEEDER_BEAST_DST_PORT}" ]] ; do
+            FEEDER_BEAST_DST_TITLE="Generic Feeder BEAST Destination (REQUIRED)"
+            FEEDER_BEAST_DST=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_BEAST_DST_TITLE}" --nocancel --inputbox "\nPlease enter the hostname or ip address of the destination you wish to export BEAST format data to.\n\nPlease note that the destination port can be specified using the format \"feeder.example.com:12345\", but if no port is specified the default value of \"${FEEDER_BEAST_DST_PORT}\" will be used." 12 78 -- "${FEEDER_BEAST_DST_HOST}:${FEEDER_BEAST_DST_PORT}" 3>&1 1>&2 2>&3)
+            FEEDER_BEAST_DST_HOST=`echo ${FEEDER_BEAST_DST} | awk -F ":" '{print $1}')`
+            if [[ `echo ${FEEDER_BEAST_DST} | grep -c ":"` -eq 1 ]] ; then
+                FEEDER_BEAST_DST_PORT=`echo ${FEEDER_BEAST_DST} | awk -F ":" '{print $2}' | tr -cd '[:digit:]')`
+            else
+                FEEDER_BEAST_DST_PORT="${FEEDER_BEAST_DST_PORT_DEFAULT}"
+            fi
+        done
+    fi
+
+    # Confirm if user wants to export MLAT format data.
+    if true ; then
+        # Configure the local MLAT source.
+        if [[ -z "${FEEDER_MLAT_SRC_HOST}" ]] || [[ -z "${FEEDER_MLAT_SRC_PORT}" ]]; then
+           FEEDER_MLAT_SRC_HOST="${FEEDER_MLAT_SRC_HOST_DEFAULT}"
+           FEEDER_MLAT_SRC_PORT="${FEEDER_MLAT_SRC_PORT_DEFAULT}"
+        fi
+        # Confirm the MLAT export destination.
+        FEEDER_MLAT_DST_TITLE="Generic Feeder MLAT Destination"
+        while [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_PORT}" ]] ; do
+            FEEDER_MLAT_DST_TITLE="Generic Feeder MLAT Destination (REQUIRED)"
+            FEEDER_MLAT_DST=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_MLAT_DST_TITLE}" --nocancel --inputbox "\nPlease enter the hostname or ip address of the destination you wish to export MLAT data to.\n\nPlease note that the destination port can be specified using the format \"feeder.example.com:12345\", but if no port is specified the default value of \"${FEEDER_MLAT_DST_PORT}\" will be used." 12 78 -- "${FEEDER_MLAT_DST_HOST}:${FEEDER_MLAT_DST_PORT}" 3>&1 1>&2 2>&3)
+            FEEDER_MLAT_DST_HOST=`echo ${FEEDER_MLAT_DST} | awk -F ":" '{print $1}')`
+            if [[ `echo ${FEEDER_MLAT_DST} | grep -c ":"` -eq 1 ]] ; then
+                FEEDER_MLAT_DST_PORT=`echo ${FEEDER_MLAT_DST} | awk -F ":" '{print $2}' | tr -cd '[:digit:]')`
+            else
+                FEEDER_MLAT_DST_PORT="${FEEDER_MLAT_DST_PORT_DEFAULT}"
+            fi
+        done
+        # Confirm if user wants to return MLAT data.
+        if true ; then
+            # Confirm the MLAT export destination.
+            FEEDER_MLAT_RETURN_TITLE="Generic Feeder MLAT Return Destination"
+            while [[ -z "${FEEDER_MLAT_RETURN_HOST}" ]] || [[ -z "${FEEDER_MLAT_RETURN_PORT}" ]] ; do
+                FEEDER_MLAT_RETURN_TITLE="Generic Feeder MLAT Return Destination (REQUIRED)"
+                FEEDER_MLAT_RETURN=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_MLAT_RETURN_TITLE}" --inputbox "\nPlease enter the hostname or ip address of the destination you wish to return data supplied by the MLAT servers, this is tpyically returned to the localhost (127.0.0.1); however to reduce the risk of accidentially feeding this data back to another feeder you are required to explicently configure this value.\n\n Please note that the destination port must be specified using the format \"127.0.0.1:12345\" as no default port is supported for MLAT data return from custom feeders." 12 78 -- "" 3>&1 1>&2 2>&3)
+                FEEDER_MLAT_RETURN_HOST=`echo ${FEEDER_MLAT_RETURN} | awk -F ":" '{print $1}')`
+                if [[ `echo ${FEEDER_MLAT_RETURN} | grep -c ":"` -eq 1 ]] ; then
+                    FEEDER_MLAT_RETURN_HOST=`echo ${FEEDER_MLAT_RETURN} | awk -F ":" '{print $1}')`
+                    FEEDER_MLAT_RETURN_PORT=`echo ${FEEDER_MLAT_RETURN} | awk -F ":" '{print $2}' | tr -cd '[:digit:]')`
+                fi
+            done
+        fi 
+    fi
+
 
     # Confirm that all required information has been obtained for BEAST feed.
 if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
@@ -174,41 +235,41 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] && [[ ${FEEDER_MLAT_ENABLED} 
     # Ask the user for the mlat user name for this receiver.
     FEEDER_USERNAME_TITLE="Receiver MLAT Username"
     while [[ -z "${FEEDER_USERNAME}" ]] ; do
-        FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
         FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
+        FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
     done
 
     # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+        RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
         if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
             RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk '{print $3}')
             RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
         RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
-        RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
 
     # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
         if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
             RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk '{print $3}')
             RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
         RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
-        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 
     # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
+        RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
         if [[ -n ${RECEIVER_LATITUDE} ]] && [[ -n ${RECEIVER_LONGITUDE} ]] ; then
             RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
             RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
         fi
         RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
-        RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
     done
 else
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
