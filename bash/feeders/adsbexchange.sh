@@ -31,56 +31,54 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
+RECEIVER_BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
 # Feeder specific variables.
-
 MLAT_CLIENT_GITBHUB_URL="https://github.com/mutability/mlat-client.git"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 
 # Preconfigured values for ADSB Exchange.
 FEEDER_NAME="adsbexchange"
-
+#
 FEEDER_BEAST_SRC_HOST="127.0.0.1"
 FEEDER_BEAST_SRC_PORT="30005"
 FEEDER_BEAST_DST_HOST="feed.adsbexchange.com"
 FEEDER_BEAST_DST_PORT="30005"
-
+#
 FEEDER_MLAT_SRC_HOST="127.0.0.1"
 FEEDER_MLAT_SRC_PORT="30005"
 FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
 FEEDER_MLAT_DST_PORT="31090"
-
+#
 FEEDER_MLAT_RETURN_HOST="127.0.0.1"
 FEEDER_MLAT_RETURN_PORT="30104"
 
 # Blank values for generic feeder.
-
 #FEEDER_NAME=""
+#
 #FEEDER_BEAST_SRC_HOST=""
 #FEEDER_BEAST_SRC_PORT=
 #FEEDER_BEAST_DST_HOST=""
 #FEEDER_BEAST_DST_PORT=""
-
+#
 #FEEDER_MLAT_SRC_HOST=""
 #FEEDER_MLAT_SRC_PORT=""
 #FEEDER_MLAT_DST_HOST=""
 #FEEDER_MLAT_DST_PORT=""
-
+#
 #FEEDER_MLAT_RETURN_HOST=""
 #FEEDER_MLAT_RETURN_PORT=""
 
 # Default values.
-
 FEEDER_BEAST_SRC_HOST_DEFAULT="127.0.0.1"
 FEEDER_BEAST_SRC_PORT_DEFAULT="30005"
 FEEDER_BEAST_DST_PORT_DEFAULT="30004"
-
+#
 FEEDER_MLAT_SRC_HOST_DEFAULT="127.0.0.1"
 FEEDER_MLAT_SRC_PORT_DEFAULT="30005"
 FEEDER_MLAT_DST_PORT_DEFAULT="31090"
@@ -129,6 +127,7 @@ echo -e ""
 # Check if the old style ${FEEDER_NAME}-maint.sh line exists in /etc/rc.local.
 echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
 if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local` -gt 0 ]] ; then
+
     # Kill any currently running instances of the ${FEEDER_NAME}-maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
@@ -139,6 +138,7 @@ if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.l
         sudo kill -9 ${PIDS} 2>&1
         echo -e ""
     fi
+
     # Remove the old line from /etc/rc.local.
     echo -e "\e[94m  Removing the old ${FEEDER_NAME}-maint.sh startup line from /etc/rc.local...\e[97m"
     sudo sed -i /$${FEEDER_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local 2>&1
@@ -166,6 +166,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         FEEDER_NAME_TITLE="Feeder Name (REQUIRED)"
         FEEDER_NAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a unique name for this feeder which will be used to save the configuration.\n\nPlease note that in order to change an existing feeder configuration you must enter the previously supplied name in order to update the saved values:" 12 78 -- "${FEEDER_NAME}" 3>&1 1>&2 2>&3)
     done
+
     # Unless all of the information required to export BEAST format data is configured then prompt the user to confirm.
     if [[ -z "${FEEDER_BEAST_DST_HOST}" ]] && [[ -z "${FEEDER_BEAST_DST_HOST}" ]] && [[ -z "${FEEDER_BEAST_DST_HOST}" ]] && [[ -z "${FEEDER_BEAST_DST_HOST}" ]] ; then
         # Confirm if user wants to export BEAST format data.
@@ -191,6 +192,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             done
         fi
     fi
+
     # Unless all of the information required to export MLAT format data is configured then prompt the user to confirm.
     if [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] ; then
         # Confirm if user wants to export MLAT format data.
@@ -214,6 +216,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                     FEEDER_MLAT_DST_PORT="${FEEDER_MLAT_DST_PORT_DEFAULT}"
                 fi
             done
+
             # Unless all of the information required to return MLAT data is configured then prompt the user to confirm.
             if [[ -z ${FEEDER_MLAT_RETURN_HOST} ]] || [[ -z ${FEEDER_MLAT_RETURN_PORT} ]] ; then
                 # Confirm if user wants to return MLAT data.
@@ -235,6 +238,52 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             fi
         fi
     fi
+
+    # Confirm receiver specific information required if MLAT client feeding is enabled
+    if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
+
+        # Explain to the user that the receiver's latitude and longitude is required.
+        FEEDER_LATLON=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
+        # Ask the user for the mlat user name for this receiver.
+        FEEDER_USERNAME_TITLE="Receiver MLAT Username"
+        while [[ -z "${FEEDER_USERNAME}" ]] ; do
+            FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
+            FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
+        done
+
+        # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
+        RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+        while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+            RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+            if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+                RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk '{print $3}')
+                RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
+            fi
+            RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
+        done
+
+        # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
+        while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+            RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+            if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+                RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk '{print $3}')
+                RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
+            fi
+            RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
+        done
+
+        # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
+        RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
+        while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
+            RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
+            if [[ -n ${RECEIVER_LATITUDE} ]] && [[ -n ${RECEIVER_LONGITUDE} ]] ; then
+                RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
+                RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
+            fi
+            RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude above sea level${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
+        done
+    fi
 else
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
     echo -e ""
@@ -246,18 +295,21 @@ fi
 if [[ -n "${FEEDER_NAME}" ]] ; then
     # Configure feeder build directory.
     FEEDER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
+
     # Confirm that all required information has been obtained for BEAST feed.
     if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
         FEEDER_BEAST_ENABLED="true"
     else
         FEEDER_BEAST_ENABLED="false"
     fi
+
     # Confirm that all required information has been obtained for MLAT feed.
     if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
         FEEDER_MLAT_ENABLED="true"
     else
         FEEDER_MLAT_ENABLED="false"
     fi
+
     # Establish if MLAT results should be fed back into local dump1090 instance.
     if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] && [[ -n ${FEEDER_MLAT_RETURN_HOST} ]] && [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
         FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
@@ -277,54 +329,14 @@ else
 
 fi
 
-# Ask for the receivers latitude and longitude.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] && [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
-    # Explain to the user that the receiver's latitude and longitude is required.
-    FEEDER_LATLON=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
-    # Ask the user for the mlat user name for this receiver.
-    FEEDER_USERNAME_TITLE="Receiver MLAT Username"
-    while [[ -z "${FEEDER_USERNAME}" ]] ; do
-        FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
-        FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
-    done
-    # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
-    RECEIVER_LATITUDE_TITLE="Receiver Latitude"
-    while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
-        RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
-        if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
-            RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk '{print $3}')
-            RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
-        fi
-        RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
-    done
-    # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
-    RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
-    while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
-        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
-        if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
-            RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk '{print $3}')
-            RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
-        fi
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
-    done
-    # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
-    RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
-    while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
-        RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
-        if [[ -n ${RECEIVER_LATITUDE} ]] && [[ -n ${RECEIVER_LONGITUDE} ]] ; then
-            RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
-            RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
-        fi
-        RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
-    done
-fi
-
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
+
+    # Check if build directory exists.
     if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
@@ -351,28 +363,33 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         echo -e ""
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
     fi
+
     # Build binary package.
     echo -e "\e[94m  Building the mlat-client package...\e[97m"
     echo -e ""
     dpkg-buildpackage -b -uc 2>&1
     echo -e ""
+
     # Install binary package.
     echo -e "\e[94m  Installing the mlat-client package...\e[97m"
     echo -e ""
     sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
     echo -e ""
+
     # Create binary archive directory.
-    if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
+    if [[ ! -d "${RECEIVER_BINARIES_DIRECTORY}" ]] ; then
         echo -e "\e[94m  Creating archive directory...\e[97m"
         echo -e ""
-        mkdir -v ${BINARIES_DIRECTORY} 2>&1
+        mkdir -v ${RECEIVER_BINARIES_DIRECTORY} 2>&1
         echo -e ""
     fi
+
     # Archive binary package.
     echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
     echo -e ""
-    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
+    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BINARIES_DIRECTORY} 2>&1
     echo -e ""
+
     # Check that the mlat-client package was installed successfully.
     echo -e ""
     echo -e "\e[94m  Checking that the mlat-client package was installed properly...\e[97m"
