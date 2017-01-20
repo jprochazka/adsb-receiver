@@ -221,6 +221,12 @@ if [ "$UPDATE_OPERATING_SYSTEM" = "true" ]; then
     UpdateOperatingSystem
 fi
 
+# Use function to detect cpu architecture.
+if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+    Check_CPU
+    echo -e ""
+fi
+
 ## EXECUTE BASH/MAIN.SH
 
 chmod +x $RECEIVER_BASH_DIRECTORY/main.sh

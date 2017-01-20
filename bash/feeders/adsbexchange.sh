@@ -63,6 +63,11 @@ FEEDER_MLAT_RETURN_PORT="30104"
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+# Source the automated install configuration file if this is an automated installation.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
+fi
+
 ## BEGIN SETUP
 
 if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then

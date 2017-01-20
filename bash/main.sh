@@ -335,12 +335,6 @@ fi
 declare array FEEDER_LIST
 touch $RECEIVER_ROOT_DIRECTORY/FEEDER_CHOICES
 
-# Use function to detect cpu architecture.
-if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
-    Check_CPU
-    echo -e ""
-fi
-
 # Check for the PiAware package.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
