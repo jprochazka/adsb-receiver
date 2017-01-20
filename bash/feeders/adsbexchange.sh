@@ -256,7 +256,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
             RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
             if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
-                RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk '{print $3}')
+                RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk -F "=" '{print $2}' | sed -e 's/"//g')
                 RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
             fi
             RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
@@ -267,7 +267,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
             RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
             if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
-                RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk '{print $3}')
+                RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk -F "=" '{print $2}' | sed -e 's/"//g')
                 RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
             fi
             RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
