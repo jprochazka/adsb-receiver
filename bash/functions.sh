@@ -45,7 +45,7 @@ function AptUpdate() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
 }
@@ -64,7 +64,7 @@ function UpdateOperatingSystem() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
 }
@@ -133,7 +133,7 @@ function CheckPrerequisites() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
 }
@@ -163,7 +163,7 @@ function UpdateRepository() {
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the $ADSB_PROJECTTITLE git repository....\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
 }

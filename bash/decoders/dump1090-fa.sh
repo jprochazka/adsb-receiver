@@ -65,7 +65,7 @@ if [[ $CONTINUESETUP = 1 ]] ; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
     echo -e ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -145,7 +145,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
     echo -e ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -199,7 +199,7 @@ echo -e ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

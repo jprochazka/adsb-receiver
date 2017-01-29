@@ -61,7 +61,7 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
     echo -e ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -148,7 +148,7 @@ else
         echo -e "\e[93m----------------------------------------------------------------------------------------------------"
         echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
         echo -e ""
-        if [[ ! -z ${VERBOSE} ]] ; then
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             read -p "Press enter to continue..." CONTINUE
         fi
         exit 1
@@ -165,7 +165,7 @@ echo -e ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  Flightradar24 feeder client setup is complete.\e[39m"
 echo -e ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

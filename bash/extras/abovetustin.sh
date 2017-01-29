@@ -616,7 +616,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

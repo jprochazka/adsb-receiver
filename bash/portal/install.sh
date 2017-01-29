@@ -61,7 +61,7 @@ if [ $CONTINUESETUP = 1 ]; then
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  ADS-B Receiver Project Portal setup halted.\e[39m"
     echo ""
-    if [[ ! -z ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -563,7 +563,7 @@ echo ""
 echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
 echo -e "\e[92m  ADS-B Receiver Project Portal setup is complete.\e[39m"
 echo ""
-if [[ ! -z ${VERBOSE} ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

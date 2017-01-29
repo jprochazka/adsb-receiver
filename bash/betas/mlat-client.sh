@@ -188,7 +188,7 @@ if [[ true ]] ; then
             echo -e "\e[93m  ------------------------------------------------------------------------------"
             echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
             echo -e ""
-            if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+            if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                 read -p "Press enter to continue..." CONTINUE
             fi
             exit 1
