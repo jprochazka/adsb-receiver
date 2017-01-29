@@ -38,12 +38,14 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## SET INSTALLATION VARIABLES
 
+DUMP1090_CONFIGURATION_FILE="/etc/default/dump1090-mutability"
+
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 else
-    RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-    RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    RECEIVER_LATITUDE=`GetConfig "LAT" "${DUMP1090_CONFIGURATION_FILE}"`
+    RECEIVER_LONGITUDE=`GetConfig "LON" "${DUMP1090_CONFIGURATION_FILE}"`
     DUMP1090_BING_MAPS_KEY=`GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
     DUMP1090_MAPZEN_KEY=`GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
 fi
@@ -169,9 +171,9 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
     done
 fi
 echo -e "\e[94m  Setting the receiver's latitude to $RECEIVER_LATITUDE...\e[97m"
-#ChangeConfig "LAT" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LATITUDE})" "/etc/default/dump1090-mutability"
+#ChangeConfig "LAT" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LATITUDE})" "${DUMP1090_CONFIGURATION_FILE}"
 echo -e "\e[94m  Setting the receiver's longitude to $RECEIVER_LONGITUDE...\e[97m"
-#ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LONGITUDE})" "/etc/default/dump1090-mutability"
+#ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LONGITUDE})" "${DUMP1090_CONFIGURATION_FILE}"
 
 # Ask for a Bing Maps API key.
 if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
@@ -205,11 +207,16 @@ if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
 fi
 if [ "$DUMP1090_BIND_TO_ALL_IPS" = "true" ]; then
     echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
-    CommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
+    CommentConfig "NET_BIND_ADDRESS" "${DUMP1090_CONFIGURATION_FILE}"
 else
     echo -e "\e[94m  Binding dump1090-mutability to only the localhost IP addresses...\e[97m"
-    UncommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
-    ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
+    UncommentConfig "NET_BIND_ADDRESS" "${DUMP1090_CONFIGURATION_FILE}"
+    ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "${DUMP1090_CONFIGURATION_FILE}"
+fi
+
+# In future ask the user if they would like to specify the dump1090 range manually, if not set to 360 nmi / ~667 km to match dump1090-fa.
+if [[ `grep "MAX_RANGE" ${DUMP1090_CONFIGURATION_FILE} | awk -F \" '{print $2}' | grep -c "360"` -eq 0 ]] ; then
+    ChangeConfig "MAX_RANGE" "360" "${DUMP1090_CONFIGURATION_FILE}"
 fi
 
 # Ask if dump1090-mutability measurments should be displayed using imperial or metric.

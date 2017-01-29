@@ -39,6 +39,7 @@ PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
 COLLECTD_CRON_FILE="/etc/cron.d/adsb-receiver-performance-graphs"
+DUMP1090_MAX_RANGE_RRD="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -392,6 +393,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 8 */12 * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
 echo -e ""
+
+# Update max_range.rrd to remove the 500 km / ~270 nmi limit.
+if [[ `rrdinfo ${DUMP1090_MAX_RANGE_RRD} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
+    rrdtool tune ${DUMP1090_MAX_RANGE_RRD} --maximum value:1000000
+fi
 
 ### SETUP COMPLETE
 

@@ -2,6 +2,6 @@ dump1090_messages	value:DERIVE:0:8000
 dump1090_cpu		value:DERIVE:0:1200
 dump1090_dbfs		value:GAUGE:U:0
 dump1090_aircraft	total:GAUGE:0:500, positions:GAUGE:0:500
-dump1090_range		value:GAUGE:0:500000
+dump1090_range		value:GAUGE:0:1000000
 dump1090_tracks		value:DERIVE:0:500
 dump1090_mlat		value:GAUGE:0:500
