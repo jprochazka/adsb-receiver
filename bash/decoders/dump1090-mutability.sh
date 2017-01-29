@@ -151,6 +151,8 @@ fi
 
 ### DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
 
+DUMP1090_CONFIGURATION_FILE="/etc/default/dump1090-mutability"
+
 # Set the receiver's latitude and longitude if it is not already set in the dump1090-mutibility configuration file.
 echo -e ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
@@ -197,6 +199,11 @@ else
     echo -e "\e[94m  Binding ${DECODER_NAME} to the localhost IP addresses...\e[97m"
     UncommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
     ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
+fi
+
+# In future ask the user if they would like to specify the dump1090 range manually, if not set to 360 nmi / ~667 km to match dump1090-fa.
+if [[ `grep "MAX_RANGE" ${DUMP1090_CONFIGURATION_FILE} | awk -F \" '{print $2}' | grep -c "360"` -eq 0 ]] ; then
+    ChangeConfig "MAX_RANGE" "360" "${DUMP1090_CONFIGURATION_FILE}"
 fi
 
 # Ask if measurments should be displayed using imperial or metric.
