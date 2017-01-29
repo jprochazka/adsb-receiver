@@ -38,20 +38,20 @@ BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
 PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
-COLLECTD_CRON_FILE="/etc/cron.d/adsb-feeder-performance-graphs"
+COLLECTD_CRON_FILE="/etc/cron.d/adsb-receiver-performance-graphs"
 
 ## FUNCTIONS
 
 #################################################################################
 # Detect Platform.
 function Check_Platform {
-if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
-    HARDWARE_PLATFORM="RPI"
-elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
-    HARDWARE_PLATFORM="CHIP"
-else
-    HARDWARE_PLATFORM="unknown"
-fi
+    if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
+        HARDWARE_PLATFORM="RPI"
+    elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
+        HARDWARE_PLATFORM="CHIP"
+    else
+        HARDWARE_PLATFORM="unknown"
+    fi
 }
 
 ## CHECK FOR PREREQUISITE PACKAGES
