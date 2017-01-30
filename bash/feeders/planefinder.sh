@@ -36,7 +36,7 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-PLANEFINDER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build/planefinder"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/planefinder"
 DEVICEIPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -93,19 +93,19 @@ echo -e ""
 echo -e "\e[95m  Downloading the Plane Finder ADS-B Client package...\e[97m"
 echo -e ""
 # Create the planefinder build directory if it does not exist.
-if [[ ! -d "${PLANEFINDER_BUILD_DIRECTORY}" ]] ; then
+if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the Plane Finder ADS-B Client build directory...\e[97m"
-    mkdir -vp ${PLANEFINDER_BUILD_DIRECTORY}
+    mkdir -vp ${COMPONENT_BUILD_DIRECTORY}
 fi
 # Download the appropriate package depending on the devices architecture.
 if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] ; then
     echo -e "\e[94m  Downloading the Plane Finder ADS-B Client v${PFCLIENTVERSIONARM} for ARM devices...\e[97m"
     echo -e ""
-    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONARM}_armhf.deb -O ${PLANEFINDER_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
+    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONARM}_armhf.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
     echo -e "\e[94m  Downloading the Plane Finder ADS-B Client v${PFCLIENTVERSIONI386} for I386 devices...\e[97m"
     echo -e ""
-    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONI386}_i386.deb -O ${PLANEFINDER_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONI386}_i386.deb
+    wget http://client.planefinder.net/pfclient_${PFCLIENTVERSIONI386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONI386}_i386.deb
 fi
 
 ## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE
@@ -113,22 +113,22 @@ fi
 echo -e "\e[95m  Installing the Plane Finder ADS-B Client package...\e[97m"
 echo -e ""
 echo -e "\e[94m  Entering the Plane Finder ADS-B Client build directory...\e[97m"
-cd ${PLANEFINDER_BUILD_DIRECTORY}
+cd ${COMPONENT_BUILD_DIRECTORY}
 # Install the proper package depending on the devices architecture.
 if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` = "aarch64" ]] ; then
     echo -e "\e[94m  Installing the Plane Finder ADS-B Client v${PFCLIENTVERSIONARM} for ARM devices package...\e[97m"
     echo -e ""
-    sudo dpkg -i ${PLANEFINDER_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
+    sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONARM}_armhf.deb
 else
     echo -e "\e[94m  Installing the Plane Finder ADS-B Client v${PFCLIENTVERSIONI386} for I386 devices package...\e[97m"
     if [[ `lsb_release -si` = "Debian" ]] ; then
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
         echo -e ""
-        sudo dpkg -i --force-architecture ${PLANEFINDER_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i --force-architecture ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     else
         echo -e ""
-        sudo dpkg -i ${PLANEFINDER_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PFCLIENTVERSIONI386}_i386.deb
     fi
 fi
 # Check that the Plane Finder ADS-B Client package was installed successfully.

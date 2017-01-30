@@ -36,7 +36,7 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-FR24_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build/flightradar24"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/flightradar24"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -100,12 +100,12 @@ echo -e ""
 echo -e "\e[95m  Begining the installation process...\e[97m"
 echo -e ""
 # Create the flightradar24 build directory if it does not exist.
-if [[ ! -d "${FR24_BUILD_DIRECTORY}" ]] ; then
+if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the Flightradar24 feeder client build directory...\e[97m"
-    mkdir -vp ${FR24_BUILD_DIRECTORY}
+    mkdir -vp ${COMPONENT_BUILD_DIRECTORY}
 fi
 echo -e "\e[94m  Entering the Flightradar24 feeder client build directory...\e[97m"
-cd ${FR24_BUILD_DIRECTORY}
+cd ${COMPONENT_BUILD_DIRECTORY}
 if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` = "aarch64" ]] ; then
 
     ## ARM INSTALLATION
@@ -123,16 +123,16 @@ else
     echo -e "\e[94m  Detected the device architecture as I386...\e[97m"
     echo -e "\e[94m  Downloading the Flightradar24 feeder client package...\e[97m"
     echo -e ""
-    wget http://feed.flightradar24.com/linux/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb -O ${FR24_BUILD_DIRECTORY}/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+    wget http://feed.flightradar24.com/linux/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
     echo -e "\e[94m  Installing the Flightradar24 feeder client package...\e[97m"
     if [[ `lsb_release -si` = "Debian" ]] ; then
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
         echo -e ""
-        sudo dpkg -i --force-architecture ${FR24_BUILD_DIRECTORY}/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i --force-architecture ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
     else
         echo -e ""
-        sudo dpkg -i ${FR24_BUILD_DIRECTORY}/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
     fi
     echo -e ""
     echo -e "\e[94m  Checking that the fr24feed package was installed properly...\e[97m"
