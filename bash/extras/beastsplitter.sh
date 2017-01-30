@@ -93,13 +93,13 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the beast-splitter listen port.
     BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port"
     while [[ -z "${BEASTSPLITTER_LISTEN_PORT}" ]] ; do
-        BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_LISTEN_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port ${COMPONENT_NAME} will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
+        BEASTSPLITTER_LISTEN_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_LISTEN_PORT_TITLE}" --nocancel --inputbox "\nPlease enter the port ${COMPONENT_NAME} will listen on.\nThis must be a port which is currently not in use." 10 78 "30005" 3>&1 1>&2 2>&3)
         BEASTSPLITTER_LISTEN_PORT_TITLE="Listen Port (REQUIRED)"
     done
     # Ask the beast-splitter connect port.
     BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port"
     while [[ -z "${BEASTSPLITTER_CONNECT_PORT}" ]] ; do
-        BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_CONNECT_PORT}_TITLE" --nocancel --inputbox "\nPlease enter the port ${COMPONENT_NAME} will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
+        BEASTSPLITTER_CONNECT_PORT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${BEASTSPLITTER_CONNECT_PORT_TITLE}" --nocancel --inputbox "\nPlease enter the port ${COMPONENT_NAME} will connect to.\nThis is generally port 30104 on dump1090." 10 78 "30104" 3>&1 1>&2 2>&3)
        BEASTSPLITTER_CONNECT_PORT_TITLE="Connect Port (REQUIRED)"
    done
 fi
@@ -127,7 +127,7 @@ echo -e "\e[95m  Downloading and configuring ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 
 echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
-if [[ -d ${COMPONENT_BUILD_DIRECTORY}/beast-splitter ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/beast-splitter/.git ]] ; then
+if [[ -d "${COMPONENT_BUILD_DIRECTORY}/beast-splitter" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/beast-splitter/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the local ${COMPONENT_NAME} git repository directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY}/beast-splitter 2>&1
@@ -156,7 +156,7 @@ fi
 echo -e ""
 echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
 echo -e ""
-if [[ ! "${PWD}" = ${COMPONENT_BUILD_DIRECTORY}/beast-splitter ]] ; then
+if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}/beast-splitter" ]] ; then
     echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY}/beast-splitter 2>&1
 fi
@@ -225,7 +225,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

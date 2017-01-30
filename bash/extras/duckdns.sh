@@ -88,13 +88,13 @@ CheckPackage curl
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask for the user sub domain to be assigned to this device.
     DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain"
-    while [[ -z ${DUCKDNS_DOMAIN} ]]; do
+    while [[ -z "${DUCKDNS_DOMAIN}" ]] ; do
         DUCKDNS_DOMAIN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_DOMAIN_TITLE}" --nocancel --inputbox "\nPlease enter the Duck DNS sub domain you selected after registering.\nIf you do not have one yet visit http://www.ducknds.org to obtain one." 9 78 3>&1 1>&2 2>&3)
         DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain (REQUIRED)"
     done
     # Ask for the Duck DNS token to be assigned to this receiver.
     DUCKDNS_TOKEN_TITLE="Duck DNS Token"
-    while [[ -z ${DUCKDNS_TOKEN} ]]; do
+    while [[ -z "${DUCKDNS_TOKEN}" ]] ; do
         DUCKDNS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_TOKEN_TITLE}" --nocancel --inputbox "\nPlease enter your Duck DNS token." 8 78 3>&1 1>&2 2>&3)
         DUCKDNS_TOKEN_TITLE="Duck DNS Token (REQUIRED)"
     done
@@ -174,7 +174,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

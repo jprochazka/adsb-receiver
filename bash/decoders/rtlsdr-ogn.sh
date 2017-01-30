@@ -54,7 +54,7 @@ echo -e "\e[92m  Setting up RTL-SDR OGN...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Setup" --yesno "The objective of the Open Glider Network is to create and maintain a unified tracking platform for gliders and other GA aircraft. Currently OGN focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nPlease note you will need a dedicated RTL-SDR dongle to use this software.\n\n  http://wiki.glidernet.org\n\nContinue setup by installing RTL-SDR OGN?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -86,7 +86,7 @@ fi
 
 # Check if the dump978 binaries exist.
 echo -e "\e[94m  Checking if the dump978 binaries exist on this device...\e[97m"
-if [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978 ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json ]] ; then
+if [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json" ]] ; then
     DUMP978_IS_INSTALLED="true"
 else
     DUMP978_IS_INSTALLED="false"
@@ -97,10 +97,10 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
     # Check if Dump1090 is installed.
     if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
         # The dump1090-mutability package appear to be installed.
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be used for dump1090.
             DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z ${DUMP1090_DEVICE_ID} ]] ; do
+            while [[ -z "${DUMP1090_DEVICE_ID}" ]] ; do
                 DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
@@ -111,10 +111,10 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
     # Check if Dump978 is installed.
     if [[ ${DUMP978_IS_INSTALLED} = "true" ]] ; then
         # The dump978 binaries appear to exist on this device.
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be use for dump978.
             DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
+            while [[ -z "${DUMP978_DEVICE_ID}" ]] ; do
                 DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
             done
         else
@@ -123,10 +123,10 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         fi
     fi
     #
-    if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Ask the user which USB device is to be use for RTL-SDR OGN.
         RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-        while [[ -z ${DUMP978_DEVICE_ID} ]] ; do
+        while [[ -z "${DUMP978_DEVICE_ID}" ]] ; do
             RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     else
@@ -134,7 +134,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         true
     fi
     # Assign the specified RTL-SDR dongle to dump1090.
-    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP1090_DEVICE_ID} ]] ; then
+    if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] && [[ -n "${DUMP1090_DEVICE_ID}" ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_DEVICE_ID\" to dump1090-mutability...\e[97m"
         ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
@@ -143,7 +143,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         echo -e ""
     fi
     # Assign the specified RTL-SDR dongle to dump978
-    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] && [[ -n ${DUMP978_DEVICE_ID} ]] ; then
+    if [[ "${DUMP978_IS_INSTALLED}" = "true" ]] && [[ -n "${DUMP978_DEVICE_ID}" ]] ; then
         echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP978_DEVICE_ID}\" to dump978...\e[97m"
         ### ADD DEVICE TO MAINTENANCE SCRIPT...
         echo -e "\e[94m  Reloading dump978...\e[97m"
@@ -180,7 +180,7 @@ echo -e ""
 
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
-if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
+if [[ ! -f "/etc/modprobe.d/rtlsdr-blacklist.conf" ]] ; then
     echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
     echo -e ""
     sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
@@ -196,7 +196,7 @@ fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
+if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
     echo -e "\e[94m  Stopping the RTL-SDR OGN service...\e[97m"
     sudo service rtlsdr-ogn stop
 fi
@@ -204,7 +204,7 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn ]] ; then
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn" ]] ; then
     echo -e "\e[94m  Creating the directory (${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn)...\e[97m"
     mkdir ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
 fi
@@ -263,7 +263,7 @@ echo -e "\e[94m  Entering the directory containing the RTL-SDR binaries...\e[97m
 cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn
 
 # Create named pipe if required.
-if [[ ! -p ogn-rf.fifo ]] ; then
+if [[ ! -p "ogn-rf.fifo" ]] ; then
     echo -e "\e[94m  Creating named pipe...\e[97m"
     sudo mkfifo ogn-rf.fifo
 fi
@@ -278,7 +278,7 @@ sudo chown root rtlsdr-ogn
 sudo chmod a+s  rtlsdr-ogn
 
 # Creat GPU device if required.
-if [[ ! -c gpu_dev ]] ; then
+if [[ ! -c "gpu_dev" ]] ; then
     # Check if kernel v4.1 or higher is being used.
     echo -e "\e[94m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
@@ -345,7 +345,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  RTL-SDR OGN setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

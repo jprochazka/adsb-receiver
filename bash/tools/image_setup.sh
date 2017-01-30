@@ -46,14 +46,14 @@ clear
 
 ## VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PROJECTROOTDIRECTORY="${PWD}"
+BASHDIRECTORY="${PROJECTROOTDIRECTORY}/bash"
+BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/variables.sh
-source $BASHDIRECTORY/functions.sh
+source ${BASHDIRECTORY}/variables.sh
+source ${BASHDIRECTORY}/functions.sh
 
 echo -e ""
 echo -e "\e[91m  The ADS-B Receiver Project Image Preparation Script\e[97m"
@@ -84,9 +84,9 @@ CheckPackage lighttpd
 CheckPackage fakeroot
 
 # Ask which version of dump1090 to install.
-DUMP1090OPTION=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Choose Dump1090 Version" --menu "Which version of dump1090 is to be installed?" 12 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)" 3>&1 1>&2 2>&3)
+DUMP1090OPTION=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Choose Dump1090 Version" --menu "Which version of dump1090 is to be installed?" 12 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)" 3>&1 1>&2 2>&3)
 
-case $DUMP1090OPTION in
+case ${DUMP1090OPTION} in
     "dump1090-mutability")
         echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
         echo -e ""
@@ -95,12 +95,12 @@ case $DUMP1090OPTION in
         echo -e ""
         echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
         echo -e ""
-        mkdir -p $BUILDDIRECTORY/dump1090-mutability
-        cd $BUILDDIRECTORY/dump1090-mutability
+        mkdir -p ${BUILDDIRECTORY}/dump1090-mutability
+        cd ${BUILDDIRECTORY}/dump1090-mutability
         git clone https://github.com/mutability/dump1090.git
-        cd $BUILDDIRECTORY/dump1090-mutability/dump1090
+        cd ${BUILDDIRECTORY}/dump1090-mutability/dump1090
         dpkg-buildpackage -b
-        cd $BUILDDIRECTORY/dump1090-mutability
+        cd ${BUILDDIRECTORY}/dump1090-mutability
         sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
         ;;
     "dump1090-fa")
@@ -126,22 +126,22 @@ case $DUMP1090OPTION in
         echo -e ""
         echo -e "\e[95m  Installing dump1090-fa...\e[97m"
         echo -e ""
-        mkdir -p $BUILDDIRECTORY/dump1090-fa
-        cd $BUILDDIRECTORY/dump1090-fa
+        mkdir -p ${BUILDDIRECTORY}/dump1090-fa
+        cd ${BUILDDIRECTORY}/dump1090-fa
         git clone https://github.com/flightaware/dump1090.git
-        cd $BUILDDIRECTORY/dump1090-fa/dump1090
+        cd ${BUILDDIRECTORY}/dump1090-fa/dump1090
         dpkg-buildpackage -b
-        cd $BUILDDIRECTORY/dump1090-fa
+        cd ${BUILDDIRECTORY}/dump1090-fa
         sudo dpkg -i dump1090-fa_*.deb
 
         # PiAware
-        cd $BUILDDIRECTORY
+        cd ${BUILDDIRECTORY}
         git clone https://github.com/flightaware/piaware_builder.git
-        cd $BUILDDIRECTORY/piaware_builder
+        cd ${BUILDDIRECTORY}/piaware_builder
         ./sensible-build.sh jessie
-        cd $BUILDDIRECTORY/piaware_builder/package-jessie
+        cd ${BUILDDIRECTORY}/piaware_builder/package-jessie
         dpkg-buildpackage -b
-        sudo dpkg -i $BUILDDIRECTORY/piaware_builder/piaware_*.deb
+        sudo dpkg -i ${BUILDDIRECTORY}/piaware_builder/piaware_*.deb
         ;;
     *)
         # Nothing selected.
@@ -238,7 +238,7 @@ echo -e ""
 ## TOUCH THE IMAGE FILE
 
 echo -e "\e[95m  Touching the \"image\" file...\e[97m"
-cd $PROJECTROOTDIRECTORY
+cd ${PROJECTROOTDIRECTORY}
 touch image
 
 ## CLEAR BASH HISTORY

@@ -70,7 +70,7 @@ fi
 
 ## BEGIN SETUP
 
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
 fi
@@ -79,7 +79,7 @@ echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -167,7 +167,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
-        if [[ -n ${RECEIVER_LATITUDE} ]] && [[ -n ${RECEIVER_LONGITUDE} ]] ; then
+        if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
             RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
             RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
         fi
@@ -196,7 +196,7 @@ else
 fi
 
 # Establish if MLAT results should be fed back into local dump1090 instance.
-if  [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
+if  [[ -n "${FEEDER_MLAT_RETURN_PORT}" ]] ; then
     FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
 else
     FEEDER_MLAT_RETURN_RESULTS=""
@@ -208,7 +208,7 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
-    if [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY} ]] && [[ -d ${MLAT_CLIENT_BUILD_DIRECTORY}/.git ]] ; then
+    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
@@ -229,7 +229,7 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
     echo -e ""
-    if [[ ! "${PWD}" = ${MLAT_CLIENT_BUILD_DIRECTORY} ]] ; then
+    if [[ ! "${PWD}" = "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] ; then
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         echo -e ""
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
@@ -273,7 +273,7 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
         echo -e ""
-        if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             read -p "Press enter to continue..." CONTINUE
         fi
         exit 1
@@ -422,7 +422,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  ADS-B Exchange feed setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

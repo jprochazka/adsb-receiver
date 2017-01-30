@@ -47,15 +47,15 @@ fi
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
-    echo -e "\n\e[91m  $RECEIVER_PROJECT_TITLE"
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
 echo -e "\e[92m  Setting up dump978..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Setup" --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  https://github.com/mutability/dump978\n\nWould you like to continue setup by installing dump978?" 9 78
-    if [ $? -eq 1 ]; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-mutability Setup" --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  https://github.com/mutability/dump978\n\nWould you like to continue setup by installing dump978?" 9 78
+    if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
@@ -88,15 +88,15 @@ echo -e "\e[95m  Preparing the dump978 Git repository...\e[97m"
 echo -e ""
 
 # Remove the existing dumpp978 build directory if it exists.
-if [ -d $RECEIVER_BUILD_DIRECTORY/dump978 ]; then
+if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump978" ]] ; then
     # Delete the current dump978 build directory if it already exists.
     echo -e "\e[94m  Deleting the existing dump978 Git repository directory...\e[97m"
-    rm -rf $RECEIVER_BUILD_DIRECTORY/dump978
+    rm -rf ${RECEIVER_BUILD_DIRECTORY}/dump978
 fi
 
 # Clone the dump978 Git repository.
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd $RECEIVER_BUILD_DIRECTORY
+cd ${RECEIVER_BUILD_DIRECTORY}
 echo -e "\e[94m  Cloning the dump978 Git repository locally...\e[97m"
 echo -e ""
 git clone https://github.com/mutability/dump978.git
@@ -107,9 +107,9 @@ echo -e ""
 echo -e "\e[95m  Building the dump978 binaries...\e[97m"
 echo -e ""
 # Enter the dump978 repository if we are not already in it.
-if [ ! "$PWD" = $RECEIVER_BUILD_DIRECTORY/dump978 ]; then
+if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump978" ]] ; then
     echo -e "\e[94m  Entering the dump978 Git repository directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY/dump978
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump978
 fi
 # Build the dump978 binaries from source.
 echo -e "\e[94m  Building the dump978 binaries...\e[97m"
@@ -119,7 +119,7 @@ echo -e ""
 
 # Check that the dump978 binaries were built.
 echo -e "\e[94m  Checking that the dump978 binaries were built...\e[97m"
-if [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/dump978 ] || [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2esnt ] || [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2json ] || [ ! -f $RECEIVER_BUILD_DIRECTORY/dump978/uat2text ]; then
+if [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text" ]] ; then
     # If the dump978 binaries could not be found halt setup.
     echo -e ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -157,24 +157,24 @@ echo -e ""
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     # The dump1090-mutability package appear to be installed.
-    if [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
-        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "RTL-SDR Dongle Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run dump978 in tandem with dump1090-mutability you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR Dongle Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run dump978 in tandem with dump1090-mutability you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
         # Ask the user which USB device is to be used for dump1090.
-        DUMP1090_DEVICE_ID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-        while [ -z $DUMP1090_DEVICE_ID ]; do
-            DUMP1090_DEVICE_ID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DUMP1090_DEVICE_ID}" ]] ; do
+            DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
         # Ask the user which USB device is to be use for dump978.
-        DUMP978_DEVICE_ID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-        while [ -z $DUMP978_DEVICE_ID ]; do
-            DUMP978_DEVICE_ID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DUMP978_DEVICE_ID}" ]] ; do
+            DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     fi
     # Assign the specified RTL-SDR dongle to dump1090-mutability.
-    echo -e "\e[94m  Assigning RTL-SDR dongle \"$DUMP1090DEVICE\" to dump1090-mutability...\e[97m"
-    ChangeConfig "DEVICE" $DUMP1090_DEVICE_ID "/etc/default/dump1090-mutability"
+    echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP1090_DEVICE_ID}\" to dump1090-mutability...\e[97m"
+    ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
     echo -e "\e[94m  Restarting dump1090-mutability...\e[97m"
     echo -e ""
     sudo /etc/init.d/dump1090-mutability restart
@@ -188,7 +188,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
 fi
 
 # If a device has not yet been assigned to dump978 assign the first available.
-if [ -z $DUMP978_DEVICE_ID ]; then
+if [[ -z "${DUMP978_DEVICE_ID}" ]] ; then
     echo -e "\e[94m  Assigning RTL-SDR dongle \"0\" to dump978...\e[97m"
     DUMP978_DEVICE_ID="0"
 fi
@@ -196,54 +196,54 @@ fi
 # Declare the LIGHTTPD_DOCUMENT_ROOT_DIRECTORY variable.
 echo -e "\e[94m  Getting the path to Lighttpd's document root...\e[97m"
 LIGHTTPD_DOCUMENT_ROOT_SETTING=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-LIGHTTPD_DOCUMENT_ROOT_DIRECTORY=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $LIGHTTPD_DOCUMENT_ROOT_SETTING`
+LIGHTTPD_DOCUMENT_ROOT_DIRECTORY=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${LIGHTTPD_DOCUMENT_ROOT_SETTING}`
 
 # Set the receivers latitude and longitude.
-if [ -z $RECEIVER_LATITUDE ] && [ -z $RECEIVER_LONGITUDE ] && [ "$RECEIVER_AUTOMATED_INSTALL" = "false" ]; then
+if [[ -z "${RECEIVER_LATITUDE}" ]] && [[ -z "${RECEIVER_LONGITUDE}" ]] && [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # If the receiver's' latitude has not yet been set ask for it.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
-    while [ -z $RECEIVER_LATITUDE ]; do
-        RECEIVER_LATITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$RECEIVER_LATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
         RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
     # If the receiver's' longitude has not yet been set ask for it.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
-    while [ -z $RECEIVER_LONGITUDE ]; do
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$RECEIVER_LONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+    while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
 fi
 # Finally set the reciver's latitude and longitude if these variables were supplied.
-if [ -n $RECEIVER_LATITUDE ] && [ -n $RECEIVER_LONGITUDE ]; then
-    echo -e "\e[94m  Setting the receiver's latitude to $RECEIVER_LATITUDE...\e[97m"
-    ChangeConfig "SiteLat" "$RECEIVER_LATITUDE" "$LIGHTTPD_DOCUMENT_ROOT_DIRECTORY/dump978/config.js"
-    echo -e "\e[94m  Setting the receiver's longitude to $RECEIVER_LONGITUDE...\e[97m"
-    ChangeConfig "SiteLon" "$RECEIVER_LONGITUDE" "$LIGHTTPD_DOCUMENT_ROOT_DIRECTORY/dump978/config.js"
+if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
+    echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
+    ChangeConfig "SiteLat" "${RECEIVER_LATITUDE}" "${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js"
+    echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
+    ChangeConfig "SiteLon" "${RECEIVER_LONGITUDE}" "${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js"
 fi
 
 # Create the dump978 JSON directory in Lighttpd's document root.
 echo -e "\e[94m  Creating the dump978 JSON data directory within Lighttpd's document root...\e[97m"
-sudo mkdir -p $LIGHTTPD_DOCUMENT_ROOT_DIRECTORY/dump978/data
+sudo mkdir -p ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
 echo -e "\e[94m  Setting permissions for the dump978 JSON data directory within Lighttpd's document root...\e[97m"
-sudo chmod +w $LIGHTTPD_DOCUMENT_ROOT_DIRECTORY/dump978/data
+sudo chmod +w ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
 
 # Create the dump978 maintenance script.
 echo -e "\e[94m  Creating the dump978 maintenance script...\e[97m"
-tee $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null <<EOF
+tee ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh > /dev/null <<EOF
 #!/bin/bash
 
 # Start dump978 without logging.
 while true; do
-    rtl_sdr -d $DUMP978DEVICE -f 978000000 -s 2083334 -g 48 - | $DUMP978BUILDDIRECTORY/dump978 | tee >($DUMP978BUILDDIRECTORY/uat2json $LIGHTTPDDOCUMENTROOTDIRECTORY/dump978/data) | $DUMP978BUILDDIRECTORY/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    rtl_sdr -d ${DUMP978_DEVICE_ID} -f 978000000 -s 2083334 -g 48 - | ${RECEIVER_BUILD_DIRECTORY}/dump978 | tee >(${RECEIVER_BUILD_DIRECTORY}/uat2json ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data) | ${RECEIVER_BUILD_DIRECTORY}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
     sleep 15
 done
 EOF
 echo -e "\e[94m  Setting permissions on the dump978 maintenance script...\e[97m"
-chmod +x $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh
+chmod +x ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh
 
 # Add the dump978 maintenance script to /etc/rc.local.
 echo -e "\e[94m  Checking if the file /etc/rc.local is already set to execute the dump978 maintenance script...\e[97m"
-if [[ `grep -cFx "$RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding a line to execute the dump978 maintenance script to the file /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
     ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &\n" /etc/rc.local
@@ -255,7 +255,7 @@ echo -e ""
 echo -e "\e[95m  Starting dump978...\e[97m"
 echo -e ""
 echo -e "\e[94m  Starting dump978 by executing the dump978 maintenance script...\e[97m"
-sudo nohup $RECEIVER_BUILD_DIRECTORY/dump978/dump978-maint.sh > /dev/null 2>&1 &
+sudo nohup ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh > /dev/null 2>&1 &
 
 ### SETUP COMPLETE
 
@@ -267,7 +267,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump978 setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

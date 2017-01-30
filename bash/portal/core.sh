@@ -33,16 +33,16 @@
 
 ## VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
-PORTALPYTHONDIRECTORY="$PORTALBUILDDIRECTORY/python"
+PROJECTROOTDIRECTORY="${PWD}"
+BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
+PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
+PORTALPYTHONDIRECTORY="${PORTALBUILDDIRECTORY}/python"
 
-DATABASEENGINE=$ADSB_DATABASEENGINE
-DATABASEHOSTNAME=$ADSB_DATABASEHOSTNAME
-DATABASEUSER=$ADSB_DATABASEUSER
-DATABASEPASSWORD1=$ADSB_DATABASEPASSWORD1
-DATABASENAME=$ADSB_DATABASENAME
+DATABASEENGINE=${ADSB_DATABASEENGINE}
+DATABASEHOSTNAME=${ADSB_DATABASEHOSTNAME}
+DATABASEUSER=${ADSB_DATABASEUSER}
+DATABASEPASSWORD1=${ADSB_DATABASEPASSWORD1}
+DATABASENAME=${ADSB_DATABASENAME}
 
 ## SETUP FLIGHT LOGGING
 
@@ -50,28 +50,28 @@ echo -e ""
 echo -e "\e[95m  Setting up core advanced portal features...\e[97m"
 echo -e ""
 
-case $DATABASEENGINE in
+case ${DATABASEENGINE} in
     "MySQL")
         echo -e "\e[94m  Creating the flight Python configuration file for MySQL...\e[97m"
-        tee $PORTALPYTHONDIRECTORY/config.json > /dev/null <<EOF
+        tee ${PORTALPYTHONDIRECTORY}/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
-                "host":"$DATABASEHOSTNAME",
-                "user":"$DATABASEUSER",
-                "passwd":"$DATABASEPASSWORD1",
-                "db":"$DATABASENAME"}
+                "host":"${DATABASEHOSTNAME}",
+                "user":"${DATABASEUSER}",
+                "passwd":"${DATABASEPASSWORD1}",
+                "db":"${DATABASENAME}"}
 }
 EOF
             ;;
     "SQLite")
         echo -e "\e[94m  Creating the Python configuration file for SQLite...\e[97m"
-        tee $PORTALPYTHONDIRECTORY/config.json > /dev/null <<EOF
+        tee ${PORTALPYTHONDIRECTORY}/config.json > /dev/null <<EOF
 {
     "database":{"type":"sqlite",
-                "host":"$DATABASEHOSTNAME",
-                "user":"$DATABASEUSER",
-                "passwd":"$DATABASEPASSWORD1",
-                "db":"$DATABASENAME"}
+                "host":"${DATABASEHOSTNAME}",
+                "user":"${DATABASEUSER}",
+                "passwd":"${DATABASEPASSWORD1}",
+                "db":"${DATABASENAME}"}
 }
 EOF
         ;;

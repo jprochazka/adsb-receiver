@@ -33,27 +33,27 @@
 
 ## VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-PORTALBUILDDIRECTORY="$BUILDDIRECTORY/portal"
+PROJECTROOTDIRECTORY="${PWD}"
+BASHDIRECTORY="${PROJECTROOTDIRECTORY}/bash"
+BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
+PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/variables.sh
-source $BASHDIRECTORY/functions.sh
+source ${BASHDIRECTORY}/variables.sh
+source ${BASHDIRECTORY}/functions.sh
 
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
+whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
 CONTINUESETUP=$?
-if [ "$CONTINUESETUP" = 1 ]; then
+if [[ "${CONTINUESETUP}" = 1 ]] ; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
@@ -61,7 +61,7 @@ if [ "$CONTINUESETUP" = 1 ]; then
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  ADS-B Receiver Project Portal setup halted.\e[39m"
     echo -e ""
-    if [[ -n ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -76,74 +76,74 @@ CheckPackage lighttpd
 
 # Assign the Lighthttpd document root directory to a variable.
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAWDOCUMENTROOT}`
 
 # Check if there is already an existing portal installation.
-if [ -f $LIGHTTPDDOCUMENTROOT/classes/settings.class.php ]; then
+if [[ -f "${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php" ]] ; then
     PORTALINSTALLED="true"
 else
     PORTALINSTALLED="false"
 fi
 
-if [ "$PORTALINSTALLED" = "true" ]; then
+if [[ "${PORTALINSTALLED}" = "true" ]] ; then
     # Assign needed variables using the driver setting in settings.class.php.
-    DATABASEENGINE=`grep 'db_driver' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-    if [ "$DATABASEENGINE" = "xml" ]; then
+    DATABASEENGINE=`grep 'db_driver' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+    if [[ "${DATABASEENGINE}" = "xml" ]] ; then
         ADVANCED="false"
     else
         ADVANCED="true"
     fi
-    if [ "$ADVANCED" = "true" ]; then
-        case $DATABASEENGINE in
+    if [[ "${ADVANCED}" = "true" ]] ; then
+        case ${DATABASEENGINE} in
             "mysql") DATABASEENGINE="MySQL";;
             "sqlite") DATABASEENGINE="SQLite";;
         esac
-        DATABASEHOSTNAME=`grep 'db_host' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASEUSER=`grep 'db_username' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASEPASSWORD1=`grep 'db_password' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASENAME=`grep 'db_database' $LIGHTTPDDOCUMENTROOT/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEHOSTNAME=`grep 'db_host' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEUSER=`grep 'db_username' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEPASSWORD1=`grep 'db_password' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASENAME=`grep 'db_database' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
     fi
 
 
 else
     # Ask if advanced features should be enabled.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Portal Selection" --defaultno --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 19 78
+    whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Receiver Portal Selection" --defaultno --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 19 78
     RESPONSE=$?
-    case $RESPONSE in
+    case ${RESPONSE} in
         0) ADVANCED="true";;
         1) ADVANCED="false";;
     esac
 
-    if [ "$ADVANCED" = "true" ]; then
+    if [[ "${ADVANCED}" = "true" ]] ; then
         # Ask which type of database to use.
-        DATABASEENGINE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Choose Database Type" --nocancel --menu "\nChoose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
+        DATABASEENGINE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Choose Database Type" --nocancel --menu "\nChoose which type of database to use." 11 80 2 "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
 
-        if [ "$DATABASEENGINE" = "MySQL" ]; then
+        if [[ "${DATABASEENGINE}" = "MySQL" ]] ; then
             # Ask if the database server will be installed locally.
-            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
+            whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
             RESPONSE=$?
-            case $RESPONSE in
+            case ${RESPONSE} in
                 0) LOCALMYSQLSERVER="true";;
                 1) LOCALMYSQLSERVER="false";;
             esac
-            if [ "$LOCALMYSQLSERVER" = "false" ]; then
+            if [[ "${LOCALMYSQLSERVER}" = "false" ]] ; then
                 # Ask for the remote MySQL servers hostname.
                 DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname"
-                while [[ -z $DATABASEHOSTNAME ]]; do
-                    DATABASEHOSTNAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEHOSTNAME_TITLE" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEHOSTNAME}" ]] ; do
+                    DATABASEHOSTNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEHOSTNAME_TITLE}" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
                     DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname (REQUIRED)"
                 done
 
                 # Ask if the remote MySQL database already exists.
-                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Does MySQL Database Exist" --yesno "Has the database already been created?" 7 80
+                whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Does MySQL Database Exist" --yesno "Has the database already been created?" 7 80
                 RESPONSE=$?
-                case $RESPONSE in
+                case ${RESPONSE} in
                     0) DATABASEEXISTS="true";;
                     1) DATABASEEXISTS="false";;
                 esac
             else
                 # Install the MySQL serer now if it does not already exist.
-                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time." 8 78
+                whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time." 8 78
                 CheckPackage mysql-server
 
                 # Since this is a local installation assume the MySQL database does not already exist.
@@ -154,79 +154,79 @@ else
             fi
 
             # Ask for the MySQL administrator credentials if the database does not already exist.
-            if [ "$LOCALMYSQLSERVER" = "true" ] || [ "$DATABASEEXISTS" = "false" ]; then
-                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 9 78
+            if [[ "${LOCALMYSQLSERVER}" = "true" ]] || [[ "${DATABASEEXISTS}" = "false" ]] ; then
+                whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 9 78
                 DATABASEADMINUSER_TITLE="MySQL Administrator User"
-                while [ -z "$DATABASEADMINUSER" ]; do
-                    DATABASEADMINUSER=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEADMINUSER}" ]] ; do
+                    DATABASEADMINUSER=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINUSER_TITLE}" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
                     DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
                 done
                 DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
                 DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
-                while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                    DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+                    DATABASEADMINPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
                 done
                 DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
                 DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
-                while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                    DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+                    DATABASEADMINPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
                 done
-                while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
+                while [[ ! "${DATABASEADMINPASSWORD1}" = "${DATABASEADMINPASSWORD2}" ]] ; do
                     DATABASEADMINPASSWORD1=""
                     DATABASEADMINPASSWORD2=""
-                    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                    whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
                     DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
-                    while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                        DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+                        DATABASEADMINPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
                     done
                     DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
-                    while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                        DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+                        DATABASEADMINPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
                     done
                 done
             fi
 
             # Get the login information pertaining to the MySQL database itself.
-            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Create Remote MySQL Database" --msgbox "You will now be asked to supply the name of the database which will store the portal data as well as the login credentials for the MySQL user that has access to this database." 9 78
+            whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Create Remote MySQL Database" --msgbox "You will now be asked to supply the name of the database which will store the portal data as well as the login credentials for the MySQL user that has access to this database." 9 78
 
             DATABASENAME_TITLE="ADS-B Receiver Portal Database Name"
-            while [ -z "$DATABASENAME" ]; do
-                DATABASENAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASENAME_TITLE" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASENAME}" ]] ; do
+                DATABASENAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASENAME_TITLE}" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
                 DATABASENAME_TITLE="ADS-B Receiver Portal Database Name (REQUIRED)"
             done
             DATABASEUSER_TITLE="ADS-B Receiver Portal Database User"
-            while [ -z "$DATABASEUSER" ]; do
-                DATABASEUSER=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEUSER_TITLE" --nocancel --inputbox "\nEnter the user for the ADS-B Receiver Portal database." 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEUSER}" ]] ; do
+                DATABASEUSER=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEUSER_TITLE}" --nocancel --inputbox "\nEnter the user for the ADS-B Receiver Portal database." 8 78 3>&1 1>&2 2>&3)
                 DATABASEUSER_TITLE="ADS-B Receiver Portal Database User (REQUIRED)"
             done
             DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
             DATABASEPASSWORD1_MESSAGE="\nEnter your ADS-B Receiver Portal database password."
-            while [ -z "$DATABASEPASSWORD1" ]; do
-                DATABASEPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEPASSWORD1}" ]] ; do
+                DATABASEPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                 DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
             done
             DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
             DATABASEPASSWORD2_MESSAGE="\nConfirm your ADS-B Receiver Portal database password."
-            while [ -z "$DATABASEPASSWORD2" ]; do
-                DATABASEPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEPASSWORD2}" ]] ; do
+                DATABASEPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                 DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
             done
-            while [ ! $DATABASEPASSWORD1 = $DATABASEPASSWORD2 ]; do
+            while [[ ! "${DATABASEPASSWORD1}" = "${DATABASEPASSWORD2}" ]] ; do
                 DATABASEPASSWORD1=""
                 DATABASEPASSWORD2=""
-                whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
                 DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
-                while [ -z "$DATABASEPASSWORD1" ]; do
-                    DATABASEPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEPASSWORD1}" ]] ; do
+                    DATABASEPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
                 done
                 DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
-                while [ -z "$DATABASEPASSWORD2" ]; do
-                    DATABASEPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEPASSWORD2}" ]] ; do
+                    DATABASEPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
                 done
             done
@@ -245,9 +245,9 @@ CheckPackage libpython2.7
 
 # Check if this is Ubuntu 16.04 LTS.
 # This needs optimized and made to recognize releases made after 16.04 as well.
-if [ -f /etc/lsb-release ]; then
+if [[ -f "/etc/lsb-release" ]] ; then
     . /etc/lsb-release
-    if [ "$DISTRIB_ID" = "Ubuntu" ] && [ "$DISTRIB_RELEASE" = "16.04" ]; then
+    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "${DISTRIB_RELEASE}" = "16.04" ]] ; then
         CheckPackage php7.0-cgi
         CheckPackage php7.0-xml
     else
@@ -260,18 +260,18 @@ else
 fi
 
 # Install packages needed for advanced portal setups.
-if [ "$ADVANCED" = "true" ]; then
+if [[ "${ADVANCED}" = "true" ]] ; then
     CheckPackage python-pyinotify
-    case $DATABASEENGINE in
+    case ${DATABASEENGINE} in
         "MySQL")
             CheckPackage mysql-client
             CheckPackage python-mysqldb
 
             # Check if this is Ubuntu 16.04 LTS.
             # This needs optimized and made to recognize releases made after 16.04 as well.
-            if [ -f /etc/lsb-release ]; then
+            if [[ -f "/etc/lsb-release" ]] ; then
                 . /etc/lsb-release
-                if [ "$DISTRIB_ID" = "Ubuntu" ] && [ "$DISTRIB_RELEASE" = "16.04"  ]; then
+                if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "${DISTRIB_RELEASE}" = "16.04"  ]] ; then
                     CheckPackage php7.0-mysql
                 else
                     CheckPackage php5-mysql
@@ -285,9 +285,9 @@ if [ "$ADVANCED" = "true" ]; then
 
             # Check if this is Ubuntu 16.04 LTS.
             # This needs optimized and made to recognize releases made after 16.04 as well.
-            if [ -f /etc/lsb-release ]; then
+            if [[ -f "/etc/lsb-release" ]] ; then
                 . /etc/lsb-release
-                if [ "$DISTRIB_ID" = "Ubuntu" ] && [ "$DISTRIB_RELEASE" = "16.04"  ]; then
+                if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "${DISTRIB_RELEASE}" = "16.04"  ]] ; then
                     CheckPackage php7.0-sqlite
                 else
                     CheckPackage php5-sqlite
@@ -311,59 +311,59 @@ echo -e "\e[95m  Setting up the web portal...\e[97m"
 echo -e ""
 
 # If this is an existing Lite installation being upgraded backup the XML data files.
-if [ "$PORTALINSTALLED" = "true" ] && [ "$ADVANCED" = "false" ]; then
-    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/administrators.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/administrators.xml $LIGHTTPDDOCUMENTROOT/data/administrators.backup.xml
-    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml $LIGHTTPDDOCUMENTROOT/data/blogPosts.backup.xml
-    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml $LIGHTTPDDOCUMENTROOT/data/flightNotifications.backup.xml
-    echo -e "\e[94m  Backing up the file $LIGHTTPDDOCUMENTROOT/data/settings.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/settings.xml $LIGHTTPDDOCUMENTROOT/data/settings.backup.xml
+if [[ "${PORTALINSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
+    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml ${LIGHTTPDDOCUMENTROOT}/data/administrators.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/settings.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/settings.xml ${LIGHTTPDDOCUMENTROOT}/data/settings.backup.xml
 fi
 
 echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"
-sudo cp -R $PORTALBUILDDIRECTORY/html/* $LIGHTTPDDOCUMENTROOT
+sudo cp -R ${PORTALBUILDDIRECTORY}/html/* ${LIGHTTPDDOCUMENTROOT}
 
 # If this is an existing installation being upgraded restore the original XML data files.
-if [ "$PORTALINSTALLED" = "true" ] && [ "$ADVANCED" = "false" ]; then
-    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/administrators.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/administrators.backup.xml $LIGHTTPDDOCUMENTROOT/data/administrators.xml
-    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/blogPosts.backup.xml $LIGHTTPDDOCUMENTROOT/data/blogPosts.xml
-    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/flightNotifications.backup.xml $LIGHTTPDDOCUMENTROOT/data/flightNotifications.xml
-    echo -e "\e[94m  Restoring the backup copy of the file $LIGHTTPDDOCUMENTROOT/data/settings.xml...\e[97m"
-    sudo mv $LIGHTTPDDOCUMENTROOT/data/settings.backup.xml $LIGHTTPDDOCUMENTROOT/data/settings.xml
+if [[ "${PORTALINSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/administrators.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/settings.xml...\e[97m"
+    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/settings.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/settings.xml
 fi
 
 # Set the proper permissions on certain portal directories.
-echo -e "\e[94m  Making the directory $LIGHTTPDDOCUMENTROOT/graphs/ writable...\e[97m"
-sudo chmod 777 $LIGHTTPDDOCUMENTROOT/graphs/
-echo -e "\e[94m  Making the directory $LIGHTTPDDOCUMENTROOT/classes/ writable...\e[97m"
-sudo chmod 777 $LIGHTTPDDOCUMENTROOT/classes/
-echo -e "\e[94m  Making the directory $LIGHTTPDDOCUMENTROOT/data/ writable...\e[97m"
-sudo chmod 777 $LIGHTTPDDOCUMENTROOT/data/
-echo -e "\e[94m  Making the files contained within the directory $LIGHTTPDDOCUMENTROOT/data/ writable...\e[97m"
-sudo chmod 666 $LIGHTTPDDOCUMENTROOT/data/*
+echo -e "\e[94m  Making the directory ${LIGHTTPDDOCUMENTROOT}/graphs/ writable...\e[97m"
+sudo chmod 777 ${LIGHTTPDDOCUMENTROOT}/graphs/
+echo -e "\e[94m  Making the directory ${LIGHTTPDDOCUMENTROOT}/classes/ writable...\e[97m"
+sudo chmod 777 ${LIGHTTPDDOCUMENTROOT}/classes/
+echo -e "\e[94m  Making the directory ${LIGHTTPDDOCUMENTROOT}/data/ writable...\e[97m"
+sudo chmod 777 ${LIGHTTPDDOCUMENTROOT}/data/
+echo -e "\e[94m  Making the files contained within the directory ${LIGHTTPDDOCUMENTROOT}/data/ writable...\e[97m"
+sudo chmod 666 ${LIGHTTPDDOCUMENTROOT}/data/*
 
 # Check if dump978 was setup.
 echo -e "\e[94m  Checking if dump978 was set up...\e[97m"
-if ! grep -q "$BUILDDIRECTORY/dump978/dump978-maint.sh &" /etc/rc.local; then
+if [[ `grep -cFx "${BUILDDIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     # Check if a heywhatsthat.com range file exists in the dump1090 HTML folder.
     echo -e "\e[94m  Checking for the file upintheair.json in the dump1090 HTML folder...\e[97m"
-    if [ -f /usr/share/dump1090-mutability/html/upintheair.json ] || [ -f /usr/share/dump1090-fa/html/upintheair.json ]; then
+    if [[ -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
         echo -e "\e[94m  Copying the file upintheair.json from the dump1090 HTML folder to the dump978 HTML folder...\e[97m"
-        if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-            sudo cp /usr/share/dump1090-mutability/html/upintheair.json $LIGHTTPDDOCUMENTROOT/dump978/
+        if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+            sudo cp /usr/share/dump1090-mutability/html/upintheair.json ${LIGHTTPDDOCUMENTROOT}/dump978/
         fi
-        if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-            sudo cp /usr/share/dump1090-fa/html/upintheair.json $LIGHTTPDDOCUMENTROOT/dump978/
+        if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+            sudo cp /usr/share/dump1090-fa/html/upintheair.json ${LIGHTTPDDOCUMENTROOT}/dump978/
         fi
     fi
 fi
 
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     echo -e "\e[94m  Removing conflicting redirects from the Lighttpd dump1090.conf file...\e[97m"
     # Remove this line completely.
     sudo sed -i "/$(echo '  "^/dump1090$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/d" /etc/lighttpd/conf-available/89-dump1090.conf
@@ -373,11 +373,11 @@ fi
 
 # Add to the Lighttpd configuration.
 echo -e "\e[94m  Adding the Lighttpd portal configuration file...\e[97m"
-if [ -f /etc/lighttpd/conf-available/89-adsb-portal.conf ]; then
+if [[ -f "/etc/lighttpd/conf-available/89-adsb-portal.conf" ]] ; then
     sudo rm -f /etc/lighttpd/conf-available/89-adsb-portal.conf
 fi
 sudo touch /etc/lighttpd/conf-available/89-adsb-portal.conf
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 # Add dump1090 as an alias to the dump1090-fa HTML folder.
 alias.url += (
@@ -404,12 +404,12 @@ sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 }
 EOF
 
-if ! [ -L /etc/lighttpd/conf-enabled/89-adsb-portal.conf ]; then
+if ! [[ -L /etc/lighttpd/conf-enabled/89-adsb-portal.conf ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd portal configuration file...\e[97m"
     sudo ln -s /etc/lighttpd/conf-available/89-adsb-portal.conf /etc/lighttpd/conf-enabled/89-adsb-portal.conf
 fi
 
-if [ "$PORTALINSTALLED" = "false" ]; then
+if [[ "${PORTALINSTALLED}" = "false" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd fastcgi-php module...\e[97m"
     echo -e ""
     sudo lighty-enable-mod fastcgi-php
@@ -429,44 +429,44 @@ fi
 
 ## SETUP THE MYSQL DATABASE
 
-if [ "$PORTALINSTALLED" = "false" ] && [ "$ADVANCED" = "true" ] && [ "$DATABASEENGINE" = "MySQL" ] && [ "$DATABASEEXISTS" = "false" ]; then
+if [[ "${PORTALINSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
 
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
-    while ! mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME  -e ";" ; do
+    while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e ";" ; do
         echo -e "\e[94m  Unable to log into the MySQL server using the supplied administrator credentials...\e[97m"
-        whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Create Remote MySQL Database" --msgbox "The script was not able to log into the MySQL server using the administrator credentials you supplied. You will now be asked to reenter the MySQL server administrator credentials." 9 78
+        whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Create Remote MySQL Database" --msgbox "The script was not able to log into the MySQL server using the administrator credentials you supplied. You will now be asked to reenter the MySQL server administrator credentials." 9 78
         DATABASEADMINPASSWORD1=""
         DATABASEADMINPASSWORD2=""
         DATABASEADMINUSER_TITLE="MySQL Administrator User"
-        while [ -z "$DATABASEADMINUSER" ]; do
-            DATABASEADMINUSER=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "$DATABASEADMINUSER" 3>&1 1>&2 2>&3)
+        while [[ -z "${DATABASEADMINUSER}" ]] ; do
+            DATABASEADMINUSER=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINUSER_TITLE}" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "${DATABASEADMINUSER}" 3>&1 1>&2 2>&3)
             DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
         done
         DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
         DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
-        while [ -z "$DATABASEADMINPASSWORD1" ]; do
-            DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+            DATABASEADMINPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
             DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
         done
         DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
         DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
-        while [ -z "$DATABASEADMINPASSWORD2" ]; do
-            DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+            DATABASEADMINPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
             DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
         done
-        while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
+        while [[ ! "${DATABASEADMINPASSWORD1}" = "${DATABASEADMINPASSWORD2}" ]] ; do
             DATABASEADMINPASSWORD1=""
             DATABASEADMINPASSWORD2=""
-            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+            whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
             DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
-            while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                DATABASEADMINPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+                DATABASEADMINPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
             done
             DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
-            while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                DATABASEADMINPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+                DATABASEADMINPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
             done
         done
@@ -474,21 +474,21 @@ if [ "$PORTALINSTALLED" = "false" ] && [ "$ADVANCED" = "true" ] && [ "$DATABASEE
     done
 
     # Create the database use and database using the information supplied by the user.
-    echo -e "\e[94m  Creating the MySQL database \"$DATABASENAME\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "CREATE DATABASE $DATABASENAME;"
-    echo -e "\e[94m  Creating the MySQL user \"$DATABASEUSER\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "CREATE USER '$DATABASEUSER'@'localhost' IDENTIFIED BY \"$DATABASEPASSWORD1\";"
-    echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"$DATABASEUSER\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "GRANT ALL PRIVILEGES ON $DATABASENAME.* TO '$DATABASEUSER'@'localhost';"
+    echo -e "\e[94m  Creating the MySQL database \"${DATABASENAME}\"...\e[97m"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE DATABASE ${DATABASENAME};"
+    echo -e "\e[94m  Creating the MySQL user \"${DATABASEUSER}\"...\e[97m"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+    echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"${DATABASEUSER}\"...\e[97m"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
     echo -e "\e[94m  Flushing priviledges on the MySQL database server...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "FLUSH PRIVILEGES;"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "FLUSH PRIVILEGES;"
 fi
 
 ## SETUP THE PERFORMANCE GRAPHS USING THE SCRIPT GRAPHS.SH
 
-chmod +x $BASHDIRECTORY/portal/graphs.sh
-$BASHDIRECTORY/portal/graphs.sh
-if [ $? -ne 0 ]; then
+chmod +x ${BASHDIRECTORY}/portal/graphs.sh
+${BASHDIRECTORY}/portal/graphs.sh
+if [[ $? -ne 0 ]] ; then
     echo -e ""
     echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AN ERROR"
     echo -e ""
@@ -498,12 +498,12 @@ fi
 ## SETUP COMMON PORTAL FEATURES
 
 # Export variables needed by logging.sh.
-if [ "$DATABASEENGINE" = "MySQL" ] || [ "$DATABASEENGINE" = "SQLite" ]; then
-    export ADSB_DATABASEENGINE=$DATABASEENGINE
-    export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
-    export ADSB_DATABASEUSER=$DATABASEUSER
-    export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
-    export ADSB_DATABASENAME=$DATABASENAME
+if [[ "${DATABASEENGINE}" = "MySQL" ]] || [[ "${DATABASEENGINE}" = "SQLite" ]] ; then
+    export ADSB_DATABASEENGINE=${DATABASEENGINE}
+    export ADSB_DATABASEHOSTNAME=${DATABASEHOSTNAME}
+    export ADSB_DATABASEUSER=${DATABASEUSER}
+    export ADSB_DATABASEPASSWORD1=${DATABASEPASSWORD1}
+    export ADSB_DATABASENAME=${DATABASENAME}
 else
     export ADSB_DATABASEENGINE="xml"
     export ADSB_DATABASEHOSTNAME=""
@@ -513,9 +513,9 @@ else
 fi
 
 # Execute the core setup script.
-chmod +x $BASHDIRECTORY/portal/core.sh
-$BASHDIRECTORY/portal/core.sh
-if [ $? -ne 0 ]; then
+chmod +x ${BASHDIRECTORY}/portal/core.sh
+${BASHDIRECTORY}/portal/core.sh
+if [[ $? -ne 0 ]] ; then
     echo -e ""
     echo -e "  \e[91m  THE SCRIPT CORE.SH ENCOUNTERED AN ERROR"
     echo -e ""
@@ -524,15 +524,15 @@ fi
 
 ## SETUP ADVANCED PORTAL FEATURES
 
-if [ "$ADVANCED" = "true" ]; then
-    # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
-    if [ "$DATABASEENGINE" = "SQLite" ] && [ -z "$DATABASENAME" ]; then
-        $DATABASENAME="$LIGHTTPDDOCUMENTROOT/data/portal.sqlite"
+if [[ "${ADVANCED}" = "true" ]] ; then
+    # If SQLite is being used and the path is not already set to the variable ${DATABASENAME} set it to the default path.
+    if [[ "${DATABASEENGINE}" = "SQLite" ]] && [[ -z "${DATABASENAME}" ]] ; then
+        ${DATABASENAME}="${LIGHTTPDDOCUMENTROOT}/data/portal.sqlite"
     fi
 
-    chmod +x $BASHDIRECTORY/portal/logging.sh
-    $BASHDIRECTORY/portal/logging.sh
-    if [ $? -ne 0 ]; then
+    chmod +x ${BASHDIRECTORY}/portal/logging.sh
+    ${BASHDIRECTORY}/portal/logging.sh
+    if [[ $? -ne 0 ]] ; then
         echo -e ""
         echo -e "  \e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AN ERROR"
         echo -e ""
@@ -553,7 +553,7 @@ unset ADSB_DATABASENAME
 IPADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
 # Display final portal setup instructions to the user.
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Portal Setup" --msgbox "NOTE THAT PORTAL SETUP IS NOT YET COMPLETE!\n\nIn order to complete the portal setup process visit the following URL in your favorite web browser.\n\nhttp://${IPADDRESS}/install/\n\nFollow the instructions and enter the requested information to complete the ADS-B Receiver Project Portal setup." 12 78
+whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Receiver Project Portal Setup" --msgbox "NOTE THAT PORTAL SETUP IS NOT YET COMPLETE!\n\nIn order to complete the portal setup process visit the following URL in your favorite web browser.\n\nhttp://${IPADDRESS}/install/\n\nFollow the instructions and enter the requested information to complete the ADS-B Receiver Project Portal setup." 12 78
 
 ### SETUP COMPLETE
 
@@ -565,7 +565,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  ADS-B Receiver Project Portal setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

@@ -39,29 +39,29 @@ function CheckPackage {
     MAXATTEMPTS=5
     WAITTIME=5
 
-    while (( $ATTEMPT -le `(($MAXATTEMPTS + 1))` )); do
+    while (( ${ATTEMPT} -le `(($MAXATTEMPTS + 1))` )); do
 
         # If the maximum attempts has been reached...
-        if [ $ATTEMPT -gt $MAXATTEMPTS ]; then
+        if [[ "${ATTEMPT}" -gt "${MAXATTEMPTS}" ]] ; then
             echo -e ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
             echo -e "  SETUP HAS BEEN TERMINATED!"
             echo -e ""
-            echo -e "\e[93mThe package \"$1\" could not be installed in $MAXATTEMPTS attempts.\e[39m"
+            echo -e "\e[93mThe package \"$1\" could not be installed in ${MAXATTEMPTS} attempts.\e[39m"
             echo -e ""
             exit 1
         fi
 
         # Check if the package is already installed.
         printf "\e[94m  Checking if the package $1 is installed..."
-        if [ $(dpkg-query -W -f='${STATUS}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+        if [[ $(dpkg-query -W -f='${STATUS}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
 
             # If this is not the first attempt at installing this package...
-            if [ $ATTEMPT -gt 1 ]; then
+            if [[ ${ATTEMPT} -gt 1 ]] ; then
                 echo -e "\e[91m  \e[5m[INSTALLATION ATTEMPT FAILED]\e[25m"
-                echo -e "\e[94m  Attempting to Install the package $1 again in $WAITTIME seconds (ATTEMPT $ATTEMPT OF $MAXATTEMPTS)..."
-                sleep $WAITTIME
+                echo -e "\e[94m  Attempting to Install the package $1 again in ${WAITTIME} seconds (ATTEMPT ${ATTEMPT} OF ${MAXATTEMPTS})..."
+                sleep ${WAITTIME}
             else
                 echo -e "\e[91m [NOT INSTALLED]"
                 echo -e "\e[94m  Installing the package $1..."

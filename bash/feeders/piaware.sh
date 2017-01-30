@@ -33,27 +33,27 @@
 
 ## VAARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-PIAWAREBUILDDIRECTORY="$PROJECTROOTDIRECTORY/build/piaware_builder"
+PROJECTROOTDIRECTORY="${PWD}"
+BASHDIRECTORY="${PROJECTROOTDIRECTORY}/bash"
+BUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build"
+PIAWAREBUILDDIRECTORY="${PROJECTROOTDIRECTORY}/build/piaware_builder"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/variables.sh
-source $BASHDIRECTORY/functions.sh
+source ${BASHDIRECTORY}/variables.sh
+source ${BASHDIRECTORY}/functions.sh
 
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
+echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up FlightAware's PiAware..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78
+whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78
 CONTINUESETUP=$?
-if [ "$CONTINUESETUP" = 1 ]; then
+if [[ "${CONTINUESETUP}" = 1 ]] ; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
@@ -61,7 +61,7 @@ if [ "$CONTINUESETUP" = 1 ]; then
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
     echo -e ""
-    if [[ -n ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
@@ -91,17 +91,17 @@ CheckPackage itcl3
 echo -e ""
 echo -e "\e[95m  Preparing the piaware_builder Git repository...\e[97m"
 echo -e ""
-if [ -d $PIAWAREBUILDDIRECTORY ] && [ -d $PIAWAREBUILDDIRECTORY/.git ]; then
+if [[ -d "${PIAWAREBUILDDIRECTORY}" ]] && [[ -d "${PIAWAREBUILDDIRECTORY}/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
-    cd $PIAWAREBUILDDIRECTORY
+    cd ${PIAWAREBUILDDIRECTORY}
     echo -e "\e[94m  Updating the local piaware_builder git repository...\e[97m"
     echo -e ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd $BUILDDIRECTORY
+    cd ${BUILDDIRECTORY}
     echo -e "\e[94m  Cloning the piaware_builder git repository locally...\e[97m"
     echo -e ""
     git clone https://github.com/flightaware/piaware_builder.git
@@ -112,28 +112,28 @@ fi
 echo -e ""
 echo -e "\e[95m  Building and installing the PiAware package...\e[97m"
 echo -e ""
-if [ ! "$PWD" = $PIAWAREBUILDDIRECTORY ]; then
+if [[ ! "${PWD}" = "${PIAWAREBUILDDIRECTORY}" ]] ; then
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
-    cd $PIAWAREBUILDDIRECTORY
+    cd ${PIAWAREBUILDDIRECTORY}
 fi
 echo -e "\e[94m  Executing the PiAware build script...\e[97m"
 echo -e ""
 ./sensible-build.sh jessie
 echo -e ""
 echo -e "\e[94m  Entering the PiAware build directory...\e[97m"
-cd $PIAWAREBUILDDIRECTORY/package-jessie
+cd ${PIAWAREBUILDDIRECTORY}/package-jessie
 echo -e "\e[94m  Building the PiAware package...\e[97m"
 echo -e ""
 dpkg-buildpackage -b
 echo -e ""
 echo -e "\e[94m  Installing the PiAware package...\e[97m"
 echo -e ""
-sudo dpkg -i $PIAWAREBUILDDIRECTORY/piaware_*.deb
+sudo dpkg -i ${PIAWAREBUILDDIRECTORY}/piaware_*.deb
 
 # Check that the PiAware package was installed successfully.
 echo -e ""
 echo -e "\e[94m  Checking that the piaware package was installed properly...\e[97m"
-if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # If the piaware package could not be installed halt setup.
     echo -e ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -145,60 +145,60 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware setup halted.\e[39m"
     echo -e ""
-    if [[ -n ${VERBOSE} ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
     exit 1
 fi
 
 # Move the .deb package into another directory simply to keep it for historical reasons.
-if [ ! -d $PIAWAREBUILDDIRECTORY/packages ]; then
+if [[ ! -d "${PIAWAREBUILDDIRECTORY}/packages" ]] ; then
     echo -e "\e[94m  Making the PiAware package archive directory...\e[97m"
-    mkdir $PIAWAREBUILDDIRECTORY/packages
+    mkdir ${PIAWAREBUILDDIRECTORY}/packages
 fi
 echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
-mv $PIAWAREBUILDDIRECTORY/piaware_*.deb $PIAWAREBUILDDIRECTORY/packages/
+mv ${PIAWAREBUILDDIRECTORY}/piaware_*.deb ${PIAWAREBUILDDIRECTORY}/packages/
 echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
-mv $PIAWAREBUILDDIRECTORY/piaware_*.changes $PIAWAREBUILDDIRECTORY/packages/
+mv ${PIAWAREBUILDDIRECTORY}/piaware_*.changes ${PIAWAREBUILDDIRECTORY}/packages/
 
 ## CONFIGURE FLIGHTAWARE
 
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
+whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
 # Ask for the users FlightAware login.
-FLIGHTAWARELOGIN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
-if [ ! "$FLIGHTAWARELOGIN" = "" ]; then
+FLIGHTAWARELOGIN=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
+if [[ ! "${FLIGHTAWARELOGIN}" = "" ]] ; then
     # If the user supplied their FlightAware login continue with the device claiming process.
     FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
-    while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-        FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+    while [[ -z "${FLIGHTAWAREPASSWORD1}" ]] ; do
+        FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${FLIGHTAWAREPASSWORD1_TITLE}" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
     done
     FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password"
-    while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-        FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+    while [[ -z "${FLIGHTAWAREPASSWORD2}" ]] ; do
+        FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${FLIGHTAWAREPASSWORD2_TITLE}" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
     done
-    while [ ! $FLIGHTAWAREPASSWORD1 = $FLIGHTAWAREPASSWORD2 ]; do
+    while [[ ! "${FLIGHTAWAREPASSWORD1}" = "${FLIGHTAWAREPASSWORD2}" ]] ; do
         FLIGHTAWAREPASSWORD1=""
         FLIGHTAWAREPASSWORD2=""
         # Display an error message if the passwords did not match.
-        whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+        whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
         FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password (REQUIRED)"
-        while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-            FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${FLIGHTAWAREPASSWORD1}" ]] ; do
+            FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${FLIGHTAWAREPASSWORD1_TITLE}" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
         done
         FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password (REQUIRED)"
-        while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-            FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${FLIGHTAWAREPASSWORD2}" ]] ; do
+            FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${FLIGHTAWAREPASSWORD2_TITLE}" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
         done
     done
 
     # Set the supplied user name and password in the configuration.
     echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
     echo -e ""
-    sudo piaware-config flightaware-user $FLIGHTAWARELOGIN
+    sudo piaware-config flightaware-user ${FLIGHTAWARELOGIN}
     echo -e ""
     echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
     echo -e ""
-    sudo piaware-config flightaware-password $FLIGHTAWAREPASSWORD1
+    sudo piaware-config flightaware-password ${FLIGHTAWAREPASSWORD1}
     echo -e ""
     echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
     echo -e ""
@@ -206,7 +206,7 @@ if [ ! "$FLIGHTAWARELOGIN" = "" ]; then
     echo -e ""
 else
     # Display a message to the user stating they need to manually claim their device.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
+    whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
 fi
 
 ### SETUP COMPLETE
@@ -219,7 +219,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  PiAware setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

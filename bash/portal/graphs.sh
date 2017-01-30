@@ -70,7 +70,7 @@ if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
     fi
     echo -e ""
 fi
-if [[ -f /etc/init.d/rtlsdr-ogn ]] ; then
+if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
     RTLSDROGN_INSTALLED="true"
 fi
 
@@ -360,7 +360,7 @@ fi
 
 # The next block is temporary in order to insure this file is
 # deleted on older installation before the project renaming.
-if [[ -f /etc/cron.d/adsb-feeder-performance-graphs ]] ; then
+if [[ -f "/etc/cron.d/adsb-feeder-performance-graphs" ]] ; then
     echo -e "\e[94m  Removing outdated performance graphs cron file...\e[97m"
     sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs 2>&1
     echo -e ""
@@ -409,7 +409,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Graphing setup is complete.\e[39m"
 echo -e ""
-if [[ ${RECEIVER_AUTOMATED_INSTALL} = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

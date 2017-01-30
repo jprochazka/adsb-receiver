@@ -68,7 +68,7 @@ function DisplayHelp() {
 
 ## CHECK FOR OPTIONS AND ARGUMENTS
 
-while [[ $# -gt 0 ]]; do
+while [[ $# -gt 0 ]] ; do
     case "$1" in
         -h|--help)
             # Display a help message.
@@ -122,12 +122,12 @@ done
 ## AUTOMATED INSTALL
 
 # If the automated installation option was selected set the needed environmental variables.
-if [ "${AUTOMATED_INSTALL}" = "true" ]; then
+if [[ "${AUTOMATED_INSTALL}" = "true" ]] ; then
     # If no configuration file was specified use the default configuration file path and name.
-    if [ -n "${CONFIGURATION_FILE}" ] || [ "${CONFIGURATION_FILE}" = "default" ]; then
+    if [[ -n "${CONFIGURATION_FILE}" ]] || [[ "${CONFIGURATION_FILE}" = "default" ]] ; then
         CONFIGURATION_FILE="${RECEIVER_ROOT_DIRECTORY}/install.config"
     # If either the -c or --config-file= flags were set a valid file must reside there.
-    elif [ ! -f "${CONFIGURATION_FILE}" ]; then
+    elif [[ ! -f "${CONFIGURATION_FILE}" ]] ; then
         echo "Unable to locate the installation configuration file."
         exit 1
     fi
