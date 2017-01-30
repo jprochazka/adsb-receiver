@@ -35,7 +35,7 @@
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
+PORTAL_BUILD_DIRECTORY="${BUILDDIRECTORY}/portal"
 
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
 COLLECTD_CRON_FILE="/etc/cron.d/adsb-receiver-performance-graphs"
@@ -135,7 +135,7 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
 # Added types for dump1090.                                                  #
 # Make sure the path to dump1090.db is correct.                              #
 #----------------------------------------------------------------------------#
-TypesDB "${PORTALBUILDDIRECTORY}/graphs/dump1090.db" "/usr/share/collectd/types.db"
+TypesDB "${PORTAL_BUILD_DIRECTORY}/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 EOF
 fi
@@ -256,7 +256,7 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
 # statistics will be loaded from http://localhost/dump1090/data/stats.json   #
 #----------------------------------------------------------------------------#
 <Plugin python>
-        ModulePath "${PORTALBUILDDIRECTORY}/graphs"
+        ModulePath "${PORTAL_BUILD_DIRECTORY}/graphs"
         LogTraces true
         Import "dump1090"
         <Module dump1090>
@@ -352,9 +352,9 @@ echo -e ""
 
 ## EDIT CRONTAB
 
-if [[ ! -x "${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh" ]] ; then
+if [[ ! -x "${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh" ]] ; then
     echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
-    chmod +x ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 2>&1
+    chmod +x ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 2>&1
     echo -e ""
 fi
 
@@ -385,12 +385,12 @@ sudo tee ${COLLECTD_CRON_FILE} > /dev/null <<EOF
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
-*/10 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
-2,12,22,32,42,52 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
-4,24,44 * * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
-6 * * *	* root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
-8 */12 * * * root bash ${PORTALBUILDDIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
+*/5 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
+*/10 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
+2,12,22,32,42,52 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
+4,24,44 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
+6 * * *	* root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
+8 */12 * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
 echo -e ""
 

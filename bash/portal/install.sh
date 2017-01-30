@@ -36,7 +36,7 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
+PORTAL_BUILD_DIRECTORY="${BUILDDIRECTORY}/portal"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -323,7 +323,7 @@ if [[ "${PORTALINSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
 fi
 
 echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"
-sudo cp -R ${PORTALBUILDDIRECTORY}/html/* ${LIGHTTPDDOCUMENTROOT}
+sudo cp -R ${PORTAL_BUILD_DIRECTORY}/html/* ${LIGHTTPDDOCUMENTROOT}
 
 # If this is an existing installation being upgraded restore the original XML data files.
 if [[ "${PORTALINSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
