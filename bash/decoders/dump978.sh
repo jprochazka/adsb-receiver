@@ -223,7 +223,7 @@ fi
 
 # Create the dump978 JSON directory in Lighttpd's document root.
 echo -e "\e[94m  Creating the dump978 JSON data directory within Lighttpd's document root...\e[97m"
-sudo mkdir -p ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
+sudo mkdir -vp ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
 echo -e "\e[94m  Setting permissions for the dump978 JSON data directory within Lighttpd's document root...\e[97m"
 sudo chmod +w ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
 

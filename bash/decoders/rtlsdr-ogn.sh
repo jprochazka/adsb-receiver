@@ -206,7 +206,7 @@ fi
 # Create build directory if not already present.
 if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn" ]] ; then
     echo -e "\e[94m  Creating the directory (${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn)...\e[97m"
-    mkdir ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
 fi
 
 # Enter the build directory.

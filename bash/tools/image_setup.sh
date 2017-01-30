@@ -95,7 +95,7 @@ case ${DUMP1090OPTION} in
         echo -e ""
         echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
         echo -e ""
-        mkdir -p ${BUILDDIRECTORY}/dump1090-mutability
+        mkdir -vp ${BUILDDIRECTORY}/dump1090-mutability
         cd ${BUILDDIRECTORY}/dump1090-mutability
         git clone https://github.com/mutability/dump1090.git
         cd ${BUILDDIRECTORY}/dump1090-mutability/dump1090
@@ -126,7 +126,7 @@ case ${DUMP1090OPTION} in
         echo -e ""
         echo -e "\e[95m  Installing dump1090-fa...\e[97m"
         echo -e ""
-        mkdir -p ${BUILDDIRECTORY}/dump1090-fa
+        mkdir -vp ${BUILDDIRECTORY}/dump1090-fa
         cd ${BUILDDIRECTORY}/dump1090-fa
         git clone https://github.com/flightaware/dump1090.git
         cd ${BUILDDIRECTORY}/dump1090-fa/dump1090

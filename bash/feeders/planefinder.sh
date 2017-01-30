@@ -95,7 +95,7 @@ echo -e ""
 # Create the planefinder build directory if it does not exist.
 if [[ ! -d "${PLANEFINDERBUILDDIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the Plane Finder ADS-B Client build directory...\e[97m"
-    mkdir ${PLANEFINDERBUILDDIRECTORY}
+    mkdir -vp ${PLANEFINDERBUILDDIRECTORY}
 fi
 # Download the appropriate package depending on the devices architecture.
 if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] ; then

@@ -154,7 +154,7 @@ fi
 # Move the .deb package into another directory simply to keep it for historical reasons.
 if [[ ! -d "${PIAWAREBUILDDIRECTORY}/packages" ]] ; then
     echo -e "\e[94m  Making the PiAware package archive directory...\e[97m"
-    mkdir ${PIAWAREBUILDDIRECTORY}/packages
+    mkdir -vp ${PIAWAREBUILDDIRECTORY}/packages
 fi
 echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
 mv ${PIAWAREBUILDDIRECTORY}/piaware_*.deb ${PIAWAREBUILDDIRECTORY}/packages/

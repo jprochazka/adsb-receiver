@@ -102,7 +102,7 @@ echo -e ""
 # Create the flightradar24 build directory if it does not exist.
 if [[ ! -d "${FR24BUILDDIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the Flightradar24 feeder client build directory...\e[97m"
-    mkdir ${FR24BUILDDIRECTORY}
+    mkdir -vp ${FR24BUILDDIRECTORY}
 fi
 echo -e "\e[94m  Entering the Flightradar24 feeder client build directory...\e[97m"
 cd ${FR24BUILDDIRECTORY}

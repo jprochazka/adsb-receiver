@@ -248,7 +248,7 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
         echo -e "\e[94m  Creating archive directory...\e[97m"
         echo -e ""
-        mkdir -v ${BINARIES_DIRECTORY} 2>&1
+        mkdir -vp ${BINARIES_DIRECTORY} 2>&1
         echo -e ""
     fi
     # Archive binary package.
@@ -290,7 +290,7 @@ echo -e ""
 echo -e "\e[94m  Checking for the ${FEEDER_NAME} build directory...\e[97m"
 if [[ ! -d "${FEEDER_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ${FEEDER_NAME} build directory...\e[97m"
-    mkdir -v ${FEEDER_BUILD_DIRECTORY} 2>&1
+    mkdir -vp ${FEEDER_BUILD_DIRECTORY} 2>&1
 fi
 echo -e ""
 

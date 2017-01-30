@@ -105,7 +105,7 @@ if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] && [[ -d "${RECEIVER
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -p ${RECEIVER_BUILD_DIRECTORY}/dump1090
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090
     cd ${RECEIVER_BUILD_DIRECTORY}/dump1090
     echo -e "\e[94m  Cloning the dump1090-mutability git repository locally...\e[97m"
     echo -e ""

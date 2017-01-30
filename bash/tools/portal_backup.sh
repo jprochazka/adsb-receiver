@@ -86,7 +86,7 @@ echo -e "\e[94m  Checking that the directory ${BACKUPSDIRECTORY} exists...\e[97m
 if [[ ! -d "${BACKUPSDIRECTORY}" ]] ; then
     # Create the backups directory.
     echo -e "\e[94m  Creating the directory ${BACKUPSDIRECTORY}...\e[97m"
-    mkdir -p ${BACKUPSDIRECTORY}
+    mkdir -vp ${BACKUPSDIRECTORY}
 fi
 
 # Check that the temporary directory exists.
@@ -94,7 +94,7 @@ echo -e "\e[94m  Checking that the directory ${TEMPORARYDIRECTORY} exists...\e[9
 if [[ ! -d "${TEMPORARYDIRECTORY}" ]] ; then
     # Create the tmp directory.
     echo -e "\e[94m  Creating the directory ${TEMPORARYDIRECTORY}...\e[97m"
-    mkdir -p ${TEMPORARYDIRECTORY}
+    mkdir -vp ${TEMPORARYDIRECTORY}
 fi
 
 ## BACKUP THE FILES COMMON TO ALL PORTAL INSTALLATION SCENARIOS
@@ -102,7 +102,7 @@ fi
 # Copy the collectd round robin database files to the temporary directory.
 echo -e "\e[94m  Checking that the directory ${TEMPORARYDIRECTORY}/var/lib/collectd/rrd/ exists...\e[97m"
 if [[ ! -d "${TEMPORARYDIRECTORY}/var/lib/collectd/rrd/" ]] ; then
-    mkdir -p ${TEMPORARYDIRECTORY}/var/lib/collectd/rrd/
+    mkdir -vp ${TEMPORARYDIRECTORY}/var/lib/collectd/rrd/
 fi
 echo -e "\e[94m  Backing up the directory /var/lib/collectd/rrd/...\e[97m"
 sudo cp -R /var/lib/collectd/rrd/ ${TEMPORARYDIRECTORY}/var/lib/collectd/rrd/
@@ -113,7 +113,7 @@ if [[ "${ADVANCED}" = "FALSE" ]] ; then
     # Copy the portal XML data files to the temporary directory.
     echo -e "\e[94m  Checking that the directory ${TEMPORARYDIRECTORY}/var/www/html/data/ exists...\e[97m"
     if [[ ! -d "${TEMPORARYDIRECTORY}/var/www/html/data/" ]] ; then
-        mkdir -p ${TEMPORARYDIRECTORY}/var/www/html/data/
+        mkdir -vp ${TEMPORARYDIRECTORY}/var/www/html/data/
     fi
     echo -e "\e[94m  Backing up all XML data files to ${TEMPORARYDIRECTORY}/var/www/html/data/...\e[97m"
     sudo cp -R /var/www/html/data/*.xml ${TEMPORARYDIRECTORY}/var/www/html/data/

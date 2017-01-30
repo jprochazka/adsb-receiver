@@ -289,13 +289,13 @@ fi
 # Create the build directory if it does not already exist.
 if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -v ${RECEIVER_BUILD_DIRECTORY} 2>&1
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY} 2>&1
 fi
 
 # Create a component directory within the build directory if it does not already exist.
 if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the directory ${COMPONENT_BUILD_DIRECTORY}...\e[97m"
-    mkdir -v ${COMPONENT_BUILD_DIRECTORY} 2>&1
+    mkdir -vp ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 
 ### SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
