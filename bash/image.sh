@@ -83,20 +83,20 @@ echo -e ""
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     # Set the receivers latitude and longitude.
     whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-    RECEIVERLATITUDE_TITLE="Receiver Latitude"
-    while [[ -z "${RECEIVERLATITUDE}" ]] ; do
-        RECEIVERLATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVERLATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+    RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+    while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
-    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
-    while [[ -z "${RECEIVERLONGITUDE}" ]] ; do
-        RECEIVERLONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVERLONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
-    echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVERLATITUDE}...\e[97m"
-    ChangeConfig "LAT" ${RECEIVERLATITUDE} "/etc/default/dump1090-mutability"
-    echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVERLONGITUDE}...\e[97m"
-    ChangeConfig "LON" ${RECEIVERLONGITUDE} "/etc/default/dump1090-mutability"
+    echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
+    ChangeConfig "LAT" ${RECEIVER_LATITUDE} "/etc/default/dump1090-mutability"
+    echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
+    ChangeConfig "LON" ${RECEIVER_LONGITUDE} "/etc/default/dump1090-mutability"
 
     # Ask if dump1090-mutability should bind on all IP addresses.
     if (whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
