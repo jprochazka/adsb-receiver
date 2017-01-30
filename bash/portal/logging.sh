@@ -36,7 +36,7 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 PORTAL_BUILD_DIRECTORY="${BUILDDIRECTORY}/portal"
-PORTALPYTHONDIRECTORY="${PORTAL_BUILD_DIRECTORY}/python"
+PORTAL_PYTHON_DIRECTORY="${PORTAL_BUILD_DIRECTORY}/python"
 PYTHONPATH=`which python`
 
 ## SETUP FLIGHT LOGGING
@@ -47,48 +47,48 @@ echo -e ""
 
 # Create and set permissions on the flight logging and maintenance maintenance scripts.
 echo -e "\e[94m  Creating the flight logging maintenance script...\e[97m"
-tee ${PORTALPYTHONDIRECTORY}/flights-maint.sh > /dev/null <<EOF
+tee ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh > /dev/null <<EOF
 #!/bin/bash
 while true
   do
     sleep 30
-        ${PYTHONPATH} ${PORTALPYTHONDIRECTORY}/flights.py
+        ${PYTHONPATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py
   done
 EOF
 
 echo -e "\e[94m  Creating the maintenance maintenance script...\e[97m"
-tee ${PORTALPYTHONDIRECTORY}/maintenance-maint.sh > /dev/null <<EOF
+tee ${PORTAL_PYTHON_DIRECTORY}/maintenance-maint.sh > /dev/null <<EOF
 #!/bin/bash
 while true
   do
     sleep 30
-        ${PYTHONPATH} ${PORTALPYTHONDIRECTORY}/maintenance.py
+        ${PYTHONPATH} ${PORTAL_PYTHON_DIRECTORY}/maintenance.py
   done
 EOF
 
 echo -e "\e[94m  Making the flight logging maintenance script executable...\e[97m"
-chmod +x ${PORTALPYTHONDIRECTORY}/flights-maint.sh
+chmod +x ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh
 echo -e "\e[94m  Making the maintenance maintenance script executable...\e[97m"
-chmod +x ${PORTALPYTHONDIRECTORY}/maintenance-maint.sh
+chmod +x ${PORTAL_PYTHON_DIRECTORY}/maintenance-maint.sh
 
 #Remove old flights-maint.sh start up line from /etc/rc.local.
 sudo sed -i '/build\/portal\/logging\/flights-maint.sh/d' /etc/rc.local
 
 # Add flight logging maintenance script to rc.local.
-if [[ `grep -cFx "${PORTALPYTHONDIRECTORY}/flights-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ `grep -cFx "${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding the flight logging maintenance script startup line to /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${PORTALPYTHONDIRECTORY}/flights-maint.sh &\n" /etc/rc.local
+    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh &\n" /etc/rc.local
 fi
 
 # Remove old maintenance-maint.sh start up line from /etc/rc.local.
 sudo sed -i '/build\/portal\/logging\/maintenance-maint.sh/d' /etc/rc.local
 
 # Add maintenance maintenance script to rc.local.
-if [[ `grep -cFx "${PORTALPYTHONDIRECTORY}/maintenance-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ `grep -cFx "${PORTAL_PYTHON_DIRECTORY}/maintenance-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     echo -e "\e[94m  Adding the maintenance maintenance script startup line to /etc/rc.local...\e[97m"
     LINENUMBER=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${PORTALPYTHONDIRECTORY}/maintenance-maint.sh &\n" /etc/rc.local
+    ((LINENUMBER>0)) && sudo sed -i "${LINENUMBER[$((${#LINENUMBER[@]}-1))]}i ${PORTAL_PYTHON_DIRECTORY}/maintenance-maint.sh &\n" /etc/rc.local
 fi
 
 # Kill any previously running maintenance scripts.
@@ -108,10 +108,10 @@ fi
 
 # Start flight logging.
 echo -e "\e[94m  Executing the flight logging maintenance script...\e[97m"
-nohup ${PORTALPYTHONDIRECTORY}/flights-maint.sh > /dev/null 2>&1 &
+nohup ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh > /dev/null 2>&1 &
 
 # Start maintenance.
 echo -e "\e[94m  Executing the maintenance maintenance script...\e[97m"
-nohup ${PORTALPYTHONDIRECTORY}/maintenance-maint.sh > /dev/null 2>&1 &
+nohup ${PORTAL_PYTHON_DIRECTORY}/maintenance-maint.sh > /dev/null 2>&1 &
 
 exit 0

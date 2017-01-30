@@ -36,7 +36,7 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 PORTAL_BUILD_DIRECTORY="${BUILDDIRECTORY}/portal"
-PORTALPYTHONDIRECTORY="${PORTAL_BUILD_DIRECTORY}/python"
+PORTAL_PYTHON_DIRECTORY="${PORTAL_BUILD_DIRECTORY}/python"
 
 DATABASEENGINE=${ADSB_DATABASEENGINE}
 DATABASEHOSTNAME=${ADSB_DATABASEHOSTNAME}
@@ -53,7 +53,7 @@ echo -e ""
 case ${DATABASEENGINE} in
     "MySQL")
         echo -e "\e[94m  Creating the flight Python configuration file for MySQL...\e[97m"
-        tee ${PORTALPYTHONDIRECTORY}/config.json > /dev/null <<EOF
+        tee ${PORTAL_PYTHON_DIRECTORY}/config.json > /dev/null <<EOF
 {
     "database":{"type":"mysql",
                 "host":"${DATABASEHOSTNAME}",
@@ -65,7 +65,7 @@ EOF
             ;;
     "SQLite")
         echo -e "\e[94m  Creating the Python configuration file for SQLite...\e[97m"
-        tee ${PORTALPYTHONDIRECTORY}/config.json > /dev/null <<EOF
+        tee ${PORTAL_PYTHON_DIRECTORY}/config.json > /dev/null <<EOF
 {
     "database":{"type":"sqlite",
                 "host":"${DATABASEHOSTNAME}",
