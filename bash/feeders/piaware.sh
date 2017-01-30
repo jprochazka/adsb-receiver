@@ -35,7 +35,7 @@
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 PIAWARE_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build/piaware_builder"
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -101,7 +101,7 @@ if [[ -d "${PIAWARE_BUILD_DIRECTORY}" ]] && [[ -d "${PIAWARE_BUILD_DIRECTORY}/.g
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd ${BUILDDIRECTORY}
+    cd ${RECEIVER_BUILD_DIRECTORY}
     echo -e "\e[94m  Cloning the piaware_builder git repository locally...\e[97m"
     echo -e ""
     git clone https://github.com/flightaware/piaware_builder.git

@@ -48,7 +48,7 @@ clear
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -95,12 +95,12 @@ case ${DUMP1090OPTION} in
         echo -e ""
         echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
         echo -e ""
-        mkdir -vp ${BUILDDIRECTORY}/dump1090-mutability
-        cd ${BUILDDIRECTORY}/dump1090-mutability
+        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability
         git clone https://github.com/mutability/dump1090.git
-        cd ${BUILDDIRECTORY}/dump1090-mutability/dump1090
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/dump1090
         dpkg-buildpackage -b
-        cd ${BUILDDIRECTORY}/dump1090-mutability
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability
         sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
         ;;
     "dump1090-fa")
@@ -126,22 +126,22 @@ case ${DUMP1090OPTION} in
         echo -e ""
         echo -e "\e[95m  Installing dump1090-fa...\e[97m"
         echo -e ""
-        mkdir -vp ${BUILDDIRECTORY}/dump1090-fa
-        cd ${BUILDDIRECTORY}/dump1090-fa
+        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
         git clone https://github.com/flightaware/dump1090.git
-        cd ${BUILDDIRECTORY}/dump1090-fa/dump1090
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090
         dpkg-buildpackage -b
-        cd ${BUILDDIRECTORY}/dump1090-fa
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
         sudo dpkg -i dump1090-fa_*.deb
 
         # PiAware
-        cd ${BUILDDIRECTORY}
+        cd ${RECEIVER_BUILD_DIRECTORY}
         git clone https://github.com/flightaware/piaware_builder.git
-        cd ${BUILDDIRECTORY}/piaware_builder
+        cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder
         ./sensible-build.sh jessie
-        cd ${BUILDDIRECTORY}/piaware_builder/package-jessie
+        cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-jessie
         dpkg-buildpackage -b
-        sudo dpkg -i ${BUILDDIRECTORY}/piaware_builder/piaware_*.deb
+        sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.deb
         ;;
     *)
         # Nothing selected.

@@ -503,7 +503,7 @@ declare array EXTRAS_LIST
 touch ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
 
 # Check if the AboveTustin repository has been cloned.
-if [[ -d "${BUILDDIRECTORY}/AboveTustin" ]] && [[ -d "${BUILDDIRECTORY}/AboveTustin/.git" ]] ; then
+if [[ -d "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/.git" ]] ; then
     # The AboveTustin repository has been cloned to this device.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
@@ -556,7 +556,7 @@ else
 fi
 
 # Check if the Duck DNS update script exists.
-if [[ ! -f "${BUILDDIRECTORY}/duckdns/duck.sh" ]] ; then
+if [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh" ]] ; then
     # Duck DNS does not appear to be set up on this device.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.

@@ -35,8 +35,8 @@
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-PORTAL_BUILD_DIRECTORY="${BUILDDIRECTORY}/portal"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+PORTAL_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -349,7 +349,7 @@ sudo chmod 666 ${LIGHTTPDDOCUMENTROOT}/data/*
 
 # Check if dump978 was setup.
 echo -e "\e[94m  Checking if dump978 was set up...\e[97m"
-if [[ `grep -cFx "${BUILDDIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     # Check if a heywhatsthat.com range file exists in the dump1090 HTML folder.
     echo -e "\e[94m  Checking for the file upintheair.json in the dump1090 HTML folder...\e[97m"
     if [[ -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
