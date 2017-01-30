@@ -36,7 +36,7 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-PIAWAREBUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build/piaware_builder"
+PIAWARE_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build/piaware_builder"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -91,10 +91,10 @@ CheckPackage itcl3
 echo -e ""
 echo -e "\e[95m  Preparing the piaware_builder Git repository...\e[97m"
 echo -e ""
-if [[ -d "${PIAWAREBUILDDIRECTORY}" ]] && [[ -d "${PIAWAREBUILDDIRECTORY}/.git" ]] ; then
+if [[ -d "${PIAWARE_BUILD_DIRECTORY}" ]] && [[ -d "${PIAWARE_BUILD_DIRECTORY}/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
-    cd ${PIAWAREBUILDDIRECTORY}
+    cd ${PIAWARE_BUILD_DIRECTORY}
     echo -e "\e[94m  Updating the local piaware_builder git repository...\e[97m"
     echo -e ""
     git pull
@@ -112,23 +112,23 @@ fi
 echo -e ""
 echo -e "\e[95m  Building and installing the PiAware package...\e[97m"
 echo -e ""
-if [[ ! "${PWD}" = "${PIAWAREBUILDDIRECTORY}" ]] ; then
+if [[ ! "${PWD}" = "${PIAWARE_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
-    cd ${PIAWAREBUILDDIRECTORY}
+    cd ${PIAWARE_BUILD_DIRECTORY}
 fi
 echo -e "\e[94m  Executing the PiAware build script...\e[97m"
 echo -e ""
 ./sensible-build.sh jessie
 echo -e ""
 echo -e "\e[94m  Entering the PiAware build directory...\e[97m"
-cd ${PIAWAREBUILDDIRECTORY}/package-jessie
+cd ${PIAWARE_BUILD_DIRECTORY}/package-jessie
 echo -e "\e[94m  Building the PiAware package...\e[97m"
 echo -e ""
 dpkg-buildpackage -b
 echo -e ""
 echo -e "\e[94m  Installing the PiAware package...\e[97m"
 echo -e ""
-sudo dpkg -i ${PIAWAREBUILDDIRECTORY}/piaware_*.deb
+sudo dpkg -i ${PIAWARE_BUILD_DIRECTORY}/piaware_*.deb
 
 # Check that the PiAware package was installed successfully.
 echo -e ""
@@ -152,14 +152,14 @@ if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed
 fi
 
 # Move the .deb package into another directory simply to keep it for historical reasons.
-if [[ ! -d "${PIAWAREBUILDDIRECTORY}/packages" ]] ; then
+if [[ ! -d "${PIAWARE_BUILD_DIRECTORY}/packages" ]] ; then
     echo -e "\e[94m  Making the PiAware package archive directory...\e[97m"
-    mkdir -vp ${PIAWAREBUILDDIRECTORY}/packages
+    mkdir -vp ${PIAWARE_BUILD_DIRECTORY}/packages
 fi
 echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
-mv ${PIAWAREBUILDDIRECTORY}/piaware_*.deb ${PIAWAREBUILDDIRECTORY}/packages/
+mv ${PIAWARE_BUILD_DIRECTORY}/piaware_*.deb ${PIAWARE_BUILD_DIRECTORY}/packages/
 echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
-mv ${PIAWAREBUILDDIRECTORY}/piaware_*.changes ${PIAWAREBUILDDIRECTORY}/packages/
+mv ${PIAWARE_BUILD_DIRECTORY}/piaware_*.changes ${PIAWARE_BUILD_DIRECTORY}/packages/
 
 ## CONFIGURE FLIGHTAWARE
 

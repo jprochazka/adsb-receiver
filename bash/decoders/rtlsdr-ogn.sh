@@ -323,8 +323,8 @@ sudo tee /etc/rtlsdr-ogn.conf > /dev/null <<EOF
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50000  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-rf     rtlsdr-ogn.conf
-50001  pi ${BUILDDIRECTORY_RTLSDROGN}/rtlsdr-ogn    ./ogn-decode rtlsdr-ogn.conf
+50000  pi ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn    ./ogn-rf     rtlsdr-ogn.conf
+50001  pi ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn    ./ogn-decode rtlsdr-ogn.conf
 EOF
 
 echo -e "\e[94m  Setting up rtlsdr-ogn as a service...\e[97m"
