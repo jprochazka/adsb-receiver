@@ -34,12 +34,12 @@
 ## VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
-BASHDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source ${BASHDIRECTORY}/variables.sh
-source ${BASHDIRECTORY}/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Assign the Lighthttpd document root directory to a variable.
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
@@ -220,8 +220,8 @@ fi
 
 ## SETUP THE ADS-B RECEIVER PROJECT WEB PORTAL
 
-chmod +x ${BASHDIRECTORY}/portal/install.sh
-${BASHDIRECTORY}/portal/install.sh
+chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/install.sh
+${RECEIVER_BASH_DIRECTORY}/portal/install.sh
 if [[ $? -ne 0 ]] ; then
     exit 1
 fi

@@ -34,14 +34,14 @@
 ## VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
-BASHDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 PORTALBUILDDIRECTORY="${BUILDDIRECTORY}/portal"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source ${BASHDIRECTORY}/variables.sh
-source ${BASHDIRECTORY}/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## BEGIN SETUP
 
@@ -486,8 +486,8 @@ fi
 
 ## SETUP THE PERFORMANCE GRAPHS USING THE SCRIPT GRAPHS.SH
 
-chmod +x ${BASHDIRECTORY}/portal/graphs.sh
-${BASHDIRECTORY}/portal/graphs.sh
+chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/graphs.sh
+${RECEIVER_BASH_DIRECTORY}/portal/graphs.sh
 if [[ $? -ne 0 ]] ; then
     echo -e ""
     echo -e "\e[91m  THE SCRIPT GRAPHS.SH ENCOUNTERED AN ERROR"
@@ -513,8 +513,8 @@ else
 fi
 
 # Execute the core setup script.
-chmod +x ${BASHDIRECTORY}/portal/core.sh
-${BASHDIRECTORY}/portal/core.sh
+chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/core.sh
+${RECEIVER_BASH_DIRECTORY}/portal/core.sh
 if [[ $? -ne 0 ]] ; then
     echo -e ""
     echo -e "  \e[91m  THE SCRIPT CORE.SH ENCOUNTERED AN ERROR"
@@ -530,8 +530,8 @@ if [[ "${ADVANCED}" = "true" ]] ; then
         ${DATABASENAME}="${LIGHTTPDDOCUMENTROOT}/data/portal.sqlite"
     fi
 
-    chmod +x ${BASHDIRECTORY}/portal/logging.sh
-    ${BASHDIRECTORY}/portal/logging.sh
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
+    ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
     if [[ $? -ne 0 ]] ; then
         echo -e ""
         echo -e "  \e[91m  THE SCRIPT LOGGING.SH ENCOUNTERED AN ERROR"

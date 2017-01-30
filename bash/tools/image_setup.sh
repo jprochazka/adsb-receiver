@@ -47,13 +47,13 @@ clear
 ## VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
-BASHDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 BUILDDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source ${BASHDIRECTORY}/variables.sh
-source ${BASHDIRECTORY}/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 echo -e ""
 echo -e "\e[91m  The ADS-B Receiver Project Image Preparation Script\e[97m"
