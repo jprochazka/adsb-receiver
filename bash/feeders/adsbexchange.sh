@@ -72,7 +72,7 @@ fi
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
-    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
 echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
@@ -80,7 +80,7 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -138,7 +138,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user for the mlat user name for this receiver.
     FEEDER_USERNAME_TITLE="Receiver MLAT Username"
     while [[ -z "${FEEDER_USERNAME}" ]] ; do
-        FEEDER_USERNAME=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
+        FEEDER_USERNAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
         FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
     done
 
@@ -149,7 +149,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk '{print $3}')
             RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
-        RECEIVER_LATITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
 
@@ -160,7 +160,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk '{print $3}')
             RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 
@@ -171,7 +171,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
             RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
         fi
-        RECEIVER_ALTITUDE=$(whiptail --backtitle "${ADSB_PROJECTTITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
     done
 else

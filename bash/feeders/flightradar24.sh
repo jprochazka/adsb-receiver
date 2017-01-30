@@ -46,12 +46,12 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up the Flightradar24 feeder client..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Flightradar24 Feeder Client Setup" --yesno "The Flightradar24's feeder client can track flights within 200-400 miles and will automatically share data with Flightradar24. You can track flights directly off your device or via Flightradar24.com.\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the Flightradar24 feeder client?" 13 78
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Flightradar24 Feeder Client Setup" --yesno "The Flightradar24's feeder client can track flights within 200-400 miles and will automatically share data with Flightradar24. You can track flights directly off your device or via Flightradar24.com.\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the Flightradar24 feeder client?" 13 78
 CONTINUESETUP=$?
 if [[ "${CONTINUESETUP}" = 1 ]] ; then
     # Setup has been halted by the user.
@@ -110,7 +110,7 @@ if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` =
 
     ## ARM INSTALLATION
 
-    whiptail --backtitle "${ADSB_PROJECTTITLE}" --title "Plane Finder ADS-B Client Setup Instructions" --msgbox "This script will now download and execute the official Flightradar24 setup script. Follow the instructions provided and supply the required information when ask for by the script.\n\nOnce finished the ADS-B Receiver Project scripts will continue." 11 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Plane Finder ADS-B Client Setup Instructions" --msgbox "This script will now download and execute the official Flightradar24 setup script. Follow the instructions provided and supply the required information when ask for by the script.\n\nOnce finished the ADS-B Receiver Project scripts will continue." 11 78
     echo -e "\e[94m  Detected the device architecture as ARM...\e[97m"
     echo -e "\e[94m  Downloading the executing the Flightradar24 Pi24 installation script...\e[97m"
     echo -e ""
