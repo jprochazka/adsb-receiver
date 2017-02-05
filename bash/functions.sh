@@ -35,16 +35,16 @@
 # UPDATE REPOSITORY PACKAGE LISTS
 function AptUpdate() {
     clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
+    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e ""
     echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     sudo apt-get update
-    echo ""
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
-    echo ""
+    echo -e ""
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -54,16 +54,16 @@ function AptUpdate() {
 # UPDATE THE OPERATING SYSTEM
 function UpdateOperatingSystem() {
     clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
+    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     sudo apt-get -y dist-upgrade
-    echo ""
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
-    echo ""
+    echo -e ""
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -77,29 +77,29 @@ function CheckPackage {
     MAXATTEMPTS=5
     WAITTIME=5
 
-    while (( $ATTEMPT -le `(($MAXATTEMPTS + 1))` )); do
+    while (( ${ATTEMPT} -le `(($MAXATTEMPTS + 1))` )); do
 
         # If the maximum attempts has been reached...
-        if [ $ATTEMPT -gt $MAXATTEMPTS ]; then
-            echo ""
+        if [[ "${ATTEMPT}" -gt "${MAXATTEMPTS}" ]] ; then
+            echo -e ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
             echo -e "  SETUP HAS BEEN TERMINATED!"
-            echo ""
-            echo -e "\e[93mThe package \"$1\" could not be installed in $MAXATTEMPTS attempts.\e[39m"
-            echo ""
+            echo -e ""
+            echo -e "\e[93mThe package \"$1\" could not be installed in ${MAXATTEMPTS} attempts.\e[39m"
+            echo -e ""
             exit 1
         fi
 
         # Check if the package is already installed.
         printf "\e[94m  Checking if the package $1 is installed..."
-        if [ $(dpkg-query -W -f='${STATUS}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+        if [[ $(dpkg-query -W -f='${STATUS}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
 
             # If this is not the first attempt at installing this package...
-            if [ $ATTEMPT -gt 1 ]; then
+            if [[ ${ATTEMPT} -gt 1 ]] ; then
                 echo -e "\e[91m  \e[5m[INSTALLATION ATTEMPT FAILED]\e[25m"
-                echo -e "\e[94m  Attempting to Install the package $1 again in $WAITTIME seconds (ATTEMPT $ATTEMPT OF $MAXATTEMPTS)..."
-                sleep $WAITTIME
+                echo -e "\e[94m  Attempting to Install the package $1 again in ${WAITTIME} seconds (ATTEMPT ${ATTEMPT} OF ${MAXATTEMPTS})..."
+                sleep ${WAITTIME}
             else
                 echo -e "\e[91m [NOT INSTALLED]"
                 echo -e "\e[94m  Installing the package $1..."
@@ -122,17 +122,17 @@ function CheckPackage {
 # CHECK PREREQUISITES
 function CheckPrerequisites() {
     clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
+    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e ""
     echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e ""
     CheckPackage whiptail
     CheckPackage git
-    echo ""
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
-    echo ""
+    echo -e ""
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -142,27 +142,27 @@ function CheckPrerequisites() {
 # UPDATE GIT REPOSITORY
 function UpdateRepository() {
     clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
-    echo -e "\e[92m  Pulling the latest version of the $ADSB_PROJECTTITLE git repository..."
+    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e ""
+    echo -e "\e[92m  Pulling the latest version of the ${ADSB_PROJECTTITLE} git repository..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
-    echo -e "\e[94m  Switching to branch $PROJECTBRANCH...\e[97m"
-    echo ""
-    git checkout $PROJECTBRANCH
-    echo ""
+    echo -e ""
+    echo -e "\e[94m  Switching to branch ${PROJECTBRANCH}...\e[97m"
+    echo -e ""
+    git checkout ${PROJECTBRANCH}
+    echo -e ""
     git remote update
-    echo ""
+    echo -e ""
     if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
        echo -e "\e[94m  Pulling the latest git repository...\e[97m"
        git pull
     else
        echo -e "\e[94m  Local install matches the latest git repository...\e[97m"
     fi
-    echo ""
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Finished pulling the latest version of the $ADSB_PROJECTTITLE git repository....\e[39m"
-    echo ""
+    echo -e "\e[92m  Finished pulling the latest version of the ${ADSB_PROJECTTITLE} git repository....\e[39m"
+    echo -e ""
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
     fi
@@ -248,13 +248,13 @@ function Check_Hardware () {
 
 function RandomDelay () {
     if [[ "${DELAY}" = "true" ]] ; then
-        DELAY_TIME=`echo "(( 300 + ( $RANDOM + $RANDOM )) / 20 )" | bc`
+        DELAY_TIME=`echo "(( 300 + ( ${RANDOM} + ${RANDOM} )) / 20 )" | bc`
         DATE=`date`
         echo -e ""
-        echo -e "\e[91m  $ADSB_PROJECTTITLE"
+        echo -e "\e[91m  ${ADSB_PROJECTTITLE}"
         echo -e ""
-        echo -en "\e[92m  Pausing for ${DELAY_TIME} seconds from: \t\e[39m $DATE"
+        echo -en "\e[92m  Pausing for ${DELAY_TIME} seconds from: \t\e[39m ${DATE}"
         echo -e ""
-        sleep $DELAY_TIME
+        sleep ${DELAY_TIME}
     fi
 }
