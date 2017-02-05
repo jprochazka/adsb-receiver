@@ -38,19 +38,19 @@ RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
-DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
-DECODER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
-DECODER_WEBSITE="http://www.pi-in-the-sky.com"
-DECODER_NAME="HAB-LoRa-Gateway"
-DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
-DECODER_RADIO="Please note that a LoRa transceiver connected via SPI is required to use this decoder"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
+COMPONENT_GITHUB="https://github.com/PiInTheSky/lora-gateway"
+COMPONENT_WEBSITE="http://www.pi-in-the-sky.com"
+COMPONENT_NAME="HAB-LoRa-Gateway"
+COMPONENT_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
+COMPONENT_RADIO="Please note that a LoRa transceiver connected via SPI is required to use this decoder"
 
 # Component service script variables.
-DECODER_SERVICE_NAME="lora-gateway"
-DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/romeo-golf/lora-gateway/master/lora-gateway-service"
-DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}-service"
-DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_NAME}"
-DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
+COMPONENT_SERVICE_NAME="lora-gateway"
+COMPONENT_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/romeo-golf/lora-gateway/master/lora-gateway-service"
+COMPONENT_SERVICE_SCRIPT_NAME="${COMPONENT_SERVICE_NAME}-service"
+COMPONENT_SERVICE_SCRIPT_PATH="/etc/init.d/${COMPONENT_SERVICE_NAME}"
+COMPONENT_SERVICE_CONFIG_PATH="/etc/${COMPONENT_SERVICE_SCRIPT_NAME}.conf"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -101,19 +101,19 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${DECODER_NAME}...\e[97m"
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}.\n\n${DECODER_RADIO}.\n\n${DECODER_WEBSITE}\n\nContinue setup by installing ${DECODER_NAME}?" 14 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
+        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
@@ -122,7 +122,7 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 # Required by install script.
 CheckPackage git
@@ -139,7 +139,7 @@ CheckPackage procserv
 CheckPackage telnet
 
 echo -e ""
-echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
+echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
 # Enable I2C.
@@ -154,25 +154,25 @@ CheckReturnCode
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f "${DECODER_SERVICE_SCRIPT_PATH}" ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} stop 2>&1)
+if [[ -f "${COMPONENT_SERVICE_SCRIPT_PATH}" ]] ; then
+    echo -en "\e[33m  Stopping the ${COMPONENT_NAME} service...\e[97m"
+    ACTION=$(sudo /etc/init.d/${COMPONENT_SERVICE_NAME} stop 2>&1)
     CheckReturnCode
 fi
 
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d "${DECODER_BUILD_DIRECTORY}" ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    ACTION=$(mkdir -v ${DECODER_BUILD_DIRECTORY} 2>&1)
+if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
+    echo -en "\e[33m  Creating build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
+    ACTION=$(mkdir -v ${COMPONENT_BUILD_DIRECTORY} 2>&1)
     CheckReturnCode
 fi
 
 # Enter the build directory.
-if [[ ! "${PWD}" = "${DECODER_BUILD_DIRECTORY}" ]] ; then
-    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    cd ${DECODER_BUILD_DIRECTORY}
+if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
+    echo -en "\e[33m  Entering build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
+    cd ${COMPONENT_BUILD_DIRECTORY}
     ACTION=${PWD}
     CheckReturnCode
 fi
@@ -181,14 +181,14 @@ fi
 SSDV_GITHUB_URL="https://github.com/fsphil/ssdv.git"
 SSDV_GITHUB_URL_SHORT=`echo ${SSDV_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-SSDV_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
+SSDV_PROJECT_DIRECTORY="${COMPONENT_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
 if [[ -d "${SSDV_PROJECT_DIRECTORY}/.git/" ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     cd ${SSDV_PROJECT_DIRECTORY}
     ACTION=$(git remote update 2>&1)
     if [[ `git status -uno 2>&1 | grep -c "is behind"` -gt 0 ]] ; then
-        if [[ `ls -l ${DECODER_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
-            ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY} clean)
+        if [[ `ls -l ${COMPONENT_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
+            ACTION=$(make -C ${COMPONENT_PROJECT_DIRECTORY} clean)
         fi
         ACTION=$(git pull 2>&1)
         if [[ -f "${SSDV_PROJECT_DIRECTORY}/Makefile" ]] ; then
@@ -212,35 +212,35 @@ fi
 CheckReturnCode
 
 # Download and compile the decoder itself.
-DECODER_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
-DECODER_GITHUB_URL_SHORT=`echo ${DECODER_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-DECODER_GITHUB_PROJECT=`echo ${DECODER_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/${DECODER_GITHUB_PROJECT}"
-if [[ -d "${DECODER_PROJECT_DIRECTORY}/.git/" ]] ; then
-    echo -en "\e[33m  Updating ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    cd ${DECODER_PROJECT_DIRECTORY}
+COMPONENT_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
+COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+COMPONENT_PROJECT_DIRECTORY="${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
+if [[ -d "${COMPONENT_PROJECT_DIRECTORY}/.git/" ]] ; then
+    echo -en "\e[33m  Updating ${COMPONENT_NAME} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+    cd ${COMPONENT_PROJECT_DIRECTORY}
     ACTION=$(git remote update 2>&1)
     if [[ `git status -uno 2>&1 | grep -c "is behind"` -gt 0 ]] ; then
-        if [[ `ls -l ${DECODER_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
-            ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY} clean)
+        if [[ `ls -l ${COMPONENT_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
+            ACTION=$(make -C ${COMPONENT_PROJECT_DIRECTORY} clean)
         fi
         ACTION=$(git pull 2>&1)
-        if [[ -f "${DECODER_PROJECT_DIRECTORY}/Makefile" ]] ; then
-            ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY})
+        if [[ -f "${COMPONENT_PROJECT_DIRECTORY}/Makefile" ]] ; then
+            ACTION=$(make -C ${COMPONENT_PROJECT_DIRECTORY})
         fi
     fi
 else
-    echo -en "\e[33m  Building ${DECODER_NAME} from \"\e[37m${DECODER_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    ACTION=$(git clone https://${DECODER_GITHUB_URL_SHORT} ${DECODER_PROJECT_DIRECTORY} 2>&1)
-    cd ${DECODER_PROJECT_DIRECTORY}
-    if [[ -f "${DECODER_PROJECT_DIRECTORY}/Makefile" ]] ; then
-        ACTION=$(make -C ${DECODER_PROJECT_DIRECTORY})
+    echo -en "\e[33m  Building ${COMPONENT_NAME} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+    ACTION=$(git clone https://${COMPONENT_GITHUB_URL_SHORT} ${COMPONENT_PROJECT_DIRECTORY} 2>&1)
+    cd ${COMPONENT_PROJECT_DIRECTORY}
+    if [[ -f "${COMPONENT_PROJECT_DIRECTORY}/Makefile" ]] ; then
+        ACTION=$(make -C ${COMPONENT_PROJECT_DIRECTORY})
     fi
 fi
 CheckReturnCode
 
 # Change to DECODER work directory for post-build actions.
-cd ${DECODER_PROJECT_DIRECTORY}
+cd ${COMPONENT_PROJECT_DIRECTORY}
 
 # TODO - Map GPIO pins using WiringPi.
 
@@ -286,12 +286,12 @@ if [[ -z "${HAB_ANTENNA}" ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-DECODER_CONFIG_FILE_NAME="gateway.txt"
-if [[ -s "${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME}" ]] ; then
-    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
+COMPONENT_CONFIG_FILE_NAME="gateway.txt"
+if [[ -s "${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME}" ]] ; then
+    echo -en "\e[33m  Using existing ${COMPONENT_NAME} config file at \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
-    sudo tee ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
+    echo -en "\e[33m  Generating new ${COMPONENT_NAME} config file as \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
+    sudo tee ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
 ###########################################################################################
 #                                                                                         #
 #  CONFIGURATION FILE BASED ON https://github.com/PiInTheSky/lora-gateway#configuration   #
@@ -462,51 +462,51 @@ EOF
 fi
 
 # Update ownership of new config file.
-ACTION=$(chown -v pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME})
+ACTION=$(chown -v pi:pi ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME})
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
 
 # Install service script.
-if [[ -f "${DECODER_SERVICE_SCRIPT_NAME}" ]] ; then
+if [[ -f "${COMPONENT_SERVICE_SCRIPT_NAME}" ]] ; then
     # Check for local copy of service script.
-    if [[ `grep -c "conf=${DECODER_SERVICE_CONFIG_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(cp -v ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH})
-        ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+    if [[ `grep -c "conf=${COMPONENT_SERVICE_CONFIG_PATH}" ${COMPONENT_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+        echo -en "\e[33m  Installing service script at \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(cp -v ${COMPONENT_SERVICE_SCRIPT_NAME} ${COMPONENT_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo chmod -v +x ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
+        echo -en "\e[33m  Invalid service script \"\e[37m${COMPONENT_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
     fi
-elif [[ -n "${DECODER_SERVICE_SCRIPT_URL}" ]] ; then
+elif [[ -n "${COMPONENT_SERVICE_SCRIPT_URL}" ]] ; then
     # Otherwise attempt to download service script.
-    if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
-        ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+    if [[ `echo ${COMPONENT_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
+        echo -en "\e[33m  Downloading service script to \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(sudo curl ${COMPONENT_SERVICE_SCRIPT_URL} -o ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod -v +x ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
+        echo -en "\e[33m  Invalid service script url \"\e[37m${COMPONENT_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n "${DECODER_SERVICE_CONFIG_PATH}" ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
-    sudo tee ${DECODER_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
+if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${COMPONENT_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
+    sudo tee ${COMPONENT_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50100  root ${DECODER_PROJECT_DIRECTORY}  /usr/bin/env TERM="vt220" ./gateway
+50100  root ${COMPONENT_PROJECT_DIRECTORY}  /usr/bin/env TERM="vt220" ./gateway
 EOF
-    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_CONFIG_PATH})
+    ACTION=$(chown -v pi:pi ${COMPONENT_SERVICE_CONFIG_PATH})
 else
     echo -en "\e[33m  Unable to create service config file...\e[97m"
     false
@@ -514,13 +514,13 @@ fi
 CheckReturnCode
 
 # Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${DECODER_SERVICE_NAME} defaults 2>&1)
+echo -en "\e[33m  Configuring ${COMPONENT_NAME} as a service...\e[97m"
+ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} start 2>&1)
+echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
+ACTION=$(sudo /etc/init.d/${COMPONENT_SERVICE_NAME} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE
@@ -532,7 +532,7 @@ ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
-echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE

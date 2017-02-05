@@ -58,6 +58,8 @@ FEEDER_MLAT_SRC_PORT="30005"
 
 FEEDER_MLAT_RETURN_PORT="30104"
 
+# Component service script variables.
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh

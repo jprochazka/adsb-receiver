@@ -38,15 +38,16 @@ RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
-BETA_NAME="Acarsdec"
-BETA_GITHUB_URL="https://github.com/TLeconte/acarsdec.git"
+COMPONENT_NAME="Acarsdec"
+COMPONENT_GITHUB_URL="https://github.com/TLeconte/acarsdec.git"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/Acarsdec"
 
 # Component service script variables.
-BETA_SERVICE_NAME=$(echo ${BETA_NAME} | tr '[A-Z]' '[a-z]')
-BETA_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-golf/acarsdec/master/acarsdec-service"
-BETA_SERVICE_SCRIPT_NAME="${BETA_SERVICE_NAME}-service"
-BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_SERVICE_NAME}"
-BETA_SERVICE_CONFIG_PATH="/etc/${BETA_SERVICE_SCRIPT_NAME}.conf"
+COMPONENT_SERVICE_NAME=$(echo ${COMPONENT_NAME} | tr '[A-Z]' '[a-z]')
+COMPONENT_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-golf/acarsdec/master/acarsdec-service"
+COMPONENT_SERVICE_SCRIPT_NAME="${COMPONENT_SERVICE_NAME}-service"
+COMPONENT_SERVICE_SCRIPT_PATH="/etc/init.d/${COMPONENT_SERVICE_NAME}"
+COMPONENT_SERVICE_CONFIG_PATH="/etc/${COMPONENT_SERVICE_SCRIPT_NAME}.conf"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -65,7 +66,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${BETA_NAME}...\e[97m"
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
@@ -73,7 +74,7 @@ echo -e ""
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${BETA_NAME}...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 # Required by install script.
 CheckPackage git
@@ -82,7 +83,7 @@ CheckPackage curl
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage rtl-sdr
-# Required for Acarsdec.
+# Required by component.
 CheckPackage autoconf
 CheckPackage automake
 CheckPackage libfftw3-3
@@ -91,14 +92,14 @@ CheckPackage libtool
 CheckPackage procserv
 CheckPackage telnet
 echo -e ""
-echo -e "\e[95m  Configuring this device to run the ${BETA_NAME} binaries...\e[97m"
+echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
 ## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f "${BETA_SERVICE_SCRIPT_PATH}" ]] ; then
-    echo -en "\e[33m  Stopping the ${BETA_NAME} service...\e[97m"
-    ACTION=$(sudo ${BETA_SERVICE_SCRIPT_PATH} stop 2>&1)
+if [[ -f "${COMPONENT_SERVICE_SCRIPT_PATH}" ]] ; then
+    echo -en "\e[33m  Stopping the ${COMPONENT_NAME} service...\e[97m"
+    ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -107,39 +108,39 @@ fi
 
 # Download from github and compile.
 if [[ true ]] ; then
-    BETA_GITHUB_URL_SHORT=`echo ${BETA_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
-    BETA_GITHUB_PROJECT=`echo ${BETA_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
-    BETA_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${BETA_GITHUB_PROJECT}"
+    COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
+    COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
+    COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
 
     # Check if already installed and located where we would expect it to be.
-    if [[ -d "${BETA_BUILD_DIRECTORY}/.git/" ]] ; then
+    if [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git/" ]] ; then
         # Then perhaps we can update from github.
-        cd ${BETA_BUILD_DIRECTORY}
+        cd ${COMPONENT_BUILD_DIRECTORY}
         ACTION=$(git remote update 2>&1)
         if [[ `git status -uno | grep -c "is behind"` -gt 0 ]] ; then
             # Local branch is behind remote so update.
-            echo -en "\e[33m  Updating ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+            echo -en "\e[33m  Updating ${COMPONENT_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
             ACTION=$(git pull 2>&1)
             DO_INSTALL_FROM_GIT="true"
         else
-            echo -en "\e[33m  Local ${BETA_GITHUB_PROJECT} repository is up to date with \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+            echo -en "\e[33m  Local ${COMPONENT_GITHUB_PROJECT} repository is up to date with \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
         fi
     else
         # Otherwise clone from github.
-        echo -en "\e[33m  Cloning ${BETA_GITHUB_PROJECT} from \"\e[37m${BETA_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-        ACTION=$(git clone https://${BETA_GITHUB_URL_SHORT} ${BETA_BUILD_DIRECTORY} 2>&1)
+        echo -en "\e[33m  Cloning ${COMPONENT_GITHUB_PROJECT} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
+        ACTION=$(git clone https://${COMPONENT_GITHUB_URL_SHORT} ${COMPONENT_BUILD_DIRECTORY} 2>&1)
         DO_INSTALL_FROM_GIT="true"
     fi
     CheckReturnCode
 
     # Compile and install from source.
     if [[ "${DO_INSTALL_FROM_GIT}" = "true" ]] ; then
-        echo -en "\e[33m  Compiling ${BETA_GITHUB_PROJECT} from source..."
+        echo -en "\e[33m  Compiling ${COMPONENT_GITHUB_PROJECT} from source..."
         # Prepare to build from source.
-        cd ${BETA_BUILD_DIRECTORY}
+        cd ${COMPONENT_BUILD_DIRECTORY}
         # And remove previous binaries.
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
-            ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} clean 2>&1)
+            ACTION=$(sudo make -C ${COMPONENT_BUILD_DIRECTORY} clean 2>&1)
         fi
         # Run bootstrap.
         if [[ -x "bootstrap" ]] ; then
@@ -147,67 +148,67 @@ if [[ true ]] ; then
         fi
         # Configure with CFLAGS.
         if [[ -x "configure" ]] ; then
-            ACTION=$(./configure ${BETA_CFLAGS} 2>&1)
+            ACTION=$(./configure ${COMPONENT_CFLAGS} 2>&1)
         fi
         # Make.
         if [[ -f "Makefile" ]] ; then
-            ACTION=$(make -C ${BETA_BUILD_DIRECTORY} 2>&1)
+            ACTION=$(make -C ${COMPONENT_BUILD_DIRECTORY} 2>&1)
             # Install
             if [[ `grep -c "^install:" Makefile` -gt 0 ]] ; then
-                ACTION=$(sudo make -C ${BETA_BUILD_DIRECTORY} install 2>&1)
+                ACTION=$(sudo make -C ${COMPONENT_BUILD_DIRECTORY} install 2>&1)
             fi
         fi
     else
-        echo -en "\e[33m  ${BETA_GITHUB_PROJECT} is already installed..."
+        echo -en "\e[33m  ${COMPONENT_GITHUB_PROJECT} is already installed..."
     fi
     CheckReturnCode
 
     unset DO_INSTALL_FROM_GIT
-    cd ${BETA_BUILD_DIRECTORY}
+    cd ${COMPONENT_BUILD_DIRECTORY}
 fi
 
 ### INSTALL AS A SERVICE
 
 # Install service script.
-if [[ -f "${BETA_SERVICE_SCRIPT_NAME}" ]] ; then
+if [[ -f "${COMPONENT_SERVICE_SCRIPT_NAME}" ]] ; then
     # Check for local copy of service script.
-    if [[ `grep -c "conf=${BETA_SERVICE_CONFIG_PATH}" ${BETA_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(cp -v ${BETA_SERVICE_SCRIPT_NAME} ${BETA_SERVICE_SCRIPT_PATH})
-        ACTION=$(sudo chmod -v +x ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
+    if [[ `grep -c "conf=${COMPONENT_SERVICE_CONFIG_PATH}" ${COMPONENT_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+        echo -en "\e[33m  Installing service script at \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(cp -v ${COMPONENT_SERVICE_SCRIPT_NAME} ${COMPONENT_SERVICE_SCRIPT_PATH})
+        ACTION=$(sudo chmod -v +x ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${BETA_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
+        echo -en "\e[33m  Invalid service script \"\e[37m${COMPONENT_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
     fi
-elif [[ -n "${BETA_SERVICE_SCRIPT_URL}" ]] ; then
+elif [[ -n "${COMPONENT_SERVICE_SCRIPT_URL}" ]] ; then
     # Otherwise attempt to download service script.
-    if [[ `echo ${BETA_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl -L ${BETA_SERVICE_SCRIPT_URL} -o ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
-        ACTION=$(sudo chmod -v +x ${BETA_SERVICE_SCRIPT_PATH} 2>&1)
+    if [[ `echo ${COMPONENT_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
+        echo -en "\e[33m  Downloading service script to \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(sudo curl -L ${COMPONENT_SERVICE_SCRIPT_URL} -o ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod -v +x ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${BETA_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
+        echo -en "\e[33m  Invalid service script url \"\e[37m${COMPONENT_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${BETA_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n "${BETA_SERVICE_CONFIG_PATH}" ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${BETA_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
-    sudo tee ${BETA_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
+if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${COMPONENT_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
+    sudo tee ${COMPONENT_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50600  pi       ${BETA_PROJECT_DIRECTORY} ./acarsdec    -o 2
+50600  pi       ${COMPONENT_PROJECT_DIRECTORY} ./acarsdec    -o 2
 EOF
-    ACTION=$(chown -v pi:pi ${BETA_SERVICE_CONFIG_PATH})
+    ACTION=$(chown -v pi:pi ${COMPONENT_SERVICE_CONFIG_PATH})
 else
     echo -en "\e[33m  Unable to create service config file...\e[97m"
     false
@@ -215,13 +216,13 @@ fi
 CheckReturnCode
 
 # Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${BETA_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${BETA_SERVICE_NAME} defaults 2>&1)
+echo -en "\e[33m  Configuring ${COMPONENT_NAME} as a service...\e[97m"
+ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
 # Start the DECODER service.
-echo -en "\e[33m  Starting the ${BETA_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${BETA_SERVICE_NAME} start 2>&1)
+echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
+ACTION=$(sudo /etc/init.d/${COMPONENT_SERVICE_NAME} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE
@@ -233,7 +234,7 @@ ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
-echo -e "\e[92m  ${BETA_NAME} setup is complete.\e[39m"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE

@@ -42,6 +42,8 @@ COMPONENT_NAME="Kalibrate"
 COMPONENT_GITHUB_URL="https://github.com/steve-m/kalibrate-rtl.git"
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/Kalibrate"
 
+# Component service script variables.
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh

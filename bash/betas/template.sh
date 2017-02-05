@@ -40,6 +40,8 @@ RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 # Component specific variables.
 COMPONENT_NAME=""
 
+# Component service script variables.
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh

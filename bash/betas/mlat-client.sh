@@ -42,6 +42,8 @@ COMPONENT_NAME="MLAT Client"
 COMPONENT_GITHUB_URL="https://github.com/mutability/mlat-client.git"
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 
+# Component service script variables.
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
