@@ -49,7 +49,7 @@ source $BASH_DIRECTORY/functions.sh
 export PROJECT_TITLE="The ADS-B Receiver Project Installer"
 export PROJECT_GITHUB="https://github.com/jprochazka/adsb-receiver"
 export PROJECT_WEBSITE="https://www.adsbreceiver.net"
-export ADSB_PROJECTTITLE="$PROJECT_TITLE"
+export RECEIVER_PROJECT_TITLE="$PROJECT_TITLE"
 TERMINATEDMESSAGE="  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
 
 # Set git branch to master if not already specified.
@@ -94,7 +94,7 @@ RandomDelay
 
 ### ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 
-if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78) then
+if (whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78) then
     UpdateOperatingSystem
 fi
 
@@ -113,13 +113,13 @@ fi
 ### INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\n ${PROJECT_GITHUB}" 20 65
+whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\n ${PROJECT_GITHUB}" 20 65
 
 # Unset any exported variables.
 unset PROJECT_TITLE
 unset PROJECT_GITHUB
 unset PROJECT_WEBSITE
-unset ADSB_PROJECTTITLE
+unset RECEIVER_PROJECT_TITLE
 
 # Remove the FEEDERCHOICES file created by whiptail.
 if [[ -f FEEDERCHOICES ]] ; then

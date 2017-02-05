@@ -50,12 +50,12 @@ source $BASHDIRECTORY/functions.sh
 
 clear
 echo -e ""
-echo -e "\e[91m  $ADSB_PROJECTTITLE"
+echo -e "\e[91m  $RECEIVER_PROJECT_TITLE"
 echo -e ""
 echo -e "\e[92m  Setting up FlightAware's ${DECODER_NAME}..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  ${DECODER_WEBSITE}  \n\nContinue setup by installing FlightAware's ${DECODER_NAME}?" 13 78
+whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  ${DECODER_WEBSITE}  \n\nContinue setup by installing FlightAware's ${DECODER_NAME}?" 13 78
 CONTINUESETUP=$?
 if [[ $CONTINUESETUP = 1 ]] ; then
     # Setup has been halted by the user.
@@ -169,31 +169,31 @@ mv $PIAWAREBUILDDIRECTORY/piaware_*.changes $PIAWAREBUILDDIRECTORY/packages/
 
 ### CONFIGURE FLIGHTAWARE
 
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting this page:\n\n  http://flightaware.com/adsb/piaware/claim" 11 78
+whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting this page:\n\n  http://flightaware.com/adsb/piaware/claim" 11 78
 # Ask for the users FlightAware login.
-FLIGHTAWARELOGIN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
+FLIGHTAWARELOGIN=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
 if [ ! $FLIGHTAWARELOGIN = "" ]; then
     # If the user supplied their FlightAware login continue with the device claiming process.
     FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
     while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-        FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
     done
     FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password"
     while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-        FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+        FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
     done
     while [ ! $FLIGHTAWAREPASSWORD1 = $FLIGHTAWAREPASSWORD2 ]; do
         FLIGHTAWAREPASSWORD1=""
         FLIGHTAWAREPASSWORD2=""
         # Display an error message if the passwords did not match.
-        whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+        whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
         FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password (REQUIRED)"
         while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-            FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+            FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
         done
         FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password (REQUIRED)"
         while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-            FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+            FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
         done
     done
 
@@ -212,13 +212,13 @@ if [ ! $FLIGHTAWARELOGIN = "" ]; then
     echo -e ""
 else
     # Display a message to the user stating they need to manually claim their device.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting this page:\n\n  http://flightaware.com/adsb/piaware/claim" 10 78
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting this page:\n\n  http://flightaware.com/adsb/piaware/claim" 10 78
 fi
 
 ### SETUP COMPLETE
 
 # Enter into the project root directory.
-echo -e "\e[94m  Entering the $ADSB_PROJECTTITLE root directory...\e[97m"
+echo -e "\e[94m  Entering the $RECEIVER_PROJECT_TITLE root directory...\e[97m"
 cd $PROJECTROOTDIRECTORY
 
 echo -e ""

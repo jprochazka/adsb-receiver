@@ -50,12 +50,12 @@ source $BASHDIRECTORY/functions.sh
 
 clear
 echo -e ""
-echo -e "\e[91m  $ADSB_PROJECTTITLE"
+echo -e "\e[91m  $RECEIVER_PROJECT_TITLE"
 echo -e ""
 echo -e "\e[92m  Setting up ${DECODER_NAME} ...."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  $DECODER_WEBSITE \n\nWould you like to continue setup by installing ${DECODER_NAME} ?" 9 78
+whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} is an experimental demodulator/decoder for 978MHz UAT signals.\n\n  $DECODER_WEBSITE \n\nWould you like to continue setup by installing ${DECODER_NAME} ?" 9 78
 CONTINUESETUP=$?
 
 if [[ $CONTINUESETUP = 1 ]] ; then
@@ -99,7 +99,7 @@ if [[ -d $BUILDDIRECTORY_DUMP978 ]] ; then
 fi
 
 # Clone the dump978 Git repository.
-echo -e "\e[94m  Entering the $ADSB_PROJECTTITLE build directory...\e[97m"
+echo -e "\e[94m  Entering the $RECEIVER_PROJECT_TITLE build directory...\e[97m"
 cd $BUILDDIRECTORY
 echo -e "\e[94m  Cloning the ${DECODER_NAME} Git repository locally...\e[97m"
 echo -e ""
@@ -163,15 +163,15 @@ echo -e ""
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     # The dump1090-mutability package appear to be installed.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "RTL-SDR Device Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run ${DECODER_NAME} in tandem with dump1090-mutability you will need to specifiy which RTL-SDR device each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "RTL-SDR Device Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run ${DECODER_NAME} in tandem with dump1090-mutability you will need to specifiy which RTL-SDR device each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
     DUMP1090_DEVICE_TITLE="Dump1090 RTL-SDR Device"
     while [[ -z $DUMP1090_DEVICE_ID ]] ; do
-        DUMP1090_DEVICE_ID=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DUMP1090_DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR device." 8 78 3>&1 1>&2 2>&3)
+        DUMP1090_DEVICE_ID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$DUMP1090_DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR device." 8 78 3>&1 1>&2 2>&3)
         DUMP1090_DEVICE_TITLE="Dump1090 RTL-SDR Device (REQUIRED)"
     done
     DUMP978_DEVICE_TITLE="Dump978 RTL-SDR Device"
     while [[ -z $DUMP978_DEVICE_ID ]] ; do
-        DUMP978_DEVICE_ID=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$DUMP978_DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR device." 8 78 3>&1 1>&2 2>&3)
+        DUMP978_DEVICE_ID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$DUMP978_DEVICE_TITLE" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR device." 8 78 3>&1 1>&2 2>&3)
         DUMP978_DEVICE_TITLE="Dump978 RTL-SDR Device (REQUIRED)"
     done
 
@@ -206,11 +206,11 @@ if [[ -z $RECEIVER_LATITUDE ]] || [[ -z $RECEIVER_LONGITUDE ]] ; then
     # If dump1090-mutability is not installed ask for the latitude and longitude of this receiver.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude (OPTIONAL)" 
 #    while [[ -z $RECEIVER_LATITUDE ]] ; do
-        RECEIVER_LATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVER_LATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)\n\nLeave blank and select <Ok> to skip." 12 78 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$RECEIVER_LATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)\n\nLeave blank and select <Ok> to skip." 12 78 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
 #    done
     while [[ -z $RECEIVER_LONGITUDE ]] ; do
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVER_LONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$RECEIVER_LONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 fi
@@ -262,7 +262,7 @@ sudo nohup $BUILDDIRECTORY_DUMP978/dump978-maint.sh > /dev/null 2>&1 &
 ### SETUP COMPLETE
 
 # Enter into the project root directory.
-echo -e "\e[94m  Entering the $ADSB_PROJECTTITLE root directory...\e[97m"
+echo -e "\e[94m  Entering the $RECEIVER_PROJECT_TITLE root directory...\e[97m"
 cd $PROJECTROOTDIRECTORY
 
 echo -e ""

@@ -35,7 +35,7 @@
 # UPDATE REPOSITORY PACKAGE LISTS
 function AptUpdate() {
     clear
-    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
     echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
@@ -54,7 +54,7 @@ function AptUpdate() {
 # UPDATE THE OPERATING SYSTEM
 function UpdateOperatingSystem() {
     clear
-    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
@@ -122,7 +122,7 @@ function CheckPackage {
 # CHECK PREREQUISITES
 function CheckPrerequisites() {
     clear
-    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
     echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
@@ -142,9 +142,9 @@ function CheckPrerequisites() {
 # UPDATE GIT REPOSITORY
 function UpdateRepository() {
     clear
-    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
-    echo -e "\e[92m  Pulling the latest version of the ${ADSB_PROJECTTITLE} git repository..."
+    echo -e "\e[92m  Pulling the latest version of the ${RECEIVER_PROJECT_TITLE} git repository..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo -e ""
     echo -e "\e[94m  Switching to branch ${PROJECTBRANCH}...\e[97m"
@@ -161,7 +161,7 @@ function UpdateRepository() {
     fi
     echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Finished pulling the latest version of the ${ADSB_PROJECTTITLE} git repository....\e[39m"
+    echo -e "\e[92m  Finished pulling the latest version of the ${RECEIVER_PROJECT_TITLE} git repository....\e[39m"
     echo -e ""
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
@@ -267,7 +267,7 @@ function RandomDelay () {
         DELAY_TIME=`echo "(( 300 + ( ${RANDOM} + ${RANDOM} )) / 20 )" | bc`
         DATE=`date`
         echo -e ""
-        echo -e "\e[91m  ${ADSB_PROJECTTITLE}"
+        echo -e "\e[91m  ${RECEIVER_PROJECT_TITLE}"
         echo -e ""
         echo -en "\e[92m  Pausing for ${DELAY_TIME} seconds from: \t\e[39m ${DATE}"
         echo -e ""

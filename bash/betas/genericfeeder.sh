@@ -74,13 +74,13 @@ fi
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
-    echo -e "\n\e[91m  ${ADSB_PROJECTTITLE}"
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
 echo -e "\e[92m  Setting up the Generic Feeder..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Generic Feeder Setup" --yesno "Some useful text goes here.\n\n  Continue setting up the Generic Feeder?" 12 78
+whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Generic Feeder Setup" --yesno "Some useful text goes here.\n\n  Continue setting up the Generic Feeder?" 12 78
 CONTINUESETUP=$?
 if [ "$CONTINUESETUP" = 1 ]; then
     # Setup has been halted by the user.
