@@ -31,6 +31,17 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+## SET INSTALLATION VARIABLES
+
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+
+# Component specific variables.
+
+COMPONENT_NAME="Duck DNS"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/duckdns"
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -39,11 +50,6 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
-
-# Component specific variables.
-
-COMPONENT_NAME="Duck DNS"
-COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/duckdns"
 
 ### BEGIN SETUP
 

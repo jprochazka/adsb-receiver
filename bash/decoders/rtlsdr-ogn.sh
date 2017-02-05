@@ -31,12 +31,16 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+## SET INSTALLATION VARIABLES
+
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
-
-## SET INSTALLATION VARIABLES
 
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then

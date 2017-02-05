@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2017 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-#######################################################################
+#################################################################################
 # Detect if a package is installed and if not attempt to install it.
 
 function CheckPackage {
@@ -88,7 +88,7 @@ function CheckPackage {
 function ChangeConfig {
     # Use sed to locate the "KEY" then replace the "VALUE", the portion after the equals sign, in the specified "FILE".
     # This function should work with any configuration file with settings formated as KEY="VALUE".
-    sudo sed -i "s/\($1 *= *\).*/\1\"$2\"/" $3
+    sudo sed -i -e "s/\($1 *= *\).*/\1\"$2\"/" $3
 }
 
 function GetConfig {
@@ -107,6 +107,7 @@ function UncommentConfig {
     sudo sed -i -e "/$1/s/^#//" $2
 }
 
+#################################################################################
 # The following function is used to clean up the log files by removing
 # any color escaping sequences from the log file so it is easier to read.
 # There are other lines not needed which can be removed as well.
