@@ -33,8 +33,8 @@
 
 ### INCLUDE EXTERNAL SCRIPTS
 
-source ${RECEIVER_BASH_DIRECTORY}/variables.sh
-source ${RECEIVER_BASH_DIRECTORY}/functions.sh
+source "${RECEIVER_BASH_DIRECTORY}"/variables.sh
+source "${RECEIVER_BASH_DIRECTORY}"/functions.sh
 
 ## SET INSTALLATION VARIABLES
 
@@ -72,16 +72,6 @@ function CheckReturnCode () {
         echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
         echo -e "\e[39m  ${ACTION}\n"
         false
-    fi
-}
-
-#################################################################################
-# Detect CPU Architecture.
-
-function Check_CPU () {
-    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
-        echo -en "\e[33m  Detecting CPU architecture...\e[97m"
-        CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
     fi
 }
 
