@@ -31,18 +31,13 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-### INCLUDE EXTERNAL SCRIPTS
-
-source "${RECEIVER_BASH_DIRECTORY}"/variables.sh
-source "${RECEIVER_BASH_DIRECTORY}"/functions.sh
-
 ## SET INSTALLATION VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Decoder specific variables.
+# Component specific variables.
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
 DECODER_GITHUB="https://github.com/glidernet/ogn-rf"
 DECODER_WEBSITE="http://wiki.glidernet.org"
@@ -50,7 +45,7 @@ DECODER_NAME="RTLSDR-OGN"
 DECODER_DESC="is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker."
 DECODER_RADIO="Please note that a dedicated RTL-SDR dongle is required to use this decoder"
 
-# Decoder service script variables.
+# Component service script variables.
 DECODER_SERVICE_NAME="rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
 DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}"
@@ -74,6 +69,11 @@ function CheckReturnCode () {
         false
     fi
 }
+
+### INCLUDE EXTERNAL SCRIPTS
+
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
