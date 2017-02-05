@@ -37,7 +37,12 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-## INCLUDE EXTERNAL SCRIPTS
+# Component specific variables.
+COMPONENT_NAME="MLAT Client"
+COMPONENT_GITHUB_URL="https://github.com/mutability/mlat-client.git"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
+
+### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
@@ -47,29 +52,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-# Component specific variables.
-COMPONENT_NAME="MLAT Client"
-COMPONENT_GITHUB_URL="https://github.com/mutability/mlat-client.git"
-COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
-
-#################################################################################
-# Checks return code.
-# Should be moved to functions.sh.
-
-function CheckReturnCode () {
-    local LINE=$((`stty size | awk '{print $1}'` - 1))
-    local COL=$((`stty size | awk '{print $2}'` - 8))
-    tput cup "${LINE}" "${COL}"
-    if [[ $? -eq 0 ]] ; then
-        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
-    else
-        echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
-        echo -e "\e[39m  ${ACTION}\n"
-        false
-    fi
-}
-
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
@@ -200,7 +183,7 @@ if [[ true ]] ; then
     unset DO_INSTALL_FROM_GIT
 fi
 
-## SETUP COMPLETE
+### SETUP COMPLETE
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"

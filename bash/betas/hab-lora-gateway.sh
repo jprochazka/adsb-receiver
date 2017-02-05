@@ -37,7 +37,7 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Decoder specific variables.
+# Component specific variables.
 DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
 DECODER_GITHUB="https://github.com/PiInTheSky/lora-gateway"
 DECODER_WEBSITE="http://www.pi-in-the-sky.com"
@@ -45,7 +45,7 @@ DECODER_NAME="HAB-LoRa-Gateway"
 DECODER_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
 DECODER_RADIO="Please note that a LoRa transceiver connected via SPI is required to use this decoder"
 
-# Decoder service script variables.
+# Component service script variables.
 DECODER_SERVICE_NAME="lora-gateway"
 DECODER_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/romeo-golf/lora-gateway/master/lora-gateway-service"
 DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}-service"
@@ -57,21 +57,10 @@ DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-#################################################################################
-# Checks return code.
-
-function CheckReturnCode () {
-    local LINE=$((`stty size | awk '{print $1}'` - 1))
-    local COL=$((`stty size | awk '{print $2}'` - 8))
-    tput cup "${LINE}" "${COL}"
-    if [[ $? -eq 0 ]] ; then
-        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
-    else
-        echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
-        echo -e "\e[39m  ${ACTION}\n"
-        false
-    fi
-}
+# Source the automated install configuration file if this is an automated installation.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
+fi
 
 #################################################################################
 # Check if I2C is enabled, if not use raspi-config to enable it.
@@ -457,7 +446,7 @@ DIO5_0=26
 #DIO0_1=6
 
 #       DIO5_1=         <WiringPi pin> 	DIO5
-#DIO5_1=5 
+#DIO5_1=5
 
 #	UplinkTime_1=	<seconds>	When to send any uplink messages, measured as seconds into each cycle.
 #UplinkTime_1=5

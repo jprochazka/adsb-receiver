@@ -208,6 +208,22 @@ function CleanLogFile {
 }
 
 #################################################################################
+# Display Done/Error based on return code of last action.
+
+function CheckReturnCode () {
+    local LINE=$((`stty size | awk '{print $1}'` - 1))
+    local COL=$((`stty size | awk '{print $2}'` - 8))
+    tput cup "${LINE}" "${COL}"
+    if [[ $? -eq 0 ]] ; then
+        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
+    else
+        echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
+        echo -e "\e[39m  ${ACTION}\n"
+        false
+    fi
+}
+
+#################################################################################
 # Detect CPU Architecture.
 
 function Check_CPU () {

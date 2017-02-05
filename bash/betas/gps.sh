@@ -31,21 +31,25 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-#################################################################################
-# Display Done/Error based on return code of last action.
+### VARIABLES
 
-function Check_Return_Code () {
-    local LINE=$((`stty size | awk '{print $1}'` - 1))
-    local COL=$((`stty size | awk '{print $2}'` - 8))
-    tput cup "${LINE}" "${COL}"
-    if [[ $? -eq 0 ]] ; then
-        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
-    else
-        echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
-        echo -e "\e[39m  ${ACTION}\n"
-        false
-    fi
-}
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+
+# Component specific variables.
+
+### INCLUDE EXTERNAL SCRIPTS
+
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
+
+# Source the automated install configuration file if this is an automated installation.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
+fi
+
+# To be moved to functions.sh
 
 #################################################################################
 # Apt install function.
@@ -491,7 +495,7 @@ echo -en "\n\e[1m  Installing GPS based NTP time server\e[0m\n\n\n"
 for PACKAGE in ${PACKAGES} ; do
     echo -en "  Installing package ${PACKAGE}..."
     CheckPackage ${PACKAGE}
-    Check_Return_Code
+    CheckReturnCode
 done
 
 ### DISABLE SERVICES
@@ -500,31 +504,31 @@ for SERVICE in ${SERVICES_DISABLE} ; do
     echo -en "  Disabling service ${SERVICE}..."
     Service_Stop ${SERVICE}
     Service_Disable ${SERVICE}
-    Check_Return_Code
+    CheckReturnCode
 done
 
 ### ENABLE SERIAL PORTS
 
 Enable_Serial 
-Check_Return_Code
+CheckReturnCode
 
 ### DISABLE BLUETOOTH
 
 Check_Hardware
-Check_Return_Code
+CheckReturnCode
 
 if [[ -n "${HARDWARE_REVISION}" ]] ; then
     # Swap serial ports on Raspberry Pi 3.
     if [[ "${HARDWARE_REVISION}" = "a02082" ]] || [[ "${HARDWARE_REVISION}" = "a22082" ]] ; then
         Disable_Bluetooth
-        Check_Return_Code
+        CheckReturnCode
     fi
 fi
 
 ### CONFIGURE PPS
 
 Enable_PPS
-Check_Return_Code
+CheckReturnCode
 
 ### TEST GPS AND PPS SIGNALS
 
@@ -534,14 +538,14 @@ else
     if [[ -n "${GPS_TTY_DEV}" ]] && [[ -n "${GPS_PPS_DEV}" ]] ; then 
         # Check GPS signal.
         Check_GPS_TTY
-        Check_Return_Code
+        CheckReturnCode
         # And PPS signal.
         Check_GPS_PPS
-        Check_Return_Code
+        CheckReturnCode
     elif [[ -n "${GPS_TTY_DEV}" ]] ; then
         # Otherwise test GPS signal.
         Check_GPS_TTY
-        Check_Return_Code
+        CheckReturnCode
     else
        echo -en "  Unable to run GPS or PPS signal tests..."
     fi
@@ -550,17 +554,17 @@ fi
 ### CREATE SYMLINKS TO GPS AND PPS DEVICES
 
 Create_UDEV_Symlink
-Check_Return_Code
+CheckReturnCode
 
 ### GPSD SERVICE
 
 Configure_Service_GPS
-Check_Return_Code
+CheckReturnCode
  
 ### PREVENT DHCP FROM UPDATING NTP CONFIG
 
 Remove_DHCP_Hooks
-Check_Return_Code
+CheckReturnCode
 
 ### INSTALL NTP WITH PPS SUPPORT
 
@@ -575,30 +579,30 @@ MAKE_CFLAGS="-j4"
 
 # Remove system package.
 Apt_Remove ntp
-Check_Return_Code
+CheckReturnCode
 
 # Prevent it from being reinstalled.
 Apt_Hold ntp
-Check_Return_Code
+CheckReturnCode
 
 # Make build directory.
 Make_Dir ${NTP_SOURCE_DIR}
-Check_Return_Code
+CheckReturnCode
 
 # Check if existing source exits and matches expected MD5, if not then download.
-until (Verify_Source_NTP && Check_Return_Code) ; do
+until (Verify_Source_NTP && CheckReturnCode) ; do
     Download_Source_NTP
-    Check_Return_Code
+    CheckReturnCode
     sleep 5
 done
 
 # Unpack source.
 Unpack_Source_NTP
-Check_Return_Code
+CheckReturnCode
 
 # Compile soure.
 Compile_Source_NTP
-Check_Return_Code
+CheckReturnCode
 
 ### RENABLE SERVICES
 
@@ -606,7 +610,7 @@ for SERVICE in ${SERVICES_ENABLE} ; do
     echo -en "  Enabling service ${SERVICE}..."
     Service_Enable ${SERVICE}
     Service_Start ${SERVICE}
-    Check_Return_Code
+    CheckReturnCode
 done
 
 ### UNSURE IF REQUIRED
@@ -614,7 +618,7 @@ done
 if [[ ! -L "/etc/systemd/system/multi-user.target.wants/gpsd.service" ]] ; then
     echo -en "  Possible fix for GPSd failing to launch on startup, TBC..."
     ACTION=$(sudo ln -s /lib/systemd/system/gpsd.service /etc/systemd/system/multi-user.target.wants/ 2>&1)
-    Check_Return_Code
+    CheckReturnCode
 fi
 
 ### SETUP COMPLETE

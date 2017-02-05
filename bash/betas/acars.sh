@@ -37,42 +37,28 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Decoder specific variables.
+# Component specific variables.
 BETA_NAME="Acarsdec"
 BETA_GITHUB_URL="https://github.com/TLeconte/acarsdec.git"
 
-# Decoder service script variables.
+# Component service script variables.
 BETA_SERVICE_NAME=$(echo ${BETA_NAME} | tr '[A-Z]' '[a-z]')
 BETA_SERVICE_SCRIPT_URL="https://raw.githubusercontent.com/Romeo-golf/acarsdec/master/acarsdec-service"
 BETA_SERVICE_SCRIPT_NAME="${BETA_SERVICE_NAME}-service"
 BETA_SERVICE_SCRIPT_PATH="/etc/init.d/${BETA_SERVICE_NAME}"
 BETA_SERVICE_CONFIG_PATH="/etc/${BETA_SERVICE_SCRIPT_NAME}.conf"
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
-
-# Should be moved to functions.sh.
-function CheckReturnCode () {
-    local LINE=$((`stty size | awk '{print $1}'` - 1))
-    local COL=$((`stty size | awk '{print $2}'` - 8))
-    tput cup "${LINE}" "${COL}"
-    if [[ $? -eq 0 ]] ; then
-        echo -e "\e[97m[\e[32mDone\e[97m]\e[39m\n"
-    else
-        echo -e "\e[97m[\e[31mError\e[97m]\e[39m\n"
-        echo -e "\e[39m  ${ACTION}\n"
-        false
-    fi
-}
 
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
@@ -238,7 +224,7 @@ echo -en "\e[33m  Starting the ${BETA_NAME} service...\e[97m"
 ACTION=$(sudo /etc/init.d/${BETA_SERVICE_NAME} start 2>&1)
 CheckReturnCode
 
-## SETUP COMPLETE
+### SETUP COMPLETE
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
