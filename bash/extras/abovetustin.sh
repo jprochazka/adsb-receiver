@@ -245,7 +245,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
-        if [[ `grep -c "^latitude =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
+        if [[ `grep "^latitude = " ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
             RECEIVER_LATITUDE=$(grep "^latitude =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
             RECEIVER_LATITUDE_SOURCE=", the value below is configured in AboveTustin"
         elif [[ -s "/etc/default/dump1090-mutability" ]] && [[ `grep -c "^LAT =" /etc/default/dump1090-mutability` -gt 0 ]] ; then
@@ -259,7 +259,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
-        if [[ `grep -c "^longitude =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
+        if [[ `grep "^longitude = " ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
             RECEIVER_LONGITUDE=$(grep "^longitude =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
             RECEIVER_LONGITUDE_SOURCE=", the value below is configured in AboveTustin"
         elif [[ -s "/etc/default/dump1090-mutability" ]] && [[ `grep -c "^LON =" /etc/default/dump1090-mutability` -gt 0 ]] ; then

@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2016-2017, Joseph A. Prochazka & Romeo Golf                         #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -54,8 +54,9 @@ echo -e "\e[92m  Setting up RTL-SDR OGN...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
+
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Setup" --yesno "The objective of the Open Glider Network is to create and maintain a unified tracking platform for gliders and other GA aircraft. Currently OGN focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nPlease note you will need a dedicated RTL-SDR dongle to use this software.\n\n  http://wiki.glidernet.org\n\nContinue setup by installing RTL-SDR OGN?" 14 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Setup" --yesno "RTL-SDR OGN is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nPlease note you will need a dedicated RTL-SDR dongle to use this software.\n\n  http://wiki.glidernet.org\n\nContinue setup by installing RTL-SDR OGN?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -93,9 +94,9 @@ else
 fi
 
 # If either dump1090 or dump978 is installed we must assign RTL-SDR dongles for each of these decoders.
-if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true" ]] ; then
+if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "true" ]] ; then
     # Check if Dump1090 is installed.
-    if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] ; then
+    if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
         # The dump1090-mutability package appear to be installed.
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be used for dump1090.
@@ -109,7 +110,7 @@ if [[ ${DUMP1090_IS_INSTALLED} = "true" ]] || [[${DUMP978_IS_INSTALLED} = "true"
         fi
     fi
     # Check if Dump978 is installed.
-    if [[ ${DUMP978_IS_INSTALLED} = "true" ]] ; then
+    if [[ "${DUMP978_IS_INSTALLED}" = "true" ]] ; then
         # The dump978 binaries appear to exist on this device.
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Ask the user which USB device is to be use for dump978.
@@ -210,46 +211,55 @@ if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn" ]] ; then
 fi
 
 # Enter the build directory.
-echo -e "\e[94m  Entering the directory (${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn)...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
+if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn" ]] ; then
+    echo -e "\e[94m  Entering the directory (${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn)...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
+fi
 
-# Download and extract the proper binaries.
-case `uname -m` in
+# Detect CPU Architecture.
+Check_CPU
+
+# Identify the correct binaries to download.
+case ${CPU_ARCHITECTURE} in
     "armv6l")
-        # Raspberry Pi 1
+        # Raspberry Pi 1.
+        DECODER_BINARY_URL="http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz"
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN RPI-GPU binaries...\e[97m"
         echo -e ""
-        wget http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-RPI-GPU-latest.tgz
+        wget "${DECODER_BINARY_URL}" -O "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-RPI-GPU-latest.tgz"
         echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN RPI-GPU binaries from the archive...\e[97m"
         echo -e ""
         tar xvzf rtlsdr-ogn-bin-RPI-GPU-latest.tgz -C ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
         ;;
     "armv7l")
-        # Raspberry Pi 2
+        # Raspberry Pi 2 onwards.
+        DECODER_BINARY_URL="http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz"
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN ARM binaries...\e[97m"
         echo -e ""
-        wget http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-ARM-latest.tgz
+        wget "${DECODER_BINARY_URL}" -O "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-ARM-latest.tgz"
         echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN ARM binaries from the archive...\e[97m"
         echo -e ""
         tar xvzf rtlsdr-ogn-bin-ARM-latest.tgz -C ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
         ;;
     "x86_64")
-        # 64 Bit
+        # 64 Bit.
+        DECODER_BINARY_URL="http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz"
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN x64 binaries...\e[97m"
         echo -e ""
-        wget http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-x64-latest.tgz
+        wget "${DECODER_BINARY_URL}" -O "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-x64-latest.tgz"
         echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN x64 binaries from the archive...\e[97m"
         echo -e ""
         tar xvzf rtlsdr-ogn-bin-x64-latest.tgz -C ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
         ;;
     *)
-        # 32 Bit (default install if no others matched)
+        # 32 Bit (default install if no others matched).
+        DECODER_BINARY_URL="http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz"
         echo -e "\e[94m  Downloading the latest RTL-SDR OGN x86 binaries...\e[97m"
         echo -e ""
-        wget http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz -O ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-x86-latest.tgz
+        wget "${DECODER_BINARY_URL}" -O "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-bin-x86-latest.tgz"
         echo -e ""
         echo -e "\e[94m  Extracting the latest RTL-SDR OGN x86 binaries from the archive...\e[97m"
         echo -e ""
@@ -282,9 +292,9 @@ if [[ ! -c "gpu_dev" ]] ; then
     # Check if kernel v4.1 or higher is being used.
     echo -e "\e[94m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
-    KERNEL_VERSION="`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`"
-    #
-    if [[ ${KERNEL_VERSION} < 4.1 ]] ; then
+    KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
+
+    if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -e "\e[94m  Executing mknod for older kernels...\e[97m"
         sudo mknod gpu_dev c 100 0
@@ -298,10 +308,13 @@ fi
 ### CREATE THE CONFIGURATION FILE
 
 
-#######################################################
-# CREATE THE CONFIGURATION FILE                       #
-# http://wiki.glidernet.org/wiki:receiver-config-file #
-#######################################################
+#########################################################
+#                                                       #
+#             CREATE THE CONFIGURATION FILE             #
+#                                                       #
+#  http://wiki.glidernet.org/wiki:receiver-config-file  #
+#                                                       #
+#########################################################
 
 
 ### INSTALL AS A SERVICE
@@ -311,10 +324,7 @@ echo -e ""
 sudo wget http://download.glidernet.org/common/service/rtlsdr-ogn -O /etc/init.d/rtlsdr-ogn
 sudo chmod +x /etc/init.d/rtlsdr-ogn
 
-#################
-# ASSIGN DEVICE #
-#################
-
+# Generate and install service script configuration file.
 echo -e "\e[94m  Creating the file /etc/rtlsdr-ogn.conf...\e[97m"
 echo -e ""
 sudo tee /etc/rtlsdr-ogn.conf > /dev/null <<EOF
@@ -327,21 +337,22 @@ sudo tee /etc/rtlsdr-ogn.conf > /dev/null <<EOF
 50001  pi ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn    ./ogn-decode rtlsdr-ogn.conf
 EOF
 
+# Configure DECODER as a service.
 echo -e "\e[94m  Setting up rtlsdr-ogn as a service...\e[97m"
 echo -e ""
 sudo update-rc.d rtlsdr-ogn defaults
 
+# Start the DECODER service.
 echo -e "\e[94m  Starting the rtlsdr-ogn service...\e[97m"
 echo -e ""
 sudo service rtlsdr-ogn start
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY}
 
-echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  RTL-SDR OGN setup is complete.\e[39m"
 echo -e ""
