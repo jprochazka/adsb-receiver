@@ -39,6 +39,17 @@ RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
 
+PACKAGES="gpsd gpsd-clients libcap-dev libssl-dev ntpdate pps-tools python-gps texinfo timelimit"
+SERVICES_DISABLE="hciuart serial-getty@ttyAMA0.service serial-getty@ttyS0.service ntp.service gpsd.socket gpsd.service"
+SERVICES_ENABLE="gpsd.service ntp.service"
+BOOT_CONFIG="/boot/config.txt"
+GPS_TTY_DEV="ttyAMA0"
+GPS_PPS_DEV="pps0"
+GPS_SYMLINK_RULE="/etc/udev/rules.d/10-pps.rules"
+GPS_SERVICE_CONFIG="/etc/default/gpsd"
+NTP_DHCP_HOOK="/lib/dhcpcd/dhcpcd-hooks/50-ntp.conf"
+NTP_DHCP_FILE="/var/lib/ntp/ntp.conf.dhcp"
+
 # Component service script variables.
 
 ### INCLUDE EXTERNAL SCRIPTS
@@ -455,7 +466,7 @@ function Compile_Source_NTP () {
     # Requires: ${NTP_SOURCE_DIR} ${NTP_SOURCE_VERSION} ${NTP_SOURCE_CFLAGS}
     if [[ -d "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}" ]] ; then
         echo -en "  Compiling \"${NTP_SOURCE_VERSION}\" from source..."
-        cd "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}"
+        cd "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}" 2>&1
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
             ACTION=$(sudo make -C "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}" clean 2>&1)
         fi
@@ -473,20 +484,6 @@ function Compile_Source_NTP () {
         false
     fi
 }
-
-
-### VARIABLES
-
-PACKAGES="gpsd gpsd-clients libcap-dev libssl-dev ntpdate pps-tools python-gps texinfo timelimit"
-SERVICES_DISABLE="hciuart serial-getty@ttyAMA0.service serial-getty@ttyS0.service ntp.service gpsd.socket gpsd.service"
-SERVICES_ENABLE="gpsd.service ntp.service"
-BOOT_CONFIG="/boot/config.txt"
-GPS_TTY_DEV="ttyAMA0"
-GPS_PPS_DEV="pps0"
-GPS_SYMLINK_RULE="/etc/udev/rules.d/10-pps.rules"
-GPS_SERVICE_CONFIG="/etc/default/gpsd"
-NTP_DHCP_HOOK="/lib/dhcpcd/dhcpcd-hooks/50-ntp.conf"
-NTP_DHCP_FILE="/var/lib/ntp/ntp.conf.dhcp"
 
 ### START CONFIGURATION
 
@@ -615,7 +612,7 @@ for SERVICE in ${SERVICES_ENABLE} ; do
     CheckReturnCode
 done
 
-### UNSURE IF REQUIRED
+# Not sure if this is reqired, but was mentioned in several guides..
 
 if [[ ! -L "/etc/systemd/system/multi-user.target.wants/gpsd.service" ]] ; then
     echo -en "  Possible fix for GPSd failing to launch on startup, TBC..."
@@ -628,7 +625,7 @@ fi
 # Return to the project root directory.
 if [[ ! "${PWD}" = "${RECEIVER_ROOT_DIRECTORY}" ]] ; then
     echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-    cd ${RECEIVER_ROOT_DIRECTORY}
+    cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
     CheckReturnCode
 fi
 

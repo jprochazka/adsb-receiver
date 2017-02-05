@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2016-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2016-2017, Joseph A. Prochazka & Romeo Golf                         #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -39,6 +39,8 @@ RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
 COMPONENT_NAME=""
+COMPONENT_GITHUB_URL=""
+COMPONENT_BUILD_DIRECTORY=""
 
 # Component service script variables.
 
@@ -63,7 +65,6 @@ echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-#
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
@@ -80,7 +81,7 @@ echo -e ""
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 ACTION=${PWD}
 CheckReturnCode
 

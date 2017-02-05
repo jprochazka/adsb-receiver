@@ -65,7 +65,6 @@ echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-#
 
 ## CHECK FOR PREREQUISITE PACKAGES
 

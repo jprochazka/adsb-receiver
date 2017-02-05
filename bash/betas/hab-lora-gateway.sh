@@ -38,10 +38,11 @@ RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
-COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
-COMPONENT_GITHUB="https://github.com/PiInTheSky/lora-gateway"
-COMPONENT_WEBSITE="http://www.pi-in-the-sky.com"
 COMPONENT_NAME="HAB-LoRa-Gateway"
+COMPONENT_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/hab"
+
+COMPONENT_WEBSITE="http://www.pi-in-the-sky.com"
 COMPONENT_DESC="is a combined receiver and feeder for the LoRa based High Altitude Baloon Tracking System"
 COMPONENT_RADIO="Please note that a LoRa transceiver connected via SPI is required to use this decoder"
 
@@ -105,6 +106,7 @@ echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
+
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 14 78
     if [[ $? -eq 1 ]] ; then
@@ -172,7 +174,7 @@ fi
 # Enter the build directory.
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    cd ${COMPONENT_BUILD_DIRECTORY}
+    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
     ACTION=${PWD}
     CheckReturnCode
 fi
@@ -184,7 +186,7 @@ SSDV_GITHUB_PROJECT=`echo ${SSDV_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e
 SSDV_PROJECT_DIRECTORY="${COMPONENT_BUILD_DIRECTORY}/${SSDV_GITHUB_PROJECT}"
 if [[ -d "${SSDV_PROJECT_DIRECTORY}/.git/" ]] ; then
     echo -en "\e[33m  Updating SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    cd ${SSDV_PROJECT_DIRECTORY}
+    cd ${SSDV_PROJECT_DIRECTORY} 2>&1
     ACTION=$(git remote update 2>&1)
     if [[ `git status -uno 2>&1 | grep -c "is behind"` -gt 0 ]] ; then
         if [[ `ls -l ${COMPONENT_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
@@ -201,7 +203,7 @@ if [[ -d "${SSDV_PROJECT_DIRECTORY}/.git/" ]] ; then
 else
     echo -en "\e[33m  Building SSDV library from \"\e[37m${SSDV_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     ACTION=$(git clone https://${SSDV_GITHUB_URL_SHORT} ${SSDV_PROJECT_DIRECTORY} 2>&1)
-    cd ${SSDV_PROJECT_DIRECTORY}
+    cd ${SSDV_PROJECT_DIRECTORY} 2>&1
     if [[ -f "${SSDV_PROJECT_DIRECTORY}/Makefile" ]] ; then
         ACTION=$(make -C ${SSDV_PROJECT_DIRECTORY})
     fi
@@ -212,13 +214,12 @@ fi
 CheckReturnCode
 
 # Download and compile the decoder itself.
-COMPONENT_GITHUB_URL="https://github.com/PiInTheSky/lora-gateway.git"
 COMPONENT_GITHUB_URL_SHORT=`echo ${COMPONENT_GITHUB_URL} | sed -e 's/http:\/\///g' -e 's/https:\/\///g' | tr '[A-Z]' '[a-z]'`
 COMPONENT_GITHUB_PROJECT=`echo ${COMPONENT_GITHUB_URL} | awk -F "/" '{print $NF}' | sed -e 's/\.git$//g'`
 COMPONENT_PROJECT_DIRECTORY="${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_GITHUB_PROJECT}"
 if [[ -d "${COMPONENT_PROJECT_DIRECTORY}/.git/" ]] ; then
     echo -en "\e[33m  Updating ${COMPONENT_NAME} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
-    cd ${COMPONENT_PROJECT_DIRECTORY}
+    cd ${COMPONENT_PROJECT_DIRECTORY} 2>&1
     ACTION=$(git remote update 2>&1)
     if [[ `git status -uno 2>&1 | grep -c "is behind"` -gt 0 ]] ; then
         if [[ `ls -l ${COMPONENT_PROJECT_DIRECTORY}/*.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
@@ -232,7 +233,7 @@ if [[ -d "${COMPONENT_PROJECT_DIRECTORY}/.git/" ]] ; then
 else
     echo -en "\e[33m  Building ${COMPONENT_NAME} from \"\e[37m${COMPONENT_GITHUB_URL_SHORT}\e[33m\"...\e[97m"
     ACTION=$(git clone https://${COMPONENT_GITHUB_URL_SHORT} ${COMPONENT_PROJECT_DIRECTORY} 2>&1)
-    cd ${COMPONENT_PROJECT_DIRECTORY}
+    cd ${COMPONENT_PROJECT_DIRECTORY} 2>&1
     if [[ -f "${COMPONENT_PROJECT_DIRECTORY}/Makefile" ]] ; then
         ACTION=$(make -C ${COMPONENT_PROJECT_DIRECTORY})
     fi
@@ -240,7 +241,7 @@ fi
 CheckReturnCode
 
 # Change to DECODER work directory for post-build actions.
-cd ${COMPONENT_PROJECT_DIRECTORY}
+cd ${COMPONENT_PROJECT_DIRECTORY} 2>&1
 
 # TODO - Map GPIO pins using WiringPi.
 
@@ -527,7 +528,7 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 ACTION=${PWD}
 CheckReturnCode
 
