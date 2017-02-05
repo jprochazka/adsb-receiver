@@ -127,7 +127,7 @@ echo -e "\e[95m  Downloading and configuring ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 
 echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
-if [[ -d ${COMPONENT_BUILD_DIRECTORY}/beast-splitter ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/beast-splitter/.git ]] ; then
+if [[ -d "${COMPONENT_BUILD_DIRECTORY}/beast-splitter" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/beast-splitter/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the local ${COMPONENT_NAME} git repository directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY}/beast-splitter 2>&1

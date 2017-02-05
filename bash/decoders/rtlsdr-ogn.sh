@@ -31,7 +31,12 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-### VARIABLES
+### INCLUDE EXTERNAL SCRIPTS
+
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
+
+## SET INSTALLATION VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
@@ -42,7 +47,7 @@ DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
 DECODER_GITHUB="https://github.com/glidernet/ogn-rf"
 DECODER_WEBSITE="http://wiki.glidernet.org"
 DECODER_NAME="RTLSDR-OGN"
-DECODER_DESC="is the Open Glider Network decoder which focuses on tracking aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
+DECODER_DESC="is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker."
 DECODER_RADIO="Please note that a dedicated RTL-SDR dongle is required to use this decoder"
 
 # Decoder service script variables.
@@ -51,11 +56,6 @@ DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-
 DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}"
 DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_NAME}"
 DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
-
-## INCLUDE EXTERNAL SCRIPTS
-
-source ${RECEIVER_BASH_DIRECTORY}/variables.sh
-source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Should be moved to functions.sh.
 
@@ -86,11 +86,11 @@ function Check_CPU () {
 }
 
 # Source the automated install configuration file if this is an automated installation.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
@@ -101,7 +101,7 @@ echo -e "\e[92m  Setting up ${DECODER_NAME}...\e[97m"
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-#
+
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}.\n\n${DECODER_RADIO}.\n\n${DECODER_WEBSITE}\n\nContinue setup by installing ${DECODER_NAME}?" 14 78
     if [[ $? -eq 1 ]] ; then
@@ -117,7 +117,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     fi
 fi
 
-## CHECK FOR PREREQUISITE PACKAGES
+### CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
 echo -e ""
@@ -127,12 +127,6 @@ CheckPackage git
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage rtl-sdr
-# Required for Kalibrate.
-CheckPackage autoconf
-CheckPackage automake
-CheckPackage libfftw3-3
-CheckPackage libfftw3-dev
-CheckPackage libtool
 # Required for RTLSDR-OGN.
 CheckPackage curl
 CheckPackage libconfig9
@@ -150,9 +144,9 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
 
-## BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
-if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] ; then
+if [[ ! -f "/etc/modprobe.d/rtlsdr-blacklist.conf" ]] ; then
     echo -en "\e[33m  Stopping unwanted kernel modules from being loaded...\e[97m"
     sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
 blacklist dvb_usb_rtl28xxu
@@ -200,7 +194,7 @@ fi
 
 # Check if the dump978 binaries exist.
 echo -e "\e[94m  Checking if the dump978 binaries exist on this device...\e[97m"
-if [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978 ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt ]] && [[ -f ${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json ]] ; then
+if [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json" ]] ; then
     DUMP978_IS_INSTALLED="true"
 else
     DUMP978_IS_INSTALLED="false"
@@ -319,7 +313,7 @@ fi
 # Create build directory if not already present.
 if [[ ! -d "${DECODER_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    ACTION=$(mkdir -v ${DECODER_BUILD_DIRECTORY} 2>&1)
+    ACTION=$(mkdir -vp ${DECODER_BUILD_DIRECTORY} 2>&1)
     CheckReturnCode
 fi
 
@@ -338,19 +332,19 @@ CheckReturnCode
 # Identify the correct binaries to download.
 case ${CPU_ARCHITECTURE} in
     "armv6l")
-        # Raspberry Pi 1
+        # Raspberry Pi 1.
         DECODER_BINARY_URL="http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz"
         ;;
     "armv7l")
-        # Raspberry Pi 2 onwards
+        # Raspberry Pi 2 onwards.
         DECODER_BINARY_URL="http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz"
         ;;
     "x86_64")
-        # 64 Bit
+        # 64 Bit.
         DECODER_BINARY_URL="http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz"
         ;;
     *)
-        # 32 Bit (default install if no others matched)
+        # 32 Bit (default install if no others matched).
         DECODER_BINARY_URL="http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz"
         ;;
 esac
@@ -412,6 +406,7 @@ if [[ ! -c "${DECODER_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     KERNEL=`uname -r`
     KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
     CheckReturnCode
+
     if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
@@ -454,7 +449,7 @@ if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
     CheckReturnCode
 fi
 
-## CREATE THE CONFIGURATION FILE
+### CREATE THE CONFIGURATION FILE
 
 # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
 
@@ -548,11 +543,13 @@ if [[ -s "${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME}" ]] ; then
 else
     echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
     sudo tee ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
-###########################################################################################
-#                                                                                         #
-#     CONFIGURATION FILE BASED ON http://wiki.glidernet.org/wiki:receiver-config-file     #
-#                                                                                         #
-###########################################################################################
+#########################################################
+#                                                       #
+#              CONFIGURATION FILE BASED ON              #
+#                                                       #
+#  http://wiki.glidernet.org/wiki:receiver-config-file  #
+#                                                       #
+#########################################################
 #
 RF:
 {
@@ -663,7 +660,7 @@ echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
 ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} start 2>&1)
 CheckReturnCode
 
-## RTL-SDR OGN SETUP COMPLETE
+### SETUP COMPLETE
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"

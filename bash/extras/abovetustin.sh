@@ -201,7 +201,7 @@ fi
 # If any exist assign the current Twitter keys and access tokens to variables.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token"
-    while [[ -z ${TWITTER_ACCESS_TOKEN} ]] ; do
+    while [[ -z "${TWITTER_ACCESS_TOKEN}" ]] ; do
         if [[ `grep -c "^access_token =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
             TWITTER_ACCESS_TOKEN=$(grep "^access_token =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
@@ -210,7 +210,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
     #
     TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret"
-    while [[ -z ${TWITTER_ACCESS_TOKEN_SECRET} ]] ; do
+    while [[ -z "${TWITTER_ACCESS_TOKEN_SECRET}" ]] ; do
         if [[ `grep -c "^access_token_secret =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
             TWITTER_ACCESS_TOKEN_SECRET=$(grep "^access_token_secret =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
@@ -219,7 +219,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
     #
     TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key"
-    while [[ -z ${TWITTER_CONSUMER_KEY} ]] ; do
+    while [[ -z "${TWITTER_CONSUMER_KEY}" ]] ; do
         if [[ `grep -c "^consumer_key =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
             TWITTER_CONSUMER_KEY=$(grep "^consumer_key =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
@@ -228,7 +228,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
     #
     TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret"
-    while [[ -z ${TWITTER_CONSUMER_SECRET} ]] ; do
+    while [[ -z "${TWITTER_CONSUMER_SECRET}" ]] ; do
         if [[ `grep -c "^consumer_secret =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
             TWITTER_CONSUMER_SECRET=$(grep "^consumer_secret =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
         fi
@@ -278,7 +278,7 @@ echo -e "\e[95m  Commencing installation...\e[97m"
 echo -e ""
 
 # Confirm timezone.
-if [[ -z ${TIME_ZONE} ]] ; then
+if [[ -z "${TIME_ZONE}" ]] ; then
     echo -e "\e[94m  Confirming time zone...\e[97m"
     TIME_ZONE=`cat /etc/timezone 2>&1`
     TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\\//\\\\\//g'`
@@ -382,7 +382,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         echo -e ""
         echo -e "\e[95m  Preparing the PhantomJS Git repository...\e[97m"
         echo -e ""
-        if [[ -d ${COMPONENT_BUILD_DIRECTORY}/phantomjs ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/phantomjs/.git ]] ; then
+        if [[ -d "${COMPONENT_BUILD_DIRECTORY}/phantomjs" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/phantomjs/.git" ]] ; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
             cd ${COMPONENT_BUILD_DIRECTORY}/phantomjs 2>&1
@@ -501,7 +501,7 @@ echo -e "\e[95m  Downloading and configuring ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 
 echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
-if [[ -d ${COMPONENT_BUILD_DIRECTORY}/AboveTustin ]] && [[ -d ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/.git ]] ; then
+if [[ -d "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the local ${COMPONENT_NAME} git repository directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY}/AboveTustin 2>&1
