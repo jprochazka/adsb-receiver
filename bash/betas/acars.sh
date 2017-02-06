@@ -221,7 +221,7 @@ CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${COMPONENT_SERVICE_NAME} start 2>&1)
+ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE

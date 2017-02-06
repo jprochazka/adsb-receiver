@@ -96,13 +96,14 @@ function Apt_Hold () {
 
 function Service_Start () {
     if [[ -n $1 ]] ; then
-        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
-        if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -eq 0 ]] ; then
-            echo -en "  Starting service \"$1\"..."
-            ACTION=$(sudo systemctl start $1 2>&1)
-        elif [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
-            echo -en "  Restarting service \"$1\"..."
-            ACTION=$(sudo systemctl restart $1 2>&1)
+        local LOCAL_SERVICE_NAME="$1"
+        local LOCAL_SERVICE_STATUS=$(sudo systemctl status ${LOCAL_SERVICE_NAME} 2>&1)
+        if [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+            echo -en "  Restarting service \"${LOCAL_SERVICE_NAME}\"..."
+            ACTION=$(sudo systemctl reload-or-restart ${LOCAL_SERVICE_NAME} 2>&1)
+        elif [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -eq 0 ]] ; then
+            echo -en "  Starting service \"${LOCAL_SERVICE_NAME}\"..."
+            ACTION=$(sudo systemctl start ${LOCAL_SERVICE_NAME} 2>&1)
         else
             echo -en "  Error: unable to start service \"$1\"..."
             false
@@ -117,15 +118,16 @@ function Service_Start () {
 
 function Service_Stop () {
     if [[ -n $1 ]] ; then
-        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
-        if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
-            echo -en "  Stopping service \"$1\"..."
-            ACTION=$(sudo systemctl stop $1 2>&1)
-        elif [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": inactive"` -gt 0 ]] ; then
-            # echo -en "  Service \"$1\" already stopped..."
+        local LOCAL_SERVICE_NAME="$1"
+        local LOCAL_SERVICE_STATUS=$(sudo systemctl status ${LOCAL_SERVICE_NAME} 2>&1)
+        if [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+            echo -en "  Stopping service \"${LOCAL_SERVICE_NAME}\"..."
+            ACTION=$(sudo systemctl stop ${LOCAL_SERVICE_NAME} 2>&1)
+        elif [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Active:" | egrep -c ": inactive"` -gt 0 ]] ; then
+            # echo -en "  Service \"${LOCAL_SERVICE_NAME}\" already stopped..."
             true
         else
-            echo -en "  Error: unable to stop service \"$1\"..."
+            echo -en "  Error: unable to stop service \"${LOCAL_SERVICE_NAME}\"..."
             false
         fi
     else
@@ -138,15 +140,16 @@ function Service_Stop () {
 
 function Service_Enable () {
     if [[ -n $1 ]] ; then
-        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
-        if [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -eq 0 ]] ; then
-            echo -en "  Enabling service \"$1\"..."
-            ACTION=$(sudo systemctl enable $1 2>&1)
-        elif [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -gt 0 ]] ; then
-            #echo -en "  Service \"$1\" already enabled..."
+        local LOCAL_SERVICE_NAME="$1"
+        local LOCAL_SERVICE_STATUS=$(sudo systemctl status ${LOCAL_SERVICE_NAME} 2>&1)
+        if [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -eq 0 ]] ; then
+            echo -en "  Enabling service \"${LOCAL_SERVICE_NAME}\"..."
+            ACTION=$(sudo systemctl enable ${LOCAL_SERVICE_NAME} 2>&1)
+        elif [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -gt 0 ]] ; then
+            #echo -en "  Service \"${LOCAL_SERVICE_NAME}\" already enabled..."
             true
         else
-            echo -en "  Error: unable to enable service \"$1\"..."
+            echo -en "  Error: unable to enable service \"${LOCAL_SERVICE_NAME}\"..."
             false
         fi
     else
@@ -160,15 +163,16 @@ function Service_Enable () {
 
 function Service_Disable () {
     if [[ -n $1 ]] ; then
-        local SERVICE_STATUS=$(sudo systemctl status $1 2>&1)
-        if [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -gt 0 ]] ; then
-            echo -en "  Disabling service \"$1\"..."
-            ACTION=$(sudo systemctl disable $1 2>&1)
-        elif [[ `echo ${SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; disabled"` -gt 0 ]] ; then
+        local LOCAL_SERVICE_NAME="$1"
+        local LOCAL_SERVICE_STATUS=$(sudo systemctl status ${LOCAL_SERVICE_NAME} 2>&1)
+        if [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; enabled"` -gt 0 ]] ; then
+            echo -en "  Disabling service \"${LOCAL_SERVICE_NAME}\"..."
+            ACTION=$(sudo systemctl disable ${LOCAL_SERVICE_NAME} 2>&1)
+        elif [[ `echo ${LOCAL_SERVICE_STATUS} | egrep "Loaded:" | egrep -c "; disabled"` -gt 0 ]] ; then
             #echo -en "  Service \"$1\" already disabled..."
             true
         else
-            echo -en "  Error: unable to disable service \"$1\"..."
+            echo -en "  Error: unable to disable service \"${LOCAL_SERVICE_NAME}\"..."
             false
         fi
     else

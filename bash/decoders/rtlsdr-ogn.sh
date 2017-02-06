@@ -69,7 +69,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${DECODER_NAME}...\e[97m"
+echo -e "\e[92m  Setting up ${DECODER_NAME}..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
@@ -629,7 +629,7 @@ CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${DECODER_SERVICE_NAME} start 2>&1)
+ACTION=$(sudo ${DECODER_SERVICE_SCRIPT_PATH} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE

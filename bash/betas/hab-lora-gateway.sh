@@ -158,7 +158,7 @@ CheckReturnCode
 
 if [[ -f "${COMPONENT_SERVICE_SCRIPT_PATH}" ]] ; then
     echo -en "\e[33m  Stopping the ${COMPONENT_NAME} service...\e[97m"
-    ACTION=$(sudo /etc/init.d/${COMPONENT_SERVICE_NAME} stop 2>&1)
+    ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -521,7 +521,7 @@ CheckReturnCode
 
 # Start the DECODER service.
 echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
-ACTION=$(sudo /etc/init.d/${COMPONENT_SERVICE_NAME} start 2>&1)
+ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE
