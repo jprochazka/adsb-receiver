@@ -474,23 +474,14 @@ else
 fi
 
 # Check if MLAT client has been installed to be used to feed ADS-B Exchange.
-if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-    # The mlat-client package does not appear to be installed.
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client' '' OFF)
-    else
-        # Check the installation configuration file to see if ADS-B Exchange feeding is to be setup.
-        if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] ; then
-            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-            echo "ADS-B Exchange data export and MLAT Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-        fi
-    fi
-else
-    # Check if a newer version of mlat-client can be installed.
+if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # The mlat-client package appears to be installed.
+    MLAT_CLIENT_IS_INSTALLED="true"
     MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]')
     MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]')
+    # Check if a newer version of mlat-client can be installed.
     if [[ ${MLAT_CLIENT_VERSION_AVAILABLE}" -gt "${MLAT_CLIENT_VERSION_INSTALLED} ]] ; then
+        # Prompt user to confirm the upgrade.
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
             FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client (upgrade)' '' OFF)
@@ -500,6 +491,19 @@ else
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                 echo "ADS-B Exchange data export and MLAT Client (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
             fi
+        fi
+    fi
+else
+    # The mlat-client package does not appear to be installed.
+    MLAT_CLIENT_IS_INSTALLED="false"
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client' '' OFF)
+    else
+        # Check the installation configuration file to see if ADS-B Exchange feeding is to be setup.
+        if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] ; then
+            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+            echo "ADS-B Exchange data export and MLAT Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
         fi
     fi
 fi
