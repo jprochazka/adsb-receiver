@@ -650,7 +650,7 @@ else
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa (upgrade)"
                 ;;
         esac
-    elif [[ "${DUMP1090_DO_INSTALL}" = "true" ]]
+    elif [[ "${DUMP1090_DO_INSTALL}" = "true" ]] ; then
         case ${DUMP1090_FORK} in
             "mutability")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
