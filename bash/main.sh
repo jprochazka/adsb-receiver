@@ -329,12 +329,19 @@ else
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Not Installed" --defaultno --yesno "RTL-SDR OGN is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is most prevalent within Europe, but new receivers are welcome at any location.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
         case $? in
             0)
-                RTLSDROGN_INSTALL="true"
+                RTLSDROGN_DO_INSTALL="true"
                 ;;
             1)
-                RTLSDROGN_INSTALL="false"
+                RTLSDROGN_DO_INSTALL="false"
                 ;;
         esac
+    else
+        # Refer to the installation configuration to decide if RTL-SDR OGN is to be installed.
+        if [[ "${RTLSDROGN_INSTALL}" = "true" ]] ; then
+            RTLSDROGN_DO_INSTALL="true"
+        else
+            RTLSDROGN_DO_INSTALL="false"
+        fi
     fi
 fi
 
@@ -651,12 +658,10 @@ else
     fi
 
     # RTL-SDR OGN
-    if [[ "${RTLSDROGN_INSTALL}" = "true" ]] || [[ "${RTLSDROGN_UPGRADE}" = "true" ]] ; then
-        if [[ "${RTLSDROGN_DO_UPGRADE}" = "true" ]] ; then
-            CONFIRMATION="${CONFIRMATION}\n  * RTL-SDR OGN (upgrade)"
-        else
-            CONFIRMATION="${CONFIRMATION}\n  * RTL-SDR OGN"
-        fi
+    if [[ "${RTLSDROGN_DO_UPGRADE}" = "true" ]] ; then
+        CONFIRMATION="${CONFIRMATION}\n  * RTL-SDR OGN (upgrade)"
+    elif [[ "${RTLSDROGN_DO_INSTALL}" = "true" ]] ; then
+        CONFIRMATION="${CONFIRMATION}\n  * RTL-SDR OGN"
     fi
 
     # If PiAware is required add it to the list.
@@ -759,7 +764,7 @@ if [[ "${DUMP978_INSTALL}" = "true" ]] || [[ "${DUMP978_UPGRADE}" = "true" ]] ; 
     InstallDump978
 fi
 
-if [[ "${RTLSDROGN_INSTALL}" = "true" ]] || [[ "${RTLSDROGN_UPGRADE}" = "true" ]] ; then
+if [[ "${RTLSDROGN_DO_INSTALL}" = "true" ]] || [[ "${RTLSDROGN_DO_UPGRADE}" = "true" ]] ; then
     InstallRtlsdrOgn
 fi
 
