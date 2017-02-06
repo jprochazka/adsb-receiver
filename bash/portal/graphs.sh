@@ -396,7 +396,7 @@ echo -e ""
 
 # Update max_range.rrd to remove the 500 km / ~270 nmi limit.
 if [[ `rrdinfo ${DUMP1090_MAX_RANGE_RRD} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
-    rrdtool tune ${DUMP1090_MAX_RANGE_RRD} --maximum value:1000000
+    sudo rrdtool tune ${DUMP1090_MAX_RANGE_RRD} --maximum value:1000000
 fi
 
 ### SETUP COMPLETE
