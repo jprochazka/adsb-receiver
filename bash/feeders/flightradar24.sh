@@ -105,7 +105,7 @@ if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     mkdir -vp ${COMPONENT_BUILD_DIRECTORY}
 fi
 echo -e "\e[94m  Entering the Flightradar24 feeder client build directory...\e[97m"
-cd ${COMPONENT_BUILD_DIRECTORY}
+cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` = "aarch64" ]] ; then
 
     ## ARM INSTALLATION

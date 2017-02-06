@@ -96,7 +96,7 @@ fi
 
 # Clone the dump978 Git repository.
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}
+cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
 echo -e "\e[94m  Cloning the dump978 Git repository locally...\e[97m"
 echo -e ""
 git clone https://github.com/mutability/dump978.git
@@ -109,7 +109,7 @@ echo -e ""
 # Enter the dump978 repository if we are not already in it.
 if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump978" ]] ; then
     echo -e "\e[94m  Entering the dump978 Git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump978
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump978 2>&1
 fi
 # Build the dump978 binaries from source.
 echo -e "\e[94m  Building the dump978 binaries...\e[97m"

@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,22 +31,24 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VAARIABLES
+## VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/piaware_builder"
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-## BEGIN SETUP
+### BEGIN SETUP
 
-clear
-echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    clear
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+fi
 echo -e ""
 echo -e "\e[92m  Setting up FlightAware's PiAware..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
@@ -94,14 +96,14 @@ echo -e ""
 if [[ -d "${COMPONENT_BUILD_DIRECTORY}" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
-    cd ${COMPONENT_BUILD_DIRECTORY}
+    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Updating the local piaware_builder git repository...\e[97m"
     echo -e ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}
+    cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Cloning the piaware_builder git repository locally...\e[97m"
     echo -e ""
     git clone https://github.com/flightaware/piaware_builder.git
@@ -114,14 +116,14 @@ echo -e "\e[95m  Building and installing the PiAware package...\e[97m"
 echo -e ""
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
-    cd ${COMPONENT_BUILD_DIRECTORY}
+    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 echo -e "\e[94m  Executing the PiAware build script...\e[97m"
 echo -e ""
 ./sensible-build.sh jessie
 echo -e ""
 echo -e "\e[94m  Entering the PiAware build directory...\e[97m"
-cd ${COMPONENT_BUILD_DIRECTORY}/package-jessie
+cd ${COMPONENT_BUILD_DIRECTORY}/package-jessie 2>&1
 echo -e "\e[94m  Building the PiAware package...\e[97m"
 echo -e ""
 dpkg-buildpackage -b

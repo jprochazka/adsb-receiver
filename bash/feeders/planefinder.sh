@@ -113,7 +113,7 @@ fi
 echo -e "\e[95m  Installing the Plane Finder ADS-B Client package...\e[97m"
 echo -e ""
 echo -e "\e[94m  Entering the Plane Finder ADS-B Client build directory...\e[97m"
-cd ${COMPONENT_BUILD_DIRECTORY}
+cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 # Install the proper package depending on the devices architecture.
 if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` = "aarch64" ]] ; then
     echo -e "\e[94m  Installing the Plane Finder ADS-B Client v${PFCLIENTVERSIONARM} for ARM devices package...\e[97m"

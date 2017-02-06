@@ -96,11 +96,11 @@ case ${DUMP1090OPTION} in
         echo -e "\e[95m  Installing dump1090-mutability...\e[97m"
         echo -e ""
         mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability
-        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability 2>&1
         git clone https://github.com/mutability/dump1090.git
-        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/dump1090
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/dump1090 2>&1
         dpkg-buildpackage -b
-        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability 2>&1
         sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
         ;;
     "dump1090-fa")
@@ -127,19 +127,19 @@ case ${DUMP1090OPTION} in
         echo -e "\e[95m  Installing dump1090-fa...\e[97m"
         echo -e ""
         mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
-        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
         git clone https://github.com/flightaware/dump1090.git
-        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090 2>&1
         dpkg-buildpackage -b
-        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
         sudo dpkg -i dump1090-fa_*.deb
 
         # PiAware
-        cd ${RECEIVER_BUILD_DIRECTORY}
+        cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
         git clone https://github.com/flightaware/piaware_builder.git
-        cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder
+        cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder 2>&1
         ./sensible-build.sh jessie
-        cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-jessie
+        cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-jessie 2>&1
         dpkg-buildpackage -b
         sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.deb
         ;;
@@ -238,7 +238,7 @@ echo -e ""
 ## TOUCH THE IMAGE FILE
 
 echo -e "\e[95m  Touching the \"image\" file...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 touch image
 
 ## CLEAR BASH HISTORY

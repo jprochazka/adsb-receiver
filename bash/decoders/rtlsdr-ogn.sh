@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## SET INSTALLATION VARIABLES
+## VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
@@ -221,7 +221,7 @@ fi
 # Enter the build directory.
 if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn" ]] ; then
     echo -e "\e[94m  Entering the directory (${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn)...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn
+    cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn 2>&1
 fi
 
 # Detect CPU Architecture.
@@ -278,7 +278,7 @@ esac
 # Enter the directory containing the binaries that were downloaded.
 echo -e ""
 echo -e "\e[94m  Entering the directory containing the RTL-SDR binaries...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn
+cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn 2>&1
 
 # Create named pipe if required.
 if [[ ! -p "ogn-rf.fifo" ]] ; then
@@ -359,7 +359,7 @@ sudo service rtlsdr-ogn start
 
 # Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
 echo -e "\e[92m  RTL-SDR OGN setup is complete.\e[39m"

@@ -4,12 +4,12 @@
 #                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
-#  This script is used to complete the setup of the Raspbian image files made       #
-#  available to the public by the projects maintainer(s).                           # 
+# This script is used to complete the setup of the Raspbian image files made        #
+# available to the public by the projects maintainer(s).                            #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -35,6 +35,7 @@
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 

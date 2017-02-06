@@ -96,7 +96,7 @@ echo -e ""
 if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090 2>&1
     echo -e "\e[94m  Updating the local dump1090-fa git repository...\e[97m"
     echo -e ""
     git pull
@@ -104,7 +104,7 @@ else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
     mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
     echo -e "\e[94m  Cloning the dump1090-fa git repository locally...\e[97m"
     echo -e ""
     git clone https://github.com/flightaware/dump1090.git
@@ -118,14 +118,14 @@ echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
 echo -e ""
 if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] ; then
     echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090 2>&1
 fi
 echo -e "\e[94m  Building the dump1090-fa package...\e[97m"
 echo -e ""
 dpkg-buildpackage -b
 echo -e ""
 echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/dump1090
+cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
 echo -e "\e[94m  Installing the dump1090-fa package...\e[97m"
 echo -e ""
 sudo dpkg -i dump1090-fa_${PIAWAREVERSION}_*.deb
