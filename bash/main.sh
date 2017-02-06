@@ -93,19 +93,19 @@ function InstallRtlsdrOgn() {
 
 ## FEEDERS
 
-# Execute the PiAware setup script
-function InstallPiAware() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
-    ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
+# Execute the ADS-B Exchange setup script.
+function InstallAdsbExchange() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
 }
 
-# Execute the Plane Finder ADS-B Client setup script.
-function InstallPlaneFinder() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
-    ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
+# Execute the PiAware setup script
+function InstallPiAware() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
@@ -120,10 +120,10 @@ function InstallFlightradar24() {
     fi
 }
 
-# Execute the ADS-B Exchange setup script.
-function InstallAdsbExchange() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
-    ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
+# Execute the Plane Finder ADS-B Client setup script.
+function InstallPlaneFinder() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
@@ -366,6 +366,41 @@ fi
 declare array FEEDER_LIST
 touch ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
 
+# Check if MLAT client has been installed to be used to feed ADS-B Exchange.
+if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # The mlat-client package appears to be installed.
+    MLAT_CLIENT_IS_INSTALLED="true"
+    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]')
+    MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]')
+    # Check if a newer version of mlat-client can be installed.
+    if [[ ${MLAT_CLIENT_VERSION_AVAILABLE}" -gt "${MLAT_CLIENT_VERSION_INSTALLED} ]] ; then
+        # Prompt user to confirm the upgrade.
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+            # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client (upgrade)' '' OFF)
+        else
+            # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
+            if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] && [[ -z "${ADSBEXCHANGE_UPGRADE}" ]] && [[ "${ADSBEXCHANGE_UPGRADE}" = "true" ]] ; then
+                # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+                echo "ADS-B Exchange data export and MLAT Client (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+            fi
+        fi
+    fi
+else
+    # The mlat-client package does not appear to be installed.
+    MLAT_CLIENT_IS_INSTALLED="false"
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client' '' OFF)
+    else
+        # Check the installation configuration file to see if ADS-B Exchange feeding is to be setup.
+        if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] ; then
+            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+            echo "ADS-B Exchange data export and MLAT Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        fi
+    fi
+fi
+
 # Check for the PiAware package.
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
@@ -393,6 +428,37 @@ else
             if [[ -z "${PIAWARE_INSTALL}" ]] && [[ "${PIAWARE_INSTALL}" = "true" ]] && [[ -z "${PIAWARE_UPGRADE}" ]] && [[ "${PIAWARE_UPGRADE}" = "true" ]] ; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                 echo "FlightAware PiAware (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+            fi
+        fi
+    fi
+fi
+
+# Check for the Flightradar24 Feeder Client package.
+if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    # The Flightradar24 client package does not appear to be installed.
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client' '' OFF)
+    else
+        # Check the installation configuration file to see if the Flightradar24 Client is to be installed.
+        if [[ -z "${FLIGHTRADAR_INSTALL}" ]] && [[ "${FLIGHTRADAR_INSTALL}" = "true" ]] ; then
+            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+            echo "Flightradar24 Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        fi
+    fi
+else
+    # Check if a newer version can be installed if this is not a Raspberry Pi device.
+    if [[ "${CPU_ARCHITECTURE}" != "armv7l" ]] ; then
+        if [[ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]] ; then
+            if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+                # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client (upgrade)' '' OFF)
+            else
+                # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
+                if [[ -z "${PLANEFINDER_INSTALL}" ]] && [[ "${PLANEFINDER_INSTALL}" = "true" ]] && [[ -z "${PLANEFINDER_UPGRADE}" ]] && [[ "${PLANEFINDER_UPGRADE}" = "true" ]] ; then
+                    # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+                    echo " (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+                fi
             fi
         fi
     fi
@@ -438,72 +504,6 @@ else
                     echo "Plane Finder Client (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
                 fi
             fi
-        fi
-    fi
-fi
-
-# Check for the Flightradar24 Feeder Client package.
-if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-    # The Flightradar24 client package does not appear to be installed.
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-        FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client' '' OFF)
-    else
-        # Check the installation configuration file to see if the Flightradar24 Client is to be installed.
-        if [[ -z "${FLIGHTRADAR_INSTALL}" ]] && [[ "${FLIGHTRADAR_INSTALL}" = "true" ]] ; then
-            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-            echo "Flightradar24 Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-        fi
-    fi
-else
-    # Check if a newer version can be installed if this is not a Raspberry Pi device.
-    if [[ "${CPU_ARCHITECTURE}" != "armv7l" ]] ; then
-        if [[ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]] ; then
-            if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-                # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client (upgrade)' '' OFF)
-            else
-                # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
-                if [[ -z "${PLANEFINDER_INSTALL}" ]] && [[ "${PLANEFINDER_INSTALL}" = "true" ]] && [[ -z "${PLANEFINDER_UPGRADE}" ]] && [[ "${PLANEFINDER_UPGRADE}" = "true" ]] ; then
-                    # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                    echo " (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-                fi
-            fi
-        fi
-    fi
-fi
-
-# Check if MLAT client has been installed to be used to feed ADS-B Exchange.
-if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    # The mlat-client package appears to be installed.
-    MLAT_CLIENT_IS_INSTALLED="true"
-    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]')
-    MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]')
-    # Check if a newer version of mlat-client can be installed.
-    if [[ ${MLAT_CLIENT_VERSION_AVAILABLE}" -gt "${MLAT_CLIENT_VERSION_INSTALLED} ]] ; then
-        # Prompt user to confirm the upgrade.
-        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-            # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-            FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client (upgrade)' '' OFF)
-        else
-            # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
-            if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] && [[ -z "${ADSBEXCHANGE_UPGRADE}" ]] && [[ "${ADSBEXCHANGE_UPGRADE}" = "true" ]] ; then
-                # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                echo "ADS-B Exchange data export and MLAT Client (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-            fi
-        fi
-    fi
-else
-    # The mlat-client package does not appear to be installed.
-    MLAT_CLIENT_IS_INSTALLED="false"
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client' '' OFF)
-    else
-        # Check the installation configuration file to see if ADS-B Exchange feeding is to be setup.
-        if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] ; then
-            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-            echo "ADS-B Exchange data export and MLAT Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
         fi
     fi
 fi
