@@ -193,7 +193,13 @@ if [[ "${FLIGHTAWARE_LOCAL_CREDENTIALS}" -eq "1" ]] ; then
                 FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FLIGHTAWAREPASSWORD2_TITLE}" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
             done
         done
+    else
+        # Display a message to the user stating they need to manually claim their device.
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device, after supplying this you will ask you to enter your password for verification.\n\nIf you decide not to provide a login and password at this time you should still be able to claim your feeder by visting the following site:\n\nhttp://flightaware.com/adsb/piaware/claim" 13 78
+    fi
+fi
 
+if [[ -n "${FLIGHTAWARELOGIN}" ]] && [[ -n "${FLIGHTAWAREPASSWORD1}" ]] ; then
     # Set the supplied user name and password in the configuration.
     echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
     echo -e ""
@@ -207,13 +213,7 @@ if [[ "${FLIGHTAWARE_LOCAL_CREDENTIALS}" -eq "1" ]] ; then
     echo -e ""
     sudo /etc/init.d/piaware restart
     echo -e ""
-
-    else
-        # Display a message to the user stating they need to manually claim their device.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device, after supplying this you will ask you to enter your password for verification.\n\nIf you decide not to provide a login and password at this time you should still be able to claim your feeder by visting the following site:\n\nhttp://flightaware.com/adsb/piaware/claim" 13 78
-    fi
 fi
-
 
 ### SETUP COMPLETE
 
