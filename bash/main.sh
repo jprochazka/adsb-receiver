@@ -488,7 +488,9 @@ if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok insta
     fi
 else
     # Check if a newer version of mlat-client can be installed.
-    if [[ $(sudo dpkg -s mlat-client 2>/dev/null | grep -c "Version: ${MLAT_CLIENT_VERSION}") -eq 0 ]] ; then
+    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]')
+    MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]')
+    if [[ ${MLAT_CLIENT_VERSION_AVAILABLE}" -gt "${MLAT_CLIENT_VERSION_INSTALLED} ]] ; then
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
             FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client (upgrade)' '' OFF)
