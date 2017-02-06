@@ -313,9 +313,10 @@ fi
 
 # Check if the RTL-SDR OGN binaries exist on this device.
 if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
+    RTLSDROGN_IS_INSTALLED="true"
     # Check if a newer version of the binaries are available.
     if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-${RTLSDROGN_VERSION}" ]] ; then
-        # Skip over this dialog if this installation is set to be automated.
+        # Prompt user to confirm if a rebuild is required.
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Installed" --defaultno --yesno "A newer version of the RTL-SDR OGN binaries is available.\n\nWould you like to setup the newer binaries on this device?" 14 65
             case $? in
@@ -337,6 +338,8 @@ if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
     fi    
 else
     # The RTL-SDR OGN binaries do not appear to exist on this device.
+    RTLSDROGN_IS_INSTALLED="false"
+    # Prompt user to confirm if installation is required.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Not Installed" --defaultno --yesno "RTL-SDR OGN is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is most prevalent within Europe, but new receivers are welcome at any location.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
         case $? in
