@@ -31,6 +31,16 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+### VARIABLES
+
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+
+# Component specific variables.
+
+# Component service script variables.
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -47,10 +57,11 @@ fi
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
-    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
 echo -e "\e[92m  Setting up dump978..."
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -259,7 +270,7 @@ sudo nohup ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh > /dev/null 2>&1
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 

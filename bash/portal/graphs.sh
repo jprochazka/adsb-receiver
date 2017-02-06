@@ -401,7 +401,7 @@ fi
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 

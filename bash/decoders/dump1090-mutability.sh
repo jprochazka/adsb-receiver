@@ -31,14 +31,24 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## INCLUDE EXTERNAL SCRIPTS
+### VARIABLES
+
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+
+# Component specific variables.
+
+DUMP1090_CONFIGURATION_FILE="/etc/default/dump1090-mutability"
+
+# Component service script variables.
+
+### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## SET INSTALLATION VARIABLES
-
-DUMP1090_CONFIGURATION_FILE="/etc/default/dump1090-mutability"
 
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
@@ -50,7 +60,7 @@ else
     DUMP1090_MAPZEN_KEY=`GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
 fi
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
@@ -58,6 +68,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 fi
 echo -e ""
 echo -e "\e[92m  Setting up dump1090-mutability..."
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -287,7 +298,7 @@ fi
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 

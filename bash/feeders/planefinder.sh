@@ -47,7 +47,7 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up the Plane Finder ADS-B Client..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
@@ -158,7 +158,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Plane Finder ADS-B Cli
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 

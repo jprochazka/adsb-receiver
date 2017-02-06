@@ -54,7 +54,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Receiver Project
 
 if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Receiver Project Image Setup" --yesno "The image comes with the latest updates to Raspbian as of it's release. However updates may have been released for the operating system since the image was released. This being said it is highly recommended you allow the script to check for additional updates now in order to ensure you are in fact running the latest software available.\n\nWould you like the script to check for and install updates now?" 13 78) then
     clear
-    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
