@@ -478,12 +478,12 @@ if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok insta
     # The mlat-client package does not appear to be installed.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-        FEEDER_LIST=("${FEEDER_LIST[@]}" 'Netcat and MLAT Client for ADS-B Exchange' '' OFF)
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client' '' OFF)
     else
         # Check the installation configuration file to see if ADS-B Exchange feeding is to be setup.
         if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] ; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-            echo "Netcat and MLAT Client for ADS-B Exchange" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+            echo "ADS-B Exchange data export and MLAT Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
         fi
     fi
 else
@@ -491,12 +491,12 @@ else
     if [[ $(sudo dpkg -s mlat-client 2>/dev/null | grep -c "Version: ${MLAT_CLIENT_VERSION}") -eq 0 ]] ; then
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-            FEEDER_LIST=("${FEEDER_LIST[@]}" 'Netcat and MLAT Client for ADS-B Exchange (upgrade)' '' OFF)
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client (upgrade)' '' OFF)
         else
             # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
             if [[ -z "${ADSBEXCHANGE_INSTALL}" ]] && [[ "${ADSBEXCHANGE_INSTALL}" = "true" ]] && [[ -z "${ADSBEXCHANGE_UPGRADE}" ]] && [[ "${ADSBEXCHANGE_UPGRADE}" = "true" ]] ; then
                 # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                echo "Netcat and MLAT Client for ADS-B Exchange (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+                echo "ADS-B Exchange data export and MLAT Client (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
             fi
         fi
     fi
@@ -702,11 +702,11 @@ else
                 "Flightradar24 Client (upgrade)")
                     CONFIRMATION="${CONFIRMATION}\n  * Flightradar24 Client (upgrade)"
                     ;;
-                "Netcat and MLAT Client for ADS-B Exchange")
-                    CONFIRMATION="${CONFIRMATION}\n  * Netcat and MLAT Client for ADS-B Exchange"
+                "ADS-B Exchange data export and MLAT Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client"
                     ;;
-                "Netcat and MLAT Client for ADS-B Exchange (upgrade)")
-                    CONFIRMATION="${CONFIRMATION}\n  * Netcat and MLAT Client for ADS-B Exchange (upgrade)"
+                "ADS-B Exchange data export and MLAT Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
                     ;;
             esac
         done < ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
@@ -802,7 +802,7 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] ; then
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
                 RUN_FLIGHTRADAR24_SCRIPT="true"
                 ;;
-            "Netcat and MLAT Client for ADS-B Exchange"|"Netcat and MLAT Client for ADS-B Exchange (upgrade)")
+            "ADS-B Exchange data export and MLAT Client"|"ADS-B Exchange data export and MLAT Client (upgrade)")
                 RUN_ADSBEXCHANGE_SCRIPT="true"
                 ;;
         esac
