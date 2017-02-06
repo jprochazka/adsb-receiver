@@ -257,8 +257,10 @@ if [[ ! "${DUMP1090_INSTALLED}" = "true" ]] ; then
 fi
 
 # If the FlightAware fork of dump1090 is or has been chosen to be installed PiAware must be installed.
-if [[ "${DUMP1090_FORK}" = "fa" ]] && [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] || [[ "${DUMP1090_INSTALLED}" = "false" ]] ; then
-    FORCE_PIAWARE_INSTALL="true"
+if [[ "${DUMP1090_FORK}" = "fa" ]] ; then
+    if [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] || [[ "${DUMP1090_INSTALLED}" = "false" ]] ; then
+         FORCE_PIAWARE_INSTALL="true"
+    fi
 fi
 
 # Check if the dump978 binaries exist.
