@@ -172,15 +172,17 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     # Ask the user for the receiver's latitude.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+    RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
     while [[ -z "${RECEIVER_LATITUDE}" ]] || [[ `echo "${RECEIVER_LATITUDE}" | tr -d '\n' | sed -e 's/[0-9]//g' -e 's/\.//g' -e 's/-//g' | wc -c` -gt 0 ]] ; do
-        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
     done
     # Ask the user for the receiver's longitude.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
+    RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
     while [[ -z "${RECEIVER_LONGITUDE}" ]] || [[ `echo "${RECEIVER_LONGITUDE}" | tr -d '\n' | sed -e 's/[0-9]//g' -e 's/\.//g' -e 's/-//g' | wc -c` -gt 0 ]] ; do
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
     done
 fi
 echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
