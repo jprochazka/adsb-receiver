@@ -37,6 +37,10 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
+# Component specific variables.
+
+# Component service script variables.
+
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh

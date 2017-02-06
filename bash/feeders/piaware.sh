@@ -161,9 +161,12 @@ mv ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb ${COMPONENT_BUILD_DIRECTORY}/packa
 echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
 mv ${COMPONENT_BUILD_DIRECTORY}/piaware_*.changes ${COMPONENT_BUILD_DIRECTORY}/packages/
 
-## CONFIGURE FLIGHTAWARE
+## CONFIGURE FLIGHTAWARE CREDENTIALS
 
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
+# Confirm if the user is able to claim their PiAware instance online.
+FLIGHTAWARE_LOCAL_CREDENTIALS=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --yesno "Although it is possible to configure your FlightAware credentials locally, these wil be stored in plaintext which represents a security risk that should be avoided.\n\nFlightAware recommends claiming your feeder online using the following page:\n\nhttp://flightaware.com/adsb/piaware/claim\n\nWill you be able to access the FlightAware website from the same public IP address as the feeder will be sending data from?" 16 78 3>&1 1>&2 2>&3)
+
+if [[ "${FLIGHTAWARE_LOCAL_CREDENTIALS}" -eq "1" ]] ; then
 # Ask for the users FlightAware login.
 FLIGHTAWARELOGIN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
 if [[ ! "${FLIGHTAWARELOGIN}" = "" ]] ; then
@@ -206,7 +209,8 @@ if [[ ! "${FLIGHTAWARELOGIN}" = "" ]] ; then
     echo -e ""
 else
     # Display a message to the user stating they need to manually claim their device.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device, after supplying this you will ask you to enter your password for verification.\n\nIf you decide not to provide a login and password at this time you should still be able to claim your feeder by visting the following site:\n\nhttp://flightaware.com/adsb/piaware/claim" 13 78
+    fi
 fi
 
 ### SETUP COMPLETE
