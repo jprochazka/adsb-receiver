@@ -274,9 +274,16 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
 fi
 
 # Reload dump1090-mutability to ensure all changes take effect.
-echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-echo -e ""
-sudo /etc/init.d/dump1090-mutability force-reload
+SERVICE_NAME="dump1090-mutability"
+SERVICE_STATUS=$(sudo systemctl status ${SERVICE_NAME} 2>&1)
+
+if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+    echo -e "\e[94m  Restarting service \"${SERVICE_NAME}\"..."
+    ACTION=$(sudo systemctl reload-or-restart ${SERVICE_NAME} 2>&1)
+else
+    echo -e "\e[94m  Starting service \"${SERVICE_NAME}\"..."
+    ACTION=$(sudo systemctl start ${SERVICE_NAME} 2>&1)
+fi
 
 ### SETUP COMPLETE
 
