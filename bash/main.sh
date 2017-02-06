@@ -266,6 +266,8 @@ fi
 # Check if the dump978 binaries exist.
 if [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json" ]] ; then
     # Dump978 appears to have been built already.
+    DUMP978_IS_INSTALLED="true"
+    # Prompt user to confirm if a rebuild is required.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 Installed" --defaultno --yesno "Dump978 appears to be installed on your device, however...\n\nThe dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.\n\nDownload and rebuild the dump978 binaries?" 14 65
         case $? in
@@ -278,7 +280,7 @@ if [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] && [[ -f "${RECEIVER_B
         esac
     else
         # Refer to the installation configuration to decide if dump978 is to be rebuilt from source or not.
-        if [[ "${DUMP1090_UPGRADE}" = "true" ]] ; then
+        if [[ "${DUMP978_UPGRADE}" = "true" ]] ; then
             DUMP978_DO_UPGRADE="true"
         else
             DUMP978_DO_UPGRADE="false"
@@ -286,16 +288,26 @@ if [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] && [[ -f "${RECEIVER_B
     fi
 else
     # Dump978 does not appear to be present on this device.
+    DUMP978_IS_INSTALLED="false"
+    # Prompt user to confirm if installation is required.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 Not Installed" --defaultno --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.\n\nDo you wish to install dump978?" 10 65
         case $? in
             0)
-                DUMP978_INSTALL="true"
+                DUMP978_DO_INSTALL="true"
                 ;;
             1)
-                DUMP978_INSTALL="false"
+                DUMP978_DO_INSTALL="false"
                 ;;
         esac
+    else
+        # Refer to the installation configuration to decide if dump978 is to be installed from source or not.
+        if [[ "${DUMP978_INSTALL}" = "true" ]] ; then
+            DUMP978_DO_INSTALL="true"
+        else
+            DUMP978_DO_INSTALL="false"
+        fi
+
     fi
 fi
 
@@ -614,7 +626,7 @@ fi
 declare CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [[ "${DUMP1090_INSTALL}" = "false" ]] && [[ "${DUMP1090_UPGRADE}" = "false" ]] && [[ "${DUMP978_INSTALL}" = "false" ]] && [[ "${DUMP978_UPGRADE}" = "false" ]] && [[ "${WEBPORTAL_INSTALL}" = "false" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
+if [[ "${DUMP1090_INSTALL}" = "false" ]] && [[ "${DUMP1090_UPGRADE}" = "false" ]] && [[ "${DUMP978_DO_INSTALL}" = "false" ]] && [[ "${DUMP978_DO_UPGRADE}" = "false" ]] && [[ "${RTLSDROGN_DO_INSTALL}" = "false" ]] && [[ "${RTLSDROGN_DO_UPGRADE}" = "false" ]] && [[ "${WEBPORTAL_INSTALL}" = "false" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
     # Nothing was chosen to be installed.
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\e[31m"
@@ -649,12 +661,10 @@ else
     fi
 
     # dump978
-    if [[ "${DUMP978_INSTALL}" = "true" ]] || [[ "${DUMP978_UPGRADE}" = "true" ]] ; then
-        if [[ "${DUMP978_DO_UPGRADE}" = "true" ]] ; then
-            CONFIRMATION="${CONFIRMATION}\n  * dump978 (rebuild)"
-        else
-            CONFIRMATION="${CONFIRMATION}\n  * dump978"
-        fi
+    if [[ "${DUMP978_DO_UPGRADE}" = "true" ]] ; then
+        CONFIRMATION="${CONFIRMATION}\n  * dump978 (rebuild)"
+    elif [[ "${DUMP978_DO_INSTALL}" = "true" ]] ; then
+        CONFIRMATION="${CONFIRMATION}\n  * dump978"
     fi
 
     # RTL-SDR OGN
@@ -760,7 +770,7 @@ if [[ "${DUMP1090_INSTALL}" = "true" ]] || [[ "${DUMP1090_UPGRADE}" = "true" ]] 
     esac
 fi
 
-if [[ "${DUMP978_INSTALL}" = "true" ]] || [[ "${DUMP978_UPGRADE}" = "true" ]] ; then
+if [[ "${DUMP978_DO_INSTALL}" = "true" ]] || [[ "${DUMP978_DO_UPGRADE}" = "true" ]] ; then
     InstallDump978
 fi
 
