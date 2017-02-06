@@ -181,7 +181,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "
     # Skip over this dialog if this installation is set to be automated.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Ask if dump1090-mutability should be reinstalled.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-mutability Installed" --defaultno --yesno "The dump1090-mutability package appears to be installed on your device, however...\n\nThe dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering. To ensure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.\n\nDownload, build, and reinstall this package?" 16 65
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-mutability Installed" --defaultno --yesno "The dump1090-mutability package appears to be installed on your device, however...\n\nThe dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering.\n\nTo ensure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.\n\nDownload, build, and reinstall this package?" 18 65
         case $? in
             0)
                 DUMP1090_DO_UPGRADE="true"
@@ -623,7 +623,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Display a menu the user can use to pick extras to be installed.
     if [[ -n "${EXTRAS_LIST}" ]] ; then
         # Display a checklist containing feeders that are not installed if any.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following extras are available for installation.\nChoose the extrass you wish to install." 13 65 4 "${EXTRAS_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following extras are available for installation, please select any which you wish to install." 13 65 4 "${EXTRAS_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
     else
         # Since all available extras appear to be installed inform the user of the fact.
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "All Extras Installed" --msgbox "It appears that all the optional extras available for installation by this script have been installed already." 8 65
