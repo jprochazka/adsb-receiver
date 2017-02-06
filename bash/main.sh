@@ -177,7 +177,7 @@ function InstallDuckDns() {
 # Check if the dump1090-mutability package is installed.
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     DUMP1090_FORK="mutability"
-    DUMP1090_INSTALLED="true"
+    DUMP1090_IS_INSTALLED="true"
     # Skip over this dialog if this installation is set to be automated.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Ask if dump1090-mutability should be reinstalled.
@@ -203,7 +203,7 @@ fi
 # Check if the dump1090-fa package is installed.
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     DUMP1090_FORK="fa"
-    DUMP1090_INSTALLED="true"
+    DUMP1090_IS_INSTALLED="true"
     # Check if a newer version can be installed.
     if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]] ; then
         # Skip over this dialog if this installation is set to be automated.
@@ -229,36 +229,36 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
 fi
 
 # If no dump1090 fork is installed then attempt to install one.
-if [[ ! "${DUMP1090_INSTALLED}" = "true" ]] ; then
+if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
     # If this is not an automated installation ask the user which one to install.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         DUMP1090_OPTION=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of the following packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF 3>&1 1>&2 2>&3)
         case ${DUMP1090_OPTION} in
             "dump1090-mutability")
                 DUMP1090_FORK="mutability"
-                DUMP1090_INSTALL="true"
+                DUMP1090_DO_INSTALL="true"
                 ;;
             "dump1090-fa")
                 DUMP1090_FORK="fa"
-                DUMP1090_INSTALL="true"
+                DUMP1090_DO_INSTALL="true"
                 ;;
             *)
-                DUMP1090_INSTALL="false"
+                DUMP1090_DO_INSTALL="false"
                 ;;
         esac
     else
         # Refer to the installation configuration to check if a dump1090 fork has been specified
         if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] ; then
-            DUMP1090_INSTALL="true"
+            DUMP1090_DO_INSTALL="true"
         else
-            DUMP1090_INSTALL="false"
+            DUMP1090_DO_INSTALL="false"
         fi
     fi
 fi
 
 # If the FlightAware fork of dump1090 is or has been chosen to be installed PiAware must be installed.
 if [[ "${DUMP1090_FORK}" = "fa" ]] ; then
-    if [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] || [[ "${DUMP1090_INSTALLED}" = "false" ]] ; then
+    if [[ "${DUMP1090_DO_INSTALL}" = "true" ]] || [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] ; then
          FORCE_PIAWARE_INSTALL="true"
     fi
 fi
@@ -629,7 +629,7 @@ fi
 declare CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [[ "${DUMP1090_INSTALL}" = "false" ]] && [[ "${DUMP1090_UPGRADE}" = "false" ]] && [[ "${DUMP978_DO_INSTALL}" = "false" ]] && [[ "${DUMP978_DO_UPGRADE}" = "false" ]] && [[ "${RTLSDROGN_DO_INSTALL}" = "false" ]] && [[ "${RTLSDROGN_DO_UPGRADE}" = "false" ]] && [[ "${WEBPORTAL_INSTALL}" = "false" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
+if [[ "${DUMP1090_DO_INSTALL}" = "false" ]] && [[ "${DUMP1090_DO_UPGRADE}" = "false" ]] && [[ "${DUMP978_DO_INSTALL}" = "false" ]] && [[ "${DUMP978_DO_UPGRADE}" = "false" ]] && [[ "${RTLSDROGN_DO_INSTALL}" = "false" ]] && [[ "${RTLSDROGN_DO_UPGRADE}" = "false" ]] && [[ "${WEBPORTAL_INSTALL}" = "false" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
     # Nothing was chosen to be installed.
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\e[31m"
@@ -641,26 +641,24 @@ else
     CONFIRMATION="The following software will be installed:\n"
 
     # dump1090
-    if [[ "${DUMP1090_INSTALL}" = "true" ]] || [[ "${DUMP1090_UPGRADE}" = "true" ]] ; then
-        if [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] ; then
-            case ${DUMP1090_FORK} in
-                "mutability")
-                    CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability (reinstall)"
-                    ;;
-                "fa")
-                    CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa (upgrade)"
-                    ;;
-            esac
-        else
-            case ${DUMP1090_FORK} in
-                "mutability")
-                    CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
-                    ;;
-                "fa")
-                    CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa"
-                    ;;
-            esac
-        fi
+    if [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] ; then
+        case ${DUMP1090_FORK} in
+            "mutability")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability (reinstall)"
+                ;;
+            "fa")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa (upgrade)"
+                ;;
+        esac
+    elif [[ "${DUMP1090_DO_INSTALL}" = "true" ]]
+        case ${DUMP1090_FORK} in
+            "mutability")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
+                ;;
+            "fa")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa"
+                ;;
+        esac
     fi
 
     # dump978
@@ -762,7 +760,7 @@ fi
 
 ## Decoders
 
-if [[ "${DUMP1090_INSTALL}" = "true" ]] || [[ "${DUMP1090_UPGRADE}" = "true" ]] ; then
+if [[ "${DUMP1090_DO_INSTALL}" = "true" ]] || [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] ; then
     case ${DUMP1090_FORK} in
         "mutability")
             InstallDump1090Mutability
