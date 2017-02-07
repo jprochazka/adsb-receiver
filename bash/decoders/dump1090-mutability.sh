@@ -238,6 +238,10 @@ else
 fi
 
 # In future ask the user if they would like to specify the dump1090 range manually, if not set to 360 nmi / ~667 km to match dump1090-fa.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Explain to the user that the receiver's latitude and longitude is required.
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 Maximum Range" --msgbox "The dump1090-mutability default maximum range value of 300 nmi has been reported to be below what is possible with a well placed antenna, thus we will increase this values to 360 nmi (~660 km) until there is code to asl the user t confirm.
+fi
 if [[ -z "${DUMP1090_MAX_RANGE}" ]] ; then
     DUMP1090_MAX_RANGE="360"
 fi
