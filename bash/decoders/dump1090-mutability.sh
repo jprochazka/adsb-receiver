@@ -185,10 +185,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
     done
 fi
+
 echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
-#ChangeConfig "LAT" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LATITUDE})" "${DUMP1090_CONFIGURATION_FILE}"
+ChangeConfig "LAT" "${RECEIVER_LATITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
 echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
-#ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LONGITUDE})" "${DUMP1090_CONFIGURATION_FILE}"
+ChangeConfig "LON" "${RECEIVER_LONGITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
 
 # Ask for a Bing Maps API key.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
