@@ -163,7 +163,7 @@ fi
 
 ## DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
 
-# Set the receiver's latitude and longitude if it is not already set in the dump1090-mutibility configuration file.
+# Confirm the receiver's latitude and longitude if it is not already set in the dump1090-mutibility configuration file.
 echo -e ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
 echo -e ""
@@ -186,10 +186,17 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
-echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
-ChangeConfig "LAT" "${RECEIVER_LATITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
-echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
-ChangeConfig "LON" "${RECEIVER_LONGITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
+# Save the receiver's latitude and longitude values to dump1090 configuration file.
+RECEIVER_LATITUDE_CONFIGURED=`GetConfig "LON" "${DUMP1090_CONFIGURATION_FILE}"`
+if [[ ! "${RECEIVER_LATITUDE}" = "${RECEIVER_LATITUDE_CONFIGURED}" ]] ; then
+    echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
+    ChangeConfig "LAT" "${RECEIVER_LATITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
+fi
+RECEIVER_LONGITUDE_CONFIGURED=`GetConfig "LON" "${DUMP1090_CONFIGURATION_FILE}"`
+if [[ ! "${RECEIVER_LONGITUDE}" = "${RECEIVER_LONGITUDE_CONFIGURED}" ]] ; then
+    echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
+    ChangeConfig "LON" "${RECEIVER_LONGITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
+fi
 
 # Ask for a Bing Maps API key.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
