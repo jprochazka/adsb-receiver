@@ -238,8 +238,11 @@ else
 fi
 
 # In future ask the user if they would like to specify the dump1090 range manually, if not set to 360 nmi / ~667 km to match dump1090-fa.
-if [[ `grep "MAX_RANGE" ${DUMP1090_CONFIGURATION_FILE} | awk -F \" '{print $2}' | grep -c "360"` -eq 0 ]] ; then
-    ChangeConfig "MAX_RANGE" "360" "${DUMP1090_CONFIGURATION_FILE}"
+if [[ -z "${DUMP1090_MAX_RANGE}" ]] ; then
+    DUMP1090_MAX_RANGE="360"
+fi
+if [[ `grep "MAX_RANGE" ${DUMP1090_CONFIGURATION_FILE} | awk -F \" '{print $2}'` = "${DUMP1090_MAX_RANGE}" ]] ; then
+    ChangeConfig "MAX_RANGE" "${DUMP1090_MAX_RANGE}" "${DUMP1090_CONFIGURATION_FILE}"
 fi
 
 # Ask if dump1090-mutability measurments should be displayed using imperial or metric.
