@@ -244,12 +244,12 @@ fi
 
 # Ask if dump1090-mutability measurments should be displayed using imperial or metric.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by dump1090-mutbility." 11 78 2 "Imperial" "" "Metric" ""
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --yes-button "Imperial" --no-button "Metric" --yesno "\nPlease select the unit of measurement to be used by dump1090-mutbility." 9 78
     case $? in
-        "Imperial")
+        0)
             DUMP1090_UNIT_OF_MEASURMENT="imperial"
             ;;
-        "Metric")
+        1)
             DUMP1090_UNIT_OF_MEASURMENT="metric"
             ;;
     esac
