@@ -31,31 +31,33 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## SET INSTALLATION VARIABLES
+### VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
-DECODER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
-DECODER_GITHUB="https://github.com/glidernet/ogn-rf"
-DECODER_WEBSITE="http://wiki.glidernet.org"
-DECODER_NAME="RTLSDR-OGN"
-DECODER_DESC="is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker."
-DECODER_RADIO="Please note that a dedicated RTL-SDR dongle is required to use this decoder"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
+COMPONENT_GITHUB="https://github.com/glidernet/ogn-rf"
+COMPONENT_WEBSITE="http://wiki.glidernet.org"
+COMPONENT_NAME="RTLSDR-OGN"
+COMPONENT_DESC="is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker."
+COMPONENT_RADIO="Please note that a dedicated RTL-SDR dongle is required to use this decoder"
 
 # Component service script variables.
-DECODER_SERVICE_NAME="rtlsdr-ogn"
-DECODER_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
-DECODER_SERVICE_SCRIPT_NAME="${DECODER_SERVICE_NAME}"
-DECODER_SERVICE_SCRIPT_PATH="/etc/init.d/${DECODER_SERVICE_NAME}"
-DECODER_SERVICE_CONFIG_PATH="/etc/${DECODER_SERVICE_SCRIPT_NAME}.conf"
+COMPONENT_SERVICE_NAME="rtlsdr-ogn"
+COMPONENT_SERVICE_SCRIPT_URL="http://download.glidernet.org/common/service/rtlsdr-ogn"
+COMPONENT_SERVICE_SCRIPT_NAME="${COMPONENT_SERVICE_NAME}"
+COMPONENT_SERVICE_SCRIPT_PATH="/etc/init.d/${COMPONENT_SERVICE_NAME}"
+COMPONENT_SERVICE_CONFIG_PATH="/etc/${COMPONENT_SERVICE_SCRIPT_NAME}.conf"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
+
+## SET INSTALLATION VARIABLES
 
 # Source the automated install configuration file if this is an automated installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
@@ -69,20 +71,20 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${DECODER_NAME}..."
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DECODER_NAME} Setup" --yesno "${DECODER_NAME} ${DECODER_DESC}.\n\n${DECODER_RADIO}.\n\n${DECODER_WEBSITE}\n\nContinue setup by installing ${DECODER_NAME}?" 14 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
+        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
@@ -91,7 +93,7 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${DECODER_NAME}...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 # Required by install script.
 CheckPackage git
@@ -113,7 +115,7 @@ CheckPackage procserv
 CheckPackage telnet
 
 echo -e ""
-echo -e "\e[95m  Configuring this device to run the ${DECODER_NAME} binaries...\e[97m"
+echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
@@ -134,9 +136,9 @@ fi
 
 ## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
-if [[ -f "${DECODER_SERVICE_SCRIPT_PATH}" ]] ; then
-    echo -en "\e[33m  Stopping the ${DECODER_NAME} service...\e[97m"
-    ACTION=$(sudo ${DECODER_SERVICE_SCRIPT_PATH} stop 2>&1)
+if [[ -f "${COMPONENT_SERVICE_SCRIPT_PATH}" ]] ; then
+    echo -en "\e[33m  Stopping the ${COMPONENT_NAME} service...\e[97m"
+    ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} stop 2>&1)
     CheckReturnCode
 fi
 
@@ -144,7 +146,7 @@ fi
 
 PIDS=`ps -efww | egrep "(\./ogn-rf\ |\./ogn-decode\ )" | awk -vpid=$$ '$2 != pid { print $2 }' | tr '\n\r' ' '`
 if [ ! -z "${PIDS}" ]; then
-    echo -en "\e[33m  Killing any running ${DECODER_NAME} processes...\e[97m"
+    echo -en "\e[33m  Killing any running ${COMPONENT_NAME} processes...\e[97m"
     ACTION=$(sudo kill -9 ${PIDS})
     CheckReturnCode
 fi
@@ -181,37 +183,37 @@ if [[ "${TUNER_COUNT}" -gt 1 ]] ; then
     if [[ -n "${OGN_DEVICE_SERIAL}" ]] ; then
         for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
             if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
-                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${DECODER_NAME}...\e[97m"
+                echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${COMPONENT_NAME}...\e[97m"
                 OGN_DEVICE_ID=${DEVICE_ID}
             fi
         done
         # If no match for this serial then assume the highest numbered tuner will be used.
         if [[ -z "${OGN_DEVICE_ID}" ]] ; then
-            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
+            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${COMPONENT_NAME}...\e[97m"
             OGN_DEVICE_ID=${TUNER_COUNT}
         fi
     # Or if a device has been specified by device ID then confirm this is currently detected.
     elif [[ -n "${OGN_DEVICE_ID}" ]] ; then
         if [[ `rtl_eeprom -d ${OGN_DEVICE_ID} 2>&1 | grep -c "^\s*${OGN_DEVICE_ID}:\s"` -eq 1 ]] ; then
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${DECODER_NAME}...\e[97m"
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${COMPONENT_NAME}...\e[97m"
         # If no match for this serial then assume the highest numbered tuner will be used.
         else
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${DECODER_NAME}...\e[97m"
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${COMPONENT_NAME}...\e[97m"
             OGN_DEVICE_ID=${TUNER_COUNT}
         fi
     # Failing that configure it with device ID 0.
     else
-        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${DECODER_NAME}...\e[97m"
+        echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${COMPONENT_NAME}...\e[97m"
         OGN_DEVICE_ID=${TUNER_COUNT}
     fi
 # Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ "${TUNER_COUNT}" -eq 1 ]] ; then
-    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${DECODER_NAME}...\e[97m"
+    echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${COMPONENT_NAME}...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
 elif [[ "${TUNER_COUNT}" -lt 1 ]] ; then
-    echo -en "\e[33m  No RTL-SDR device detected so ${DECODER_NAME} will be assigned device \"0\"...\e[97m"
+    echo -en "\e[33m  No RTL-SDR device detected so ${COMPONENT_NAME} will be assigned device \"0\"...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
 fi
@@ -283,16 +285,16 @@ fi
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
-if [[ ! -d "${DECODER_BUILD_DIRECTORY}" ]] ; then
-    echo -en "\e[33m  Creating build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    ACTION=$(mkdir -vp ${DECODER_BUILD_DIRECTORY} 2>&1)
+if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
+    echo -en "\e[33m  Creating build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
+    ACTION=$(mkdir -vp ${COMPONENT_BUILD_DIRECTORY} 2>&1)
     CheckReturnCode
 fi
 
 # Enter the build directory.
-if [[ ! "${PWD}" = "${DECODER_BUILD_DIRECTORY}" ]] ; then
-    echo -en "\e[33m  Entering build directory \"\e[37m${DECODER_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    cd ${DECODER_BUILD_DIRECTORY}
+if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
+    echo -en "\e[33m  Entering build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
+    cd ${COMPONENT_BUILD_DIRECTORY}
     ACTION=${PWD}
     CheckReturnCode
 fi
@@ -305,66 +307,66 @@ CheckReturnCode
 case ${CPU_ARCHITECTURE} in
     "armv6l")
         # Raspberry Pi 1.
-        DECODER_BINARY_URL="http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz"
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards.
-        DECODER_BINARY_URL="http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz"
         ;;
     "x86_64")
         # 64 Bit.
-        DECODER_BINARY_URL="http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz"
         ;;
     *)
         # 32 Bit (default install if no others matched).
-        DECODER_BINARY_URL="http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz"
         ;;
 esac
 
 # Attempt to download and extract binaries.
-if [[ `echo "${DECODER_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
+if [[ `echo "${COMPONENT_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     # Download binaries.
-    echo -en "\e[33m  Downloading ${DECODER_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\e[97m"
-    DECODER_BINARY_FILE=`echo ${DECODER_BINARY_URL} | awk -F "/" '{print $NF}'`
-    ACTION=$(curl -L ${DECODER_BINARY_URL} -o ${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE} 2>&1)
+    echo -en "\e[33m  Downloading ${COMPONENT_NAME} binaries for \"\e[37m${CPU_ARCHITECTURE}\e[33m\" architecture...\e[97m"
+    COMPONENT_BINARY_FILE=`echo ${COMPONENT_BINARY_URL} | awk -F "/" '{print $NF}'`
+    ACTION=$(curl -L ${COMPONENT_BINARY_URL} -o ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_BINARY_FILE} 2>&1)
     CheckReturnCode
     # Extract binaries.
-    echo -en "\e[33m  Extracting ${DECODER_NAME} package \"\e[37m${DECODER_BINARY_FILE}\e[33m\"...\e[97m"
-    ACTION=$(tar -vxzf "${DECODER_BUILD_DIRECTORY}/${DECODER_BINARY_FILE}" -C "${DECODER_BUILD_DIRECTORY}" 2>&1)
+    echo -en "\e[33m  Extracting ${COMPONENT_NAME} package \"\e[37m${COMPONENT_BINARY_FILE}\e[33m\"...\e[97m"
+    ACTION=$(tar -vxzf "${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_BINARY_FILE}" -C "${COMPONENT_BUILD_DIRECTORY}" 2>&1)
     CheckReturnCode
 else
     # Unable to download bimary due to invalid URL.
-    echo -e "\e[33m  Error invalid DECODER_BINARY_URL \"${DECODER_BINARY_URL}\"...\e[97m"
+    echo -e "\e[33m  Error invalid COMPONENT_BINARY_URL \"${COMPONENT_BINARY_URL}\"...\e[97m"
     exit 1
 fi
 
-# Change to DECODER work directory for post-build actions.
-DECODER_PROJECT_DIRECTORY="${DECODER_BUILD_DIRECTORY}/rtlsdr-ogn"
-if [[ -d "${DECODER_PROJECT_DIRECTORY}" ]] ; then
-    cd ${DECODER_PROJECT_DIRECTORY}
+# Change to component work directory for post-build actions.
+COMPONENT_PROJECT_DIRECTORY="${COMPONENT_BUILD_DIRECTORY}/rtlsdr-ogn"
+if [[ -d "${COMPONENT_PROJECT_DIRECTORY}" ]] ; then
+    cd ${COMPONENT_PROJECT_DIRECTORY}
 else
-    echo -e "\e[33m  Error unable to access \"${DECODER_PROJECT_DIRECTORY}\"...\e[97m"
+    echo -e "\e[33m  Error unable to access \"${COMPONENT_PROJECT_DIRECTORY}\"...\e[97m"
     exit 1
 fi
 
 # Create named pipe if required.
-if [[ ! -p "${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo" ]] ; then
+if [[ ! -p "${COMPONENT_PROJECT_DIRECTORY}/ogn-rf.fifo" ]] ; then
     echo -en "\e[33m  Creating named pipe...\e[97m"
-    ACTION=$(sudo mkfifo ${DECODER_PROJECT_DIRECTORY}/ogn-rf.fifo 2>&1)
+    ACTION=$(sudo mkfifo ${COMPONENT_PROJECT_DIRECTORY}/ogn-rf.fifo 2>&1)
     CheckReturnCode
 fi
 
 # Set file permissions.
 echo -en "\e[33m  Setting proper file permissions...\e[97m"
-DECODER_SETUID_BINARIES="gsm_scan ogn-rf rtlsdr-ogn"
-DECODER_SETUID_COUNT="0"
-for DECODER_SETUID_BINARY in ${DECODER_SETUID_BINARIES} ; do
-    DECODER_SETUID_COUNT=$((DECODER_SETUID_COUNT+1))
-    ACTION=$(sudo chown -v root ${DECODER_SETUID_BINARY} 2>&1)
-    ACTION=$(sudo chmod -v a+s  ${DECODER_SETUID_BINARY} 2>&1)
+COMPONENT_SETUID_BINARIES="gsm_scan ogn-rf rtlsdr-ogn"
+COMPONENT_SETUID_COUNT="0"
+for COMPONENT_SETUID_BINARY in ${COMPONENT_SETUID_BINARIES} ; do
+    COMPONENT_SETUID_COUNT=$((COMPONENT_SETUID_COUNT+1))
+    ACTION=$(sudo chown -v root ${COMPONENT_SETUID_BINARY} 2>&1)
+    ACTION=$(sudo chmod -v a+s  ${COMPONENT_SETUID_BINARY} 2>&1)
 done
 # And check that the file permissions have been applied.
-if [[ `ls -l ${DECODER_SETUID_BINARIES} | grep -c "\-rwsr-sr-x"` -eq "${DECODER_SETUID_COUNT}" ]] ; then
+if [[ `ls -l ${COMPONENT_SETUID_BINARIES} | grep -c "\-rwsr-sr-x"` -eq "${COMPONENT_SETUID_COUNT}" ]] ; then
     true
 else
     false
@@ -372,7 +374,7 @@ fi
 CheckReturnCode
 
 # Creat GPU device if required.
-if [[ ! -c "${DECODER_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
+if [[ ! -c "${COMPONENT_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     # Check if kernel v4.1 or higher is being used.
     echo -en "\e[33m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
@@ -382,11 +384,11 @@ if [[ ! -c "${DECODER_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
-        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 100 0 2>&1)
+        ACTION=$(sudo mknod ${COMPONENT_PROJECT_DIRECTORY}/gpu_dev c 100 0 2>&1)
     else
         # Kernel is version 4.1 or newer.
         echo -en "\e[33m  Executing mknod for newer kernels...\e[97m"
-        ACTION=$(sudo mknod ${DECODER_PROJECT_DIRECTORY}/gpu_dev c 249 0 2>&1)
+        ACTION=$(sudo mknod ${COMPONENT_PROJECT_DIRECTORY}/gpu_dev c 249 0 2>&1)
     fi
     CheckReturnCode
 fi
@@ -404,7 +406,7 @@ if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
         DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
         DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
-    elif [[ -x "${DECODER_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
+    elif [[ -x "${COMPONENT_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
         echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take up to 20 minutes...\e[97m"
         if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
             DERIVED_GSM_OPTS="--gsm850"
@@ -474,7 +476,7 @@ if [[ -z "${OGN_RECEIVER_NAME}" ]] ; then
     fi
 fi
 
-# Check for decoder specific variable, if not set then populate with dummy values to ensure valid config generation.
+# Check for component specific variables, otherwise populate with dummy values to ensure valid config generation.
 
 # Frequency Correction
 if [[ -z "${OGN_FREQ_CORR}" ]] ; then
@@ -509,12 +511,12 @@ if [[ -z "${OGN_WHITELIST}" ]] ; then
 fi
 
 # Test if config file exists, if not create it.
-DECODER_CONFIG_FILE_NAME="${OGN_RECEIVER_NAME}.conf"
-if [[ -s "${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME}" ]] ; then
-    echo -en "\e[33m  Using existing ${DECODER_NAME} config file at \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
+COMPONENT_CONFIG_FILE_NAME="${OGN_RECEIVER_NAME}.conf"
+if [[ -s "${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME}" ]] ; then
+    echo -en "\e[33m  Using existing ${COMPONENT_NAME} config file at \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
 else
-    echo -en "\e[33m  Generating new ${DECODER_NAME} config file as \"\e[37m${DECODER_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
-    sudo tee ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
+    echo -en "\e[33m  Generating new ${COMPONENT_NAME} config file as \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
+    sudo tee ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
 #########################################################
 #                                                       #
 #              CONFIGURATION FILE BASED ON              #
@@ -557,59 +559,59 @@ EOF
 fi
 
 # Update ownership of new config file.
-ACTION=$(chown -v pi:pi ${DECODER_PROJECT_DIRECTORY}/${DECODER_CONFIG_FILE_NAME} 2>&1)
+ACTION=$(chown -v pi:pi ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} 2>&1)
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
 
 # Install service script.
-if [[ -f "${DECODER_SERVICE_SCRIPT_NAME}" ]] ; then
+if [[ -f "${COMPONENT_SERVICE_SCRIPT_NAME}" ]] ; then
     # Check for local copy of service script.
-    if [[ `grep -c "conf=${DECODER_SERVICE_CONFIG_PATH}" ${DECODER_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
-        echo -en "\e[33m  Installing service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(cp -v ${DECODER_SERVICE_SCRIPT_NAME} ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
-        ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+    if [[ `grep -c "conf=${COMPONENT_SERVICE_CONFIG_PATH}" ${COMPONENT_SERVICE_SCRIPT_NAME}` -eq 1 ]] ; then
+        echo -en "\e[33m  Installing service script at \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(cp -v ${COMPONENT_SERVICE_SCRIPT_NAME} ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod -v +x ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
     else
-        echo -en "\e[33m  Invalid service script \"\e[37m${DECODER_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
+        echo -en "\e[33m  Invalid service script \"\e[37m${COMPONENT_SERVICE_SCRIPT_NAME}\e[33m\"...\e[97m"
         false
     fi
-elif [[ -n "${DECODER_SERVICE_SCRIPT_URL}" ]] ; then
+elif [[ -n "${COMPONENT_SERVICE_SCRIPT_URL}" ]] ; then
     # Otherwise attempt to download service script.
-    if [[ `echo ${DECODER_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
-        echo -en "\e[33m  Downloading service script to \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
-        ACTION=$(sudo curl -L ${DECODER_SERVICE_SCRIPT_URL} -o ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
-        ACTION=$(sudo chmod -v +x ${DECODER_SERVICE_SCRIPT_PATH} 2>&1)
+    if [[ `echo ${COMPONENT_SERVICE_SCRIPT_URL} | grep -c "^http"` -gt 0 ]] ; then
+        echo -en "\e[33m  Downloading service script to \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+        ACTION=$(sudo curl -L ${COMPONENT_SERVICE_SCRIPT_URL} -o ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
+        ACTION=$(sudo chmod -v +x ${COMPONENT_SERVICE_SCRIPT_PATH} 2>&1)
     else
-        echo -en "\e[33m  Invalid service script url \"\e[37m${DECODER_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
+        echo -en "\e[33m  Invalid service script url \"\e[37m${COMPONENT_SERVICE_SCRIPT_URL}\e[33m\"...\e[97m"
         false
     fi
 else
     # Otherwise error if unable to use local or downloaded service script
-    echo -en "\e[33m  Unable to install service script at \"\e[37m${DECODER_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
+    echo -en "\e[33m  Unable to install service script at \"\e[37m${COMPONENT_SERVICE_SCRIPT_PATH}\e[33m\"...\e[97m"
     false
 fi
 CheckReturnCode
 
 # Generate and install service script configuration file.
-if [[ -n "${DECODER_SERVICE_CONFIG_PATH}" ]] ; then
-    echo -en "\e[33m  Creating service config file \"\e[37m${DECODER_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
-    sudo tee ${DECODER_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
+if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] ; then
+    echo -en "\e[33m  Creating service config file \"\e[37m${COMPONENT_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
+    sudo tee ${COMPONENT_SERVICE_CONFIG_PATH} > /dev/null 2>&1 <<EOF
 #shellbox configuration file
 #Starts commands inside a "box" with a telnet-like server.
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50000  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
-50001  pi ${DECODER_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
+50000  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
+50001  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
 EOF
-    ACTION=$(chown -v pi:pi ${DECODER_SERVICE_CONFIG_PATH} 2>&1)
+    ACTION=$(chown -v pi:pi ${COMPONENT_SERVICE_CONFIG_PATH} 2>&1)
 else
-    echo -en "\e[33m  Unable to create service config file \"\e[37m${DECODER_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
+    echo -en "\e[33m  Unable to create service config file \"\e[37m${COMPONENT_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
     false
 fi
 CheckReturnCode
 
-# Potentially obselse tuner detection code.
+# Potentially obsolete tuner detection code.
 if [[ "${TUNER_COUNT}" -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
     echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\e[97m"
@@ -622,14 +624,14 @@ if [[ "${TUNER_COUNT}" -lt 2 ]] ; then
     CheckReturnCode
 fi
 
-# Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${DECODER_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${DECODER_SERVICE_NAME} defaults 2>&1)
+# Configure component as a service.
+echo -en "\e[33m  Configuring ${COMPONENT_NAME} as a service...\e[97m"
+ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
-# Start the DECODER service.
-echo -en "\e[33m  Starting the ${DECODER_NAME} service...\e[97m"
-ACTION=$(sudo ${DECODER_SERVICE_SCRIPT_PATH} start 2>&1)
+# Start the component service.
+echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
+ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} start 2>&1)
 CheckReturnCode
 
 ### SETUP COMPLETE
@@ -641,7 +643,7 @@ ACTION=${PWD}
 CheckReturnCode
 
 echo -e "\e[93m  ------------------------------------------------------------------------------\n"
-echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
