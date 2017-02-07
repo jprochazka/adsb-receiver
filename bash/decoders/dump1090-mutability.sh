@@ -239,7 +239,7 @@ fi
 
 # In future ask the user if they would like to specify the dump1090 range manually, if not set to 360 nmi / ~667 km to match dump1090-fa.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 Maximum Range" --msgbox "The dump1090-mutability default maximum range value of 300 nmi has been reported to be below what is possible with a well placed antenna so we will increase this value to 360 nmi (~660 km) to match dump1090-fa" 10 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 Maximum Range" --msgbox "The default maximum range value for dump1090-mutability is 300 nmi (~550km) and has been reported to be below what is possible under the right conditions, so this value will be increased to 360 nmi (~660 km) to match the values used by dump1090-fa." 10 78
 fi
 if [[ -z "${DUMP1090_MAX_RANGE}" ]] ; then
     DUMP1090_MAX_RANGE="360"

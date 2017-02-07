@@ -48,7 +48,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURA
 fi
 
 ## Set the project title variable.
-export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project v${PROJECTVERSION} Installer"
+export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project v${PROJECT_VERSION} Installer"
 
 ###############
 ## FUNCTIONS
