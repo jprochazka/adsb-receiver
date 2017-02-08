@@ -210,7 +210,6 @@ fi
 UNITOFMEASUREMENT=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by ${DECODER_NAME}." 11 78 2 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
 if [[ $UNITOFMEASUREMENT = "Metric" ]] ; then
     echo -e "\e[94m  Setting ${DECODER_NAME} unit of measurement to Metric...\e[97m"
-    echo -e "\e[94m  Setting ${DECODER_NAME} unit of measurement to Imperial...\e[97m"
     ChangeConfig "Metric" "true;" "/usr/share/dump1090-mutability/html/config.js"
 else
     echo -e "\e[94m  Setting ${DECODER_NAME} unit of measurement to Imperial...\e[97m"
