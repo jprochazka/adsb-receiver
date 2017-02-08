@@ -151,7 +151,7 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
     fi
     # Assign the specified RTL-SDR dongle to dump1090.
     if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] && [[ -n "${DUMP1090_DEVICE_ID}" ]] ; then
-        echo -e "\e[94m  Assigning RTL-SDR dongle \"DUMP1090_DEVICE_ID\" to dump1090-mutability...\e[97m"
+        echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP1090_DEVICE_ID}\" to dump1090-mutability...\e[97m"
         ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
         echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
         echo -e ""
