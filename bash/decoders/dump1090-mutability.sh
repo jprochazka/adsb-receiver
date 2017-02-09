@@ -286,7 +286,7 @@ if [[ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]] ; then
         if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to ${COMPONENT_NAME} using data obtained from Heywhatsthat.com. In order to add these rings to your ${COMPONENT_NAME} map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78) ; then
             # Set the DUMP1090_HEYWHATSTHAT_INSTALL variable to true.
             DUMP1090_HEYWHATSTHAT_INSTALL="true"
-            # Ask the user for the Heywhatsthat.com panarama ID.
+            # Ask the user for the Heywhatsthat.com panorama ID.
             DUMP1090_HEYWHATSTHAT_ID_TITLE="Heywhatsthat.com Panarama ID"
             while [[ -z "${DUMP1090_HEYWHATSTHAT_ID}" ]] ; do
                 DUMP1090_HEYWHATSTHAT_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_ID_TITLE}" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
