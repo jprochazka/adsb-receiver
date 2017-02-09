@@ -148,6 +148,14 @@ echo -e "\e[94m  Installing the dump1090-mutability package...\e[97m"
 echo -e ""
 sudo dpkg -i dump1090-mutability_1.15~dev_*.deb 2>&1
 
+# Prempt the dpkg question asking if the user would like dump1090 to start automatically.
+if [[ ! "`sudo debconf-get-selections 2>/dev/null | grep "dump1090-mutability/auto-start" | awk '{print $4}'`" = "true" ]] ; then
+    echo -e ""
+    echo -e "\e[94m  Configuring dump109-mutablity to start automatically....\e[97m]"
+    ACTION=$(echo 'dump1090-mutability dump1090-mutability/auto-start boolean true' | sudo debconf-set-selections -v 2>&1)
+    echo -e ""
+fi
+
 # Check that the package was installed.
 echo -e ""
 echo -e "\e[94m  Checking that the dump1090-mutability package was installed properly...\e[97m"
