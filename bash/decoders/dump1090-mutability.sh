@@ -71,6 +71,8 @@ echo -e "\e[92m  Setting up dump1090-mutability..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
+
+# Skip over this dialog if this installation is set to be automated.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-mutability Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-mutability is a fork of MalcolmRobb's version of dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  https://github.com/mutability/dump1090\n\nContinue setup by installing dump1090-mutability?" 14 78
     if [[ $? -eq 1 ]] ; then
@@ -81,6 +83,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
         echo -e ""
+        read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
 fi
@@ -125,6 +128,7 @@ fi
 
 ## BUILD AND INSTALL THE DUMP1090-MUTABILITY PACKAGE
 
+# Build the deb binary package.
 echo -e ""
 echo -e "\e[95m  Building and installing the dump1090-mutability package...\e[97m"
 echo -e ""
@@ -134,13 +138,15 @@ if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] ; then
 fi
 echo -e "\e[94m  Building the dump1090-mutability package...\e[97m"
 echo -e ""
-dpkg-buildpackage -b
+dpkg-buildpackage -b 2>&1
+
+# Install the deb binary package.
 echo -e ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
 echo -e "\e[94m  Installing the dump1090-mutability package...\e[97m"
 echo -e ""
-sudo dpkg -i dump1090-mutability_1.15~dev_*.deb
+sudo dpkg -i dump1090-mutability_1.15~dev_*.deb 2>&1
 
 # Check that the package was installed.
 echo -e ""
@@ -157,7 +163,9 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
     echo -e ""
-    read -p "Press enter to continue..." CONTINUE
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
@@ -248,7 +256,7 @@ if [[ `grep "MAX_RANGE" ${DUMP1090_CONFIGURATION_FILE} | awk -F \" '{print $2}'`
     ChangeConfig "MAX_RANGE" "${DUMP1090_MAX_RANGE}" "${DUMP1090_CONFIGURATION_FILE}"
 fi
 
-# Ask if dump1090-mutability measurments should be displayed using imperial or metric.
+# Ask if measurments should be displayed using imperial or metric.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --yes-button "Imperial" --no-button "Metric" --yesno "\nPlease select the unit of measurement to be used by dump1090-mutbility." 9 78
     case $? in
