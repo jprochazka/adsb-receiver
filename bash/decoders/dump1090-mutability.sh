@@ -140,14 +140,6 @@ echo -e "\e[94m  Building the dump1090-mutability package...\e[97m"
 echo -e ""
 dpkg-buildpackage -b 2>&1
 
-# Install the deb binary package.
-echo -e ""
-echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
-echo -e "\e[94m  Installing the dump1090-mutability package...\e[97m"
-echo -e ""
-sudo dpkg -i dump1090-mutability_1.15~dev_*.deb 2>&1
-
 # Prempt the dpkg question asking if the user would like dump1090 to start automatically.
 if [[ ! "`sudo debconf-get-selections 2>/dev/null | grep "dump1090-mutability/auto-start" | awk '{print $4}'`" = "true" ]] ; then
     echo -e ""
@@ -155,6 +147,14 @@ if [[ ! "`sudo debconf-get-selections 2>/dev/null | grep "dump1090-mutability/au
     ACTION=$(echo 'dump1090-mutability dump1090-mutability/auto-start boolean true' | sudo debconf-set-selections -v 2>&1)
     echo -e ""
 fi
+
+# Install the deb binary package.
+echo -e ""
+echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
+echo -e "\e[94m  Installing the dump1090-mutability package...\e[97m"
+echo -e ""
+sudo dpkg -i dump1090-mutability_1.15~dev_*.deb 2>&1
 
 # Check that the package was installed.
 echo -e ""
