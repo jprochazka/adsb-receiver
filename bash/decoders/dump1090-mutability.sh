@@ -260,7 +260,7 @@ if [[ `grep "MAX_RANGE" ${DUMP1090_CONFIGURATION_FILE} | awk -F \" '{print $2}'`
     ChangeConfig "MAX_RANGE" "${DUMP1090_MAX_RANGE}" "${DUMP1090_CONFIGURATION_FILE}"
 fi
 
-# Ask if measurments should be displayed using imperial or metric.
+# Ask if measurements should be displayed using imperial or metric.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --yes-button "Imperial" --no-button "Metric" --yesno "\nPlease select the unit of measurement to be used by dump1090-mutbility." 9 78
     case $? in
