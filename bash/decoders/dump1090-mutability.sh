@@ -36,12 +36,12 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability"
 
 # Component specific variables.
 
 COMPONENT_NAME="Dump1090-mutability"
 COMPONENT_WEBSITE="https://github.com/mutability/dump1090"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability"
 DUMP1090_CONFIGURATION_FILE="/etc/default/dump1090-mutability"
 
 # Component service script variables.
@@ -53,6 +53,16 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## SET INSTALLATION VARIABLES
 
+# Source the automated install configuration file if this is an automated installation.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
+else
+    RECEIVER_LATITUDE=`GetConfig "LAT" "${DUMP1090_CONFIGURATION_FILE}"`
+    RECEIVER_LONGITUDE=`GetConfig "LON" "${DUMP1090_CONFIGURATION_FILE}"`
+    DUMP1090_BING_MAPS_KEY=`GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
+    DUMP1090_MAPZEN_KEY=`GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
+fi
+
 ### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -60,15 +70,14 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${COMPONENT_NAME} ..."
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}...."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
 # Skip over this dialog if this installation is set to be automated.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "Dump1090 is a Mode-S decoder specifically designed for RTL-SDR devices. ${COMPONENT_NAME} is a fork of MalcolmRobb's version of Dump1090 that adds new functionality and is designed to be built as a Debian/Raspbian package.\n\n  ${COMPONENT_WEBSITE} \n\nContinue setup by installing ${COMPONENT_NAME}?" 14 78
-    CONTINUESETUP=$?
-    if [[ ${CONTINUESETUP} = 1 ]] ; then
+    if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
@@ -83,7 +92,7 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to build and fulfill dependencies for ${COMPONENT_NAME} ...\e[97m"
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
 CheckPackage git
 CheckPackage curl
@@ -204,19 +213,19 @@ ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LONGITUDE})" "/et
 # Ask for a Bing Maps API key.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     DUMP1090_BING_MAPS_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 12 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
-    if [[ ! -z ${DUMP1090_BING_MAPS_KEY} ]] ; then
-        echo -e "\e[94m  Setting the Bing Maps API Key to ${DUMP1090_BING_MAPS_KEY}...\e[97m"
-        ChangeConfig "BingMapsAPIKey" "${DUMP1090_BING_MAPS_KEY}" "/usr/share/dump1090-mutability/html/config.js"
-    fi
+fi
+if [[ -n "${DUMP1090_BING_MAPS_KEY}" ]] ; then
+    echo -e "\e[94m  Setting the Bing Maps API Key to ${DUMP1090_BING_MAPS_KEY}...\e[97m"
+    ChangeConfig "BingMapsAPIKey" "${DUMP1090_BING_MAPS_KEY}" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
 # Ask for a Mapzen API key.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     DUMP1090_MAPZEN_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the ${COMPONENT_NAME} map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 `GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
-    if [[ ! -z ${DUMP1090_MAPZEN_KEY} ]] ; then
-        echo -e "\e[94m  Setting the Mapzen API Key to ${DUMP1090_MAPZEN_KEY}...\e[97m"
-        ChangeConfig "MapzenAPIKey" "${DUMP1090_MAPZEN_KEY}" "/usr/share/dump1090-mutability/html/config.js"
-    fi
+fi
+if [[ -n "${DUMP1090_MAPZEN_KEY}" ]] ; then
+    echo -e "\e[94m  Setting the Mapzen API Key to ${DUMP1090_MAPZEN_KEY}...\e[97m"
+    ChangeConfig "MapzenAPIKey" "${DUMP1090_MAPZEN_KEY}" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
 # Ask if dump1090-mutability should bind on all IP addresses.
@@ -272,26 +281,37 @@ else
 fi
 
 # Download Heywhatsthat.com maximum range rings.
-if [[ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]] && (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to ${COMPONENT_NAME} using data obtained from Heywhatsthat.com. In order to add these rings to your ${COMPONENT_NAME} map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
-    DUMP1090_HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
-    while [[ -z "${DUMP1090_HEYWHATSTHATID}" ]] ; do
-        DUMP1090_HEYWHATSTHATID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHATID_TITLE}" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
-        DUMP1090_HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
-    done
-    DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude"
-    while [[ -z "${DUMP1090_HEYWHATSTHAT_RING_ONE}" ]] ; do
-        DUMP1090_HEYWHATSTHAT_RING_ONE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE}" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
-        DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
-    done
-    DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude"
-    while [[ -z "${DUMP1090_HEYWHATSTHAT_RING_TWO}" ]] ; do
-        DUMP1090_HEYWHATSTHAT_RING_TWO=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE}" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
-        DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
-    done
+if [[ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]] ; then
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to ${COMPONENT_NAME} using data obtained from Heywhatsthat.com. In order to add these rings to your ${COMPONENT_NAME} map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78) ; then
+            # Set the DUMP1090_HEYWHATSTHAT_INSTALL variable to true.
+            DUMP1090_HEYWHATSTHAT_INSTALL="true"
+            # Ask the user for the Heywhatsthat.com panarama ID.
+            DUMP1090_HEYWHATSTHAT_ID_TITLE="Heywhatsthat.com Panarama ID"
+            while [[ -z "${DUMP1090_HEYWHATSTHAT_ID}" ]] ; do
+                DUMP1090_HEYWHATSTHAT_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_ID_TITLE}" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
+                DUMP1090_HEYWHATSTHAT_ID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+            done
+            # Ask the user what altitude in meters to set the first range ring.
+            DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude"
+            while [[ -z "${DUMP1090_HEYWHATSTHAT_RING_ONE}" ]] ; do
+                DUMP1090_HEYWHATSTHAT_RING_ONE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE}" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
+                DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
+            done
+            # Ask the user what altitude in meters to set the second range ring.
+            DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude"
+            while [[ -z "${DUMP1090_HEYWHATSTHAT_RING_TWO}" ]] ; do
+                DUMP1090_HEYWHATSTHAT_RING_TWO=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE}" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
+                DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
+            done
+        fi
+    fi
     # If the Heywhatsthat.com maximum range rings are to be added download them now.
+    if [[ "${DUMP1090_HEYWHATSTHAT_INSTALL}" = "true" ]] ; then
         echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
         echo -e ""
-        sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${DUMP1090_HEYWHATSTHATID}&refraction=0.25&alts=${DUMP1090_HEYWHATSTHAT_RING_ONE},${DUMP1090_HEYWHATSTHAT_RING_TWO}"
+        sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${DUMP1090_HEYWHATSTHAT_ID}&refraction=0.25&alts=${DUMP1090_HEYWHATSTHAT_RING_ONE},${DUMP1090_HEYWHATSTHAT_RING_TWO}"
+    fi
 fi
 
 # Reload component to ensure all changes take effect.
