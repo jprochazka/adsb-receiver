@@ -244,7 +244,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             ;;
     esac
 fi
-if [[ "${DUMP1090_BIND_TO_ALL_IPS}" = "true" ]] ; then
+if [[ ! "${DUMP1090_BIND_TO_ALL_IPS}" = "false" ]] ; then
     echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
     CommentConfig "NET_BIND_ADDRESS" "${DUMP1090_CONFIGURATION_FILE}"
 else
