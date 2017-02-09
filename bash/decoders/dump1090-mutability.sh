@@ -176,21 +176,24 @@ fi
 echo -e ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
 echo -e ""
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Explain to the user that the receiver's latitude and longitude is required.
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
     # Ask the user for the receiver's latitude.
-RECEIVER_LATITUDE_TITLE="Receiver Latitude"
-while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
-    RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-    RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 " ${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
-    RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
-done
+    RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+    while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+        RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 " ${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+    done
     # Ask the user for the receiver's longitude.
-RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
-while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
-    RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
-    RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 " ${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
-    RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
-done
+    RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+        RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 " ${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    done
+fi
 
 # Save the receiver's latitude and longitude values to dump1090 configuration file.
 echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
@@ -199,21 +202,36 @@ echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[
 ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LONGITUDE})" "/etc/default/dump1090-mutability"
 
 # Ask for a Bing Maps API key.
-BINGMAPSKEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 12 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
-if [[ ! -z ${BINGMAPSKEY} ]] ; then
-    echo -e "\e[94m  Setting the Bing Maps API Key to ${BINGMAPSKEY}...\e[97m"
-    ChangeConfig "BingMapsAPIKey" "${BINGMAPSKEY}" "/usr/share/dump1090-mutability/html/config.js"
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    DUMP1090_BING_MAPS_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 12 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+    if [[ ! -z ${DUMP1090_BING_MAPS_KEY} ]] ; then
+        echo -e "\e[94m  Setting the Bing Maps API Key to ${DUMP1090_BING_MAPS_KEY}...\e[97m"
+        ChangeConfig "BingMapsAPIKey" "${DUMP1090_BING_MAPS_KEY}" "/usr/share/dump1090-mutability/html/config.js"
+    fi
 fi
 
 # Ask for a Mapzen API key.
-MAPZENKEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the ${COMPONENT_NAME} map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 `GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
-if [[ ! -z ${MAPZENKEY} ]] ; then
-    echo -e "\e[94m  Setting the Mapzen API Key to ${MAPZENKEY}...\e[97m"
-    ChangeConfig "MapzenAPIKey" "${MAPZENKEY}" "/usr/share/dump1090-mutability/html/config.js"
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    DUMP1090_MAPZEN_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the ${COMPONENT_NAME} map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 `GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+    if [[ ! -z ${DUMP1090_MAPZEN_KEY} ]] ; then
+        echo -e "\e[94m  Setting the Mapzen API Key to ${DUMP1090_MAPZEN_KEY}...\e[97m"
+        ChangeConfig "MapzenAPIKey" "${DUMP1090_MAPZEN_KEY}" "/usr/share/dump1090-mutability/html/config.js"
+    fi
 fi
 
 # Ask if dump1090-mutability should bind on all IP addresses.
-if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Bind ${COMPONENT_NAME} To All IP Addresses" --yesno "By default ${COMPONENT_NAME} is bound only to the local loopback IP address(s) for security reasons. However some people wish to make ${COMPONENT_NAME}'s data accessable externally by other devices. To allow this ${COMPONENT_NAME} can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that ${COMPONENT_NAME} remain bound only to the local loopback IP address(s).\n\nWould you like ${COMPONENT_NAME} to listen on all IP addesses?" 15 78) then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Bind ${COMPONENT_NAME} To All IP Addresses" --yesno "By default ${COMPONENT_NAME} is bound only to the local loopback IP address(s) for security reasons. However some people wish to make ${COMPONENT_NAME}'s data accessable externally by other devices. To allow this ${COMPONENT_NAME} can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that ${COMPONENT_NAME} remain bound only to the local loopback IP address(s).\n\nWould you like ${COMPONENT_NAME} to listen on all IP addesses?" 15 78
+    case $? in
+        0)
+            DUMP1090_BIND_TO_ALL_IPS="true"
+            ;;
+        1)
+            DUMP1090_BIND_TO_ALL_IPS="false"
+            ;;
+    esac
+fi
+if [[ "${DUMP1090_BIND_TO_ALL_IPS}" = "true" ]] ; then
     echo -e "\e[94m  Binding ${COMPONENT_NAME} to all available IP addresses...\e[97m"
     CommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
 else
@@ -234,8 +252,18 @@ if [[ `grep "MAX_RANGE" ${DUMP1090_CONFIGURATION_FILE} | awk -F \" '{print $2}'`
 fi
 
 # Ask if measurments should be displayed using imperial or metric.
-DUMP1090_UNIT_OF_MEASUREMENT=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by ${COMPONENT_NAME}." 11 78 2 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
-if [[ "${DUMP1090_UNIT_OF_MEASUREMENT}" = "Metric" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --yes-button "Imperial" --no-button "Metric" --yesno "\nPlease select the unit of measurement to be used by dump1090-mutbility." 9 78
+    case $? in
+        0)
+            DUMP1090_UNIT_OF_MEASUREMENT="imperial"
+            ;;
+        1)
+            DUMP1090_UNIT_OF_MEASUREMENT="metric"
+            ;;
+    esac
+fi
+if [[ "${DUMP1090_UNIT_OF_MEASUREMENT}" = "metric" ]] ; then
     echo -e "\e[94m  Setting ${COMPONENT_NAME} unit of measurement to Metric...\e[97m"
     ChangeConfig "Metric" "true;" "/usr/share/dump1090-mutability/html/config.js"
 else
@@ -245,34 +273,42 @@ fi
 
 # Download Heywhatsthat.com maximum range rings.
 if [[ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]] && (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to ${COMPONENT_NAME} using data obtained from Heywhatsthat.com. In order to add these rings to your ${COMPONENT_NAME} map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
-    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
-    while [[ -z "${HEYWHATSTHATID}" ]] ; do
-        HEYWHATSTHATID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${HEYWHATSTHATID}_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
-        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+    DUMP1090_HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
+    while [[ -z "${DUMP1090_HEYWHATSTHATID}" ]] ; do
+        DUMP1090_HEYWHATSTHATID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHATID_TITLE}" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
+        DUMP1090_HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
     done
-    HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude"
-    while [[ -z "${HEYWHATSTHAT_RING_ONE}" ]] ; do
-        HEYWHATSTHAT_RING_ONE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${HEYWHATSTHAT_RING_ONE}_TITLE" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
-        HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
+    DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude"
+    while [[ -z "${DUMP1090_HEYWHATSTHAT_RING_ONE}" ]] ; do
+        DUMP1090_HEYWHATSTHAT_RING_ONE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE}" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
+        DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
     done
-    HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude"
-    while [[ -z "${HEYWHATSTHAT_RING_TWO}" ]] ; do
-        HEYWHATSTHAT_RING_TWO=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${HEYWHATSTHAT_RING_TWO}_TITLE" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
-        HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
+    DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude"
+    while [[ -z "${DUMP1090_HEYWHATSTHAT_RING_TWO}" ]] ; do
+        DUMP1090_HEYWHATSTHAT_RING_TWO=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE}" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
+        DUMP1090_HEYWHATSTHAT_RING_TWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
     done
-    echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
-    echo -e ""
-    sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATID}&refraction=0.25&alts=${HEYWHATSTHAT_RING_ONE},${HEYWHATSTHAT_RING_TWO}"
+    # If the Heywhatsthat.com maximum range rings are to be added download them now.
+        echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
+        echo -e ""
+        sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${DUMP1090_HEYWHATSTHATID}&refraction=0.25&alts=${DUMP1090_HEYWHATSTHAT_RING_ONE},${DUMP1090_HEYWHATSTHAT_RING_TWO}"
 fi
 
-# Reload ${COMPONENT_NAME} to ensure all changes take effect.
-echo -e "\e[94m  Reloading ${COMPONENT_NAME} ...\e[97m"
-echo -e ""
-sudo /etc/init.d/dump1090-mutability force-reload
+# Reload component to ensure all changes take effect.
+SERVICE_NAME="dump1090-mutability"
+SERVICE_STATUS=$(sudo systemctl status ${SERVICE_NAME} 2>&1)
+
+if [[ `echo ${SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+    echo -e "\e[94m  Restarting service \"${SERVICE_NAME}\"..."
+    ACTION=$(sudo systemctl reload-or-restart ${SERVICE_NAME} 2>&1)
+else
+    echo -e "\e[94m  Starting service \"${SERVICE_NAME}\"..."
+    ACTION=$(sudo systemctl start ${SERVICE_NAME} 2>&1)
+fi
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
