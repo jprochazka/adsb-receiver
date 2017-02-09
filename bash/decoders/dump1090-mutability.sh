@@ -269,14 +269,14 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --yes-button "Imperial" --no-button "Metric" --yesno "\nPlease select the unit of measurement to be used by dump1090-mutbility." 9 78
     case $? in
         0)
-            DUMP1090_UNIT_OF_MEASURMENT="imperial"
+            DUMP1090_UNIT_OF_MEASUREMENT="imperial"
             ;;
         1)
-            DUMP1090_UNIT_OF_MEASURMENT="metric"
+            DUMP1090_UNIT_OF_MEASUREMENT="metric"
             ;;
     esac
 fi
-if [[ "${DUMP1090_UNIT_OF_MEASURMENT}" = "metric" ]] ; then
+if [[ "${DUMP1090_UNIT_OF_MEASUREMENT}" = "metric" ]] ; then
     echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Metric...\e[97m"
     ChangeConfig "Metric" "true;" "/usr/share/dump1090-mutability/html/config.js"
 else
@@ -318,7 +318,7 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
     fi
 fi
 
-# Reload dump1090-mutability to ensure all changes take effect.
+# Reload component to ensure all changes take effect.
 SERVICE_NAME="dump1090-mutability"
 SERVICE_STATUS=$(sudo systemctl status ${SERVICE_NAME} 2>&1)
 
