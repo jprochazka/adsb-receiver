@@ -154,34 +154,46 @@ unset PIDS
 
 ### ASSIGN RTL-SDR DONGLES
 
-# Check if the dump1090-mutability package is installed.
+# Count the number of tuners available.
+RECEIVER_TUNERS_AVAILABLE=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
+
+# Start counting the number of tuners required with 1 for this component.
+RECEIVER_TUNERS_REQUIRED="1"
+
+# Check which other components are installed.
 echo -e "\e[95m  Checking for existing decoders...\e[97m"
 echo -e ""
 
+# Check if any of the dump1090 forks are installed.
+echo -en "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
 # Check if the dump1090-mutability package is installed.
-echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    RECEIVER_TUNERS_REQUIRED=$((RECEIVER_TUNERS_REQUIRED+1))
+    DUMP1090_IS_INSTALLED="true"
+# Check if the dump1090-fa package is installed.
+elif [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    RECEIVER_TUNERS_REQUIRED=$((RECEIVER_TUNERS_REQUIRED+1))
     DUMP1090_IS_INSTALLED="true"
 else
     DUMP1090_IS_INSTALLED="false"
 fi
+CheckReturnCode
 
 # Check if the dump978 binaries exist.
-echo -e "\e[94m  Checking if the dump978 binaries exist on this device...\e[97m"
+echo -en "\e[94m  Checking if the dump978 binaries exist on this device...\e[97m"
 if [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json" ]] ; then
+    RECEIVER_TUNERS_REQUIRED=$((RECEIVER_TUNERS_REQUIRED+1))
     DUMP978_IS_INSTALLED="true"
 else
     DUMP978_IS_INSTALLED="false"
 fi
-
-# Check for multiple tuners...
-TUNER_COUNT=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
+CheckReturnCode
 
 # Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
-if [[ "${TUNER_COUNT}" -gt 1 ]] ; then
+if [[ "${RECEIVER_TUNERS_AVAILABLE}" -gt 1 ]] ; then
     # If a device has been specified by serial number then try to match that with the currently detected tuners.
     if [[ -n "${OGN_DEVICE_SERIAL}" ]] ; then
-        for DEVICE_ID in `seq 0 ${TUNER_COUNT}` ; do
+        for DEVICE_ID in `seq 0 ${RECEIVER_TUNERS_AVAILABLE}` ; do
             if [[ `rtl_eeprom -d ${DEVICE_ID} 2>&1 | grep -c "Serial number:\s*${OGN_DEVICE_SERIAL}$" ` -eq 1 ]] ; then
                 echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" found at device \"${OGN_DEVICE_ID}\" and will be assigned to ${COMPONENT_NAME}...\e[97m"
                 OGN_DEVICE_ID=${DEVICE_ID}
@@ -189,8 +201,8 @@ if [[ "${TUNER_COUNT}" -gt 1 ]] ; then
         done
         # If no match for this serial then assume the highest numbered tuner will be used.
         if [[ -z "${OGN_DEVICE_ID}" ]] ; then
-            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${TUNER_COUNT}\" to ${COMPONENT_NAME}...\e[97m"
-            OGN_DEVICE_ID=${TUNER_COUNT}
+            echo -en "\e[33m  RTL-SDR with Serial \"${OGN_DEVICE_SERIAL}\" not found, assigning device \"${RECEIVER_TUNERS_AVAILABLE}\" to ${COMPONENT_NAME}...\e[97m"
+            OGN_DEVICE_ID=${RECEIVER_TUNERS_AVAILABLE}
         fi
     # Or if a device has been specified by device ID then confirm this is currently detected.
     elif [[ -n "${OGN_DEVICE_ID}" ]] ; then
@@ -198,21 +210,21 @@ if [[ "${TUNER_COUNT}" -gt 1 ]] ; then
             echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" found and will be assigned to ${COMPONENT_NAME}...\e[97m"
         # If no match for this serial then assume the highest numbered tuner will be used.
         else
-            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${TUNER_COUNT}\" to ${COMPONENT_NAME}...\e[97m"
-            OGN_DEVICE_ID=${TUNER_COUNT}
+            echo -en "\e[33m  RTL-SDR device \"${OGN_DEVICE_ID}\" not found, assigning device \"${RECEIVER_TUNERS_AVAILABLE}\" to ${COMPONENT_NAME}...\e[97m"
+            OGN_DEVICE_ID=${RECEIVER_TUNERS_AVAILABLE}
         fi
     # Failing that configure it with device ID 0.
     else
         echo -en "\e[33m  No RTL-SDR device specified, assigning device \"0\" to ${COMPONENT_NAME}...\e[97m"
-        OGN_DEVICE_ID=${TUNER_COUNT}
+        OGN_DEVICE_ID=${RECEIVER_TUNERS_AVAILABLE}
     fi
 # Single tuner present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ "${TUNER_COUNT}" -eq 1 ]] ; then
+elif [[ "${RECEIVER_TUNERS_AVAILABLE}" -eq 1 ]] ; then
     echo -en "\e[33m  Single RTL-SDR device \"0\" detected and assigned to ${COMPONENT_NAME}...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
 # No tuners present so assign device 0 and stop any other running decoders, or at least dump1090-mutablity for a default install.
-elif [[ "${TUNER_COUNT}" -lt 1 ]] ; then
+elif [[ "${RECEIVER_TUNERS_AVAILABLE}" -lt 1 ]] ; then
     echo -en "\e[33m  No RTL-SDR device detected so ${COMPONENT_NAME} will be assigned device \"0\"...\e[97m"
     OGN_DEVICE_ID="0"
     ACTION=$(sudo /etc/init.d/dump1090-mutability stop 2>&1)
@@ -336,7 +348,7 @@ if [[ `echo "${COMPONENT_BINARY_URL}" | grep -c "^http"` -gt 0 ]] ; then
     CheckReturnCode
 else
     # Unable to download bimary due to invalid URL.
-    echo -e "\e[33m  Error invalid COMPONENT_BINARY_URL \"${COMPONENT_BINARY_URL}\"...\e[97m"
+    echo -e "\e[33m  Error invalid COMPONENT_BINARY_URL \"\e[37m${COMPONENT_BINARY_URL}\e[33m\"...\e[97m"
     exit 1
 fi
 
@@ -345,7 +357,7 @@ COMPONENT_PROJECT_DIRECTORY="${COMPONENT_BUILD_DIRECTORY}/rtlsdr-ogn"
 if [[ -d "${COMPONENT_PROJECT_DIRECTORY}" ]] ; then
     cd ${COMPONENT_PROJECT_DIRECTORY}
 else
-    echo -e "\e[33m  Error unable to access \"${COMPONENT_PROJECT_DIRECTORY}\"...\e[97m"
+    echo -e "\e[33m  Error unable to access \"\e[37m${COMPONENT_PROJECT_DIRECTORY}\e[33m\"...\e[97m"
     exit 1
 fi
 
@@ -375,12 +387,12 @@ CheckReturnCode
 
 # Creat GPU device if required.
 if [[ ! -c "${COMPONENT_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
-    # Check if kernel v4.1 or higher is being used.
+    # The mknod major_version number varies with kernel version.
     echo -en "\e[33m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
     KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
     CheckReturnCode
-
+    # Check if kernel v4.1 or higher is being used.
     if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
@@ -393,19 +405,21 @@ if [[ ! -c "${COMPONENT_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     CheckReturnCode
 fi
 
-# Calculate RTL-SDR device error rate
+# Calculate RTL-SDR device error rate.
 if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
     # Attempt to calibrate if required values are not provided.
     # Should probably confirm if user wishes to calibrate.
     # GSM Band is GSM850 in US and GSM900 elsewhere.
     DERIVED_GSM_BAND="GSM900"
-    DERIVED_GAIN="40"
+    DERIVED_GAIN="-10"
+    # Check for Kalibrates 'kal' binary.
     if [[ -x "`which kal`" ]] ; then
         echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, may take up to 10 minutes...\e[97m"
         DERIVED_GSM_SCAN=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
         DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
         DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
+    # Otherwise fall back to gsm_scan binary provided with OGN code.
     elif [[ -x "${COMPONENT_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
         echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take up to 20 minutes...\e[97m"
         if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
@@ -417,6 +431,7 @@ if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
         DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
         DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
     else
+        # No suitable tool found to perform cailbrations.
         echo -en "\e[33m  Unable to calibrate RTL-SDR device...\e[97m"
         false
     fi
@@ -454,6 +469,8 @@ if [[ -z "${OGN_ALTITUDE}" ]] ; then
     fi
 fi
 
+# Check for component specific variables, otherwise populate with dummy values to ensure valid config generation.
+
 # Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude.
 # To find value you can check: 	http://geographiclib.sourceforge.net/cgi-bin/GeoidEval
 # Need to derive from co-ords but will set to altitude as a placeholders.
@@ -475,8 +492,6 @@ if [[ -z "${OGN_RECEIVER_NAME}" ]] ; then
         OGN_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
     fi
 fi
-
-# Check for component specific variables, otherwise populate with dummy values to ensure valid config generation.
 
 # Frequency Correction
 if [[ -z "${OGN_FREQ_CORR}" ]] ; then
@@ -501,7 +516,7 @@ if [[ -z "${OGN_GSM_GAIN}" ]] ; then
     if [[ -n "${DERIVED_GAIN}" ]] ; then
         OGN_GSM_GAIN="${DERIVED_GAIN}"
     else
-        OGN_GSM_GAIN="40"
+        OGN_GSM_GAIN="-10"
     fi
 fi
 
@@ -612,7 +627,7 @@ fi
 CheckReturnCode
 
 # Potentially obsolete tuner detection code.
-if [[ "${TUNER_COUNT}" -lt 2 ]] ; then
+if [[ "${RECEIVER_TUNERS_AVAILABLE}" -lt 2 ]] ; then
     # Less than 2 tuners present so we must stop other services before starting this decoder.
     echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\e[97m"
     SERVICES_DISABLE="dump1090-mutability"
@@ -629,9 +644,15 @@ echo -en "\e[33m  Configuring ${COMPONENT_NAME} as a service...\e[97m"
 ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
-# Start the component service.
-echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
-ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} start 2>&1)
+# (re)start the component service.
+COMPONENT_SERVICE_STATUS=$(sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1)
+if [[ `echo ${COMPONENT_SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+    echo -e "\e[33m  Restarting the ${COMPONENT_NAME} service..."
+    ACTION=$(sudo systemctl reload-or-restart ${COMPONENT_SERVICE_NAME} 2>&1)
+else
+    echo -e "\e[33m  Starting the ${COMPONENT_NAME} service..."
+    ACTION=$(sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1)
+fi
 CheckReturnCode
 
 ### SETUP COMPLETE
