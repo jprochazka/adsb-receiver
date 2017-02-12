@@ -76,14 +76,14 @@ function CalibrateTuner () {
         fi
         # Use the Kalibrate 'kal' binary if available.
         if [[ -x "`which kal`" ]] ; then
-            echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, may take up to 10 minutes...\e[97m"
+            echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, this may take up to 10 minutes...\e[97m"
             CALIBRATION_GSM_SCAN=`kal -d "${CALIBRATION_DEVICE_ID}" -g "${CALIBRATION_GAIN}" -s ${CALIBRATION_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
             CALIBRATION_GSM_FREQ=`echo ${CALIBRATION_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
             CALIBRATION_GSM_CHAN=`echo ${CALIBRATION_GSM_SCAN} | awk '{print $2}'`
             CALIBRATION_ERROR=`kal -d "${CALIBRATION_DEVICE_ID}" -g "${CALIBRATION_GAIN}" -c "${CALIBRATION_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
-        # Otherwise fall back to gsm_scan binary provided with OGN code.
+        # Otherwise use the gsm_scan binary provided with the OGN package.
         elif [[ -x "${COMPONENT_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
-            echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take up to 20 minutes...\e[97m"
+            echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, this may take up to 20 minutes...\e[97m"
             if [[ "${CALIBRATION_GSM_BAND}" = "GSM850" ]] ; then
                 CALIBRATION_GSM_OPTS="--gsm850"
             else
@@ -99,7 +99,7 @@ function CalibrateTuner () {
         fi
     else
         # No tuner specified.
-        echo -en "\e[33m  Unable to calibrate unspecified RTL-SDR device...\e[97m"
+        echo -en "\e[33m  Unable to calibrate due to no RTL-SDR device specified...\e[97m"
         false
     fi
 }
@@ -452,7 +452,7 @@ if [[ ! -c "${COMPONENT_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     CheckReturnCode
 fi
 
-### CREATE THE CONFIGURATION FILE
+## GATHER INFORMATION FROM USER
 
 # Skip over this dialog if this installation is set to be automated.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -462,7 +462,7 @@ fi
 
 # Latitude.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
+    # Ask the user to confirm the receivers latitude, this will be populated with the latitude configured in dump1090-mutability.
     COMPONENT_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${COMPONENT_LATITUDE}" ]] ; do
         if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
@@ -491,7 +491,7 @@ fi
 
 # Longitude.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
+    # Ask the user to confirm the receivers longitude, this will be populated with the longitude configured in dump1090-mutability.
     COMPONENT_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${COMPONENT_LONGITUDE}" ]] ; do
         if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
@@ -520,7 +520,7 @@ fi
 
 # Altitude.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Ask the user to confirm the receivers altitude, this will be prepopulated by the google derived altutude based on the LAT/LON.
+    # Ask the user to confirm the receivers altitude, this will be populated with an altutude value derived from the configured LAT/LON.
     COMPONENT_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${COMPONENT_ALTITUDE}" ]] ; do
         if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
@@ -628,6 +628,8 @@ if [[ -z "${OGN_GSM_FREQ}" ]] ; then
        OGN_GSM_FREQ="958"
     fi
 fi
+
+### CREATE THE CONFIGURATION FILE
 
 # Test if config file exists, if not create it.
 COMPONENT_CONFIG_FILE_NAME="${OGN_RECEIVER_NAME}.conf"
