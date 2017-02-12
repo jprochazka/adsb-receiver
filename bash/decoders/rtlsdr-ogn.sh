@@ -657,13 +657,13 @@ else
 #
 RF:
 {
-  FreqCorr	= ${OGN_FREQ_CORR};             	# [ppm]		Some R820T sticks have 40-80ppm correction factors, measure it with gsm_scan.
+  FreqCorr	= ${OGN_FREQ_CORR};             	# [ppm]		Some R820T sticks require a correction of up to 80ppm, measure it with gsm_scan.
   Device   	= ${OGN_DEVICE_ID};      	   	# 		Device index of the USB RTL-SDR device to be selected.
-#  DeviceSerial	= ${OGN_DEVICE_SERIAL};	 	# char[12] 	Serial number of the USB RTL-SDR device to be selected.
+#  DeviceSerial	= ${OGN_DEVICE_SERIAL}; 	 	# char[12] 	Serial number of the USB RTL-SDR device to be selected.
   GSM:
   {
     CenterFreq	= ${OGN_GSM_FREQ};   		# [MHz]		Fnd the best GSM frequency with gsm_scan.
-    Gain	= ${OGN_GSM_GAIN};   	 	# [0.1 dB] 	RF input gain for frequency calibration (beware that GSM signals are very strong).
+    Gain	= ${OGN_GSM_GAIN};   	 	# [0.1 dB] 	RF input gain for frequency calibration, beware GSM signals are very strong.
   } ;
 } ;
 #
@@ -682,7 +682,7 @@ APRS:
 #
 DDB:
 {
-  UseAsWhitelist = ${OGN_WHITELIST};     	     	# [0|1] 	Setting to 1 enforces strict opt in.
+  UseAsWhitelist = ${OGN_WHITELIST};     	     	# [0|1] 	Setting to 1 enforces strict opt in to OGN Whitelist.
 } ;
 #
 EOF
