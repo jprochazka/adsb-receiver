@@ -197,7 +197,8 @@ echo -e ""
 
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
-
+# Use function to install kernel module blacklist.
+BlacklistModules
 CheckReturnCode
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
