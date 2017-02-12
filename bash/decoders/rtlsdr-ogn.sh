@@ -689,7 +689,7 @@ EOF
 fi
 
 # Update ownership of new config file.
-ACTION=$(chown -v pi:pi ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} 2>&1)
+ACTION=$(sudo chown -v pi:pi ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} 2>&1)
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
@@ -734,7 +734,7 @@ if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] ; then
 50000  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-rf     ${COMPONENT_RECEIVER_NAME}.conf
 50001  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-decode ${COMPONENT_RECEIVER_NAME}.conf
 EOF
-    ACTION=$(chown -v pi:pi ${COMPONENT_SERVICE_CONFIG_PATH} 2>&1)
+    ACTION=$(sudo chown -v pi:pi ${COMPONENT_SERVICE_CONFIG_PATH} 2>&1)
 else
     echo -en "\e[33m  Unable to create service config file \"\e[37m${COMPONENT_SERVICE_CONFIG_PATH}\e[33m\"...\e[97m"
     false
