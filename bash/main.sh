@@ -46,7 +46,7 @@ source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
 ## Set the project title variable.
-export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project v$PROJECTVERSION Installer"
+export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project v${PROJECT_VERSION} Installer"
 
 ###############
 ## FUNCTIONS
