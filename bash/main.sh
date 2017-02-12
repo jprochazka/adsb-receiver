@@ -154,7 +154,7 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     # The dump1090-fa package appear to be installed.
     DUMP1090FA_INSTALLED=0
     # Check if a newer version can be installed.
-    if [ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${PIAWAREVERSION}") -eq 0 ]; then
+    if [ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]; then
         whiptail  --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
         DUMP1090FA_UPGRADE=$?
     fi
@@ -211,7 +211,7 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
     fi
 else
     # Check if a newer version can be installed.
-    if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: $PIAWAREVERSION") -eq 0 ]; then
+    if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]; then
         FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
     fi
 fi

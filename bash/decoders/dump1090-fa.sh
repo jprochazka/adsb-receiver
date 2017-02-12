@@ -128,7 +128,7 @@ echo -e "\e[94m  Entering the ${DECODER_NAME} build directory...\e[97m"
 cd $BUILDDIRECTORY_DUMP1090
 echo -e "\e[94m  Installing the ${DECODER_NAME} package...\e[97m"
 echo -e ""
-sudo dpkg -i dump1090-fa_${PIAWAREVERSION}_*.deb
+sudo dpkg -i dump1090-fa_${PIAWARE_VERSION}_*.deb
 
 # Check that the package was installed.
 echo -e ""
