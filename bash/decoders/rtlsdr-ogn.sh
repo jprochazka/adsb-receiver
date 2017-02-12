@@ -89,7 +89,7 @@ function CalibrateTuner () {
             else
                 CALIBRATION_GSM_OPTS=""
             fi
-            CALIBRATION_GSM_SCAN=`gsm_scan --device "${CALIBRATION_DEVICE_ID}" --gain "${CALIBRATION_GAIN}" ${CALIBRATION_GSM_OPTS} | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+            CALIBRATION_GSM_SCAN=`gsm_scan --device "${CALIBRATION_DEVICE_ID}" --gain "${CALIBRATION_GAIN}" ${CALIBRATION_GSM_OPTS} 2>&1 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
             CALIBRATION_GSM_FREQ=`echo ${CALIBRATION_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
             CALIBRATION_ERROR=`echo ${CALIBRATION_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
         else
@@ -99,7 +99,7 @@ function CalibrateTuner () {
         fi
     else
         # No tuner specified.
-        echo -en "\e[33m  Unable to calibrate due to no RTL-SDR device specified...\e[97m"
+        echo -en "\e[33m  Unable calibrate due to invalid or no RTL-SDR device specified...\e[97m"
         false
     fi
 }
@@ -590,7 +590,7 @@ if [[ -z "${OGN_GSM_GAIN}" ]] ; then
     fi
 fi
 
-# Calculate RTL-SDR device error rate.
+# Ask if user would like to calibrate the tuner.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Tuner Calibration" --yesno "Would you like to calibrate the device \"${OGN_DEVICE_ID}\" which has been configured for use with ${COMPONENT_NAME}?\n\nPlease be aware this may take between 10 and 20 minutes." 8 78
     if [[ $? -eq 0 ]] ; then
@@ -600,7 +600,10 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 elif [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
     COMPONENT_DO_CALIBRATE="true"
 fi
+
+# Calculate RTL-SDR device error rate.
 if [[ "${COMPONENT_DO_CALIBRATE}" ]] ; then
+    # Requires a device to be specified.
     if [[ -n "${OGN_DEVICE_ID}" ]] ; then
         CalibrateTuner ${OGN_DEVICE_ID}
     else
@@ -610,8 +613,9 @@ if [[ "${COMPONENT_DO_CALIBRATE}" ]] ; then
     CheckReturnCode
 fi
 
-# Frequency Correction
+# Set Frequency Correction.
 if [[ -z "${OGN_FREQ_CORR}" ]] ; then
+    # Using the value derived from calibration, if available.
     if [[ -n "${CALIBRATION_ERROR}" ]] ; then
         OGN_FREQ_CORR="${CALIBRATION_ERROR}"
     else
@@ -619,8 +623,9 @@ if [[ -z "${OGN_FREQ_CORR}" ]] ; then
     fi
 fi
 
-# GSM Reference signal frequency.
+# Set GSM Reference signal frequency.
 if [[ -z "${OGN_GSM_FREQ}" ]] ; then
+    # Using the value derived from calibration, if available.
     if [[ -n "${CALIBRATION_GSM_FREQ}" ]] ; then
        OGN_GSM_FREQ="${CALIBRATION_GSM_FREQ}"
     else
