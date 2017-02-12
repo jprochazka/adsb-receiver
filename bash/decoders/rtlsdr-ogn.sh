@@ -579,10 +579,13 @@ fi
 # Please see:   http://wiki.glidernet.org/receiver-naming-convention
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     COMPONENT_RECEIVER_NAME_TITLE="Receiver Name"
-   while [[ -z "${COMPONENT_RECEIVER_NAME}" ]]  || [[ `echo -n ${COMPONENT_RECEIVER_NAME} | wc -c` -gt 9 ]] ; do
-       COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, this should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 10 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
-       COMPONENT_RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
-   done
+    while [[ -z "${COMPONENT_RECEIVER_NAME}" ]]  || [[ `echo -n ${COMPONENT_RECEIVER_NAME} | wc -c` -gt 9 ]] ; do
+        if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] && [[ `grep -c "^ *Call" ${COMPONENT_SERVICE_CONFIG_PATH}` -gt 0 ]] ; then
+            COMPONENT_RECEIVER_NAME=`grep "^ *Call" ${COMPONENT_SERVICE_CONFIG_PATH} | awk -F ";" '{print $1}' | awk -F "=" '{print $2}' | sed -e 's/"//g' -e 's/ //g'`
+        fi
+        COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, this should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 10 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
+        COMPONENT_RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
+    done
 else
     if [[ -n "${OGN_RECEIVER_NAME}" ]] ; then
         COMPONENT_RECEIVER_NAME=`echo ${OGN_RECEIVER_NAME} | tr -cd '[:alnum:]' | cut -c -9`
