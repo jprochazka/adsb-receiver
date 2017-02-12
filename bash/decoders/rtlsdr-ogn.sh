@@ -65,41 +65,41 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 function CalibrateTuner () {
     # Attempt to calibrate the specified tuner using GSM frequencies.
     if [[ -n "$1" ]] ; then
-        CALIBRATION_DEVICE_ID="$1"
+        COMPONENT_CALIBRATION_DEVICE_ID="$1"
         # GSM Band is GSM850 in US and GSM900 elsewhere, should probably try to figure this out...
-        CALIBRATION_GSM_BAND="GSM900"
+        COMPONENT_CALIBRATION_GSM_BAND="GSM900"
         # Check if gain has been specified, otherwise set to 40.
         if [[ -n "${OGN_GSM_GAIN}" ]] ; then
-            CALIBRATION_GAIN="${OGN_GSM_GAIN}"
+            COMPONENT_CALIBRATION_GAIN="${OGN_GSM_GAIN}"
         else
-            CALIBRATION_GAIN="40"
+            COMPONENT_CALIBRATION_GAIN="40"
         fi
         # Use the Kalibrate 'kal' binary if available.
         if [[ -x "`which kal`" ]] ; then
             echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, this may take up to 10 minutes...\e[97m"
-            CALIBRATION_GSM_SCAN=`kal -d "${CALIBRATION_DEVICE_ID}" -g "${CALIBRATION_GAIN}" -s ${CALIBRATION_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
-            CALIBRATION_GSM_FREQ=`echo ${CALIBRATION_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
-            CALIBRATION_GSM_CHAN=`echo ${CALIBRATION_GSM_SCAN} | awk '{print $2}'`
-            if [[ -n "${CALIBRATION_GSM_CHAN}"  ]] ; then
-                CALIBRATION_ERROR=`kal -d "${CALIBRATION_DEVICE_ID}" -g "${CALIBRATION_GAIN}" -c "${CALIBRATION_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
+            COMPONENT_CALIBRATION_GSM_SCAN=`kal -d "${COMPONENT_CALIBRATION_DEVICE_ID}" -g "${COMPONENT_CALIBRATION_GAIN}" -s ${COMPONENT_CALIBRATION_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
+            COMPONENT_CALIBRATION_GSM_FREQ=`echo ${COMPONENT_CALIBRATION_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
+            COMPONENT_CALIBRATION_GSM_CHAN=`echo ${COMPONENT_CALIBRATION_GSM_SCAN} | awk '{print $2}'`
+            if [[ -n "${COMPONENT_CALIBRATION_GSM_CHAN}"  ]] ; then
+                COMPONENT_CALIBRATION_ERROR=`kal -d "${COMPONENT_CALIBRATION_DEVICE_ID}" -g "${COMPONENT_CALIBRATION_GAIN}" -c "${COMPONENT_CALIBRATION_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
             else
-                echo -en "\e[33m  Unable to calibrate RTL-SDR device \"${CALIBRATION_DEVICE_ID}\" on channel \"${CALIBRATION_GSM_CHAN}\"...\e[97m"
+                echo -en "\e[33m  Unable to calibrate RTL-SDR device \"${COMPONENT_CALIBRATION_DEVICE_ID}\" on channel \"${COMPONENT_CALIBRATION_GSM_CHAN}\"...\e[97m"
                 false
             fi
         # Otherwise use the gsm_scan binary provided with the OGN package.
         elif [[ -x "${COMPONENT_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
             echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, this may take up to 20 minutes...\e[97m"
-            if [[ "${CALIBRATION_GSM_BAND}" = "GSM850" ]] ; then
-                CALIBRATION_GSM_OPTS="--gsm850"
+            if [[ "${COMPONENT_CALIBRATION_GSM_BAND}" = "GSM850" ]] ; then
+                COMPONENT_CALIBRATION_GSM_OPTS="--gsm850"
             else
-                CALIBRATION_GSM_OPTS=""
+                COMPONENT_CALIBRATION_GSM_OPTS=""
             fi
-            CALIBRATION_GSM_SCAN=`gsm_scan --device "${CALIBRATION_DEVICE_ID}" --gain "${CALIBRATION_GAIN}" ${CALIBRATION_GSM_OPTS} 2>&1 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
-            CALIBRATION_GSM_FREQ=`echo ${CALIBRATION_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
-            CALIBRATION_ERROR=`echo ${CALIBRATION_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
+            COMPONENT_CALIBRATION_GSM_SCAN=`gsm_scan --device "${COMPONENT_CALIBRATION_DEVICE_ID}" --gain "${COMPONENT_CALIBRATION_GAIN}" ${COMPONENT_CALIBRATION_GSM_OPTS} 2>&1 | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+            COMPONENT_CALIBRATION_GSM_FREQ=`echo ${COMPONENT_CALIBRATION_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
+            COMPONENT_CALIBRATION_ERROR=`echo ${COMPONENT_CALIBRATION_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
         else
             # No suitable tool found to perform cailbrations.
-            echo -en "\e[33m  Unable to calibrate RTL-SDR device \"${CALIBRATION_DEVICE_ID}\"...\e[97m"
+            echo -en "\e[33m  Unable to calibrate RTL-SDR device \"${COMPONENT_CALIBRATION_DEVICE_ID}\"...\e[97m"
             false
         fi
     else
@@ -588,8 +588,8 @@ fi
 
 # Gain value for RTL-SDR device.
 if [[ -z "${OGN_GSM_GAIN}" ]] ; then
-    if [[ -n "${CALIBRATION_GAIN}" ]] ; then
-        OGN_GSM_GAIN="${CALIBRATION_GAIN}"
+    if [[ -n "${COMPONENT_CALIBRATION_GAIN}" ]] ; then
+        OGN_GSM_GAIN="${COMPONENT_CALIBRATION_GAIN}"
     else
         OGN_GSM_GAIN="40"
     fi
@@ -621,8 +621,8 @@ fi
 # Set Frequency Correction.
 if [[ -z "${OGN_FREQ_CORR}" ]] ; then
     # Using the value derived from calibration, if available.
-    if [[ -n "${CALIBRATION_ERROR}" ]] ; then
-        OGN_FREQ_CORR="${CALIBRATION_ERROR}"
+    if [[ -n "${COMPONENT_CALIBRATION_ERROR}" ]] ; then
+        OGN_FREQ_CORR="${COMPONENT_CALIBRATION_ERROR}"
     else
         OGN_FREQ_CORR="0"
     fi
@@ -631,8 +631,8 @@ fi
 # Set GSM Reference signal frequency.
 if [[ -z "${OGN_GSM_FREQ}" ]] ; then
     # Using the value derived from calibration, if available.
-    if [[ -n "${CALIBRATION_GSM_FREQ}" ]] ; then
-       OGN_GSM_FREQ="${CALIBRATION_GSM_FREQ}"
+    if [[ -n "${COMPONENT_CALIBRATION_GSM_FREQ}" ]] ; then
+       OGN_GSM_FREQ="${COMPONENT_CALIBRATION_GSM_FREQ}"
     else
        OGN_GSM_FREQ="958"
     fi
