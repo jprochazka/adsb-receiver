@@ -130,12 +130,15 @@ fi
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
+# Attempt to stop using systemd.
+
+# And the init script.
 if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
     echo -e "\e[94m  Stopping the RTL-SDR OGN service...\e[97m"
     sudo service rtlsdr-ogn stop
 fi
 
-## FAILSAFE KILL
+# Finally a failsafe process kill.
 
 ### ASSIGN RTL-SDR DONGLES
 
