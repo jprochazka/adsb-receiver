@@ -202,14 +202,22 @@ CheckReturnCode
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
+# Attempt to stop using systemd.
+COMPONENT_SERVICE_STATUS=$(sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1)
+if [[ `echo ${COMPONENT_SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+    echo -e "\e[33m  Stopping the ${COMPONENT_NAME} service..."
+    ACTION=$(sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1)
+    CheckReturnCode
+fi
+
+# And the init script.
 if [[ -f "${COMPONENT_SERVICE_SCRIPT_PATH}" ]] ; then
     echo -en "\e[33m  Stopping the ${COMPONENT_NAME} service...\e[97m"
     ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} stop 2>&1)
     CheckReturnCode
 fi
 
-## FAILSAFE KILL
-
+# Finally a failsafe process kill.
 PIDS=`ps -efww | egrep "(\./ogn-rf\ |\./ogn-decode\ )" | awk -vpid=$$ '$2 != pid { print $2 }' | tr '\n\r' ' '`
 if [ ! -z "${PIDS}" ]; then
     echo -en "\e[33m  Killing any running ${COMPONENT_NAME} processes...\e[97m"
