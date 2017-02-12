@@ -393,19 +393,19 @@ CheckReturnCode
 case ${CPU_ARCHITECTURE} in
     "armv6l")
         # Raspberry Pi 1.
-        COMPONENT_BINARY_URL="http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/rpi-gpu/rtlsdr-ogn-bin-RPI-GPU-${RTLSDROGN_VERSION}.tgz"
         ;;
     "armv7l")
         # Raspberry Pi 2 onwards.
-        COMPONENT_BINARY_URL="http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/arm/rtlsdr-ogn-bin-ARM-${RTLSDROGN_VERSION}.tgz"
         ;;
     "x86_64")
         # 64 Bit.
-        COMPONENT_BINARY_URL="http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/x64/rtlsdr-ogn-bin-x64-${RTLSDROGN_VERSION}.tgz"
         ;;
     *)
         # 32 Bit (default install if no others matched).
-        COMPONENT_BINARY_URL="http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-latest.tgz"
+        COMPONENT_BINARY_URL="http://download.glidernet.org/x86/rtlsdr-ogn-bin-x86-${RTLSDROGN_VERSION}.tgz"
         ;;
 esac
 
