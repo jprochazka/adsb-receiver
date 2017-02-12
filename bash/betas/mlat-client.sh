@@ -139,7 +139,7 @@ if [[ true ]] ; then
         # Install binary package.
         echo -e "\e[94m  Installing the ${COMPONENT_NAME} package...\e[97m"
         echo -e ""
-        sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
+        sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLAT_CLIENT_VERSION}*.deb 2>&1
         echo -e ""
         # Create binary archive directory.
         if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
