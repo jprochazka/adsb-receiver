@@ -731,8 +731,8 @@ if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] ; then
 #Contact the shell with: telnet <hostname> <port>
 #Syntax:
 #port  user     directory                 command       args
-50000  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-rf     ${OGN_RECEIVER_NAME}.conf
-50001  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-decode ${OGN_RECEIVER_NAME}.conf
+50000  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-rf     ${COMPONENT_RECEIVER_NAME}.conf
+50001  pi ${COMPONENT_PROJECT_DIRECTORY}    ./ogn-decode ${COMPONENT_RECEIVER_NAME}.conf
 EOF
     ACTION=$(chown -v pi:pi ${COMPONENT_SERVICE_CONFIG_PATH} 2>&1)
 else
