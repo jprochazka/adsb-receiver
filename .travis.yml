@@ -2,7 +2,7 @@ language: 	bash
 
 sudo: 		required
 
-before_install: sudo apt-get -qq update && sudo apt-get -qq install -y cmake libcurl4-openssl-dev libdw-dev libelf-dev kcov
+before_install: sudo apt-get -qq update && sudo apt-get -qq install -y cmake libcurl4-openssl-dev libdw-dev libelf-dev
 
 install: 	true
 
@@ -21,4 +21,5 @@ after_success: |
   rm -rf kcov-master &&
   mkdir -p coverage &&
   kcov coverage install.sh -a &&
-  bash <(curl -s https://codecov.io/bash) -s coverage || echo "Codecov did not collect coverage reports"
+  ls -l coverage &&
+  bash -x <(curl -s https://codecov.io/bash) -s coverage || echo "Codecov did not collect coverage reports"
