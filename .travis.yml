@@ -3,12 +3,12 @@ language: 	bash
 sudo: 		required
 
 addons:
-	apt:
-		packages:
-			- cmake
-			- libcurl4-openssl-dev
-			- libelf-dev
-			- libdw-dev
+  apt:
+    packages:
+		- cmake
+		- libcurl4-openssl-dev
+		- libelf-dev
+		- libdw-dev
 
 before_install:	sudo apt-get -qq update
 
