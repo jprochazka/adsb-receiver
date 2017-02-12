@@ -82,6 +82,33 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
+echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
+echo -e ""
+# Required by install script.
+CheckPackage git
+CheckPackage python-dev
+CheckPackage python3-dev
+# Required for USB SDR devices.
+CheckPackage librtlsdr-dev
+CheckPackage libusb-1.0-0-dev
+CheckPackage rtl-sdr
+# Required by component.
+CheckPackage curl
+CheckPackage libconfig9
+CheckPackage libconfig-dev
+CheckPackage libcurl3
+CheckPackage libfftw3-3
+CheckPackage libfftw3-dev
+CheckPackage libjpeg8
+CheckPackage libjpeg-dev
+CheckPackage lynx
+CheckPackage procserv
+CheckPackage telnet
+CheckPackage wget
+
+echo -e ""
+echo -e "\e[95m  Configuring this device to run the RTL-SDR OGN binaries...\e[97m"
+echo -e ""
 
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
@@ -106,16 +133,21 @@ if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
     sudo service rtlsdr-ogn stop
 fi
 
+## FAILSAFE KILL
 
 ### ASSIGN RTL-SDR DONGLES
 
-# Check if the dump1090-mutability package is installed.
+# Check which components are installed.
 echo -e "\e[95m  Checking for existing decoders...\e[97m"
 echo -e ""
 
+# Check if any of the dump1090 forks are installed.
+echo -e "\e[94m  Checking if any of the dump1090 packages are installed...\e[97m"
 # Check if the dump1090-mutability package is installed.
-echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    DUMP1090_IS_INSTALLED="true"
+# Check if the dump1090-fa package is installed.
+elif [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     DUMP1090_IS_INSTALLED="true"
 else
     DUMP1090_IS_INSTALLED="false"
@@ -192,28 +224,6 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
 fi
 
 ### ASSIGN RTL-SDR DONGLE FOR RTL-SDR OGN...
-
-
-### CHECK FOR PREREQUISITE PACKAGES
-
-echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
-echo -e ""
-CheckPackage git
-CheckPackage rtl-sdr
-CheckPackage librtlsdr-dev
-CheckPackage libusb-1.0-0-dev
-CheckPackage libconfig-dev
-CheckPackage libfftw3-dev
-CheckPackage libjpeg8
-CheckPackage libjpeg-dev
-CheckPackage libconfig9
-CheckPackage procserv
-CheckPackage telnet
-CheckPackage wget
-CheckPackage lynx
-
-echo -e "\e[95m  Configuring this device to run the RTL-SDR OGN binaries...\e[97m"
-echo -e ""
 
 ### DOWNLOAD AND SET UP THE BINARIES
 
@@ -303,11 +313,11 @@ sudo chmod a+s  rtlsdr-ogn
 
 # Creat GPU device if required.
 if [[ ! -c "gpu_dev" ]] ; then
-    # Check if kernel v4.1 or higher is being used.
+    # The mknod major_version number varies with kernel version.
     echo -e "\e[94m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
     KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
-
+    # Check if the currently running kernel is version 4.1 or higher.
     if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -e "\e[94m  Executing mknod for older kernels...\e[97m"
@@ -319,18 +329,22 @@ if [[ ! -c "gpu_dev" ]] ; then
     fi
 fi
 
-# Calculate RTL-SDR device error rate.
+## GATHER INFORMATION FROM USER
 
-### CREATE THE CONFIGURATION FILE
 
-# Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
+# Latitude.
 
+# Longitude.
+
+# Altitude.
 
 # Check for component specific variables, otherwise populate with dummy values to ensure valid config generation.
 
+# Ask if user would like to calibrate the tuner.
+
+### CREATE THE CONFIGURATION FILE
 
 # Test if config file exists, if not create it.
-
 #########################################################
 #                                                       #
 #             CREATE THE CONFIGURATION FILE             #
