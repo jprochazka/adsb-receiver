@@ -306,7 +306,7 @@ fi
 # Enter the build directory.
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
-    cd ${COMPONENT_BUILD_DIRECTORY}
+    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
     ACTION=${PWD}
     CheckReturnCode
 fi
@@ -355,7 +355,7 @@ fi
 # Change to component work directory for post-build actions.
 COMPONENT_PROJECT_DIRECTORY="${COMPONENT_BUILD_DIRECTORY}/rtlsdr-ogn"
 if [[ -d "${COMPONENT_PROJECT_DIRECTORY}" ]] ; then
-    cd ${COMPONENT_PROJECT_DIRECTORY}
+    cd ${COMPONENT_PROJECT_DIRECTORY} 2>&1
 else
     echo -e "\e[33m  Error unable to access \"\e[37m${COMPONENT_PROJECT_DIRECTORY}\e[33m\"...\e[97m"
     exit 1
@@ -440,32 +440,93 @@ fi
 
 ### CREATE THE CONFIGURATION FILE
 
-# Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
+# Skip over this dialog if this installation is set to be automated.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Explain to the user that the receiver's latitude and longitude is required.
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+fi
 
 # Latitude.
-if [[ -z "${OGN_LATITUDE}" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
+    COMPONENT_LATITUDE_TITLE="Receiver Latitude"
+    while [[ -z "${COMPONENT_LATITUDE}" ]] ; do
+        if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
+            COMPONENT_LATITUDE="${RECEIVER_LATITUDE}"
+            COMPONENT_LATITUDE_SOURCE="the ${RECEIVER_PROJECT_TITLE} configuration file"
+        elif [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+            COMPONENT_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
+            COMPONENT_LATITUDE_SOURCE="the Dump1090 configuration file"
+        fi
+        if [[ -n "${COMPONENT_LATITUDE_SOURCE}" ]] ; then
+            COMPONENT_LATITUDE_SOURCE_MESSAGE=", the value below is sourced from ${COMPONENT_LATITUDE_SOURCE}"
+        fi
+        COMPONENT_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${COMPONENT_LATITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_LATITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+    done
+else
+    # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
     if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
-        OGN_LATITUDE="${RECEIVER_LATITUDE}"
+        COMPONENT_LATITUDE="${RECEIVER_LATITUDE}"
+    elif [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+        COMPONENT_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
     else
-        OGN_LATITUDE="0.000"
+        COMPONENT_LATITUDE="0.000"
     fi
 fi
 
 # Longitude.
-if [[ -z "${OGN_LONGITUDE}" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
+    COMPONENT_LONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z "${COMPONENT_LONGITUDE}" ]] ; do
+        if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
+            COMPONENT_LONGITUDE="${RECEIVER_LONGITUDE}"
+            COMPONENT_LONGITUDE_SOURCE="the ${RECEIVER_PROJECT_TITLE} configuration file"
+        elif [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+            COMPONENT_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
+            COMPONENT_LONGITUDE_SOURCE="the Dump1090 configuration file"
+        fi
+        if [[ -n "${COMPONENT_LONGITUDE_SOURCE}" ]] ; then
+            COMPONENT_LONGITUDE_SOURCE_MESSAGE=", the value below is sourced from ${COMPONENT_LONGITUDE_SOURCE}"
+        fi
+        COMPONENT_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LONGITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's longitude${COMPONENT_LONGITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_LONGITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+    done
+else
+    # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
     if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
-        OGN_LONGITUDE="${RECEIVER_LONGITUDE}"
+        COMPONENT_LONGITUDE="${RECEIVER_LONGITUDE}"
+    elif [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
+        COMPONENT_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
     else
-        OGN_LONGITUDE="0.000"
+        COMPONENT_LONGITUDE="0.000"
     fi
 fi
 
 # Altitude.
-if [[ -z "${OGN_ALTITUDE}" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Ask the user to confirm the receivers altitude, this will be prepopulated by the google derived altutude based on the LAT/LON.
+    COMPONENT_ALTITUDE_TITLE="Receiver Altitude"
+    while [[ -z "${COMPONENT_ALTITUDE}" ]] ; do
+        if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
+            COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
+            COMPONENT_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
+        fi
+        if [[ -n "${COMPONENT_ALTITUDE_SOURCE}" ]] ; then
+            COMPONENT_ALTITUDE_SOURCE_MESSAGE=", the value below is sourced from ${COMPONENT_ALTITUDE_SOURCE}"
+        fi
+        COMPONENT_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_ALTITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's altitude in meters${COMPONENT_ALTITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_ALTITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
+    done
+else
+    # Use receiver coordinates if already know, otherwise populate with dummy values to ensure valid config generation.
     if [[ -n "${RECEIVER_ALTITUDE}" ]] ; then
-        OGN_ALTITUDE="${RECEIVER_ALTITUDE}"
+        COMPONENT_ALTITUDE="${RECEIVER_ALTITUDE}"
+    elif [[ -n "${COMPONENT_LATITUDE}" ]] && [[ -n "${COMPONENT_LONGITUDE}" ]] ; then
+        COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
     else
-        OGN_ALTITUDE="0"
+        COMPONENT_ALTITUDE="0.000"
     fi
 fi
 
@@ -554,9 +615,9 @@ RF:
 #
 Position:
 {
-  Latitude	= ${OGN_LATITUDE};    		# [deg] 	Antenna coordinates in decimal degrees.
-  Longitude	= ${OGN_LONGITUDE};           	# [deg] 	Antenna coordinates in decimal degrees.
-  Altitude	= ${OGN_ALTITUDE};   		# [m]   	Altitude above sea leavel.
+  Latitude	= ${COMPONENT_LATITUDE};    		# [deg] 	Antenna coordinates in decimal degrees.
+  Longitude	= ${COMPONENT_LONGITUDE};           	# [deg] 	Antenna coordinates in decimal degrees.
+  Altitude	= ${COMPONENT_ALTITUDE};   		# [m]   	Altitude above sea leavel.
   GeoidSepar	= ${OGN_GEOID};           	# [m]   	Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude.
 } ;
 #
@@ -659,7 +720,7 @@ CheckReturnCode
 
 # Return to the project root directory.
 echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 ACTION=${PWD}
 CheckReturnCode
 
