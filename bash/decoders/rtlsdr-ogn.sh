@@ -57,6 +57,53 @@ COMPONENT_SERVICE_CONFIG_PATH="/etc/${COMPONENT_SERVICE_SCRIPT_NAME}.conf"
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+# To be moved to functions.sh...
+
+#################################################################################
+# Calculate RTL-SDR device error rate.
+
+function CalibrateTuner () {
+    # Attempt to calibrate the specified tuner using GSM frequencies.
+    if [[ -n "$1" ]] ; then
+        DERIVED_DEVICE_ID="$1"
+        # GSM Band is GSM850 in US and GSM900 elsewhere, should probably try to figure this out...
+        DERIVED_GSM_BAND="GSM900"
+        # Check if gain has been specified, otherwise use automatic gain.
+        if [[ -n "${OGN_GSM_GAIN}" ]] ; then
+            DERIVED_GAIN="${OGN_GSM_GAIN}"
+        else
+            DERIVED_GAIN="-10"
+        fi
+        # Use the Kalibrate 'kal' binary if available.
+        if [[ -x "`which kal`" ]] ; then
+            echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, may take up to 10 minutes...\e[97m"
+            DERIVED_GSM_SCAN=`kal -d "${DERIVED_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
+            DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
+            DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
+            DERIVED_ERROR=`kal -d "${DERIVED_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
+        # Otherwise fall back to gsm_scan binary provided with OGN code.
+        elif [[ -x "${COMPONENT_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
+            echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take up to 20 minutes...\e[97m"
+            if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
+                DERIVED_GSM_OPTS="--gsm850"
+            else
+                DERIVED_GSM_OPTS=""
+            fi
+            DERIVED_GSM_SCAN=`gsm_scan --device "${DERIVED_DEVICE_ID}" --gain "${DERIVED_GAIN}" ${DERIVED_GSM_OPTS} | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
+            DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
+            DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
+        else
+            # No suitable tool found to perform cailbrations.
+            echo -en "\e[33m  Unable to calibrate RTL-SDR device \"${DERIVED_DEVICE_ID}\"...\e[97m"
+            false
+        fi
+    else
+        # No tuner specified.
+        echo -en "\e[33m  Unable to calibrate unspecified RTL-SDR device...\e[97m"
+        false
+    fi
+}
+
 ## SET INSTALLATION VARIABLES
 
 # Source the automated install configuration file if this is an automated installation.
@@ -405,39 +452,6 @@ if [[ ! -c "${COMPONENT_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     CheckReturnCode
 fi
 
-# Calculate RTL-SDR device error rate.
-if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
-    # Attempt to calibrate if required values are not provided.
-    # Should probably confirm if user wishes to calibrate.
-    # GSM Band is GSM850 in US and GSM900 elsewhere.
-    DERIVED_GSM_BAND="GSM900"
-    DERIVED_GAIN="-10"
-    # Check for Kalibrates 'kal' binary.
-    if [[ -x "`which kal`" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, may take up to 10 minutes...\e[97m"
-        DERIVED_GSM_SCAN=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -s ${DERIVED_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
-        DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
-        DERIVED_GSM_CHAN=`echo ${DERIVED_GSM_SCAN} | awk '{print $2}'`
-        DERIVED_ERROR=`kal -d "${OGN_DEVICE_ID}" -g "${DERIVED_GAIN}" -c "${DERIVED_GSM_CHAN}" 2>&1 | grep "^average absolute error:" | awk '{print int($4)}' | sed -e 's/\-//g'`
-    # Otherwise fall back to gsm_scan binary provided with OGN code.
-    elif [[ -x "${COMPONENT_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
-        echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, may take up to 20 minutes...\e[97m"
-        if [[ "${DERIVED_GSM_BAND}" = "GSM850" ]] ; then
-            DERIVED_GSM_OPTS="--gsm850"
-        else
-            DERIVED_GSM_OPTS=""
-        fi
-        DERIVED_GSM_SCAN=`gsm_scan --device "${OGN_DEVICE_ID}" --gain "${DERIVED_GAIN}" ${DERIVED_GSM_OPTS} | grep "^[0-9]*\.[0-9]*MHz:" | sed -e 's/dB://g' -e 's/\+//g' | sort -n -r -k 2 | grep -m1 "ppm"`
-        DERIVED_GSM_FREQ=`echo ${DERIVED_GSM_SCAN} | awk '{print $1}' | sed -e 's/00MHz://g'`
-        DERIVED_ERROR=`echo ${DERIVED_GSM_SCAN} | awk '{print int(($3 + $4)/2)}'`
-    else
-        # No suitable tool found to perform cailbrations.
-        echo -en "\e[33m  Unable to calibrate RTL-SDR device...\e[97m"
-        false
-    fi
-    CheckReturnCode
-fi
-
 ### CREATE THE CONFIGURATION FILE
 
 # Skip over this dialog if this installation is set to be automated.
@@ -572,6 +586,12 @@ if [[ -z "${OGN_GSM_GAIN}" ]] ; then
     else
         OGN_GSM_GAIN="-10"
     fi
+fi
+
+# Calculate RTL-SDR device error rate.
+if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
+    CalibrateTuner ${OGN_DEVICE_ID}
+    CheckReturnCode
 fi
 
 # Frequency Correction
