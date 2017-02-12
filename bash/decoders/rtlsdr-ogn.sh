@@ -85,6 +85,27 @@ fi
 
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
+if [[ ! -f "/etc/modprobe.d/rtlsdr-blacklist.conf" ]] ; then
+    echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
+    echo -e ""
+    sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
+    blacklist dvb_usb_rtl28xxu
+    blacklist dvb_usb_v2
+    blacklist rtl_2830
+    blacklist rtl_2832
+    blacklist r820t
+    blacklist rtl2830
+    blacklist rtl2832
+EOF
+fi
+
+### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+
+if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
+    echo -e "\e[94m  Stopping the RTL-SDR OGN service...\e[97m"
+    sudo service rtlsdr-ogn stop
+fi
+
 
 ### ASSIGN RTL-SDR DONGLES
 
@@ -194,29 +215,6 @@ CheckPackage lynx
 echo -e "\e[95m  Configuring this device to run the RTL-SDR OGN binaries...\e[97m"
 echo -e ""
 
-### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
-
-if [[ ! -f "/etc/modprobe.d/rtlsdr-blacklist.conf" ]] ; then
-    echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
-    echo -e ""
-    sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
-    blacklist dvb_usb_rtl28xxu
-    blacklist dvb_usb_v2
-    blacklist rtl_2830
-    blacklist rtl_2832
-    blacklist r820t
-    blacklist rtl2830
-    blacklist rtl2832
-EOF
-fi
-
-### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
-
-if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
-    echo -e "\e[94m  Stopping the RTL-SDR OGN service...\e[97m"
-    sudo service rtlsdr-ogn stop
-fi
-
 ### DOWNLOAD AND SET UP THE BINARIES
 
 # Create build directory if not already present.
@@ -321,7 +319,7 @@ if [[ ! -c "gpu_dev" ]] ; then
     fi
 fi
 
-# Calculate RTL-SDR device error rate
+# Calculate RTL-SDR device error rate.
 
 ### CREATE THE CONFIGURATION FILE
 
@@ -369,7 +367,7 @@ echo -e "\e[94m  Setting up rtlsdr-ogn as a service...\e[97m"
 echo -e ""
 sudo update-rc.d rtlsdr-ogn defaults
 
-# Start the component service.
+# (re)start the component service.
 echo -e "\e[94m  Starting the rtlsdr-ogn service...\e[97m"
 echo -e ""
 sudo service rtlsdr-ogn start
