@@ -786,7 +786,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 fi
 
 # Unset component specific variables.
-for VARIABLE in `grep "[A-Z]=" $0 | gawk -F "=" '{print $1}'| sed -e 's/ //g' | grep "^COMPONENT_" | sort | uniq` ; do
+for VARIABLE in `grep "[A-Z]=" $0 | awk -F "=" '{print $1}'| sed -e 's/ //g' | grep "^COMPONENT_" | sort | uniq` ; do
     unset ${VARIABLE}
 done
 
