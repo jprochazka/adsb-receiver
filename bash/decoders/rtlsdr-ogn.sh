@@ -530,8 +530,8 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user to confirm the receivers altitude, this will be populated with an altutude value derived from the configured LAT/LON.
     COMPONENT_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${COMPONENT_ALTITUDE}" ]] ; do
-        if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
-            COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
+        if [[ -n "${COMPONENT_LATITUDE}" ]] && [[ -n "${COMPONENT_LONGITUDE}" ]] ; then
+            COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${COMPONENT_LATITUDE},${COMPONENT_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
             COMPONENT_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
         fi
         if [[ -n "${COMPONENT_ALTITUDE_SOURCE}" ]] ; then
