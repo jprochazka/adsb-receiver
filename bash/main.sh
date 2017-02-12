@@ -239,7 +239,7 @@ if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed
 else
     # Check if a newer version can be installed if this is not a Raspberry Pi device.
     if [[ `uname -m` != "armv7l" ]]; then
-        if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FR24CLIENTVERSIONI386}") -eq 0 ]; then
+        if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]; then
             FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24  Client (upgrade)' '' OFF)
         fi
     fi

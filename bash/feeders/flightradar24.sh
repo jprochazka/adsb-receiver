@@ -123,16 +123,16 @@ else
     echo -e "\e[94m  Detected the device architecture as I386...\e[97m"
     echo -e "\e[94m  Downloading the Flightradar24 feeder client package...\e[97m"
     echo -e ""
-    wget http://feed.flightradar24.com/linux/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb -O $FR24BUILDDIRECTORY/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+    wget http://feed.flightradar24.com/linux/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb -O $FR24BUILDDIRECTORY/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
     echo -e "\e[94m  Installing the Flightradar24 feeder client package...\e[97m"
     if [[ `lsb_release -si` == "Debian" ]]; then
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
         echo -e ""
-        sudo dpkg -i --force-architecture $FR24BUILDDIRECTORY/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i --force-architecture $FR24BUILDDIRECTORY/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
     else
         echo -e ""
-        sudo dpkg -i $FR24BUILDDIRECTORY/fr24feed_${FR24CLIENTVERSIONI386}_i386.deb
+        sudo dpkg -i $FR24BUILDDIRECTORY/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
     fi
     echo -e ""
     echo -e "\e[94m  Checking that the fr24feed package was installed properly...\e[97m"
