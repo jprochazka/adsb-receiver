@@ -503,7 +503,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if [[ -n "${COMPONENT_LATITUDE_SOURCE}" ]] ; then
             COMPONENT_LATITUDE_SOURCE_MESSAGE=", the value below is obtained from ${COMPONENT_LATITUDE_SOURCE}"
         fi
-        COMPONENT_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${COMPONENT_LATITUDE_SOURCE_MESSAGE}:\n" 12 78 -- "${COMPONENT_LATITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${COMPONENT_LATITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_LATITUDE}" 3>&1 1>&2 2>&3)
         COMPONENT_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
 else
@@ -532,7 +532,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if [[ -n "${COMPONENT_LONGITUDE_SOURCE}" ]] ; then
             COMPONENT_LONGITUDE_SOURCE_MESSAGE=", the value below is obtained from ${COMPONENT_LONGITUDE_SOURCE}"
         fi
-        COMPONENT_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LONGITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's longitude${COMPONENT_LONGITUDE_SOURCE_MESSAGE}:\n" 12 78 -- "${COMPONENT_LONGITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LONGITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's longitude${COMPONENT_LONGITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_LONGITUDE}" 3>&1 1>&2 2>&3)
         COMPONENT_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 else
@@ -558,7 +558,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if [[ -n "${COMPONENT_ALTITUDE_SOURCE}" ]] ; then
             COMPONENT_ALTITUDE_SOURCE_MESSAGE=", the value below is obtained from ${COMPONENT_ALTITUDE_SOURCE}"
         fi
-        COMPONENT_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_ALTITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's altitude in meters${COMPONENT_ALTITUDE_SOURCE_MESSAGE}:\n" 12 78 -- "${COMPONENT_ALTITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_ALTITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's altitude in meters${COMPONENT_ALTITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_ALTITUDE}" 3>&1 1>&2 2>&3)
         COMPONENT_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
     done
 else
@@ -580,7 +580,7 @@ fi
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     COMPONENT_RECEIVER_NAME_TITLE="Receiver Name"
    while [[ -z "${COMPONENT_RECEIVER_NAME}" ]]  || [[ `echo -n ${COMPONENT_RECEIVER_NAME} | wc -c` -gt 9 ]] ; do
-       COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, this should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 12 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
+       COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, this should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 10 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
        COMPONENT_RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
    done
 else
