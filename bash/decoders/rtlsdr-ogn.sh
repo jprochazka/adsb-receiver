@@ -641,7 +641,7 @@ fi
 ### CREATE THE CONFIGURATION FILE
 
 # Test if config file exists, if not create it.
-COMPONENT_CONFIG_FILE_NAME="${OGN_RECEIVER_NAME}.conf"
+COMPONENT_CONFIG_FILE_NAME="${COMPONENT_RECEIVER_NAME}.conf"
 if [[ -s "${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME}" ]] ; then
     echo -en "\e[33m  Using existing ${COMPONENT_NAME} config file at \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
 else
@@ -677,7 +677,7 @@ Position:
 #
 APRS:
 {
-  Call		= "${OGN_RECEIVER_NAME}";  	# char[9]	APRS callsign (max. 9 characters).
+  Call		= "${COMPONENT_RECEIVER_NAME}";  	# char[9]	APRS callsign (max. 9 characters).
 } ;
 #
 DDB:
