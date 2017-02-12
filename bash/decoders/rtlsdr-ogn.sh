@@ -576,7 +576,7 @@ if [[ -z "${OGN_GEOID}" ]] ; then
     fi
 fi
 
-# Enforce OGN whitelist.
+# Future option to enable OGN whitelist.
 if [[ -z "${OGN_WHITELIST}" ]] ; then
     OGN_WHITELIST="0"
 fi
@@ -592,18 +592,15 @@ fi
 
 # Calculate RTL-SDR device error rate.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Tuner Calibration" --yesno "Would you like to calibrate the device \"${OGN_DEVICE_ID}\" which has been configured for use with ${COMPONENT_NAME}?" 8 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Tuner Calibration" --yesno "Would you like to calibrate the device \"${OGN_DEVICE_ID}\" which has been configured for use with ${COMPONENT_NAME}?\n\nPlease be aware this may take between 10 and 20 minutes." 8 78
     if [[ $? -eq 0 ]] ; then
         # User would like to calibrate the tuner.
-        if [[ -n "${OGN_DEVICE_ID}" ]] ; then
-            CalibrateTuner ${OGN_DEVICE_ID}
-        else
-            echo -en "\e[33m  The specified device is either invalid or does not exist...\e[97m"
-            false
-        fi
-        CheckReturnCode
+        COMPONENT_DO_CALIBRATE="true"
     fi
 elif [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
+    COMPONENT_DO_CALIBRATE="true"
+fi
+if [[ "${COMPONENT_DO_CALIBRATE}" ]] ; then
     if [[ -n "${OGN_DEVICE_ID}" ]] ; then
         CalibrateTuner ${OGN_DEVICE_ID}
     else
