@@ -711,10 +711,12 @@ DDB:
 } ;
 #
 EOF
+    # Update ownership of new config file.
+    ACTION=$(sudo chown -v pi:pi ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} 2>&1)
+else
+    echo -en "\e[33m  Unable to create ${COMPONENT_NAME} config file...\e[97m"
+    false
 fi
-
-# Update ownership of new config file.
-ACTION=$(sudo chown -v pi:pi ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} 2>&1)
 CheckReturnCode
 
 ### INSTALL AS A SERVICE
