@@ -589,8 +589,25 @@ if [[ -z "${OGN_GSM_GAIN}" ]] ; then
 fi
 
 # Calculate RTL-SDR device error rate.
-if [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
-    CalibrateTuner ${OGN_DEVICE_ID}
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Tuner Calibration" --yesno "Would you like to calibrate the device \"${OGN_DEVICE_ID}\" which has been configured for use with ${COMPONENT_NAME}?" 8 78
+    if [[ $? -eq 0 ]] ; then
+        # User would like to calibrate the tuner.
+        if [[ -n "${OGN_DEVICE_ID}" ]] ; then
+            CalibrateTuner ${OGN_DEVICE_ID}
+        else
+            echo -en "\e[33m  The specified device is either invalid or does not exist...\e[97m"
+            false
+        fi
+        CheckReturnCode
+    fi
+elif [[ -z "${OGN_FREQ_CORR}" ]] || [[ -z "${OGN_GSM_FREQ}" ]] ; then
+    if [[ -n "${OGN_DEVICE_ID}" ]] ; then
+        CalibrateTuner ${OGN_DEVICE_ID}
+    else
+        echo -en "\e[33m  The specified device is either invalid or does not exist...\e[97m"
+        false
+    fi
     CheckReturnCode
 fi
 
