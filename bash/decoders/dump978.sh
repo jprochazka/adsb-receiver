@@ -148,11 +148,15 @@ echo -e ""
 # Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
 echo -e "\e[94m  Creating an RTL-SDR kernel module blacklist file...\e[97m"
 sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
-blacklist dvb_usb_rtl28xxu
 blacklist dvb_usb_v2
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_rtl2830u
+blacklist dvb_usb_rtl2832u
 blacklist rtl_2830
 blacklist rtl_2832
 blacklist r820t
+blacklist rtl2830
+blacklist rtl2832
 EOF
 echo -e "\e[94m  Removing the kernel module dvb_usb_rtl28xxu...\e[97m"
 echo -e ""

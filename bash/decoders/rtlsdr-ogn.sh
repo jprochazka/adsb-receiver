@@ -42,7 +42,7 @@ COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/ogn"
 COMPONENT_GITHUB="https://github.com/glidernet/ogn-rf"
 COMPONENT_WEBSITE="http://wiki.glidernet.org"
 COMPONENT_NAME="RTLSDR-OGN"
-COMPONENT_DESC="is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker."
+COMPONENT_DESC="is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker"
 COMPONENT_RADIO="Please note that a dedicated RTL-SDR dongle is required to use this decoder"
 
 # Component service script variables.
@@ -152,7 +152,7 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 14 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 18 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -476,7 +476,7 @@ fi
 # Skip over this dialog if this installation is set to be automated.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly, you will now be asked to supply these values for your receiver.\n\n If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 15 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations, you will now be asked to supply these values for your receiver.\n\nIf you do not have this information you can obtain it using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 16 78
 fi
 
 # Latitude.
@@ -494,7 +494,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if [[ -n "${COMPONENT_LATITUDE_SOURCE}" ]] ; then
             COMPONENT_LATITUDE_SOURCE_MESSAGE=", the value below is obtained from ${COMPONENT_LATITUDE_SOURCE}"
         fi
-        COMPONENT_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${COMPONENT_LATITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_LATITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${COMPONENT_LATITUDE_SOURCE_MESSAGE}:\n" 12 78 -- "${COMPONENT_LATITUDE}" 3>&1 1>&2 2>&3)
         COMPONENT_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
 else
@@ -523,7 +523,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if [[ -n "${COMPONENT_LONGITUDE_SOURCE}" ]] ; then
             COMPONENT_LONGITUDE_SOURCE_MESSAGE=", the value below is obtained from ${COMPONENT_LONGITUDE_SOURCE}"
         fi
-        COMPONENT_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LONGITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's longitude${COMPONENT_LONGITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_LONGITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_LONGITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's longitude${COMPONENT_LONGITUDE_SOURCE_MESSAGE}:\n" 12 78 -- "${COMPONENT_LONGITUDE}" 3>&1 1>&2 2>&3)
         COMPONENT_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 else
@@ -544,12 +544,12 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     while [[ -z "${COMPONENT_ALTITUDE}" ]] ; do
         if [[ -n "${COMPONENT_LATITUDE}" ]] && [[ -n "${COMPONENT_LONGITUDE}" ]] ; then
             COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${COMPONENT_LATITUDE},${COMPONENT_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
-            COMPONENT_ALTITUDE_SOURCE="Google but should be increased to reflect your antennas height above ground level"
+            COMPONENT_ALTITUDE_SOURCE="Google; however should be increased to reflect your antennas height above ground level"
         fi
         if [[ -n "${COMPONENT_ALTITUDE_SOURCE}" ]] ; then
             COMPONENT_ALTITUDE_SOURCE_MESSAGE=", the value below is obtained from ${COMPONENT_ALTITUDE_SOURCE}"
         fi
-        COMPONENT_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_ALTITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's altitude in meters${COMPONENT_ALTITUDE_SOURCE_MESSAGE}:\n" 10 78 -- "${COMPONENT_ALTITUDE}" 3>&1 1>&2 2>&3)
+        COMPONENT_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_ALTITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's altitude in meters${COMPONENT_ALTITUDE_SOURCE_MESSAGE}:\n" 12 78 -- "${COMPONENT_ALTITUDE}" 3>&1 1>&2 2>&3)
         COMPONENT_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
     done
 else
@@ -571,7 +571,7 @@ fi
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     COMPONENT_RECEIVER_NAME_TITLE="Receiver Name"
    while [[ -z "${COMPONENT_RECEIVER_NAME}" ]]  || [[ `echo -n ${COMPONENT_RECEIVER_NAME} | wc -c` -gt 9 ]] ; do
-       COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, this should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 10 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
+       COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, this should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 12 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
        COMPONENT_RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
    done
 else
