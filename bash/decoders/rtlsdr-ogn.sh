@@ -60,6 +60,29 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 # To be moved to functions.sh...
 
 #################################################################################
+# Blacklist DVB-T drivers for RTL-SDR devices.
+
+function BlacklistModules () {
+    RECEIVER_MODULE_BLACKLIST="/etc/modprobe.d/rtlsdr-blacklist.conf"
+    if [[ ! -f "${RECEIVER_MODULE_BLACKLIST}" ]] || [[ `cat ${RECEIVER_MODULE_BLACKLIST} | wc -l` -lt 9 ]] ; then
+        echo -en "\e[33m  Installing blacklist to prevent unwanted kernel modules from being loaded...\e[97m"
+        sudo tee ${RECEIVER_MODULE_BLACKLIST}  > /dev/null <<EOF
+blacklist dvb_usb_v2
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_rtl2830u
+blacklist dvb_usb_rtl2832u
+blacklist rtl_2830
+blacklist rtl_2832
+blacklist r820t
+blacklist rtl2830
+blacklist rtl2832
+EOF
+    else
+        echo -en "\e[33m  Kernel module blacklist already installed...\e[97m"
+    fi
+}
+
+#################################################################################
 # Calculate RTL-SDR device error rate.
 
 function CalibrateTuner () {
@@ -174,19 +197,8 @@ echo -e ""
 
 ### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
-if [[ ! -f "/etc/modprobe.d/rtlsdr-blacklist.conf" ]] ; then
-    echo -en "\e[33m  Stopping unwanted kernel modules from being loaded...\e[97m"
-    sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
-blacklist dvb_usb_rtl28xxu
-blacklist dvb_usb_v2
-blacklist rtl_2830
-blacklist rtl_2832
-blacklist r820t
-blacklist rtl2830
-blacklist rtl2832
-EOF
-    CheckReturnCode
-fi
+
+CheckReturnCode
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
@@ -464,7 +476,7 @@ fi
 # Skip over this dialog if this installation is set to be automated.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly, you will now be asked to supply these values for your receiver.\n\n If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 15 78
 fi
 
 # Latitude.
