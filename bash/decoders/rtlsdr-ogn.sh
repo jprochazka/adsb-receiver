@@ -150,7 +150,7 @@ CheckPackage python3-dev
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
 CheckPackage rtl-sdr
-# Required for RTLSDR-OGN.
+# Required by component.
 CheckPackage curl
 CheckPackage libconfig9
 CheckPackage libconfig-dev
@@ -183,7 +183,7 @@ EOF
     CheckReturnCode
 fi
 
-## CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 if [[ -f "${COMPONENT_SERVICE_SCRIPT_PATH}" ]] ; then
     echo -en "\e[33m  Stopping the ${COMPONENT_NAME} service...\e[97m"
@@ -206,15 +206,15 @@ unset PIDS
 # Count the number of tuners available.
 RECEIVER_TUNERS_AVAILABLE=`rtl_eeprom 2>&1 | grep -c "^\s*[0-9]*:\s"`
 
-# Start counting the number of tuners required with 1 for this component.
+# Start counting the number of tuners required with one for this component.
 RECEIVER_TUNERS_REQUIRED="1"
 
-# Check which other components are installed.
+# Check which components are installed.
 echo -e "\e[95m  Checking for existing decoders...\e[97m"
 echo -e ""
 
 # Check if any of the dump1090 forks are installed.
-echo -en "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
+echo -en "\e[94m  Checking if any of the dump1090 packages are installed...\e[97m"
 # Check if the dump1090-mutability package is installed.
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     RECEIVER_TUNERS_REQUIRED=$((RECEIVER_TUNERS_REQUIRED+1))
@@ -441,7 +441,7 @@ if [[ ! -c "${COMPONENT_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     KERNEL=`uname -r`
     KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
     CheckReturnCode
-    # Check if kernel v4.1 or higher is being used.
+    # Check if the currently running kernel is version 4.1 or higher.
     if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
