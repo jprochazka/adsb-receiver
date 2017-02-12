@@ -144,6 +144,8 @@ echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPON
 echo -e ""
 # Required by install script.
 CheckPackage git
+CheckPackage python-dev
+CheckPackage python3-dev
 # Required for USB SDR devices.
 CheckPackage librtlsdr-dev
 CheckPackage libusb-1.0-0-dev
