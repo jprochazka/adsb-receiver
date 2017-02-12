@@ -484,7 +484,7 @@ fi
 # Skip over this dialog if this installation is set to be automated.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations, you will now be asked to supply these values for your receiver.\n\nIf you do not have this information you can obtain it using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 16 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations, you will now be asked to supply these values for your receiver.\n\nIf you do not have this information you can obtain it using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites:\n\n  https://www.swiftbyte.com/toolbox/geocode" 16 78
 fi
 
 # Latitude.
@@ -579,8 +579,8 @@ fi
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     COMPONENT_RECEIVER_NAME_TITLE="Receiver Name"
     while [[ -z "${COMPONENT_RECEIVER_NAME}" ]]  || [[ `echo -n ${COMPONENT_RECEIVER_NAME} | wc -c` -gt 9 ]] ; do
-        if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] && [[ `grep -c "^ *Call" ${COMPONENT_SERVICE_CONFIG_PATH}` -gt 0 ]] ; then
-            COMPONENT_RECEIVER_NAME=`grep "^ *Call" ${COMPONENT_SERVICE_CONFIG_PATH} | awk -F ";" '{print $1}' | awk -F "=" '{print $2}' | sed -e 's/"//g' -e 's/ //g'`
+        if [[ -n "${COMPONENT_SERVICE_CONFIG_PATH}" ]] && [[ `grep -c "ogn-decode" ${COMPONENT_SERVICE_CONFIG_PATH}` -gt 0 ]] ; then
+            COMPONENT_RECEIVER_NAME=`grep "ogn-decode" ${COMPONENT_SERVICE_CONFIG_PATH} | awk '{print $5}' | awk -F "." '{print $1}' `
         fi
         COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, this should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 10 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
         COMPONENT_RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
@@ -663,12 +663,14 @@ fi
 
 ### CREATE THE CONFIGURATION FILE
 
-# Test if config file exists, if not create it.
-COMPONENT_CONFIG_FILE_NAME="${COMPONENT_RECEIVER_NAME}.conf"
-if [[ -s "${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME}" ]] ; then
-    echo -en "\e[33m  Using existing ${COMPONENT_NAME} config file at \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
-else
-    echo -en "\e[33m  Generating new ${COMPONENT_NAME} config file as \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
+# Update existing or create new config file.
+if [[ -n "${COMPONENT_RECEIVER_NAME}" ]] ; then
+    COMPONENT_CONFIG_FILE_NAME="${COMPONENT_RECEIVER_NAME}.conf"
+    if [[ -s "${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME}" ]] ; then
+        echo -en "\e[33m  Updating existing ${COMPONENT_NAME} config file at \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
+    else
+        echo -en "\e[33m  Generating new ${COMPONENT_NAME} config file as \"\e[37m${COMPONENT_CONFIG_FILE_NAME}\e[33m\"...\e[97m"
+    fi
     sudo tee ${COMPONENT_PROJECT_DIRECTORY}/${COMPONENT_CONFIG_FILE_NAME} > /dev/null 2>&1 <<EOF
 #########################################################
 #                                                       #
