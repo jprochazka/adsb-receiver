@@ -20,5 +20,6 @@ after_success: |
   cd ../.. &&
   rm -rf kcov-master &&
   mkdir -p coverage &&
-  kcov coverage script.sh &&
+  export PROJECTBRANCH="${TRAVIS_BRANCH}" &&
+  kcov coverage ./install.sh -a &&
   bash <(curl -s https://codecov.io/bash)
