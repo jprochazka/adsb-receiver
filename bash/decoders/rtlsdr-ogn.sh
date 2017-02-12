@@ -532,25 +532,45 @@ fi
 
 # Check for component specific variables, otherwise populate with dummy values to ensure valid config generation.
 
+# Set receiver callsign for this decoder.
+# This should be between 3 and 9 alphanumeric charactors, with no punctuation.
+# Please see:   http://wiki.glidernet.org/receiver-naming-convention
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    COMPONENT_RECEIVER_NAME_TITLE="Receiver Name"
+   while [[ -z "${COMPONENT_RECEIVER_NAME}" ]]  || [[ `echo -n ${COMPONENT_RECEIVER_NAME} | wc -c` -gt 9 ]] ; do
+       COMPONENT_RECEIVER_NAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --backtitle "${BACKTITLETEXT}" --title "${COMPONENT_RECEIVER_NAME_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver name, tThis should be between 3 and 9 alphanumeric charactors and contain no punctuation or special charactors:\n" 10 78 -- "${COMPONENT_RECEIVER_NAME}" 3>&1 1>&2 2>&3)
+       COMPONENT_RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
+   done
+else
+    if [[ -n "${OGN_RECEIVER_NAME}" ]] ; then
+        COMPONENT_RECEIVER_NAME=`echo ${OGN_RECEIVER_NAME} | tr -cd '[:alnum:]' | cut -c -9`
+    else
+        COMPONENT_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
+    fi
+fi
+
 # Geoid separation: FLARM transmits GPS altitude, APRS uses means Sea level altitude.
 # To find value you can check: 	http://geographiclib.sourceforge.net/cgi-bin/GeoidEval
 # Need to derive from co-ords but will set to altitude as a placeholders.
 if [[ -z "${OGN_GEOID}" ]] ; then
-    if [[ -n "${RECEIVER_ALTITUDE}" ]] ; then
-        OGN_GEOID="${RECEIVER_ALTITUDE}"
+    if [[ -n "${COMPONENT_ALTITUDE}" ]] ; then
+        OGN_GEOID="${COMPONENT_ALTITUDE}"
     else
         OGN_GEOID="0"
     fi
 fi
 
-# Set receiver callsign for this decoder.
-# This should be between 3 and 9 alphanumeric charactors, with no punctuation.
-# Please see: 	http://wiki.glidernet.org/receiver-naming-convention
-if [[ -z "${OGN_RECEIVER_NAME}" ]] ; then
-    if [[ -n "${RECEIVERNAME}" ]] ; then
-        OGN_RECEIVER_NAME=`echo ${RECEIVERNAME} | tr -cd '[:alnum:]' | cut -c -9`
+# Enforce OGN whitelist.
+if [[ -z "${OGN_WHITELIST}" ]] ; then
+    OGN_WHITELIST="0"
+fi
+
+# Gain value for RTL-SDR device.
+if [[ -z "${OGN_GSM_GAIN}" ]] ; then
+    if [[ -n "${DERIVED_GAIN}" ]] ; then
+        OGN_GSM_GAIN="${DERIVED_GAIN}"
     else
-        OGN_RECEIVER_NAME=`hostname -s | tr -cd '[:alnum:]' | cut -c -9`
+        OGN_GSM_GAIN="-10"
     fi
 fi
 
@@ -570,20 +590,6 @@ if [[ -z "${OGN_GSM_FREQ}" ]] ; then
     else
        OGN_GSM_FREQ="958"
     fi
-fi
-
-# Gain value for RTL-SDR device.
-if [[ -z "${OGN_GSM_GAIN}" ]] ; then
-    if [[ -n "${DERIVED_GAIN}" ]] ; then
-        OGN_GSM_GAIN="${DERIVED_GAIN}"
-    else
-        OGN_GSM_GAIN="-10"
-    fi
-fi
-
-# Enforce OGN whitelist.
-if [[ -z "${OGN_WHITELIST}" ]] ; then
-    OGN_WHITELIST="0"
 fi
 
 # Test if config file exists, if not create it.
