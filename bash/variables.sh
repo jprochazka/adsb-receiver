@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -42,11 +42,11 @@ RTLSDROGN_VERSION="0.2.5"
 # FlightAware PiAware
 PIAWARE_VERSION="3.3.0"
 
-# PlaneFinder ADS-B Client
-PLANEFINDER_CLIENT_ARM="3.5.461"
-PLANEFINDER_CLIENT_I386="3.4.61"
+# PlaneFinder Client
+PLANEFINDER_CLIENT_VERSION_ARM="3.5.461"
+PLANEFINDER_CLIENT_VERSION_I386="3.4.61"
 
-# Flightradar24 Linux Debian package
+# Flightradar24 Client
 FLIGHTRADAR24_CLIENT_VERSION_I386="1.0.18-5"
 
 # mlat-client

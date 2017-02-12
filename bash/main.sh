@@ -222,12 +222,12 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 else
     # Set version depending on the device architecture.
-    PLANEFINDER_CLIENT=${PLANEFINDER_CLIENT_ARM}
+    PLANEFINDER_CLIENT_VERSION=${PLANEFINDER_CLIENT_VERSION_ARM}
     if [[ `uname -m` != "armv7l" ]]; then
-        PLANEFINDER_CLIENT=${PLANEFINDER_CLIENT_I386}
+        PLANEFINDER_CLIENT_VERSION=${PLANEFINDER_CLIENT_VERSION_I386}
     fi
     # Check if a newer version can be installed.
-    if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PLANEFINDER_CLIENT}") -eq 0 ]; then
+    if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PLANEFINDER_CLIENT_VERSION}") -eq 0 ]; then
         FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client (upgrade)' '' OFF)
     fi
 fi
