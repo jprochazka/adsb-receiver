@@ -785,4 +785,9 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
+# Unset component specific variables.
+for VARIABLE in `grep "[A-Z]=" $0 | gawk -F "=" '{print $1}'| sed -e 's/ //g' | grep "^COMPONENT_" | sort | uniq` ; do
+    unset ${VARIABLE}
+done
+
 exit 0
