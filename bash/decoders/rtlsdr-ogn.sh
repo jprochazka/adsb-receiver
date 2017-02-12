@@ -204,10 +204,9 @@ CheckReturnCode
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
 # Attempt to stop using systemd.
-COMPONENT_SERVICE_STATUS=$(sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1)
-if [[ `echo ${COMPONENT_SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active"`" -gt 0 ]] ; then
     echo -e "\e[33m  Stopping the ${COMPONENT_NAME} service..."
-    ACTION=$(sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1)
+    ACTION=$(sudo systemctl stop ${COMPONENT_SERVICE_NAME} 2>&1)
     CheckReturnCode
 fi
 
@@ -771,7 +770,7 @@ if [[ "${RECEIVER_TUNERS_AVAILABLE}" -lt 2 ]] ; then
     echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\e[97m"
     SERVICES_DISABLE="dump1090-mutability"
     for SERVICE in ${SERVICES_DISABLE} ; do
-        if [[ `service ${SERVICE} status | grep -c "Active: active"` -gt 0 ]] ; then
+        if [[ `sudo systemctl status ${SERVICE} | grep -c "Active: active"` -gt 0 ]] ; then
             ACTION=$(sudo update-rc.d ${SERVICE} disable 2>&1)
         fi
     done
@@ -784,10 +783,9 @@ ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
 # (re)start the component service.
-COMPONENT_SERVICE_STATUS=$(sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1)
-if [[ `echo ${COMPONENT_SERVICE_STATUS} | egrep "Active:" | egrep -c ": active"` -gt 0 ]] ; then
+if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active"`" -gt 0 ]] ; then
     echo -e "\e[33m  Restarting the ${COMPONENT_NAME} service..."
-    ACTION=$(sudo systemctl reload-or-restart ${COMPONENT_SERVICE_NAME} 2>&1)
+    ACTION=$(sudo systemctl restart ${COMPONENT_SERVICE_NAME} 2>&1)
 else
     echo -e "\e[33m  Starting the ${COMPONENT_NAME} service..."
     ACTION=$(sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1)
