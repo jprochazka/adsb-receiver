@@ -3,8 +3,8 @@ language: 	bash
 sudo: 		required
 
 before_install:
-		- sudo apt-get -qq update
-		- sudo apt-get install -y cmake libcurl4-openssl-dev libdw-dev libelf-dev
+		sudo apt-get -qq update
+		sudo apt-get -qq install -y cmake libcurl4-openssl-dev libdw-dev libelf-dev
 
 install: 	true
 
