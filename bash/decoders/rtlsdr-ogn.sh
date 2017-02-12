@@ -319,7 +319,7 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Ask the user which USB device is to be use for RTL-SDR OGN.
         RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-        while [[ -z "${DUMP978_DEVICE_ID}" ]] ; do
+        while [[ -z "${RTLSDROGN_DEVICE_ID}" ]] ; do
             RTLSDROGN_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your RTL-SDR OGN RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     else
