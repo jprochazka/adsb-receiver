@@ -46,6 +46,31 @@ RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+# To be moved to functions.sh...
+
+#################################################################################
+# Blacklist DVB-T drivers for RTL-SDR devices.
+
+function BlacklistModules () {
+    RECEIVER_MODULE_BLACKLIST="/etc/modprobe.d/rtlsdr-blacklist.conf"
+    if [[ ! -f "${RECEIVER_MODULE_BLACKLIST}" ]] || [[ `cat ${RECEIVER_MODULE_BLACKLIST} | wc -l` -lt 9 ]] ; then
+        echo -en "\e[33m  Installing blacklist to prevent unwanted kernel modules from being loaded...\e[97m"
+        sudo tee ${RECEIVER_MODULE_BLACKLIST}  > /dev/null <<EOF
+blacklist dvb_usb_v2
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_rtl2830u
+blacklist dvb_usb_rtl2832u
+blacklist rtl_2830
+blacklist rtl_2832
+blacklist r820t
+blacklist rtl2830
+blacklist rtl2832
+EOF
+    else
+        echo -en "\e[33m  Kernel module blacklist already installed...\e[97m"
+    fi
+}
+
 ## SET INSTALLATION VARIABLES
 
 # Source the automated install configuration file if this is an automated installation.
@@ -111,23 +136,11 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the RTL-SDR OGN binaries...\e[97m"
 echo -e ""
 
-### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+### BLACKLIST TO PREVENT UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
-if [[ ! -f "/etc/modprobe.d/rtlsdr-blacklist.conf" ]] ; then
-    echo -e "\e[94m  Stopping unwanted kernel modules from being loaded...\e[97m"
-    echo -e ""
-    sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
-blacklist dvb_usb_v2
-blacklist dvb_usb_rtl28xxu
-blacklist dvb_usb_rtl2830u
-blacklist dvb_usb_rtl2832u
-blacklist rtl_2830
-blacklist rtl_2832
-blacklist r820t
-blacklist rtl2830
-blacklist rtl2832
-EOF
-fi
+# Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
+BlacklistModules
+CheckReturnCode
 
 ### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
 
