@@ -46,6 +46,31 @@ DECODER_WEBSITE="https://github.com/mutability/dump978"
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
+# To be moved to functions.sh...
+
+#################################################################################
+# Blacklist DVB-T drivers for RTL-SDR devices.
+
+function BlacklistModules () {
+    RECEIVER_MODULE_BLACKLIST="/etc/modprobe.d/rtlsdr-blacklist.conf"
+    if [[ ! -f "${RECEIVER_MODULE_BLACKLIST}" ]] || [[ `cat ${RECEIVER_MODULE_BLACKLIST} | wc -l` -lt 9 ]] ; then
+        echo -en "\e[33m  Installing blacklist to prevent unwanted kernel modules from being loaded...\e[97m"
+        sudo tee ${RECEIVER_MODULE_BLACKLIST}  > /dev/null <<EOF
+blacklist dvb_usb_v2
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_rtl2830u
+blacklist dvb_usb_rtl2832u
+blacklist rtl_2830
+blacklist rtl_2832
+blacklist r820t
+blacklist rtl2830
+blacklist rtl2832
+EOF
+    else
+        echo -en "\e[33m  Kernel module blacklist already installed...\e[97m"
+    fi
+}
+
 ### BEGIN SETUP
 
 clear
@@ -145,19 +170,12 @@ echo -e ""
 echo -e "\e[95m  Configuring the device to utilize the ${DECODER_NAME} binaries...\e[97m"
 echo -e ""
 
+### BLACKLIST TO PREVENT UNWANTED RTL-SDR MODULES FROM BEING LOADED
+
 # Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
-echo -e "\e[94m  Creating an RTL-SDR kernel module blacklist file...\e[97m"
-sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
-blacklist dvb_usb_v2
-blacklist dvb_usb_rtl28xxu
-blacklist dvb_usb_rtl2830u
-blacklist dvb_usb_rtl2832u
-blacklist rtl_2830
-blacklist rtl_2832
-blacklist r820t
-blacklist rtl2830
-blacklist rtl2832
-EOF
+BlacklistModules
+CheckReturnCode
+
 echo -e "\e[94m  Removing the kernel module dvb_usb_rtl28xxu...\e[97m"
 echo -e ""
 sudo rmmod dvb_usb_rtl28xxu

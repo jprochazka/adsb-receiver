@@ -196,7 +196,7 @@ echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
 
-### BLACKLIST UNWANTED RTL-SDR MODULES FROM BEING LOADED
+### BLACKLIST TO PREVENT UNWANTED RTL-SDR MODULES FROM BEING LOADED
 
 # Use function to install kernel module blacklist.
 BlacklistModules
