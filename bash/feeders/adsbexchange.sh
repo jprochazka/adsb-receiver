@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2016-2017, Joseph A. Prochazka & Romeo Golf                         #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,32 +31,42 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
+RECEIVER_BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
 # Component specific variables.
-
 MLAT_CLIENT_GITBHUB_URL="https://github.com/mutability/mlat-client.git"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 
+# Preconfigured values for ADSB Exchange.
 FEEDER_NAME="adsbexchange"
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
-
-FEEDER_BEAST_DST_HOST="feed.adsbexchange.com"
-FEEDER_BEAST_DST_PORT="30005"
+#
 FEEDER_BEAST_SRC_HOST="127.0.0.1"
 FEEDER_BEAST_SRC_PORT="30005"
-
-FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
-FEEDER_MLAT_DST_PORT="31090"
+FEEDER_BEAST_DST_HOST="feed.adsbexchange.com"
+FEEDER_BEAST_DST_PORT="30005"
+#
 FEEDER_MLAT_SRC_HOST="127.0.0.1"
 FEEDER_MLAT_SRC_PORT="30005"
-
+FEEDER_MLAT_DST_HOST="feed.adsbexchange.com"
+FEEDER_MLAT_DST_PORT="31090"
+#
+FEEDER_MLAT_RETURN_HOST="127.0.0.1"
 FEEDER_MLAT_RETURN_PORT="30104"
+
+# Default values.
+FEEDER_BEAST_SRC_HOST_DEFAULT="127.0.0.1"
+FEEDER_BEAST_SRC_PORT_DEFAULT="30005"
+FEEDER_BEAST_DST_PORT_DEFAULT="30004"
+#
+FEEDER_MLAT_SRC_HOST_DEFAULT="127.0.0.1"
+FEEDER_MLAT_SRC_PORT_DEFAULT="30005"
+FEEDER_MLAT_DST_PORT_DEFAULT="31090"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -68,7 +78,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
@@ -79,6 +89,7 @@ echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
+# Interactive install.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
     if [[ $? -eq 1 ]] ; then
@@ -130,18 +141,16 @@ CheckPackage netcat
 
 ## CONFIRM DERIVED VALUES
 
-# Ask for the receivers latitude and longitude.
+# For interactive install we test each required variable and prompt the user if not present.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-
     # Ask the user for the mlat user name for this receiver.
     FEEDER_USERNAME_TITLE="Receiver MLAT Username"
     while [[ -z "${FEEDER_USERNAME}" ]] ; do
         FEEDER_USERNAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
         FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
     done
-
     # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
@@ -152,7 +161,6 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
-
     # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
@@ -163,7 +171,6 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
-
     # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
@@ -181,33 +188,37 @@ else
     exit 1
 fi
 
-# Confirm that all required information has been obtained for BEAST feed.
-if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
-    FEEDER_BEAST_ENABLED="true"
-else
-    FEEDER_BEAST_ENABLED="false"
-fi
+# Check that all information required to configure the feeder has been provided.
+if [[ -n "${FEEDER_NAME}" ]] ; then
+    # Confirm that all required information has been obtained for BEAST feed.
+    if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
+        FEEDER_BEAST_ENABLED="true"
+    else
+        FEEDER_BEAST_ENABLED="false"
+    fi
 
-# Confirm that all required information has been obtained for MLAT feed.
-if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
-    FEEDER_MLAT_ENABLED="true"
-else
-    FEEDER_MLAT_ENABLED="false"
-fi
+    # Confirm that all required information has been obtained for MLAT feed.
+    if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
+        FEEDER_MLAT_ENABLED="true"
+    else
+        FEEDER_MLAT_ENABLED="false"
+    fi
 
-# Establish if MLAT results should be fed back into local dump1090 instance.
-if  [[ -n "${FEEDER_MLAT_RETURN_PORT}" ]] ; then
-    FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
-else
-    FEEDER_MLAT_RETURN_RESULTS=""
+    # Establish if MLAT results should be fed back into local dump1090 instance.
+    if  [[ -n "${FEEDER_MLAT_RETURN_PORT}" ]] ; then
+        FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
+    else
+        FEEDER_MLAT_RETURN_RESULTS=""
+    fi
 fi
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
-if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
+if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
+    # Check if build directory exists.
     if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
@@ -234,27 +245,31 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
         echo -e ""
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
     fi
+
     # Build binary package.
     echo -e "\e[94m  Building the mlat-client package...\e[97m"
     echo -e ""
     dpkg-buildpackage -b -uc 2>&1
     echo -e ""
+
     # Install binary package.
     echo -e "\e[94m  Installing the mlat-client package...\e[97m"
     echo -e ""
     sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLATCLIENTVERSION}*.deb 2>&1
     echo -e ""
+
     # Create binary archive directory.
-    if [[ ! -d "${BINARIES_DIRECTORY}" ]] ; then
+    if [[ ! -d "${RECEIVER_BINARIES_DIRECTORY}" ]] ; then
         echo -e "\e[94m  Creating archive directory...\e[97m"
         echo -e ""
-        mkdir -vp ${BINARIES_DIRECTORY} 2>&1
+        mkdir -vp ${RECEIVER_BINARIES_DIRECTORY} 2>&1
         echo -e ""
     fi
+
     # Archive binary package.
     echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
     echo -e ""
-    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${BINARIES_DIRECTORY} 2>&1
+    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BINARIES_DIRECTORY} 2>&1
     echo -e ""
 
     # Check that the mlat-client package was installed successfully.
@@ -294,8 +309,8 @@ if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
 fi
 echo -e ""
 
-if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-    # Create netcat maint script.
+# Create netcat maint script if required.
+if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
     tee ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
 #! /bin/bash
@@ -307,8 +322,8 @@ while true
 EOF
 fi
 
-if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-    # Create MLAT maint script.
+# Create MLAT maint script if required.
+if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
     tee ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/bash
@@ -321,21 +336,21 @@ EOF
     echo -e ""
 fi
 
-if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-    # Set permissions on netcat script.
+# Set permissions on netcat script.
+if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
     sudo chmod +x ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 fi
 
-if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-    # Set permissions on MLAT script.
+# Set permissions on MLAT script.
+if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
     sudo chmod +x ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
     echo -e ""
 fi
 
-if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-    # Add netcat script to startup.
+# Add netcat script to startup.
+if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
     if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
@@ -345,8 +360,8 @@ if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
     fi
 fi
 
-if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-    # Add MLAT script to startup.
+# Add MLAT script to startup.
+if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
     if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
@@ -360,11 +375,17 @@ fi
 ## START THE NETCAT FEED AND MLAT-CLIENT
 
 echo -e ""
-echo -e "\e[95m  Starting the netcat and mlat-client feeds...\e[97m"
+if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] && [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
+    echo -e "\e[95m  Starting the netcat and mlat-client feeds...\e[97m"
+elif [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
+    echo -e "\e[95m  Starting the netcat feed...\e[97m"
+elif [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
+    echo -e "\e[95m  Starting the mlat-client feed...\e[97m"
+fi
 echo -e ""
 
-if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-    # Kill any currently running instances of the feeder netcat_maint.sh script.
+# Kill any currently running instances of the feeder netcat_maint.sh script.
+if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
@@ -381,8 +402,8 @@ if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
     echo -e ""
 fi
 
-if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-    # Kill any currently running instances of the feeder mlat_maint.sh script.
+# Kill any currently running instances of the feeder mlat_maint.sh script.
+if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
@@ -399,14 +420,14 @@ if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
     echo -e ""
 fi
 
-if [[ ${FEEDER_BEAST_ENABLED} = "true" ]] ; then
-    # Start netcat script.
+# Start netcat script.
+if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
     sudo nohup ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
 fi
 
-if [[ ${FEEDER_MLAT_ENABLED} = "true" ]] ; then
-    # Start MLAT script.
+# Start MLAT script.
+if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
     sudo nohup ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
     echo -e ""
