@@ -264,6 +264,8 @@ else
 fi
 CheckReturnCode
 
+# The two sets of if loops below will be combined into a unified tuner detection and allocation function :)
+
 # Multiple RTL_SDR tuners found, check if device specified for this decoder is present.
 if [[ "${RECEIVER_TUNERS_AVAILABLE}" -gt 1 ]] ; then
     # If a device has been specified by serial number then try to match that with the currently detected tuners.
@@ -365,6 +367,12 @@ if [[ "${DUMP1090_IS_INSTALLED}" = "true" ]] || [[ "${DUMP978_IS_INSTALLED}" = "
         echo -e ""
         ### RESTART DUMP978...
         echo -e ""
+    fi
+else
+    if [[ -z "${RTLSDROGN_DEVICE_ID}" ]] ; then
+        # If no other decoders are installed then assume device ID 0 can be used by this decoder.
+        echo -e "\e[94m  Assigning RTL-SDR dongle \"0\" to RTL-SDR OGN...\e[97m"
+        RTLSDROGN_DEVICE_ID="0"
     fi
 fi
 
