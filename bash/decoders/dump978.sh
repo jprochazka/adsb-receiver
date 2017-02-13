@@ -52,10 +52,10 @@ source $BASHDIRECTORY/functions.sh
 # Blacklist DVB-T drivers for RTL-SDR devices.
 
 function BlacklistModules () {
-    RECEIVER_MODULE_BLACKLIST="/etc/modprobe.d/rtlsdr-blacklist.conf"
-    if [[ ! -f "${RECEIVER_MODULE_BLACKLIST}" ]] || [[ `cat ${RECEIVER_MODULE_BLACKLIST} | wc -l` -lt 9 ]] ; then
+    RECEIVER_KERNEL_MODULE_BLACKLIST="/etc/modprobe.d/rtlsdr-blacklist.conf"
+    if [[ ! -f "${RECEIVER_KERNEL_MODULE_BLACKLIST}" ]] || [[ `cat ${RECEIVER_KERNEL_MODULE_BLACKLIST} | wc -l` -lt 9 ]] ; then
         echo -en "\e[33m  Installing blacklist to prevent unwanted kernel modules from being loaded...\e[97m"
-        sudo tee ${RECEIVER_MODULE_BLACKLIST}  > /dev/null <<EOF
+        sudo tee ${RECEIVER_KERNEL_MODULE_BLACKLIST}  > /dev/null <<EOF
 blacklist dvb_usb_v2
 blacklist dvb_usb_rtl28xxu
 blacklist dvb_usb_rtl2830u
