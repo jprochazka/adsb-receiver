@@ -476,10 +476,10 @@ if [[ ! -c "${COMPONENT_PROJECT_DIRECTORY}/gpu_dev" ]] ; then
     # The mknod major_version number varies with kernel version.
     echo -en "\e[33m  Getting the version of the kernel currently running...\e[97m"
     KERNEL=`uname -r`
-    KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
+    RECEIVER_KERNEL_VERSION=`echo ${KERNEL} | cut -d \. -f 1`.`echo ${KERNEL} | cut -d \. -f 2`
     CheckReturnCode
     # Check if the currently running kernel is version 4.1 or higher.
-    if [[ "${KERNEL_VERSION}" < 4.1 ]] ; then
+    if [[ "${RECEIVER_KERNEL_VERSION}" < 4.1 ]] ; then
         # Kernel is older than version 4.1.
         echo -en "\e[33m  Executing mknod for older kernels...\e[97m"
         ACTION=$(sudo mknod ${COMPONENT_PROJECT_DIRECTORY}/gpu_dev c 100 0 2>&1)
