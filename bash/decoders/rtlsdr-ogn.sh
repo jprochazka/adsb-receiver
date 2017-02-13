@@ -107,7 +107,7 @@ fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for RTL-SDR OGN...\e[97m"
 echo -e ""
 # Required by install script.
 CheckPackage git
@@ -258,8 +258,11 @@ if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn" ]] ; then
     cd ${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn 2>&1
 fi
 
-# Detect CPU Architecture.
-Check_CPU
+# Use function to detect cpu architecture.
+if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+    Check_CPU
+    echo -e ""
+fi
 
 # Identify the correct binaries to download.
 case ${CPU_ARCHITECTURE} in
@@ -363,7 +366,7 @@ fi
 
 ### CREATE THE CONFIGURATION FILE
 
-# Test if config file exists, if not create it.
+# Update existing or create new config file.
 #########################################################
 #                                                       #
 #             CREATE THE CONFIGURATION FILE             #
