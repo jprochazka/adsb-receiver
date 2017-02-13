@@ -182,39 +182,6 @@ function Service_Disable () {
 }
 
 #################################################################################
-# Detect CPU Architecture.
-
-function Check_CPU () {
-    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
-        echo -en "\e[33m  Detecting CPU architecture...\e[97m"
-        CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
-    fi
-}
-
-#################################################################################
-# Detect Platform.
-
-function Check_Platform () {
-    if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
-        HARDWARE_PLATFORM="RPI"
-    elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
-        HARDWARE_PLATFORM="CHIP"
-    else
-        HARDWARE_PLATFORM="unknown"
-    fi
-}
-
-#################################################################################
-# Detect Hardware Revision.
-
-function Check_Hardware () {
-    if [[ -z "${HARDWARE_REVISION}" ]] ; then
-        echo -en "\e[33m  Detecting Hardware revision...\e[97m"
-        HARDWARE_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
-    fi
-}
-
-#################################################################################
 # Check if I2C is enabled, if not use raspi-config to enable it.
 
 function Enable_I2C () {
