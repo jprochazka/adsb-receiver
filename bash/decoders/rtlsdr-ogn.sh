@@ -99,7 +99,7 @@ function CalibrateTuner () {
         fi
         # Use the Kalibrate 'kal' binary if available.
         if [[ -x "`which kal`" ]] ; then
-            echo -en "\e[33m  Calibrating RTL-SDR device using Kalibrate, this may take up to 10 minutes...\e[97m"
+            echo -en "\e[33m  Calibrating RTL-SDR device \"${COMPONENT_CALIBRATION_DEVICE_ID}\" using Kalibrate, this may take up to 10 minutes...\e[97m"
             COMPONENT_CALIBRATION_GSM_SCAN=`kal -d "${COMPONENT_CALIBRATION_DEVICE_ID}" -g "${COMPONENT_CALIBRATION_GAIN}" -s ${COMPONENT_CALIBRATION_GSM_BAND} 2>&1 | grep "power:" | sort -n -r -k 7 | grep -m1 "power:"`
             COMPONENT_CALIBRATION_GSM_FREQ=`echo ${COMPONENT_CALIBRATION_GSM_SCAN} | awk '{print $3}' | sed -e 's/(//g' -e 's/MHz//g'`
             COMPONENT_CALIBRATION_GSM_CHAN=`echo ${COMPONENT_CALIBRATION_GSM_SCAN} | awk '{print $2}'`
@@ -111,7 +111,7 @@ function CalibrateTuner () {
             fi
         # Otherwise use the gsm_scan binary provided with the OGN package.
         elif [[ -x "${COMPONENT_PROJECT_DIRECTORY}/gsm_scan" ]] ; then
-            echo -en "\e[33m  Calibrating RTL-SDR device using gsm_scan, this may take up to 20 minutes...\e[97m"
+            echo -en "\e[33m  Calibrating RTL-SDR device \"${COMPONENT_CALIBRATION_DEVICE_ID}\" using gsm_scan, this may take up to 20 minutes...\e[97m"
             if [[ "${COMPONENT_CALIBRATION_GSM_BAND}" = "GSM850" ]] ; then
                 COMPONENT_CALIBRATION_GSM_OPTS="--gsm850"
             else
@@ -152,7 +152,7 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 18 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n  ${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 18 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -632,7 +632,7 @@ fi
 
 # Ask if user would like to calibrate the tuner.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Tuner Calibration" --yesno "Would you like to calibrate the device \"${OGN_DEVICE_ID}\" which has been configured for use with ${COMPONENT_NAME}?\n\nPlease be aware this may take between 10 and 20 minutes." 8 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Tuner Calibration" --yesno "Would you like to calibrate the device \"${OGN_DEVICE_ID}\" which has been configured for use by the ${COMPONENT_NAME} decoder?\n\nPlease be aware this may take between 10 and 20 minutes." 8 78
     if [[ $? -eq 0 ]] ; then
         # User would like to calibrate the tuner.
         COMPONENT_DO_CALIBRATE="true"
