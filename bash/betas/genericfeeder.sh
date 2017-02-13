@@ -142,9 +142,14 @@ while true
   done
 EOF
 
+# Set permissions on netcat script.
+
     echo -e "\e[94m  Setting file permissions for ${FEEDER_BEAST_SCRIPT}...\e[97m"
     sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_BEAST_SCRIPT}
 
+# Set permissions on MLAT script
+
+# Add netcat script to startup.
 
     echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
     if ! grep -Fxq "${FEEDER_BUILD_DIRECTORY}/${FEEDER_BEAST_SCRIPT} &" /etc/rc.local; then
@@ -153,13 +158,15 @@ EOF
         ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_BEAST_SCRIPT} &\n" /etc/rc.local
     fi
 
-## START THE MLAT-CLIENT AND NETCAT FEED
+# Add MLAT script to startup.
+
+## START THE NETCAT FEED AND MLAT-CLIENT
 
 echo -e ""
-echo -e "\e[95m  Starting netcat feeds...\e[97m"
+echo -e "\e[95m  Starting netcat feed...\e[97m"
 echo -e ""
 
-    # Kill any currently running instances of the ${FEEDER_BEAST_SCRIPT} script.
+# Kill any currently running instances of the feeder netcat_maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_BEAST_SCRIPT} processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_BEAST_SCRIPT}" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [ ! -z "$PIDS" ]; then
@@ -173,15 +180,20 @@ echo -e ""
         sudo kill $PIDS
         sudo kill -9 $PIDS
     fi
+    echo -e ""
 
-    # Kill any currently running instances of the adsbexchange-mlat_maint.sh script.
+# Kill any currently running instances of the feeder mlat_maint.sh script.
 
+# Start netcat script.
     echo -e "\e[94m  Executing the ${FEEDER_BEAST_SCRIPT} script...\e[97m"
     sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_BEAST_SCRIPT} > /dev/null 2>&1 &
 
+# Start MLAT script.
+    echo -e ""
+
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
