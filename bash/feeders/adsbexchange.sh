@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2016-2017, Joseph A. Prochazka & Romeo Golf                         #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -38,12 +38,13 @@ RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 RECEIVER_BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
-# Feeder specific variables.
+# Component specific variables.
 MLAT_CLIENT_GITBHUB_URL="https://github.com/mutability/mlat-client.git"
 MLAT_CLIENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/mlat-client"
 
 # Preconfigured values for ADSB Exchange.
 FEEDER_NAME="adsbexchange"
+COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
 #
 FEEDER_BEAST_SRC_HOST="127.0.0.1"
 FEEDER_BEAST_SRC_PORT="30005"
@@ -93,7 +94,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
@@ -127,7 +128,6 @@ echo -e ""
 # Check if the old style ${FEEDER_NAME}-maint.sh line exists in /etc/rc.local.
 echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
 if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local` -gt 0 ]] ; then
-
     # Kill any currently running instances of the ${FEEDER_NAME}-maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
@@ -138,7 +138,6 @@ if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.l
         sudo kill -9 ${PIDS} 2>&1
         echo -e ""
     fi
-
     # Remove the old line from /etc/rc.local.
     echo -e "\e[94m  Removing the old ${FEEDER_NAME}-maint.sh startup line from /etc/rc.local...\e[97m"
     sudo sed -i /$${FEEDER_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local 2>&1
@@ -177,6 +176,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                FEEDER_BEAST_SRC_HOST="${FEEDER_BEAST_SRC_HOST_DEFAULT}"
                FEEDER_BEAST_SRC_PORT="${FEEDER_BEAST_SRC_PORT_DEFAULT}"
             fi
+
             # Confirm the BEAST export destination.
             FEEDER_BEAST_DST_TITLE="Feeder BEAST Destination"
             while [[ -z "${FEEDER_BEAST_DST_HOST}" ]] || [[ -z "${FEEDER_BEAST_DST_PORT}" ]] ; do
@@ -192,7 +192,6 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             done
         fi
     fi
-
     # Unless all of the information required to export MLAT format data is configured then prompt the user to confirm.
     if [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_HOST}" ]] ; then
         # Confirm if user wants to export MLAT format data.
@@ -203,6 +202,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                FEEDER_MLAT_SRC_HOST="${FEEDER_MLAT_SRC_HOST_DEFAULT}"
                FEEDER_MLAT_SRC_PORT="${FEEDER_MLAT_SRC_PORT_DEFAULT}"
             fi
+
             # Confirm the MLAT export destination.
             FEEDER_MLAT_DST_TITLE="Feeder MLAT Destination"
             while [[ -z "${FEEDER_MLAT_DST_HOST}" ]] || [[ -z "${FEEDER_MLAT_DST_PORT}" ]] ; do
@@ -241,9 +241,9 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 
     # Confirm receiver specific information required if MLAT client feeding is enabled
     if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
-
         # Explain to the user that the receiver's latitude and longitude is required.
         FEEDER_LATLON=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
+
         # Ask the user for the mlat user name for this receiver.
         FEEDER_USERNAME_TITLE="Receiver MLAT Username"
         while [[ -z "${FEEDER_USERNAME}" ]] ; do
@@ -335,7 +335,6 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
-
     # Check if build directory exists.
     if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] ; then
         # A directory with a git repository containing the source code already exists.
@@ -380,7 +379,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     if [[ ! -d "${RECEIVER_BINARIES_DIRECTORY}" ]] ; then
         echo -e "\e[94m  Creating archive directory...\e[97m"
         echo -e ""
-        mkdir -v ${RECEIVER_BINARIES_DIRECTORY} 2>&1
+        mkdir -vp ${RECEIVER_BINARIES_DIRECTORY} 2>&1
         echo -e ""
     fi
 
@@ -423,7 +422,7 @@ echo -e ""
 echo -e "\e[94m  Checking for the ${FEEDER_NAME} build directory...\e[97m"
 if [[ ! -d "${FEEDER_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ${FEEDER_NAME} build directory...\e[97m"
-    mkdir -v ${FEEDER_BUILD_DIRECTORY} 2>&1
+    mkdir -vp ${FEEDER_BUILD_DIRECTORY} 2>&1
 fi
 echo -e ""
 
@@ -454,21 +453,21 @@ EOF
     echo -e ""
 fi
 
+# Set permissions on netcat script.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
-    # Set permissions on netcat script.
     echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
     sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 fi
 
+# Set permissions on MLAT script.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
-    # Set permissions on MLAT script.
     echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
     sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
     echo -e ""
 fi
 
+# Add netcat script to startup.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
-    # Add netcat script to startup.
     echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
     if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
@@ -478,8 +477,8 @@ if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     fi
 fi
 
+# Add MLAT script to startup.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
-    # Add MLAT script to startup.
     echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
     if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
@@ -502,8 +501,8 @@ elif [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
 fi
 echo -e ""
 
+# Kill any currently running instances of the feeder netcat_maint.sh script.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
-    # Kill any currently running instances of the feeder netcat_maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
@@ -520,8 +519,8 @@ if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e ""
 fi
 
+# Kill any currently running instances of the feeder mlat_maint.sh script.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
-    # Kill any currently running instances of the feeder mlat_maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
@@ -538,14 +537,14 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
 fi
 
+# Start netcat script.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
-    # Start netcat script.
     echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
     sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
 fi
 
+# Start MLAT script.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
-    # Start MLAT script.
     echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
     sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
     echo -e ""
@@ -553,7 +552,7 @@ fi
 
 ### SETUP COMPLETE
 
-# Enter into the project root directory.
+# Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
