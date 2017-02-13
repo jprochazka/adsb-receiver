@@ -386,9 +386,11 @@ if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     CheckReturnCode
 fi
 
-# Detect CPU Architecture.
-Check_CPU
-CheckReturnCode
+# Use function to detect cpu architecture.
+if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+    Check_CPU
+    CheckReturnCode
+fi
 
 # Identify the correct binaries to download.
 case ${CPU_ARCHITECTURE} in

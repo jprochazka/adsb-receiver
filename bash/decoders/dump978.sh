@@ -176,6 +176,7 @@ echo -e ""
 BlacklistModules
 CheckReturnCode
 
+# Remove the dvb_usb_rtl28xxu kernel module.
 echo -e "\e[94m  Removing the kernel module dvb_usb_rtl28xxu...\e[97m"
 echo -e ""
 sudo rmmod dvb_usb_rtl28xxu
