@@ -249,17 +249,17 @@ CheckPackage libpython2.7
 if [[ -s "/etc/lsb-release" ]] ; then
     source /etc/lsb-release
     if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')"  -ge "1604" ]] ; then
-        CheckPackage php7.0-cgi
-        # Note the line below was previously 'CheckPackage php7.0-xml' but is suspected of being a typo.. TBC
-        CheckPackage php7.0-json
+        RECEIVER_PHP_VERSION="7.0"
     else
-        CheckPackage php5-cgi
-        CheckPackage php5-json
+        RECEIVER_PHP_VERSION="5"
     fi
 else
-    CheckPackage php5-cgi
-    CheckPackage php5-json
+    RECEIVER_PHP_VERSION="5"
 fi
+
+# Install connect PHP version for the platform.
+CheckPackage php${RECEIVER_PHP_VERSION}-cgi
+CheckPackage php${RECEIVER_PHP_VERSION}-json
 
 # Install packages needed for advanced portal setups.
 if [ $ADVANCED = TRUE ]; then
@@ -268,31 +268,11 @@ if [ $ADVANCED = TRUE ]; then
         "MySQL")
             CheckPackage mysql-client
             CheckPackage python-mysqldb
-            # Check if this is Ubuntu 16.04 LTS (or later).
-            if [[ -s "/etc/lsb-release" ]] ; then
-                source /etc/lsb-release
-                if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')"  -ge "1604" ]] ; then
-                    CheckPackage php7.0-mysql
-                else
-                    CheckPackage php5-mysql
-                fi
-            else
-                CheckPackage php5-mysql
-            fi
+            CheckPackage php${RECEIVER_PHP_VERSION}-mysql
             ;;
         "SQLite")
             CheckPackage sqlite3
-            # Check if this is Ubuntu 16.04 LTS (or later).
-            if [[ -s "/etc/lsb-release" ]] ; then
-                source /etc/lsb-release
-                if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')"  -ge "1604" ]] ; then
-                    CheckPackage php7.0-sqlite
-                else
-                    CheckPackage php5-sqlite
-                fi
-            else
-                CheckPackage php5-sqlite
-            fi
+            CheckPackage php${RECEIVER_PHP_VERSION}-sqlite
             ;;
     esac
 fi
