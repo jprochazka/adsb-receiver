@@ -52,8 +52,8 @@ echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
-CONTINUESETUP=$?
-if [[ "${CONTINUESETUP}" = 1 ]] ; then
+CONTINUE_SETUP=$?
+if [[ "${CONTINUE_SETUP}" = 1 ]] ; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
@@ -80,12 +80,12 @@ LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAWDOCUMENTROOT}`
 
 # Check if there is already an existing portal installation.
 if [[ -f "${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php" ]] ; then
-    PORTALINSTALLED="true"
+    RECEIVER_PORTAL_INSTALLED="true"
 else
-    PORTALINSTALLED="false"
+    RECEIVER_PORTAL_INSTALLED="false"
 fi
 
-if [[ "${PORTALINSTALLED}" = "true" ]] ; then
+if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] ; then
     # Assign needed variables using the driver setting in settings.class.php.
     DATABASEENGINE=`grep 'db_driver' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
     if [[ "${DATABASEENGINE}" = "xml" ]] ; then
@@ -94,9 +94,9 @@ if [[ "${PORTALINSTALLED}" = "true" ]] ; then
         ADVANCED="true"
     fi
     if [[ "${ADVANCED}" = "true" ]] ; then
-        case ${DATABASEENGINE} in
-            "mysql") DATABASEENGINE="MySQL";;
-            "sqlite") DATABASEENGINE="SQLite";;
+        case "${DATABASEENGINE}" in
+            "mysql") DATABASEENGINE="MySQL" ;;
+            "sqlite") DATABASEENGINE="SQLite" ;;
         esac
         DATABASEHOSTNAME=`grep 'db_host' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
         DATABASEUSER=`grep 'db_username' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
@@ -110,8 +110,8 @@ else
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Receiver Portal Selection" --defaultno --yesno "NOTE THAT THE ADVANCED FEATURES ARE STILL IN DEVELOPMENT AT THIS TIME\nADVANCED FEATURES SHOULD ONLY BE ENABLED BY DEVELOPERS AND TESTERS ONLY\n\nBy enabling advanced features the portal will log all flights seen as well as the path of the flight. This data is stored in either a MySQL or SQLite database. This will result in a lot more data being stored on your devices hard drive. Keep this and your devices hardware capabilities in mind before selecting to enable these features.\n\nENABLING ADVANCED FEATURES ON DEVICES USING SD CARDS CAN SHORTEN THE LIFE OF THE SD CARD IMMENSELY\n\nDo you wish to enable the portal advanced features?" 19 78
     RESPONSE=$?
     case ${RESPONSE} in
-        0) ADVANCED="true";;
-        1) ADVANCED="false";;
+        0) ADVANCED="true" ;;
+        1) ADVANCED="false" ;;
     esac
 
     if [[ "${ADVANCED}" = "true" ]] ; then
@@ -123,8 +123,8 @@ else
             whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Database Location" --yesno "Will the database be hosted locally on this device?" 7 80
             RESPONSE=$?
             case ${RESPONSE} in
-                0) LOCALMYSQLSERVER="true";;
-                1) LOCALMYSQLSERVER="false";;
+                0) LOCALMYSQLSERVER="true" ;;
+                1) LOCALMYSQLSERVER="false" ;;
             esac
             if [[ "${LOCALMYSQLSERVER}" = "false" ]] ; then
                 # Ask for the remote MySQL servers hostname.
@@ -138,8 +138,8 @@ else
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Does MySQL Database Exist" --yesno "Has the database already been created?" 7 80
                 RESPONSE=$?
                 case ${RESPONSE} in
-                    0) DATABASEEXISTS="true";;
-                    1) DATABASEEXISTS="false";;
+                    0) DATABASEEXISTS="true" ;;
+                    1) DATABASEEXISTS="false" ;;
                 esac
             else
                 # Install the MySQL serer now if it does not already exist.
@@ -262,7 +262,7 @@ fi
 # Install packages needed for advanced portal setups.
 if [[ "${ADVANCED}" = "true" ]] ; then
     CheckPackage python-pyinotify
-    case ${DATABASEENGINE} in
+    case "${DATABASEENGINE}" in
         "MySQL")
             CheckPackage mysql-client
             CheckPackage python-mysqldb
@@ -311,7 +311,7 @@ echo -e "\e[95m  Setting up the web portal...\e[97m"
 echo -e ""
 
 # If this is an existing Lite installation being upgraded backup the XML data files.
-if [[ "${PORTALINSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
+if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
     echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml...\e[97m"
     sudo mv ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml ${LIGHTTPDDOCUMENTROOT}/data/administrators.backup.xml
     echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml...\e[97m"
@@ -326,7 +326,7 @@ echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"
 sudo cp -R ${PORTAL_BUILD_DIRECTORY}/html/* ${LIGHTTPDDOCUMENTROOT}
 
 # If this is an existing installation being upgraded restore the original XML data files.
-if [[ "${PORTALINSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
+if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
     echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml...\e[97m"
     sudo mv ${LIGHTTPDDOCUMENTROOT}/data/administrators.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml
     echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml...\e[97m"
@@ -404,12 +404,12 @@ sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 }
 EOF
 
-if ! [[ -L /etc/lighttpd/conf-enabled/89-adsb-portal.conf ]] ; then
+if [[ ! -L "/etc/lighttpd/conf-enabled/89-adsb-portal.conf" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd portal configuration file...\e[97m"
     sudo ln -s /etc/lighttpd/conf-available/89-adsb-portal.conf /etc/lighttpd/conf-enabled/89-adsb-portal.conf
 fi
 
-if [[ "${PORTALINSTALLED}" = "false" ]] ; then
+if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd fastcgi-php module...\e[97m"
     echo -e ""
     sudo lighty-enable-mod fastcgi-php
@@ -429,7 +429,7 @@ fi
 
 ## SETUP THE MYSQL DATABASE
 
-if [[ "${PORTALINSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
+if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
 
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
@@ -525,9 +525,9 @@ fi
 ## SETUP ADVANCED PORTAL FEATURES
 
 if [[ "${ADVANCED}" = "true" ]] ; then
-    # If SQLite is being used and the path is not already set to the variable ${DATABASENAME} set it to the default path.
+    # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
     if [[ "${DATABASEENGINE}" = "SQLite" ]] && [[ -z "${DATABASENAME}" ]] ; then
-        ${DATABASENAME}="${LIGHTTPDDOCUMENTROOT}/data/portal.sqlite"
+        DATABASENAME="${LIGHTTPDDOCUMENTROOT}/data/portal.sqlite"
     fi
 
     chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
