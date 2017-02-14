@@ -257,7 +257,7 @@ else
     RECEIVER_PHP_VERSION="5"
 fi
 
-# Install connect PHP version for the platform.
+# Install correct PHP version for the platform.
 CheckPackage php${RECEIVER_PHP_VERSION}-cgi
 CheckPackage php${RECEIVER_PHP_VERSION}-json
 
