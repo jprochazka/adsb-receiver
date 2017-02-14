@@ -243,21 +243,23 @@ CheckPackage rrdtool
 # Portal dependencies.
 CheckPackage libpython2.7
 
-# Check if this is Ubuntu 16.04 LTS.
-# This needs optimized and made to recognize releases made after 16.04 as well.
-if [[ -f "/etc/lsb-release" ]] ; then
-    . /etc/lsb-release
-    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "${DISTRIB_RELEASE}" = "16.04" ]] ; then
-        CheckPackage php7.0-cgi
-        CheckPackage php7.0-xml
+# Check if this is Ubuntu 16.04 LTS (or later).
+# Note Ubuntu versions should always be in the format yy.mm format...
+# So we can simply remove the decimal and treat the resultant string as an integer.
+if [[ -s "/etc/lsb-release" ]] ; then
+    source /etc/lsb-release
+    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')"  -ge "1604" ]] ; then
+        RECEIVER_PHP_VERSION="7.0"
     else
-        CheckPackage php5-cgi
-        CheckPackage php5-json
+        RECEIVER_PHP_VERSION="5"
     fi
 else
-    CheckPackage php5-cgi
-    CheckPackage php5-json
+    RECEIVER_PHP_VERSION="5"
 fi
+
+# Install correct PHP version for the platform.
+CheckPackage php${RECEIVER_PHP_VERSION}-cgi
+CheckPackage php${RECEIVER_PHP_VERSION}-json
 
 # Install packages needed for advanced portal setups.
 if [[ "${ADVANCED}" = "true" ]] ; then
@@ -266,35 +268,11 @@ if [[ "${ADVANCED}" = "true" ]] ; then
         "MySQL")
             CheckPackage mysql-client
             CheckPackage python-mysqldb
-
-            # Check if this is Ubuntu 16.04 LTS.
-            # This needs optimized and made to recognize releases made after 16.04 as well.
-            if [[ -f "/etc/lsb-release" ]] ; then
-                . /etc/lsb-release
-                if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "${DISTRIB_RELEASE}" = "16.04"  ]] ; then
-                    CheckPackage php7.0-mysql
-                else
-                    CheckPackage php5-mysql
-                fi
-            else
-                CheckPackage php5-mysql
-            fi
+            CheckPackage php${RECEIVER_PHP_VERSION}-mysql
             ;;
         "SQLite")
             CheckPackage sqlite3
-
-            # Check if this is Ubuntu 16.04 LTS.
-            # This needs optimized and made to recognize releases made after 16.04 as well.
-            if [[ -f "/etc/lsb-release" ]] ; then
-                . /etc/lsb-release
-                if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "${DISTRIB_RELEASE}" = "16.04"  ]] ; then
-                    CheckPackage php7.0-sqlite
-                else
-                    CheckPackage php5-sqlite
-                fi
-            else
-                CheckPackage php5-sqlite
-            fi
+            CheckPackage php${RECEIVER_PHP_VERSION}-sqlite
             ;;
     esac
 fi
