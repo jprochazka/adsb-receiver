@@ -279,9 +279,9 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
             if [[ -n ${RECEIVER_LATITUDE} ]] && [[ -n ${RECEIVER_LONGITUDE} ]] ; then
                 RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
-                RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from google but should be increased to reflect your antennas height above ground level"
+                RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from Google but should be increased to reflect your antennas height above ground level"
             fi
-            RECEIVER_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude above sea level${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
+            RECEIVER_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude in meters above sea level${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
         done
     fi
 else
@@ -335,7 +335,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
-    # Check if build directory exists.
+    # Check if build directory exists and contains a git repository.
     if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
@@ -344,7 +344,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         echo -e ""
         git pull 2>&1
     else
-        # A directory containing the source code does not exist in the build directory.
+        # A directory containing the source code does not exist locally.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
