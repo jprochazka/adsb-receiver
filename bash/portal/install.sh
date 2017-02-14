@@ -130,7 +130,7 @@ else
                 # Ask for the remote MySQL servers hostname.
                 DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname"
                 while [[ -z "${DATABASEHOSTNAME}" ]] ; do
-                    DATABASEHOSTNAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEHOSTNAME_TITLE" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
+                    DATABASEHOSTNAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEHOSTNAME_TITLE}" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
                     DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname (REQUIRED)"
                 done
 
@@ -157,34 +157,34 @@ else
             if [[ "${LOCALMYSQLSERVER}" = "true" ]] || [[ "${DATABASEEXISTS}" = "false" ]] ; then
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Create Remote MySQL Database" --msgbox "This script can attempt to create the MySQL database for you.\nYou will now be asked for the credentials for a MySQL user who has the ability to create a database on the MySQL server." 9 78
                 DATABASEADMINUSER_TITLE="MySQL Administrator User"
-                while [[ -z "$DATABASEADMINUSER" ]] ; do
-                    DATABASEADMINUSER=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEADMINUSER}" ]] ; do
+                    DATABASEADMINUSER=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINUSER_TITLE}" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "root" 3>&1 1>&2 2>&3)
                     DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
                 done
                 DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
                 DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
-                while [[ -z "$DATABASEADMINPASSWORD1" ]] ; do
-                    DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+                    DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
                 done
                 DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
                 DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
-                while [[ -z "$DATABASEADMINPASSWORD2" ]] ; do
-                    DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+                    DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
                 done
-                while [[ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]] ; do
+                while [[ ! "${DATABASEADMINPASSWORD1}" = "${DATABASEADMINPASSWORD2}" ]] ; do
                     DATABASEADMINPASSWORD1=""
                     DATABASEADMINPASSWORD2=""
                     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
                     DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
-                    while [[ -z "$DATABASEADMINPASSWORD1" ]] ; do
-                        DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+                        DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
                     done
                     DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
-                    while [[ -z "$DATABASEADMINPASSWORD2" ]] ; do
-                        DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                    while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+                        DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                         DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
                     done
                 done
@@ -194,39 +194,39 @@ else
             whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Create Remote MySQL Database" --msgbox "You will now be asked to supply the name of the database which will store the portal data as well as the login credentials for the MySQL user that has access to this database." 9 78
 
             DATABASENAME_TITLE="ADS-B Receiver Portal Database Name"
-            while [ -z "${DATABASENAME}" ]; do
-                DATABASENAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASENAME_TITLE" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASENAME}" ]] ; do
+                DATABASENAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASENAME_TITLE}" --nocancel --inputbox "\nEnter your ADS-B Receiver Portal database name." 8 78 3>&1 1>&2 2>&3)
                 DATABASENAME_TITLE="ADS-B Receiver Portal Database Name (REQUIRED)"
             done
             DATABASEUSER_TITLE="ADS-B Receiver Portal Database User"
-            while [ -z "$DATABASEUSER" ]; do
-                DATABASEUSER=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEUSER_TITLE" --nocancel --inputbox "\nEnter the user for the ADS-B Receiver Portal database." 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEUSER}" ]] ; do
+                DATABASEUSER=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEUSER_TITLE}" --nocancel --inputbox "\nEnter the user for the ADS-B Receiver Portal database." 8 78 3>&1 1>&2 2>&3)
                 DATABASEUSER_TITLE="ADS-B Receiver Portal Database User (REQUIRED)"
             done
             DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
             DATABASEPASSWORD1_MESSAGE="\nEnter your ADS-B Receiver Portal database password."
-            while [ -z "$DATABASEPASSWORD1" ]; do
-                DATABASEPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEPASSWORD1}" ]] ; do
+                DATABASEPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                 DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
             done
             DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
             DATABASEPASSWORD2_MESSAGE="\nConfirm your ADS-B Receiver Portal database password."
-            while [ -z "$DATABASEPASSWORD2" ]; do
-                DATABASEPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEPASSWORD2}" ]] ; do
+                DATABASEPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                 DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
             done
-            while [ ! $DATABASEPASSWORD1 = $DATABASEPASSWORD2 ]; do
+            while [[ ! "${DATABASEPASSWORD1}" = "${DATABASEPASSWORD2}" ]] ; do
                 DATABASEPASSWORD1=""
                 DATABASEPASSWORD2=""
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
                 DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password"
-                while [ -z "$DATABASEPASSWORD1" ]; do
-                    DATABASEPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEPASSWORD1}" ]] ; do
+                    DATABASEPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEPASSWORD1_TITLE="ADS-B Receiver Portal Password (REQUIRED)"
                 done
                 DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password"
-                while [ -z "$DATABASEPASSWORD2" ]; do
-                    DATABASEPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+                while [[ -z "${DATABASEPASSWORD2}" ]] ; do
+                    DATABASEPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
                     DATABASEPASSWORD2_TITLE="Confirm The ADS-B Receiver Portal Password (REQUIRED)"
                 done
             done
@@ -417,34 +417,34 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]
         DATABASEADMINPASSWORD1=""
         DATABASEADMINPASSWORD2=""
         DATABASEADMINUSER_TITLE="MySQL Administrator User"
-        while [ -z "$DATABASEADMINUSER" ]; do
-            DATABASEADMINUSER=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINUSER_TITLE" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "$DATABASEADMINUSER" 3>&1 1>&2 2>&3)
+        while [[ -z "${DATABASEADMINUSER}" ]] ; do
+            DATABASEADMINUSER=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINUSER_TITLE}" --nocancel --inputbox "\nEnter the MySQL administrator user." 8 78 "${DATABASEADMINUSER}" 3>&1 1>&2 2>&3)
             DATABASEADMINUSER_TITLE="MySQL Administrator User (REQUIRED)"
         done
         DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
         DATABASEADMINPASSWORD1_MESSAGE="\nEnter the password for the MySQL adminitrator user."
-        while [ -z "$DATABASEADMINPASSWORD1" ]; do
-            DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+            DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD1_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
             DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
         done
         DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
         DATABASEADMINPASSWORD2_MESSAGE="\nConfirm the password for the MySQL adminitrator user."
-        while [ -z "$DATABASEADMINPASSWORD2" ]; do
-            DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "$DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+            DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "${DATABASEADMINPASSWORD2_MESSAGE}" 8 78 3>&1 1>&2 2>&3)
             DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
         done
-        while [ ! $DATABASEADMINPASSWORD1 = $DATABASEADMINPASSWORD2 ]; do
+        while [[ ! "${DATABASEADMINPASSWORD1}" = "${DATABASEADMINPASSWORD2}" ]] ; do
             DATABASEADMINPASSWORD1=""
             DATABASEADMINPASSWORD2=""
             whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Passwords Did Not Match" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
             DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password"
-            while [ -z "$DATABASEADMINPASSWORD1" ]; do
-                DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD1_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEADMINPASSWORD1}" ]] ; do
+                DATABASEADMINPASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD1_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD1_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEADMINPASSWORD1_TITLE="MySQL Administrator Password (REQUIRED)"
             done
             DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password"
-            while [ -z "$DATABASEADMINPASSWORD2" ]; do
-                DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "$DATABASEADMINPASSWORD2_TITLE" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
+            while [[ -z "${DATABASEADMINPASSWORD2}" ]] ; do
+                DATABASEADMINPASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEADMINPASSWORD2_TITLE}" --nocancel --passwordbox "DATABASEADMINPASSWORD2_MESSAGE" 8 78 3>&1 1>&2 2>&3)
                 DATABASEADMINPASSWORD2_TITLE="Confirm The MySQL Administrator Password (REQUIRED)"
             done
         done
@@ -453,13 +453,13 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]
 
     # Create the database use and database using the information supplied by the user.
     echo -e "\e[94m  Creating the MySQL database \"${DATABASENAME}\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "CREATE DATABASE $DATABASENAME;"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE DATABASE ${DATABASENAME};"
     echo -e "\e[94m  Creating the MySQL user \"${DATABASEUSER}\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "CREATE USER '$DATABASEUSER'@'localhost' IDENTIFIED BY \"$DATABASEPASSWORD1\";"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
     echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"${DATABASEUSER}\"...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "GRANT ALL PRIVILEGES ON $DATABASENAME.* TO '$DATABASEUSER'@'localhost';"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
     echo -e "\e[94m  Flushing priviledges on the MySQL database server...\e[97m"
-    mysql -u$DATABASEADMINUSER -p$DATABASEADMINPASSWORD1 -h $DATABASEHOSTNAME -e "FLUSH PRIVILEGES;"
+    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "FLUSH PRIVILEGES;"
 fi
 
 ## SETUP THE PERFORMANCE GRAPHS USING THE SCRIPT GRAPHS.SH
@@ -477,11 +477,11 @@ fi
 
 # Export variables needed by logging.sh.
 if [[ "${DATABASEENGINE}" = "MySQL" ]] || [[ "${DATABASEENGINE}" = "SQLite" ]] ; then
-    export ADSB_DATABASEENGINE=$DATABASEENGINE
-    export ADSB_DATABASEHOSTNAME=$DATABASEHOSTNAME
-    export ADSB_DATABASEUSER=$DATABASEUSER
-    export ADSB_DATABASEPASSWORD1=$DATABASEPASSWORD1
-    export ADSB_DATABASENAME=$DATABASENAME
+    export ADSB_DATABASEENGINE=${DATABASEENGINE}
+    export ADSB_DATABASEHOSTNAME=${DATABASEHOSTNAME}
+    export ADSB_DATABASEUSER=${DATABASEUSER}
+    export ADSB_DATABASEPASSWORD1=${DATABASEPASSWORD1}
+    export ADSB_DATABASENAME=${DATABASENAME}
 else
     export ADSB_DATABASEENGINE="xml"
     export ADSB_DATABASEHOSTNAME=""
