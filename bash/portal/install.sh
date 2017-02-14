@@ -75,11 +75,11 @@ echo -e ""
 CheckPackage lighttpd
 
 # Assign the Lighthttpd document root directory to a variable.
-RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAWDOCUMENTROOT}`
+RAW_DOCUMENT_ROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
+LIGHTTPD_DOCUMENT_ROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAW_DOCUMENT_ROOT}`
 
 # Check if there is already an existing portal installation.
-if [[ -f "${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php" ]] ; then
+if [[ -f "${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php" ]] ; then
     RECEIVER_PORTAL_INSTALLED="true"
 else
     RECEIVER_PORTAL_INSTALLED="false"
@@ -87,7 +87,7 @@ fi
 
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] ; then
     # Assign needed variables using the driver setting in settings.class.php.
-    DATABASEENGINE=`grep 'db_driver' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+    DATABASEENGINE=`grep 'db_driver' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
     if [[ "${DATABASEENGINE}" = "xml" ]] ; then
         ADVANCED="false"
     else
@@ -98,10 +98,10 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] ; then
             "mysql") DATABASEENGINE="MySQL" ;;
             "sqlite") DATABASEENGINE="SQLite" ;;
         esac
-        DATABASEHOSTNAME=`grep 'db_host' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASEUSER=`grep 'db_username' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASEPASSWORD1=`grep 'db_password' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASENAME=`grep 'db_database' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEHOSTNAME=`grep 'db_host' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEUSER=`grep 'db_username' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASEPASSWORD1=`grep 'db_password' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+        DATABASENAME=`grep 'db_database' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
     fi
 
 
@@ -312,40 +312,40 @@ echo -e ""
 
 # If this is an existing Lite installation being upgraded backup the XML data files.
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
-    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml ${LIGHTTPDDOCUMENTROOT}/data/administrators.backup.xml
-    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.backup.xml
-    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.backup.xml
-    echo -e "\e[94m  Backing up the file ${LIGHTTPDDOCUMENTROOT}/data/settings.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/settings.xml ${LIGHTTPDDOCUMENTROOT}/data/settings.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.backup.xml
 fi
 
 echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"
-sudo cp -R ${PORTAL_BUILD_DIRECTORY}/html/* ${LIGHTTPDDOCUMENTROOT}
+sudo cp -R ${PORTAL_BUILD_DIRECTORY}/html/* ${LIGHTTPD_DOCUMENT_ROOT}
 
 # If this is an existing installation being upgraded restore the original XML data files.
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
-    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/administrators.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/administrators.xml
-    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/blogPosts.xml
-    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/flightNotifications.xml
-    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPDDOCUMENTROOT}/data/settings.xml...\e[97m"
-    sudo mv ${LIGHTTPDDOCUMENTROOT}/data/settings.backup.xml ${LIGHTTPDDOCUMENTROOT}/data/settings.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml
 fi
 
 # Set the proper permissions on certain portal directories.
-echo -e "\e[94m  Making the directory ${LIGHTTPDDOCUMENTROOT}/graphs/ writable...\e[97m"
-sudo chmod 777 ${LIGHTTPDDOCUMENTROOT}/graphs/
-echo -e "\e[94m  Making the directory ${LIGHTTPDDOCUMENTROOT}/classes/ writable...\e[97m"
-sudo chmod 777 ${LIGHTTPDDOCUMENTROOT}/classes/
-echo -e "\e[94m  Making the directory ${LIGHTTPDDOCUMENTROOT}/data/ writable...\e[97m"
-sudo chmod 777 ${LIGHTTPDDOCUMENTROOT}/data/
-echo -e "\e[94m  Making the files contained within the directory ${LIGHTTPDDOCUMENTROOT}/data/ writable...\e[97m"
-sudo chmod 666 ${LIGHTTPDDOCUMENTROOT}/data/*
+echo -e "\e[94m  Making the directory ${LIGHTTPD_DOCUMENT_ROOT}/graphs/ writable...\e[97m"
+sudo chmod 777 ${LIGHTTPD_DOCUMENT_ROOT}/graphs/
+echo -e "\e[94m  Making the directory ${LIGHTTPD_DOCUMENT_ROOT}/classes/ writable...\e[97m"
+sudo chmod 777 ${LIGHTTPD_DOCUMENT_ROOT}/classes/
+echo -e "\e[94m  Making the directory ${LIGHTTPD_DOCUMENT_ROOT}/data/ writable...\e[97m"
+sudo chmod 777 ${LIGHTTPD_DOCUMENT_ROOT}/data/
+echo -e "\e[94m  Making the files contained within the directory ${LIGHTTPD_DOCUMENT_ROOT}/data/ writable...\e[97m"
+sudo chmod 666 ${LIGHTTPD_DOCUMENT_ROOT}/data/*
 
 # Check if dump978 was setup.
 echo -e "\e[94m  Checking if dump978 was set up...\e[97m"
@@ -355,10 +355,10 @@ if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &" /etc/r
     if [[ -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
         echo -e "\e[94m  Copying the file upintheair.json from the dump1090 HTML folder to the dump978 HTML folder...\e[97m"
         if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-            sudo cp /usr/share/dump1090-mutability/html/upintheair.json ${LIGHTTPDDOCUMENTROOT}/dump978/
+            sudo cp /usr/share/dump1090-mutability/html/upintheair.json ${LIGHTTPD_DOCUMENT_ROOT}/dump978/
         fi
         if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-            sudo cp /usr/share/dump1090-fa/html/upintheair.json ${LIGHTTPDDOCUMENTROOT}/dump978/
+            sudo cp /usr/share/dump1090-fa/html/upintheair.json ${LIGHTTPD_DOCUMENT_ROOT}/dump978/
         fi
     fi
 fi
@@ -527,7 +527,7 @@ fi
 if [[ "${ADVANCED}" = "true" ]] ; then
     # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
     if [[ "${DATABASEENGINE}" = "SQLite" ]] && [[ -z "${DATABASENAME}" ]] ; then
-        DATABASENAME="${LIGHTTPDDOCUMENTROOT}/data/portal.sqlite"
+        DATABASENAME="${LIGHTTPD_DOCUMENT_ROOT}/data/portal.sqlite"
     fi
 
     chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
