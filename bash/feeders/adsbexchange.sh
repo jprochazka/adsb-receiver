@@ -345,7 +345,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         git pull 2>&1
     else
         # A directory containing the source code does not exist locally.
-        echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+        echo -e "\e[94m  Entering the ${RECEIVER_PROJECT_TITLE} build directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
         echo -e ""
@@ -553,7 +553,7 @@ fi
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+echo -e "\e[94m  Entering the ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e ""
