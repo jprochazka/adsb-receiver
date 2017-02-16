@@ -563,7 +563,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     COMPONENT_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${COMPONENT_ALTITUDE}" ]] ; do
         if [[ -n "${COMPONENT_LATITUDE}" ]] && [[ -n "${COMPONENT_LONGITUDE}" ]] ; then
-            COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${COMPONENT_LATITUDE},${COMPONENT_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
+            COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${COMPONENT_LATITUDE},${COMPONENT_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.0f\n", $1)}')
             COMPONENT_ALTITUDE_SOURCE="Google; however should be increased to reflect your antennas height above ground level"
         fi
         if [[ -n "${COMPONENT_ALTITUDE_SOURCE}" ]] ; then
@@ -577,7 +577,7 @@ else
     if [[ -n "${RECEIVER_ALTITUDE}" ]] ; then
         COMPONENT_ALTITUDE="${RECEIVER_ALTITUDE}"
     elif [[ -n "${COMPONENT_LATITUDE}" ]] && [[ -n "${COMPONENT_LONGITUDE}" ]] ; then
-        COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.2f\n", $1)}')
+        COMPONENT_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.0f\n", $1)}')
     else
         COMPONENT_ALTITUDE="0.000"
     fi
