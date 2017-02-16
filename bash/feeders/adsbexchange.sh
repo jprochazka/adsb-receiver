@@ -285,6 +285,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         done
     fi
 else
+    # Attempt to derive required values at some point...
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
     echo -e ""
     read -p "Press enter to continue..." CONTINUE
@@ -352,16 +353,18 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         git clone ${MLAT_CLIENT_GITHUB_URL} 2>&1
     fi
 
-    ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
-
-    echo -e ""
-    echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
-    echo -e ""
+    # Enter the git repository directory.
     if [[ ! "${PWD}" = "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] ; then
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         echo -e ""
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
     fi
+
+    ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
+
+    echo -e ""
+    echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
+    echo -e ""
 
     # Build binary package.
     echo -e "\e[94m  Building the mlat-client package...\e[97m"
