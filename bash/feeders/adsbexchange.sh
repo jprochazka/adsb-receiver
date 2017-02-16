@@ -98,7 +98,7 @@ fi
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
-    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
 echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
@@ -127,10 +127,10 @@ echo -e "\e[95m  Checking for and removing any old style ADS-B Exchange setups i
 echo -e ""
 # Check if the old style ${FEEDER_NAME}-maint.sh line exists in /etc/rc.local.
 echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
-if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local` -gt 0 ]] ; then
+if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.local` -gt 0 ]] ; then
     # Kill any currently running instances of the ${FEEDER_NAME}-maint.sh script.
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
-    PIDS=`ps -efww | grep -w "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
+    PIDS=`ps -efww | grep -w "${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
         echo -e "\e[94m  -Killing any running ${FEEDER_NAME}-maint.sh processes...\e[97m"
         echo -e ""
@@ -140,7 +140,7 @@ if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-maint.sh &" /etc/rc.l
     fi
     # Remove the old line from /etc/rc.local.
     echo -e "\e[94m  Removing the old ${FEEDER_NAME}-maint.sh startup line from /etc/rc.local...\e[97m"
-    sudo sed -i /$${FEEDER_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local 2>&1
+    sudo sed -i /$${COMPONENT_BUILD_DIRECTORY}\/${FEEDER_NAME}-maint.sh &/d /etc/rc.local 2>&1
 fi
 echo -e ""
 
@@ -295,7 +295,7 @@ fi
 # Check that all information required to configure the feeder has been provided.
 if [[ -n "${FEEDER_NAME}" ]] ; then
     # Configure feeder build directory.
-    FEEDER_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
+    COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/${FEEDER_NAME}"
 
     # Confirm that all required information has been obtained for BEAST feed.
     if [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] && [[ -n "${FEEDER_BEAST_DST_HOST}" ]] ; then
@@ -450,16 +450,16 @@ echo -e ""
 
 # Create the feeder directory in the build directory if it does not exist.
 echo -e "\e[94m  Checking for the ${FEEDER_NAME} build directory...\e[97m"
-if [[ ! -d "${FEEDER_BUILD_DIRECTORY}" ]] ; then
+if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the ${FEEDER_NAME} build directory...\e[97m"
-    mkdir -vp ${FEEDER_BUILD_DIRECTORY} 2>&1
+    mkdir -vp ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 echo -e ""
 
 # Create netcat maint script if required.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Creating the file ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
-    tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
+    tee ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null <<EOF
 #! /bin/bash
 while true
   do
@@ -472,7 +472,7 @@ fi
 # Create MLAT maint script if required.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Creating the file ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
-    tee ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
+    tee ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null <<EOF
 #! /bin/bash
 while true
   do
@@ -486,23 +486,23 @@ fi
 # Set permissions on netcat script.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-netcat_maint.sh...\e[97m"
-    sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
+    sudo chmod +x ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh 2>&1
 fi
 
 # Set permissions on MLAT script.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Setting file permissions for ${FEEDER_NAME}-mlat_maint.sh...\e[97m"
-    sudo chmod +x ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
+    sudo chmod +x ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh 2>&1
     echo -e ""
 fi
 
 # Add netcat script to startup.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-    if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+    if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
         lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh &\n" /etc/rc.local
         echo -e ""
     fi
 fi
@@ -510,10 +510,10 @@ fi
 # Add MLAT script to startup.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
-    if [[ `grep -cFx "${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+    if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &" /etc/rc.local` -eq 0 ]] ; then
         echo -e "\e[94m  Adding the mlat-client startup line to the file /etc/rc.local...\e[97m"
         lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
+        ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh &\n" /etc/rc.local
         echo -e ""
     fi
     echo -e ""
@@ -570,13 +570,13 @@ fi
 # Start netcat script.
 if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Executing the ${FEEDER_NAME}-netcat_maint.sh script...\e[97m"
-    sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
+    sudo nohup ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-netcat_maint.sh > /dev/null 2>&1 &
 fi
 
 # Start MLAT script.
 if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Executing the ${FEEDER_NAME}-mlat_maint.sh script...\e[97m"
-    sudo nohup ${FEEDER_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
+    sudo nohup ${COMPONENT_BUILD_DIRECTORY}/${FEEDER_NAME}-mlat_maint.sh > /dev/null 2>&1 &
     echo -e ""
 fi
 
