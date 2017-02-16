@@ -364,6 +364,18 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
     fi
 
+    # Check that a git tag has been specified and that it is valid.
+    if [[ -z "${MLAT_CLIENT_TAG}" ]] || [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/${MLAT_CLIENT_TAG}\$"` -eq 0 ]] ; then
+        # No tag has been specified, or the this tag is not present in the remote repo.
+        if [[ -n "${MLAT_CLIENT_VERSION}" ]] && [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/v${MLAT_CLIENT_VERSION}\$"` -gt 0 ]] ; then
+            # If there is a tag matching the configured version use that.
+            MLAT_CLIENT_TAG="v${MLAT_CLIENT_VERSION}"
+        else
+            # Otherwise get the most recent tag in the hope that it is a stable release.
+            MLAT_CLIENT_TAG=`git ls-remote | grep "refs/tags/v" | awk '{print $2}'| sort -V | awk -F "/" '{print $3}' | tail -1`
+        fi
+    fi
+
     # Attempt to check out the required code version based on the supplied tag.
     if [[ -n "${MLAT_CLIENT_TAG}" ]] && [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/${MLAT_CLIENT_TAG}"` -gt 0 ]] ; then
         # If a valid git tag has been specified then check that out.
