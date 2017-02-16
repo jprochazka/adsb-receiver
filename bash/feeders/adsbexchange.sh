@@ -336,8 +336,8 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
-    # Check if build directory exists and contains a git repository.
-    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] ; then
+    # Check if build directory exists and contains the relevant git repository.
+    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] && [[ -f "${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config" ]] && [[ `grep -c "url = ${MLAT_CLIENT_GITHUB_URL}" ${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config` -gt 0 ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
