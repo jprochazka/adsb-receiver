@@ -182,6 +182,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
     done
 else
+    # Attempt to derive required values at some point...
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
     echo -e ""
     read -p "Press enter to continue..." CONTINUE
@@ -389,13 +390,13 @@ if [[ "${FEEDER_BEAST_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m   Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
+        echo -e "\e[94m  Killing any running ${FEEDER_NAME}-netcat_maint.sh processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
     PIDS=`ps -efww | grep -w "/bin/nc ${FEEDER_BEAST_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m   Killing any running netcat processes...\e[97m"
+        echo -e "\e[94m  Killing any running netcat processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
@@ -407,13 +408,13 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e "\e[94m  Checking for any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
     PIDS=`ps -efww | grep -w "${FEEDER_NAME}-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m   Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
+        echo -e "\e[94m  Killing any running ${FEEDER_NAME}-mlat_maint.sh processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
     PIDS=`ps -efww | grep -w "mlat-client --input-type .* --server ${FEEDER_MLAT_DST_HOST}" | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m   Killing any running mlat-client processes...\e[97m"
+        echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
     fi
