@@ -219,16 +219,20 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
     echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
     echo -e ""
-    # Check if build directory exists.
-    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] ; then
+
+    # Check if build directory exists and contains the relevant git repository.
+    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] && [[ -f "${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config" ]] && [[ `grep -c "url = ${MLAT_CLIENT_GITHUB_URL}" ${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config` -gt 0 ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
+        echo -e "\e[94m  Fetching changes from the remote mlat-client git repository...\e[97m"
+        echo -e ""
+        git fetch --tags origin 2>&1
         echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
         echo -e ""
-        git pull 2>&1
+        git reset --hard origin/master 2>&1
     else
-        # A directory containing the source code does not exist in the build directory.
+        # A directory containing the source code does not exist locally.
         echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
@@ -236,16 +240,41 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         git clone ${MLAT_CLIENT_GITHUB_URL} 2>&1
     fi
 
-    ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
-
-    echo -e ""
-    echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
-    echo -e ""
+    # Enter the git repository directory.
     if [[ ! "${PWD}" = "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] ; then
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         echo -e ""
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
     fi
+
+    # Check that a git tag has been specified and that it is valid.
+    if [[ -z "${MLAT_CLIENT_TAG}" ]] || [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/${MLAT_CLIENT_TAG}\$"` -eq 0 ]] ; then
+        # No tag has been specified, or the this tag is not present in the remote repo.
+        if [[ -n "${MLAT_CLIENT_VERSION}" ]] && [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/v${MLAT_CLIENT_VERSION}\$"` -gt 0 ]] ; then
+            # If there is a tag matching the configured version use that.
+            MLAT_CLIENT_TAG="v${MLAT_CLIENT_VERSION}"
+        else
+            # Otherwise get the most recent tag in the hope that it is a stable release.
+            MLAT_CLIENT_TAG=`git ls-remote | grep "refs/tags/v" | awk '{print $2}'| sort -V | awk -F "/" '{print $3}' | tail -1`
+        fi
+    fi
+
+    # Attempt to check out the required code version based on the supplied tag.
+    if [[ -n "${MLAT_CLIENT_TAG}" ]] && [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/${MLAT_CLIENT_TAG}"` -gt 0 ]] ; then
+        # If a valid git tag has been specified then check that out.
+        echo -e "\e[94m  Checking out mlat-client version \"${MLAT_CLIENT_TAG}\"...\e[97m"
+        git checkout tags/${MLAT_CLIENT_TAG} 2>&1
+    else
+        # Otherwise checkout the master branch.
+        echo -e "\e[94m  Checking out mlat-client from the master branch...\e[97m"
+        git checkout master 2>&1
+    fi
+
+    ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
+
+    echo -e ""
+    echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
+    echo -e ""
 
     # Build binary package.
     echo -e "\e[94m  Building the mlat-client package...\e[97m"
