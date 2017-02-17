@@ -91,8 +91,8 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 # Interactive install.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78
-    if [[ $? -eq 1 ]] ; then
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78 3>&1 1>&2 2>&3)
+    if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
@@ -143,15 +143,18 @@ CheckPackage netcat
 
 # For interactive install we test each required variable and prompt the user if not present.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Explain to the user that the receiver's latitude and longitude is required.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-    # Ask the user for the mlat user name for this receiver.
+
+        # Explain to the user that the receiver's latitude and longitude is required.
+        RECEIVER_LATLON_DIALOG=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
+
+        # Ask the user for the mlat user name for this receiver.
     FEEDER_USERNAME_TITLE="Receiver MLAT Username"
     while [[ -z "${FEEDER_USERNAME}" ]] ; do
         FEEDER_USERNAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
         FEEDER_USERNAME_TITLE="Receiver Name (REQUIRED)"
     done
-    # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
+
+        # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
         if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
@@ -161,7 +164,8 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
-    # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
+
+        # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
         if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
@@ -171,7 +175,8 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
-    # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
+
+        # Ask the user to confirm the receivers altitude, this will be prepopulated by the altitude returned from the Google Maps API.
     RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
     while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
         if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
@@ -181,6 +186,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_ALTITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_ALTITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's altitude${RECEIVER_ALTITUDE_SOURCE}:\n" 11 78 -- "${RECEIVER_ALTITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
     done
+
 else
     # Attempt to derive required values at some point...
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
@@ -209,11 +215,21 @@ if [[ -n "${FEEDER_NAME}" ]] ; then
     fi
 
     # Establish if MLAT results should be fed back into local dump1090 instance.
-    if  [[ -n "${FEEDER_MLAT_RETURN_PORT}" ]] ; then
+    if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] && [[ -n "${FEEDER_MLAT_RETURN_HOST}" ]] && [[ -n "${FEEDER_MLAT_RETURN_PORT}" ]] ; then
         FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
     else
         FEEDER_MLAT_RETURN_RESULTS=""
     fi
+else
+    # Insufficent information to continue.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted due to insufficent information to configure this feeder."
+    echo -e ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
+    echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
+    echo -e ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
 fi
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
@@ -224,7 +240,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
 
     # Check if build directory exists and contains the relevant git repository.
-    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] && [[ -f "${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config" ]] && [[ `grep -c "url = ${MLAT_CLIENT_GITHUB_URL}" ${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config` -gt 0 ]] ; then
+    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] && [[ -f "${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config" ]] && [[ `grep -c "url = ${MLAT_CLIENT_GITHUB_URL}" ${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config` -gt 0 ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
@@ -236,7 +252,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         git reset --hard origin/master 2>&1
     else
         # A directory containing the source code does not exist locally.
-        echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+        echo -e "\e[94m  Entering the ${RECEIVER_PROJECT_TITLE} build directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
         echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
         echo -e ""
@@ -302,7 +318,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     # Archive binary package.
     echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
     echo -e ""
-    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BINARIES_DIRECTORY} 2>&1
+    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BINARIES_DIRECTORY} 2>&1
     echo -e ""
 
     # Check that the mlat-client package was installed successfully.
@@ -469,7 +485,7 @@ fi
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+echo -e "\e[94m  Entering the ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e ""
