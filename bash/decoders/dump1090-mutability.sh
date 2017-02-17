@@ -151,13 +151,13 @@ whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitu
 RECEIVERLATITUDE_TITLE="Receiver Latitude"
 while [[ -z $RECEIVERLATITUDE ]]; do
     RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-    RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 "$RECEIVERLATITUDE" 3>&1 1>&2 2>&3)
+    RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 -- "$RECEIVERLATITUDE" 3>&1 1>&2 2>&3)
     RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
 RECEIVERLONGITUDE_TITLE="Receiver Longitude"
 while [[ -z $RECEIVERLONGITUDE ]]; do
     RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
-    RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 "$RECEIVERLONGITUDE" 3>&1 1>&2 2>&3)
+    RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 -- "$RECEIVERLONGITUDE" 3>&1 1>&2 2>&3)
     RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
 done
 
