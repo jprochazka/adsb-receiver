@@ -56,7 +56,7 @@ RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project Preliminary Setup Process"
 
 ## FUNCTIONS
 
-# Update repository package lists.
+# Function to update the repository package lists.
 function AptUpdate() {
     clear
     echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
@@ -74,7 +74,7 @@ function AptUpdate() {
     fi
 }
 
-# Check that the packages required by these scripts are installed.
+# Function to check that the packages required by this script are installed.
 function CheckPrerequisites() {
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         clear
@@ -95,7 +95,7 @@ function CheckPrerequisites() {
     fi
 }
 
-# Update The ADS-B Receiver Project Git repository.
+# Function to update the local git repository.
 function UpdateRepository() {
     # Update lcoal branches which are set to track remote.
     ACTION=$(git remote update 2>&1)
@@ -155,7 +155,7 @@ function UpdateRepository() {
     fi
 }
 
-# Update the operating system.
+# Function to update the operating system.
 function UpdateOperatingSystem() {
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         clear
@@ -191,7 +191,7 @@ CheckPrerequisites
 ## DISPLAY WELCOME SCREEN
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "The ADS-B Receiver Project" --title "The ADS-B Receiver Project" --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.net\n\nWould you like to continue setup?" 14 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "The ADS-B Receiver Project" --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.net\n\nWould you like to continue setup?" 14 78
     CONTINUE_SETUP=$?
     if [[ "${CONTINUE_SETUP}" = 1 ]] ; then
     # Setup has been halted by the user.
