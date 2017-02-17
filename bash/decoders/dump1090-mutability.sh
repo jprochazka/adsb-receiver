@@ -185,32 +185,40 @@ fi
 echo -e ""
 echo -e "\e[95m  Begining post installation configuration...\e[97m"
 echo -e ""
+
+# Ask for the receivers latitude and longitude.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Explain to the user that the receiver's latitude and longitude is required.
-    RECEIVER_LATLON_DIALOG=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations, you will now be asked to supply these values for your receiver.\n\nIf you do not have this information you can obtain it using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites:\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
+    RECEIVER_LATLON_DIALOG=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations, you will now be asked to supply these values for your receiver.\n\nIf you do not have this information you can obtain it using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites:\n\n  https://www.swiftbyte.com/toolbox/geocode" 15 78 3>&1 1>&2 2>&3)
 
     # Ask the user for the receiver's latitude.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
-    while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+    while [[ -z "${RECEIVER_LATITUDE}" ]] || [[ `echo -n "${RECEIVER_LATITUDE}" | sed -e 's/[0-9]//g' -e 's/\.//g' -e 's/-//g' | wc -c` -gt 0 ]] ; do
         RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 " ${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
 
     # Ask the user for the receiver's longitude.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
-    while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+    while [[ -z "${RECEIVER_LONGITUDE}" ]] || [[ `echo -n "${RECEIVER_LONGITUDE}" | sed -e 's/[0-9]//g' -e 's/\.//g' -e 's/-//g' | wc -c` -gt 0 ]] ; do
         RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
-        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 " ${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
 fi
 
 # Save the receiver's latitude and longitude values to dump1090 configuration file.
-echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
-ChangeConfig "LAT" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LATITUDE})" "/etc/default/dump1090-mutability"
-echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
-ChangeConfig "LON" "$(sed -e 's/[[:space:]]*$//' <<<${RECEIVER_LONGITUDE})" "/etc/default/dump1090-mutability"
+RECEIVER_LATITUDE_CONFIGURED=`GetConfig "LON" "${DUMP1090_CONFIGURATION_FILE}"`
+if [[ ! "${RECEIVER_LATITUDE}" = "${RECEIVER_LATITUDE_CONFIGURED}" ]] ; then
+    echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
+    ChangeConfig "LAT" "${RECEIVER_LATITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
+fi
+RECEIVER_LONGITUDE_CONFIGURED=`GetConfig "LON" "${DUMP1090_CONFIGURATION_FILE}"`
+if [[ ! "${RECEIVER_LONGITUDE}" = "${RECEIVER_LONGITUDE_CONFIGURED}" ]] ; then
+    echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
+    ChangeConfig "LON" "${RECEIVER_LONGITUDE}" "${DUMP1090_CONFIGURATION_FILE}"
+fi
 
 # Ask for a Bing Maps API key.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -264,7 +272,7 @@ fi
 
 # Ask if measurements should be displayed using imperial or metric.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --yes-button "Imperial" --no-button "Metric" --yesno "\nPlease select the unit of measurement to be used by dump1090-mutbility." 9 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Unit of Measurement" --yes-button "Imperial" --no-button "Metric" --yesno "\nPlease select the unit of measurement to be used by dump1090-mutbility." 8 78
     case $? in
         0)
             DUMP1090_UNIT_OF_MEASUREMENT="imperial"
@@ -283,7 +291,7 @@ else
 fi
 
 # Download Heywhatsthat.com maximum range rings.
-if [[ ! -f /usr/share/dump1090-mutability/html/upintheair.json ]] ; then
+if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] ; then
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to ${COMPONENT_NAME} using data obtained from Heywhatsthat.com. In order to add these rings to your ${COMPONENT_NAME} map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78) ; then
             # Set the DUMP1090_HEYWHATSTHAT_INSTALL variable to true.

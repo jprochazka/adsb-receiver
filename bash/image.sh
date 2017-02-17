@@ -74,20 +74,24 @@ fi
 
 ### ASK USER TO CONFIRM RECEIVER LATITUDE AND LONGITUDE
 
+# Check for the receivers latitude and longitude.
 if [ -z $RECEIVERLATITUDE ] || [ -z $RECEIVERLONGITUDE ] ; then
-# Set the receivers latitude and longitude.
-    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
+    # Explain to the user that the receiver's latitude and longitude is required.
+    RECEIVER_LATLON_DIALOG=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations, you will now be asked to supply these values for your receiver.\n\nIf you do not have this information you can obtain it using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites:\n\n  https://www.swiftbyte.com/toolbox/geocode" 15 78 3>&1 1>&2 2>&3)
+
     RECEIVERLATITUDE_TITLE="Receiver Latitude"
     while [[ -z $RECEIVERLATITUDE ]] ; do
         RECEIVERLATITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude in decimal degrees.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
         RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
+
     RECEIVERLONGITUDE_TITLE="Receiver Longitude"
     while [[ -z $RECEIVERLONGITUDE ]] ; do
         RECEIVERLONGITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude in decimal degrees.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
         RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
-# Can hopefully be derived
+
+    # Todo - replace with code to derive altitude via Google API.
     RECEIVERALTITUDE_TITLE="Receiver Altitude"
     while [[ -z $RECEIVERALTITUDE ]] ; do
         RECEIVERALTITUDE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$RECEIVERALTITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's altitude in meters.\n(Example: XX)" 9 78 3>&1 1>&2 2>&3)
