@@ -109,9 +109,12 @@ if [ -d $MLATCLIENTBUILDDIRECTORY ] && [ -d $MLATCLIENTBUILDDIRECTORY/.git ]; th
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
     cd $MLATCLIENTBUILDDIRECTORY
+    echo -e "\e[94m  Fetching changes from the remote mlat-client git repository...\e[97m"
+    echo ""
+    git fetch --tags origin 2>&1
     echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
     echo ""
-    git pull
+    git reset --hard origin/master 2>&1
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
@@ -121,15 +124,30 @@ else
     git clone https://github.com/mutability/mlat-client.git
 fi
 
+# Enter the git repository directory.
+if [[ ! ${PWD} = ${MLATCLIENTBUILDDIRECTORY} ]] ; then
+    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
+    cd ${MLATCLIENTBUILDDIRECTORY}
+fi
+
+# Attempt to check out the required code version based on the supplied tag.
+if [[ -n "${MLATCLIENTTAG}" ]] && [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/${MLATCLIENTTAG}"` -gt 0 ]] ; then
+    # If a valid git tag has been specified then check that out.
+    echo -e "\e[94m  Checking out mlat-client version \"${MLATCLIENTTAG}\"...\e[97m"
+    git checkout tags/${MLATCLIENTTAG} 2>&1
+else
+    # Otherwise checkout the master branch.
+    echo -e "\e[94m  Checking out mlat-client from the master branch...\e[97m"
+    git checkout master 2>&1
+fi
+
+
 ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
 
 echo ""
 echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
 echo ""
-if [ ! $PWD = $MLATCLIENTBUILDDIRECTORY ]; then
-    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
-    cd $MLATCLIENTBUILDDIRECTORY
-fi
+
 echo -e "\e[94m  Building the mlat-client package...\e[97m"
 echo ""
 dpkg-buildpackage -b -uc
