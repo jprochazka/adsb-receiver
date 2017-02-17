@@ -372,8 +372,8 @@ if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok insta
     MLAT_CLIENT_IS_INSTALLED="true"
     MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
     MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
-    # Check if a newer version of mlat-client can be installed.
-    if [[ "${MLAT_CLIENT_VERSION_AVAILABLE}" -gt "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
+    # Check if installed mlat-client matches the available version.
+    if [[ ! "${MLAT_CLIENT_VERSION_AVAILABLE}" = "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
         # Prompt user to confirm the upgrade.
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
