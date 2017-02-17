@@ -107,7 +107,7 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 # Interactive install.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-   CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78 3>&1 1>&2 2>&3)
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -218,7 +218,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             done
 
             # Unless all of the information required to return MLAT data is configured then prompt the user to confirm.
-            if [[ -z ${FEEDER_MLAT_RETURN_HOST} ]] || [[ -z ${FEEDER_MLAT_RETURN_PORT} ]] ; then
+            if [[ -z "${FEEDER_MLAT_RETURN_HOST}" ]] || [[ -z "${FEEDER_MLAT_RETURN_PORT}" ]] ; then
                 # Confirm if user wants to return MLAT data.
                 FEEDER_MLAT_RETURN=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Confirm MLAT data return" --yesno --defaultno "$CONFIRMATION" 17 78 3>&1 1>&2 2>&3)
                 if [[ "${FEEDER_BEAST_DO_INSTALL}" -eq 0 ]] ; then
@@ -242,7 +242,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Confirm receiver specific information required if MLAT client feeding is enabled
     if [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] && [[ -n "${FEEDER_MLAT_DST_HOST}" ]] ; then
         # Explain to the user that the receiver's latitude and longitude is required.
-        FEEDER_LATLON=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
+        RECEIVER_LATLON_DIALOG=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations to work properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78 3>&1 1>&2 2>&3)
 
         # Ask the user for the mlat user name for this receiver.
         FEEDER_USERNAME_TITLE="Receiver MLAT Username"
@@ -277,7 +277,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         RECEIVER_ALTITUDE_TITLE="Receiver Altitude"
         while [[ -z "${RECEIVER_ALTITUDE}" ]] ; do
             RECEIVER_ALTITUDE_TITLE="Receiver Altitude (REQUIRED)"
-            if [[ -n ${RECEIVER_LATITUDE} ]] && [[ -n ${RECEIVER_LONGITUDE} ]] ; then
+            if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
                 RECEIVER_ALTITUDE=$(curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVER_LATITUDE},${RECEIVER_LONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.0f\n", $1)}')
                 RECEIVER_ALTITUDE_SOURCE=", the below value is obtained from Google but should be increased to reflect your antennas height above ground level"
             fi
@@ -312,7 +312,7 @@ if [[ -n "${FEEDER_NAME}" ]] ; then
     fi
 
     # Establish if MLAT results should be fed back into local dump1090 instance.
-    if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] && [[ -n ${FEEDER_MLAT_RETURN_HOST} ]] && [[ -n ${FEEDER_MLAT_RETURN_PORT} ]] ; then
+    if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] && [[ -n "${FEEDER_MLAT_RETURN_HOST}" ]] && [[ -n "${FEEDER_MLAT_RETURN_PORT}" ]] ; then
         FEEDER_MLAT_RETURN_RESULTS="--results beast,connect,${FEEDER_MLAT_SRC_HOST}:${FEEDER_MLAT_RETURN_PORT}"
     else
         FEEDER_MLAT_RETURN_RESULTS=""
@@ -327,7 +327,6 @@ else
     echo -e ""
     read -p "Press enter to continue..." CONTINUE
     exit 1
-
 fi
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
@@ -338,7 +337,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
 
     # Check if build directory exists and contains the relevant git repository.
-    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}" ]] && [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] && [[ -f "${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config" ]] && [[ `grep -c "url = ${MLAT_CLIENT_GITHUB_URL}" ${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config` -gt 0 ]] ; then
+    if [[ -d "${MLAT_CLIENT_BUILD_DIRECTORY}/.git" ]] && [[ -f "${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config" ]] && [[ `grep -c "url = ${MLAT_CLIENT_GITHUB_URL}" ${MLAT_CLIENT_BUILD_DIRECTORY}/.git/config` -gt 0 ]] ; then
         # A directory with a git repository containing the source code already exists.
         echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
         cd ${MLAT_CLIENT_BUILD_DIRECTORY} 2>&1
@@ -416,7 +415,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     # Archive binary package.
     echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
     echo -e ""
-    mv -v -f ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BINARIES_DIRECTORY} 2>&1
+    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BINARIES_DIRECTORY} 2>&1
     echo -e ""
 
     # Check that the mlat-client package was installed successfully.
