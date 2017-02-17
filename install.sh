@@ -36,7 +36,6 @@
 
 ## VARIABLES
 
-PROJECTBRANCH="master"
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
@@ -67,7 +66,7 @@ fi
 
 ## FUNCTIONS
 
-# UPDATE REPOSITORY PACKAGE LISTS
+# Function to update the repository package lists.
 function AptUpdate() {
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
@@ -83,6 +82,7 @@ function AptUpdate() {
     read -p "Press enter to continue..." CONTINUE
 }
 
+# Function to check that the packages required by this script are installed.
 function CheckPrerequisites() {
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
@@ -100,8 +100,8 @@ function CheckPrerequisites() {
 }
 
 
+# Function to update the local git repository.
 function UpdateRepository() {
-## UPDATE THIS REPOSITORY
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
     echo ""
@@ -122,7 +122,7 @@ function UpdateRepository() {
     read -p "Press enter to continue..." CONTINUE
 }
 
-# UPDATE THE OPERATING SYSTEM
+# Function to update the operating system.
 function UpdateOperatingSystem() {
     clear
     echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
@@ -138,11 +138,24 @@ function UpdateOperatingSystem() {
     read -p "Press enter to continue..." CONTINUE
 }
 
+# Set git branch to master if not already specified.
+if [[ -z "${PROJECTBRANCH}" ]] ; then
+    PROJECTBRANCH="master"
+fi
+
+## UPDATE THE OPERATING SYSTEM
+
 AptUpdate
+
+## CHECK PREREQUISITES
+
 CheckPrerequisites
-UpdateRepository
 
 ## DISPLAY WELCOME SCREEN
+
+## UPDATE THE REPOSITORY
+
+UpdateRepository
 
 ## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 
