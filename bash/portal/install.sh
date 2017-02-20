@@ -236,30 +236,33 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
+# Attempt to detect Debian and derivative distros such as Ubuntu.
+if [[ -s "/etc/lsb-release" ]] ; then
+    source /etc/lsb-release
+elif [[ -x "`which lsb_release`" ]] ; then
+    DISTRIB_ID=`lsb_release -a 2>&1 | grep "^Distributor ID:" | awk -F ":" '{print $2}' | awk '{print $1}'`
+    DISTRIB_RELEASE=`lsb_release -a 2>&1 | grep "^Release:" | awk -F ":" '{print $2}' | awk '{print $1}'`
+fi
+
+    # Use phpp7.0 for Ubuntu 16.04 LTS (or later), which we detect based on version string format of yymm.
+    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')" -ge "1604" ]] ; then
+        RECEIVER_PHP_VERSION="7.0"
+    elif [[ "${DISTRIB_ID}" = "Debian" ]] && [[ "${DISTRIB_RELEASE}" = "testing" ]] ; then
+        RECEIVER_PHP_VERSION="7.0"
+    else
+        RECEIVER_PHP_VERSION="5"
+    fi
+
+# Install correct PHP version for the platform.
+CheckPackage php${RECEIVER_PHP_VERSION}-cgi
+CheckPackage php${RECEIVER_PHP_VERSION}-json
+
 # Performance graph dependencies.
 CheckPackage collectd-core
 CheckPackage rrdtool
 
 # Portal dependencies.
 CheckPackage libpython2.7
-
-# Check if this is Ubuntu 16.04 LTS (or later).
-# Note Ubuntu versions should always be in the format yy.mm format...
-# So we can simply remove the decimal and treat the resultant string as an integer.
-if [[ -s "/etc/lsb-release" ]] ; then
-    source /etc/lsb-release
-    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')"  -ge "1604" ]] ; then
-        RECEIVER_PHP_VERSION="7.0"
-    else
-        RECEIVER_PHP_VERSION="5"
-    fi
-else
-    RECEIVER_PHP_VERSION="5"
-fi
-
-# Install correct PHP version for the platform.
-CheckPackage php${RECEIVER_PHP_VERSION}-cgi
-CheckPackage php${RECEIVER_PHP_VERSION}-json
 
 # Install packages needed for advanced portal setups.
 if [[ "${ADVANCED}" = "true" ]] ; then
