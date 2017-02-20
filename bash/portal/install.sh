@@ -244,14 +244,33 @@ elif [[ -x "`which lsb_release`" ]] ; then
     DISTRIB_RELEASE=`lsb_release -a 2>&1 | grep "^Release:" | awk -F ":" '{print $2}' | awk '{print $1}'`
 fi
 
-    # Use phpp7.0 for Ubuntu 16.04 LTS (or later), which we detect based on version string format of yymm.
-    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')" -ge "1604" ]] ; then
+# Check for existing PHP installation.
+if [[ -x `which php` ]] && [[ `php -v | grep -c "^PHP [0-9]"` -gt 0 ]] ; then
+    # Detect installed PHP version.
+    RECEIVER_PHP_INSTALLED=`php -v | grep "^PHP [0-9]" | awk '{print $2}'`
+    if [[ `echo ${RECEIVER_PHP_INSTALLED} | grep -c "^7\.0\."` -gt 0 ]] ; then
+        # Found php7.0 install.
         RECEIVER_PHP_VERSION="7.0"
-    elif [[ "${DISTRIB_ID}" = "Debian" ]] && [[ "${DISTRIB_RELEASE}" = "testing" ]] ; then
-        RECEIVER_PHP_VERSION="7.0"
+    elif [[ `echo ${RECEIVER_PHP_INSTALLED} | grep -c "^5\."` -gt 0 ]] ; then
+        # Found php5 install.
+        RECEIVER_PHP_VERSION="5"
     else
+        # Otherwise assume php5.
         RECEIVER_PHP_VERSION="5"
     fi
+else
+    # Otherwise determine required PHP version based on distribution version.
+    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')" -ge "1604" ]] ; then
+    # Use phpp7.0 for Ubuntu 16.04 LTS and above, which we detect based on version string format of yymm.
+        RECEIVER_PHP_VERSION="7.0"
+    elif [[ "${DISTRIB_ID}" = "Debian" ]] && [[ "${DISTRIB_RELEASE}" = "testing" ]] ; then
+    # Use php7.0 for Debian 9.0 'Strech' which is currently identified as the "testing" release.
+        RECEIVER_PHP_VERSION="7.0"
+    else
+    # Use php5 for all other platforms and distributions.
+        RECEIVER_PHP_VERSION="5"
+    fi
+fi
 
 # Install correct PHP version for the platform.
 CheckPackage php${RECEIVER_PHP_VERSION}-cgi
