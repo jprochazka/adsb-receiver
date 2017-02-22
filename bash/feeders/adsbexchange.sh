@@ -411,7 +411,7 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
         echo -e ""
     fi
 
-    # Archive binary package.
+    # Archive binary package and changelog.
     echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
     echo -e ""
     mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
