@@ -71,7 +71,7 @@ fi
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo -e ""
-if [[ `uname -m` = "x86_64" ]] ; then
+if [[ "${CPU_ARCHITECTURE}" = "x86_64" ]] ; then
     if [[ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]] ; then
         echo -e "\e[94m  Adding the i386 architecture...\e[97m"
         sudo dpkg --add-architecture i386
@@ -106,7 +106,7 @@ if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
 fi
 echo -e "\e[94m  Entering the Flightradar24 feeder client build directory...\e[97m"
 cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
-if [[ `uname -m` = "armv7l" ]] || [[ `uname -m` = "armv6l" ]] || [[ `uname -m` = "aarch64" ]] ; then
+if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
 
     ## ARM INSTALLATION
 
