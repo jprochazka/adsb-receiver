@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2017 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -99,6 +99,7 @@ CheckPackage wget
 echo -e ""
 echo -e "\e[95m  Begining the installation process...\e[97m"
 echo -e ""
+
 # Create the flightradar24 build directory if it does not exist.
 if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Creating the Flightradar24 feeder client build directory...\e[97m"
@@ -106,15 +107,20 @@ if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
 fi
 echo -e "\e[94m  Entering the Flightradar24 feeder client build directory...\e[97m"
 cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
+
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
 
     ## ARM INSTALLATION
 
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Plane Finder ADS-B Client Setup Instructions" --msgbox "This script will now download and execute the official Flightradar24 setup script. Follow the instructions provided and supply the required information when ask for by the script.\n\nOnce finished the ADS-B Receiver Project scripts will continue." 11 78
+
     echo -e "\e[94m  Detected the device architecture as ARM...\e[97m"
-    echo -e "\e[94m  Downloading the executing the Flightradar24 Pi24 installation script...\e[97m"
+    echo -e "\e[94m  Downloading the Flightradar24 feeder installation script...\e[97m"
     echo -e ""
-    sudo bash -c "$(wget -O - http://repo.feed.flightradar24.com/install_fr24_rpi.sh)"
+    wget http://repo.feed.flightradar24.com/install_fr24_rpi.sh -O ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
+    echo -e ""
+    echo -e "\e[94m  Executing the Flightradar24 feeder installation script...\e[97m"
+    sudo bash ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
     echo -e ""
 else
 
