@@ -307,16 +307,20 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
 
     # Create binary package archive directory.
     if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
-        echo -e "\e[94m  Creating archive directory...\e[97m"
+        echo -e "\e[94m  Creating package archive directory...\e[97m"
         echo -e ""
         mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
     fi
 
-    # Archive binary package.
+    # Archive binary package and changelog.
     echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
     echo -e ""
-    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+    echo -e ""
+    echo -e "\e[94m  Archiving the mlat-client changelog...\e[97m"
+    echo -e ""
+    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
     echo -e ""
 
     # Check that the mlat-client package was installed successfully.
