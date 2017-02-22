@@ -154,14 +154,16 @@ if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed
 fi
 
 # Move the .deb package into another directory simply to keep it for historical reasons.
-if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}/packages" ]] ; then
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
     echo -e "\e[94m  Making the PiAware package archive directory...\e[97m"
-    mkdir -vp ${COMPONENT_BUILD_DIRECTORY}/packages
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
 fi
+
+# Archive binary package.
 echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
-mv ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb ${COMPONENT_BUILD_DIRECTORY}/packages/
+mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
 echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
-mv ${COMPONENT_BUILD_DIRECTORY}/piaware_*.changes ${COMPONENT_BUILD_DIRECTORY}/packages/
+mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
 
 ## CONFIGURE FLIGHTAWARE CREDENTIALS
 
