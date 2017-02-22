@@ -114,6 +114,7 @@ echo -e "\e[95m  Installing the Plane Finder ADS-B Client package...\e[97m"
 echo -e ""
 echo -e "\e[94m  Entering the Plane Finder ADS-B Client build directory...\e[97m"
 cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
+
 # Install the proper package depending on the devices architecture.
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
     echo -e "\e[94m  Installing the Plane Finder ADS-B Client v${PLANEFINDER_CLIENT_VERSION_ARM} for ARM devices package...\e[97m"
@@ -131,6 +132,19 @@ else
         sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb
     fi
 fi
+
+# Create binary package archive directory.
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+    echo -e "\e[94m  Creating package archive directory...\e[97m"
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+    echo -e ""
+fi
+
+# Archive binary package and changelog.
+echo -e "\e[94m  Archiving the pfclient package...\e[97m"
+mv -vf ${COMPONENT_BUILD_DIRECTORY}/pfclient_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+echo -e ""
+
 # Check that the Plane Finder ADS-B Client package was installed successfully.
 echo -e ""
 echo -e "\e[94m  Checking that the pfclient package was installed properly...\e[97m"
