@@ -457,7 +457,7 @@ else
                 # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
                 if [[ -z "${PLANEFINDER_INSTALL}" ]] && [[ "${PLANEFINDER_INSTALL}" = "true" ]] && [[ -z "${PLANEFINDER_UPGRADE}" ]] && [[ "${PLANEFINDER_UPGRADE}" = "true" ]] ; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
-                    echo " (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+                    echo "Flightradar24 Client (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
                 fi
             fi
         fi
