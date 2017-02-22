@@ -101,11 +101,11 @@ fi
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] ; then
     echo -e "\e[94m  Downloading the Plane Finder ADS-B Client v${PLANEFINDER_CLIENT_VERSION_ARM} for ARM devices...\e[97m"
     echo -e ""
-    wget http://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb
+    wget --no-check-certificate https://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb
 else
     echo -e "\e[94m  Downloading the Plane Finder ADS-B Client v${PLANEFINDER_CLIENT_VERSION_I386} for I386 devices...\e[97m"
     echo -e ""
-    wget http://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb
+    wget --no-check-certificate https://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb
 fi
 
 ## INSTALL THE PLANEFINDER ADS-B CLIENT PACKAGE

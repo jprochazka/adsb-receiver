@@ -117,7 +117,7 @@ if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l"
     echo -e "\e[94m  Detected the device architecture as ARM...\e[97m"
     echo -e "\e[94m  Downloading the Flightradar24 feeder installation script...\e[97m"
     echo -e ""
-    wget http://repo.feed.flightradar24.com/install_fr24_rpi.sh -O ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
+    wget --no-check-certificate https://repo.feed.flightradar24.com/install_fr24_rpi.sh -O ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
     echo -e ""
     echo -e "\e[94m  Executing the Flightradar24 feeder installation script...\e[97m"
     sudo bash ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
@@ -129,7 +129,7 @@ else
     echo -e "\e[94m  Detected the device architecture as I386...\e[97m"
     echo -e "\e[94m  Downloading the Flightradar24 feeder client package...\e[97m"
     echo -e ""
-    wget http://feed.flightradar24.com/linux/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
+    wget --no-check-certificate https://feed.flightradar24.com/linux/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
     echo -e "\e[94m  Installing the Flightradar24 feeder client package...\e[97m"
     if [[ `lsb_release -si` = "Debian" ]] ; then
         # Force architecture if this is Debian.
