@@ -120,7 +120,7 @@ function InstallFlightradar24() {
     fi
 }
 
-# Execute the Plane Finder ADS-B Client setup script.
+# Execute the Plane Finder Client setup script.
 function InstallPlaneFinder() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
@@ -802,7 +802,7 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] ; then
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
                 RUN_PIAWARE_SCRIPT="true"
                 ;;
-            "Plane Finder ADS-B Client"|"Plane Finder Client (upgrade)")
+            "Plane Finder Client"|"Plane Finder Client (upgrade)")
                 RUN_PLANEFINDER_SCRIPT="true"
                 ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
