@@ -36,7 +36,6 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-RECEIVER_BINARIES_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/binaries"
 
 # Component specific variables.
 MLAT_CLIENT_GITHUB_URL="https://github.com/mutability/mlat-client.git"
@@ -306,18 +305,18 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLAT_CLIENT_VERSION}*.deb 2>&1
     echo -e ""
 
-    # Create binary archive directory.
-    if [[ ! -d "${RECEIVER_BINARIES_DIRECTORY}" ]] ; then
+    # Create binary package archive directory.
+    if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
         echo -e "\e[94m  Creating archive directory...\e[97m"
         echo -e ""
-        mkdir -vp ${RECEIVER_BINARIES_DIRECTORY} 2>&1
+        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
     fi
 
     # Archive binary package.
     echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
     echo -e ""
-    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BINARIES_DIRECTORY} 2>&1
+    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_* ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
     echo -e ""
 
     # Check that the mlat-client package was installed successfully.
