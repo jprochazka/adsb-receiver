@@ -454,8 +454,8 @@ else
                 # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
                 FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client (upgrade)' '' OFF)
             else
-                # Check the installation configuration file to see if the Planefinder Client is to be upgraded.
-                if [[ -z "${PLANEFINDER_INSTALL}" ]] && [[ "${PLANEFINDER_INSTALL}" = "true" ]] && [[ -z "${PLANEFINDER_UPGRADE}" ]] && [[ "${PLANEFINDER_UPGRADE}" = "true" ]] ; then
+                # Check the installation configuration file to see if the Flightradar24 Client is to be upgraded.
+                if [[ -z "${FLIGHTRADAR_INSTALL}" ]] && [[ "${FLIGHTRADAR_INSTALL}" = "true" ]] && [[ -z "${FLIGHTRADAR_UPGRADE}" ]] && [[ "${FLIGHTRADAR_UPGRADE}" = "true" ]] ; then
                     # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
                     echo "Flightradar24 Client (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
                 fi
