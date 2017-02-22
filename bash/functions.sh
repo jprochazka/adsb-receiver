@@ -125,7 +125,7 @@ function CleanLogFile {
 function Check_CPU () {
     if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
         echo -en "\e[94m  Detecting CPU architecture...\e[97m"
-        CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
+        export CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
     fi
 }
 
@@ -136,11 +136,11 @@ function Check_Platform () {
     if [[ -z "${HARDWARE_PLATFORM}" ]] ; then
         echo -en "\e[94m  Detecting hardware platform...\e[97m"
         if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
-            HARDWARE_PLATFORM="RPI"
+            export HARDWARE_PLATFORM="RPI"
         elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
-            HARDWARE_PLATFORM="CHIP"
+            export HARDWARE_PLATFORM="CHIP"
         else
-            HARDWARE_PLATFORM="unknown"
+            export HARDWARE_PLATFORM="unknown"
         fi
     fi
 }
@@ -151,6 +151,6 @@ function Check_Platform () {
 function Check_Hardware () {
     if [[ -z "${HARDWARE_REVISION}" ]] ; then
         echo -en "\e[94m  Detecting Hardware revision...\e[97m"
-        HARDWARE_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
+        export HARDWARE_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
     fi
 }
