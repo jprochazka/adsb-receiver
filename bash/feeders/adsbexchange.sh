@@ -250,24 +250,30 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             FEEDER_USERNAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FEEDER_USERNAME_TITLE}" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 -- "${ADSBEXCHANGE_RECEIVER_USERNAME}" 3>&1 1>&2 2>&3)
         done
 
-        # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
+        # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090 where possible.
         RECEIVER_LATITUDE_TITLE="Receiver Latitude"
         while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
             RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
             if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
                 RECEIVER_LATITUDE=$(grep "^LAT" "/etc/default/dump1090-mutability" | awk -F "=" '{print $2}' | sed -e 's/"//g')
-                RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
+                RECEIVER_LATITUDE_SOURCE=", the value below is configured in dump1090-mutability"
+            elif [[ -s /run/dump1090-fa/receiver.json ]] ; then
+                RECEIVER_LATITUDE=`cat /run/dump1090-fa/receiver.json | awk -F "lat\" : " '{print $2}' | awk -F "," '{print $1}'`
+                RECEIVER_LATITUDE_SOURCE=", the value below is configured in dump1090-fa"
             fi
             RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nPlease confirm your receiver's latitude${RECEIVER_LATITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LATITUDE}" 3>&1 1>&2 2>&3)
         done
 
-        # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
+        # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090 where possible.
         RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
         while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
             RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
             if [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
                 RECEIVER_LONGITUDE=$(grep "^LON" "/etc/default/dump1090-mutability" | awk -F "=" '{print $2}' | sed -e 's/"//g')
-                RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
+                RECEIVER_LONGITUDE_SOURCE=", the value below is configured in dump1090-mutability"
+            elif [[ -s /run/dump1090-fa/receiver.json ]] ; then
+                RECEIVER_LONGITUDE=`cat /run/dump1090-fa/receiver.json | awk -F "lon\" : " '{print $2}' | awk '{print $1}'`
+                RECEIVER_LONGITUDE_SOURCE=", the value below is configured in dump1090-fa"
             fi
             RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's longitude${RECEIVER_LONGITUDE_SOURCE}:\n" 10 78 -- "${RECEIVER_LONGITUDE}" 3>&1 1>&2 2>&3)
         done
