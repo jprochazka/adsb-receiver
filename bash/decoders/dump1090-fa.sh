@@ -170,10 +170,10 @@ fi
 
 # Download Heywhatsthat.com maximum range rings.
 if [[ ! -f /usr/share/dump1090-fa/html/upintheair.json ]] && (whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to ${DECODER_NAME} using data obtained from Heywhatsthat.com. In order to add these rings to your ${DECODER_NAME} map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
-    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
+    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID"
     while [[ -z $HEYWHATSTHATID ]] ; do
         HEYWHATSTHATID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
-        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID (REQUIRED)"
     done
     HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude"
     while [[ -z $HEYWHATSTHATRINGONE ]] ; do

@@ -447,6 +447,18 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
             read -p "Press enter to continue..." CONTINUE
         fi
         exit 1
+    else
+        MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
+        MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
+        # Check if installed mlat-client matches the available version.
+        if [[ ! "${MLAT_CLIENT_VERSION_AVAILABLE}" = "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
+            echo -e ""
+            echo -e "\e[93mThe \"mlat-client\" installed on this receiver could not be upgraded to version ${MLAT_CLIENT_VERSION}.\e[39m"
+            echo -e ""
+            if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+                read -p "Press enter to continue..." CONTINUE
+            fi
+        fi
     fi
 fi
 
