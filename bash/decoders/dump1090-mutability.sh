@@ -298,7 +298,7 @@ if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] ; then
             DUMP1090_HEYWHATSTHAT_ID_TITLE="Heywhatsthat.com Panorama ID"
             while [[ -z "${DUMP1090_HEYWHATSTHAT_ID}" ]] ; do
                 DUMP1090_HEYWHATSTHAT_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUMP1090_HEYWHATSTHAT_ID_TITLE}" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
-                DUMP1090_HEYWHATSTHAT_ID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+                DUMP1090_HEYWHATSTHAT_ID_TITLE="Heywhatsthat.com Panorama ID (REQUIRED)"
             done
             # Ask the user what altitude in meters to set the first range ring.
             DUMP1090_HEYWHATSTHAT_RING_ONE_TITLE="Heywhatsthat.com First Ring Altitude"
