@@ -189,8 +189,19 @@ while [[ -z $RECEIVERNAME ]]; do
 done
 
 # Source the latitude and longitude values configured in dump1090.
-RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # dump1090 fork is -mutability
+    if [[ -s /etc/default/dump1090-mutability ]] ; then
+        RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+        RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    fi
+elif [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # dump1090 fork is -fa
+    if [[ -s /run/dump1090-fa/receiver.json ]] ; then
+        RECEIVERLATITUDE=`cat /run/dump1090-fa/receiver.json | awk -F "lat\" : " '{print $2}' | awk -F "," '{print $1}'`
+        RECEIVERLONGITUDE=`cat /run/dump1090-fa/receiver.json | awk -F "lon\" : " '{print $2}' | awk '{print $1}'`
+    fi
+fi
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude.
 if [[ -n "${RECEIVERLATITUDE}" ]] && [[ -n "${RECEIVERLONGITUDE}" ]] ; then
