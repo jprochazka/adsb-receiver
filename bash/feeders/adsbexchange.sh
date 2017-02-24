@@ -205,7 +205,7 @@ fi
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude.
 if [[ -n "${RECEIVERLATITUDE}" ]] && [[ -n "${RECEIVERLONGITUDE}" ]] ; then
-    RECEIVERALTITUDE=`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVERLATITUDE},${RECEIVERLONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`
+    RECEIVERALTITUDE=`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVERLATITUDE},${RECEIVERLONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.0f\n", $1)}'`
 fi
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
