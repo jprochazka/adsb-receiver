@@ -98,6 +98,7 @@ CheckPackage pkg-config
 CheckPackage lighttpd
 CheckPackage fakeroot
 CheckPackage dh-systemd
+CheckPackage libncurses5-dev
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
 
