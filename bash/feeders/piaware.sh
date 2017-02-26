@@ -43,6 +43,11 @@ COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/piaware_builder"
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+# Source the automated install configuration file if this is an automated installation.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
+fi
+
 ### BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -51,22 +56,24 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 fi
 echo -e ""
 echo -e "\e[92m  Setting up FlightAware's PiAware..."
+echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78
-CONTINUESETUP=$?
-if [[ "${CONTINUESETUP}" = 1 ]] ; then
-    # Setup has been halted by the user.
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  Dump1090-mutability setup halted.\e[39m"
-    echo -e ""
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+
+# Interactive install.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78 3>&1 1>&2 2>&3)
+    if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
+        # Setup has been halted by the user.
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  Setup has been halted at the request of the user."
+        echo -e ""
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
+        echo -e "\e[92m  PiAware setup halted.\e[39m"
+        echo -e ""
         read -p "Press enter to continue..." CONTINUE
+        exit 1
     fi
-    exit 1
 fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -88,11 +95,12 @@ CheckPackage tcllib
 CheckPackage tcl-tls
 CheckPackage itcl3
 
-## DOWNLOAD OR UPDATE THE PIAWARE_BUILDER SOURCE
+### START INSTALLATION
 
 echo -e ""
-echo -e "\e[95m  Preparing the piaware_builder Git repository...\e[97m"
+echo -e "\e[95m  Begining the installation process...\e[97m"
 echo -e ""
+
 if [[ -d "${COMPONENT_BUILD_DIRECTORY}" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
@@ -114,56 +122,83 @@ fi
 echo -e ""
 echo -e "\e[95m  Building and installing the PiAware package...\e[97m"
 echo -e ""
+
+# Change to the comonent build directory.
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
-echo -e "\e[94m  Executing the PiAware build script...\e[97m"
-echo -e ""
-./sensible-build.sh jessie
-echo -e ""
-echo -e "\e[94m  Entering the PiAware build directory...\e[97m"
-cd ${COMPONENT_BUILD_DIRECTORY}/package-jessie 2>&1
-echo -e "\e[94m  Building the PiAware package...\e[97m"
-echo -e ""
-dpkg-buildpackage -b
-echo -e ""
-echo -e "\e[94m  Installing the PiAware package...\e[97m"
-echo -e ""
-sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb
 
-# Check that the PiAware package was installed successfully.
-echo -e ""
-echo -e "\e[94m  Checking that the piaware package was installed properly...\e[97m"
-if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-    # If the piaware package could not be installed halt setup.
+# Dummy test for consistency with other feeder install scripts.
+if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
+    # Execute build script.
+    echo -e "\e[94m  Executing the PiAware build script...\e[97m"
     echo -e ""
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-    echo -e "  SETUP HAS BEEN TERMINATED!"
+    ./sensible-build.sh jessie
     echo -e ""
-    echo -e "\e[93mThe package \"piaware\" could not be installed.\e[39m"
+
+    # Change to build script directory.
+    echo -e "\e[94m  Entering the PiAware build directory...\e[97m"
+    cd ${COMPONENT_BUILD_DIRECTORY}/package-jessie 2>&1
     echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  PiAware setup halted.\e[39m"
+
+    # Build binary package.
+    echo -e "\e[94m  Building the PiAware package...\e[97m"
     echo -e ""
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        read -p "Press enter to continue..." CONTINUE
+    dpkg-buildpackage -b 2>&1
+    echo -e ""
+
+    # Install binary package.
+    echo -e "\e[94m  Installing the PiAware package...\e[97m"
+    echo -e ""
+    sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb 2>&1
+    echo -e ""
+
+    # Check that the component package was installed successfully.
+    echo -e ""
+    echo -e "\e[94m  Checking that the piaware package was installed properly...\e[97m"
+    echo -e ""
+
+    if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+        # If the component package could not be installed halt setup.
+        echo -e ""
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
+        echo -e "  SETUP HAS BEEN TERMINATED!"
+        echo -e ""
+        echo -e "\e[93mThe package \"piaware\" could not be installed.\e[39m"
+        echo -e ""
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
+        echo -e "\e[92m  PiAware setup halted.\e[39m"
+        echo -e ""
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+            read -p "Press enter to continue..." CONTINUE
+        fi
+        exit 1
+    else
+        # Move the .deb package into another directory simply to keep it for historical reasons.
+
+        # Create binary package archive directory.
+        if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+            echo -e "\e[94m  Creating package archive directory...\e[97m"
+            echo -e ""
+            mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+            echo -e ""
+        fi
+
+        # Archive binary package.
+        echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
+        echo -e ""
+        mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        echo -e ""
+
+        # Archive changelog.
+        echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
+        echo -e ""
+        mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        echo -e ""
     fi
-    exit 1
 fi
-
-# Move the .deb package into another directory simply to keep it for historical reasons.
-if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
-    echo -e "\e[94m  Making the PiAware package archive directory...\e[97m"
-    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-fi
-
-# Archive binary package.
-echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
-mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
-mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
 
 ## CONFIGURE FLIGHTAWARE CREDENTIALS
 
@@ -222,7 +257,7 @@ fi
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+echo -e "\e[94m  Entering the ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e ""
