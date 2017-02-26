@@ -60,8 +60,8 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
-# Interactive install.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Interactive install.
     CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -74,6 +74,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
+else
+    # Warn that automated installation is not supported.
+    echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
+    echo -e ""
+    exit 1
 fi
 
 ## CHECK FOR PREREQUISITE PACKAGES

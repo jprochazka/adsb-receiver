@@ -89,8 +89,8 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
-# Interactive install.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Interactive install.
     CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -103,6 +103,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
+else
+    # Warn that automated installation is not supported.
+    echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
+    echo -e ""
+    exit 1
 fi
 
 ## CHECK FOR AND REMOVE ANY OLD STYLE ADB-B EXCHANGE SETUPS IF ANY EXIST
@@ -190,7 +195,6 @@ else
     # Attempt to derive required values at some point...
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
     echo -e ""
-    read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
@@ -305,6 +309,10 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     echo -e ""
     sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLAT_CLIENT_VERSION}*.deb 2>&1
     echo -e ""
+
+    # Check installed version.
+    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
+    MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
 
     # Check that the component package was installed successfully.
     echo -e ""
