@@ -83,7 +83,7 @@ FEEDER_MLAT_SRC_HOST_DEFAULT="127.0.0.1"
 FEEDER_MLAT_SRC_PORT_DEFAULT="30005"
 FEEDER_MLAT_DST_PORT_DEFAULT="31090"
 
-## INCLUDE EXTERNAL SCRIPTS
+### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
@@ -104,8 +104,9 @@ echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-# Interactive install.
+
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    # Interactive install.
     CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 12 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
@@ -118,6 +119,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
+else
+    # Warn that automated installation is not supported.
+    echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
+    echo -e ""
+    exit 1
 fi
 
 ## CHECK FOR AND REMOVE ANY OLD STYLE ADB-B EXCHANGE SETUPS IF ANY EXIST
@@ -293,7 +299,6 @@ else
     # Attempt to derive required values at some point...
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
     echo -e ""
-    read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
@@ -409,28 +414,15 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
     sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/mlat-client_${MLAT_CLIENT_VERSION}*.deb 2>&1
     echo -e ""
 
-    # Create binary package archive directory.
-    if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
-        echo -e "\e[94m  Creating package archive directory...\e[97m"
-        echo -e ""
-        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-        echo -e ""
-    fi
+    # Check installed version.
+    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
+    MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
 
-    # Archive binary package and changelog.
-    echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
-    echo -e ""
-    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-    echo -e ""
-    echo -e "\e[94m  Archiving the mlat-client changelog...\e[97m"
-    echo -e ""
-    mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-    echo -e ""
-
-    # Check that the mlat-client package was installed successfully.
+    # Check that the component package was installed successfully.
     echo -e ""
     echo -e "\e[94m  Checking that the mlat-client package was installed properly...\e[97m"
     echo -e ""
+
     if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
         # If the mlat-client package could not be installed halt setup.
         echo -e ""
@@ -447,18 +439,34 @@ if [[ "${FEEDER_MLAT_ENABLED}" = "true" ]] ; then
             read -p "Press enter to continue..." CONTINUE
         fi
         exit 1
-    else
-        MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
-        MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
-        # Check if installed mlat-client matches the available version.
-        if [[ ! "${MLAT_CLIENT_VERSION_AVAILABLE}" = "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
-            echo -e ""
-            echo -e "\e[93mThe \"mlat-client\" installed on this receiver could not be upgraded to version ${MLAT_CLIENT_VERSION}.\e[39m"
-            echo -e ""
-            if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-                read -p "Press enter to continue..." CONTINUE
-            fi
+    elif [[ ! "${MLAT_CLIENT_VERSION_AVAILABLE}" = "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
+        # The installed mlat-client does not match the available version.
+        echo -e ""
+        echo -e "\e[93mThe \"mlat-client\" installed on this receiver could not be upgraded to version ${MLAT_CLIENT_VERSION}.\e[39m"
+        echo -e ""
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+            read -p "Press enter to continue..." CONTINUE
         fi
+    else
+        # Create binary package archive directory.
+        if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+            echo -e "\e[94m  Creating package archive directory...\e[97m"
+            echo -e ""
+            mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+            echo -e ""
+        fi
+
+        # Archive binary package.
+        echo -e "\e[94m  Archiving the mlat-client package...\e[97m"
+        echo -e ""
+        mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        echo -e ""
+
+        # Archive changelog.
+        echo -e "\e[94m  Archiving the mlat-client changelog...\e[97m"
+        echo -e ""
+        mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        echo -e ""
     fi
 fi
 
