@@ -36,7 +36,13 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+
+# Component specific variables.
+COMPONENT_NAME="Flightradar24 feeder client"
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/flightradar24"
+
+# Component service script variables.
+COMPONENT_SERVICE_NAME="fr24feed"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -60,9 +66,15 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
+# Check for existing component install.
+if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    COMPONENT_FIRST_INSTALL="true"
+fi
+
+# Confirm component installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Interactive install.
-    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Flightradar24 Feeder Client Setup" --yesno "The Flightradar24's feeder client can track flights within 200-400 miles and will automatically share data with Flightradar24, you can track flights directly off your device or via Flightradar24.com.\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the Flightradar24 feeder client?" 13 78 3>&1 1>&2 2>&3)
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Flightradar24 feeder client setup" --yesno "The Flightradar24 feeder client takes data from a local dump1090 instance and will automatically share this with Flightradar24, you can track flights locally on your device or via their website:\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the Flightradar24 feeder client?" 13 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -108,6 +120,14 @@ else
 fi
 CheckPackage wget
 
+### STOP ANY RUNNING SERVICES
+
+# Attempt to stop using systemd.
+if [[ "`sudo systemctl status fr24feed 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+    echo -e "\e[33m  Stopping the Flightradar24 feeder client service..."
+    sudo systemctl stop fr24feed 2>&1
+fi
+
 ### START INSTALLATION
 
 echo -e ""
@@ -129,9 +149,9 @@ fi
 # Download the appropriate package depending on the devices architecture.
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
     # ARM achitecture detected.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Plane Finder ADS-B Client Setup Instructions" --msgbox "This script will now download and execute the official Flightradar24 setup script. Follow the instructions provided and supply the required information when ask for by the script.\n\nOnce finished the ADS-B Receiver Project scripts will continue." 11 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Flightradar24 feeder client setup instructions" --msgbox "This script will now download and execute the official Flightradar24 feeder client setup script, please follow the instructions provided and supply the required information when ask for by the script.\n\nOnce finished the ADS-B Receiver Project scripts will continue." 11 78
 
-    echo -e "\e[94m  Downloading the Flightradar24 feeder installation script for ARM...\e[97m"
+    echo -e "\e[94m  Downloading the Flightradar24 feeder client installation script for ARM...\e[97m"
     echo -e ""
     wget --no-check-certificate https://repo.feed.flightradar24.com/install_fr24_rpi.sh -O ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
 else
@@ -149,7 +169,7 @@ echo -e ""
 # Install the proper package depending on the devices architecture.
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
     # ARM achitecture detected.
-    echo -e "\e[94m  Executing the Flightradar24 feeder installation script...\e[97m"
+    echo -e "\e[94m  Executing the Flightradar24 feeder client installation script...\e[97m"
     echo -e ""
     sudo bash ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
 else
@@ -203,6 +223,30 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         echo -e ""
         mv -vf ${COMPONENT_BUILD_DIRECTORY}/fr24feed_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
+
+        # Check for component first install
+        if [[ "${COMPONENT_FIRST_INSTALL}" = "true" ]] ; then
+            # Run signup script if first install.
+            echo -e "\e[94m  Starting fr24feed signup wizard...\e[97m"
+            echo -e ""
+            fr24feed --signup
+            echo -e ""
+        fi
+
+        # Update config file permissions
+        echo -e "\e[94m  Updating configuration file permissions...\e[97m"
+        echo -e ""
+        sudo chmod a+rw /etc/fr24feed.ini 2>&1
+        echo -e ""
+
+        # (re)start the component service.
+        if [[ "`sudo systemctl status fr24feed 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+            echo -e "\e[33m  Restarting the fr24feed service..."
+            sudo systemctl restart fr24feed 2>&1
+        else
+            echo -e "\e[33m  Starting the fr24feed service..."
+            sudo systemctl start fr24feed 2>&1
+        fi
     fi
 fi
 
