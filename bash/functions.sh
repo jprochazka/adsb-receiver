@@ -144,7 +144,7 @@ function UpdateRepository() {
     clear
     echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
-    echo -e "\e[92m  Pulling the latest version of the ${RECEIVER_PROJECT_TITLE} git repository..."
+    echo -e "\e[92m  Pulling the latest version of ${RECEIVER_PROJECT_TITLE} git repository..."
     echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
     echo -e ""
     echo -e "\e[94m  Switching to branch ${PROJECTBRANCH}...\e[97m"
@@ -161,7 +161,7 @@ function UpdateRepository() {
     fi
     echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Finished pulling the latest version of the ${RECEIVER_PROJECT_TITLE} git repository....\e[39m"
+    echo -e "\e[92m  Finished pulling the latest version of ${RECEIVER_PROJECT_TITLE} git repository....\e[39m"
     echo -e ""
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE

@@ -154,7 +154,7 @@ CheckReturnCode
 Enable_SPI
 CheckReturnCode
 
-### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+### STOP ANY RUNNING SERVICES
 
 if [[ -f "${COMPONENT_SERVICE_SCRIPT_PATH}" ]] ; then
     echo -en "\e[33m  Stopping the ${COMPONENT_NAME} service...\e[97m"

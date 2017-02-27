@@ -437,7 +437,7 @@ function Compile_Source_NTP () {
     # Requires: ${NTP_SOURCE_DIR} ${NTP_SOURCE_VERSION} ${NTP_SOURCE_CFLAGS}
     if [[ -d "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}" ]] ; then
         echo -en "  Compiling \"${NTP_SOURCE_VERSION}\" from source..."
-        cd "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}" 2>&1
+        cd ${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION} 2>&1
         if [[ `ls -l *.h 2>/dev/null | grep -c "\.h"` -gt 0 ]] ; then
             ACTION=$(sudo make -C "${NTP_SOURCE_DIR}/${NTP_SOURCE_VERSION}" clean 2>&1)
         fi

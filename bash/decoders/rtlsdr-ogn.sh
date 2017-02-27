@@ -151,9 +151,13 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
+# Check for existing component install.
+
+# Confirm component installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n  ${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 18 78
-    if [[ $? -eq 1 ]] ; then
+    # Interactive install.
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} ${COMPONENT_DESC}.\n\n${COMPONENT_RADIO}.\n\n  ${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 18 78 3>&1 1>&2 2>&3)
+    if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
@@ -164,6 +168,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
+else
+    # Warn that automated installation is not supported.
+    echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
+    echo -e ""
+    exit 1
 fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
@@ -192,6 +201,8 @@ CheckPackage lynx
 CheckPackage procserv
 CheckPackage telnet
 
+### START INSTALLATION
+
 echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
@@ -202,10 +213,10 @@ echo -e ""
 BlacklistModules
 CheckReturnCode
 
-### CHECK FOR EXISTING INSTALL AND IF SO STOP IT
+### STOP ANY RUNNING SERVICES
 
 # Attempt to stop using systemd.
-if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active"`" -gt 0 ]] ; then
+if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
     echo -e "\e[33m  Stopping the ${COMPONENT_NAME} service..."
     ACTION=$(sudo systemctl stop ${COMPONENT_SERVICE_NAME} 2>&1)
     CheckReturnCode
@@ -380,14 +391,14 @@ fi
 
 ### DOWNLOAD AND SET UP THE BINARIES
 
-# Create build directory if not already present.
+# Create the component build directory if not already present.
 if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Creating build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     ACTION=$(mkdir -vp ${COMPONENT_BUILD_DIRECTORY} 2>&1)
     CheckReturnCode
 fi
 
-# Enter the build directory.
+# Enter the component build directory.
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -en "\e[33m  Entering build directory \"\e[37m${COMPONENT_BUILD_DIRECTORY}\e[33m\"...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
@@ -506,7 +517,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     while [[ -z "${COMPONENT_LATITUDE}" ]] ; do
         if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
             COMPONENT_LATITUDE="${RECEIVER_LATITUDE}"
-            COMPONENT_LATITUDE_SOURCE="the ${RECEIVER_PROJECT_TITLE} configuration file"
+            COMPONENT_LATITUDE_SOURCE="${RECEIVER_PROJECT_TITLE} configuration file"
         elif [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LAT" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
             COMPONENT_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
             COMPONENT_LATITUDE_SOURCE="the Dump1090-mutability configuration file"
@@ -535,7 +546,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     while [[ -z "${COMPONENT_LONGITUDE}" ]] ; do
         if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
             COMPONENT_LONGITUDE="${RECEIVER_LONGITUDE}"
-            COMPONENT_LONGITUDE_SOURCE="the ${RECEIVER_PROJECT_TITLE} configuration file"
+            COMPONENT_LONGITUDE_SOURCE="${RECEIVER_PROJECT_TITLE} configuration file"
         elif [[ -s /etc/default/dump1090-mutability ]] && [[ `grep -c "^LON" "/etc/default/dump1090-mutability"` -gt 0 ]] ; then
             COMPONENT_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
             COMPONENT_LONGITUDE_SOURCE="the Dump1090-mutability configuration file"
@@ -786,7 +797,7 @@ if [[ "${RECEIVER_TUNERS_AVAILABLE}" -lt 2 ]] ; then
     echo -en "\e[33m  Found less than 2 tuners so other decoders will be disabled...\e[97m"
     SERVICES_DISABLE="dump1090-mutability"
     for SERVICE in ${SERVICES_DISABLE} ; do
-        if [[ `sudo systemctl status ${SERVICE} | grep -c "Active: active"` -gt 0 ]] ; then
+        if [[ `sudo systemctl status ${SERVICE} | grep -c "Active: active (running)"` -gt 0 ]] ; then
             ACTION=$(sudo update-rc.d ${SERVICE} disable 2>&1)
         fi
     done
@@ -799,7 +810,7 @@ ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
 CheckReturnCode
 
 # (re)start the component service.
-if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active"`" -gt 0 ]] ; then
+if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
     echo -e "\e[33m  Restarting the ${COMPONENT_NAME} service..."
     ACTION=$(sudo systemctl restart ${COMPONENT_SERVICE_NAME} 2>&1)
 else
