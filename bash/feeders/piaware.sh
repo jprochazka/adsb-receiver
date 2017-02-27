@@ -36,7 +36,13 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+
+# Component specific variables.
+COMPONENT_NAME="PiAware"
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/piaware_builder"
+
+# Component service script variables.
+COMPONENT_SERVICE_NAME="piaware"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -60,6 +66,12 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
+# Check for existing component install.
+if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    COMPONENT_FIRST_INSTALL="true"
+fi
+
+# Confirm component installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Interactive install.
     CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PiAware Setup" --yesno "PiAware is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, piaware, while aided by other support programs.\n\n  https://github.com/flightaware/piaware\n\nContinue setup by installing FlightAware's PiAware?" 13 78 3>&1 1>&2 2>&3)
@@ -99,6 +111,8 @@ CheckPackage tclx8.4
 CheckPackage tcllib
 CheckPackage tcl-tls
 CheckPackage itcl3
+
+### STOP ANY RUNNING SERVICES
 
 ### START INSTALLATION
 
@@ -192,13 +206,13 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         fi
 
         # Archive binary package.
-        echo -e "\e[94m  Moving the PiAware package into the package archive directory...\e[97m"
+        echo -e "\e[94m  Moving the PiAware binary package into the archive directory...\e[97m"
         echo -e ""
         mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
 
         # Archive changelog.
-        echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
+        echo -e "\e[94m  Moving the PiAware changes file into the archive directory...\e[97m"
         echo -e ""
         mv -vr ${COMPONENT_BUILD_DIRECTORY}/piaware_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
@@ -243,20 +257,31 @@ if [[ "${FLIGHTAWARE_LOCAL_CREDENTIALS}" -eq "1" ]] ; then
     fi
 fi
 
-if [[ -n "${FLIGHTAWARE_LOGIN}" ]] && [[ -n "${FLIGHTAWARE_PASSWORD1}" ]] ; then
-    # Set the supplied user name and password in the configuration.
-    echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
-    echo -e ""
-    sudo piaware-config flightaware-user ${FLIGHTAWARE_LOGIN}
-    echo -e ""
-    echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
-    echo -e ""
-    sudo piaware-config flightaware-password ${FLIGHTAWARE_PASSWORD1}
-    echo -e ""
-    echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
-    echo -e ""
-    sudo /etc/init.d/piaware restart
-    echo -e ""
+# Dummy test for consistency with other feeder install scripts.
+if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
+    if [[ -n "${FLIGHTAWARE_LOGIN}" ]] && [[ -n "${FLIGHTAWARE_PASSWORD1}" ]] ; then
+        # Set the supplied user name in the configuration.
+        echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
+        echo -e ""
+        sudo piaware-config flightaware-user ${FLIGHTAWARE_LOGIN}
+        echo -e ""
+
+        # Set the supplied password in the configuration.
+        echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
+        echo -e ""
+        sudo piaware-config flightaware-password ${FLIGHTAWARE_PASSWORD1}
+        echo -e ""
+
+        # (re)start the component service.
+        if [[ "`sudo systemctl status piaware 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+            echo -e "\e[94m  Restarting the PiAware service...\e[97m"
+            sudo systemctl restart piaware 2>&1
+        else
+            echo -e "\e[94m  Starting the PiAware service...\e[97m"
+            sudo systemctl start piaware 2>&1
+        fi
+        echo -e ""
+    fi
 fi
 
 ### SETUP COMPLETE

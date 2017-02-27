@@ -61,7 +61,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up the Flightradar24 feeder client..."
+echo -e "\e[92m  Setting up Flightradar24 feeder client..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
@@ -124,7 +124,7 @@ CheckPackage wget
 
 # Attempt to stop using systemd.
 if [[ "`sudo systemctl status fr24feed 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
-    echo -e "\e[33m  Stopping the Flightradar24 feeder client service..."
+    echo -e "\e[94m  Stopping the Flightradar24 feeder client service...\e[97m"
     sudo systemctl stop fr24feed 2>&1
 fi
 
@@ -241,12 +241,13 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
 
         # (re)start the component service.
         if [[ "`sudo systemctl status fr24feed 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
-            echo -e "\e[33m  Restarting the fr24feed service..."
+            echo -e "\e[94m  Restarting the fr24feed service...\e[97m"
             sudo systemctl restart fr24feed 2>&1
         else
-            echo -e "\e[33m  Starting the fr24feed service..."
+            echo -e "\e[94m  Starting the fr24feed service...\e[97m"
             sudo systemctl start fr24feed 2>&1
         fi
+        echo -e ""
     fi
 fi
 
