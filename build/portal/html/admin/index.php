@@ -364,10 +364,10 @@
                                     <label><input type="radio" name="dateFormatSlelection" value="Y-m-d g:i A"<?php ($dateFormat == "Y-m-d g:i A" ? print ' checked' : ''); ?>>2015-10-16 5:00 PM</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y g:i A"<?php ($dateFormat == "m/d/Y g:i A" ? print ' checked' : ''); ?>>16/10/2015 5:00 PM</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y g:i A"<?php ($dateFormat == "m/d/Y g:i A" ? print ' checked' : ''); ?>>10/16/2015 5:00 PM</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y g:i A"<?php ($dateFormat == "d/m/Y g:i A" ? print ' checked' : ''); ?>>10/16/2015 5:00 PM</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y g:i A"<?php ($dateFormat == "d/m/Y g:i A" ? print ' checked' : ''); ?>>16/10/2015 5:00 PM</label>
                                 </div>
                                 <label for="defaultPage">Date Format - 24 Hour Format</label>
                                 <div class="radio">
@@ -377,10 +377,10 @@
                                     <label><input type="radio" name="dateFormatSlelection" value="Y-m-d G:i"<?php ($dateFormat == "Y-m-d G:i" ? print ' checked' : ''); ?>>2015-10-16 17:00</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y G:i"<?php ($dateFormat == "m/d/Y G:i" ? print ' checked' : ''); ?>>16/10/2015 17:00</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="m/d/Y G:i"<?php ($dateFormat == "m/d/Y G:i" ? print ' checked' : ''); ?>>10/16/2015 17:00</label>
                                 </div>
                                 <div class="radio">
-                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y G:i"<?php ($dateFormat == "d/m/Y G:i" ? print ' checked' : ''); ?>>10/16/2015 17:00</label>
+                                    <label><input type="radio" name="dateFormatSlelection" value="d/m/Y G:i"<?php ($dateFormat == "d/m/Y G:i" ? print ' checked' : ''); ?>>16/10/2015 17:00</label>
                                 </div>
                                 <label for="dateFormat">Date Format</label>
                                 <input type="text" class="form-control" id="dateFormat" name="dateFormat" value="<?php echo $dateFormat; ?>">
