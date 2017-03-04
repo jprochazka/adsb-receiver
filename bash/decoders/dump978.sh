@@ -177,7 +177,7 @@ echo -e ""
 echo -e "\e[95m  Configuring the device to utilize the dump978 binaries...\e[97m"
 echo -e ""
 
-### BLACKLIST TO PREVENT UNWANTED RTL-SDR MODULES FROM BEING LOADED
+### BLACKLIST UNWANTED RTL-SDR MODULES
 
 # Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
 BlacklistModules
