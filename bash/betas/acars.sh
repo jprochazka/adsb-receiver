@@ -90,9 +90,18 @@ CheckPackage libfftw3-dev
 CheckPackage libtool
 CheckPackage procserv
 CheckPackage telnet
+
+### START INSTALLATION
+
 echo -e ""
 echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
 echo -e ""
+
+### BLACKLIST UNWANTED RTL-SDR MODULES
+
+# Use function to install kernel module blacklist.
+BlacklistModules
+CheckReturnCode
 
 ### STOP ANY RUNNING SERVICES
 
@@ -214,15 +223,22 @@ else
 fi
 CheckReturnCode
 
-# Configure DECODER as a service.
-echo -en "\e[33m  Configuring ${COMPONENT_NAME} as a service...\e[97m"
-ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
-CheckReturnCode
+if [[ -n "${COMPONENT_SERVICE_NAME}" ]] ; then
+    # Configure component as a service.
+    echo -en "\e[33m  Configuring ${COMPONENT_NAME} as a service...\e[97m"
+    ACTION=$(sudo update-rc.d ${COMPONENT_SERVICE_NAME} defaults 2>&1)
+    CheckReturnCode
 
-# Start the DECODER service.
-echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
-ACTION=$(sudo ${COMPONENT_SERVICE_SCRIPT_PATH} start 2>&1)
-CheckReturnCode
+    # (re)start the component service.
+    if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+        echo -en "\e[33m  Restarting the ${COMPONENT_NAME} service...\e[97m"
+        ACTION=$(sudo systemctl restart ${COMPONENT_SERVICE_NAME} 2>&1)
+    else
+        echo -en "\e[33m  Starting the ${COMPONENT_NAME} service...\e[97m"
+        ACTION=$(sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1)
+    fi
+    CheckReturnCode
+fi
 
 ### SETUP COMPLETE
 
