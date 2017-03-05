@@ -38,7 +38,11 @@ RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
-COMPONENT_NAME="Flightradar24 feeder client"
+COMPONENT_NAME="FlightRadar24 feeder client"
+COMPONENT_PROVIDER="FlightRadar24"
+COMPONENT_PACKAGE_NAME="fr24feed"
+COMPONENT_WEBSITE="https://www.flightradar24.com/share-your-data"
+COMPONENT_GITHUB_URL=""
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/flightradar24"
 
 # Component service script variables.
@@ -61,7 +65,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up Flightradar24 feeder client..."
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
@@ -74,14 +78,14 @@ fi
 # Confirm component installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Interactive install.
-    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Flightradar24 feeder client setup" --yesno "The Flightradar24 feeder client takes data from a local dump1090 instance and will automatically share this with Flightradar24, you can track flights locally on your device or via their website:\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the Flightradar24 feeder client?" 13 78 3>&1 1>&2 2>&3)
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} setup" --yesno "The ${COMPONENT_NAME} takes data from a local dump1090 instance and will automatically share this with Flightradar24, you can track flights locally on your device or via their website:\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the ${COMPONENT_NAME}?" 13 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
+        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
@@ -124,7 +128,7 @@ CheckPackage wget
 
 # Attempt to stop using systemd.
 if [[ "`sudo systemctl status fr24feed 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
-    echo -e "\e[94m  Stopping the Flightradar24 feeder client service...\e[97m"
+    echo -e "\e[94m  Stopping the ${COMPONENT_NAME} service...\e[97m"
     sudo systemctl stop fr24feed 2>&1
 fi
 
@@ -136,45 +140,45 @@ echo -e ""
 
 # Create the component build directory if it does not exist.
 if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
-    echo -e "\e[94m  Creating the Flightradar24 feeder client build directory...\e[97m"
+    echo -e "\e[94m  Creating the ${COMPONENT_NAME} build directory...\e[97m"
     mkdir -vp ${COMPONENT_BUILD_DIRECTORY}
 fi
 
 # Change to the comonent build directory.
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
-    echo -e "\e[94m  Entering the Flightradar24 feeder client build directory...\e[97m"
+    echo -e "\e[94m  Entering the ${COMPONENT_NAME} build directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
 
 # Download the appropriate package depending on the devices architecture.
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
     # ARM achitecture detected.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Flightradar24 feeder client setup instructions" --msgbox "This script will now download and execute the official Flightradar24 feeder client setup script, please follow the instructions provided and supply the required information when ask for by the script.\n\nOnce finished the ADS-B Receiver Project scripts will continue." 11 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} setup instructions" --msgbox "This script will now download and execute the official ${COMPONENT_NAME} setup script, please follow the instructions provided and supply the required information when ask for by the script.\n\nOnce finished the ADS-B Receiver Project scripts will continue." 11 78
 
-    echo -e "\e[94m  Downloading the Flightradar24 feeder client installation script for ARM...\e[97m"
+    echo -e "\e[94m  Downloading the ${COMPONENT_NAME} installation script for ARM...\e[97m"
     echo -e ""
     wget --no-check-certificate https://repo.feed.flightradar24.com/install_fr24_rpi.sh -O ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
 else
     # Otherwise assume i386.
-    echo -e "\e[94m  Downloading the Flightradar24 feeder client v${FLIGHTRADAR24_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
+    echo -e "\e[94m  Downloading the ${COMPONENT_NAME} v${FLIGHTRADAR24_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
     echo -e ""
     wget --no-check-certificate https://feed.flightradar24.com/linux/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
 fi
 
 ## INSTALL THE COMPONENT PACKAGE
 
-echo -e "\e[95m  Installing the Flightradar24 feeder client package...\e[97m"
+echo -e "\e[95m  Installing the ${COMPONENT_NAME} package...\e[97m"
 echo -e ""
 
 # Install the proper package depending on the devices architecture.
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
     # ARM achitecture detected.
-    echo -e "\e[94m  Executing the Flightradar24 feeder client installation script...\e[97m"
+    echo -e "\e[94m  Executing the ${COMPONENT_NAME} installation script...\e[97m"
     echo -e ""
     sudo bash ${COMPONENT_BUILD_DIRECTORY}/install_fr24_rpi.sh
 else
     # Otherwise assume i386.
-    echo -e "\e[94m  Installing the Flightradar24 feeder client v${FLIGHTRADAR24_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
+    echo -e "\e[94m  Installing the ${COMPONENT_NAME} v${FLIGHTRADAR24_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
     if [[ `lsb_release -si` = "Debian" ]] ; then
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
@@ -203,7 +207,7 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         echo -e "\e[93mThe package \"fr24feed\" could not be installed.\e[39m"
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  Flightradar24 feeder client setup halted.\e[39m"
+        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
         echo -e ""
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             read -p "Press enter to continue..." CONTINUE
@@ -259,7 +263,7 @@ cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  Flightradar24 feeder client setup is complete.\e[39m"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
