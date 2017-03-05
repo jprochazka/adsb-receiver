@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -105,6 +105,7 @@ fi
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
+
 # Required by install script.
 CheckPackage git
 CheckPackage curl
@@ -120,80 +121,115 @@ CheckPackage pkg-config
 CheckPackage lighttpd
 CheckPackage fakeroot
 
-## DOWNLOAD OR UPDATE THE DUMP1090-MUTABILITY SOURCE
+### STOP ANY RUNNING SERVICES
+
+### START INSTALLATION
 
 echo -e ""
-echo -e "\e[95m  Preparing the ${COMPONENT_NAME} Git repository...\e[97m"
+echo -e "\e[95m  Begining the ${COMPONENT_NAME} installation process...\e[97m"
 echo -e ""
-if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090/.git" ]] ; then
-    # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090 2>&1
-    echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
-    echo -e ""
-    git pull 2>&1
-else
-    # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Entering ${RECEIVER_PROJECT_TITLE} build directory...\e[97m"
-    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
-    echo -e "\e[94m  Cloning the ${COMPONENT_NAME} git repository locally...\e[97m"
-    echo -e ""
-    git clone ${COMPONENT_GITHUB_URL} 2>&1
+
+## ATTEMPT TO DOWNLOAD OR UPDATE THE COMPONENT FROM GITHUB
+
+if [[ -n "${COMPONENT_GITHUB_URL}" ]] ; then
+    # Github installation.
+    if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090/.git" ]] ; then
+        # A directory with a git repository containing the source code already exists.
+        echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090 2>&1
+        echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
+        echo -e ""
+        git pull 2>&1
+    else
+        # A directory containing the source code does not exist in the build directory.
+        echo -e "\e[94m  Entering ${RECEIVER_PROJECT_TITLE} build directory...\e[97m"
+        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090
+        cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
+        echo -e "\e[94m  Cloning the ${COMPONENT_NAME} git repository locally...\e[97m"
+        echo -e ""
+        git clone ${COMPONENT_GITHUB_URL} 2>&1
+    fi
+elif [[ -n "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
+    # Create the component build directory if it does not exist.
+    if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
+        echo -e "\e[94m  Creating the ${COMPONENT_NAME} build directory...\e[97m"
+        mkdir -vp ${COMPONENT_BUILD_DIRECTORY}
+    fi
 fi
 
-## BUILD AND INSTALL THE DUMP1090-MUTABILITY PACKAGE
+## BUILD AND INSTALL THE COMPONENT PACKAGE
 
-# Build the deb binary package.
 echo -e ""
 echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
 echo -e ""
+
+# Change to the component build directory.
 if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] ; then
-    echo -e "\e[94m  Entering the ${COMPONENT_NAME} git repository directory...\e[97m"
+    echo -e "\e[94m  Entering the ${COMPONENT_NAME} build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090 2>&1
 fi
-echo -e "\e[94m  Building the ${COMPONENT_NAME} package...\e[97m"
-echo -e ""
-dpkg-buildpackage -b 2>&1
 
-# Prempt the dpkg question asking if the user would like dump1090 to start automatically.
-if [[ ! "`sudo debconf-get-selections 2>/dev/null | grep "dump1090-mutability/auto-start" | awk '{print $4}'`" = "true" ]] ; then
-    echo -e ""
-    echo -e "\e[94m  Configuring ${COMPONENT_NAME} to start automatically....\e[97m]"
-    ACTION=$(echo 'dump1090-mutability dump1090-mutability/auto-start boolean true' | sudo debconf-set-selections -v 2>&1)
-    echo -e ""
-fi
+# Dummy test for consistency with other feeder install scripts.
+if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
 
-# Install the deb binary package.
-echo -e ""
-echo -e "\e[94m  Entering ${RECEIVER_PROJECT_TITLE} build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
-echo -e "\e[94m  Installing the ${COMPONENT_NAME} package...\e[97m"
-echo -e ""
-sudo dpkg -i ${COMPONENT_PACKAGE_NAME}_1.15~dev_*.deb 2>&1
+    # Build binary package.
+    echo -e "\e[94m  Building the ${COMPONENT_NAME} package...\e[97m"
+    echo -e ""
+    dpkg-buildpackage -b 2>&1
+    echo -e ""
 
-# Check that the package was installed.
-echo -e ""
-echo -e "\e[94m  Checking that the ${COMPONENT_NAME} package was installed properly...\e[97m"
-if [[ $(dpkg-query -W -f='${STATUS}' ${COMPONENT_PACKAGE_NAME} 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-    # If the component package could not be installed halt setup.
-    echo -e ""
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-    echo -e "  SETUP HAS BEEN TERMINATED!"
-    echo -e ""
-    echo -e "\e[93mThe package \"${COMPONENT_PACKAGE_NAME}\" could not be installed.\e[39m"
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
-    echo -e ""
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        read -p "Press enter to continue..." CONTINUE
+    # Prempt the dpkg question asking if the user would like dump1090 to start automatically.
+    if [[ ! "`sudo debconf-get-selections 2>/dev/null | grep "dump1090-mutability/auto-start" | awk '{print $4}'`" = "true" ]] ; then
+        echo -e "\e[94m  Configuring ${COMPONENT_NAME} to start automatically....\e[97m]"
+        ACTION=$(echo 'dump1090-mutability dump1090-mutability/auto-start boolean true' | sudo debconf-set-selections -v 2>&1)
+        echo -e ""
     fi
-    exit 1
+
+    # Install binary package.
+    echo -e "\e[94m  Installing the ${COMPONENT_NAME} package...\e[97m"
+    echo -e ""
+    sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/dump1090/${COMPONENT_PACKAGE_NAME}_1.15~dev_*.deb 2>&1
+    echo -e ""
+
+    # Check that the component package was installed successfully.
+    echo -e ""
+    echo -e "\e[94m  Checking that the ${COMPONENT_NAME} package was installed properly...\e[97m"
+    echo -e ""
+
+    if [[ $(dpkg-query -W -f='${STATUS}' ${COMPONENT_PACKAGE_NAME} 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+        # If the component package could not be installed halt setup.
+        echo -e ""
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
+        echo -e "  SETUP HAS BEEN TERMINATED!"
+        echo -e ""
+        echo -e "\e[93mThe package \"${COMPONENT_PACKAGE_NAME}\" could not be installed.\e[39m"
+        echo -e ""
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
+        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
+        echo -e ""
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+            read -p "Press enter to continue..." CONTINUE
+        fi
+        exit 1
+    else
+        # Create binary package archive directory.
+        if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+            echo -e "\e[94m  Creating package archive directory...\e[97m"
+            echo -e ""
+            mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+            echo -e ""
+        fi
+
+        # Archive binary package.
+        echo -e "\e[94m  Moving the ${COMPONENT_NAME} binary package into the archive directory...\e[97m"
+        echo -e ""
+        mv -vf ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        echo -e ""
+    fi
 fi
 
-## DUMP1090-MUTABILITY POST INSTALLATION CONFIGURATION
+## COMPONENT POST INSTALL ACTIONS
 
 # Confirm the receiver's latitude and longitude if it is not already set in the component configuration file.
 echo -e ""
@@ -338,13 +374,19 @@ if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] ; then
     fi
 fi
 
-# (re)start the component service.
-if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
-    echo -e "\e[94m  Restarting the ${COMPONENT_NAME} service..."
-    ACTION=$(sudo systemctl restart ${COMPONENT_SERVICE_NAME} 2>&1)
-else
-    echo -e "\e[94m  Starting the ${COMPONENT_NAME} service..."
-    ACTION=$(sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1)
+# Dummy test for consistency with other feeder install scripts.
+if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
+    if [[ -n "${COMPONENT_SERVICE_NAME}" ]] ; then
+        # (re)start the component service.
+        if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+            echo -e "\e[94m  Restarting the ${COMPONENT_NAME} service...\e[97m"
+            sudo systemctl restart ${COMPONENT_SERVICE_NAME} 2>&1
+        else
+            echo -e "\e[94m  Starting the ${COMPONENT_NAME} service...\e[97m"
+            sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1
+        fi
+        echo -e ""
+    fi
 fi
 
 ### SETUP COMPLETE
