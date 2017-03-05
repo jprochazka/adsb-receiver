@@ -138,12 +138,12 @@ if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l"
     # ARM achitecture detected.
     echo -e "\e[94m  Downloading ${COMPONENT_NAME} v${PLANEFINDER_CLIENT_VERSION_ARM} for ARM devices...\e[97m"
     echo -e ""
-    wget --no-check-certificate https://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb
+    wget --no-check-certificate https://client.planefinder.net/${COMPONENT_PACKAGE_NAME}_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb -O ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb
 else
     # Otherwise assume i386.
     echo -e "\e[94m  Downloading ${COMPONENT_NAME} v${PLANEFINDER_CLIENT_VERSION_I386} for i386 devices...\e[97m"
     echo -e ""
-    wget --no-check-certificate https://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb
+    wget --no-check-certificate https://client.planefinder.net/${COMPONENT_PACKAGE_NAME}_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb
 fi
 
 ## INSTALL THE COMPONENT PACKAGE
@@ -157,7 +157,7 @@ if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l"
     # ARM achitecture detected.
     echo -e "\e[94m  Installing ${COMPONENT_NAME} v${PLANEFINDER_CLIENT_VERSION_ARM} package for ARM devices...\e[97m"
     echo -e ""
-    sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb 2>&1
+    sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb 2>&1
 else
     # Otherwise assume i386.
     echo -e "\e[94m  Installing ${COMPONENT_NAME} v${PLANEFINDER_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
@@ -165,10 +165,10 @@ else
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
         echo -e ""
-        sudo dpkg -i --force-architecture ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb 2>&1
+        sudo dpkg -i --force-architecture ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb 2>&1
     else
         echo -e ""
-        sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb 2>&1
+        sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb 2>&1
     fi
 fi
 
@@ -176,17 +176,17 @@ fi
 if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
     # Check that the component package was installed successfully.
     echo -e ""
-    echo -e "\e[94m  Checking that the pfclient package was installed properly...\e[97m"
+    echo -e "\e[94m  Checking that the ${COMPONENT_PACKAGE_NAME} package was installed properly...\e[97m"
     echo -e ""
 
-    if [[ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    if [[ $(dpkg-query -W -f='${STATUS}' ${COMPONENT_PACKAGE_NAME} 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
         # If the component package could not be installed halt setup.
         echo -e ""
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
         echo -e "  SETUP HAS BEEN TERMINATED!"
         echo -e ""
-        echo -e "\e[93mThe package \"pfclient\" could not be installed.\e[39m"
+        echo -e "\e[93mThe package \"${COMPONENT_PACKAGE_NAME}\" could not be installed.\e[39m"
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
@@ -207,7 +207,7 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         # Archive binary package.
         echo -e "\e[94m  Moving ${COMPONENT_NAME} binary package into the archive directory...\e[97m"
         echo -e ""
-        mv -vf ${COMPONENT_BUILD_DIRECTORY}/pfclient_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        mv -vf ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
     fi
 fi
