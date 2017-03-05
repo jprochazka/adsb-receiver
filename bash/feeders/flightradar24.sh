@@ -53,8 +53,10 @@ COMPONENT_SERVICE_NAME="fr24feed"
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+## SET INSTALLATION VARIABLES
+
 # Source the automated install configuration file if this is an automated installation.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
@@ -78,7 +80,7 @@ fi
 # Confirm component installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Interactive install.
-    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} setup" --yesno "The ${COMPONENT_NAME} takes data from a local dump1090 instance and will automatically share this with Flightradar24, you can track flights locally on your device or via their website:\n\n  http://www.flightradar24.com/share-your-data\n\nContinue setup by installing the ${COMPONENT_NAME}?" 13 78 3>&1 1>&2 2>&3)
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "The ${COMPONENT_NAME} takes data from a local dump1090 instance and shares this with ${COMPONENT_PROVIDER} using the ${COMPONENT_PACKAGE_NAME} package, for more information please see their website:\n\n  ${COMPONENT_WEBSITE}\n\nContinue setup by installing the ${COMPONENT_NAME}?" 13 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -97,10 +99,11 @@ else
     exit 1
 fi
 
-## CHECK FOR PREREQUISITE PACKAGES
+### CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
+
 if [[ "${CPU_ARCHITECTURE}" = "x86_64" ]] ; then
     if [[ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]] ; then
         echo -e "\e[94m  Adding the i386 architecture...\e[97m"
@@ -135,7 +138,7 @@ fi
 ### START INSTALLATION
 
 echo -e ""
-echo -e "\e[95m  Begining the installation process...\e[97m"
+echo -e "\e[95m  Begining the ${COMPONENT_NAME} installation process...\e[97m"
 echo -e ""
 
 # Create the component build directory if it does not exist.
@@ -144,11 +147,19 @@ if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     mkdir -vp ${COMPONENT_BUILD_DIRECTORY}
 fi
 
-# Change to the comonent build directory.
+# Change to the component build directory.
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Entering the ${COMPONENT_NAME} build directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
 fi
+
+## BUILD AND INSTALL THE COMPONENT PACKAGE
+
+echo -e ""
+echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
+echo -e ""
+
+## DOWNLOAD OR UPDATE THE COMPONENT SOURCE
 
 # Download the appropriate package depending on the devices architecture.
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
@@ -167,8 +178,11 @@ fi
 
 ## INSTALL THE COMPONENT PACKAGE
 
-echo -e "\e[95m  Installing the ${COMPONENT_NAME} package...\e[97m"
-echo -e ""
+# Dummy test for consistency with other feeder install scripts.
+if [[ -n "${COMPONENT_NAME}" ]] ; then
+    echo -e "\e[94m  Installing the ${COMPONENT_NAME} package...\e[97m"
+    echo -e ""
+fi
 
 # Install the proper package depending on the devices architecture.
 if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
@@ -223,10 +237,12 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         fi
 
         # Archive binary package.
-        echo -e "\e[94m  Archiving the ${COMPONENT_NAME} package...\e[97m"
+        echo -e "\e[94m  Moving the ${COMPONENT_NAME} binary package into the archive directory...\e[97m"
         echo -e ""
         mv -vf ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
+
+## COMPONENT POST INSTALL ACTIONS
 
         # Check for component first install
         if [[ "${COMPONENT_FIRST_INSTALL}" = "true" ]] ; then
@@ -258,7 +274,7 @@ fi
 ### SETUP COMPLETE
 
 # Return to the project root directory.
-echo -e "\e[94m  Entering the ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
+echo -e "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e ""
