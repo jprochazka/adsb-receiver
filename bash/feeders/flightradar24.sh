@@ -71,7 +71,7 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 
 # Check for existing component install.
-if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+if [[ $(dpkg-query -W -f='${STATUS}' ${COMPONENT_PACKAGE_NAME} 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     COMPONENT_FIRST_INSTALL="true"
 fi
 
@@ -127,9 +127,9 @@ CheckPackage wget
 ### STOP ANY RUNNING SERVICES
 
 # Attempt to stop using systemd.
-if [[ "`sudo systemctl status fr24feed 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
     echo -e "\e[94m  Stopping the ${COMPONENT_NAME} service...\e[97m"
-    sudo systemctl stop fr24feed 2>&1
+    sudo systemctl stop ${COMPONENT_SERVICE_NAME} 2>&1
 fi
 
 ### START INSTALLATION
@@ -162,7 +162,7 @@ else
     # Otherwise assume i386.
     echo -e "\e[94m  Downloading the ${COMPONENT_NAME} v${FLIGHTRADAR24_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
     echo -e ""
-    wget --no-check-certificate https://feed.flightradar24.com/linux/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
+    wget --no-check-certificate https://feed.flightradar24.com/linux/${COMPONENT_PACKAGE_NAME}_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb -O ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb
 fi
 
 ## INSTALL THE COMPONENT PACKAGE
@@ -183,10 +183,10 @@ else
         # Force architecture if this is Debian.
         echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
         echo -e ""
-        sudo dpkg -i --force-architecture ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb 2>&1
+        sudo dpkg -i --force-architecture ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb 2>&1
     else
         echo -e ""
-        sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/fr24feed_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb 2>&1
+        sudo dpkg -i ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_${FLIGHTRADAR24_CLIENT_VERSION_I386}_i386.deb 2>&1
     fi
 fi
 
@@ -194,17 +194,17 @@ fi
 if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
     # Check that the component package was installed successfully.
     echo -e ""
-    echo -e "\e[94m  Checking that the fr24feed package was installed properly...\e[97m"
+    echo -e "\e[94m  Checking that the ${COMPONENT_NAME} package was installed properly...\e[97m"
     echo -e ""
 
-    if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    if [[ $(dpkg-query -W -f='${STATUS}' ${COMPONENT_PACKAGE_NAME} 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
         # If the component package could not be installed halt setup.
         echo -e ""
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
         echo -e "  SETUP HAS BEEN TERMINATED!"
         echo -e ""
-        echo -e "\e[93mThe package \"fr24feed\" could not be installed.\e[39m"
+        echo -e "\e[93mThe package \"${COMPONENT_PACKAGE_NAME}\" could not be installed.\e[39m"
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
@@ -223,17 +223,17 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         fi
 
         # Archive binary package.
-        echo -e "\e[94m  Archiving the fr24feed package...\e[97m"
+        echo -e "\e[94m  Archiving the ${COMPONENT_NAME} package...\e[97m"
         echo -e ""
-        mv -vf ${COMPONENT_BUILD_DIRECTORY}/fr24feed_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        mv -vf ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
 
         # Check for component first install
         if [[ "${COMPONENT_FIRST_INSTALL}" = "true" ]] ; then
             # Run signup script if first install.
-            echo -e "\e[94m  Starting fr24feed signup wizard...\e[97m"
+            echo -e "\e[94m  Starting ${COMPONENT_PACKAGE_NAME} signup wizard...\e[97m"
             echo -e ""
-            fr24feed --signup
+            ${COMPONENT_PACKAGE_NAME} --signup
             echo -e ""
         fi
 
@@ -244,12 +244,12 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         echo -e ""
 
         # (re)start the component service.
-        if [[ "`sudo systemctl status fr24feed 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
-            echo -e "\e[94m  Restarting the fr24feed service...\e[97m"
-            sudo systemctl restart fr24feed 2>&1
+        if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+            echo -e "\e[94m  Restarting the ${COMPONENT_NAME} service...\e[97m"
+            sudo systemctl restart ${COMPONENT_SERVICE_NAME} 2>&1
         else
-            echo -e "\e[94m  Starting the fr24feed service...\e[97m"
-            sudo systemctl start fr24feed 2>&1
+            echo -e "\e[94m  Starting the ${COMPONENT_NAME} service...\e[97m"
+            sudo systemctl start ${COMPONENT_SERVICE_NAME} 2>&1
         fi
         echo -e ""
     fi
