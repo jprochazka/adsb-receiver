@@ -38,9 +38,10 @@ RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 # Component specific variables.
-COMPONENT_NAME="FlightAware PiAware"
+COMPONENT_NAME="FlightAware PiAware client"
+COMPONENT_PROVIDER="FlightAware"
 COMPONENT_PACKAGE_NAME="piaware"
-COMPONENT_WEBSITE="https://github.com/flightaware/piaware"
+COMPONENT_WEBSITE="https://www.flightaware.com/adsb/piaware/"
 COMPONENT_GITHUB_URL="https://github.com/flightaware/piaware_builder.git"
 COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/piaware_builder"
 
@@ -79,7 +80,7 @@ fi
 # Confirm component installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Interactive install.
-    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} is a package used to forward data read from an ADS-B receiver to FlightAware. It does this using a program, ${COMPONENT_PACKAGE_NAME}, while aided by other support programs.\n\n  ${COMPONENT_WEBSITE}\n\nContinue setup by installing ${COMPONENT_NAME}?" 13 78 3>&1 1>&2 2>&3)
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "The ${COMPONENT_NAME} takes data from a local dump1090 instance and shares this with ${COMPONENT_PROVIDER} using the ${COMPONENT_PACKAGE_NAME} package, for more information please see their website:\n\n  ${COMPONENT_WEBSITE}\n\nContinue setup by installing the ${COMPONENT_NAME}?" 13 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -102,8 +103,11 @@ fi
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
 echo -e ""
+
+# Required by install script.
 CheckPackage git
 CheckPackage build-essential
+# Required by component.
 CheckPackage debhelper
 CheckPackage tcl8.6-dev
 CheckPackage autoconf
@@ -118,6 +122,12 @@ CheckPackage tcl-tls
 CheckPackage itcl3
 
 ### STOP ANY RUNNING SERVICES
+
+# Attempt to stop using systemd.
+if [[ "`sudo systemctl status ${COMPONENT_SERVICE_NAME} 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+    echo -e "\e[94m  Stopping the ${COMPONENT_NAME} service...\e[97m"
+    sudo systemctl stop ${COMPONENT_SERVICE_NAME} 2>&1
+fi
 
 ### START INSTALLATION
 
@@ -141,13 +151,13 @@ else
     git clone ${COMPONENT_GITHUB_URL} 2>&1
 fi
 
-## BUILD AND INSTALL THE PIAWARE PACKAGE
+## BUILD AND INSTALL THE COMPONENT PACKAGE
 
 echo -e ""
 echo -e "\e[95m  Building and installing the ${COMPONENT_NAME} package...\e[97m"
 echo -e ""
 
-# Change to the comonent build directory.
+# Change to the component build directory.
 if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
     cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
@@ -180,7 +190,7 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
 
     # Check that the component package was installed successfully.
     echo -e ""
-    echo -e "\e[94m  Checking that the ${COMPONENT_PACKAGE_NAME} package was installed properly...\e[97m"
+    echo -e "\e[94m  Checking that the ${COMPONENT_NAME} package was installed properly...\e[97m"
     echo -e ""
 
     if [[ $(dpkg-query -W -f='${STATUS}' ${COMPONENT_PACKAGE_NAME} 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
@@ -211,18 +221,18 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         # Archive binary package.
         echo -e "\e[94m  Moving the ${COMPONENT_NAME} binary package into the archive directory...\e[97m"
         echo -e ""
-        mv -vr ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        mv -vf ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
 
         # Archive changelog.
         echo -e "\e[94m  Moving the ${COMPONENT_NAME} changes file into the archive directory...\e[97m"
         echo -e ""
-        mv -vr ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        mv -vf ${COMPONENT_BUILD_DIRECTORY}/${COMPONENT_PACKAGE_NAME}_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo -e ""
     fi
 fi
 
-## CONFIGURE FLIGHTAWARE CREDENTIALS
+## COMPONENT POST INSTALL ACTIONS
 
 # Confirm if the user is able to claim their PiAware instance online.
 FLIGHTAWARE_LOCAL_CREDENTIALS=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --yesno "Although it is possible to configure your FlightAware credentials locally, these will be stored in plaintext which represents a security risk that should be avoided.\n\nFlightAware recommends claiming your feeder online using the following page:\n\n  http://flightaware.com/adsb/piaware/claim\n\nWill you be able to access the FlightAware website from the same public IP address as the feeder will be sending data from?" 16 78 3>&1 1>&2 2>&3)
@@ -256,7 +266,7 @@ if [[ "${FLIGHTAWARE_LOCAL_CREDENTIALS}" -eq "1" ]] ; then
         done
     else
         # Display a message to the user stating they need to manually claim their device.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device, after supplying this you will ask you to enter your password for verification.\n\nIf you decide not to provide a login and password at this time you should still be able to claim your feeder by visting the following site:\n\n  http://flightaware.com/adsb/piaware/claim" 13 78
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your ${COMPONENT_PROVIDER} login in order to claim this device, after supplying this you will ask you to enter your password for verification.\n\nIf you decide not to provide a login and password at this time you should still be able to claim your feeder by visting the following site:\n\n  http://flightaware.com/adsb/piaware/claim" 13 78
     fi
 fi
 
