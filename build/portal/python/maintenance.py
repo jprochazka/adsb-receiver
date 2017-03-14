@@ -32,7 +32,7 @@ import json
 import os
 import datetime
 
-while true:
+while True:
 
     ## Read the configuration file.
     with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
@@ -150,7 +150,7 @@ while true:
         #SQLite
         if config["database"]["type"] == "sqlite":
             params = (purge_date,)
-             cursor.execute("DELETE FROM adsb_positions WHERE time < ?", params)
+            cursor.execute("DELETE FROM adsb_positions WHERE time < ?", params)
 
     ## Close the database connection.
 
