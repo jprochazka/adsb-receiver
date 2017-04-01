@@ -150,7 +150,7 @@ fi
 
 ## DISPLAY FINAL SETUP INSTRUCTIONS WHICH CONNOT BE HANDLED BY THIS SCRIPT
 
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Plane Finder ADS-B Client Setup Instructions" --msgbox "At this point the Plane Finder ADS-B Client should be installed and running howeverThis script is only capable of installing the Plane Finder ADS-B Client. There are stilla few steps left which you must manually do through the Plane Finder ADS-B Client itself.\n\nVisit the following URL: http://${DEVICEIPADDRESS}:30053\n\nThe follow the instructions supplied by the Plane Finder ADS-B Client.\n\nUse the following settings when asked for them.\n\nData Format: Beast\nTcp Address: 127.0.0.1\nTcp Port: 30005" 20 78
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Plane Finder ADS-B Client Setup Instructions" --msgbox "At this point the Plane Finder ADS-B Client should be installed and running; however this script is only capable of installing the Plane Finder ADS-B Client. There are still some steps which must be performed manually using the Plane Finder ADS-B Client at the following URL:\n\n  http://${DEVICEIPADDRESS}:30053\n\nThe follow the instructions supplied by the Plane Finder ADS-B Client.\n\nUse the following settings when asked for them.\n\nData Format: Beast\nTcp Address: 127.0.0.1\nTcp Port: 30005" 20 78
 
 ## PLANE FINDER ADS-B CLIENT SETUP COMPLETE
 
