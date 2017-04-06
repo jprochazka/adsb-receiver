@@ -48,6 +48,9 @@ source $BASHDIRECTORY/functions.sh
 ## Set the project title variable.
 export ADSB_PROJECTTITLE="The ADS-B Receiver Project v$PROJECTVERSION Installer"
 
+# Set RECEIVER_AUTOMATED_INSTALL to false until this is implimented in the 2.6.0 release.
+RECEIVER_AUTOMATED_INSTALL="false"
+
 ###############
 ## FUNCTIONS
 
@@ -202,10 +205,26 @@ fi
 declare array FEEDER_LIST
 
 # Check if MLAT client has been installed to be used to feed ADS-B Exchange.
-if ! grep -q "$BUILDDIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
-    # The ADS-B Exchange maintenance script does not appear to be executed on startup.
+if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # The mlat-client package appears to be installed.
+    MLAT_CLIENT_IS_INSTALLED="true"
+    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
+    MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
+    # Check if installed mlat-client matches the available version.
+    if [[ ! "${MLAT_CLIENT_VERSION_AVAILABLE}" = "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
+        # Prompt user to confirm the upgrade.
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+            # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client (upgrade)' '' OFF)
+        fi
+    fi
+else
+    # The mlat-client package does not appear to be installed.
+    MLAT_CLIENT_IS_INSTALLED="false"
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
         FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client' '' OFF)
+    fi
 fi
 
 # Check for the PiAware package.
