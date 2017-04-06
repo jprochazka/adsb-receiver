@@ -355,7 +355,10 @@ if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] 
                     CONFIRMATION="$CONFIRMATION\n  * Flightradar24 Client (upgrade)"
                    ;;
                 "ADS-B Exchange data export and MLAT Client")
-                    CONFIRMATION="$CONFIRMATION\n  * ADS-B Exchange data export and MLAT Client"
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client"
+                    ;;
+                "ADS-B Exchange data export and MLAT Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
                     ;;
             esac
         done < FEEDERCHOICES
