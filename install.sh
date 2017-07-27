@@ -34,145 +34,136 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
-PROJECTBRANCH="master"
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
-BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
+PROJECT_ROOT_DIRECTORY="$PWD"
+BASH_DIRECTORY="$PROJECT_ROOT_DIRECTORY/bash"
+LOG_DIRECTORY="$PROJECT_ROOT_DIRECTORY/logs"
 
-## INCLUDE EXTERNAL SCRIPTS
+ENABLE_LOGGING="false"
+AUTOMATED_INSTALL="false"
+CONFIGURATION_FILE="default"
 
-source $BASHDIRECTORY/functions.sh
+### INCLUDE EXTERNAL SCRIPTS
 
-## MORE VARIABLES
+source $BASH_DIRECTORY/functions.sh
 
-export ADSB_PROJECTTITLE="The ADS-B Receiver Project Installer"
-TERMINATEDMESSAGE="  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+### USAGE 
 
-## CHECK IF THIS IS THE FIRST RUN USING THE IMAGE RELEASE
+usage()
+{   
+    echo -e ""
+    echo -e "Usage: $0 [OPTIONS] [ARGUMENTS]"
+    echo -e ""
+    echo -e "Option     GNU long option     	Meaning"
+    echo -e "-c <FILE>  --config-file=<FILE>	The configuration file to be use for an unattended installation."
+    echo -e "-d         --delay            	Add a pseudo-random delay of between 5 and 59 minutes."
+    echo -e "-h         --help              	Shows this message."
+    echo -e "-l         --log-output        	Logs all output to a file in the logs directory."
+    echo -e "-u         --unattended        	Begins an unattended installation using a configuration file."
+    echo -e "-v         --verbose           	Provides extra confirmation at each stage of the install."
+    echo -e ""
+}
 
-if [ -f $PROJECTROOTDIRECTORY/image ]; then
-    # Execute image setup script..
-    chmod +x $BASHDIRECTORY/image.sh
-    $BASHDIRECTORY/image.sh
-    if [ $? -ne 0 ]; then
-        echo ""
-        echo -e $TERMINATEDMESSAGE
-        echo ""
+### CHECK FOR OPTIONS AND ARGUMENTS
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            # Display a help message.
+            usage
+            exit 0
+            ;;
+        -a|--automated)
+            # Enable logging to a log file.
+            AUTOMATED_INSTALL="true"
+            shift 1
+            ;;
+        -c)
+            # The specified installation configuration file.
+            CONFIGURATION_FILE="$2"
+            shift 2
+            ;;
+        --config-file*)
+            # The specified installation configuration file.
+            CONFIGURATION_FILE=`echo $1 | sed -e 's/^[^=]*=//g'`
+            shift 1
+            ;;
+        -d|--delay)
+            DELAY="true"
+            shift 1
+            ;;
+        -l|--log-output)
+            # Enable logging to a file in the logs directory.
+            ENABLE_LOGGING="true"
+            shift 1
+            ;;
+        -v|--verbose)
+            # Provides extra confirmation at each stage of the install.
+            export VERBOSE="true"
+            shift 1
+            ;;
+        *)
+            # Unknown options were set so exit.
+            echo -e "Error: Unknown option: $1" >&2
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+### AUTOMATED INSTALL
+
+# If the automated installation option was selected set the needed environmental variables.
+if [ $AUTOMATED_INSTALL = "true" ]; then
+
+    ###################################################################
+    ##            THIS FEATURE IS NOT READY FOR USE YET             ###
+    echo "The automated installation option is still in development..."
+    exit 1
+    ###################################################################
+
+    # If no configuration file was specified use the default configuration file path and name.
+    if [ $CONFIGURATION_FILE = "default" ]; then
+        CONFIGURATION_FILE="$PROJECT_ROOT_DIRECTORY/install.config"
+    fi
+
+    # If either the -c or --config-file= flags were set a valid file must reside there.
+    if [ ! -f $CONFIGURATION_FILE ]; then
+        echo "The specified configuration file does not exist."
         exit 1
     fi
+fi
+
+# Add any environmental variables needed by any child scripts.
+export AUTOMATED_INSTALL
+export CONFIGURATION_FILE
+
+### EXECUTE BASH/INIT.SH
+
+chmod +x $BASH_DIRECTORY/init.sh
+if [[ ! -z $ENABLE_LOGGING ]] && [[ $ENABLE_LOGGING = "true" ]] ; then
+    # Execute init.sh logging all output to the log drectory as the file name specified.
+    LOG_FILE="$LOG_DIRECTORY/install_$(date +"%m_%d_%Y_%H_%M_%S").log"
+    $BASH_DIRECTORY/init.sh 2>&1 | tee -a "$LOG_FILE"
+    CleanLogFile "$LOG_FILE"
+else
+    # Execute init.sh without logging any output to the log directory.
+    $BASH_DIRECTORY/init.sh
+fi
+
+### CLEAN UP
+
+# Remove any global variables assigned by this script.
+unset AUTOMATED_INSTALL
+unset CONFIGURATION_FILE
+unset VERBOSE
+unset DELAY
+
+# Check if any errors were encountered by any child scripts.
+# If no errors were encountered then exit this script cleanly.
+if [[ $? -ne 0 ]] ; then
+    exit 1
+else
     exit 0
 fi
-
-## FUNCTIONS
-
-# UPDATE REPOSITORY PACKAGE LISTS
-function AptUpdate() {
-    clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
-    echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
-    sudo apt-get update
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
-}
-
-function CheckPrerequisites() {
-    clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
-    echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
-    CheckPackage whiptail
-    CheckPackage git
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
-}
-
-
-function UpdateRepository() {
-## UPDATE THIS REPOSITORY
-    clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
-    echo -e "\e[92m  Pulling the latest version of the ADS-B Receiver Project repository..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
-    echo -e "\e[94m  Switching to branch $PROJECTBRANCH...\e[97m"
-    echo ""
-    git checkout $PROJECTBRANCH
-    echo ""
-    echo -e "\e[94m  Pulling the latest git repository...\e[97m"
-    echo ""
-    git pull
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
-}
-
-# UPDATE THE OPERATING SYSTEM
-function UpdateOperatingSystem() {
-    clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
-    echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
-    sudo apt-get -y dist-upgrade
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
-}
-
-AptUpdate
-CheckPrerequisites
-UpdateRepository
-
-## DISPLAY WELCOME SCREEN
-
-## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
-
-if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78) then
-    UpdateOperatingSystem
-fi
-
-## EXECUTE BASH/MAIN.SH
-
-chmod +x $BASHDIRECTORY/main.sh
-$BASHDIRECTORY/main.sh
-if [ $? -ne 0 ]; then
-    echo -e $TERMINATEDMESSAGE
-    echo ""
-    exit 1
-fi
-
-## INSTALLATION COMPLETE
-
-# Display the installation complete message box.
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\nhttps://github.com/jprochazka/adsb-receiver" 20 65
-
-# Unset any exported variables.
-unset ADSB_PROJECTTITLE
-
-# Remove the FEEDERCHOICES file created by whiptail.
-rm -f FEEDERCHOICES
-
-echo -e "\033[32m"
-echo "Installation complete."
-echo -e "\033[37m"
-
-exit 0

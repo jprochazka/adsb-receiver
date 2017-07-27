@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2016-2017, Joseph A. Prochazka & Romeo Golf                         #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,27 +31,65 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## SOFTWARE VERSIONS
+### VARIABLES
 
-# The ADS-B Receiver Project
-PROJECT_VERSION="2.7.0"
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# RTL-SDR OGN
-RTLSDROGN_VERSION="0.2.5"
+# Component specific variables.
+COMPONENT_NAME=""
+COMPONENT_GITHUB_URL=""
+COMPONENT_BUILD_DIRECTORY=""
 
-# FlightAware PiAware
-PIAWARE_VERSION="3.5.0"
+# Component service script variables.
 
-# PlaneFinder Client
-PLANEFINDER_CLIENT_VERSION_ARM="3.7.20"
-PLANEFINDER_CLIENT_VERSION_I386="3.7.1"
+### INCLUDE EXTERNAL SCRIPTS
 
-# Flightradar24 Client
-FLIGHTRADAR24_CLIENT_VERSION_I386="1.0.18-5"
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-# mlat-client
-MLAT_CLIENT_VERSION="0.2.9"
-MLAT_CLIENT_TAG="v${MLAT_CLIENT_VERSION}"
+# Source the automated install configuration file if this is an automated installation.
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+    source ${RECEIVER_CONFIGURATION_FILE}
+fi
 
-# PhantomJS
-PHANTOMJS_VERSION="2.1.1"
+### BEGIN SETUP
+
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    clear
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
+fi
+echo -e ""
+echo -e "\e[92m  Setting up ${COMPONENT_NAME}...\e[97m"
+echo -e ""
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
+echo -e ""
+
+## CHECK FOR PREREQUISITE PACKAGES
+
+echo -e "\e[95m  Installing packages needed to fulfill dependencies for ${COMPONENT_NAME}...\e[97m"
+echo -e ""
+# Required by install script.
+CheckPackage git
+CheckPackage curl
+echo -e ""
+echo -e "\e[95m  Configuring this device to run the ${COMPONENT_NAME} binaries...\e[97m"
+echo -e ""
+
+### SETUP COMPLETE
+
+# Return to the project root directory.
+echo -en "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
+cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
+ACTION=${PWD}
+CheckReturnCode
+
+echo -e "\e[93m  ------------------------------------------------------------------------------\n"
+echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
+echo -e ""
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
+
+exit 0

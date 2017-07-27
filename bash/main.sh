@@ -46,7 +46,7 @@ source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
 ## Set the project title variable.
-export ADSB_PROJECTTITLE="The ADS-B Receiver Project v$PROJECTVERSION Installer"
+export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project v${PROJECT_VERSION} Installer"
 
 ###############
 ## FUNCTIONS
@@ -142,7 +142,7 @@ DUMP1090MUTABILITY_REINSTALL=1
 if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
     # The dump1090-mutability package appear to be installed.
     DUMP1090MUTABILITY_INSTALLED=0
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-mutability Installed" --defaultno --yesno "The dump1090-mutability package appears to be installed on your device, however...\n\nThe dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering. To ensure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.\n\nDownload, build, and reinstall this package?" 16 65
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-mutability Installed" --defaultno --yesno "The dump1090-mutability package appears to be installed on your device, however...\n\nThe dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering. To ensure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.\n\nDownload, build, and reinstall this package?" 16 65
     DUMP1090MUTABILITY_REINSTALL=$?
 fi
 
@@ -154,15 +154,15 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok instal
     # The dump1090-fa package appear to be installed.
     DUMP1090FA_INSTALLED=0
     # Check if a newer version can be installed.
-    if [ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${PIAWAREVERSION}") -eq 0 ]; then
-        whiptail  --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
+    if [ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]; then
+        whiptail  --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
         DUMP1090FA_UPGRADE=$?
     fi
 fi
 
 # If any version of dump1090 is not installed ask which one to install.
 if [ $DUMP1090MUTABILITY_INSTALLED = 1 ] && [ $DUMP1090FA_INSTALLED = 1 ]; then
-    DUMP1090OPTION=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Choose Dump1090 Version" --menu "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of these two packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)" 3>&1 1>&2 2>&3)
+    DUMP1090OPTION=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Choose Dump1090 Version" --menu "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of these two packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)" 3>&1 1>&2 2>&3)
     case $DUMP1090OPTION in
         "dump1090-mutability")
             DUMP1090MUTABILITY_INSTALL=0
@@ -189,11 +189,11 @@ DUMP978_INSTALL=1
 DUMP978_REINSTALL=1
 if [ -f $BUILDDIRECTORY/dump978/dump978 ] && [ -f $BUILDDIRECTORY/dump978/uat2text ] && [ -f $BUILDDIRECTORY/dump978/uat2esnt ] && [ -f $BUILDDIRECTORY/dump978/uat2json ]; then
     # Dump978 appears to have been built already.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump978 Installed" --defaultno --yesno "Dump978 appears to be installed on your device, however...\n\nThe dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.\n\nDownload and rebuild the dump978 binaries?" 14 65
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Installed" --defaultno --yesno "Dump978 appears to be installed on your device, however...\n\nThe dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.\n\nDownload and rebuild the dump978 binaries?" 14 65
     DUMP978_REINSTALL=$?
 else
     # Dump978 does not appear to have been built yet.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump978 Not Installed" --defaultno --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.\n\nDo you wish to install dump978?" 10 65
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Dump978 Not Installed" --defaultno --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.\n\nDo you wish to install dump978?" 10 65
     DUMP978_INSTALL=$?
 fi
 
@@ -211,7 +211,7 @@ if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed"
     fi
 else
     # Check if a newer version can be installed.
-    if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: $PIAWAREVERSION") -eq 0 ]; then
+    if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]; then
         FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
     fi
 fi
@@ -222,12 +222,12 @@ if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed
     FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
 else
     # Set version depending on the device architecture.
-    PFCLIENTVERSION=$PFCLIENTVERSIONARM
+    PLANEFINDER_CLIENT_VERSION=${PLANEFINDER_CLIENT_VERSION_ARM}
     if [[ `uname -m` != "armv7l" ]]; then
-        PFCLIENTVERSION=$PFCLIENTVERSIONI386
+        PLANEFINDER_CLIENT_VERSION=${PLANEFINDER_CLIENT_VERSION_I386}
     fi
     # Check if a newer version can be installed.
-    if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PFCLIENTVERSION}") -eq 0 ]; then
+    if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PLANEFINDER_CLIENT_VERSION}") -eq 0 ]; then
         FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client (upgrade)' '' OFF)
     fi
 fi
@@ -239,7 +239,7 @@ if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed
 else
     # Check if a newer version can be installed if this is not a Raspberry Pi device.
     if [[ `uname -m` != "armv7l" ]]; then
-        if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FR24CLIENTVERSIONI386}") -eq 0 ]; then
+        if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]; then
             FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24  Client (upgrade)' '' OFF)
         fi
     fi
@@ -255,23 +255,23 @@ declare FEEDERCHOICES
 
 if [[ -n "$FEEDERLIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
 fi
 
 ## ADS-B Receiver Project Web Portal
 
 # Ask if the web portal should be installed.
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal on this device?" 8 78
+whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal on this device?" 8 78
 PORTAL_INSTALL=$?
 
 ## Setup Confirmation
 
 # Check if anything is to be done before moving on.
 if [ $DUMP1090MUTABILITY_INSTALL = 1 ] && [ $DUMP1090MUTABILITY_REINSTALL = 1 ] && [ $DUMP1090FA_INSTALL = 1 ] && [ $DUMP1090FA_UPGRADE = 1 ] && [ $DUMP978_INSTALL = 1 ] && [ $DUMP978_REINSTALL = 1 ] && [ $PORTAL_INSTALL = 1 ] && [ ! -s FEEDERCHOICES ]; then
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
+    whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\033[31m"
     echo "Nothing was selected to do or be installed."
     echo -e "\033[37m"
@@ -350,7 +350,7 @@ fi
 
 # Ask for confirmation before moving on.
 CONFIRMATION="${CONFIRMATION}Do you wish to continue setup?"
-if ! (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 17 78) then
+if ! (whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Confirm You Wish To Continue" --yesno "$CONFIRMATION" 17 78) then
     echo -e "\033[31m"
     echo "  Installation canceled by user."
     exit 1

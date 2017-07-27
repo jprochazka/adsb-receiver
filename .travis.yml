@@ -1,0 +1,25 @@
+language: 	bash
+
+sudo: 		required
+
+before_install: sudo apt-get -qq update && sudo apt-get -qq install -y cmake libcurl4-openssl-dev libdw-dev libelf-dev
+
+install: 	true
+
+script:  	BRANCH_NUMBER=`echo -n "${TRAVIS_BRANCH}" | sed -e 's/\.//g'` && if [[ "${BRANCH_NUMBER}" -eq "270" ]] ; then export PROJECTBRANCH="${TRAVIS_BRANCH}" ; ./install.sh -a ; true ; elif [[ "${BRANCH_NUMBER}" -ge "260" ]] ; then ./install.sh -a -b ${TRAVIS_BRANCH} ; else echo "Automated build testing only supported in version 2.6.0 or above." ; fi
+
+after_success: |
+  wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+  tar xzf master.tar.gz &&
+  cd kcov-master &&
+  mkdir build &&
+  cd build &&
+  cmake .. &&
+  make &&
+  sudo make install &&
+  cd ../.. &&
+  rm -rf kcov-master &&
+  mkdir -p coverage &&
+  kcov coverage install.sh -a &&
+  ls -l coverage &&
+  bash -x <(curl -s https://codecov.io/bash) -s coverage || echo "Codecov did not collect coverage reports"

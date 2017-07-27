@@ -31,44 +31,50 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+### VARIABLES
 
 PROJECTROOTDIRECTORY="$PWD"
 BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
 BUILDDIRECTORY="$PROJECTROOTDIRECTORY/build"
-DUMP1090BUILDDIRECTORY="$BUILDDIRECTORY/dump1090-fa"
+BUILDDIRECTORY_DUMP1090="$BUILDDIRECTORY/dump1090-fa"
 
-## INCLUDE EXTERNAL SCRIPTS
+DECODER_NAME="Dump1090-fa"
+DECODER_WEBSITE="https://github.com/flightaware/dump1090"
+
+### INCLUDE EXTERNAL SCRIPTS
 
 source $BASHDIRECTORY/variables.sh
 source $BASHDIRECTORY/functions.sh
 
-## BEGIN SETUP
+### BEGIN SETUP
 
 clear
-echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
-echo ""
-echo -e "\e[92m  Setting up dump1090-fa..."
+echo -e ""
+echo -e "\e[91m  $RECEIVER_PROJECT_TITLE"
+echo -e ""
+echo -e "\e[92m  Setting up ${DECODER_NAME} ..."
 echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
-echo ""
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Dump1090-fa Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-fa is a fork of the dump1090-mutability version of dump1090 that is specifically designed for FlightAware's PiAware software.\n\nIn order to use this version of dump1090 FlightAware's PiAware software must be installed as well.\n\n  https://github.com/flightaware/dump1090\n\nContinue setup by installing dump1090-fa?" 14 78
+echo -e ""
+whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "${DECODER_NAME} Setup" --yesno "Dump1090 is a Mode-S decoder specifically designed for RTL-SDR devices. ${DECODER_NAME} is a fork of the dump1090-mutability version of dump1090 that is specifically designed for FlightAware's PiAware software.\n\nIn order to use this version of dump1090 FlightAware's PiAware software must be installed as well.\n\n $DECODER_WEBSITE \n\nContinue setup by installing ${DECODER_NAME}?" 14 78
 CONTINUESETUP=$?
-if [ $CONTINUESETUP = 1 ]; then
+if [[ $CONTINUESETUP = 1 ]] ; then
     # Setup has been halted by the user.
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
-    echo ""
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
+    echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
+    echo -e ""
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
-## CHECK FOR PREREQUISITE PACKAGES
+### CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
+echo -e "\e[95m  Installing packages needed to build and fulfill dependencies for ${DECODER_NAME} ...\e[97m"
+echo -e ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
@@ -81,116 +87,121 @@ CheckPackage pkg-config
 CheckPackage lighttpd
 CheckPackage fakeroot
 CheckPackage dh-systemd
+CheckPackage libncurses5-dev
 
-## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
+### DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
 
-echo ""
-echo -e "\e[95m  Preparing the dump1090-fa Git repository...\e[97m"
-echo ""
-if [ -d $DUMP1090BUILDDIRECTORY/dump1090 ] && [ -d $DUMP1090BUILDDIRECTORY/dump1090/.git ]; then
+echo -e ""
+echo -e "\e[95m  Preparing the ${DECODER_NAME} Git repository...\e[97m"
+echo -e ""
+if [[ -d $BUILDDIRECTORY_DUMP1090/dump1090 ]] && [[ -d $BUILDDIRECTORY_DUMP1090/dump1090/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd $DUMP1090BUILDDIRECTORY/dump1090
-    echo -e "\e[94m  Updating the local dump1090-fa git repository...\e[97m"
-    echo ""
+    echo -e "\e[94m  Entering the ${DECODER_NAME} git repository directory...\e[97m"
+    cd $BUILDDIRECTORY_DUMP1090/dump1090
+    echo -e "\e[94m  Updating the local ${DECODER_NAME} git repository...\e[97m"
+    echo -e ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -p $DUMP1090BUILDDIRECTORY
-    cd $DUMP1090BUILDDIRECTORY
-    echo -e "\e[94m  Cloning the dump1090-fa git repository locally...\e[97m"
-    echo ""
+    echo -e "\e[94m  Entering the $RECEIVER_PROJECT_TITLE build directory...\e[97m"
+    mkdir -p $BUILDDIRECTORY_DUMP1090
+    cd $BUILDDIRECTORY_DUMP1090
+    echo -e "\e[94m  Cloning the ${DECODER_NAME} git repository locally...\e[97m"
+    echo -e ""
     git clone https://github.com/flightaware/dump1090.git
-    echo ""
+    echo -e ""
 fi
 
-## BUILD AND INSTALL THE DUMP1090-FA PACKAGE
+### BUILD AND INSTALL THE DUMP1090-FA PACKAGE
 
-echo ""
-echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
-echo ""
-if [ ! $PWD = $DUMP1090BUILDDIRECTORY/dump1090 ]; then
-    echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd $DUMP1090BUILDDIRECTORY/dump1090
+echo -e ""
+echo -e "\e[95m  Building and installing the ${DECODER_NAME} package...\e[97m"
+echo -e ""
+if [[ ! $PWD = $BUILDDIRECTORY_DUMP1090/dump1090 ]] ; then
+    echo -e "\e[94m  Entering the ${DECODER_NAME} git repository directory...\e[97m"
+    cd $BUILDDIRECTORY_DUMP1090/dump1090
 fi
-echo -e "\e[94m  Building the dump1090-fa package...\e[97m"
-echo ""
+echo -e "\e[94m  Building the ${DECODER_NAME} package...\e[97m"
+echo -e ""
 dpkg-buildpackage -b
-echo ""
-echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
-cd $DUMP1090BUILDDIRECTORY
-echo -e "\e[94m  Installing the dump1090-fa package...\e[97m"
-echo ""
-sudo dpkg -i dump1090-fa_${PIAWAREVERSION}_*.deb
+echo -e ""
+echo -e "\e[94m  Entering the ${DECODER_NAME} build directory...\e[97m"
+cd $BUILDDIRECTORY_DUMP1090
+echo -e "\e[94m  Installing the ${DECODER_NAME} package...\e[97m"
+echo -e ""
+sudo dpkg -i dump1090-fa_${PIAWARE_VERSION}_*.deb
 
 # Check that the package was installed.
-echo ""
-echo -e "\e[94m  Checking that the dump1090-fa package was installed properly...\e[97m"
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+echo -e ""
+echo -e "\e[94m  Checking that the ${DECODER_NAME} package was installed properly...\e[97m"
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # If the dump1090-fa package could not be installed halt setup.
-    echo ""
+    echo -e ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
     echo -e "  SETUP HAS BEEN TERMINATED!"
-    echo ""
-    echo -e "\e[93mThe package \"dump1090-fa\" could not be installed.\e[39m"
-    echo ""
+    echo -e ""
+    echo -e "\e[93mThe package \"${DECODER_NAME}\" could not be installed.\e[39m"
+    echo -e ""
     echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-    echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
+    echo -e "\e[92m  ${DECODER_NAME} setup halted.\e[39m"
+    echo -e ""
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
     exit 1
 fi
 
-## DUMP1090-FA POST INSTALLATION CONFIGURATION
+### DUMP1090-FA POST INSTALLATION CONFIGURATION
 
 # Ask for a Bing Maps API key.
-BINGMAPSKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 11 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
-if [[ ! -z $BINGMAPSKEY ]]; then
+BINGMAPSKEY=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 11 78 `GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+if [[ ! -z $BINGMAPSKEY ]] ; then
     echo -e "\e[94m  Setting the Bing Maps API Key to $BINGMAPSKEY...\e[97m"
     ChangeConfig "BingMapsAPIKey" "$BINGMAPSKEY" "/usr/share/dump1090-fa/html/config.js"
 fi
 
 # Ask for a Mapzen API key.
-MAPZENKEY=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the dump1090-mutability map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 `GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
-if [[ ! -z $MAPZENKEY ]]; then
+MAPZENKEY=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the dump1090-mutability map. You can obtain a free key at https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 13 78 `GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"` 3>&1 1>&2 2>&3)
+if [[ ! -z $MAPZENKEY ]] ; then
     echo -e "\e[94m  Setting the Mapzen API Key to $MAPZENKEY...\e[97m"
     ChangeConfig "MapzenAPIKey" "$MAPZENKEY" "/usr/share/dump1090-fa/html/config.js"
 fi
 
 # Download Heywhatsthat.com maximum range rings.
-if [ ! -f /usr/share/dump1090-fa/html/upintheair.json ] && (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Heywhaststhat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-fa usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-fa map you will first need to visit http://www.heywhatsthat.com and generate a new panarama centered on the location of your receiver. Once your panarama has been generated a link to the panarama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
-    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
-    while [[ -z $HEYWHATSTHATID ]]; do
-        HEYWHATSTHATID=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panarama ID." 8 78 3>&1 1>&2 2>&3)
-        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+if [[ ! -f /usr/share/dump1090-fa/html/upintheair.json ]] && (whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to ${DECODER_NAME} using data obtained from Heywhatsthat.com. In order to add these rings to your ${DECODER_NAME} map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
+    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID"
+    while [[ -z $HEYWHATSTHATID ]] ; do
+        HEYWHATSTHATID=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
+        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID (REQUIRED)"
     done
     HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude"
-    while [[ -z $HEYWHATSTHATRINGONE ]]; do
-        HEYWHATSTHATRINGONE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATRINGONE_TITLE" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
+    while [[ -z $HEYWHATSTHATRINGONE ]] ; do
+        HEYWHATSTHATRINGONE=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$HEYWHATSTHATRINGONE_TITLE" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
         HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
     done
     HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude"
-    while [[ -z $HEYWHATSTHATRINGTWO ]]; do
-        HEYWHATSTHATRINGTWO=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATRINGTWO_TITLE" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
+    while [[ -z $HEYWHATSTHATRINGTWO ]] ; do
+        HEYWHATSTHATRINGTWO=$(whiptail --backtitle "$RECEIVER_PROJECT_TITLE" --title "$HEYWHATSTHATRINGTWO_TITLE" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
         HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
     done
     echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
-    echo ""
+    echo -e ""
     sudo wget -O /usr/share/dump1090-fa/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
 fi
 
-## DUMP1090-FA SETUP COMPLETE
+### SETUP COMPLETE
 
 # Enter into the project root directory.
-echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+echo -e "\e[94m  Entering the $RECEIVER_PROJECT_TITLE root directory...\e[97m"
 cd $PROJECTROOTDIRECTORY
 
-echo ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------"
-echo -e "\e[92m  Dump1090-fa setup is complete.\e[39m"
-echo ""
-read -p "Press enter to continue..." CONTINUE
+echo -e ""
+echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
+echo -e "\e[92m  ${DECODER_NAME} setup is complete.\e[39m"
+echo -e ""
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 exit 0
