@@ -208,7 +208,7 @@ declare array FEEDER_LIST
 if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     # The mlat-client package appears to be installed.
     MLAT_CLIENT_IS_INSTALLED="true"
-    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLAT_CLIENT_VERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
+    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLATCLIENTVERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
     MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
     # Check if installed mlat-client matches the available version.
     if [[ ! "${MLAT_CLIENT_VERSION_AVAILABLE}" = "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
