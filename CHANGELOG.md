@@ -2,6 +2,16 @@
 
 The following is a history of the changes made to this project.
 
+## v2.6.0 *(prerelease)*
+
+* Updated to install planfinder.net ARM client version 3.7.20.
+* Updated to install planfinder.net I386 client version 3.7.1.
+* Creates and enables /etc/rc.local if dump978 is installed.
+* Creates and enables /etc/rc.local if ADS-B Exchange support is added.
+* Added check for the dvb_usb_rtl28xxu kernel module before trying to remove it.
+* Checks for the package dirmngr before executing the Flightradar24 setup script.
+* Fixed text displaying date time formats which were swapped in the portal settings.
+
 ## v2.5.0 *(December 5th, 2016)*
 
 * Can now specify the unit of measurement for dump1090-mutability during setup.

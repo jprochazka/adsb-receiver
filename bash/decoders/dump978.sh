@@ -78,6 +78,40 @@ CheckPackage gcc
 CheckPackage netcat
 CheckPackage lighttpd
 
+## ENABLE THE USE OF /ETC/RC.LOCAL IF THE FILE DOES NOT EXIST
+
+if [ ! -f /etc/rc.local ]; then
+    echo ""
+    echo -e "\e[95m  Enabling the use of the /etc/rc.local file...\e[97m"
+    echo ""
+
+    # In Debian Stretch /etc/rc.local has been removed.
+    # However at this time we can bring this file back into play.
+    # As to if in future releases this will work remains to be seen...
+
+    echo -e "\e[94m  Creating the file /etc/rc.local...\e[97m"
+    sudo tee /etc/rc.local > /dev/null <<EOF
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+exit 0
+EOF
+
+    echo -e "\e[94m  Making /etc/rc.local executable...\e[97m"
+    sudo chmod +x /etc/rc.local
+    echo -e "\e[94m  Enabling the use of /etc/rc.local...\e[97m"
+    sudo systemctl start rc-local
+fi
+
 ## DOWNLOAD THE DUMP978 SOURCE CODE
 
 echo ""
@@ -145,10 +179,13 @@ blacklist rtl_2830
 blacklist rtl_2832
 blacklist r820t
 EOF
-echo -e "\e[94m  Removing the kernel module dvb_usb_rtl28xxu...\e[97m"
-echo ""
-sudo rmmod dvb_usb_rtl28xxu
-echo ""
+echo -e "\e[94m  Checking if the kernel module dvb_usb_rtl28xxu is loaded...\e[97m"
+if lsmod | grep "dvb_usb_rtl28xxu" &> /dev/null ; then
+    echo -e "\e[94m  Removing the kernel module dvb_usb_rtl28xxu...\e[97m"
+    echo ""
+    sudo rmmod dvb_usb_rtl28xxu
+    echo ""
+fi
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"

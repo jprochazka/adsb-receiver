@@ -91,6 +91,7 @@ else
     CheckPackage libstdc++6
 fi
 CheckPackage wget
+CheckPackage dirmngr
 
 ## BEGIN INSTALLATION DEPENDING ON DEVICE ARCHITECTURE
 
