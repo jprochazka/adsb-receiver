@@ -48,6 +48,9 @@ source $BASHDIRECTORY/functions.sh
 ## Set the project title variable.
 export ADSB_PROJECTTITLE="The ADS-B Receiver Project v$PROJECTVERSION Installer"
 
+# Set RECEIVER_AUTOMATED_INSTALL to false until this is implimented in the 2.6.0 release.
+RECEIVER_AUTOMATED_INSTALL="false"
+
 ###############
 ## FUNCTIONS
 
@@ -71,7 +74,6 @@ function InstallDump1090Fa() {
     fi
 }
 
-
 # Execute the dump978 setup script.
 function InstallDump978() {
     chmod +x $BASHDIRECTORY/decoders/dump978.sh
@@ -92,7 +94,7 @@ function InstallPiAware() {
     fi
 }
 
-# Execute the Plane Finder ADS-B Client setup script.
+# Execute the Plane Finder Client setup script.
 function InstallPlaneFinder() {
     chmod +x $BASHDIRECTORY/feeders/planefinder.sh
     $BASHDIRECTORY/feeders/planefinder.sh
@@ -199,27 +201,63 @@ fi
 
 ## Feeder Selection Menu
 
-# Declare the FEEDERLIST array which will store feeder installation choices for the feeder whiptail menu.
-declare array FEEDERLIST
+# Declare the FEEDER_LIST array which will store feeder installation choices for the feeder whiptail menu.
+declare array FEEDER_LIST
+
+# Check if MLAT client has been installed to be used to feed ADS-B Exchange.
+if [[ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # The mlat-client package appears to be installed.
+    MLAT_CLIENT_IS_INSTALLED="true"
+    MLAT_CLIENT_VERSION_AVAILABLE=$(echo ${MLATCLIENTVERSION} | tr -cd '[:digit:]' | sed -e 's/^0//g')
+    MLAT_CLIENT_VERSION_INSTALLED=$(sudo dpkg -s mlat-client 2>/dev/null | grep "^Version:" | awk '{print $2}' | tr -cd '[:digit:]' | sed -e 's/^0//g')
+    # Check if installed mlat-client matches the available version.
+    if [[ ! "${MLAT_CLIENT_VERSION_AVAILABLE}" = "${MLAT_CLIENT_VERSION_INSTALLED}" ]] ; then
+        # Prompt user to confirm the upgrade.
+        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+            # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client (upgrade)' '' OFF)
+        fi
+    fi
+else
+    # The mlat-client package does not appear to be installed.
+    MLAT_CLIENT_IS_INSTALLED="false"
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange data export and MLAT Client' '' OFF)
+    fi
+fi
 
 # Check for the PiAware package.
 if [ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # Do not show the PiAware install option if it is marked as required.
     if [ $PIAWAREREQUIRED = 1 ]; then
         # The PiAware package appears to not be installed.
-        FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware' '' OFF)
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'FlightAware PiAware' '' OFF)
     fi
 else
     # Check if a newer version can be installed.
     if [ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: $PIAWAREVERSION") -eq 0 ]; then
-        FEEDERLIST=("${FEEDERLIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
+    fi
+fi
+
+# Check for the Flightradar24 Feeder Client package.
+if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+    # The Flightradar24 client package appears to be installed.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client' '' OFF)
+else
+    # Check if a newer version can be installed if this is not a Raspberry Pi device.
+    if [[ `uname -m` != "armv7l" ]]; then
+        if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FR24CLIENTVERSIONI386}") -eq 0 ]; then
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client (upgrade)' '' OFF)
+        fi
     fi
 fi
 
 # Check for the Planefinder ADS-B Client package.
 if [ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
     # The Planefinder ADS-B Client package appears to be installed.
-    FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client' '' OFF)
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client' '' OFF)
 else
     # Set version depending on the device architecture.
     PFCLIENTVERSION=$PFCLIENTVERSIONARM
@@ -228,34 +266,15 @@ else
     fi
     # Check if a newer version can be installed.
     if [ $(sudo dpkg -s pfclient 2>/dev/null | grep -c "Version: ${PFCLIENTVERSION}") -eq 0 ]; then
-        FEEDERLIST=("${FEEDERLIST[@]}" 'Plane Finder ADS-B Client (upgrade)' '' OFF)
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
     fi
-fi
-
-# Check for the Flightradar24 Feeder Client package.
-if [ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
-    # The Flightradar24 client package appears to be installed.
-    FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24 Client' '' OFF)
-else
-    # Check if a newer version can be installed if this is not a Raspberry Pi device.
-    if [[ `uname -m` != "armv7l" ]]; then
-        if [ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FR24CLIENTVERSIONI386}") -eq 0 ]; then
-            FEEDERLIST=("${FEEDERLIST[@]}" 'Flightradar24  Client (upgrade)' '' OFF)
-        fi
-    fi
-fi
-
-# Check if ADS-B Exchange MLAT client has been set up.
-if ! grep -q "$BUILDDIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh &" /etc/rc.local; then
-    # The ADS-B Exchange maintenance script does not appear to be executed on startup.
-    FEEDERLIST=("${FEEDERLIST[@]}" 'ADS-B Exchange Script' '' OFF)
 fi
 
 declare FEEDERCHOICES
 
-if [[ -n "$FEEDERLIST" ]]; then
+if [[ -n "$FEEDER_LIST" ]]; then
     # Display a checklist containing feeders that are not installed if any.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDERLIST[@]}" 2>FEEDERCHOICES
+    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDER_LIST[@]}" 2>FEEDERCHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
     whiptail --backtitle "$ADSB_PROJECTTITLE" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
@@ -323,11 +342,11 @@ if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] 
                 "FlightAware PiAware (upgrade)")
                     CONFIRMATION="$CONFIRMATION\n  * FlightAware PiAware (upgrade)"
                     ;;
-                "Plane Finder ADS-B Client")
-                    CONFIRMATION="$CONFIRMATION\n  * Plane Finder ADS-B Client"
+                "Plane Finder Client")
+                    CONFIRMATION="$CONFIRMATION\n  * Plane Finder Client"
                     ;;
-                "Plane Finder ADS-B Client (upgrade)")
-                    CONFIRMATION="$CONFIRMATION\n  * Plane Finder ADS-B Client (upgrade)"
+                "Plane Finder Client (upgrade)")
+                    CONFIRMATION="$CONFIRMATION\n  * Plane Finder Client (upgrade)"
                     ;;
                 "Flightradar24 Client")
                     CONFIRMATION="$CONFIRMATION\n  * Flightradar24 Client"
@@ -335,8 +354,11 @@ if [ $DUMP1090MUTABILITY_INSTALL = 0 ] || [ $DUMP1090MUTABILITY_REINSTALL = 0 ] 
                 "Flightradar24 Client (upgrade)")
                     CONFIRMATION="$CONFIRMATION\n  * Flightradar24 Client (upgrade)"
                    ;;
-                "ADS-B Exchange Script")
-                    CONFIRMATION="$CONFIRMATION\n  * ADS-B Exchange Script"
+                "ADS-B Exchange data export and MLAT Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client"
+                    ;;
+                "ADS-B Exchange data export and MLAT Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
                     ;;
             esac
         done < FEEDERCHOICES
@@ -390,13 +412,13 @@ if [ -s FEEDERCHOICES ]; then
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
                 RUNPIAWARESCRIPT=0
             ;;
-            "Plane Finder ADS-B Client"|"Plane Finder ADS-B Client (upgrade)")
+            "Plane Finder Client"|"Plane Finder Client (upgrade)")
                 RUNPLANEFINDERSCRIPT=0
             ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
                 RUNFLIGHTRADAR24SCRIPT=0
             ;;
-            "ADS-B Exchange Script")
+            "ADS-B Exchange data export and MLAT Client"|"ADS-B Exchange data export and MLAT Client (upgrade)")
                 RUNADSBEXCHANGESCRIPT=0
             ;;
         esac

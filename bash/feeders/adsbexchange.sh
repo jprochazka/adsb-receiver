@@ -143,9 +143,12 @@ if [ -d $MLATCLIENTBUILDDIRECTORY ] && [ -d $MLATCLIENTBUILDDIRECTORY/.git ]; th
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
     cd $MLATCLIENTBUILDDIRECTORY
+    echo -e "\e[94m  Fetching changes from the remote mlat-client git repository...\e[97m"
+    echo ""
+    git fetch --tags origin 2>&1
     echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
     echo ""
-    git pull
+    git reset --hard origin/master 2>&1
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
@@ -155,15 +158,30 @@ else
     git clone https://github.com/mutability/mlat-client.git
 fi
 
+# Enter the git repository directory.
+if [[ ! ${PWD} = ${MLATCLIENTBUILDDIRECTORY} ]] ; then
+    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
+    cd ${MLATCLIENTBUILDDIRECTORY}
+fi
+
+# Attempt to check out the required code version based on the supplied tag.
+if [[ -n "${MLATCLIENTTAG}" ]] && [[ `git ls-remote 2>/dev/null| grep -c "refs/tags/${MLATCLIENTTAG}"` -gt 0 ]] ; then
+    # If a valid git tag has been specified then check that out.
+    echo -e "\e[94m  Checking out mlat-client version \"${MLATCLIENTTAG}\"...\e[97m"
+    git checkout tags/${MLATCLIENTTAG} 2>&1
+else
+    # Otherwise checkout the master branch.
+    echo -e "\e[94m  Checking out mlat-client from the master branch...\e[97m"
+    git checkout master 2>&1
+fi
+
+
 ## BUILD AND INSTALL THE MLAT-CLIENT PACKAGE
 
 echo ""
 echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
 echo ""
-if [ ! $PWD = $MLATCLIENTBUILDDIRECTORY ]; then
-    echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
-    cd $MLATCLIENTBUILDDIRECTORY
-fi
+
 echo -e "\e[94m  Building the mlat-client package...\e[97m"
 echo ""
 dpkg-buildpackage -b -uc
@@ -204,12 +222,28 @@ while [[ -z $RECEIVERNAME ]]; do
     RECEIVERNAME_TITLE="Receiver Name (REQUIRED)"
 done
 
-# Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability.
-RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+# Source the latitude and longitude values configured in dump1090.
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # dump1090 fork is -mutability
+    if [[ -s /etc/default/dump1090-mutability ]] ; then
+        RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+        RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    fi
+elif [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # dump1090 fork is -fa
+    if [[ -s /run/dump1090-fa/receiver.json ]] ; then
+        RECEIVERLATITUDE=`cat /run/dump1090-fa/receiver.json | awk -F "lat\" : " '{print $2}' | awk -F "," '{print $1}'`
+        RECEIVERLONGITUDE=`cat /run/dump1090-fa/receiver.json | awk -F "lon\" : " '{print $2}' | awk '{print $1}'`
+    fi
+fi
+
+# Get the altitude of the receiver from the Google Maps API using the latitude and longitude.
+if [[ -n "${RECEIVERLATITUDE}" ]] && [[ -n "${RECEIVERLONGITUDE}" ]] ; then
+    RECEIVERALTITUDE=`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=${RECEIVERLATITUDE},${RECEIVERLONGITUDE} | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];" | awk '{printf("%.0f\n", $1)}'`
+fi
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
-RECEIVERALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLATITUDE,$RECEIVERLONGITUDE | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)
+RECEIVERALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "${RECEIVERALTITUDE}" 3>&1 1>&2 2>&3)
 
 # Create the adsbexchange directory in the build directory if it does not exist.
 echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"

@@ -1,0 +1,5 @@
+language:        bash
+sudo:            required
+before_install:  sudo apt-get -qq update
+install:         true
+script:          BRANCH_NUMBER=`echo -n "${TRAVIS_BRANCH}" | sed -e 's/\.//g'` && if [[ "${BRANCH_NUMBER}" -ge "260" ]] ; then ./install.sh -a -b ${TRAVIS_BRANCH} ; else echo "Automated build testing only supported in version 2.6.0 or above, but returning true for consistency" && true ; fi

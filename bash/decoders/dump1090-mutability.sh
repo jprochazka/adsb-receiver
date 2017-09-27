@@ -151,13 +151,13 @@ whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitu
 RECEIVERLATITUDE_TITLE="Receiver Latitude"
 while [[ -z $RECEIVERLATITUDE ]]; do
     RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-    RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVERLATITUDE" 3>&1 1>&2 2>&3)
+    RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 -- "$RECEIVERLATITUDE" 3>&1 1>&2 2>&3)
     RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
 done
 RECEIVERLONGITUDE_TITLE="Receiver Longitude"
 while [[ -z $RECEIVERLONGITUDE ]]; do
     RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
-    RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 " $RECEIVERLONGITUDE" 3>&1 1>&2 2>&3)
+    RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 -- "$RECEIVERLONGITUDE" 3>&1 1>&2 2>&3)
     RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
 done
 
@@ -202,11 +202,11 @@ else
 fi
 
 # Download Heywhatsthat.com maximum range rings.
-if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] && (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Heywhaststhat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-mutability usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-mutability map you will first need to visit http://www.heywhatsthat.com and generate a new panarama centered on the location of your receiver. Once your panarama has been generated a link to the panarama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
-    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
+if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] && (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Heywhaststhat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-mutability usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-mutability map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywatsthat.com maximum range rings to your map?" 16 78); then
+    HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID"
     while [[ -z $HEYWHATSTHATID ]]; do
-        HEYWHATSTHATID=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panarama ID." 8 78 3>&1 1>&2 2>&3)
-        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+        HEYWHATSTHATID=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
+        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID (REQUIRED)"
     done
     HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude"
     while [[ -z $HEYWHATSTHATRINGONE ]]; do
