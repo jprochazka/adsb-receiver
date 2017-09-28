@@ -7,6 +7,7 @@ The following is a history of the changes made to this project.
 * As requested users must now claim PiAware receivers via the FlightAware site.
 * Updated to install planfinder.net ARM client version 3.7.20.
 * Updated to install planfinder.net I386 client version 3.7.1.
+* Updated to install PiAware version 3.5.1.
 * Creates and enables /etc/rc.local if dump978 is installed.
 * Creates and enables /etc/rc.local if ADS-B Exchange support is added.
 * Added check for the dvb_usb_rtl28xxu kernel module before trying to remove it.
