@@ -157,53 +157,9 @@ mv $PIAWAREBUILDDIRECTORY/piaware_*.deb $PIAWAREBUILDDIRECTORY/packages/
 echo -e "\e[94m  Moving the PiAware package changes file into the package archive directory...\e[97m"
 mv $PIAWAREBUILDDIRECTORY/piaware_*.changes $PIAWAREBUILDDIRECTORY/packages/
 
-## CONFIGURE FLIGHTAWARE
+## INSTRUCTIONS TO CLAIM THE RECIEVER
 
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
-# Ask for the users FlightAware login.
-FLIGHTAWARELOGIN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
-if [ ! $FLIGHTAWARELOGIN = "" ]; then
-    # If the user supplied their FlightAware login continue with the device claiming process.
-    FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
-    while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-        FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-    done
-    FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password"
-    while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-        FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-    done
-    while [ ! $FLIGHTAWAREPASSWORD1 = $FLIGHTAWAREPASSWORD2 ]; do
-        FLIGHTAWAREPASSWORD1=""
-        FLIGHTAWAREPASSWORD2=""
-        # Display an error message if the passwords did not match.
-        whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
-        FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password (REQUIRED)"
-        while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-            FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-        done
-        FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password (REQUIRED)"
-        while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-            FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-        done
-    done
-
-    # Set the supplied user name and password in the configuration.
-    echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
-    echo ""
-    sudo piaware-config flightaware-user $FLIGHTAWARELOGIN
-    echo ""
-    echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
-    echo ""
-    sudo piaware-config flightaware-password $FLIGHTAWAREPASSWORD1
-    echo ""
-    echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
-    echo ""
-    sudo /etc/init.d/piaware restart
-    echo ""
-else
-    # Display a message to the user stating they need to manually claim their device.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
-fi
+whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "IMPORTANT!!!/n/nYou will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
 
 ## PIAWARE SETUP COMPLETE
 

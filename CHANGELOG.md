@@ -4,6 +4,7 @@ The following is a history of the changes made to this project.
 
 ## v2.6.0 *(prerelease)*
 
+* As requested users must now claim PiAware receivers via the FlightAware site.
 * Updated to install planfinder.net ARM client version 3.7.20.
 * Updated to install planfinder.net I386 client version 3.7.1.
 * Creates and enables /etc/rc.local if dump978 is installed.
