@@ -191,7 +191,7 @@ else
     ChangeConfig "NET_BIND_ADDRESS" "127.0.0.1" "/etc/default/dump1090-mutability"
 fi
 
-# Ask if measurments should be displayed using imperial or metric.
+# Ask if measurements should be displayed using imperial or metric.
 UNITOFMEASUREMENT=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Unit of Measurement" --nocancel --menu "\nChoose unit of measurement to be used by dump1090-mutbility." 11 78 2 "Imperial" "" "Metric" "" 3>&1 1>&2 2>&3)
 if [ $UNITOFMEASUREMENT = "Metric" ]; then
     echo -e "\e[94m  Setting dump1090-mutability unit of measurement to Metric...\e[97m"

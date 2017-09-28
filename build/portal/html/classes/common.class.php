@@ -294,7 +294,7 @@
         }
 
         // Get the size of the database.
-        function getDatabaseSize($measurment = "") {
+        function getDatabaseSize($measurement = "") {
             require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
             $settings = new settings();
             
@@ -311,7 +311,7 @@
             } else {
                 $databaseSize = 0;
             }
-            switch ($measurment) {
+            switch ($measurement) {
                 case "kb":
                     return round($databaseSize / 1024, 2);
                     break;
