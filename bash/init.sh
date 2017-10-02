@@ -206,7 +206,9 @@ fi
 
 ## UPDATE THE REPOSITORY
 
-UpdateRepository
+if [ ! $DEVELOPMENT_MODE = "true" ]; then
+    UpdateRepository
+fi
 
 ## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 

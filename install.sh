@@ -100,6 +100,11 @@ while [[ $# -gt 0 ]] ; do
             CONFIGURATION_FILE=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift 1
             ;;
+        -d|--development)
+            # Skip adsb-receiver repository update.
+            DEVELOPMENT_MODE="true"
+            shift 1
+            ;;
         -l|--log-output)
             # Enable logging to a file in the logs directory.
             ENABLE_LOGGING="true"
