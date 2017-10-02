@@ -241,13 +241,15 @@ CheckPackage rrdtool
 # Portal dependencies.
 CheckPackage libpython2.7
 
-# Check if this is Ubuntu 16.04 LTS.
-# This needs optimized and made to recognize releases made after 16.04 as well.
+# Check if this is Ubuntu 16.04 LTS (or later)
+# Since Ubuntu versions are always in the format yy.mm, we can simply
+# remove the decimal and treat the resultant string as an integer
 if [ -f /etc/lsb-release ]; then
     . /etc/lsb-release
-    if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04" ]; then
+		temp=$(echo $DISTRIB_RELEASE | sed "s/\.//g")
+		if [ $DISTRIB_ID == "Ubuntu" ] && [ $temp -ge 1604 ]; then
         CheckPackage php7.0-cgi
-        CheckPackage php7.0-xml
+        CheckPackage php7.0-json # was php7.0-xml - maybe a typo?
     else
         CheckPackage php5-cgi
         CheckPackage php5-json
@@ -265,11 +267,13 @@ if [ $ADVANCED = TRUE ]; then
             CheckPackage mysql-client
             CheckPackage python-mysqldb
 
-            # Check if this is Ubuntu 16.04 LTS.
-            # This needs optimized and made to recognize releases made after 16.04 as well.
+            # Check if this is Ubuntu 16.04 LTS (or later)
+						# Since Ubuntu versions are always in the format yy.mm we can simply
+						# remove the decimal and treat the resultant string as an integer
             if [ -f /etc/lsb-release ]; then
                 . /etc/lsb-release
-                if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+								temp=$(echo $DISTRIB_RELEASE | sed "s/\.//g")
+								if [ $DISTRIB_ID == "Ubuntu" ] && [ $temp -ge 1604 ]; then
                     CheckPackage php7.0-mysql
                 else
                     CheckPackage php5-mysql
@@ -281,11 +285,13 @@ if [ $ADVANCED = TRUE ]; then
         "SQLite")
             CheckPackage sqlite3
 
-            # Check if this is Ubuntu 16.04 LTS.
-            # This needs optimized and made to recognize releases made after 16.04 as well.
+            # Check if this is Ubuntu 16.04 LTS (or later)
+						# Since Ubuntu versions are always in the format yy.mm we can simply
+						# remove the decimal and treat the resultant string as an integer
             if [ -f /etc/lsb-release ]; then
                 . /etc/lsb-release
-                if [ $DISTRIB_ID == "Ubuntu" ] && [ $DISTRIB_RELEASE == "16.04"  ]; then
+								temp=$(echo $DISTRIB_RELEASE | sed "s/\.//g")
+                if [ $DISTRIB_ID == "Ubuntu" ] && [ $temp -ge 1604  ]; then
                     CheckPackage php7.0-sqlite
                 else
                     CheckPackage php5-sqlite
