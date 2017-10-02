@@ -198,7 +198,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         echo -e ""
         echo -e "\e[91m  \e[5mSETUP HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo -e ""
+        echo -e "\e[37m"
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi

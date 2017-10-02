@@ -98,13 +98,17 @@ function GetConfig {
 }
 
 function CommentConfig {
-    # Use sed to locate the "KEY" then comment out the line containing it in the specified "FILE".
-    sudo sed -i -e "/$1/s/^#*/#/" $2
+    if [[ ! `grep -cFx "#${1}" $2` -gt 0 ]] ; then
+        # Use sed to locate the "KEY" then comment out the line containing it in the specified "FILE".
+        sudo sed -i "/${1}/ s/^/#/" $2
+    fi
 }
 
 function UncommentConfig {
-    # Use sed to locate the "KEY" then uncomment the line containing it in the specified "FILE".
-    sudo sed -i -e "/$1/s/^#//" $2
+    if [[ `grep -cFx "#${1}" $2` -gt 0 ]] ; then
+        # Use sed to locate the "KEY" then uncomment the line containing it in the specified "FILE".
+        sudo sed -i "/#${1}*/ s/#*//" $2
+    fi
 }
 
 #################################################################################

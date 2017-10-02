@@ -21,6 +21,7 @@ The following is a history of the changes made to this project.
 * The branch you wish to use can be specified using the -b or --branch switch.
 * Pagination on the flights page has been minimized.
 * Corrected the page count on the flights page.
+* Added -d --development flags to install.sh to avoid overwriting changes made.
 
 ## v2.5.0 *(December 5th, 2016)*
 
