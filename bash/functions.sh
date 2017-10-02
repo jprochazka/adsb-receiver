@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2016-2017, Joseph A. Prochazka & Romeo Golf                         #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,7 +31,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-#######################################################################
+#################################################################################
 # Detect if a package is installed and if not attempt to install it.
 
 function CheckPackage {
@@ -39,29 +39,29 @@ function CheckPackage {
     MAXATTEMPTS=5
     WAITTIME=5
 
-    while (( $ATTEMPT -le `(($MAXATTEMPTS + 1))` )); do
+    while (( ${ATTEMPT} -le `(($MAXATTEMPTS + 1))` )); do
 
         # If the maximum attempts has been reached...
-        if [ $ATTEMPT -gt $MAXATTEMPTS ]; then
-            echo ""
+        if [[ "${ATTEMPT}" -gt "${MAXATTEMPTS}" ]] ; then
+            echo -e ""
             echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
             echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
             echo -e "  SETUP HAS BEEN TERMINATED!"
-            echo ""
-            echo -e "\e[93mThe package \"$1\" could not be installed in $MAXATTEMPTS attempts.\e[39m"
-            echo ""
+            echo -e ""
+            echo -e "\e[93mThe package \"$1\" could not be installed in ${MAXATTEMPTS} attempts.\e[39m"
+            echo -e ""
             exit 1
         fi
 
         # Check if the package is already installed.
         printf "\e[94m  Checking if the package $1 is installed..."
-        if [ $(dpkg-query -W -f='${STATUS}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]; then
+        if [[ $(dpkg-query -W -f='${STATUS}' $1 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
 
             # If this is not the first attempt at installing this package...
-            if [ $ATTEMPT -gt 1 ]; then
+            if [[ ${ATTEMPT} -gt 1 ]] ; then
                 echo -e "\e[91m  \e[5m[INSTALLATION ATTEMPT FAILED]\e[25m"
-                echo -e "\e[94m  Attempting to Install the package $1 again in $WAITTIME seconds (ATTEMPT $ATTEMPT OF $MAXATTEMPTS)..."
-                sleep $WAITTIME
+                echo -e "\e[94m  Attempting to Install the package $1 again in ${WAITTIME} seconds (ATTEMPT ${ATTEMPT} OF ${MAXATTEMPTS})..."
+                sleep ${WAITTIME}
             else
                 echo -e "\e[91m [NOT INSTALLED]"
                 echo -e "\e[94m  Installing the package $1..."
@@ -88,7 +88,7 @@ function CheckPackage {
 function ChangeConfig {
     # Use sed to locate the "KEY" then replace the "VALUE", the portion after the equals sign, in the specified "FILE".
     # This function should work with any configuration file with settings formated as KEY="VALUE".
-    sudo sed -i "s/\($1 *= *\).*/\1\"$2\"/" $3
+    sudo sed -i -e "s/\($1 *= *\).*/\1\"$2\"/" $3
 }
 
 function GetConfig {
@@ -105,4 +105,52 @@ function CommentConfig {
 function UncommentConfig {
     # Use sed to locate the "KEY" then uncomment the line containing it in the specified "FILE".
     sudo sed -i -e "/$1/s/^#//" $2
+}
+
+#################################################################################
+# The following function is used to clean up the log files by removing
+# any color escaping sequences from the log file so it is easier to read.
+# There are other lines not needed which can be removed as well.
+
+function CleanLogFile {
+    # Use sed to remove any color sequences from the specified "FILE".
+    sed -i "s,\x1B\[[0-9;]*[a-zA-Z],,g" $1
+    # Remove the "Press enter to continue..." lines from the log file.
+    sed -i "/Press enter to continue.../d" $1
+}
+
+#################################################################################
+# Detect CPU Architecture.
+
+function Check_CPU () {
+    if [[ -z "${CPU_ARCHITECTURE}" ]] ; then
+        echo -en "\e[94m  Detecting CPU architecture...\e[97m"
+        export CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
+    fi
+}
+
+#################################################################################
+# Detect Platform.
+
+function Check_Platform () {
+    if [[ -z "${HARDWARE_PLATFORM}" ]] ; then
+        echo -en "\e[94m  Detecting hardware platform...\e[97m"
+        if [[ `egrep -c "^Hardware.*: BCM" /proc/cpuinfo` -gt 0 ]] ; then
+            export HARDWARE_PLATFORM="RPI"
+        elif [[ `egrep -c "^Hardware.*: Allwinner sun4i/sun5i Families$" /proc/cpuinfo` -gt 0 ]] ; then
+            export HARDWARE_PLATFORM="CHIP"
+        else
+            export HARDWARE_PLATFORM="unknown"
+        fi
+    fi
+}
+
+#################################################################################
+# Detect Hardware Revision.
+
+function Check_Hardware () {
+    if [[ -z "${HARDWARE_REVISION}" ]] ; then
+        echo -en "\e[94m  Detecting Hardware revision...\e[97m"
+        export HARDWARE_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
+    fi
 }

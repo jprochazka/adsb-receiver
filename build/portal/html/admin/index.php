@@ -296,7 +296,7 @@
                 <li role="presentation" class="active"><a href="#general" aria-controls="general" role="tab" data-toggle="tab">General</a></li>
                 <li role="presentation"><a href="#notifications" aria-controls="notifications" role="tab" data-toggle="tab">Notifications</a></li>
                 <li role="presentation"><a href="#navigation" aria-controls="navigation" role="tab" data-toggle="tab">Navigation</a></li>
-                <li role="presentation"><a href="#measurments" aria-controls="measurments" role="tab" data-toggle="tab">Measurements</a></li>
+                <li role="presentation"><a href="#measurements" aria-controls="measurements" role="tab" data-toggle="tab">Measurements</a></li>
                 <li role="presentation"><a href="#system" aria-controls="system" role="tab" data-toggle="tab">System</a></li>
                 <li role="presentation"><a href="#maintenance" aria-controls="maintenance" role="tab" data-toggle="tab">Maintenance</a></li>
             </ul>
@@ -496,7 +496,7 @@
                         </div>
                     </div>
                 </div>
-                <div role="tabpanel" class="tab-pane fade" id="measurments">
+                <div role="tabpanel" class="tab-pane fade" id="measurements">
                     <div class="panel panel-default">
                         <div class="panel-heading">Unit of Measurement (Range)</div>
                         <div class="panel-body">

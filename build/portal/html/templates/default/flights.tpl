@@ -43,12 +43,29 @@
                         </td>
                     {/foreach}
                 </table>
-                <ul class="pagination">
-                    {for pageNumber eq 1 to page:pageLinks}
-                    <li><a href="flights.php?page={pageNumber}">{pageNumber}</a></li>
-                    {/for}
-                </ul>
+                <p id="page-nav"></p>
             </div>
 {/area}
-{area:scripts/}
-
+{area:scripts}
+<script src="/templates/{setting:template}/assets/js/jquery.bootpag.min.js"></script>
+        <script>
+            $('#page-nav').bootpag({
+                total: {page:pageLinks},
+                page: {page:pageNumber},
+                maxVisible: 10,
+                leaps: true,
+                firstLastUse: true,
+                first: '<',
+                last: '>',
+                wrapClass: 'pagination',
+                activeClass: 'active',
+                disabledClass: 'disabled',
+                nextClass: 'next',
+                prevClass: 'prev',
+                lastClass: 'last',
+                firstClass: 'first'
+            }).on("page", function(event, num){
+                window.location="/flights.php?page=" + num;
+            });
+        </script>
+{/area}

@@ -32,7 +32,7 @@ import json
 import os
 import datetime
 
-while True:
+while true:
 
     ## Read the configuration file.
     with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:

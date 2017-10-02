@@ -4,15 +4,12 @@
 #                                  ADS-B RECEIVER                                   #
 #####################################################################################
 #                                                                                   #
-#  A set of scripts created to automate the process of installing the software      #
-#  needed to setup a Mode S decoder as well as feeders which are capable of         #
-#  sharing your ADS-B results with many of the most popular ADS-B aggregate sites.  #
-#                                                                                   #
-#  Project Hosted On GitHub: https://github.com/jprochazka/adsb-receiver            #
+# This script is used to complete the setup of the Raspbian image files made        #
+# available to the public by the projects maintainer(s).                            #
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -36,71 +33,80 @@
 
 ## VARIABLES
 
-PROJECTROOTDIRECTORY="$PWD"
-BASHDIRECTORY="$PROJECTROOTDIRECTORY/bash"
+RECEIVER_ROOT_DIRECTORY="${PWD}"
+RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
+RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
 ## INCLUDE EXTERNAL SCRIPTS
 
-source $BASHDIRECTORY/variables.sh
-source $BASHDIRECTORY/functions.sh
+source ${RECEIVER_BASH_DIRECTORY}/variables.sh
+source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Assign the Lighthttpd document root directory to a variable.
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< $RAWDOCUMENTROOT`
+DOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAWDOCUMENTROOT}`
 
 ## WELCOME MESSAGE
 
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --msgbox "Thank you for choosing to use the ADS-B Receiver Project image.\n\nDuring this setup process the preinstalled dump1090-mutability installation will be configured and the ADS-B Project Web Portal will be installed. If you would like to add additional features to your receiver simply execute ./install.sh again after this initial setup process has been completed." 13 78
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Receiver Project Image Setup" --msgbox "Thank you for choosing to use the ADS-B Receiver Project image.\n\nDuring this setup process the preinstalled dump1090-mutability installation will be configured and the ADS-B Project Web Portal will be installed. If you would like to add additional features to your receiver simply execute ./install.sh again after this initial setup process has been completed." 13 78
 
 ## ASK TO UPDATE THE OPERATING SYSTEM
 
-if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --yesno "The image comes with the latest updates to Raspbian as of it's release. However updates may have been released for the operating system since the image was released. This being said it is highly recommended you allow the script to check for additional updates now in order to ensure you are in fact running the latest software available.\n\nWould you like the script to check for and install updates now?" 13 78) then
+if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Receiver Project Image Setup" --yesno "The image comes with the latest updates to Raspbian as of it's release. However updates may have been released for the operating system since the image was released. This being said it is highly recommended you allow the script to check for additional updates now in order to ensure you are in fact running the latest software available.\n\nWould you like the script to check for and install updates now?" 13 78) then
     clear
-    echo -e "\n\e[91m  $ADSB_PROJECTTITLE"
-    echo ""
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
+    echo -e ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[97m"
-    echo ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
+    echo -e ""
     sudo apt-get update
     sudo apt-get -y dist-upgrade
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
+    echo -e ""
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 fi
 
 ## CONFIGURE DUMP1090
 
 clear
-echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
-echo ""
+echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
+echo -e ""
 echo -e "\e[92m  Configure dump1090..."
-echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
-echo ""
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
+echo -e ""
 
 # If dump1090-mutability is installed...
 
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
-    # Set the receivers latitude and longitude.
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for certain features to function properly. You will now be asked to supply the latitude and longitude for your receiver. If you do not have this information you get it by using the web based \"Geocode by Address\" utility hosted on another of my websites.\n\n  https://www.swiftbyte.com/toolbox/geocode" 13 78
-    RECEIVERLATITUDE_TITLE="Receiver Latitude"
-    while [[ -z $RECEIVERLATITUDE ]]; do
-        RECEIVERLATITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLATITUDE_TITLE" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLATITUDE_TITLE="Receiver Latitude (REQUIRED)"
+
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    # Explain to the user that the receiver's latitude and longitude is required.
+    RECEIVER_LATLON_DIALOG=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Receiver Latitude and Longitude" --msgbox "Your receivers latitude and longitude are required for distance calculations, you will now be asked to supply these values for your receiver.\n\nIf you do not have this information you can obtain it using the web based \"Geocode by Address\" utility hosted on another of the lead developers websites:\n\n  https://www.swiftbyte.com/toolbox/geocode" 15 78 3>&1 1>&2 2>&3)
+
+    # Ask the user for the receiver's latitude.
+    RECEIVER_LATITUDE_TITLE="Receiver Latitude"
+    while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
+        RECEIVER_LATITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LATITUDE_TITLE}" --nocancel --inputbox "\nEnter your receiver's latitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVER_LATITUDE_TITLE="Receiver Latitude (REQUIRED)"
     done
-    RECEIVERLONGITUDE_TITLE="Receiver Longitude"
-    while [[ -z $RECEIVERLONGITUDE ]]; do
-        RECEIVERLONGITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$RECEIVERLONGITUDE_TITLE" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
-        RECEIVERLONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
+
+    # Ask the user for the receiver's longitude.
+    RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
+    while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
+        RECEIVER_LONGITUDE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${RECEIVER_LONGITUDE_TITLE}" --nocancel --inputbox "\nEnter your receeiver's longitude.\n(Example: XX.XXXXXXX)" 9 78 3>&1 1>&2 2>&3)
+        RECEIVER_LONGITUDE_TITLE="Receiver Longitude (REQUIRED)"
     done
-    echo -e "\e[94m  Setting the receiver's latitude to $RECEIVERLATITUDE...\e[97m"
-    ChangeConfig "LAT" $RECEIVERLATITUDE "/etc/default/dump1090-mutability"
-    echo -e "\e[94m  Setting the receiver's longitude to $RECEIVERLONGITUDE...\e[97m"
-    ChangeConfig "LON" $RECEIVERLONGITUDE "/etc/default/dump1090-mutability"
+
+    echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
+    ChangeConfig "LAT" ${RECEIVER_LATITUDE} "/etc/default/dump1090-mutability"
+    echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
+    ChangeConfig "LON" ${RECEIVER_LONGITUDE} "/etc/default/dump1090-mutability"
 
     # Ask if dump1090-mutability should bind on all IP addresses.
-    if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
+    if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Bind Dump1090-mutability To All IP Addresses" --defaultno --yesno "By default dump1090-mutability is bound only to the local loopback IP address(s) for security reasons. However some people wish to make dump1090-mutability's data accessable externally by other devices. To allow this dump1090-mutability can be configured to listen on all IP addresses bound to this device. It is recommended that unless you plan to access this device from an external source that dump1090-mutability remain bound only to the local loopback IP address(s).\n\nWould you like dump1090-mutability to listen on all IP addesses?" 15 78) then
         echo -e "\e[94m  Binding dump1090-mutability to all available IP addresses...\e[97m"
         CommentConfig "NET_BIND_ADDRESS" "/etc/default/dump1090-mutability"
     else
@@ -110,116 +116,126 @@ if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "o
 
     # Reload dump1090-mutability to ensure all changes take effect.
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-    echo ""
+    echo -e ""
     sudo /etc/init.d/dump1090-mutability force-reload
 fi
 
 # Download Heywhatsthat.com maximum range rings if the user wishes them to be displayed.
-if [ ! -f /usr/share/dump1090-mutability/html/upintheair.json ] || [ ! -f /usr/share/dump1090-fa/html/upintheair.json ]; then
-    if (whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Heywhatsthat.com Maimum Range Rings" --yesno "Maximum range rings can be added to dump1090-mutability usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-mutability map you will first need to visit http://www.heywhatsthat.com and generate a new panarama centered on the location of your receiver. Once your panarama has been generated a link to the panarama will be displayed in the up left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywhatsthat.com maximum range rings to your map?" 16 78); then
-        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID"
-        while [[ -z $HEYWHATSTHATID ]]; do
-            HEYWHATSTHATID=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATID_TITLE" --nocancel --inputbox "\nEnter your Heywhatsthat.com panarama ID." 8 78 3>&1 1>&2 2>&3)
-            HEYWHATSTHATID_TITLE="Heywhatsthat.com Panarama ID (REQUIRED)"
+if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
+    if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Heywhatsthat.com Maximum Range Rings" --yesno "Maximum range rings can be added to dump1090-mutability usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-mutability map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywhatsthat.com maximum range rings to your map?" 16 78); then
+        HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID"
+        while [[ -z "${HEYWHATSTHATID}" ]] ; do
+            HEYWHATSTHATID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${HEYWHATSTHATID_TITLE}" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
+            HEYWHATSTHATID_TITLE="Heywhatsthat.com Panorama ID (REQUIRED)"
         done
         HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude"
-        while [[ -z $HEYWHATSTHATRINGONE ]]; do
-            HEYWHATSTHATRINGONE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATRINGONE_TITLE" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
+        while [[ -z "${HEYWHATSTHATRINGONE}" ]] ; do
+            HEYWHATSTHATRINGONE=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${HEYWHATSTHATRINGONE_TITLE}" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
             HEYWHATSTHATRINGONE_TITLE="Heywhatsthat.com First Ring Altitude (REQUIRED)"
         done
         HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude"
-        while [[ -z $HEYWHATSTHATRINGTWO ]]; do
-            HEYWHATSTHATRINGTWO=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$HEYWHATSTHATRINGTWO_TITLE" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
+        while [[ -z "${HEYWHATSTHATRINGTWO}" ]] ; do
+            HEYWHATSTHATRINGTWO=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${HEYWHATSTHATRINGTWO_TITLE}" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
             HEYWHATSTHATRINGTWO_TITLE="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
         done
         echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
-        echo ""
-        if [ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+        echo -e ""
+        if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
             HTMLPATH="/usr/share/dump1090-mutability/html/upintheair.json"
         else
             HTMLPATH="/usr/share/dump1090-fa/html/upintheair.json"
         fi
-        sudo wget -O $HTMLPATH "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATID}&refraction=0.25&alts=$HEYWHATSTHATRINGONE,$HEYWHATSTHATRINGTWO"
+        sudo wget -O ${HTMLPATH} "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATID}&refraction=0.25&alts=${HEYWHATSTHATRINGONE},${HEYWHATSTHATRINGTWO}"
     fi
 fi
 
 # Dump1090 configuration is now complete.
-echo ""
-echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+echo -e ""
+echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090 configuration complete.\e[39m"
-echo ""
-read -p "Press enter to continue..." CONTINUE
+echo -e ""
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    read -p "Press enter to continue..." CONTINUE
+fi
 
 
 # CONFIGURE PIAWARE IF NEEDED
 
-if [ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     clear
-    echo -e "\n\e[91m   $ADSB_PROJECTTITLE"
-    echo ""
+    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
+    echo -e ""
     echo -e "\e[92m  Configure PiAware..."
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------\e[96m"
-    echo ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
+    echo -e ""
 
-    whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device. After supplying your login PiAware will ask you to enter your password for verification. If you decide not to supply a login and password at this time you should still be able to claim your feeder by visting the page http://flightaware.com/adsb/piaware/claim." 11 78
-    # Ask for the users FlightAware login.
-    FLIGHTAWARELOGIN=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
-    if [ ! $FLIGHTAWARELOGIN = "" ]; then
-        # If the user supplied their FlightAware login continue with the device claiming process.
-        FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password"
-        while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-            FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-        done
-        FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password"
-        while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-            FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-        done
-        while [ ! $FLIGHTAWAREPASSWORD1 = $FLIGHTAWAREPASSWORD2 ]; do
-            FLIGHTAWAREPASSWORD1=""
-            FLIGHTAWAREPASSWORD2=""
-            # Display an error message if the passwords did not match.
-            whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
-            FLIGHTAWAREPASSWORD1_TITLE="Your FlightAware Password (REQUIRED)"
-            while [[ -z $FLIGHTAWAREPASSWORD1 ]]; do
-                 FLIGHTAWAREPASSWORD1=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD1_TITLE" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-            done
-            FLIGHTAWAREPASSWORD2_TITLE="Confirm Your FlightAware Password (REQUIRED)"
-            while [[ -z $FLIGHTAWAREPASSWORD2 ]]; do
-                 FLIGHTAWAREPASSWORD2=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --title "$FLIGHTAWAREPASSWORD2_TITLE" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
-            done
-        done
+    # Confirm if the user is able to claim their PiAware instance online.
+    FLIGHTAWARE_LOCAL_CREDENTIALS=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --yesno "Although it is possible to configure your FlightAware credentials locally, these will be stored in plaintext which represents a security risk that should be avoided.\n\nFlightAware recommends claiming your feeder online using the following page:\n\n  http://flightaware.com/adsb/piaware/claim\n\nWill you be able to access the FlightAware website from the same public IP address as the feeder will be sending data from?" 16 78 3>&1 1>&2 2>&3)
 
+    if [[ "${FLIGHTAWARE_LOCAL_CREDENTIALS}" -eq "1" ]] ; then
+        # Ask for the users FlightAware login.
+        FLIGHTAWARE_LOGIN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Your FlightAware Login" --nocancel --inputbox "\nEnter your FlightAware login.\nLeave this blank to manually claim your PiAware device." 9 78 3>&1 1>&2 2>&3)
+        if [[ ! "${FLIGHTAWARE_LOGIN}" = "" ]] ; then
+            # If the user supplied their FlightAware login continue with the device claiming process.
+            FLIGHTAWARE_PASSWORD1_TITLE="Your FlightAware Password"
+            while [[ -z "${FLIGHTAWARE_PASSWORD1}" ]] ; do
+                FLIGHTAWARE_PASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FLIGHTAWARE_PASSWORD1_TITLE}" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+            done
+            FLIGHTAWARE_PASSWORD2_TITLE="Confirm Your FlightAware Password"
+            while [[ -z "${FLIGHTAWARE_PASSWORD2}" ]] ; do
+                FLIGHTAWARE_PASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FLIGHTAWARE_PASSWORD2_TITLE}" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+            done
+            while [[ ! "${FLIGHTAWARE_PASSWORD1}" = "${FLIGHTAWARE_PASSWORD2}" ]] ; do
+                FLIGHTAWARE_PASSWORD1=""
+                FLIGHTAWARE_PASSWORD2=""
+                # Display an error message if the passwords did not match.
+                whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Passwords did not match.\nPlease enter your password again." 9 78
+                FLIGHTAWARE_PASSWORD1_TITLE="Your FlightAware Password (REQUIRED)"
+                while [[ -z "${FLIGHTAWARE_PASSWORD1}" ]] ; do
+                     FLIGHTAWARE_PASSWORD1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FLIGHTAWARE_PASSWORD1_TITLE}" --nocancel --passwordbox "\nEnter your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+                done
+                FLIGHTAWARE_PASSWORD2_TITLE="Confirm Your FlightAware Password (REQUIRED)"
+                while [[ -z "${FLIGHTAWARE_PASSWORD2}" ]] ; do
+                     FLIGHTAWARE_PASSWORD2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${FLIGHTAWARE_PASSWORD2_TITLE}" --nocancel --passwordbox "\nConfirm your FlightAware password." 8 78 3>&1 1>&2 2>&3)
+                done
+            done
+        else
+            # Display a message to the user stating they need to manually claim their device.
+            whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device, after supplying this you will ask you to enter your password for verification.\n\nIf you decide not to provide a login and password at this time you should still be able to claim your feeder by visting the following site:\n\n  http://flightaware.com/adsb/piaware/claim" 13 78
+        fi
+    fi
+
+    if [[ -n "${FLIGHTAWARE_LOGIN}" ]] && [[ -n "${FLIGHTAWARE_PASSWORD1}" ]] ; then
         # Set the supplied user name and password in the configuration.
         echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
-        echo ""
-        sudo piaware-config flightaware-user $FLIGHTAWARELOGIN
-        echo ""
+        echo -e ""
+        sudo piaware-config flightaware-user ${FLIGHTAWARE_LOGIN}
+        echo -e ""
         echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
-        echo ""
-        sudo piaware-config flightaware-password $FLIGHTAWAREPASSWORD1
-        echo ""
+        echo -e ""
+        sudo piaware-config flightaware-password ${FLIGHTAWARE_PASSWORD1}
+        echo -e ""
         echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
-        echo ""
+        echo -e ""
         sudo /etc/init.d/piaware restart
-        echo ""
-    else
-        # Display a message to the user stating they need to manually claim their device.
-        whiptail --backtitle "$ADSB_PROJECTTITLE" --title "Claim Your PiAware Device" --msgbox "Since you did not supply a login you will need to claim this PiAware device manually by visiting the following URL.\n\nhttp://flightaware.com/adsb/piaware/claim." 10 78
+        echo -e ""
     fi
 
     # PiAware configuration is now complete.
-    echo ""
-    echo -e "\e[93m----------------------------------------------------------------------------------------------------"
+    echo -e ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  PiAware configuration complete.\e[39m"
-    echo ""
-    read -p "Press enter to continue..." CONTINUE
+    echo -e ""
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
 fi
 
-## SETUP THE ADS-B RECIEVER PROJECT WEB PORTAL
+## SETUP THE ADS-B RECEIVER PROJECT WEB PORTAL
 
-chmod +x $BASHDIRECTORY/portal/install.sh
-$BASHDIRECTORY/portal/install.sh
-if [ $? -ne 0 ]; then
+chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/install.sh
+${RECEIVER_BASH_DIRECTORY}/portal/install.sh
+if [[ $? -ne 0 ]] ; then
     exit 1
 fi
 
@@ -228,6 +244,6 @@ fi
 # remove the "image" file.
 rm -f image
 
-whiptail --backtitle "$ADSB_PROJECTTITLE" --title "ADS-B Receiver Project Image Setup" --msgbox "Image setup is now complete. If you have any questions or comments on the project let us know on our website.\n\n  https://www.adsbreceiver.net\n\nRemember to install additional features simply run ./install.sh again." 12 78
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Receiver Project Image Setup" --msgbox "Image setup is now complete. If you have any questions or comments on the project let us know on our website.\n\n  https://www.adsbreceiver.net\n\nRemember to install additional features simply run ./install.sh again." 12 78
 
 exit 0
