@@ -353,19 +353,13 @@ if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] ; then
     fi
 fi
 
-# Dummy test for consistency with other feeder install scripts.
-if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
-    if [[ -n "dump1090-mutability" ]] ; then
-        # (re)start the component service.
-        if [[ "`sudo systemctl status dump1090-mutability 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
-            echo -e "\e[94m  Restarting the dump1090-mutability service...\e[97m"
-            sudo systemctl restart dump1090-mutability 2>&1
-        else
-            echo -e "\e[94m  Starting the dump1090-mutability service...\e[97m"
-            sudo systemctl start dump1090-mutability 2>&1
-        fi
-        echo -e ""
-    fi
+# (re)start dump1090-mutability.
+if [[ "`sudo systemctl status dump1090-mutability 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
+    echo -e "\e[94m  Restarting the dump1090-mutability service...\e[97m"
+    sudo systemctl restart dump1090-mutability 2>&1
+else
+    echo -e "\e[94m  Starting the dump1090-mutability service...\e[97m"
+    sudo systemctl start dump1090-mutability 2>&1
 fi
 
 ### SETUP COMPLETE

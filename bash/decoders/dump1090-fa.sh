@@ -58,21 +58,21 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
-echo -e ""
+echo ""
 echo -e "\e[92m  Setting up dump1090-fa..."
-echo -e ""
+echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo -e ""
+echo ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-fa Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-fa is a fork of the dump1090-mutability version of dump1090 that is specifically designed for FlightAware's PiAware software.\n\nIn order to use this version of dump1090 FlightAware's PiAware software must be installed as well.\n\n  https://github.com/flightaware/dump1090\n\nContinue setup by installing dump1090-fa?" 14 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo -e ""
+        echo ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
-        echo -e ""
+        echo ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
@@ -81,7 +81,7 @@ fi
 ## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo -e ""
+echo ""
 CheckPackage git
 CheckPackage curl
 CheckPackage build-essential
@@ -98,60 +98,83 @@ CheckPackage libncurses5-dev
 CheckPackage cmake
 CheckPackage doxygen
 CheckPackage libtecla-dev
-CheckPackage libtecla1-dev
 CheckPackage help2man
 CheckPackage pandoc
 
 ## BUILD AND INSTALL THE BLADERF PACKAGE FROM SOURCE IF NOT INSTALLED
 
-echo -e ""
-echo -e "\e[95m  Preparing the bladRF Git repository...\e[97m"
-echo -e ""
-if [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF/.git" ]] ; then
-    # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the bladeRF git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/dump1090 2>&1
-    echo -e "\e[94m  Updating the local bladeRF git repository...\e[97m"
-    echo -e ""
-    git pull
-else
-    # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+# Dheck if the needed bladeRF packages are installed.
+if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-udev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
     echo ""
-    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/bladeRF
+    echo -e "\e[95m  Preparing the bladRF Git repository...\e[97m"
     echo ""
+    if [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF/.git" ]] ; then
+        # A directory with a git repository containing the source code already exists.
+        echo -e "\e[94m  Entering the bladeRF git repository directory...\e[97m"
+        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
+        echo -e "\e[94m  Updating the local bladeRF git repository...\e[97m"
+        echo ""
+        git pull
+    else
+        # A directory containing the source code does not exist in the build directory.
+        echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+        echo ""
+        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/bladeRF
+        echo ""
+        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
+        echo -e "\e[94m  Cloning the bladeRF git repository locally...\e[97m"
+        echo ""
+        git clone https://github.com/Nuand/bladeRF.git
+    fi
+
+    echo ""
+    echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
+    echo ""
+    if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] ; then
+        echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
+        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
+    fi
+
+    echo -e "\e[94m  Building the bladeRF package...\e[97m"
+    echo ""
+    dpkg-buildpackage -b
+    echo ""
+
+    echo -e "\e[94m  Entering the bladeRF build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
-    echo -e "\e[94m  Cloning the bladeRF git repository locally...\e[97m"
-    echo -e ""
-    git clone https://github.com/Nuand/bladeRF.git
+
+    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+        echo -e "\e[94m  Installing the libbladerf1 package...\e[97m"
+        echo ""
+        sudo dpkg -i libbladerf1_*.deb
+        echo ""
+    fi
+
+    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+        echo -e "\e[94m  Installing the libbladerf-dev package...\e[97m"
+        echo ""
+        sudo dpkg -i libbladerf-dev_*.deb
+        echo ""
+    fi
+
+    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf-udev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+        echo -e "\e[94m  Installing the libbladerf-udev package...\e[97m"
+        echo ""
+        sudo dpkg -i libbladerf-udev_*.deb
+    fi
 fi
-
-echo -e ""
-echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
-echo -e ""
-if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] ; then
-    echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
-fi
-
-echo -e "\e[94m  Building the bladeRF package...\e[97m"
-echo -e ""
-dpkg-buildpackage -b
-echo -e ""
-
-exit 0
+echo ""
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
 
-echo -e ""
 echo -e "\e[95m  Preparing the dump1090-fa Git repository...\e[97m"
-echo -e ""
+echo ""
 if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090 2>&1
     echo -e "\e[94m  Updating the local dump1090-fa git repository...\e[97m"
-    echo -e ""
+    echo ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
@@ -161,51 +184,59 @@ else
     echo ""
     cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
     echo -e "\e[94m  Cloning the dump1090-fa git repository locally...\e[97m"
-    echo -e ""
+    echo ""
     git clone https://github.com/flightaware/dump1090.git
 fi
 
 ## BUILD AND INSTALL THE DUMP1090-FA PACKAGE
 
-echo -e ""
+echo ""
 echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
-echo -e ""
+echo ""
 if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] ; then
     echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090 2>&1
 fi
 echo -e "\e[94m  Building the dump1090-fa package...\e[97m"
-echo -e ""
+echo ""
 dpkg-buildpackage -b
-echo -e ""
+echo ""
 echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
 echo -e "\e[94m  Installing the dump1090-fa package...\e[97m"
-echo -e ""
+echo ""
 sudo dpkg -i dump1090-fa_${PIAWARE_VERSION}_*.deb
 
 # Check that the package was installed.
-echo -e ""
+echo ""
 echo -e "\e[94m  Checking that the dump1090-fa package was installed properly...\e[97m"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # If the dump1090-fa package could not be installed halt setup.
-    echo -e ""
+    echo ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
     echo -e "  SETUP HAS BEEN TERMINATED!"
-    echo -e ""
+    echo ""
     echo -e "\e[93mThe package \"dump1090-fa\" could not be installed.\e[39m"
-    echo -e ""
+    echo ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
-    echo -e ""
+    echo ""
     read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
+# Create binary package archive directory.
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+    echo -e "\e[94m  Creating package archive directory...\e[97m"
+    echo -e ""
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+    echo -e ""
+fi
+
 # Archive binary package.
 echo -e "\e[94m  Moving the dump1090-mutability binary package into the archive directory...\e[97m"
-echo -e ""
+echo ""
 mv -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090-fa_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
 
 
@@ -258,7 +289,7 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
     # If the Heywhatsthat.com maximum range rings are to be added download them now.
     if [[ "${DUMP1090_HEYWHATSTHAT_INSTALL}" = "true" ]] ; then
         echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
-        echo -e ""
+        echo ""
         sudo wget -O /usr/share/dump1090-fa/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${DUMP1090_HEYWHATSTHAT_ID}&refraction=0.25&alts=${DUMP1090_HEYWHATSTHAT_RING_ONE},${DUMP1090_HEYWHATSTHAT_RING_TWO}"
     fi
 fi
@@ -266,13 +297,14 @@ fi
 ### SETUP COMPLETE
 
 # Return to the project root directory.
+echo ""
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo -e ""
+echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump1090-fa setup is complete.\e[39m"
-echo -e ""
+echo ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi

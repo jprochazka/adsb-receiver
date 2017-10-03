@@ -37,12 +37,7 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Component specific variables.
-
-COMPONENT_NAME="Duck DNS"
-COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/duckdns"
-
-### INCLUDE EXTERNAL SCRIPTS
+## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
@@ -51,44 +46,44 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURA
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-### BEGIN SETUP
+## BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
-echo -e ""
-echo -e "\e[92m  Setting up ${COMPONENT_NAME}..."
+echo ""
+echo -e "\e[92m  Setting up Duck DNS..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo -e ""
+echo ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Dynamic DNS" --yesno "${COMPONENT_NAME} is a free dynamic DNS service hosted on Amazon VPC.\n\nPLEASE NOTE:\n\nBefore continuing this setup it is recommended that you visit the ${COMPONENT_NAME} website and signup for then setup a sub domain which will be used by this device. You will need both the domain and token supplied to you after setting up your account.\n\n  http://www.duckdns.org\n\nContinue with ${COMPONENT_NAME} update script setup?" 18 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Duck DNS Dynamic DNS" --yesno "Duck DNS is a free dynamic DNS service hosted on Amazon VPC.\n\nPLEASE NOTE:\n\nBefore continuing this setup it is recommended that you visit the Duck DNS website and signup for then setup a sub domain which will be used by this device. You will need both the domain and token supplied to you after setting up your account.\n\n  http://www.duckdns.org\n\nContinue with Duck DNS update script setup?" 18 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo -e ""
+        echo ""
         echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
-        echo -e ""
+        echo -e "\e[92m  Duck DNS setup halted.\e[39m"
+        echo ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
 fi
 
-echo -e "\e[95m  Setting up ${COMPONENT_NAME} on this device...\e[97m"
-echo -e ""
+echo -e "\e[95m  Setting up Duck DNS on this device...\e[97m"
+echo ""
 
-### CHECK FOR PREREQUISITE PACKAGES
+## CHECK FOR PREREQUISITE PACKAGES
 
 # Check that the required packages are installed.
-echo -e ""
+echo ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo -e ""
+echo ""
 CheckPackage cron
 CheckPackage curl
 
-### CONFIRM SETTINGS
+## CONFIRM SETTINGS
 
 # Confirm settings with user.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
@@ -106,7 +101,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
-### PROJECT BUILD DIRECTORY
+## PROJECT BUILD DIRECTORY
 
 # Create the build directory if it does not already exist.
 if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}" ]] ; then
@@ -115,42 +110,40 @@ if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}" ]] ; then
 fi
 
 # Create a component directory within the build directory if it does not already exist.
-if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
-    echo -e "\e[94m  Creating the directory ${COMPONENT_BUILD_DIRECTORY}...\e[97m"
-    mkdir -vp ${COMPONENT_BUILD_DIRECTORY} 2>&1
+if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/duckdns ]] ; then
+    echo -e "\e[94m  Creating the directory ${RECEIVER_BUILD_DIRECTORY}/duckdns...\e[97m"
+    echo ""
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/duckdns 2>&1
+    echo ""
 fi
 
-### DOWNLOAD SOURCE
+## DOWNLOAD SOURCE
 
-### BUILD AND INSTALL
+## BUILD AND INSTALL
 
 # Create then set permissions on the file duck.sh.
-echo -e "\e[94m  Creating the ${COMPONENT_NAME} update script...\e[97m"
-tee ${COMPONENT_BUILD_DIRECTORY}/duck.sh > /dev/null <<EOF
-echo url="https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip=" | curl -k -o ${COMPONENT_BUILD_DIRECTORY}/duck.log -K -
+echo -e "\e[94m  Creating the Duck DNS update script...\e[97m"
+tee ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh > /dev/null <<EOF
+echo url="https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip=" | curl -k -o ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.log -K -
 EOF
 
-echo -e "\e[94m  Setting execute permissions for only this user on the ${COMPONENT_NAME} update script...\e[97m"
-chmod -v 700 ${COMPONENT_BUILD_DIRECTORY}/duck.sh 2>&1
+echo -e "\e[94m  Setting execute permissions for only this user on the Duck DNS update script...\e[97m"
+chmod -v 700 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
 
-### CREATE SCRIPTS
+## CREATE SCRIPTS
 
-# Add job to the users crontab if it does not exist.
-echo -e "\e[94m  Adding the ${COMPONENT_NAME} update command to your crontab if it does not exist already...\e[97m"
-COMMAND="${COMPONENT_BUILD_DIRECTORY}/duck.sh >/dev/null 2>&1"
-JOB="*/5 * * * * ${COMMAND}"
+echo -e "\e[94m  Adding the DuckDNS cron file...\e[97m"
+sudo tee /etc/cron.d/duckdns_ip_address_update > /dev/null <<EOF
+# Updates IP address with duckdns.org.
+*/5 * * * * ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh >/dev/null 2>&1
+EOF
+echo ""
 
-# Should only add the job if the COMMAND does not already exist in the users crontab.
-(crontab -l | grep -v -F "${COMMAND}" ; echo "${JOB}") | crontab -
+## START SCRIPTS
 
-# The following command should remove the job from the users crontab.
-#(crontab -l | grep -v -F "${COMMAND}" ) | crontab -
-
-### START SCRIPTS
-
-echo -e ""
-echo -e "\e[95m  Starting ${COMPONENT_NAME}...\e[97m"
-echo -e ""
+echo ""
+echo -e "\e[95m  Starting Duck DNS...\e[97m"
+echo ""
 
 # Kill any currently running instances.
 PROCS="duck.sh"
@@ -165,23 +158,24 @@ for PROC in ${PROCS} ; do
 done
 
 # Run the Duck DNS update script for the first time..
-echo -e "\e[94m  Executing the ${COMPONENT_NAME} update script...\e[97m"
-echo -e ""
-${COMPONENT_BUILD_DIRECTORY}/duck.sh 2>&1
-echo -e ""
+echo -e "\e[94m  Executing the Duck DNS update script...\e[97m"
+echo ""
+${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
+echo ""
 
-### SETUP COMPLETE
+## SETUP COMPLETE
 
 # Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo -e ""
+echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
-echo -e ""
+echo -e "\e[92m  Duck DNS setup is complete.\e[39m"
+echo ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
-#exit 0
+exit 0
+

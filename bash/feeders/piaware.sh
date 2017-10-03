@@ -55,11 +55,11 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
-echo -e ""
+echo ""
 echo -e "\e[92m  Setting up FlightAware PiAware client..."
-echo -e ""
+echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo -e ""
+echo ""
 
 # Check for existing component install.
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
@@ -74,24 +74,24 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
-        echo -e ""
+        echo ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  FlightAware PiAware client setup halted.\e[39m"
-        echo -e ""
+        echo ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
 else
     # Warn that automated installation is not supported.
     echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
-    echo -e ""
+    echo ""
     exit 1
 fi
 
 ### CHECK FOR PREREQUISITE PACKAGES
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for FlightAware PiAware client...\e[97m"
-echo -e ""
+echo ""
 
 CheckPackage build-essential
 CheckPackage debhelper
@@ -118,31 +118,31 @@ fi
 
 ### START INSTALLATION
 
-echo -e ""
+echo ""
 echo -e "\e[95m  Begining the FlightAware PiAware client installation process...\e[97m"
-echo -e ""
+echo ""
 
 if [[ -d ${RECEIVER_BUILD_DIRECTORY}/piaware_builder ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/.git ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the piaware_builder git repository directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder 2>&1
     echo -e "\e[94m  Updating the local piaware_builder git repository...\e[97m"
-    echo -e ""
+    echo ""
     git pull 2>&1
 else
     # A directory containing the source code does not exist in the build directory.
     echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
     echo -e "\e[94m  Cloning the piaware_builder git repository locally...\e[97m"
-    echo -e ""
+    echo ""
     git clone https://github.com/flightaware/piaware_builder.git 2>&1
 fi
 
 ## BUILD AND INSTALL THE COMPONENT PACKAGE
 
-echo -e ""
+echo ""
 echo -e "\e[95m  Building and installing the FlightAware PiAware client package...\e[97m"
-echo -e ""
+echo ""
 
 # Change to the component build directory.
 if [[ ! ${PWD} = ${RECEIVER_BUILD_DIRECTORY}/piaware_builder ]] ; then
@@ -154,42 +154,41 @@ fi
 if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
     # Execute build script.
     echo -e "\e[94m  Executing the FlightAware PiAware client build script...\e[97m"
-    echo -e ""
+    echo ""
     ./sensible-build.sh jessie
-    echo -e ""
+    echo ""
 
     # Change to build script directory.
     echo -e "\e[94m  Entering the FlightAware PiAware client build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-jessie 2>&1
-    echo -e ""
 
     # Build binary package.
     echo -e "\e[94m  Building the FlightAware PiAware client package...\e[97m"
-    echo -e ""
+    echo ""
     dpkg-buildpackage -b 2>&1
-    echo -e ""
+    echo ""
 
     # Install binary package.
     echo -e "\e[94m  Installing the FlightAware PiAware client package...\e[97m"
-    echo -e ""
+    echo ""
     sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.deb 2>&1
-    echo -e ""
+    echo ""
 
     # Check that the component package was installed successfully.
     echo -e "\e[94m  Checking that the FlightAware PiAware client package was installed properly...\e[97m"
 
     if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
         # If the component package could not be installed halt setup.
-        echo -e ""
+        echo ""
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
         echo -e "  SETUP HAS BEEN TERMINATED!"
-        echo -e ""
+        echo ""
         echo -e "\e[93mThe package \"piaware\" could not be installed.\e[39m"
-        echo -e ""
+        echo ""
         echo -e "\e[93m  ------------------------------------------------------------------------------"
         echo -e "\e[92m  FlightAware PiAware client setup halted.\e[39m"
-        echo -e ""
+        echo ""
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             read -p "Press enter to continue..." CONTINUE
         fi
@@ -198,29 +197,29 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         # Create binary package archive directory.
         if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
             echo -e "\e[94m  Creating package archive directory...\e[97m"
-            echo -e ""
+            echo ""
             mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-            echo -e ""
+            echo ""
         fi
 
         # Archive binary package.
         echo -e "\e[94m  Moving the FlightAware PiAware client binary package into the archive directory...\e[97m"
-        echo -e ""
+        echo ""
         mv -vf ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-        echo -e ""
+        echo ""
 
         # Archive changelog.
         echo -e "\e[94m  Moving the FlightAware PiAware client changes file into the archive directory...\e[97m"
-        echo -e ""
+        echo ""
         mv -vf ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-        echo -e ""
+        echo ""
     fi
 fi
 
 ## COMPONENT POST INSTALL ACTIONS
 
 # Instruct the user as to how they can claim their receiver online.
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claiming Your PiAware Device" --yesno "FlightAware now requires you claim your feeder online using the following page:\n\n  http://flightaware.com/adsb/piaware/claim\n\nTo claim your device simply visit the address listed above." 16 78
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claiming Your PiAware Device" --msgbox "FlightAware requires you claim your feeder online using the following URL:\n\n  http://flightaware.com/adsb/piaware/claim\n\nTo claim your device simply visit the address listed above." 12 78
 
 ### SETUP COMPLETE
 
@@ -228,12 +227,13 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claiming Your PiAware 
 echo -e "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
-echo -e ""
+echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  FlightAware PiAware client setup is complete.\e[39m"
-echo -e ""
+echo ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     read -p "Press enter to continue..." CONTINUE
 fi
 
 exit 0
+
