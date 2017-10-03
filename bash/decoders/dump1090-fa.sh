@@ -37,10 +37,6 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Component specific variables.
-
-# Component service script variables.
-
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -99,28 +95,74 @@ CheckPackage lighttpd
 CheckPackage fakeroot
 CheckPackage dh-systemd
 CheckPackage libncurses5-dev
+CheckPackage cmake
+CheckPackage doxygen
+CheckPackage libtecla-dev
+CheckPackage libtecla1-dev
+CheckPackage help2man
+CheckPackage pandoc
+
+## BUILD AND INSTALL THE BLADERF PACKAGE FROM SOURCE IF NOT INSTALLED
+
+echo -e ""
+echo -e "\e[95m  Preparing the bladRF Git repository...\e[97m"
+echo -e ""
+if [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF/.git" ]] ; then
+    # A directory with a git repository containing the source code already exists.
+    echo -e "\e[94m  Entering the bladeRF git repository directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/dump1090 2>&1
+    echo -e "\e[94m  Updating the local bladeRF git repository...\e[97m"
+    echo -e ""
+    git pull
+else
+    # A directory containing the source code does not exist in the build directory.
+    echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+    echo ""
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/bladeRF
+    echo ""
+    cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
+    echo -e "\e[94m  Cloning the bladeRF git repository locally...\e[97m"
+    echo -e ""
+    git clone https://github.com/Nuand/bladeRF.git
+fi
+
+echo -e ""
+echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
+echo -e ""
+if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] ; then
+    echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
+fi
+
+echo -e "\e[94m  Building the bladeRF package...\e[97m"
+echo -e ""
+dpkg-buildpackage -b
+echo -e ""
+
+exit 0
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
 
 echo -e ""
 echo -e "\e[95m  Preparing the dump1090-fa Git repository...\e[97m"
 echo -e ""
-if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090/.git" ]] ; then
+if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090 2>&1
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090 2>&1
     echo -e "\e[94m  Updating the local dump1090-fa git repository...\e[97m"
     echo -e ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
+    echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+    echo ""
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
+    echo ""
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
     echo -e "\e[94m  Cloning the dump1090-fa git repository locally...\e[97m"
     echo -e ""
     git clone https://github.com/flightaware/dump1090.git
-    echo -e ""
 fi
 
 ## BUILD AND INSTALL THE DUMP1090-FA PACKAGE
@@ -128,16 +170,16 @@ fi
 echo -e ""
 echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
 echo -e ""
-if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090" ]] ; then
+if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] ; then
     echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090/dump1090 2>&1
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090 2>&1
 fi
 echo -e "\e[94m  Building the dump1090-fa package...\e[97m"
 echo -e ""
 dpkg-buildpackage -b
 echo -e ""
 echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY}/dump1090 2>&1
+cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
 echo -e "\e[94m  Installing the dump1090-fa package...\e[97m"
 echo -e ""
 sudo dpkg -i dump1090-fa_${PIAWARE_VERSION}_*.deb
@@ -160,6 +202,12 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
+
+# Archive binary package.
+echo -e "\e[94m  Moving the dump1090-mutability binary package into the archive directory...\e[97m"
+echo -e ""
+mv -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090-fa_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+
 
 ## DUMP1090-FA POST INSTALLATION CONFIGURATION
 

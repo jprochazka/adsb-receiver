@@ -60,6 +60,7 @@ function DisplayHelp() {
     echo -e "-a            --automated-install    Use a configuration file to automate the install process somewhat."
     echo -e "-b <BRANCH>   --branch=<BRANCH>      Specifies the repository branch to be used."
     echo -e "-c <FILE>     --config-file=<FILE>   The configuration file to be use for an unattended installation."
+    echo -e "-d            --development          Skips local repository update so changes are not overwrote."
     echo -e "-h            --help                 Shows this message."
     echo -e "-l            --log-output           Logs all output to a file in the logs directory."
     echo -e "-v            --verbose              Provides extra confirmation at each stage of the install."
