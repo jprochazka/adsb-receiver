@@ -338,26 +338,34 @@ if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
     fi
 else
     # The RTL-SDR OGN binaries do not appear to exist on this device.
+
+    # Support for Open Glider Network has been removed until the script has been rewritten to
+    # utilize the updated software they supply in their GItHub repositories.
+    #
+    #   https://github.com/glidernet
+
     RTLSDROGN_IS_INSTALLED="false"
-    # Prompt user to confirm if installation is required.
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Not Installed" --defaultno --yesno "RTL-SDR OGN is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is most prevalent within Europe, but new receivers are welcome at any location.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
-        case $? in
-            0)
-                RTLSDROGN_DO_INSTALL="true"
-                ;;
-            1)
-                RTLSDROGN_DO_INSTALL="false"
-                ;;
-        esac
-    else
-        # Refer to the installation configuration to decide if RTL-SDR OGN is to be installed.
-        if [[ "${RTLSDROGN_INSTALL}" = "true" ]] ; then
-            RTLSDROGN_DO_INSTALL="true"
-        else
-            RTLSDROGN_DO_INSTALL="false"
-        fi
-    fi
+    RTLSDROGN_DO_INSTALL="false"
+
+    ## Prompt user to confirm if installation is required.
+    #if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+    #    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Not Installed" --defaultno --yesno "RTL-SDR OGN is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is most prevalent within Europe, but new receivers are welcome at any location.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
+    #    case $? in
+    #        0)
+    #            RTLSDROGN_DO_INSTALL="true"
+    #            ;;
+    #        1)
+    #            RTLSDROGN_DO_INSTALL="false"
+    #            ;;
+    #    esac
+    #else
+    #    # Refer to the installation configuration to decide if RTL-SDR OGN is to be installed.
+    #    if [[ "${RTLSDROGN_INSTALL}" = "true" ]] ; then
+    #        RTLSDROGN_DO_INSTALL="true"
+    #    else
+    #        RTLSDROGN_DO_INSTALL="false"
+    #    fi
+    #fi
 fi
 
 ## Feeder Selection Menu
