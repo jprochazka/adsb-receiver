@@ -128,7 +128,9 @@ echo url="https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKD
 EOF
 
 echo -e "\e[94m  Setting execute permissions for only this user on the Duck DNS update script...\e[97m"
+echo ""
 chmod -v 700 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
+echo ""
 
 ## CREATE SCRIPTS
 
