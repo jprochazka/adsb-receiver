@@ -37,39 +37,10 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Component specific variables.
-
-# Component service script variables.
-
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
-
-# To be moved to functions.sh...
-
-#################################################################################
-# Blacklist DVB-T drivers for RTL-SDR devices.
-
-function BlacklistModules () {
-    RECEIVER_KERNEL_MODULE_BLACKLIST="/etc/modprobe.d/rtlsdr-blacklist.conf"
-    if [[ ! -f "${RECEIVER_KERNEL_MODULE_BLACKLIST}" ]] || [[ `cat ${RECEIVER_KERNEL_MODULE_BLACKLIST} | wc -l` -lt 9 ]] ; then
-        echo -en "\e[94m  Installing blacklist to prevent unwanted kernel modules from being loaded...\e[97m"
-        sudo tee ${RECEIVER_KERNEL_MODULE_BLACKLIST}  > /dev/null <<EOF
-blacklist dvb_usb_v2
-blacklist dvb_usb_rtl28xxu
-blacklist dvb_usb_rtl2830u
-blacklist dvb_usb_rtl2832u
-blacklist rtl_2830
-blacklist rtl_2832
-blacklist r820t
-blacklist rtl2830
-blacklist rtl2832
-EOF
-    else
-        echo -en "\e[94m  Kernel module blacklist already installed...\e[97m"
-    fi
-}
 
 ## SET INSTALLATION VARIABLES
 
@@ -215,7 +186,6 @@ echo -e ""
 
 # Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
 BlacklistModules
-CheckReturnCode
 
 # Remove the dvb_usb_rtl28xxu kernel module.
 echo -e "\e[94m  Checking if the kernel module dvb_usb_rtl28xxu is loaded...\e[97m"
@@ -286,10 +256,16 @@ if [[ -z "${RECEIVER_LATITUDE}" ]] && [[ -z "${RECEIVER_LONGITUDE}" ]] && [[ "${
 fi
 # Finally set the reciver's latitude and longitude if these variables were supplied.
 if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
-    echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
-    ChangeConfig "SiteLat" "${RECEIVER_LATITUDE}" "${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js"
-    echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
-    ChangeConfig "SiteLon" "${RECEIVER_LONGITUDE}" "${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js"
+    if [ -f ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js ]; then
+        echo -e "\e[94m  Setting the receiver's latitude in ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js to ${RECEIVER_LATITUDE}...\e[97m"
+        ChangeConfig "SiteLat" "${RECEIVER_LATITUDE}" "${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js"
+        echo -e "\e[94m  Setting the receiver's longitude in ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js to ${RECEIVER_LONGITUDE}...\e[97m"
+        ChangeConfig "SiteLon" "${RECEIVER_LONGITUDE}" "${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/config.js"
+    fi
+    echo -e "\e[94m  Setting the receiver's latitude in ${RECEIVER_BUILD_DIRECTORY}/portal/html/dump978/config.js to ${RECEIVER_LATITUDE}...\e[97m"
+    ChangeConfig "SiteLat" "${RECEIVER_LATITUDE}" "${RECEIVER_BUILD_DIRECTORY}/portal/html/dump978/config.js"
+    echo -e "\e[94m  Setting the receiver's longitude in ${RECEIVER_BUILD_DIRECTORY}/portal/html/dump978/config.js to ${RECEIVER_LONGITUDE}...\e[97m"
+    ChangeConfig "SiteLon" "${RECEIVER_LONGITUDE}" "${RECEIVER_BUILD_DIRECTORY}/portal/html/dump978/config.js"
 fi
 
 # Create the dump978 JSON directory in Lighttpd's document root.

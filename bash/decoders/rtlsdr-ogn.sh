@@ -125,7 +125,7 @@ CheckPackage libcurl3
 CheckPackage libfftw3-3
 CheckPackage libfftw3-dev
 CheckPackage libjpeg62-turbo
-CheckPackage libjpeg8
+CheckPackage libjpeg
 CheckPackage libjpeg-dev
 CheckPackage lynx
 CheckPackage procserv

@@ -335,7 +335,7 @@ if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
                 RTLSDROGN_DO_UPGRADE="false"
             fi
         fi
-    fi    
+    fi
 else
     # The RTL-SDR OGN binaries do not appear to exist on this device.
     RTLSDROGN_IS_INSTALLED="false"

@@ -158,3 +158,26 @@ function Check_Hardware () {
         export HARDWARE_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
     fi
 }
+
+#################################################################################
+# Blacklist DVB-T drivers for RTL-SDR devices.
+
+function BlacklistModules {
+    if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf ]] || [[ `cat /etc/modprobe.d/rtlsdr-blacklist.conf | wc -l` -lt 9 ]] ; then
+        echo -en "\e[94m  Installing blacklist to prevent unwanted kernel modules from being loaded...\e[97m"
+        sudo tee ${RECEIVER_KERNEL_MODULE_BLACKLIST}  > /dev/null <<EOF
+blacklist dvb_usb_v2
+blacklist dvb_usb_rtl28xxu
+blacklist dvb_usb_rtl2830u
+blacklist dvb_usb_rtl2832u
+blacklist rtl_2830
+blacklist rtl_2832
+blacklist r820t
+blacklist rtl2830
+blacklist rtl2832
+EOF
+    else
+        echo -en "\e[94m  Kernel module blacklist already installed...\e[97m"
+    fi
+}
+
