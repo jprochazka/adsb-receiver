@@ -263,8 +263,8 @@ else
     if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')" -ge "1604" ]] ; then
     # Use phpp7.0 for Ubuntu 16.04 LTS and above, which we detect based on version string format of yymm.
         RECEIVER_PHP_VERSION="7.0"
-    elif [[ "${DISTRIB_ID}" = "Debian" ]] && [[ "${DISTRIB_RELEASE}" = "testing" ]] ; then
-    # Use php7.0 for Debian 9.0 'Strech' which is currently identified as the "testing" release.
+    elif [[ "${DISTRIB_ID}" = "Debian" ]] && (( "${DISTRIB_RELEASE}" >= "9.1" )) ; then
+    # Use php7.0 for Debian 9.0 Strech.
         RECEIVER_PHP_VERSION="7.0"
     else
     # Use php5 for all other platforms and distributions.
