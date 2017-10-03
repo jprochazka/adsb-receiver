@@ -37,12 +37,7 @@ RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 
-# Component specific variables.
-
-COMPONENT_NAME="AboveTustin"
-COMPONENT_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/abovetustin"
-
-### INCLUDE EXTERNAL SCRIPTS
+## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
@@ -51,32 +46,32 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURA
     source ${RECEIVER_CONFIGURATION_FILE}
 fi
 
-### BEGIN SETUP
+## BEGIN SETUP
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     clear
     echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 fi
 echo -e ""
-echo -e "\e[92m  Setting up ${COMPONENT_NAME}..."
+echo -e "\e[92m  Setting up AboveTustin..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${COMPONENT_NAME} Setup" --yesno "${COMPONENT_NAME} is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up ${COMPONENT_NAME}?" 13 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
+        echo -e "\e[92m  AboveTustin setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
     fi
 fi
 
-echo -e "\e[95m  Setting up ${COMPONENT_NAME} on this device...\e[97m"
+echo -e "\e[95m  Setting up AboveTustin on this device...\e[97m"
 echo -e ""
 
 ## ENABLE THE USE OF /ETC/RC.LOCAL IF THE FILE DOES NOT EXIST
@@ -113,7 +108,7 @@ EOF
     sudo systemctl start rc-local
 fi
 
-### CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
+## CHECK IF A PHANTOMJS ALREADY EXISTS OR IF A PRECOMPILED BINARY IS AVAILABLE FOR THIS DEVICE
 
 echo -e "\e[95m  Checking for PhantomJS...\e[97m"
 echo -e ""
@@ -150,7 +145,7 @@ else
                 echo "  Setup has been halted at the request of the user."
                 echo -e ""
                 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-                echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
+                echo -e "\e[92m  AboveTustin setup halted.\e[39m"
                 echo -e ""
                 read -p "Press enter to continue..." CONTINUE
                 exit 1
@@ -162,7 +157,7 @@ else
                 echo "  A prebuilt PhantomJS binary is not available for this system."
                 echo -e ""
                 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-                echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
+                echo -e "\e[92m  AboveTustin setup halted.\e[39m"
                 echo -e ""
                 exit 1
             fi
@@ -172,7 +167,7 @@ else
     fi
 fi
 
-### CHECK FOR PREREQUISITE PACKAGES
+## CHECK FOR PREREQUISITE PACKAGES
 
 echo -e ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
@@ -184,7 +179,9 @@ if [[ `lsb_release -si` = "Debian" ]] ; then
     echo -e "\e[94m  Adding the contrib component to the repositories contained sources.list...\e[97m"
     sudo sed -i 's/main/main contrib/g' /etc/apt/sources.list 2>&1
     echo -e "\e[94m  Updating the repository package lists...\e[97m"
+    echo ""
     sudo apt-get update 2>&1
+    echo ""
 fi
 
 # Check that the required packages are installed.
@@ -206,7 +203,7 @@ CheckPackage libjpeg-dev
 CheckPackage python
 CheckPackage libx11-dev
 CheckPackage libxext-dev
-CheckPackage libpng12-dev
+CheckPackage libpng-dev
 CheckPackage libc6
 CheckPackage curl
 
@@ -219,19 +216,19 @@ else
     CheckPackage bzip2
 fi
 
-### CONFIRM SETTINGS
+## CONFIRM SETTINGS
 
 # GATHER TWITTER API INFORMATION FROM THE USER
 
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using ${COMPONENT_NAME} you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\n  https://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the ${COMPONENT_NAME} setup?" 20 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Twiter Keys and Tokens" --yesno "In order to send Tweets to Twitter using AboveTustin you will need to obtain the proper keys and tokens from Twitter. You will need to sign up for a Twitter developer account at https://apps.twitter.com and create an application there in order to obtain this information.\n\nMore information on obtaining Twitter keys and access tokens can be found in the projects wiki page.\n\n  https://github.com/jprochazka/adsb-receiver/wiki/Setting-Up-AboveTustin\n\nProceed with the AboveTustin setup?" 18 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
         echo -e "  Setup has been halted at the request of the user."
         echo -e ""
         echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-        echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
+        echo -e "\e[92m  AboveTustin setup halted.\e[39m"
         echo -e ""
         read -p "Press enter to continue..." CONTINUE
         exit 1
@@ -241,9 +238,11 @@ fi
 # If any exist assign the current Twitter keys and access tokens to variables.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token"
-    while [[ -z "${TWITTER_ACCESS_TOKEN}" ]] ; do
-        if [[ `grep -c "^access_token =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_ACCESS_TOKEN=$(grep "^access_token =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
+    while [[ -z "${TWITTER_ACCESS_TOKEN}" ]]; do
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini ]]; then
+            if [[ `grep -c "^access_token =" ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini` -gt 0 ]]; then
+                TWITTER_ACCESS_TOKEN=$(grep "^access_token =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
+            fi
         fi
         TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token." 7 78 "${TWITTER_ACCESS_TOKEN}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token (REQUIRED)"
@@ -251,8 +250,10 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     #
     TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret"
     while [[ -z "${TWITTER_ACCESS_TOKEN_SECRET}" ]] ; do
-        if [[ `grep -c "^access_token_secret =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_ACCESS_TOKEN_SECRET=$(grep "^access_token_secret =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini ]]; then
+            if [[ `grep -c "^access_token_secret =" ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini` -gt 0 ]] ; then
+                TWITTER_ACCESS_TOKEN_SECRET=$(grep "^access_token_secret =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
+            fi
         fi
         TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 7 78 "${TWITTER_ACCESS_TOKEN_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret (REQUIRED)"
@@ -260,8 +261,10 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     #
     TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key"
     while [[ -z "${TWITTER_CONSUMER_KEY}" ]] ; do
-        if [[ `grep -c "^consumer_key =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_CONSUMER_KEY=$(grep "^consumer_key =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini ]]; then
+            if [[ `grep -c "^consumer_key =" ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini` -gt 0 ]] ; then
+                TWITTER_CONSUMER_KEY=$(grep "^consumer_key =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
+            fi
         fi
         TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key (REQUIRED)"
@@ -269,8 +272,10 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     #
     TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret"
     while [[ -z "${TWITTER_CONSUMER_SECRET}" ]] ; do
-        if [[ `grep -c "^consumer_secret =" ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini` -gt 0 ]] ; then
-            TWITTER_CONSUMER_SECRET=$(grep "^consumer_secret =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini ]]; then
+            if [[ `grep -c "^consumer_secret =" ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini` -gt 0 ]] ; then
+                TWITTER_CONSUMER_SECRET=$(grep "^consumer_secret =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
+            fi
         fi
         TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "${TWITTER_CONSUMER_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret (REQUIRED)"
@@ -285,10 +290,12 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user to confirm the receivers latitude, this will be prepopulated by the latitude assigned dump1090-mutability.
     RECEIVER_LATITUDE_TITLE="Receiver Latitude"
     while [[ -z "${RECEIVER_LATITUDE}" ]] ; do
-        if [[ `grep "^latitude = " ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
-            RECEIVER_LATITUDE=$(grep "^latitude =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
-            RECEIVER_LATITUDE_SOURCE=", the value below is configured in AboveTustin"
-        elif [[ -s "/etc/default/dump1090-mutability" ]] && [[ `grep -c "^LAT =" /etc/default/dump1090-mutability` -gt 0 ]] ; then
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini ]]; then
+            if [[ `grep "^latitude = " ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
+                RECEIVER_LATITUDE=$(grep "^latitude =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
+                RECEIVER_LATITUDE_SOURCE=", the value below is configured in AboveTustin"
+            fi
+        elif [[ -f /etc/default/dump1090-mutability ]]; then
             RECEIVER_LATITUDE=$(GetConfig "LAT" "/etc/default/dump1090-mutability")
             RECEIVER_LATITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
@@ -299,10 +306,12 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Ask the user to confirm the receivers longitude, this will be prepopulated by the longitude assigned dump1090-mutability.
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
-        if [[ `grep "^longitude = " ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
-            RECEIVER_LONGITUDE=$(grep "^longitude =" "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" | awk '{print $3}')
-            RECEIVER_LONGITUDE_SOURCE=", the value below is configured in AboveTustin"
-        elif [[ -s "/etc/default/dump1090-mutability" ]] && [[ `grep -c "^LON =" /etc/default/dump1090-mutability` -gt 0 ]] ; then
+        if [[ -f ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini ]]; then
+            if [[ `grep "^longitude = ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
+                RECEIVER_LONGITUDE=$(grep "^longitude =" ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini | awk '{print $3}')
+                RECEIVER_LONGITUDE_SOURCE=", the value below is configured in AboveTustin"
+            fi
+        elif [[ -f /etc/default/dump1090-mutability ]]; then
             RECEIVER_LONGITUDE=$(GetConfig "LON" "/etc/default/dump1090-mutability")
             RECEIVER_LONGITUDE_SOURCE=", the value below is configured in Dump1090"
         fi
@@ -311,7 +320,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     done
 fi
 
-### START INSTALLATION
+## START INSTALLATION
 
 echo -e ""
 echo -e "\e[95m  Commencing installation...\e[97m"
@@ -324,21 +333,21 @@ if [[ -z "${TIME_ZONE}" ]] ; then
     TIME_ZONE_ESCAPED=`echo ${TIME_ZONE} | sed -e 's/\\//\\\\\//g'`
 fi
 
-### PROJECT BUILD DIRECTORY
+## PROJECT BUILD DIRECTORY
 
 # Create the build directory if it does not already exist.
-if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}" ]] ; then
+if [[ ! -d ${RECEIVER_BUILD_DIRECTORY} ]] ; then
     echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
     mkdir -vp ${RECEIVER_BUILD_DIRECTORY} 2>&1
 fi
 
 # Create a component directory within the build directory if it does not already exist.
-if [[ ! -d "${COMPONENT_BUILD_DIRECTORY}" ]] ; then
-    echo -e "\e[94m  Creating the directory ${COMPONENT_BUILD_DIRECTORY}...\e[97m"
-    mkdir -vp ${COMPONENT_BUILD_DIRECTORY} 2>&1
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/abovetustin" ]] ; then
+    echo -e "\e[94m  Creating the directory ${RECEIVER_BUILD_DIRECTORY}/abovetustin...\e[97m"
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/abovetustin 2>&1
 fi
 
-### SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
+## SETUP PHANTOMJS IF IT DOES NOT ALREADY EXIST ON THIS DEVICE
 
 if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
     if [[ "${PHANTOMJS_BINARY_AVAILABLE}" = "true" ]] ; then
@@ -351,7 +360,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
 
         # Enter the root of the project build directory.
         echo -e "\e[94m  Entering the build directory...\e[97m"
-        cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
+        cd ${RECEIVER_BUILD_DIRECTORY}/abovetustin 2>&1
 
         # Select the relevant PhantomJS binary.
         case ${CPU_ARCHITECTURE} in
@@ -378,14 +387,17 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         # Download the PantomJS binary.
         if [[ -n "${PHANTOMJS_BINARY_URL}" ]] ; then
             curl -L "${PHANTOMJS_BINARY_URL}" -O 2>&1
+            echo ""
         fi
 
         # Extract the files from the PhantomJS archive which was just downloaded.
         if [[ -f "phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2" ]] ; then
             echo -e "\e[94m  Extracting the PhantomJS binary archive...\e[97m"
+            echo ""
             tar -vxj -f phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2 2>&1
             echo -e ""
             echo -e "\e[94m  Removing the PhantomJS binary archive...\e[97m"
+            echo ""
             rm -vf phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}.tar.bz2 2>&1
             echo -e ""
         else
@@ -422,10 +434,10 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         echo -e ""
         echo -e "\e[95m  Preparing the PhantomJS Git repository...\e[97m"
         echo -e ""
-        if [[ -d "${COMPONENT_BUILD_DIRECTORY}/phantomjs" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/phantomjs/.git" ]] ; then
+        if [[ -d "${RECEIVER_BUILD_DIRECTORY}/phantomjs" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/phantomjs/.git" ]] ; then
             # A directory with a git repository containing the source code already exists.
             echo -e "\e[94m  Entering the PhantomJS git repository directory...\e[97m"
-            cd ${COMPONENT_BUILD_DIRECTORY}/phantomjs 2>&1
+            cd ${RECEIVER_BUILD_DIRECTORY}/phantomjs 2>&1
             echo -e ""
             echo -e "\e[94m  Updating the local PhantomJS git repository...\e[97m"
             git pull --all 2>&1
@@ -433,23 +445,23 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         else
             # A directory containing the source code does not exist in the build directory.
             echo -e "\e[94m  Entering the build directory...\e[97m"
-            cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
+            cd ${RECEIVER_BUILD_DIRECTORY}/phantomjs 2>&1
             echo -e ""
-            if [[ -d "${COMPONENT_BUILD_DIRECTORY}/phantomjs" ]] ; then
+            if [[ -d "${RECEIVER_BUILD_DIRECTORY}/phantomjs" ]] ; then
                 echo -e "\e[94m  Removing old PhantomJS build directory...\e[97m"
-                rm -vrf "${COMPONENT_BUILD_DIRECTORY}/phantomjs" 2>&1
+                rm -vrf "${RECEIVER_BUILD_DIRECTORY}/phantomjs" 2>&1
                 echo -e ""
             fi
             echo -e "\e[94m  Cloning the PhantomJS git repository locally...\e[97m"
             echo -e ""
-            git clone git://github.com/ariya/phantomjs.git "${COMPONENT_BUILD_DIRECTORY}/phantomjs" 2>&1
+            git clone git://github.com/ariya/phantomjs.git "${RECEIVER_BUILD_DIRECTORY}/phantomjs" 2>&1
             echo -e ""
         fi
 
         # Enter the PhantomJS build directory if not already there.
-        if [[ ! "${PWD}" = "${COMPONENT_BUILD_DIRECTORY}/phantomjs" ]] ; then
+        if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/phantomjs" ]] ; then
             echo -e "\e[94m  Entering the PhantomJS Git repository directory...\e[97m"
-            cd ${COMPONENT_BUILD_DIRECTORY}/phantomjs 2>&1
+            cd ${RECEIVER_BUILD_DIRECTORY}/phantomjs 2>&1
         fi
 
         # Checkout the proper branch then init and update the submodules.
@@ -470,7 +482,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
             # Limit the amount of processors being used on Raspberry Pi devices.
             # Not doing will very likely cause the compile to fail due to an out of memory error.
-            echo -e "\e[94m  Building PhantomJS... (Job will be limited to using 1 processor.)\e[97m"
+            echo -e "\e[94m  Building PhantomJS... \(Job will be limited to using 1 processor.\)\e[97m"
             python build.py -j 1 2>&1
         else
             echo -e "\e[94m  Building PhantomJS...\e[97m"
@@ -489,7 +501,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             echo -e "\e[93mThe PhantomJS binary appear to have not been built successfully..\e[39m"
             echo -e ""
             echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-            echo -e "\e[92m  ${COMPONENT_NAME} setup halted.\e[39m"
+            echo -e "\e[92m  AboveTustin setup halted.\e[39m"
             echo -e ""
             read -p "Press enter to continue..." CONTINUE
             exit 1
@@ -498,13 +510,14 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
         # Move the binary into the /usr/bin directory and make it executable.
         echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
         sudo cp -v bin/phantomjs /usr/bin 2>&1
+        echo ""
         echo -e "\e[94m  Making the file /usr/bin/phantomjs executable...\e[97m"
         sudo chmod -v +x /usr/bin/phantomjs 2>&1
 
     fi
 fi
 
-### INSTALL THE NEEDED PYTHON MODULES
+## INSTALL THE NEEDED PYTHON MODULES
 
 echo -e ""
 echo -e "\e[95m  Setting up the required Python modules...\e[97m"
@@ -534,47 +547,47 @@ echo -e ""
 sudo pip3 install python-dateutil 2>&1
 echo -e ""
 
-### DOWNLOAD SOURCE
+## DOWNLOAD SOURCE
 
-echo -e ""
-echo -e "\e[95m  Downloading and configuring ${COMPONENT_NAME}...\e[97m"
+echo -e "\e[95m  Downloading and configuring AboveTustin...\e[97m"
 echo -e ""
 
 echo -e "\e[94m  Checking if the Git repository has been cloned...\e[97m"
-if [[ -d "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" ]] && [[ -d "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/.git" ]] ; then
+if [[ -d "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/.git" ]] ; then
     # A directory with a git repository containing the source code already exists.
-    echo -e "\e[94m  Entering the local ${COMPONENT_NAME} git repository directory...\e[97m"
-    cd ${COMPONENT_BUILD_DIRECTORY}/AboveTustin 2>&1
+    echo -e "\e[94m  Entering the local AboveTustin git repository directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin 2>&1
     echo -e ""
-    echo -e "\e[94m  Updating the local ${COMPONENT_NAME} git repository...\e[97m"
+    echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
     git pull 2>&1
     echo -e ""
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Entering the ${COMPONENT_NAME} build directory...\e[97m"
-    cd ${COMPONENT_BUILD_DIRECTORY} 2>&1
-    echo -e ""
-    if [[ -d "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" ]] ; then
+    echo -e "\e[94m  Entering the AboveTustin build directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/abovetustin 2>&1
+    if [[ -d "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin" ]] ; then
         echo -e "\e[94m  Removing old build directory...\e[97m"
-        rm -vrf "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" 2>&1
+        rm -vrf "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin" 2>&1
         echo -e ""
     fi
-    echo -e "\e[94m  Cloning the ${COMPONENT_NAME} git repository locally...\e[97m"
+    echo -e "\e[94m  Cloning the AboveTustin git repository locally...\e[97m"
     echo -e ""
-    git clone https://github.com/kevinabrandon/AboveTustin.git "${COMPONENT_BUILD_DIRECTORY}/AboveTustin" 2>&1
+    git clone https://github.com/kevinabrandon/AboveTustin.git "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin" 2>&1
     echo -e ""
 fi
 
-### BUILD AND INSTALL
+## BUILD AND INSTALL
 
-### APPLY CONFIGURATION
+## APPLY CONFIGURATION
 
 # Copy the file config.sample.ini to config.ini
-if [[ -s "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" ]] ; then
+if [[ -s "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" ]] ; then
     echo -e "\e[94m  Found existing configuration file config.ini...\e[97m"
-elif [[ -s "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.sample.ini" ]] ; then
+elif [[ -s "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.sample.ini" ]] ; then
     echo -e "\e[94m  Copying the file config.sample.ini to the file config.ini...\e[97m"
-    cp -v ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.sample.ini ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini 2>&1
+    echo ""
+    cp -v ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.sample.ini ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini 2>&1
+    echo ""
 else
     echo -e "\e[94m  Unable to install configuration file config.ini...\e[97m"
 fi
@@ -582,50 +595,50 @@ fi
 # Write out the supplied values to the file config.ini.
 if [[ -n "${TWITTER_ACCESS_TOKEN}" ]] ; then
     echo -e "\e[94m  Writing Twitter token value to the config.ini file...\e[97m"
-    ChangeConfig access_token ${TWITTER_ACCESS_TOKEN} "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig access_token ${TWITTER_ACCESS_TOKEN} "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_ACCESS_TOKEN_SECRET}" ]] ; then
     echo -e "\e[94m  Writing Twitter token secret value to the config.ini file...\e[97m"
-    ChangeConfig access_token_secret ${TWITTER_ACCESS_TOKEN_SECRET} "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig access_token_secret ${TWITTER_ACCESS_TOKEN_SECRET} "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_CONSUMER_KEY}" ]] ; then
     echo -e "\e[94m  Writing Twitter consumer key value to the config.ini file...\e[97m"
-    ChangeConfig consumer_key ${TWITTER_CONSUMER_KEY} "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig consumer_key ${TWITTER_CONSUMER_KEY} "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini"
 fi
 if [[ -n "${TWITTER_CONSUMER_SECRET}" ]] ; then
     echo -e "\e[94m  Writing Twitter consumer secret to the config.ini file...\e[97m"
-    ChangeConfig consumer_secret ${TWITTER_CONSUMER_SECRET} "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig consumer_secret ${TWITTER_CONSUMER_SECRET} "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini"
 fi
 if [[ -n "${TIME_ZONE_ESCAPED}" ]] ; then
     echo -e "\e[94m  Writing receiver timezone to the config.ini file...\e[97m"
-    ChangeConfig time_zone ${TIME_ZONE_ESCAPED} "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig time_zone ${TIME_ZONE_ESCAPED} "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini"
 fi
 if [[ -n "${RECEIVER_LATITUDE}" ]] ; then
     echo -e "\e[94m  Writing receiver latitude to the config.ini file...\e[97m"
-    ChangeConfig latitude ${RECEIVER_LATITUDE} "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig latitude ${RECEIVER_LATITUDE} "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini"
 fi
 if [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
     echo -e "\e[94m  Writing receiver longitude to the config.ini file...\e[97m"
-    ChangeConfig longitude ${RECEIVER_LONGITUDE} "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini"
+    ChangeConfig longitude ${RECEIVER_LONGITUDE} "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini"
 fi
 
 # Quick fix to remove quotes from config.
-sed -e 's/= "/= /g' -e 's/"$//g' -i "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/config.ini" 2>&1
+sed -e 's/= "/= /g' -e 's/"$//g' -i "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" 2>&1
 
-### CREATE SCRIPTS
+## CREATE SCRIPTS
 
 # Add the run_tracker.sh script to /etc/rc.local so it is executed at boot up.
-echo -e "\e[94m  Checking if the ${COMPONENT_NAME} startup line is contained within the file /etc/rc.local...\e[97m"
-if [[ `grep -cFx "${COMPONENT_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &" /etc/rc.local` -eq 0 ]] ; then
-    echo -e "\e[94m  Adding the ${COMPONENT_NAME} startup line to the file /etc/rc.local...\e[97m"
+echo -e "\e[94m  Checking if the AboveTustin startup line is contained within the file /etc/rc.local...\e[97m"
+if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/run_tracker.sh &" /etc/rc.local` -eq 0 ]] ; then
+    echo -e "\e[94m  Adding the AboveTustin startup line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/run_tracker.sh &\n" /etc/rc.local
 fi
 
-### START SCRIPTS
+## START SCRIPTS
 
 echo -e ""
-echo -e "\e[95m  Starting ${COMPONENT_NAME}...\e[97m"
+echo -e "\e[95m  Starting AboveTustin...\e[97m"
 echo -e ""
 
 # Kill any currently running instances.
@@ -642,11 +655,9 @@ done
 
 # Start the run_tracker.sh script.
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"
-echo -e ""
-sudo nohup ${COMPONENT_BUILD_DIRECTORY}/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
-echo -e ""
+sudo nohup ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/run_tracker.sh > /dev/null 2>&1 &
 
-### SETUP COMPLETE
+## SETUP COMPLETE
 
 # Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
@@ -654,9 +665,9 @@ cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  ${COMPONENT_NAME} setup is complete.\e[39m"
+echo -e "\e[92m  AboveTustin setup is complete.\e[39m"
 echo -e ""
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]]; then
     read -p "Press enter to continue..." CONTINUE
 fi
 

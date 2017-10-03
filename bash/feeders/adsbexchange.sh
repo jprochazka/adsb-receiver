@@ -151,17 +151,21 @@ CheckPackage netcat
 echo ""
 echo -e "\e[95m  Preparing the mlat-client Git repository...\e[97m"
 echo ""
-if [ -d $RECEIVER_BUILD_DIRECTORY/mlat-client ] && [ -d $RECEIVER_BUILD_DIRECTORY/mlat-client/.git ]; then
+if [ -d $RECEIVER_BUILD_DIRECTORY/mlat-client/mlat-client ] && [ -d $RECEIVER_BUILD_DIRECTORY/mlat-client/mlat-client/.git ]; then
     # A directory with a git repository containing the source code already exists.
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY/mlat-client
+    cd $RECEIVER_BUILD_DIRECTORY/mlat-client/mlat-client
     echo -e "\e[94m  Updating the local mlat-client git repository...\e[97m"
     echo ""
     git pull
 else
     # A directory containing the source code does not exist in the build directory.
-    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY
+    echo -e "\e[94m  Creating the mlat-client build directory...\e[97m"
+    echo ""
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/mlat-client
+    echo ""
+    echo -e "\e[94m  Entering the mlat-client build directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/mlat-client 2>&1
     echo -e "\e[94m  Cloning the mlat-client git repository locally...\e[97m"
     echo ""
     git clone https://github.com/mutability/mlat-client.git
@@ -172,9 +176,9 @@ fi
 echo ""
 echo -e "\e[95m  Building and installing the mlat-client package...\e[97m"
 echo ""
-if [ ! $PWD = $RECEIVER_BUILD_DIRECTORY/mlat-client ]; then
+if [ ! $PWD = $RECEIVER_BUILD_DIRECTORY/mlat-client/mlat-client ]; then
     echo -e "\e[94m  Entering the mlat-client git repository directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY/mlat-client
+    cd $RECEIVER_BUILD_DIRECTORY/mlat-client/mlat-client
 fi
 echo -e "\e[94m  Building the mlat-client package...\e[97m"
 echo ""
@@ -203,6 +207,19 @@ if [ $(dpkg-query -W -f='${STATUS}' mlat-client 2>/dev/null | grep -c "ok instal
     exit 1
 fi
 
+# Create binary package archive directory.
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+    echo -e "\e[94m  Creating package archive directory...\e[97m"
+    echo -e ""
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+    echo -e ""
+fi
+
+# Archive binary package.
+echo -e "\e[94m  Moving the mlat-client binary package into the archive directory...\e[97m"
+echo ""
+mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client/mlat-client_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+
 ## CREATE THE SCRIPT TO EXECUTE AND MAINTAIN MLAT-CLIENT AND NETCAT TO FEED ADS-B EXCHANGE
 
 echo ""
@@ -216,9 +233,11 @@ while [[ -z $RECEIVERNAME ]]; do
     RECEIVERNAME_TITLE="Receiver Name (REQUIRED)"
 done
 
-# Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability.
-RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+# Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability if it is installed.
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+    RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+    RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+fi
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
 RECEIVERALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVERLATITUDE,$RECEIVERLONGITUDE | python -c "import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation'];"`" 3>&1 1>&2 2>&3)

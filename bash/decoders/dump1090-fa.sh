@@ -182,6 +182,7 @@ else
     echo ""
     mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa
     echo ""
+    echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
     echo -e "\e[94m  Cloning the dump1090-fa git repository locally...\e[97m"
     echo ""
