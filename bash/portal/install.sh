@@ -236,45 +236,25 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-# Attempt to detect Debian and derivative distros such as Ubuntu.
-if [[ -s "/etc/lsb-release" ]] ; then
-    source /etc/lsb-release
-elif [[ -x "`which lsb_release`" ]] ; then
-    DISTRIB_ID=`lsb_release -a 2>&1 | grep "^Distributor ID:" | awk -F ":" '{print $2}' | awk '{print $1}'`
-    DISTRIB_RELEASE=`lsb_release -a 2>&1 | grep "^Release:" | awk -F ":" '{print $2}' | awk '{print $1}'`
-fi
+# Detect the OS distribution and version.
+DISTRO_ID=`. /etc/os-release; echo ${ID/*, /}`
+DISTRO_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 
-# Check for existing PHP installation.
-if [[ -x `which php` ]] && [[ `php -v | grep -c "^PHP [0-9]"` -gt 0 ]] ; then
-    # Detect installed PHP version.
-    RECEIVER_PHP_INSTALLED=`php -v | grep "^PHP [0-9]" | awk '{print $2}'`
-    if [[ `echo ${RECEIVER_PHP_INSTALLED} | grep -c "^7\.0\."` -gt 0 ]] ; then
-        # Found php7.0 install.
-        RECEIVER_PHP_VERSION="7.0"
-    elif [[ `echo ${RECEIVER_PHP_INSTALLED} | grep -c "^5\."` -gt 0 ]] ; then
-        # Found php5 install.
-        RECEIVER_PHP_VERSION="5"
-    else
-        # Otherwise assume php5.
-        RECEIVER_PHP_VERSION="5"
-    fi
-else
-    # Otherwise determine required PHP version based on distribution version.
-    if [[ "${DISTRIB_ID}" = "Ubuntu" ]] && [[ "$(echo ${DISTRIB_RELEASE} | tr -cd '[:digit:]')" -ge "1604" ]] ; then
-    # Use phpp7.0 for Ubuntu 16.04 LTS and above, which we detect based on version string format of yymm.
-        RECEIVER_PHP_VERSION="7.0"
-    elif [[ "${DISTRIB_ID}" = "Debian" ]] && (( "${DISTRIB_RELEASE}" >= "9.1" )) ; then
-    # Use php7.0 for Debian 9.0 Strech.
-        RECEIVER_PHP_VERSION="7.0"
-    else
-    # Use php5 for all other platforms and distributions.
-        RECEIVER_PHP_VERSION="5"
-    fi
-fi
+case $DISTRO_ID in
+    debian|raspbian)
+        if [[ $DISTRO_RELEASE -ge "9" ]]; then PHP_VERSION="7.0"; fi
+        ;;
+    ubuntu)
+        if [[ $DISTRO_RELEASE -ge "16.04" ]]; then PHP_VERSION="7.0"; fi
+        ;;
+    *)
+        PHP_VERSION="5"
+        ;;
+esac
 
-# Install correct PHP version for the platform.
-CheckPackage php${RECEIVER_PHP_VERSION}-cgi
-CheckPackage php${RECEIVER_PHP_VERSION}-json
+# Install PHP.
+CheckPackage php${DISTRO_PHP_VERSION}-cgi
+CheckPackage php${DISTRO_PHP_VERSION}-json
 
 # Performance graph dependencies.
 CheckPackage collectd-core
@@ -290,13 +270,15 @@ if [[ "${ADVANCED}" = "true" ]] ; then
         "MySQL")
             CheckPackage mysql-client
             CheckPackage python-mysqldb
-            CheckPackage php${RECEIVER_PHP_VERSION}-mysql
+            CheckPackage php${DISTRO_PHP_VERSION}-mysql
             ;;
         "SQLite")
             CheckPackage sqlite3
-            CheckPackage php${RECEIVER_PHP_VERSION}-sqlite
+            CheckPackage php${DISTRO_PHP_VERSION}-sqlite
             ;;
     esac
+else
+    CheckPackage php${DISTRO_PHP_VERSION}-xml
 fi
 
 # Reload Lighttpd after installing the prerequisite packages.
