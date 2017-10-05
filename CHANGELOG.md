@@ -27,6 +27,8 @@ The following is a history of the changes made to this project.
 * Corrected the page count on the flights page.
 * Added -d --development flags to install.sh to avoid overwriting changes made.
 * All .deb packages built by the scripts are archived in an archive folder.
+* Addressed issue where altitude was not returned when setting up ADS-B Exchange feed.
+* Dump1090-mutability --measure-noise argument moved to the configuration file.
 
 ## v2.5.0 *(December 5th, 2016)*
 
