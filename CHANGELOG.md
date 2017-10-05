@@ -4,7 +4,11 @@ The following is a history of the changes made to this project.
 
 ## v2.6.0 (*prerelease*)
 
+* Ubuntu 16.04 and above now detected properly when deciding which version of PHP to use.
+* Raspbian 9 and above now detected properly when deciding which version of PHP to use.
+* Debian 9 and above now detected properly when deciding which version of PHP to use.
 * As requested users must now claim PiAware receivers via the FlightAware site.
+* Updated to install mlat-client version 0.2.9.
 * Updated to install planfinder.net ARM client version 3.7.20.
 * Updated to install planfinder.net I386 client version 3.7.1.
 * Updated to install PiAware version 3.5.1.

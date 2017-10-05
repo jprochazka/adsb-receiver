@@ -8,10 +8,14 @@ directly. Their time and effort is greatly appreciated by myself as well as many
 **Direct Contributors**
 
 * @adamkaplan
+* @atbPy
+* @charlie-foxtrot
 * @dschaper
+* @g0wfv
 * @leearmstrong
 * @jdwall
 * @mgunther68
+* @target-drone
 * @Romeo-Golf
 
 I would like to thank the members and contributors to the following forums for all the time and effort

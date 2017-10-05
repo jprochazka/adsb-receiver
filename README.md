@@ -63,7 +63,7 @@ Supply the information asked for and submit the form once done to complete the s
 
 ### What Can Be Installed
 
-At this time the following software can be installed using these scripts.
+The following software can be installed using these scripts.
 
 **Decoders**
 
@@ -78,10 +78,16 @@ At this time the following software can be installed using these scripts.
 * Plane Finder ADS-B Client:   https://planefinder.net
 * ADS-B Exchange:              http://adsbexchange.com
 
+**Extras**
+
+* ADS-B Receiver Project Portal: https://www.adsbreceiver.net
+* AboveTustin:                   https://github.com/flightaware/beast-splitter
+* Beast-Splitter:                https://github.com/flightaware/beast-splitter
+* DuckDNS.org Support:           http://www.duckdns.org/
 
 ### Supported Operating Systems
 
-The scripts and packages have been tested on most Debian Jessie based operating systems.
+The scripts and packages have been tested on most Debian Jessie and Stretch based operating systems.
 
 The scripts are NOT supported on existing PiAware *image based* installations. The PiAware image is still based on Raspbian Wheezey version which is missing some required libraries for dump1090-mutability installation.
 
@@ -89,7 +95,7 @@ The scripts are NOT supported on existing PiAware *image based* installations. T
 
 - Website - https://www.adsbreceiver.net/
 
-- Forum - https://www.adsbreceiver.net/forums/
+- Forum - https://www.adsbreceiver.net/forum/
 
 - Wiki - https://github.com/jprochazka/adsb-receiver/wiki
 
