@@ -204,7 +204,7 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         # Archive binary package.
         echo -e "\e[94m  Moving the dump1090-mutability binary package into the archive directory...\e[97m"
         echo -e ""
-        mv -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/dump1090-mutability_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        cp -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive/ 2>&1
     fi
 fi
 

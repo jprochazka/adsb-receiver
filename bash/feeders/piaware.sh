@@ -205,13 +205,7 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         # Archive binary package.
         echo -e "\e[94m  Moving the FlightAware PiAware client binary package into the archive directory...\e[97m"
         echo ""
-        mv -vf ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-        echo ""
-
-        # Archive changelog.
-        echo -e "\e[94m  Moving the FlightAware PiAware client changes file into the archive directory...\e[97m"
-        echo ""
-        mv -vf ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.changes ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+        cp -vf ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive/ 2>&1
         echo ""
     fi
 fi

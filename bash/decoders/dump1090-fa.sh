@@ -238,7 +238,7 @@ fi
 # Archive binary package.
 echo -e "\e[94m  Moving the dump1090-mutability binary package into the archive directory...\e[97m"
 echo ""
-mv -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090-fa_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+cp -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive/ 2>&1
 
 
 ## DUMP1090-FA POST INSTALLATION CONFIGURATION
