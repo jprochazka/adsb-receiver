@@ -128,16 +128,20 @@ echo -e ""
 echo -e "\e[95m  Preparing the dump978 Git repository...\e[97m"
 echo -e ""
 
-# Remove the existing dumpp978 build directory if it exists.
+# Create or recreate the dump978 build directory.
 if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump978" ]] ; then
     # Delete the current dump978 build directory if it already exists.
-    echo -e "\e[94m  Deleting the existing dump978 Git repository directory...\e[97m"
+    echo -e "\e[94m  Deleting the existing dump978 build directory...\e[97m"
     rm -rf ${RECEIVER_BUILD_DIRECTORY}/dump978
 fi
+echo -e "\e[94m  Creating the dump978 build directory...\e[97m"
+echo ""
+mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/dump978
+echo ""
 
 # Clone the dump978 Git repository.
 echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
-cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
+cd ${RECEIVER_BUILD_DIRECTORY}/dump978 2>&1
 echo -e "\e[94m  Cloning the dump978 Git repository locally...\e[97m"
 echo -e ""
 git clone https://github.com/mutability/dump978.git
@@ -148,9 +152,9 @@ echo -e ""
 echo -e "\e[95m  Building the dump978 binaries...\e[97m"
 echo -e ""
 # Enter the dump978 repository if we are not already in it.
-if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump978" ]] ; then
+if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] ; then
     echo -e "\e[94m  Entering the dump978 Git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump978 2>&1
+    cd ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978 2>&1
 fi
 # Build the dump978 binaries from source.
 echo -e "\e[94m  Building the dump978 binaries...\e[97m"
@@ -160,7 +164,7 @@ echo -e ""
 
 # Check that the dump978 binaries were built.
 echo -e "\e[94m  Checking that the dump978 binaries were built...\e[97m"
-if [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text" ]] ; then
+if [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978/dump978" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978/uat2esnt" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978/uat2json" ]] || [[ ! -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978/uat2text" ]] ; then
     # If the dump978 binaries could not be found halt setup.
     echo -e ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -269,10 +273,14 @@ if [[ -n "${RECEIVER_LATITUDE}" ]] && [[ -n "${RECEIVER_LONGITUDE}" ]] ; then
 fi
 
 # Create the dump978 JSON directory in Lighttpd's document root.
-echo -e "\e[94m  Creating the dump978 JSON data directory within Lighttpd's document root...\e[97m"
-sudo mkdir -vp ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
-echo -e "\e[94m  Setting permissions for the dump978 JSON data directory within Lighttpd's document root...\e[97m"
-sudo chmod +w ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
+if [[ ! -d ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data ]]; then
+    echo -e "\e[94m  Creating the dump978 JSON data directory within Lighttpd's document root...\e[97m"
+    echo ""
+    sudo mkdir -vp ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
+    echo ""
+    echo -e "\e[94m  Setting permissions for the dump978 JSON data directory within Lighttpd's document root...\e[97m"
+    sudo chmod +w ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data
+fi
 
 # Create the dump978 maintenance script.
 echo -e "\e[94m  Creating the dump978 maintenance script...\e[97m"
@@ -281,7 +289,7 @@ tee ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh > /dev/null <<EOF
 
 # Start dump978 without logging.
 while true; do
-    rtl_sdr -d ${DUMP978_DEVICE_ID} -f 978000000 -s 2083334 -g 48 - | ${RECEIVER_BUILD_DIRECTORY}/dump978 | tee >(${RECEIVER_BUILD_DIRECTORY}/uat2json ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data) | ${RECEIVER_BUILD_DIRECTORY}/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+    rtl_sdr -d ${DUMP978_DEVICE_ID} -f 978000000 -s 2083334 -g 48 - | ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978/dump978 | tee >(${RECEIVER_BUILD_DIRECTORY}/dump978/dump978/uat2json ${LIGHTTPD_DOCUMENT_ROOT_DIRECTORY}/dump978/data) | ${RECEIVER_BUILD_DIRECTORY}/dump978/dump978/uat2esnt | /bin/nc -q1 127.0.0.1 30001
     sleep 15
 done
 EOF
