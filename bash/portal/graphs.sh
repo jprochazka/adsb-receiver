@@ -84,12 +84,14 @@ fi
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
 
 if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability" ]] ; then
-    echo -e "\e[94m  Modifying the dump1090-mutability init script to add noise measurements...\e[97m"
-    sudo sed -i 's/ARGS=""/ARGS="--measure-noise "/g' /etc/init.d/dump1090-mutability 2>&1
-    #
+    echo -e "\e[94m  Modifying the dump1090-mutability configuration file to add noise measurements...\e[97m"
+    EXTRA_ARGS=`GetConfig "EXTRA_ARGS" "/etc/default/dump1090-mutability"`
+    EXTRA_ARGS=$(sed -e 's/^[[:space:]]*//' <<<"EXTRA_ARGS --measure-noise")
+    ChangeConfig "EXTRA_ARGS" "${RECEIVER_LONGITUDE}" "/etc/default/dump1090-mutability"
+
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
     sudo systemctl daemon-reload 2>&1
-    #
+
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
     sudo /etc/init.d/dump1090-mutability force-reload 2>&1
     echo -e ""
