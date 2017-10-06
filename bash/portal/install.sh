@@ -242,13 +242,13 @@ DISTRO_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 
 case $DISTRO_ID in
     debian|raspbian)
-        if [[ $DISTRO_RELEASE -ge "9" ]]; then PHP_VERSION="7.0"; fi
+        if [[ $DISTRO_RELEASE -ge "9" ]]; then DISTRO_PHP_VERSION="7.0"; fi
         ;;
     ubuntu)
-        if [[ $DISTRO_RELEASE -ge "16.04" ]]; then PHP_VERSION="7.0"; fi
+        if [[ $DISTRO_RELEASE -ge "16.04" ]]; then DISTRO_PHP_VERSION="7.0"; fi
         ;;
     *)
-        PHP_VERSION="5"
+        DISTRO_PHP_VERSION="5"
         ;;
 esac
 
