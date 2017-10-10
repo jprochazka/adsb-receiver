@@ -239,6 +239,7 @@ fi
 # Detect the OS distribution and version.
 DISTRO_ID=`. /etc/os-release; echo ${ID/*, /}`
 DISTRO_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
+DISTRO_PHP_VERSION="5"
 
 case $DISTRO_ID in
     debian|raspbian)
@@ -246,9 +247,6 @@ case $DISTRO_ID in
         ;;
     ubuntu)
         if [[ $DISTRO_RELEASE -ge "16.04" ]]; then DISTRO_PHP_VERSION="7.0"; fi
-        ;;
-    *)
-        DISTRO_PHP_VERSION="5"
         ;;
 esac
 
