@@ -93,8 +93,9 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability
     sudo systemctl daemon-reload 2>&1
 
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
+    echo ""
     sudo /etc/init.d/dump1090-mutability force-reload 2>&1
-    echo -e ""
+    echo ""
 fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF

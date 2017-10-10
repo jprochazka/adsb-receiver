@@ -278,7 +278,9 @@ if [[ "${ADVANCED}" = "true" ]] ; then
             ;;
     esac
 else
-    CheckPackage php${DISTRO_PHP_VERSION}-xml
+    if [ $DISTRO_PHP_VERSION == "7.0" ]; then
+        CheckPackage php${DISTRO_PHP_VERSION}-xml
+    fi
 fi
 
 # Reload Lighttpd after installing the prerequisite packages.
