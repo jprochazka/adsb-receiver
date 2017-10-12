@@ -179,7 +179,9 @@ echo -e ""
 echo -e "\e[94m  Entering the beast-splitter build directory...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/beast-splitter 2>&1
 echo -e "\e[94m  Installing the beast-splitter package...\e[97m"
+echo ""
 sudo dpkg -i beast-splitter_*.deb 2>&1
+echo ""
 
 if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
     # Create binary package archive directory.
@@ -208,7 +210,9 @@ while true
 EOF
 
 echo -e "\e[94m  Setting file permissions for beast-splitter_maint.sh...\e[97m"
+echo ""
 sudo chmod -v +x ${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh 2>&1
+echo ""
 
 echo -e "\e[94m  Checking if the beast-splitter startup line is contained within the file /etc/rc.local...\e[97m"
 if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/beast-splitter/beast-splitter_maint.sh &" /etc/rc.local` -eq 0 ]] ; then

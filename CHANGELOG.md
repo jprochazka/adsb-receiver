@@ -4,6 +4,10 @@ The following is a history of the changes made to this project.
 
 ## v2.6.0 (*prerelease*)
 
+* Added "Extras" option to install process.
+* Added the ability to install beast-splitter as an extra.
+* Added the ability to setup Duck DNS dynamic DNS service as an extra.
+* Added the ability to setup the AboveTustin Twitter bot.
 * Ubuntu 16.04 and above now detected properly when deciding which version of PHP to use.
 * Raspbian 9 and above now detected properly when deciding which version of PHP to use.
 * Debian 9 and above now detected properly when deciding which version of PHP to use.
@@ -17,9 +21,6 @@ The following is a history of the changes made to this project.
 * Added check for the dvb_usb_rtl28xxu kernel module before trying to remove it.
 * Checks for the package dirmngr before executing the Flightradar24 setup script.
 * Fixed text displaying date time formats which were swapped in the portal settings.
-* Added the ability to install beast-splitter as an extra.
-* Added the ability to setup Duck DNS dynamic DNS service as an extra.
-* Added the ability to setup the AboveTustin Twitter bot.
 * Help pertaining to the new switches is available using the -h or --help switch.
 * An installation log file can be kept by using either the -l or --log-output switch.
 * The branch you wish to use can be specified using the -b or --branch switch.

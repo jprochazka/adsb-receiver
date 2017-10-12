@@ -184,6 +184,10 @@ if [[ `lsb_release -si` = "Debian" ]] ; then
     echo ""
 fi
 
+# Detect the OS distribution and version.
+DISTRO_ID=`. /etc/os-release; echo ${ID/*, /}`
+DISTRO_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
+
 # Check that the required packages are installed.
 CheckPackage ttf-mscorefonts-installer
 CheckPackage python3-pip
@@ -203,9 +207,30 @@ CheckPackage libjpeg-dev
 CheckPackage python
 CheckPackage libx11-dev
 CheckPackage libxext-dev
-CheckPackage libpng-dev
 CheckPackage libc6
 CheckPackage curl
+
+# Depending on the version of Debian, Raspbian, or Ubuntu the correct libpng-dev package needs to be installed.
+# This is currently kind of sloppy and rushed and should definatly be refactored later.
+case $DISTRO_ID in
+    debian|raspbian)
+        if [[ $DISTRO_RELEASE -ge "9" ]]; then
+            CheckPackage libpng-dev
+        else
+            CheckPackage libpng12-dev
+        fi
+        ;;
+    ubuntu)
+        if [[ $DISTRO_RELEASE -ge "16.04" ]]; then
+            CheckPackage libpng-dev
+        else
+            CheckPackage libpng12-dev
+        fi
+        ;;
+    *)
+        CheckPackage libpng12-dev
+        ;;
+esac
 
 if [[ "${PHANTOMJS_BINARY_AVAILABLE}" = "false" ]] ; then
     # These packages are only needed if the user decided to build PhantomJS.
@@ -344,6 +369,7 @@ fi
 # Create a component directory within the build directory if it does not already exist.
 if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/abovetustin" ]] ; then
     echo -e "\e[94m  Creating the directory ${RECEIVER_BUILD_DIRECTORY}/abovetustin...\e[97m"
+    echo ""
     mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/abovetustin 2>&1
 fi
 
@@ -409,6 +435,7 @@ if [[ "${PHANTOMJS_EXISTS}" = "false" ]] ; then
             echo -e "\e[94m  Copying the PhantomJS binary into the directory /usr/bin...\e[97m"
             echo -e ""
             sudo cp -v phantomjs-${PHANTOMJS_VERSION}-linux-${CPU_ARCHITECTURE}/bin/phantomjs /usr/bin 2>&1
+            echo ""
         else
             echo -e "\e[94m  Unable to copying the PhantomJS binary into the directory /usr/bin...\e[97m"
         fi
