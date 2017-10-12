@@ -110,17 +110,13 @@ case ${DUMP1090OPTION} in
         # Install prerequisite packages.
         echo -e "\e[95m  Installing additional dump1090-fa and PiAware prerequisite packages...\e[97m"
         echo -e ""
-        CheckPackage tcl8.6-dev
-        CheckPackage autoconf
-        CheckPackage python3-dev
-        CheckPackage python3-venv
-        CheckPackage virtualenv
         CheckPackage dh-systemd
-        CheckPackage zlib1g-dev
-        CheckPackage tclx8.4
-        CheckPackage tcllib
-        CheckPackage tcl-tls
-        CheckPackage itcl3
+        CheckPackage libncurses5-dev
+        CheckPackage cmake
+        CheckPackage doxygen
+        CheckPackage libtecla-dev
+        CheckPackage help2man
+        CheckPackage pandoc
 
         # Dump1090-fa
         echo -e ""
@@ -158,8 +154,8 @@ CheckPackage lighttpd
 CheckPackage collectd-core
 CheckPackage rrdtool
 CheckPackage libpython2.7
-CheckPackage php5-cgi
-CheckPackage php5-json
+CheckPackage php7.0-cgi
+CheckPackage php7.0-json
 
 ## SET LOCALE
 
