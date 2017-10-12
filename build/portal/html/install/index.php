@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.5.0";
+    $thisVersion = "2.6.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
