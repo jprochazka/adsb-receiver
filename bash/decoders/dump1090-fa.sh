@@ -103,10 +103,10 @@ CheckPackage pandoc
 
 ## BUILD AND INSTALL THE BLADERF PACKAGE FROM SOURCE IF NOT INSTALLED
 
-# Dheck if the needed bladeRF packages are installed.
+# Check if the needed bladeRF packages are installed.
 if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-udev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
     echo ""
-    echo -e "\e[95m  Preparing the bladRF Git repository...\e[97m"
+    echo -e "\e[95m  Preparing the bladeRF Git repository...\e[97m"
     echo ""
     if [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF/.git" ]] ; then
         # A directory with a git repository containing the source code already exists.
@@ -117,7 +117,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok insta
         git pull
     else
         # A directory containing the source code does not exist in the build directory.
-        echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
+        echo -e "\e[94m  Creating the bladeRF build directory...\e[97m"
         echo ""
         mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/bladeRF
         echo ""
@@ -128,10 +128,10 @@ if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok insta
     fi
 
     echo ""
-    echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
+    echo -e "\e[95m  Building and installing the bladeRF package...\e[97m"
     echo ""
-    if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump1090-fa/dump1090" ]] ; then
-        echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
+    if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF" ]] ; then
+        echo -e "\e[94m  Entering the bladeRF git repository directory...\e[97m"
         cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
     fi
 

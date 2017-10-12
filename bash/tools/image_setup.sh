@@ -117,6 +117,31 @@ case ${DUMP1090OPTION} in
         CheckPackage libtecla-dev
         CheckPackage help2man
         CheckPackage pandoc
+        CheckPackage tcl8.6-dev
+        CheckPackage autoconf
+        CheckPackage python3-dev
+        CheckPackage python3-venv
+        CheckPackage virtualenv
+        CheckPackage zlib1g-dev
+        CheckPackage tclx8.4
+        CheckPackage tcllib
+        CheckPackage tcl-tls
+        CheckPackage itcl3
+        CheckPackage net-tools
+
+        # bladeRF
+        echo ""
+        echo -e "\e[95m  Installing bladeRF...\e[97m"
+        echo ""
+        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/bladeRF
+        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
+        git clone https://github.com/Nuand/bladeRF.git
+        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
+        dpkg-buildpackage -b
+        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
+        sudo dpkg -i libbladerf1_*.deb
+        sudo dpkg -i libbladerf-dev_*.deb
+        sudo dpkg -i libbladerf-udev_*.deb
 
         # Dump1090-fa
         echo -e ""
