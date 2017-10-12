@@ -222,7 +222,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "
     ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
     echo -e "\e[94m  Restarting dump1090-mutability...\e[97m"
     echo -e ""
-    sudo /etc/init.d/dump1090-mutability restart
+    sudo service dump1090-mutability force-reload
     echo -e ""
 
     # Get the latitude and longitude set in the dump1090-mutability configuration file to be used later.

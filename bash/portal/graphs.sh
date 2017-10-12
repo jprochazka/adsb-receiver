@@ -94,7 +94,7 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability
 
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
     echo ""
-    sudo /etc/init.d/dump1090-mutability force-reload 2>&1
+    sudo service dump1090-mutability force-reload 2>&1
     echo ""
 fi
 
@@ -350,7 +350,7 @@ echo -e ""
 
 echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
 echo -e ""
-sudo /etc/init.d/collectd force-reload 2>&1
+sudo service collectd force-reload
 echo -e ""
 
 ## EDIT CRONTAB

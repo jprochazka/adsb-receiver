@@ -117,7 +117,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "
     # Reload dump1090-mutability to ensure all changes take effect.
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
     echo -e ""
-    sudo /etc/init.d/dump1090-mutability force-reload
+    sudo service dump1090-mutability force-reload
 fi
 
 # Download Heywhatsthat.com maximum range rings if the user wishes them to be displayed.
@@ -205,22 +205,6 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
             # Display a message to the user stating they need to manually claim their device.
             whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claim Your PiAware Device" --msgbox "Please supply your FlightAware login in order to claim this device, after supplying this you will ask you to enter your password for verification.\n\nIf you decide not to provide a login and password at this time you should still be able to claim your feeder by visting the following site:\n\n  http://flightaware.com/adsb/piaware/claim" 13 78
         fi
-    fi
-
-    if [[ -n "${FLIGHTAWARE_LOGIN}" ]] && [[ -n "${FLIGHTAWARE_PASSWORD1}" ]] ; then
-        # Set the supplied user name and password in the configuration.
-        echo -e "\e[94m  Setting the flightaware-user setting using piaware-config...\e[97m"
-        echo -e ""
-        sudo piaware-config flightaware-user ${FLIGHTAWARE_LOGIN}
-        echo -e ""
-        echo -e "\e[94m  Setting the flightaware-password setting using piaware-config...\e[97m"
-        echo -e ""
-        sudo piaware-config flightaware-password ${FLIGHTAWARE_PASSWORD1}
-        echo -e ""
-        echo -e "\e[94m  Restarting PiAware to ensure changes take effect...\e[97m"
-        echo -e ""
-        sudo /etc/init.d/piaware restart
-        echo -e ""
     fi
 
     # PiAware configuration is now complete.

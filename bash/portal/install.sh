@@ -284,7 +284,7 @@ fi
 # Reload Lighttpd after installing the prerequisite packages.
 echo -e "\e[94m  Reloading Lighttpd...\e[97m"
 echo -e ""
-sudo /etc/init.d/lighttpd force-reload
+sudo service lighttpd force-reload
 
 ## SETUP THE PORTAL WEBSITE
 
@@ -402,11 +402,11 @@ fi
 if pgrep "lighttpd" > /dev/null; then
     echo -e "\e[94m  Reloading Lighttpd...\e[97m"
     echo -e ""
-    sudo /etc/init.d/lighttpd force-reload
+    sudo service lighttpd force-reload
 else
     echo -e "\e[94m  Starting Lighttpd...\e[97m"
     echo -e ""
-    sudo /etc/init.d/lighttpd start
+    sudo service lighttpd start
 fi
 
 ## SETUP THE MYSQL DATABASE
