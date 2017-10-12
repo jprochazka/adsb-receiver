@@ -147,6 +147,8 @@ if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ ! -f "
         fi
         sudo wget -O ${HTMLPATH} "http://www.heywhatsthat.com/api/upintheair.json?id=${HEYWHATSTHATID}&refraction=0.25&alts=${HEYWHATSTHATRINGONE},${HEYWHATSTHATRINGTWO}"
     fi
+else
+    echo -e "\e[94m  Heywhatsthat.com  maximum range rings setup skipped..."
 fi
 
 # Dump1090 configuration is now complete.
