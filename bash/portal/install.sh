@@ -146,7 +146,9 @@ else
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time.\n\nPlease note you may be asked questions used to secure your database server installation after the setup process." 12 78
                 CheckPackage mysql-server
                 if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+                    echo -e "\e[94m  Executing the mysql_secure_installation script...\e[97m"
                     sudo mysql_secure_installation
+                    echo ""
                 fi
 
                 # Since this is a local installation assume the MySQL database does not already exist.
@@ -414,6 +416,16 @@ fi
 ## SETUP THE MYSQL DATABASE
 
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
+    # If MariaDB is being used we will switch the plugin from unix_socket to mysql_native_password to keep things on the same page as MySQL setups.
+    if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        echo -e "\e[94m  Switching the default MySQL plugin from unix_socket to mysql_native_password...\e[97m"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE user = 'root' AND plugin = 'unix_socket';"
+        echo -e "\e[94m  Flushing privileges on the  MySQL (MariaDB) server...\e[97m"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e "FLUSH PRIVILEGES;"
+        echo -e "\e[94m  Reloading MySQL (MariaDB)...\e[97m"
+        sudo service mysql force-reload
+    fi
+
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
     while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e ";" ; do
