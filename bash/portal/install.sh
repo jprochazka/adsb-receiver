@@ -142,9 +142,12 @@ else
                     1) DATABASEEXISTS="false" ;;
                 esac
             else
-                # Install the MySQL or MariaDB server package now if it is not already installed.
-                whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time." 8 78
+                # Install the MySQL server package now if it is not already installed.
+                whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time.\n\nPlease note you may be asked questions used to secure your database server installation after the setup process." 12 78
                 CheckPackage mysql-server
+                if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+                    sudo mysql_secure_installation
+                fi
 
                 # Since this is a local installation assume the MySQL database does not already exist.
                 DATABASEEXISTS="false"
@@ -288,7 +291,6 @@ sudo service lighttpd force-reload
 
 ## SETUP THE PORTAL WEBSITE
 
-echo -e ""
 echo -e "\e[95m  Setting up the web portal...\e[97m"
 echo -e ""
 
@@ -331,7 +333,7 @@ sudo chmod 666 ${LIGHTTPD_DOCUMENT_ROOT}/data/*
 
 # Check if dump978 was setup.
 echo -e "\e[94m  Checking if dump978 was set up...\e[97m"
-if [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ -f "/etc/rc.local" ]] && [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
     # Check if a heywhatsthat.com range file exists in the dump1090 HTML folder.
     echo -e "\e[94m  Checking for the file upintheair.json in the dump1090 HTML folder...\e[97m"
     if [[ -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
@@ -412,13 +414,6 @@ fi
 ## SETUP THE MYSQL DATABASE
 
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
-
-    # If this device is using MariaDB set the root password for the server.
-    if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-        mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "UPDATE user SET password=PASSWORD("${DATABASEADMINPASSWORD1}") WHERE User='root';"
-        sudo service mysql force-reload
-    fi
-
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
     while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e ";" ; do
