@@ -142,7 +142,7 @@ else
                     1) DATABASEEXISTS="false" ;;
                 esac
             else
-                # Install the MySQL serer now if it does not already exist.
+                # Install the MySQL or MariaDB server package now if it is not already installed.
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time." 8 78
                 CheckPackage mysql-server
 
@@ -246,7 +246,7 @@ case $DISTRO_ID in
         if [[ $DISTRO_RELEASE -ge "9" ]]; then DISTRO_PHP_VERSION="7.0"; fi
         ;;
     ubuntu)
-        if [[ $DISTRO_RELEASE -ge "16.04" ]]; then DISTRO_PHP_VERSION="7.0"; fi
+        if [ `bc -l <<< "$DISTRO_RELEASE >= 16.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.0"; fi
         ;;
 esac
 
@@ -412,6 +412,22 @@ fi
 ## SETUP THE MYSQL DATABASE
 
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
+
+    # If this device is using MariaDB set the root password for the server.
+    case $DISTRO_ID in
+        debian|raspbian)
+            if [[ $DISTRO_RELEASE -ge "9" ]]; then
+                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "UPDATE user SET password=PASSWORD("${DATABASEADMINPASSWORD1}") WHERE User='root';"
+                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "flush privileges;"
+            fi
+            ;;
+        ubuntu)
+            if [ `bc -l <<< "$DISTRO_RELEASE >= 16.04"` -eq 1 ]; then
+                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "UPDATE user SET password=PASSWORD("${DATABASEADMINPASSWORD1}") WHERE User='root';"
+                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "flush privileges;"
+            fi
+            ;;
+    esac
 
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
