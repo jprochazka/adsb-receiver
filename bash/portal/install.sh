@@ -414,20 +414,10 @@ fi
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
 
     # If this device is using MariaDB set the root password for the server.
-    case $DISTRO_ID in
-        debian|raspbian)
-            if [[ $DISTRO_RELEASE -ge "9" ]]; then
-                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "UPDATE user SET password=PASSWORD("${DATABASEADMINPASSWORD1}") WHERE User='root';"
-                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "flush privileges;"
-            fi
-            ;;
-        ubuntu)
-            if [ `bc -l <<< "$DISTRO_RELEASE >= 16.04"` -eq 1 ]; then
-                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "UPDATE user SET password=PASSWORD("${DATABASEADMINPASSWORD1}") WHERE User='root';"
-                mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "flush privileges;"
-            fi
-            ;;
-    esac
+    if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+        mysql -u${DATABASEADMINUSER} -h ${DATABASEHOSTNAME} -e "UPDATE user SET password=PASSWORD("${DATABASEADMINPASSWORD1}") WHERE User='root';"
+        sudo service mysql force-reload
+    fi
 
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
