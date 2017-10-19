@@ -56,7 +56,7 @@
     }
 
     // Set the start stop positions to be used in the query.
-    $start = 1;
+    $start = 0;
     if (isset($_GET['page'])) {
         $start = $_GET['page'] * $itemsPerPage;
     }
