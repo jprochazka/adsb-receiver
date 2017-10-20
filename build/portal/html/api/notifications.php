@@ -28,15 +28,13 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    $possibleActions = array("flights", "update");
+    $possibleActions = array("flights");
 
     if (isset($_GET['type']) && in_array($_GET["type"], $possibleActions)) {
         switch ($_GET["type"]) {
             case "flights":
                 $queryArray = getVisibleFlights();
                 break;
-            case "update":
-                $queryArray = updateVisibleFlights();
         }
         exit(json_encode($queryArray));
     } else {
@@ -62,7 +60,7 @@
         } else {
             // PDO
             $dbh = $common->pdoOpen();
-            $sql = "SELECT flight, lastMessageCount FROM ".$settings::db_prefix."flightNotifications";
+            $sql = "SELECT flight FROM ".$settings::db_prefix."flightNotifications";
             $sth = $dbh->prepare($sql);
             $sth->execute();
             $lookingFor = $sth->fetchAll();
@@ -82,31 +80,22 @@
         }
 
         $foundFlights = array();
-        $foundFlights['tracking'] = '';
         foreach ($lookingFor as $flight) {
             if(strpos($flight[0], "%") !== false) {
                 $searchFor = str_replace("%", "", $flight[0]);
                 foreach ($visibleFlights as $visible) {
-                    // Still needs to be modified to send data using the new format as done below.
                     if (strpos(strtolower($visible), strtolower($searchFor)) !== false) {
                         $foundFlights[] = $visible;
                     }
                 }
             } else {
                 if (in_array($flight[0], $visibleFlights)) {
-                    $thisFlight['flight'] = $flight[0];
-                    $thisFlight['lastMessageCount'] = $flight[1];
-                    $foundFlights['tracking'][] = $thisFlight;
+                    $foundFlights[] = $flight[0];
                 }
             }
         }
 
 
         return json_decode(json_encode((array)$foundFlights), true);
-    }
-
-    function updateVisibleFlights() {
-        $success = TRUE;
-        return json_decode(json_encode((array)$success), true);
     }
 ?>
