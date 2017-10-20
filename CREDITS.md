@@ -21,7 +21,7 @@ directly. Their time and effort is greatly appreciated by myself as well as many
 I would like to thank the members and contributors to the following forums for all the time and effort
 they have put in in order to create a useful and informative place to discuss aircraft tracking.
 
-* The ADS-B Receiver Project Forums:  https://www.adsb-receiver.net
+* The ADS-B Receiver Project Forums:  https://www.adsbreceiver.net
 * The FlightAware Forums:             http://discussions.flightaware.com
 * The PlaneFinder Forums:             http://forum.planefinder.net
 * The ADS-B Exchange Forums:          http://www.adsbexchange.com/forums/
