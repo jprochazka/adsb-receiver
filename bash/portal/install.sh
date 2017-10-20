@@ -277,7 +277,7 @@ if [[ "${ADVANCED}" = "true" ]] ; then
             ;;
         "SQLite")
             CheckPackage sqlite3
-            CheckPackage php${DISTRO_PHP_VERSION}-sqlite
+            CheckPackage php${DISTRO_PHP_VERSION}-sqlite3
             ;;
     esac
 else
@@ -493,11 +493,20 @@ fi
 ## SETUP COMMON PORTAL FEATURES
 
 # Export variables needed by logging.sh.
-if [[ "${DATABASEENGINE}" = "MySQL" ]] || [[ "${DATABASEENGINE}" = "SQLite" ]] ; then
+if [ "${DATABASEENGINE}" = "MySQL" ]; then
     export ADSB_DATABASEENGINE=${DATABASEENGINE}
     export ADSB_DATABASEHOSTNAME=${DATABASEHOSTNAME}
     export ADSB_DATABASEUSER=${DATABASEUSER}
     export ADSB_DATABASEPASSWORD1=${DATABASEPASSWORD1}
+    export ADSB_DATABASENAME=${DATABASENAME}
+elif [ "${DATABASEENGINE}" = "SQLite" ]; then
+    if [ -z "${DATABASENAME}" ] ; then
+        DATABASENAME="${LIGHTTPD_DOCUMENT_ROOT}/data/portal.sqlite"
+    fi
+    export ADSB_DATABASEENGINE=${DATABASEENGINE}
+    export ADSB_DATABASEHOSTNAME=""
+    export ADSB_DATABASEUSER=""
+    export ADSB_DATABASEPASSWORD1=""
     export ADSB_DATABASENAME=${DATABASENAME}
 else
     export ADSB_DATABASEENGINE="xml"
@@ -519,12 +528,7 @@ fi
 
 ## SETUP ADVANCED PORTAL FEATURES
 
-if [[ "${ADVANCED}" = "true" ]] ; then
-    # If SQLite is being used and the path is not already set to the variable $DATABASENAME set it to the default path.
-    if [[ "${DATABASEENGINE}" = "SQLite" ]] && [[ -z "${DATABASENAME}" ]] ; then
-        DATABASENAME="${LIGHTTPD_DOCUMENT_ROOT}/data/portal.sqlite"
-    fi
-
+if [ "${ADVANCED}" = "true" ] ; then
     chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
     ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
     if [[ $? -ne 0 ]] ; then
