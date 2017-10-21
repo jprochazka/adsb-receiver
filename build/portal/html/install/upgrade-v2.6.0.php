@@ -28,7 +28,25 @@
     // SOFTWARE.                                                                       //
     /////////////////////////////////////////////////////////////////////////////////////
 
-    class settings {
+    ///////////////////////
+    // UPGRADE TO V2.6.0
+    ///////////////////////
+
+    // ------------------------------------------------------------------------------------------
+    // Updates the version setting to 2.6.0.
+    // ------------------------------------------------------------------------------------------
+
+    $results = upgrade();
+    exit(json_encode($results));
+
+    function upgrade() {
+        require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+        require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php");
+
+        $common = new common();
+        $settings = new settings();
+
+        try {
             // Update the version and patch settings..
             $common->updateSetting("version", "2.6.0");
             $common->updateSetting("patch", "");
