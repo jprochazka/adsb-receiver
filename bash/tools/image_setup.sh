@@ -182,79 +182,10 @@ CheckPackage libpython2.7
 CheckPackage php7.0-cgi
 CheckPackage php7.0-json
 
-## SET LOCALE
-
-echo -e ""
-echo -e "\e[95m  Setting the locale to en_US.UTF-8...\e[97m"
-echo -e ""
-sudo su -c "sed --regexp-extended --expression='
-
-   1  {
-         i\
-# This file lists locales that you wish to have built. You can find a list\
-# of valid supported locales at /usr/share/i18n/SUPPORTED, and you can add\
-# user defined locales to /usr/local/share/i18n/SUPPORTED. If you change\
-# this file, you need to rerun locale-gen.\
-\
-
-
-      }
-
-   /^(en_US+)?(\.UTF-8)?(@[^[:space:]]+)?[[:space:]]+UTF-8$/!   s/^/# /
-
-' /usr/share/i18n/SUPPORTED > /etc/locale.gen"
-
-sudo debconf-set-selections <<< 'locales locales/default_environment_locale select en_US.UTF-8'
-sudo rm -f /etc/default/locale
-sudo dpkg-reconfigure --frontend=noninteractive locales
-
-sudo update-locale LC_NUMERIC='en_US.UTF-8'
-sudo update-locale LC_TIME='en_US.UTF-8'
-sudo update-locale LC_MONETARY='en_US.UTF-8'
-sudo update-locale LC_PAPER='en_US.UTF-8'
-sudo update-locale LC_NAME='en_US.UTF-8'
-sudo update-locale LC_ADDRESS='en_US.UTF-8'
-sudo update-locale LC_TELEPHONE='en_US.UTF-8'
-sudo update-locale LC_MEASUREMENT='en_US.UTF-8'
-sudo update-locale LC_IDENTIFICATION='en_US.UTF-8'
-
-#sudo update-locale LANGUAGE='en_US'
-#sudo locale-gen en_US.UTF-8
-
-## CHANGE THE KEYBOARD LAYOUT
-
-echo -e ""
-echo -e "\e[95m  Changing the default keyboard layout to US/PC105...\e[97m"
-ChangeConfig "XKBMODEL" "pc105" "/etc/default/keyboard"
-ChangeConfig "XKBLAYOUT" "us" "/etc/default/keyboard"
-ChangeConfig "XKBVARIANT" "" "/etc/default/keyboard"
-ChangeConfig "XKBOPTIONS" "" "/etc/default/keyboard"
-ChangeConfig "BACKSPACE" "guess" "/etc/default/keyboard"
-
-sudo setupcon
-
-## SET TIMEZONE
-
-echo -e "\e[95m  Setting the timezone to America/New_York...\e[97m"
-AREA="America"
-ZONE="New_York"
-
-ZONEINFO_FILE='/usr/share/zoneinfo/'"${AREA}"'/'"${ZONE}"
-sudo ln --force --symbolic "${ZONEINFO_FILE}" '/etc/localtime'
-sudo dpkg-reconfigure --frontend=noninteractive tzdata
-
-## CHANGE THE PASSWORD FOR THE USER PI
-
-echo "pi:adsbreceiver" | sudo chpasswd
-
-## CLEAN UP THE SYSTEM TO MAKE THE IMAGE SMALLER
-
-echo -e "\e[95m  Removing packages which are no longer needed...\e[97m"
-echo -e ""
-sudo apt-get -y clean
-sudo apt-get -y autoclean
-sudo apt-get -y autoremove
-echo -e ""
+## PREVIOUS LOCALE SCRIPTING THAT SET LOCALE NO LONGER WORKS PROPERLY ON STRETCH.
+## The scripting setting this using this script has been removed for now.
+## We will manually set this using rasp-config when creating the script in the meantime.
+## Later I will look into automating this but time is short on the v2.6.0 release.
 
 ## TOUCH THE IMAGE FILE
 
