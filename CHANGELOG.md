@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.6.0 (*prerelease*)
+## v2.6.0 *(October 21st, 2017)*
 
 * Added "Extras" option to install process.
 * Added the ability to install beast-splitter as an extra.
