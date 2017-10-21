@@ -82,6 +82,7 @@ CheckPackage libusb-1.0-0-dev
 CheckPackage pkg-config
 CheckPackage lighttpd
 CheckPackage fakeroot
+CheckPackage bc
 
 # Ask which version of dump1090 to install.
 DUMP1090OPTION=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version" --menu "Which version of dump1090 is to be installed?" 12 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)" 3>&1 1>&2 2>&3)
