@@ -110,13 +110,18 @@ CheckPackage pkg-config
 CheckPackage lighttpd
 CheckPackage fakeroot
 
-### STOP ANY RUNNING SERVICES
-
 ### START INSTALLATION
 
 echo -e ""
 echo -e "\e[95m  Begining the dump1090-mutability installation process...\e[97m"
 echo -e ""
+
+## SETUP UDEV RTL-SDR RULES
+
+echo -e "\e[94m  Downloading RTL-SDR udev rules...\e[97m"
+sudo curl --http1.1 https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules --output /etc/udev/rules.d/rtl-sdr.rules
+echo -e "\e[94m  Restarting udev...\e[97m"
+sudo service udev restart
 
 ## ATTEMPT TO DOWNLOAD OR UPDATE THE COMPONENT FROM GITHUB
 
