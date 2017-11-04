@@ -603,6 +603,11 @@ else
     echo -e ""
 fi
 
+if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin" ]] ; then
+    echo -e "\e[94m  Entering the AboveTustin git repository directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin 2>&1
+fi
+
 ## BUILD AND INSTALL
 
 ## APPLY CONFIGURATION
