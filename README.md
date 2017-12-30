@@ -81,7 +81,7 @@ The following software can be installed using these scripts.
 **Extras**
 
 * ADS-B Receiver Project Portal: https://www.adsbreceiver.net
-* AboveTustin:                   https://github.com/flightaware/beast-splitter
+* AboveTustin:                   https://github.com/kevinabrandon/AboveTustin
 * Beast-Splitter:                https://github.com/flightaware/beast-splitter
 * DuckDNS.org Support:           http://www.duckdns.org/
 
