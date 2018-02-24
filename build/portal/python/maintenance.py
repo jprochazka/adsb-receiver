@@ -31,8 +31,9 @@
 import json
 import os
 import datetime
+import time
 
-while true:
+while True:
 
     ## Read the configuration file.
     with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
@@ -51,6 +52,7 @@ while true:
 
     ## Get maintenance settings.
 
+    purge_aircraft = False
     # MySQL
     if config["database"]["type"] == "mysql":
         cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgeAircraft")
@@ -59,8 +61,9 @@ while true:
         params = ("purgeAircraft",)
         cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
     row = cursor.fetchone()
-    purge_aircraft = row[0]
+    purge_aircraft = row
 
+    purge_flights = False
     # MySQL
     if config["database"]["type"] == "mysql":
         cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgeFlights")
@@ -69,8 +72,10 @@ while true:
         params = ("purgeFlights",)
         cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
     row = cursor.fetchone()
-    purge_flights = row[0]
+    if row: 
+        purge_flights = row
 
+    purge_positions = False
     # MySQL
     if config["database"]["type"] == "mysql":
         cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgePositions")
@@ -79,8 +84,10 @@ while true:
         params = ("purgePositions",)
         cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
     row = cursor.fetchone()
-    purge_positions = row[0]
+    if row: 
+        purge_positions = row
 
+    purge_days_old = False
     # MySQL
     if config["database"]["type"] == "mysql":
         cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgeDaysOld")
@@ -89,16 +96,20 @@ while true:
         params = ("purgeDaysOld",)
         cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
     row = cursor.fetchone()
-    purge_days_old = row[0]
+    purge_days_old = row
 
     ## Create the purge date from the age specified.
 
-    purge_datetime = datetime.datetime.utcnow() - timedelta(days=purge_days_old)
-    purge_date = purge_datetime.strftime("%Y/%m/%d %H:%M:%S")
+    if purge_days_old:
+        purge_datetime = datetime.datetime.utcnow() - timedelta(days=purge_days_old)
+        purge_date = purge_datetime.strftime("%Y/%m/%d %H:%M:%S")
+    else:
+        purge_datetime = None
+        purge_date = None
 
     ## Remove aircraft not seen since the specified date.
 
-    if purge_aircraft == true:
+    if purge_aircraft and purge_date:
         # MySQL
         if config["database"]["type"] == "mysql":
             cursor.execute("SELECT id FROM adsb_aircraft WHERE lastSeen < %s", purge_date)
@@ -121,7 +132,7 @@ while true:
 
     ## Remove flights not seen since the specified date.
 
-    if purge_flights == true:
+    if purge_flights and purge_date:
         # MySQL
         if config["database"]["type"] == "mysql":
             cursor.execute("SELECT id FROM adsb_flights WHERE lastSeen < %s", purge_date)
@@ -142,7 +153,7 @@ while true:
 
     ## Remove positions older than the specified date.
 
-    if purge_positions == true:
+    if purge_positions and purge_date:
         # MySQL
         if config["database"]["type"] == "mysql":
             cursor.execute("DELETE FROM adsb_positions WHERE time < %s", purge_date)
