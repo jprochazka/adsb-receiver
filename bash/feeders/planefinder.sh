@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2015-2018, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -121,6 +121,7 @@ if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/planefinder ]] ; then
     echo -e "\e[94m  Creating the PlaneFinder ADS-B Client build directory...\e[97m"
     echo ""
     mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/planefinder
+    echo ""
 fi
 
 # Change to the component build directory.

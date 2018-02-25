@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -293,8 +293,8 @@ fi
 
 # Reload Lighttpd after installing the prerequisite packages.
 echo -e "\e[94m  Reloading Lighttpd...\e[97m"
-echo -e ""
 sudo service lighttpd force-reload
+echo ""
 
 ## SETUP THE PORTAL WEBSITE
 
@@ -410,11 +410,9 @@ fi
 # Reload or start Lighttpd.
 if pgrep "lighttpd" > /dev/null; then
     echo -e "\e[94m  Reloading Lighttpd...\e[97m"
-    echo -e ""
     sudo service lighttpd force-reload
 else
     echo -e "\e[94m  Starting Lighttpd...\e[97m"
-    echo -e ""
     sudo service lighttpd start
 fi
 

@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -57,7 +57,7 @@ echo -e "\e[92m  Setting up AboveTustin..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 13 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "AboveTustin Setup" --yesno "AboveTustin is an ADS-B Twitter Bot. Uses dump1090-mutability to track airplanes and then tweets whenever an airplane flies overhead.\n\n  https://github.com/kevinabrandon/AboveTustin\n\nContinue setting up AboveTustin?" 12 78
     if [[ $? -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -269,7 +269,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                 TWITTER_ACCESS_TOKEN=$(grep "^access_token =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
             fi
         fi
-        TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token." 7 78 "${TWITTER_ACCESS_TOKEN}" 3>&1 1>&2 2>&3)
+        TWITTER_ACCESS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token." 8 78 "${TWITTER_ACCESS_TOKEN}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_TITLE="Twitter Access Token (REQUIRED)"
     done
     #
@@ -280,7 +280,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                 TWITTER_ACCESS_TOKEN_SECRET=$(grep "^access_token_secret =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
             fi
         fi
-        TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 7 78 "${TWITTER_ACCESS_TOKEN_SECRET}" 3>&1 1>&2 2>&3)
+        TWITTER_ACCESS_TOKEN_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_ACCESS_TOKEN_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Access Token Secret." 8 78 "${TWITTER_ACCESS_TOKEN_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_ACCESS_TOKEN_SECRET_TITLE="Twitter Access Token Secret (REQUIRED)"
     done
     #
@@ -291,7 +291,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                 TWITTER_CONSUMER_KEY=$(grep "^consumer_key =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
             fi
         fi
-        TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 7 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
+        TWITTER_CONSUMER_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_KEY_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Key." 8 78 "${TWITTER_CONSUMER_KEY}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_KEY_TITLE="Twitter Consumer Key (REQUIRED)"
     done
     #
@@ -302,7 +302,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
                 TWITTER_CONSUMER_SECRET=$(grep "^consumer_secret =" "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini" | awk '{print $3}')
             fi
         fi
-        TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 7 78 "${TWITTER_CONSUMER_SECRET}" 3>&1 1>&2 2>&3)
+        TWITTER_CONSUMER_SECRET=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${TWITTER_CONSUMER_SECRET_TITLE}" --nocancel --inputbox "\nEnter your Twitter Consumer Secret." 8 78 "${TWITTER_CONSUMER_SECRET}" 3>&1 1>&2 2>&3)
         TWITTER_CONSUMER_SECRET_TITLE="Twitter Consumer Secret (REQUIRED)"
     done
 fi
@@ -332,7 +332,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     RECEIVER_LONGITUDE_TITLE="Receiver Longitude"
     while [[ -z "${RECEIVER_LONGITUDE}" ]] ; do
         if [[ -f ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini ]]; then
-            if [[ `grep "^longitude = ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
+            if [[ `grep "^longitude = " ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini | awk '{print $3}' | wc -c` -gt 1 ]] ; then
                 RECEIVER_LONGITUDE=$(grep "^longitude =" ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin/config.ini | awk '{print $3}')
                 RECEIVER_LONGITUDE_SOURCE=", the value below is configured in AboveTustin"
             fi
@@ -586,6 +586,7 @@ if [[ -d "${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin" ]] && [[ -d "${RE
     cd ${RECEIVER_BUILD_DIRECTORY}/abovetustin/AboveTustin 2>&1
     echo -e ""
     echo -e "\e[94m  Updating the local AboveTustin git repository...\e[97m"
+    echo ""
     git pull 2>&1
     echo -e ""
 else
@@ -673,17 +674,20 @@ echo -e ""
 echo -e "\e[95m  Starting AboveTustin...\e[97m"
 echo -e ""
 
-# Kill any currently running instances.
-PROCS="run_tracker.sh tracker.py phantomjs"
-for PROC in ${PROCS} ; do
-    PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
-        sudo kill ${PIDS} 2>&1
-        sudo kill -9 ${PIDS} 2>&1
-    fi
-    unset PIDS
-done
+# Kill any currently running AboveTustin related processes.
+echo -e "\e[94m  Checking for any running AboveTustin processes...\e[97m"
+if [[ $(ps -aux | grep '[r]un_tracker.sh' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current run_tracker.sh process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[r]un_tracker.sh' | awk '{print $2}') &> /dev/null
+fi
+if [[ $(ps -aux | grep '[t]racker.py' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current tracker.py process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[t]racker.py' | awk '{print $2}') &> /dev/null
+fi
+if [[ $(ps -aux | grep '[p]hantomjs' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current phantomjs process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[p]hantomjs' | awk '{print $2}') &> /dev/null
+fi
 
 # Start the run_tracker.sh script.
 echo -e "\e[94m  Executing the run_tracker.sh script...\e[97m"

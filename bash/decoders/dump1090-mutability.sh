@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2015-2018, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -119,7 +119,9 @@ echo -e ""
 ## SETUP UDEV RTL-SDR RULES
 
 echo -e "\e[94m  Downloading RTL-SDR udev rules...\e[97m"
+echo ""
 sudo curl --http1.1 https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules --output /etc/udev/rules.d/rtl-sdr.rules
+echo ""
 echo -e "\e[94m  Restarting udev...\e[97m"
 sudo service udev restart
 
@@ -209,7 +211,7 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
         # Archive binary package.
         echo -e "\e[94m  Moving the dump1090-mutability binary package into the archive directory...\e[97m"
         echo -e ""
-        cp -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive/ 2>&1
+        cp -vf ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/*.deb ${RECEIVER_BUILD_DIRECTORY}/dump1090-mutability/package-archive/ 2>&1
     fi
 fi
 

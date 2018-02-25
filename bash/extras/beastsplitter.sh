@@ -228,16 +228,15 @@ echo -e "\e[95m  Starting beast-splitter...\e[97m"
 echo -e ""
 
 # Kill any currently running instances.
-PROCS="beast-splitter_maint.sh beast-splitter"
-for PROC in ${PROCS} ; do
-    PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
-    if [[ -n "${PIDS}" ]] ; then
-        echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
-        sudo kill ${PIDS} 2>&1
-        sudo kill -9 ${PIDS} 2>&1
-    fi
-    unset PIDS
-done
+echo -e "\e[94m  Checking for any running beast-splitter processes...\e[97m"
+if [[ $(ps -aux | grep '[b]east-splitter_maint.sh' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current beast-splitter_maint.sh process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[b]east-splitter_maint.sh' | awk '{print $2}') &> /dev/null
+fi
+if [[ $(ps -aux | grep '[b]east-splitter' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current beast-splitter process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[b]east-splitter' | awk '{print $2}') &> /dev/null
+fi
 
 # Start the beast-splitter_maint.sh script.
 echo -e "\e[94m  Executing the beast-splitter script...\e[97m"

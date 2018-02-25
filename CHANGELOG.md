@@ -2,6 +2,23 @@
 
 The following is a history of the changes made to this project.
 
+## v2.6.1 *(prerelease)*
+
+* Fixes to issues contained within maintenance.py. (thanks to @mkrzysztofowicz)
+* Dump1090-mutability wget permission error fixed. (thanks to SCX77)
+* The option to upgrade the Planefinder client now appears when one is available.
+* Updated to install planfinder.net ARM client version 3.7.40.
+* Updated to install PiAware version 3.5.3.
+* The version of mlat-client installed has been reverted back to v0.2.6 from v0.2.9.
+* Fixed path variable to where the built dump1090-mutability packages are archived.
+* Fixed path variable used to check if the ADS-B Exchange build directory exists.
+* Simplified and fixed lines killing existing ADS-B Exchange processes during reinstallation.
+* Simplified and fixed lines killing existing AboveTustin processes during reinstallation.
+* Simplified and fixed lines killing existing BeastSplitter processes during reinstallation.
+* Fixed many minor bash script output syntax and formating issues.
+* Some Whiptail dialogs have been expanded to be more descriptive.
+* AboveTustin script was not retriving the current longitude when upgrading it.
+
 ## v2.6.0 *(October 21st, 2017)*
 
 * Added "Extras" option to install process.

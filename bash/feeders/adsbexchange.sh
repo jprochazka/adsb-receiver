@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2016-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2016-2018, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -227,24 +227,24 @@ echo -e "\e[95m  Creating maintenance for both the mlat-client and netcat feeds.
 echo ""
 
 # Ask the user for the user name for this receiver.
-RECEIVERNAME_TITLE="Receiver Name"
-while [[ -z $RECEIVERNAME ]]; do
-    RECEIVERNAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "$RECEIVERNAME_TITLE" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
-    RECEIVERNAME_TITLE="Receiver Name (REQUIRED)"
+RECEIVER_NAME_TITLE="Receiver Name"
+while [[ -z $RECEIVER_NAME ]]; do
+    RECEIVER_NAME=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "$RECEIVER_NAME_TITLE" --nocancel --inputbox "\nPlease enter a name for this receiver.\n\nIf you have more than one receiver, this name should be unique.\nExample: \"username-01\", \"username-02\", etc." 12 78 3>&1 1>&2 2>&3)
+    RECEIVER_NAME_TITLE="Receiver Name (REQUIRED)"
 done
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability if it is installed.
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-    RECEIVERLATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
-    RECEIVERLONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+    RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
+    RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 fi
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
-RECEIVERALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=41.3872537,-82.0769568 | python -c \"import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation']\"`" 3>&1 1>&2 2>&3)
+RECEIVER_ALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=41.3872537,-82.0769568 | python -c \"import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation']\"`" 3>&1 1>&2 2>&3)
 
 # Create the adsbexchange directory in the build directory if it does not exist.
 echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"
-if [ ! -d "$ADSBEXCHANGEBUILDDIRECTORY" ]; then
+if [ ! -d "$RECEIVER_BUILD_DIRECTORY/adsbexchange" ]; then
     echo -e "\e[94m  Creating the adsbexchange build directory...\e[97m"
     mkdir $RECEIVER_BUILD_DIRECTORY/adsbexchange
 fi
@@ -265,7 +265,7 @@ tee $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh > /dev/nul
 while true
   do
     sleep 30
-    /usr/bin/mlat-client --input-type dump1090 --input-connect 127.0.0.1:30005 --lat $RECEIVERLATITUDE --lon $RECEIVERLONGITUDE --alt $RECEIVERALTITUDE --user $RECEIVERNAME --server feed.adsbexchange.com:31090 --no-udp --results beast,connect,127.0.0.1:30104
+    /usr/bin/mlat-client --input-type dump1090 --input-connect 127.0.0.1:30005 --lat $RECEIVER_LATITUDE --lon $RECEIVER_LONGITUDE --alt $RECEIVER_ALTITUDE --user $RECEIVER_NAME --server feed.adsbexchange.com:31090 --no-udp --results beast,connect,127.0.0.1:30104
   done
 EOF
 
@@ -297,32 +297,24 @@ echo ""
 
 # Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
 echo -e "\e[94m  Checking for any running adsbexchange-netcat_maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "adsbexchange-netcat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running adsbexchange-netcat_maint.sh processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
+if [[ $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current adsbexchange-netcat_maint.sh process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') &> /dev/null
 fi
-PIDS=`ps -efww | grep -w "/bin/nc feed.adsbexchange.com" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running netcat processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
+if [[ $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current feed.adsbexchange.com process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') &> /dev/null
 fi
 
 # Kill any currently running instances of the adsbexchange-mlat_maint.sh script.
 echo -e "\e[94m  Checking for any running adsbexchange-mlat_maint.sh processes...\e[97m"
-PIDS=`ps -efww | grep -w "adsbexchange-mlat_maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running adsbexchange-mlat_maint.sh processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
+if [[ $(ps -aux | grep '[a]dsbexchange-mlat_maint.sh' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current adsbexchange-mlat_maint.sh process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[a]dsbexchange-mlat_maint.sh' | awk '{print $2}') &> /dev/null
 fi
-PIDS=`ps -efww | grep -w "mlat-client" | awk -vpid=$$ '$2 != pid { print $2 }'`
-if [ ! -z "$PIDS" ]; then
-    echo -e "\e[94m  Killing any running mlat-client processes...\e[97m"
-    sudo kill $PIDS
-    sudo kill -9 $PIDS
+if [[ $(ps -aux | grep 'mlat-client' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current mlat-client process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[m]lat-client' | awk '{print $2}') &> /dev/null
 fi
 
 echo -e "\e[94m  Executing the adsbexchange-netcat_maint.sh script...\e[97m"

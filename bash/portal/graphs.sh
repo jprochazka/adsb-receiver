@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -59,7 +59,7 @@ echo -e ""
 ## CONFIRM INSTALLED PACKAGES
 
 if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
-    echo -e "\e[95m  Checking which dump1090 fork is installed...\e[97m"
+    echo -e "\e[94m  Checking which dump1090 fork is installed...\e[97m"
     if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
         DUMP1090_FORK="mutability"
         DUMP1090_INSTALLED="true"
@@ -68,7 +68,6 @@ if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
         DUMP1090_FORK="fa"
         DUMP1090_INSTALLED="true"
     fi
-    echo -e ""
 fi
 if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
     RTLSDROGN_INSTALLED="true"
@@ -90,12 +89,10 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability
     ChangeConfig "EXTRA_ARGS" "${RECEIVER_LONGITUDE}" "/etc/default/dump1090-mutability"
 
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
-    sudo systemctl daemon-reload 2>&1
+    sudo systemctl daemon-reload
 
     echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-    echo ""
-    sudo service dump1090-mutability force-reload 2>&1
-    echo ""
+    sudo service dump1090-mutability force-reload
 fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
@@ -103,8 +100,7 @@ fi
 # Check if the collectd config file exists and if so back it up.
 if [[ -f "${COLLECTD_CONFIG}" ]] ; then
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-    sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak 2>&1
-    echo -e ""
+    sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak
 fi
 
 # Generate new collectd config.
@@ -344,35 +340,29 @@ sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 	Target "write"
 </Chain>
 EOF
-echo -e ""
 
 ## RELOAD COLLECTD
 
 echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
-echo -e ""
 sudo service collectd force-reload
-echo -e ""
 
 ## EDIT CRONTAB
 
 if [[ ! -x "${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh" ]] ; then
     echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
-    chmod +x ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 2>&1
-    echo -e ""
+    chmod +x ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh
 fi
 
 # The next block is temporary in order to insure this file is
 # deleted on older installation before the project renaming.
 if [[ -f "/etc/cron.d/adsb-feeder-performance-graphs" ]] ; then
     echo -e "\e[94m  Removing outdated performance graphs cron file...\e[97m"
-    sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs 2>&1
-    echo -e ""
+    sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
 fi
 
 if [[ -f "${COLLECTD_CRON_FILE}" ]] ; then
     echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
-    sudo rm -f ${COLLECTD_CRON_FILE} 2>&1
-    echo -e ""
+    sudo rm -f ${COLLECTD_CRON_FILE}
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
@@ -395,15 +385,17 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 6 * * *	* root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
 8 */12 * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
-echo -e ""
 
 # Update max_range.rrd to remove the 500 km / ~270 nmi limit.
-if [[ `rrdinfo ${DUMP1090_MAX_RANGE_RRD} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
-    sudo rrdtool tune ${DUMP1090_MAX_RANGE_RRD} --maximum "value:1000000" 2>&1
+if [ -f "/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd" ]; then
+    if [[ `rrdinfo ${DUMP1090_MAX_RANGE_RRD} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
+        echo -e "\e[94m  Removing 500km/270mi limit from max_range.rrd...\e[97m"
+        sudo rrdtool tune ${DUMP1090_MAX_RANGE_RRD} --maximum "value:1000000"
+    fi
 fi
 
 ### SETUP COMPLETE
 
 # Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
+cd ${RECEIVER_ROOT_DIRECTORY}
