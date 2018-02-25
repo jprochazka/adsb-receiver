@@ -7,7 +7,7 @@ The following is a history of the changes made to this project.
 * Fixes to issues contained within maintenance.py. (thanks to @mkrzysztofowicz)
 * Dump1090-mutability wget permission error fixed. (thanks to SCX77)
 * The option to upgrade the Planefinder client now appears when one is available.
-* Updated to install planfinder.net ARM client version 3.7.40.
+* Updated to install planefinder.net ARM client version 3.7.40.
 * Updated to install PiAware version 3.5.3.
 * The version of mlat-client installed has been reverted back to v0.2.6 from v0.2.9.
 * Fixed path variable to where the built dump1090-mutability packages are archived.
