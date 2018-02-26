@@ -234,13 +234,13 @@ while [[ -z $RECEIVER_NAME ]]; do
 done
 
 # Get the altitude of the receiver from the Google Maps API using the latitude and longitude assigned dump1090-mutability if it is installed.
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
     RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
     RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
 fi
 
 # Ask the user for the receivers altitude. (This will be prepopulated by the altitude returned from the Google Maps API.
-RECEIVER_ALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=41.3872537,-82.0769568 | python -c \"import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation']\"`" 3>&1 1>&2 2>&3)
+RECEIVER_ALTITUDE=$(whiptail --backtitle "$ADSB_PROJECTTITLE" --backtitle "$BACKTITLETEXT" --title "Receiver Altitude" --nocancel --inputbox "\nEnter your receiver's altitude." 9 78 "`curl -s https://maps.googleapis.com/maps/api/elevation/json?locations=$RECEIVER_LATITUDE,$RECEIVER_LONGITUDE | python -c \"import json,sys;obj=json.load(sys.stdin);print obj['results'][0]['elevation']\"`" 3>&1 1>&2 2>&3)
 
 # Create the adsbexchange directory in the build directory if it does not exist.
 echo -e "\e[94m  Checking for the adsbexchange build directory...\e[97m"

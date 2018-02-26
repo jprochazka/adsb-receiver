@@ -6,6 +6,8 @@ The following is a history of the changes made to this project.
 
 * Fixes to issues contained within maintenance.py. (thanks to @mkrzysztofowicz)
 * Dump1090-mutability wget permission error fixed. (thanks to SCX77)
+* Latitude and longitude sent to get altitude was hard coded in ADS-B Exchange script.
+* The ADS-B Exchange script was not getting latitude and longitude from dump1090-mutability.
 * Fixed RTLSDR device permissions issue by downloading rtl-sdr.rules if not present.
 * The option to upgrade the Planefinder client now appears when one is available.
 * Updated to install planefinder.net ARM client version 3.7.40.
