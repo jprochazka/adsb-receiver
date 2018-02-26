@@ -6,6 +6,7 @@ The following is a history of the changes made to this project.
 
 * Fixes to issues contained within maintenance.py. (thanks to @mkrzysztofowicz)
 * Dump1090-mutability wget permission error fixed. (thanks to SCX77)
+* Fixed RTLSDR device permissions issue by downloading rtl-sdr.rules if not present.
 * The option to upgrade the Planefinder client now appears when one is available.
 * Updated to install planefinder.net ARM client version 3.7.40.
 * Updated to install PiAware version 3.5.3.

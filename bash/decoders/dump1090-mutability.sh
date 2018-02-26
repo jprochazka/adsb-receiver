@@ -360,6 +360,12 @@ if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] ; then
     fi
 fi
 
+# Download the file rtl-sdr.rules from the osmocon rtl-sdr repository if it does not already exist.
+if [[ ! -f "/etc/udev/rules.d/rtl-sdr.rules" ]] ; then
+    echo -e "\e[94m  Downloading the file rtl-sdr.rules from the rtl-sdr repository...\e[97m"
+    sudo wget -O /etc/udev/rules.d/rtl-sdr.rules "https://raw.githubusercontent.com/osmocom/
+fi
+
 # (re)start dump1090-mutability.
 if [[ "`sudo systemctl status dump1090-mutability 2>&1 | egrep -c "Active: active (running)"`" -gt 0 ]] ; then
     echo -e "\e[94m  Restarting the dump1090-mutability service...\e[97m"
