@@ -363,7 +363,7 @@ fi
 # Download the file rtl-sdr.rules from the osmocon rtl-sdr repository if it does not already exist.
 if [[ ! -f "/etc/udev/rules.d/rtl-sdr.rules" ]] ; then
     echo -e "\e[94m  Downloading the file rtl-sdr.rules from the rtl-sdr repository...\e[97m"
-    sudo wget -O /etc/udev/rules.d/rtl-sdr.rules "https://raw.githubusercontent.com/osmocom/
+    sudo wget -O /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules
 fi
 
 # (re)start dump1090-mutability.
