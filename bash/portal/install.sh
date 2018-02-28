@@ -475,7 +475,14 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]
     echo -e "\e[94m  Creating the MySQL database \"${DATABASENAME}\"...\e[97m"
     mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE DATABASE ${DATABASENAME};"
     echo -e "\e[94m  Creating the MySQL user \"${DATABASEUSER}\"...\e[97m"
-    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+
+    if [[ "${LOCALMYSQLSERVER}" = "false" ]] ; then
+        # If the databse resides on a remote server be sure to allow the newly created user access to it remotly.
+        mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'%' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+    else
+        # Since this is a local database we will restrict this login to localhost logins only.
+        mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+    fi
     echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"${DATABASEUSER}\"...\e[97m"
     mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
     echo -e "\e[94m  Flushing priviledges on the MySQL database server...\e[97m"
