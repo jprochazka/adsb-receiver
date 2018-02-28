@@ -69,13 +69,13 @@
                 $columns = $dbh->query("pragma table_info(positions)")->fetchArray(SQLITE3_ASSOC);
                 $columnExists = FALSE;
                 foreach($columns as $column ){
-                    if ($column['name'] == 'lastSeen') {
+                    if ($column['name'] == 'positions') {
                         $columnExists = TRUE;
                     }
                 }
                 // Add the column if it does not exist.
                 if (!$columnExists) {
-                    $sql = "ALTER TABLE ".$settings::db_prefix."positionss ADD COLUMN aircraft BIGINT";
+                    $sql = "ALTER TABLE ".$settings::db_prefix."positions ADD COLUMN aircraft BIGINT";
                     $sth = $dbh->prepare($sql);
                     $sth->execute();
                     $sth = NULL;
