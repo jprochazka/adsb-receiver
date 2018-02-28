@@ -53,50 +53,32 @@ while True:
     ## Get maintenance settings.
 
     purge_aircraft = False
-    # MySQL
-    if config["database"]["type"] == "mysql":
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgeAircraft")
-    # SQLite
-    if config["database"]["type"] == "sqlite":
-        params = ("purgeAircraft",)
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
+    # MySQL and SQLite
+    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeAircraft'")
     row = cursor.fetchone()
-    purge_aircraft = row
+    if row:
+        purge_aircraft = row
 
     purge_flights = False
-    # MySQL
-    if config["database"]["type"] == "mysql":
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgeFlights")
-    # SQLite
-    if config["database"]["type"] == "sqlite":
-        params = ("purgeFlights",)
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
+    # MySQL and SQLite
+    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeFlights'")
     row = cursor.fetchone()
-    if row: 
+    if row:
         purge_flights = row
 
     purge_positions = False
-    # MySQL
-    if config["database"]["type"] == "mysql":
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgePositions")
-    # SQLite
-    if config["database"]["type"] == "sqlite":
-        params = ("purgePositions",)
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
+    # MySQL and SQLite
+    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgePositions'")
     row = cursor.fetchone()
-    if row: 
+    if row:
         purge_positions = row
 
     purge_days_old = False
-    # MySQL
-    if config["database"]["type"] == "mysql":
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = %s", "purgeDaysOld")
-    # SQLite
-    if config["database"]["type"] == "sqlite":
-        params = ("purgeDaysOld",)
-        cursor.execute("SELECT value FROM adsb_settings WHERE name = ?", params)
+    # MySQL and SQLite
+    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeDaysOld'")
     row = cursor.fetchone()
-    purge_days_old = row
+    if row:
+        purge_days_old = row
 
     ## Create the purge date from the age specified.
 

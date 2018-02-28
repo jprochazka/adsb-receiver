@@ -4,7 +4,9 @@ The following is a history of the changes made to this project.
 
 ## v2.6.1 *(prerelease)*
 
+* When created remote database users are now allowed to access the server remotly.
 * Fixes to issues contained within maintenance.py. (thanks to @mkrzysztofowicz)
+* Consolidated simple queries which run on both MySQL and SQLite in maintenance.py.
 * Dump1090-mutability wget permission error fixed. (thanks to SCX77)
 * Latitude and longitude sent to get altitude was hard coded in ADS-B Exchange script.
 * The ADS-B Exchange script was not getting latitude and longitude from dump1090-mutability.
