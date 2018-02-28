@@ -228,11 +228,12 @@
         }
 
         // Generate a random string of the given length.
-        function randomString($length) {
+        function randomString($length = 10) {
             $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $charactersLength = strlen($characters);
             $string = '';
-            for ($p = 0; $p < $length; $p++) {
-                 $string .= $characters[mt_rand(0, strlen($characters))];
+            for ($i = 0; $i < $length; $i++) {
+                 $string .= $characters[rand(0, $charactersLength - 1)];
             }
             return $string;
         }
@@ -244,12 +245,12 @@
 
         // Remove all HTML tags from a string.
         function removeHtmlTags($string) {
-            $string = preg_replace ('/<[^>]*>/', ' ', $string); 
+            $string = preg_replace ('/<[^>]*>/', ' ', $string);
             $string = str_replace("\r", '', $string);
             $string = str_replace("\n", ' ', $string);
             $string = str_replace("\t", ' ', $string);
             $string = trim(preg_replace('/ {2,}/', ' ', $string));
-            return $string; 
+            return $string;
         }
 
         // Remove HTML from a string and shorten to the specified length.

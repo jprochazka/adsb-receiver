@@ -4,6 +4,8 @@ The following is a history of the changes made to this project.
 
 ## v2.6.1 *(prerelease)*
 
+* Password recovery token column used for password retrieval not added properly in the past.
+* Postix package installation was removed at some point and is now reintroduced.
 * When created remote database users are now allowed to access the server remotly.
 * Fixes to issues contained within maintenance.py. (thanks to @mkrzysztofowicz)
 * Consolidated simple queries which run on both MySQL and SQLite in maintenance.py.

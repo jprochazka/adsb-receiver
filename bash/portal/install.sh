@@ -265,6 +265,7 @@ CheckPackage collectd-core
 CheckPackage rrdtool
 
 # Portal dependencies.
+CheckPackage postfix
 CheckPackage libpython2.7
 
 # Install packages needed for advanced portal setups.

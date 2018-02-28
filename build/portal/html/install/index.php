@@ -205,7 +205,8 @@ EOF;
                                                 name VARCHAR(100) NOT NULL,
                                                 email VARCHAR(75) NOT NULL,
                                                 login VARCHAR(25) NOT NULL,
-                                                password VARCHAR(255) NOT NULL);';
+                                                password VARCHAR(255) NOT NULL),
+                                                token VARCHAR(10);';
                         $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
@@ -256,7 +257,8 @@ EOF;
                                               name VARCHAR(100) NOT NULL,
                                               email VARCHAR(75) NOT NULL,
                                               login VARCHAR(25) NOT NULL,
-                                              password VARCHAR(255) NOT NULL);';
+                                              password VARCHAR(255) NOT NULL),
+                                              token VARCHAR(10);';
                         $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id SERIAL PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
@@ -306,7 +308,8 @@ EOF;
                                               name TEXT NOT NULL,
                                               email TEXT NOT NULL,
                                               login TEXT NOT NULL,
-                                              password TEXT NOT NULL);';
+                                              password TEXT NOT NULL),
+                                              token TEXT;';
                         $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
                                           icao TEXT NOT NULL,
