@@ -118,16 +118,16 @@ echo -e ""
 
 ## SETUP UDEV RTL-SDR RULES
 
-echo -e "\e[94m  Downloading RTL-SDR udev rules...\e[97m"
-echo ""
-sudo curl --http1.1 https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules --output /etc/udev/rules.d/rtl-sdr.rules
-echo ""
-echo -e "\e[94m  Restarting udev...\e[97m"
+# Download the file rtl-sdr.rules from the osmocon rtl-sdr repository if it does not already exist.
+if [[ ! -f "/etc/udev/rules.d/rtl-sdr.rules" ]] ; then
+    echo -e "\e[94m  Downloading the file rtl-sdr.rules from the rtl-sdr repository...\e[97m"
+    sudo wget -O /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules
+    echo -e "\e[94m  Restarting udev...\e[97m"
+    sudo service udev restart
+fi
 
 # Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
 BlacklistModules
-
-sudo service udev restart
 
 ## ATTEMPT TO DOWNLOAD OR UPDATE THE COMPONENT FROM GITHUB
 
@@ -362,12 +362,6 @@ if [[ ! -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] ; then
         echo -e ""
         sudo wget -O /usr/share/dump1090-mutability/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${DUMP1090_HEYWHATSTHAT_ID}&refraction=0.25&alts=${DUMP1090_HEYWHATSTHAT_RING_ONE},${DUMP1090_HEYWHATSTHAT_RING_TWO}"
     fi
-fi
-
-# Download the file rtl-sdr.rules from the osmocon rtl-sdr repository if it does not already exist.
-if [[ ! -f "/etc/udev/rules.d/rtl-sdr.rules" ]] ; then
-    echo -e "\e[94m  Downloading the file rtl-sdr.rules from the rtl-sdr repository...\e[97m"
-    sudo wget -O /etc/udev/rules.d/rtl-sdr.rules https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules
 fi
 
 # (re)start dump1090-mutability.
