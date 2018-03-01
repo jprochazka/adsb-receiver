@@ -194,6 +194,18 @@ echo -e "\e[95m  Touching the \"image\" file...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY} 2>&1
 touch image
 
+## CHANGE THE PASSWORD FOR THE USER PI
+
+echo -e "\e[95m  Changing the password for the user pi...\e[97m"
+echo "pi:adsbreceiver" | sudo chpasswd
+
+## ENABLE SSH
+
+echo -e "\e[95m  Touching the \"ssh\" file...\e[97m"
+sudo touch /boot/ssh
+echo -e "\e[95m  Reconfiguring openssh-server...\e[97m"
+sudo rm -f /etc/ssh/ssh_host_* && sudo dpkg-reconfigure openssh-server
+
 ## CLEAR BASH HISTORY
 
 history -c && history -w

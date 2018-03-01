@@ -37,7 +37,7 @@
 
             // Check if the portal is installed or needs upgraded.
 
-            $thisVersion = "2.6.0";
+            $thisVersion = "2.6.1";
 
             if (!file_exists($_SERVER['DOCUMENT_ROOT']."/classes/settings.class.php")) {
                 header ("Location: /install/install.php");

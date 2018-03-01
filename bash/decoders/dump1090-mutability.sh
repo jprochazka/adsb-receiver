@@ -123,6 +123,10 @@ echo ""
 sudo curl --http1.1 https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules --output /etc/udev/rules.d/rtl-sdr.rules
 echo ""
 echo -e "\e[94m  Restarting udev...\e[97m"
+
+# Create an RTL-SDR blacklist file so the device does not claim SDR's for other purposes.
+BlacklistModules
+
 sudo service udev restart
 
 ## ATTEMPT TO DOWNLOAD OR UPDATE THE COMPONENT FROM GITHUB

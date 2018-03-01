@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.6.0";
+    $thisVersion = "2.6.1";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -205,8 +205,8 @@ EOF;
                                                 name VARCHAR(100) NOT NULL,
                                                 email VARCHAR(75) NOT NULL,
                                                 login VARCHAR(25) NOT NULL,
-                                                password VARCHAR(255) NOT NULL),
-                                                token VARCHAR(10);';
+                                                password VARCHAR(255) NOT NULL,
+                                                token VARCHAR(10) NULL);';
                         $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,
@@ -257,8 +257,8 @@ EOF;
                                               name VARCHAR(100) NOT NULL,
                                               email VARCHAR(75) NOT NULL,
                                               login VARCHAR(25) NOT NULL,
-                                              password VARCHAR(255) NOT NULL),
-                                              token VARCHAR(10);';
+                                              password VARCHAR(255) NOT NULL,
+                                              token VARCHAR(10) NULL);';
                         $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id SERIAL PRIMARY KEY,
                                           icao VARCHAR(24) NOT NULL,

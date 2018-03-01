@@ -2,8 +2,9 @@
 
 The following is a history of the changes made to this project.
 
-## v2.6.1 *(prerelease)*
+## v2.6.1 *(February 28th, 2018)*
 
+* Readded missing RTL-SDR kernel module blacklist to dump1090-mutability script.
 * Password recovery token column used for password retrieval not added properly in the past.
 * Postix package installation was removed at some point and is now reintroduced.
 * When created remote database users are now allowed to access the server remotly.
