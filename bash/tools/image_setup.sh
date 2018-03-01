@@ -84,6 +84,13 @@ CheckPackage lighttpd
 CheckPackage fakeroot
 CheckPackage bc
 
+## SETUP RTL-SDR RULES
+
+echo -e "\e[95m  Setting up RTL-SDR udev rules...\e[97m"
+sudo curl --http1.1 https://raw.githubusercontent.com/osmocom/rtl-sdr/master/rtl-sdr.rules --output /etc/udev/rules.d/rtl-sdr.rules
+sudo service udev restart
+BlacklistModules
+
 # Ask which version of dump1090 to install.
 DUMP1090OPTION=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version" --menu "Which version of dump1090 is to be installed?" 12 65 2 "dump1090-mutability" "(Mutability)" "dump1090-fa" "(FlightAware)" 3>&1 1>&2 2>&3)
 
