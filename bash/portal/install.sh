@@ -265,7 +265,9 @@ CheckPackage collectd-core
 CheckPackage rrdtool
 
 # Portal dependencies.
-CheckPackage postfix
+if [ $RECEIVER_MTA == "POSTFIX" ] || [ -z $RECEIVER_MTA ]; then
+    CheckPackage postfix
+fi
 CheckPackage libpython2.7
 
 # Install packages needed for advanced portal setups.

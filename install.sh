@@ -53,18 +53,19 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 # Display the help message.
 function DisplayHelp() {
-    echo -e ""
-    echo -e "Usage: $0 [OPTIONS] [ARGUMENTS]"
-    echo -e ""
-    echo -e "Option        GNU long option        Meaning"
-    echo -e "-a            --automated-install    Use a configuration file to automate the install process somewhat."
-    echo -e "-b <BRANCH>   --branch=<BRANCH>      Specifies the repository branch to be used."
-    echo -e "-c <FILE>     --config-file=<FILE>   The configuration file to be use for an unattended installation."
-    echo -e "-d            --development          Skips local repository update so changes are not overwrote."
-    echo -e "-h            --help                 Shows this message."
-    echo -e "-l            --log-output           Logs all output to a file in the logs directory."
-    echo -e "-v            --verbose              Provides extra confirmation at each stage of the install."
-    echo -e ""
+    echo ""
+    echo "Usage: $0 [OPTIONS] [ARGUMENTS]"
+    echo ""
+    echo "Option        GNU long option        Meaning"
+    echo "-a            --automated-install    Use a configuration file to automate the install process somewhat."
+    echo "-b <BRANCH>   --branch=<BRANCH>      Specifies the repository branch to be used."
+    echo "-c <FILE>     --config-file=<FILE>   The configuration file to be use for an unattended installation."
+    echo "-d            --development          Skips local repository update so changes are not overwrote."
+    echo "-h            --help                 Shows this message."
+    echo "-l            --log-output           Logs all output to a file in the logs directory."
+    echo "-m <MTA>      --mta=<MTA>            Specify which email MTA to use currently Exim or Postfix."
+    echo "-v            --verbose              Provides extra confirmation at each stage of the install."
+    echo ""
 }
 
 ## CHECK FOR OPTIONS AND ARGUMENTS
@@ -111,6 +112,24 @@ while [[ $# -gt 0 ]] ; do
             ENABLE_LOGGING="true"
             shift 1
             ;;
+        -m)
+           # The MTA to use.
+            MTA=${2^^}
+            if [ $MTA != "EXIM" ] && [ $MTA != "POSTFIX" ]; then
+                echo "MTA can only be either EXIM or POSTFIX."
+                exit 1
+            fi
+            shift 2
+            ;;
+         --mta*)
+            MTA=`echo ${1^^} | sed -e 's/^[^=]*=//g'`
+            if [ $MTA != "EXIM" ] && [ $MTA != "POSTFIX" ]; then
+                echo "MTA can only be either EXIM or POSTFIX."
+                exit 1
+            fi
+            shift 1
+            ;;
+
         -v|--verbose)
             # Provides extra confirmation at each stage of the install.
             VERBOSE="true"
@@ -144,6 +163,7 @@ export RECEIVER_AUTOMATED_INSTALL=${AUTOMATED_INSTALL}
 export RECEIVER_PROJECT_BRANCH=${PROJECT_BRANCH}
 export RECEIVER_CONFIGURATION_FILE=${CONFIGURATION_FILE}
 export RECEIVER_VERBOSE=${VERBOSE}
+export RECEIVER_MTA=${MTA}
 
 ## EXECUTE BASH/INIT.SH
 
@@ -177,6 +197,7 @@ unset RECEIVER_AUTOMATED_INSTALL
 unset RECEIVER_CONFIGURATION_FILE
 unset RECEIVER_VERBOSE
 unset RECEIVER_PROJECT_TITLE
+unset RECEIVER_MTA
 
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.
