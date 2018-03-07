@@ -265,7 +265,7 @@ CheckPackage collectd-core
 CheckPackage rrdtool
 
 # Portal dependencies.
-if [ $RECEIVER_MTA == "POSTFIX" ] || [ -z $RECEIVER_MTA ]; then
+if [ $RECEIVER_MTA == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
     CheckPackage postfix
 fi
 CheckPackage libpython2.7
