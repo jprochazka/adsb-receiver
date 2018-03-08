@@ -253,6 +253,7 @@ case $DISTRO_ID in
         ;;
     ubuntu)
         if [ `bc -l <<< "$DISTRO_RELEASE >= 16.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.0"; fi
+        if [ `bc -l <<< "$DISTRO_RELEASE >= 17.10"` -eq 1 ]; then DISTRO_PHP_VERSION="7.1"; fi
         ;;
 esac
 
