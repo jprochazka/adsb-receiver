@@ -120,6 +120,33 @@
         {/if}
         <script type="text/javascript">
             $('#{template:pageId}').addClass("active");
+            {if setting:hideNavbarAndFooter eq TRUE}
+            setTimeout(hideNavbar, 10000);
+                setTimeout(hideFooter, 10000);
+                function hideFooter(){
+                    if ( $("#iframe-wrapper").length ) {
+                        $('#iframe-wrapper').css('bottom', '0px');
+                    }
+                };
+
+                $('#navbar').mouseenter(function() {
+                    $('#navbar').fadeTo(600, 1.0, function(){
+                        $('#iframe-wrapper').css('top', '50px');
+                    });
+                });
+
+                $('#navbar').mouseleave(function() {
+                    setTimeout(hideNavbar, 3000);
+                });
+
+                function hideNavbar(){
+                    if ( $("#iframe-wrapper").length ) {
+                        $('#navbar').fadeTo(400, 0.05, function(){
+                        $('#iframe-wrapper').css('top', '0px');
+                    });
+                }
+            };
+            {/if}
         </script>
         {area:scripts}
    </body>

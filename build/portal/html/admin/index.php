@@ -150,6 +150,10 @@
         if (isset($_POST['enableWebNotifications']) && $_POST['enableWebNotifications'] == "TRUE")
             $enableWebNotifications = TRUE;
 
+        $hideNavbarAndFooter = FALSE;
+         if (isset($_POST['hideNavbarAndFooter']) && $_POST['hideNavbarAndFooter'] == "TRUE")
+            $hideNavbarAndFooter = TRUE;
+
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
@@ -178,6 +182,7 @@
         $common->updateSetting("timeZone", $_POST['timeZone']);
         $common->updateSetting("enableWebNotifications", $enableWebNotifications);
         $common->updateSetting("googleMapsApiKey", $_POST['googleMapsApiKey']);
+        $common->updateSetting("hideNavbarAndFooter", $hideNavbarAndFooter);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -235,6 +240,7 @@
     $enableDump1090 = $common->getSetting("enableDump1090");
     $enableDump978 = $common->getSetting("enableDump978");
     $enablePfclient = $common->getSetting("enablePfclient");
+    $hideNavbarAndFooter = $common->getSetting("hideNavbarAndFooter");
 
     // Get aggregate site settings from settings.xml.
     $enableFlightAwareLink = $common->getSetting("enableFlightAwareLink");
@@ -407,8 +413,13 @@
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="navigation">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Enable/Disable Navigation Links</div>
+                        <div class="panel-heading">Navigation Settings</div>
                         <div class="panel-body">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="hideNavbarAndFooter" value="TRUE"<?php ($hideNavbarAndFooter == 1 ? print ' checked' : ''); ?>> Enable navigation and footer auto hiding.
+                                </label>
+                            </div>
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enableFlights" value="TRUE"<?php ($enableFlights == 1 ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Enable flights link.
