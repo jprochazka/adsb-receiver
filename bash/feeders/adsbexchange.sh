@@ -116,6 +116,7 @@ fi
 
 echo -e "\e[95m  Checking for and removing any old style ADS-B Exchange setups if any exist...\e[97m"
 echo -e ""
+
 # Check if the old style adsbexchange-maint.sh line exists in /etc/rc.local.
 echo -e "\e[94m  Checking for any preexisting older style setups...\e[97m"
 if [[ `grep -cFx "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local` -gt 0 ]] ; then
@@ -133,6 +134,24 @@ if [[ `grep -cFx "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-maint.sh &
     echo -e "\e[94m  Removing the old adsbexchange--maint.sh startup line from /etc/rc.local...\e[97m"
     sudo sed -i /$$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-maint.sh &/d /etc/rc.local 2>&1
 fi
+
+# Remove the depreciated adsbexchange-netcat_maint.sh script.
+echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
+if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
+    # Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
+    echo -e "\e[94m  Checking for any running adsbexchange-netcat_maint.sh processes...\e[97m"
+    if [[ $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') ]]; then
+        echo -e "\e[94m  Killing the current adsbexchange-netcat_maint.sh process...\e[97m"
+        sudo kill -9 $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') &> /dev/null
+    fi
+    if [[ $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') ]]; then
+        echo -e "\e[94m  Killing the current feed.adsbexchange.com process...\e[97m"
+        sudo kill -9 $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') &> /dev/null
+    fi
+    # Remove the depreciated netcat script start up line.
+    echo -e "\e[94m  Removing the netcat startup script line to the file /etc/rc.local...\e[97m"
+    sudo sed -i /$$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-netcat_maint.sh &/d /etc/rc.local 2>&1
+fi
 echo -e ""
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -144,7 +163,7 @@ CheckPackage build-essential
 CheckPackage debhelper
 CheckPackage python-dev
 CheckPackage python3-dev
-CheckPackage netcat
+CheckPackage socat
 
 ## DOWNLOAD OR UPDATE THE MLAT-CLIENT SOURCE
 
@@ -220,10 +239,10 @@ echo -e "\e[94m  Moving the mlat-client binary package into the archive director
 echo ""
 mv -vf ${RECEIVER_BUILD_DIRECTORY}/mlat-client/mlat-client_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
 
-## CREATE THE SCRIPT TO EXECUTE AND MAINTAIN MLAT-CLIENT AND NETCAT TO FEED ADS-B EXCHANGE
+## CREATE THE SCRIPT TO EXECUTE AND MAINTAIN MLAT-CLIENT AND SOCAT TO FEED ADS-B EXCHANGE
 
 echo ""
-echo -e "\e[95m  Creating maintenance for both the mlat-client and netcat feeds...\e[97m"
+echo -e "\e[95m  Creating maintenance for both the mlat-client and socat feeds...\e[97m"
 echo ""
 
 # Ask the user for the user name for this receiver.
@@ -249,13 +268,13 @@ if [ ! -d "$RECEIVER_BUILD_DIRECTORY/adsbexchange" ]; then
     mkdir $RECEIVER_BUILD_DIRECTORY/adsbexchange
 fi
 
-echo -e "\e[94m  Creating the file adsbexchange-netcat_maint.sh...\e[97m"
-tee $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh > /dev/null <<EOF
+echo -e "\e[94m  Creating the file adsbexchange-socat_maint.sh...\e[97m"
+tee $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-socat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
     sleep 30
-    /bin/nc 127.0.0.1 30005 | /bin/nc feed.adsbexchange.com 30005
+    /usr/sbin/socat -u TCP:localhost:30005 TCP:feed.adsbexchange.com:30005
   done
 EOF
 
@@ -269,17 +288,18 @@ while true
   done
 EOF
 
-echo -e "\e[94m  Setting file permissions for adsbexchange-netcat_maint.sh...\e[97m"
-sudo chmod +x $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh
+echo -e "\e[94m  Setting file permissions for adsbexchange-socat_maint.sh...\e[97m"
+sudo chmod +x $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-socat_maint.sh
 
 echo -e "\e[94m  Setting file permissions for adsbexchange-mlat_maint.sh...\e[97m"
 sudo chmod +x $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh
 
-echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
-    echo -e "\e[94m  Adding the netcat startup line to the file /etc/rc.local...\e[97m"
+# Add a line to start up socat at boot.
+echo -e "\e[94m  Checking if the socat startup line is contained within the file /etc/rc.local...\e[97m"
+if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-socat_maint.sh &" /etc/rc.local; then
+    echo -e "\e[94m  Adding the socat startup script line to the file /etc/rc.local...\e[97m"
     lnum=($(sed -n '/exit 0/=' /etc/rc.local))
-    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh &\n" /etc/rc.local
+    ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-socat_maint.sh &\n" /etc/rc.local
 fi
 
 echo -e "\e[94m  Checking if the mlat-client startup line is contained within the file /etc/rc.local...\e[97m"
@@ -289,17 +309,17 @@ if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-mlat_maint.s
     ((lnum>0)) && sudo sed -i "${lnum[$((${#lnum[@]}-1))]}i $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh &\n" /etc/rc.local
 fi
 
-## START THE MLAT-CLIENT AND NETCAT FEED
+## START THE MLAT-CLIENT AND SOCAT FEED
 
 echo ""
-echo -e "\e[95m  Starting both the mlat-client and netcat feeds...\e[97m"
+echo -e "\e[95m  Starting both the mlat-client and socat feeds...\e[97m"
 echo ""
 
-# Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
-echo -e "\e[94m  Checking for any running adsbexchange-netcat_maint.sh processes...\e[97m"
-if [[ $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') ]]; then
-    echo -e "\e[94m  Killing the current adsbexchange-netcat_maint.sh process...\e[97m"
-    sudo kill -9 $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') &> /dev/null
+# Kill any currently running instances of the adsbexchange-socat_maint.sh script.
+echo -e "\e[94m  Checking for any running adsbexchange-socat_maint.sh processes...\e[97m"
+if [[ $(ps -aux | grep '[a]dsbexchange-socat_maint.sh' | awk '{print $2}') ]]; then
+    echo -e "\e[94m  Killing the current adsbexchange-socat_maint.sh process...\e[97m"
+    sudo kill -9 $(ps -aux | grep '[a]dsbexchange-socat_maint.sh' | awk '{print $2}') &> /dev/null
 fi
 if [[ $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') ]]; then
     echo -e "\e[94m  Killing the current feed.adsbexchange.com process...\e[97m"
@@ -317,8 +337,8 @@ if [[ $(ps -aux | grep 'mlat-client' | awk '{print $2}') ]]; then
     sudo kill -9 $(ps -aux | grep '[m]lat-client' | awk '{print $2}') &> /dev/null
 fi
 
-echo -e "\e[94m  Executing the adsbexchange-netcat_maint.sh script...\e[97m"
-sudo nohup $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh > /dev/null 2>&1 &
+echo -e "\e[94m  Executing the adsbexchange-socat_maint.sh script...\e[97m"
+sudo nohup $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-socat_maint.sh > /dev/null 2>&1 &
 
 echo -e "\e[94m  Executing the adsbexchange-mlat_maint.sh script...\e[97m"
 sudo nohup $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-mlat_maint.sh > /dev/null 2>&1 &
