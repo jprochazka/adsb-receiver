@@ -5,6 +5,7 @@ The following is a history of the changes made to this project.
 ## v2.7.0 *(prerelease)*
 
 * Removed Mapzen support from the scripts due to the service shutting down.
+* Now uses socat instead of netcat to feed ADS-B Exchange.
 
 ## v2.6.1 *(February 28th, 2018)*
 
