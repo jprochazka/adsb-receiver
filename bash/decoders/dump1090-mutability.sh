@@ -51,7 +51,6 @@ else
     RECEIVER_LATITUDE=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
     RECEIVER_LONGITUDE=`GetConfig "LON" "/etc/default/dump1090-mutability"`
     DUMP1090_BING_MAPS_KEY=`GetConfig "BingMapsAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
-    DUMP1090_MAPZEN_KEY=`GetConfig "MapzenAPIKey" "/usr/share/dump1090-mutability/html/config.js"`
 fi
 
 ### BEGIN SETUP
@@ -267,15 +266,6 @@ fi
 if [[ -n "${DUMP1090_BING_MAPS_KEY}" ]] ; then
     echo -e "\e[94m  Setting the Bing Maps API Key to ${DUMP1090_BING_MAPS_KEY}...\e[97m"
     ChangeConfig "BingMapsAPIKey" "${DUMP1090_BING_MAPS_KEY}" "/usr/share/dump1090-mutability/html/config.js"
-fi
-
-# Ask for a Mapzen API key.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    DUMP1090_MAPZEN_KEY=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Mapzen API Key" --nocancel --inputbox "\nProvide a Mapzen API key here to enable the Mapzen vector tile layer within the dump1090-mutability map, you can obtain a free key at the following website:\n\n  https://mapzen.com/developers/\n\nProviding a Mapzen API key is not required to continue." 15 78 -- "${DUMP1090_MAPZEN_KEY}" 3>&1 1>&2 2>&3)
-fi
-if [[ -n "${DUMP1090_MAPZEN_KEY}" ]] ; then
-    echo -e "\e[94m  Setting the Mapzen API Key to ${DUMP1090_MAPZEN_KEY}...\e[97m"
-    ChangeConfig "MapzenAPIKey" "${DUMP1090_MAPZEN_KEY}" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
 # Ask if the component should bind on all IP addresses.

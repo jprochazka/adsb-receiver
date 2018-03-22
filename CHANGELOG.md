@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## v2.7.0 *(prerelease)*
+
+* Removed Mapzen support from the scripts due to the service shutting down.
+
 ## v2.6.1 *(February 28th, 2018)*
 
 * Readded missing RTL-SDR kernel module blacklist to dump1090-mutability script.
