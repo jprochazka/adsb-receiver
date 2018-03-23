@@ -86,6 +86,7 @@ function CheckPrerequisites() {
     echo -e ""
     CheckPackage whiptail
     CheckPackage git
+    CheckPackage bc
     echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
