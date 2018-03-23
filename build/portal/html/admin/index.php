@@ -420,6 +420,7 @@
                                     <input type="checkbox" name="hideNavbarAndFooter" value="TRUE"<?php ($hideNavbarAndFooter == 1 ? print ' checked' : ''); ?>> Enable navigation and footer auto hiding.
                                 </label>
                             </div>
+                            <br />
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enableFlights" value="TRUE"<?php ($enableFlights == 1 ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Enable flights link.

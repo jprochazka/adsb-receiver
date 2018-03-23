@@ -286,7 +286,7 @@ if [[ "${ADVANCED}" = "true" ]] ; then
             ;;
     esac
 else
-    if [ $DISTRO_PHP_VERSION == "7.0" ]; then
+    if [ ! $DISTRO_PHP_VERSION == "5" ]; then
         CheckPackage php${DISTRO_PHP_VERSION}-xml
     fi
 fi
@@ -311,6 +311,11 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.backup.xml
     echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml...\e[97m"
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.backup.xml
+fi
+
+if [ -f ${LIGHTTPD_DOCUMENT_ROOT}/index.lighttpd.html ]; then
+    echo -e "\e[94m  Removing default Lighttpd index file from document root...\e[97m"
+    sudo rm ${LIGHTTPD_DOCUMENT_ROOT}/index.lighttpd.html
 fi
 
 echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"

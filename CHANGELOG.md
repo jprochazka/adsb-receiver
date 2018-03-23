@@ -2,10 +2,11 @@
 
 The following is a history of the changes made to this project.
 
-## v2.7.0 *(prerelease)*
+## v2.6.2 *(prerelease)*
 
 * Option to install dump1090-fa removed on Ubuntu 17.10 or higher due to cx_freez issue.
 * Fixed so Ubunbtu 17.10 and higher properly installs PHP 7.1 and its related packages.
+* Install the package php7.1-xml if using Ubuntu 17.10 or newer.
 * ADS-B Exchange run script now uses socat instead of netcat to send data.
 * Removed Mapzen support from the scripts due to the service shutting down.
 * Now uses socat instead of netcat to feed ADS-B Exchange.
