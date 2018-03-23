@@ -36,6 +36,8 @@
 RECEIVER_ROOT_DIRECTORY="${PWD}"
 RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
 RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
+RECEIVER_OS_DISTRIBUTION=`. /etc/os-release; echo ${ID/*, /}`
+RECEIVER_OS_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 
 ## INCLUDE EXTERNAL SCRIPTS
 
@@ -232,7 +234,7 @@ fi
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
     # If this is not an automated installation ask the user which one to install.
     if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        DUMP1090_OPTION=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of the following packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF 3>&1 1>&2 2>&3)
+        DUMP1090_OPTION=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of the following packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON`if [ ! "$RECEIVER_OS_DISTRIBUTION" == "ubuntu" ] $$ [ ! $RECEIVER_OS_RELEASE >= 17.10 ]; then echo "\" dump1090-fa\" \"(FlightAware)\" OFF"` 3>&1 1>&2 2>&3)
         case ${DUMP1090_OPTION} in
             "dump1090-mutability")
                 DUMP1090_FORK="mutability"

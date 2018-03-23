@@ -242,18 +242,14 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-# Detect the OS distribution and version.
-DISTRO_ID=`. /etc/os-release; echo ${ID/*, /}`
-DISTRO_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 DISTRO_PHP_VERSION="5"
-
-case $DISTRO_ID in
+case $RECEIVER_OS_DISTRIBUTION in
     debian|raspbian)
-        if [[ $DISTRO_RELEASE -ge "9" ]]; then DISTRO_PHP_VERSION="7.0"; fi
+        if [[ $RECEIVER_OS_RELEASE -ge "9" ]]; then DISTRO_PHP_VERSION="7.0"; fi
         ;;
     ubuntu)
-        if [ `bc -l <<< "$DISTRO_RELEASE >= 16.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.0"; fi
-        if [ `bc -l <<< "$DISTRO_RELEASE >= 17.10"` -eq 1 ]; then DISTRO_PHP_VERSION="7.1"; fi
+        if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 16.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.0"; fi
+        if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 17.10"` -eq 1 ]; then DISTRO_PHP_VERSION="7.1"; fi
         ;;
 esac
 
@@ -269,6 +265,9 @@ CheckPackage rrdtool
 if [ $RECEIVER_MTA == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
     CheckPackage postfix
 fi
+
+exit 0
+
 CheckPackage libpython2.7
 
 # Install packages needed for advanced portal setups.

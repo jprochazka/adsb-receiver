@@ -198,6 +198,8 @@ unset RECEIVER_CONFIGURATION_FILE
 unset RECEIVER_VERBOSE
 unset RECEIVER_PROJECT_TITLE
 unset RECEIVER_MTA
+unset RECEIVER_OS_DISTRIBUTION
+unset RECEIVER_OS_RELEASE
 
 # Check if any errors were encountered by any child scripts.
 # If no errors were encountered then exit this script cleanly.
