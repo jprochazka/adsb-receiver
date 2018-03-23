@@ -73,7 +73,6 @@ fi
 echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
 echo -e ""
 CheckPackage lighttpd
-CheckPackage bc
 
 # Assign the Lighthttpd document root directory to a variable.
 RAW_DOCUMENT_ROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
@@ -262,7 +261,7 @@ CheckPackage collectd-core
 CheckPackage rrdtool
 
 # Portal dependencies.
-if [ $RECEIVER_MTA == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
+if [ "$RECEIVER_MTA" == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
     CheckPackage postfix
 fi
 
