@@ -4,15 +4,13 @@ The following is a history of the changes made to this project.
 
 ## v2.6.2 *(prerelease)*
 
-* Option to install dump1090-fa removed on Ubuntu 17.10 or higher due to cx_freez issue.
+* Option to install dump1090-fa removed on Ubuntu 17.10 or higher due to cx_freeze issue.
 * Fixed so Ubunbtu 17.10 and higher properly installs PHP 7.1 and its related packages.
-* Install the package php7.1-xml if using Ubuntu 17.10 or newer.
 * ADS-B Exchange run script now uses socat instead of netcat to send data.
 * Removed Mapzen support from the scripts due to the service shutting down.
-* Now uses socat instead of netcat to feed ADS-B Exchange.
 * Added option to auto hide portal navigation and footer elements. (thanks to @Mictronics)
 * User can opt to skip the installation of the Postfix MTA using the --mta= flag.
-* Operating system and release detection moved to centralized position.
+* OS and release variables temporarily exported to save repeating the detection process.
 
 ## v2.6.1 *(February 28th, 2018)*
 
