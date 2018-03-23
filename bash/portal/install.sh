@@ -265,8 +265,6 @@ if [ "$RECEIVER_MTA" == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
     CheckPackage postfix
 fi
 
-exit 0
-
 CheckPackage libpython2.7
 
 # Install packages needed for advanced portal setups.
