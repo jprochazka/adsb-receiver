@@ -2,8 +2,9 @@
 
 The following is a history of the changes made to this project.
 
-## v2.6.2 *(prerelease)*
+## v2.6.2 *(April 6th, 2018)*
 
+* Images created using the latest version of Raspbian which supports the Raspberry Pi 3 b+.
 * Option to install dump1090-fa removed on Ubuntu 17.10 or higher due to cx_freeze issue.
 * Fixed so Ubunbtu 17.10 and higher properly installs PHP 7.1 and its related packages.
 * ADS-B Exchange run script now uses socat instead of netcat to send data.
