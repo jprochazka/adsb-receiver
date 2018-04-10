@@ -149,8 +149,10 @@ if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint
         sudo kill -9 $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') &> /dev/null
     fi
     # Remove the depreciated netcat script start up line.
-    echo -e "\e[94m  Removing the netcat startup script line to the file /etc/rc.local...\e[97m"
-    sudo sed -i /$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-netcat_maint.sh &/d /etc/rc.local 2>&1
+    if [ -f /etc/rc.local ]; then
+        echo -e "\e[94m  Removing the netcat startup script line to the file /etc/rc.local...\e[97m"
+        sudo sed -i /$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-netcat_maint.sh &/d /etc/rc.local 2>&1
+    fi
 fi
 echo -e ""
 
