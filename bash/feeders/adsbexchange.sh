@@ -132,7 +132,7 @@ if [[ `grep -cFx "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-maint.sh &
     fi
     # Remove the old line from /etc/rc.local.
     echo -e "\e[94m  Removing the old adsbexchange--maint.sh startup line from /etc/rc.local...\e[97m"
-    sudo sed -i /$$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-maint.sh &/d /etc/rc.local 2>&1
+    sudo sed -i /$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-maint.sh &/d /etc/rc.local 2>&1
 fi
 
 # Remove the depreciated adsbexchange-netcat_maint.sh script.
@@ -150,7 +150,7 @@ if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint
     fi
     # Remove the depreciated netcat script start up line.
     echo -e "\e[94m  Removing the netcat startup script line to the file /etc/rc.local...\e[97m"
-    sudo sed -i /$$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-netcat_maint.sh &/d /etc/rc.local 2>&1
+    sudo sed -i /$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-netcat_maint.sh &/d /etc/rc.local 2>&1
 fi
 echo -e ""
 
