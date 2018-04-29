@@ -427,6 +427,7 @@ EOF;
             $common->addSetting('timeZone', $_POST['timeZone']);
             $common->addSetting('enableWebNotifications', FALSE);
             $common->addSetting('googleMapsApiKey', '');
+            $common->addSetting("hideNavbarAndFooter", "FALSE");
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);
