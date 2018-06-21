@@ -2,6 +2,11 @@
 
 The following is a history of the changes made to this project.
 
+## v2.6.3 *(pre-release)*
+
+* Fix to navigation bar auto hiding code submitted by @vitaliy-sk.
+* SQLite query fix submitted by @vitaliy-sk.
+
 ## v2.6.2 *(April 6th, 2018)*
 
 * Images created using the latest version of Raspbian which supports the Raspberry Pi 3 b+.
