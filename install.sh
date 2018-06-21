@@ -66,6 +66,7 @@ function DisplayHelp() {
     echo "-h            --help                 Shows this message."
     echo "-l            --log-output           Logs all output to a file in the logs directory."
     echo "-m <MTA>      --mta=<MTA>            Specify which email MTA to use currently Exim or Postfix."
+    echo "-u            --apt-update           Forces the apt update command to be ran."
     echo "-v            --verbose              Provides extra confirmation at each stage of the install."
     echo ""
 }
@@ -123,7 +124,7 @@ while [[ $# -gt 0 ]] ; do
             fi
             shift 2
             ;;
-         --mta*)
+        --mta*)
             MTA=`echo ${1^^} | sed -e 's/^[^=]*=//g'`
             if [ $MTA != "EXIM" ] && [ $MTA != "POSTFIX" ]; then
                 echo "MTA can only be either EXIM or POSTFIX."
@@ -131,7 +132,11 @@ while [[ $# -gt 0 ]] ; do
             fi
             shift 1
             ;;
-
+        -u|--apt-update)
+            # Force apt update.
+            FORCE_APT_UPDATE="true"
+            shift 1
+            ;;
         -v|--verbose)
             # Provides extra confirmation at each stage of the install.
             VERBOSE="true"
@@ -164,8 +169,9 @@ fi
 export RECEIVER_AUTOMATED_INSTALL=${AUTOMATED_INSTALL}
 export RECEIVER_PROJECT_BRANCH=${PROJECT_BRANCH}
 export RECEIVER_CONFIGURATION_FILE=${CONFIGURATION_FILE}
-export RECEIVER_VERBOSE=${VERBOSE}
 export RECEIVER_MTA=${MTA}
+export RECEIVER_FORCE_APT_UPDATE=$FORCE_APT_UPDATE
+export RECEIVER_VERBOSE=${VERBOSE}
 
 ## EXECUTE BASH/INIT.SH
 
@@ -197,6 +203,7 @@ unset RECEIVER_BUILD_DIRECTORY
 unset RECEIVER_PROJECT_BRANCH
 unset RECEIVER_AUTOMATED_INSTALL
 unset RECEIVER_CONFIGURATION_FILE
+unset RECEIVER_FORCE_APT_UPDATE
 unset RECEIVER_VERBOSE
 unset RECEIVER_PROJECT_TITLE
 unset RECEIVER_MTA
