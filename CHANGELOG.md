@@ -10,6 +10,7 @@ The following is a history of the changes made to this project.
 * Checks for the location of socat and uses the proper path to feed ADS-B Exchange.
 * Added switch to force apt update when executing install.sh.
 * Updated current Planefinder client versions to 4.1.1.
+* Updated current dump1090-fa version to 3.2.3.
 
 ## v2.6.2 *(April 6th, 2018)*
 
