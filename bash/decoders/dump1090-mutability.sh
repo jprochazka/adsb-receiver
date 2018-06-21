@@ -249,7 +249,7 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 fi
 
 # Save the receiver's latitude and longitude values to dump1090 configuration file.
-RECEIVER_LATITUDE_CONFIGURED=`GetConfig "LON" "/etc/default/dump1090-mutability"`
+RECEIVER_LATITUDE_CONFIGURED=`GetConfig "LAT" "/etc/default/dump1090-mutability"`
 if [[ ! "${RECEIVER_LATITUDE}" = "${RECEIVER_LATITUDE_CONFIGURED}" ]] ; then
     echo -e "\e[94m  Setting the receiver's latitude to ${RECEIVER_LATITUDE}...\e[97m"
     ChangeConfig "LAT" "${RECEIVER_LATITUDE}" "/etc/default/dump1090-mutability"
@@ -258,6 +258,19 @@ RECEIVER_LONGITUDE_CONFIGURED=`GetConfig "LON" "/etc/default/dump1090-mutability
 if [[ ! "${RECEIVER_LONGITUDE}" = "${RECEIVER_LONGITUDE_CONFIGURED}" ]] ; then
     echo -e "\e[94m  Setting the receiver's longitude to ${RECEIVER_LONGITUDE}...\e[97m"
     ChangeConfig "LON" "${RECEIVER_LONGITUDE}" "/etc/default/dump1090-mutability"
+fi
+
+# Save the receiver's latitude and longitude values to the dump1090-mutability config.js file.
+JS_LATITUDE_CONFIGURED=`GetConfig "DefaultCenterLat" "/usr/share/dump1090-mutability/html/config.js"`
+if [[ ! "${RECEIVER_LATITUDE}" = "${JS_LATITUDE_CONFIGURED}" ]] ; then
+    echo -e "\e[94m  Setting the receiver's latitude in config.js to ${RECEIVER_LATITUDE}...\e[97m"
+    ChangeConfig "DefaultCenterLat" "${RECEIVER_LATITUDE}" "/usr/share/dump1090-mutability/html/config.js"
+fi
+if [[ ! "${RECEIVER_LONGITUDE}" = "${JS_LONGITUDE_CONFIGURED}" ]] ; then
+JS_LONGITUDE_CONFIGURED=`GetConfig "DefaultCenterLon" "/usr/share/dump1090-mutability/html/config.js"`
+
+    echo -e "\e[94m  Setting the receiver's longitude in config.js to ${RECEIVER_LONGITUDE}...\e[97m"
+    ChangeConfig "DefaultCenterLon" "${RECEIVER_LONGITUDE}" "/usr/share/dump1090-mutability/html/config.js"
 fi
 
 # Ask for a Bing Maps API key.
