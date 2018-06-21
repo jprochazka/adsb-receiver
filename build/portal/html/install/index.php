@@ -308,8 +308,8 @@ EOF;
                                               name TEXT NOT NULL,
                                               email TEXT NOT NULL,
                                               login TEXT NOT NULL,
-                                              password TEXT NOT NULL),
-                                              token TEXT;';
+                                              password TEXT NOT NULL,
+                                              token TEXT NULL);';
                         $aircraftSql = 'CREATE TABLE '.$dbPrefix.'aircraft (
                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
                                           icao TEXT NOT NULL,
@@ -354,6 +354,11 @@ EOF;
                     break;
                 }
 
+                // Set permissions on SQLite file.
+                if ($_POST['driver'] == "sqlite") {
+                    chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
+                }
+                
                 $dbh = $common->pdoOpen();
 
                 $sth = $dbh->prepare($administratorsSql);
@@ -391,10 +396,6 @@ EOF;
                 $dbh = NULL;
             }
 
-            // Set permissions on SQLite file.
-            if ($_POST['driver'] == "sqlite") {
-                chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
-            }
 
             // Add settings.
             $common->addSetting('version', $thisVersion);
