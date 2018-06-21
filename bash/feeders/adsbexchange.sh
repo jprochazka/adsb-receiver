@@ -271,12 +271,28 @@ if [ ! -d "$RECEIVER_BUILD_DIRECTORY/adsbexchange" ]; then
 fi
 
 echo -e "\e[94m  Creating the file adsbexchange-socat_maint.sh...\e[97m"
+
+# Some distgros place socat in /usr/bin instead of /user/sbin..
+if [ -f "/usr/sbin/socat" ]; then
+    SOCAT_PATH="/usr/sbin/socat"
+fi
+if [ -f "/usr/bin/socat" ]; then
+    SOCAT_PATH="/usr/bin/socat"
+fi
+if [ -z $SOCAT_PATH ]; then
+    echo -e ""
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  UNABLE TO LOCATE SOCAT."
+    echo -e ""
+    exit 1
+fi
+
 tee $RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-socat_maint.sh > /dev/null <<EOF
 #! /bin/sh
 while true
   do
     sleep 30
-    /usr/sbin/socat -u TCP:localhost:30005 TCP:feed.adsbexchange.com:30005
+    $SOCAT_PATH -u TCP:localhost:30005 TCP:feed.adsbexchange.com:30005
   done
 EOF
 
