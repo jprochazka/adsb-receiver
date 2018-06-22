@@ -249,6 +249,7 @@ case $RECEIVER_OS_DISTRIBUTION in
     ubuntu)
         if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 16.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.0"; fi
         if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 17.10"` -eq 1 ]; then DISTRO_PHP_VERSION="7.1"; fi
+        if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 18.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.2"; fi
         ;;
 esac
 
