@@ -354,12 +354,12 @@ EOF;
                     break;
                 }
 
+                $dbh = $common->pdoOpen();
+
                 // Set permissions on SQLite file.
                 if ($_POST['driver'] == "sqlite") {
                     chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
                 }
-                
-                $dbh = $common->pdoOpen();
 
                 $sth = $dbh->prepare($administratorsSql);
                 $sth->execute();
