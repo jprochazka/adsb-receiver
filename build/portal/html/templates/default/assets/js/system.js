@@ -9,8 +9,8 @@ $(document).ready(function () {
             ['Label', 'Value'],
             ['Memory', 100],
             ['CPU', 100],
-            ['In ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 150],
-            ['Out ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 150],
+            ['In ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 100],
+            ['Out ' + ((bandwidthScale == 'kbps') ? '(KB/s)' : '(MB/s)'), 100],
             ['CPU Temp', 100]
         ]);
 
