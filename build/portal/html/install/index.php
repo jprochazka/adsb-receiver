@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.6.2";
+    $thisVersion = "2.6.3";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -354,12 +354,12 @@ EOF;
                     break;
                 }
 
+                $dbh = $common->pdoOpen();
+
                 // Set permissions on SQLite file.
                 if ($_POST['driver'] == "sqlite") {
                     chmod($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."portal.sqlite", 0666);
                 }
-                
-                $dbh = $common->pdoOpen();
 
                 $sth = $dbh->prepare($administratorsSql);
                 $sth->execute();
@@ -421,7 +421,7 @@ EOF;
             $common->addSetting('enableAdsbExchangeLink', FALSE);
             $common->addSetting('measurementRange', 'imperialNautical');
             $common->addSetting('measurementTemperature', 'imperial');
-            $common->addSetting('measurementBandwidth', 'kbps');
+            $common->addSetting('measurementBandwidth', 'mbps');
             $common->addSetting('networkInterface', 'eth0');
             $common->addSetting('emailFrom', 'noreply@adsbreceiver.net');
             $common->addSetting('emailReplyTo', 'noreply@adsbreceiver.net');
