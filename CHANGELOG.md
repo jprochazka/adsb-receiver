@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.6.3 *(pre-release)*
+## v2.6.3 *(June 23rd, 2018)*
 
 * Fix to navigation bar auto hiding code submitted by @vitaliy-sk.
 * SQLite query fix submitted by @vitaliy-sk.
