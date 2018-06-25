@@ -73,6 +73,15 @@ function InstallDump1090Fa() {
     fi
 }
 
+# Execute the dump1090-hptoa setup script.
+function InstallDump1090Hptoa() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-hptoa.sh
+    ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-hptoa.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
 # Execute the dump978 setup script.
 function InstallDump978() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump978.sh
@@ -228,6 +237,33 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     fi
 fi
 
+# Check if dump1090-hptoa is being used.
+if [ -f  ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/dump1090 ] && [ -f ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/faup1090 ] && [ -f ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/view1090 ] && [ -f /etc/init.d/dump1090 ] ; then
+    DUMP1090_FORK="hptoa"
+    DUMP1090_IS_INSTALLED="true"
+    # Skip over this dialog if this installation is set to be automated.
+    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+        # Ask if dump1090-hptoa should be reinstalled.
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-hptoa Installed" --defaultno --yesno "The dump1090-hptoa package appears to be installed on your device, however...\n\nThe dump1090-hptoa source code may have been updated recently.\n\nTo ensure you are running the latest version of dump1090-hptoa you may opt to rebuild these binaries.\n\nDownload and rebuild dump1090-hptoa from source?" 17 65
+
+        case $? in
+            0)
+                DUMP1090_DO_UPGRADE="true"
+                ;;
+            1)
+                DUMP1090_DO_UPGRADE="false"
+                ;;
+        esac
+    else
+        # Refer to the installation configuration to decide if dump1090-hptoa is to be reinstalled or not.
+        if [[ "${DUMP1090_UPGRADE}" = "true" ]] ; then
+            DUMP1090_DO_UPGRADE="true"
+        else
+            DUMP1090_DO_UPGRADE="false"
+        fi
+    fi
+fi
+
 # If no dump1090 fork is installed then attempt to install one.
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
     # If this is not an automated installation ask the user which one to install.
@@ -235,9 +271,9 @@ if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
 
         # Do not show dump 1090-fa option for Ubuntu 17.10 or higher until it is updated to support it.
         if [ ! "$RECEIVER_OS_DISTRIBUTION" == "ubuntu" ] && (( $(bc -l <<<"$RECEIVER_OS_RELEASE < 17.10") )); then
-            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of the following packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF 3>&1 1>&2 2>&3)
+            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF "dump1090-hptoa" "(OpenSky Network)" OFF3>&1 1>&2 2>&3)
         else
-            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of the following packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON 3>&1 1>&2 2>&3)
+            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
         fi
 
         case ${DUMP1090_OPTION} in
@@ -249,13 +285,17 @@ if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
                 DUMP1090_FORK="fa"
                 DUMP1090_DO_INSTALL="true"
                 ;;
+             "dump1090-hptoa")
+                DUMP1090_FORK="hptoa"
+                DUMP1090_DO_INSTALL="true"
+                ;;
             *)
                 DUMP1090_DO_INSTALL="false"
                 ;;
         esac
     else
         # Refer to the installation configuration to check if a dump1090 fork has been specified
-        if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] ; then
+        if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] || [[ "${DUMP1090_FORK}" = "hptoa" ]] ; then
             DUMP1090_DO_INSTALL="true"
         else
             DUMP1090_DO_INSTALL="false"
@@ -670,6 +710,9 @@ else
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa (upgrade)"
                 ;;
+            "hptoa")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-hptoa (reinstall)"
+                ;;
         esac
     elif [[ "${DUMP1090_DO_INSTALL}" = "true" ]] ; then
         case ${DUMP1090_FORK} in
@@ -678,6 +721,9 @@ else
                 ;;
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa"
+                ;;
+            "hptoa")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-hptoa"
                 ;;
         esac
     fi
@@ -788,6 +834,9 @@ if [[ "${DUMP1090_DO_INSTALL}" = "true" ]] || [[ "${DUMP1090_DO_UPGRADE}" = "tru
             ;;
         "fa")
              InstallDump1090Fa
+             ;;
+        "hptoa")
+             InstallDump1090Hptoa
              ;;
     esac
 fi
