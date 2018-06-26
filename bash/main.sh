@@ -111,19 +111,28 @@ function InstallAdsbExchange() {
     fi
 }
 
-# Execute the PiAware setup script
-function InstallPiAware() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
-    ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
+# Execute the Flightradar24 Feeder client setup script.
+function InstallFlightradar24() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
 }
 
-# Execute the Flightradar24 Feeder client setup script.
-function InstallFlightradar24() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
-    ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
+# Execute the OpenSky Network setup script.
+function InstallOpenSkyNetwork() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
+# Execute the PiAware setup script
+function InstallPiAware() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
@@ -456,6 +465,21 @@ else
     fi
 fi
 
+# Check for the OpenSky Network package.
+if [[ $(dpkg-query -W -f='${STATUS}' opensky-feeder 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    # The OpenSky Network feeder package appears to not be installed.
+    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'OpenSky Network Feeder' '' OFF)
+    else
+        # Check the installation configuration file to see if PiAware is to be installed.
+        if [[ -z "${OPENSKY_NETWORK_INSTALL}" ]] && [[ "${{OPENSKY_NETWORK_INSTALL}" = "true" ]] ; then
+            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+            echo "OpenSky Network Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        fi
+    fi
+fi
+
 # Check for the PiAware package.
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
@@ -566,7 +590,7 @@ fi
 if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     if [[ -n "${FEEDER_LIST}" ]] ; then
         # Display a checklist containing feeders that are not installed if any.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 5 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     else
         # Since all available feeders appear to be installed inform the user of the fact.
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
@@ -751,17 +775,17 @@ else
         while read FEEDER_CHOICE
         do
             case ${FEEDER_CHOICE} in
+                "ADS-B Exchange data export and MLAT Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client"
+                    ;;
+                "ADS-B Exchange data export and MLAT Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
+                    ;;
                 "FlightAware PiAware")
                     CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
                     ;;
                 "FlightAware PiAware (upgrade)")
                     CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware (upgrade)"
-                    ;;
-                "Plane Finder Client")
-                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client"
-                    ;;
-                "Plane Finder Client (upgrade)")
-                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client (upgrade)"
                     ;;
                 "Flightradar24 Client")
                     CONFIRMATION="${CONFIRMATION}\n  * Flightradar24 Client"
@@ -769,11 +793,14 @@ else
                 "Flightradar24 Client (upgrade)")
                     CONFIRMATION="${CONFIRMATION}\n  * Flightradar24 Client (upgrade)"
                     ;;
-                "ADS-B Exchange data export and MLAT Client")
-                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client"
+                "OpenSky Network Feeder")
+                    CONFIRMATION="${CONFIRMATION}\n  * OpenSky Network Feeder"
                     ;;
-                "ADS-B Exchange data export and MLAT Client (upgrade)")
-                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
+                "Plane Finder Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client"
+                    ;;
+                "Plane Finder Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client (upgrade)"
                     ;;
             esac
         done < ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
@@ -854,45 +881,53 @@ fi
 # Moved execution of functions outside of while loop.
 # Inside the while loop the installation scripts are not stopping at reads.
 
-RUN_PIAWARE_SCRIPT="false"
-RUN_PLANEFINDER_SCRIPT="false"
-RUN_FLIGHTRADAR24_SCRIPT="false"
 RUN_ADSBEXCHANGE_SCRIPT="false"
+RUN_PIAWARE_SCRIPT="false"
+RUN_FLIGHTRADAR24_SCRIPT="false"
+RUN_OPENSKYNETWORK_SCRIPT="false"
+RUN_PLANEFINDER_SCRIPT="false"
 
 if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] ; then
     while read FEEDER_CHOICE
     do
         case ${FEEDER_CHOICE} in
+            "ADS-B Exchange data export and MLAT Client"|"ADS-B Exchange data export and MLAT Client (upgrade)")
+                RUN_ADSBEXCHANGE_SCRIPT="true"
+                ;;
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
                 RUN_PIAWARE_SCRIPT="true"
-                ;;
-            "Plane Finder Client"|"Plane Finder Client (upgrade)")
-                RUN_PLANEFINDER_SCRIPT="true"
                 ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
                 RUN_FLIGHTRADAR24_SCRIPT="true"
                 ;;
-            "ADS-B Exchange data export and MLAT Client"|"ADS-B Exchange data export and MLAT Client (upgrade)")
-                RUN_ADSBEXCHANGE_SCRIPT="true"
+            "OpenSky Network Feeder")
+                RUN_OPENSKYNETWORK_SCRIPT="true"
+                ;;
+            "Plane Finder Client"|"Plane Finder Client (upgrade)")
+                RUN_PLANEFINDER_SCRIPT="true"
                 ;;
         esac
     done < ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+fi
+
+if [[ "${RUN_ADSBEXCHANGE_SCRIPT}" = "true" ]] ; then
+    InstallAdsbExchange
 fi
 
 if [[ "${RUN_PIAWARE_SCRIPT}" = "true" ]] || [[ "${FORCE_PIAWARE_INSTALL}" = "true" ]] ; then
     InstallPiAware
 fi
 
-if [[ "${RUN_PLANEFINDER_SCRIPT}" = "true" ]] ; then
-    InstallPlaneFinder
-fi
-
 if [[ "${RUN_FLIGHTRADAR24_SCRIPT}" = "true" ]] ; then
     InstallFlightradar24
 fi
 
-if [[ "${RUN_ADSBEXCHANGE_SCRIPT}" = "true" ]] ; then
-    InstallAdsbExchange
+if [[ "${RUN_OPENSKYNETWORK_SCRIPT}" = "true" ]] ; then
+    InstallOpenSkyNetwork
+fi
+
+if [[ "${RUN_PLANEFINDER_SCRIPT}" = "true" ]] ; then
+    InstallPlaneFinder
 fi
 
 ## ADS-B Receiver Project Web Portal
