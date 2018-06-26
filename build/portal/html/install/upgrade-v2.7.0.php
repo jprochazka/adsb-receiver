@@ -29,12 +29,12 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////
-    // UPGRADE TO V2.6.3
+    // UPGRADE TO V2.7.0
     ///////////////////////
 
     // ------------------------------------------------------------------------------------------
-    // Updates the version setting to 2.6.3.
-    // Added setting to toggle navbar and footer hiding.
+    // Updates the version setting to 2.7.0.
+    // Added options to set the default latitude and longitude for the advanced features map.
     // ------------------------------------------------------------------------------------------
 
     $results = upgrade();
@@ -49,15 +49,16 @@
 
         try {
             // Add portal navigation and footer autohide option.
-            $common->addSetting("hideNavbarAndFooter", "FALSE");
+            $common->addSetting("advancedMapCenterLatitude", "41.3683798");
+            $common->addSetting("advancedMapCenterLongitude", "-82.1076486");
 
             // Update the version and patch settings..
-            $common->updateSetting("version", "2.6.3");
+            $common->updateSetting("version", "2.7.0");
             $common->updateSetting("patch", "");
 
             // The upgrade process completed successfully.
             $results['success'] = TRUE;
-            $results['message'] = "Upgrade to v2.6.3 successful.";
+            $results['message'] = "Upgrade to v2.7.0 successful.";
             return $results;
 
         } catch(Exception $e) {
