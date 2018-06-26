@@ -11,7 +11,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -41,6 +41,7 @@ BACKUPSDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/backups"
 TEMPORARY_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/backup_${BACKUPDATE}"
 RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
 LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAWDOCUMENTROOT}`
+COLLECTD_RRD_DIRECTORY="/var/lib/collectd/rrd"
 
 ## BEGIN THE BACKUP PROCESS
 
@@ -97,15 +98,24 @@ if [[ ! -d "${TEMPORARY_DIRECTORY}" ]] ; then
     mkdir -vp ${TEMPORARY_DIRECTORY}
 fi
 
-## BACKUP THE FILES COMMON TO ALL PORTAL INSTALLATION SCENARIOS
+## BACKUP THE COLLECTD RRD FILES BY EXPORTING THEM TO XML.
 
-# Copy the collectd round robin database files to the temporary directory.
-echo -e "\e[94m  Checking that the directory ${TEMPORARY_DIRECTORY}/var/lib/collectd/rrd/ exists...\e[97m"
-if [[ ! -d "${TEMPORARY_DIRECTORY}/var/lib/collectd/rrd/" ]] ; then
-    mkdir -vp ${TEMPORARY_DIRECTORY}/var/lib/collectd/rrd/
+# Export the collectd round robin database files to the temporary directory as XML files.
+RRD_FILE_LIST=`find ${COLLECTD_RRD_DIRECTORY} -name '*.rrd'`
+if [[ -z "${RRD_FILE_LIST}" ]]; then
+    echo -e "\e[94m  No RRD file found in ${COLLECTD_RRD_DIRECTORY}...\e[97m"
+    echo -e "\e[94m  Skipping RRD file backups...\e[97m"
+else
+    for RRD_FILE in `find ${COLLECTD_RRD_DIRECTORY} -name '*.rrd'`; do
+        echo -e "\e[94m  Exporting RRD files named $RRD_FILE to XML...\e[97m"
+        RRD_FILE_NAME=`basename -s .rrd $RRD_FILE`
+        RRD_FILE_DIRECTORY=`dirname $RRD_FILE`
+        if [ ! -d ${TEMPORARY_DIRECTORY}/${RRD_FILE_DIRECTORY} ]; then
+            mkdir ${TEMPORARY_DIRECTORY}/${RRD_FILE_DIRECTORY}
+        fi
+        sudo rrdtool dump $RRD_FILE > ${TEMPORARY_DIRECTORY}/${RRD_FILE_DIRECTORY}/${RRD_FILE_NAME}.xml
+    done
 fi
-echo -e "\e[94m  Backing up the directory /var/lib/collectd/rrd/...\e[97m"
-sudo cp -R /var/lib/collectd/rrd/ ${TEMPORARY_DIRECTORY}/var/lib/collectd/rrd/
 
 ## BACKUP PORTAL USING LITE FEATURES AND XML FILES
 
