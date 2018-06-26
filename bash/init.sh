@@ -236,7 +236,7 @@ fi
 chmod +x ${RECEIVER_BASH_DIRECTORY}/main.sh
 ${RECEIVER_BASH_DIRECTORY}/main.sh
 if [[ $? -ne 0 ]] ; then
-    echo -e "  \e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
+    echo -e "\e[91m  ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED\e[39m"
     echo -e ""
     exit 1
 fi
