@@ -111,6 +111,15 @@ function InstallAdsbExchange() {
     fi
 }
 
+# Execute the ADSBHub setup script.
+function InstallAdsbhub() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/adsbhub.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/adsbhub.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
 # Execute the Flightradar24 Feeder client setup script.
 function InstallFlightradar24() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
@@ -465,6 +474,21 @@ else
     fi
 fi
 
+# Check if the ADSBHuub client script has been set up.
+if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local; then
+    # The ADSBHub client script does not appear to be executed on start up.
+    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDERLIST[@]}" 'ADSBHub Client Script' '' OFF)
+    else
+        # Check the installation configuration file to see if the ADSBHub client is to be installed.
+        if [[ -z "${ADSBHUB_INSTALL}" ]] && [[ "${ADSBHUB_INSTALL}" = "true" ]] ; then
+            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+            echo "ADSBHub Client Script" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        fi
+    fi
+fi
+
 # Check for the OpenSky Network package.
 if [[ $(dpkg-query -W -f='${STATUS}' opensky-feeder 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # The OpenSky Network feeder package appears to not be installed.
@@ -472,8 +496,8 @@ if [[ $(dpkg-query -W -f='${STATUS}' opensky-feeder 2>/dev/null | grep -c "ok in
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
         FEEDER_LIST=("${FEEDER_LIST[@]}" 'OpenSky Network Feeder' '' OFF)
     else
-        # Check the installation configuration file to see if PiAware is to be installed.
-        if [[ -z "${OPENSKY_NETWORK_INSTALL}" ]] && [[ "${{OPENSKY_NETWORK_INSTALL}" = "true" ]] ; then
+        # Check the installation configuration file to see if the OpenSky Network package is to be installed.
+        if [[ -z "${OPENSKY_NETWORK_INSTALL}" ]] && [[ "${OPENSKY_NETWORK_INSTALL}" = "true" ]] ; then
             # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
             echo "OpenSky Network Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
         fi
@@ -781,6 +805,9 @@ else
                 "ADS-B Exchange data export and MLAT Client (upgrade)")
                     CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
                     ;;
+                "ADSBHub Client Script")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADSBHub Client Script"
+                    ;;
                 "FlightAware PiAware")
                     CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
                     ;;
@@ -894,6 +921,9 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] ; then
             "ADS-B Exchange data export and MLAT Client"|"ADS-B Exchange data export and MLAT Client (upgrade)")
                 RUN_ADSBEXCHANGE_SCRIPT="true"
                 ;;
+            "ADSBHub Client Script")
+                RUN_ADSBHUB_SCRIPT="true"
+                ;;
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
                 RUN_PIAWARE_SCRIPT="true"
                 ;;
@@ -912,6 +942,10 @@ fi
 
 if [[ "${RUN_ADSBEXCHANGE_SCRIPT}" = "true" ]] ; then
     InstallAdsbExchange
+fi
+
+if [[ "${RUN_ADSBHUB_SCRIPT}" = "true" ]] ; then
+    InstallAdsbhub
 fi
 
 if [[ "${RUN_PIAWARE_SCRIPT}" = "true" ]] || [[ "${FORCE_PIAWARE_INSTALL}" = "true" ]] ; then
