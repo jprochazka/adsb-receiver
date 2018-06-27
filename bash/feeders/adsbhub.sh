@@ -64,7 +64,7 @@ echo -e ""
 # Confirm component installation.
 if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
     # Interactive install.
-    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADSBHub client Setup" --yesno "There are many Web sites tracking aircraft and all of them rely on data shared by ADS-B fans. However, the access to aggregated ADS-B worldwide data is limited. The main goal of ADSBHub is to become a ADS-B data sharing centre and valuable data source for all enthusiasts and professionals interested in development of ADS-B related software. For more information please see their website:\n\n  http://www.adsbhub.org/howtofeed.php\n\nContinue setup by installing the ADSBHub client?" 13 78 3>&1 1>&2 2>&3)
+    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADSBHub client Setup" --yesno "There are many Web sites tracking aircraft and all of them rely on data shared by ADS-B fans. However, the access to aggregated ADS-B worldwide data is limited. The main goal of ADSBHub is to become a ADS-B data sharing centre and valuable data source for all enthusiasts and professionals interested in development of ADS-B related software. For more information please see their website:\n\n  http://www.adsbhub.org/howtofeed.php\n\nContinue setup by installing the ADSBHub client?" 16 78 3>&1 1>&2 2>&3)
     if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
         # Setup has been halted by the user.
         echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
@@ -160,9 +160,9 @@ echo ""
 
 # Kill any currently running instances of the adsbexchange-socat_maint.sh script.
 echo -e "\e[94m  Checking for any running adsbexchange-socat_maint.sh processes...\e[97m"
-if [[ $(ps -aux | grep '[a]dsbhub.sh' | awk '{print $2}') ]]; then
+if [[ $(ps -aux | grep '[a]dsbhub/adsbhub.sh' | awk '{print $2}') ]]; then
     echo -e "\e[94m  Killing the current adsbhub.sh process...\e[97m"
-    sudo kill -9 $(ps -aux | grep '[a]dsbhub.sh' | awk '{print $2}') &> /dev/null
+    sudo kill -9 $(ps -aux | grep '[a]dsbhub/adsbhub.sh' | awk '{print $2}') &> /dev/null
 fi
 
 echo -e "\e[94m  Executing the ADSBHub client script...\e[97m"

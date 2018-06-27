@@ -474,12 +474,12 @@ else
     fi
 fi
 
-# Check if the ADSBHuub client script has been set up.
+# Check if the ADSBHub client script has been set up.
 if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local; then
     # The ADSBHub client script does not appear to be executed on start up.
     if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-        FEEDER_LIST=("${FEEDERLIST[@]}" 'ADSBHub Client Script' '' OFF)
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADSBHub Client Script' '' OFF)
     else
         # Check the installation configuration file to see if the ADSBHub client is to be installed.
         if [[ -z "${ADSBHUB_INSTALL}" ]] && [[ "${ADSBHUB_INSTALL}" = "true" ]] ; then
@@ -614,7 +614,7 @@ fi
 if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     if [[ -n "${FEEDER_LIST}" ]] ; then
         # Display a checklist containing feeders that are not installed if any.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 5 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 6 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     else
         # Since all available feeders appear to be installed inform the user of the fact.
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
