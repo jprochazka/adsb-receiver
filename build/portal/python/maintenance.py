@@ -64,26 +64,26 @@ while True:
     cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeFlights'")
     row = cursor.fetchone()
     if row:
-        purge_flights = row
+        purge_flights = int(row[0])
 
     purge_positions = False
     # MySQL and SQLite
     cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgePositions'")
     row = cursor.fetchone()
     if row:
-        purge_positions = row
+        purge_positions = int(row[0])
 
     purge_days_old = False
     # MySQL and SQLite
     cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeDaysOld'")
     row = cursor.fetchone()
     if row:
-        purge_days_old = row
+        purge_days_old = int(row[0])
 
     ## Create the purge date from the age specified.
 
     if purge_days_old:
-        purge_datetime = datetime.datetime.utcnow() - timedelta(days=purge_days_old)
+        purge_datetime = datetime.datetime.utcnow() - datetime.timedelta(days=purge_days_old)
         purge_date = purge_datetime.strftime("%Y/%m/%d %H:%M:%S")
     else:
         purge_datetime = None
