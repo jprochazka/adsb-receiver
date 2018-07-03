@@ -39,7 +39,7 @@ import datetime
 import json
 import time
 import os
-#urllib2 is depreciated in python3
+#urllib2 is deprecated in python3
 try:
     # For Python 3.0 and later
     from urllib.request import urlopen
