@@ -39,7 +39,13 @@ import datetime
 import json
 import time
 import os
-import urllib2
+#urllib2 is deprecated in python3
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 def log(string):
     #print(string) # uncomment to enable debug logging
@@ -190,10 +196,10 @@ if __name__ == "__main__":
         #with open('/run/dump1090-mutability/aircraft.json') as data_file:
         #    data = json.load(data_file)
 
-        # Switch from physical file location to using urllib2 after the addition of the dump1090-fa option.
+        # Switch from physical file location to using urlopen after the addition of the dump1090-fa option.
         # dump1090-fa and dump1090-mutability store aircraft.json in difrent locations.
         # However Lighttpd is set up to serve this file using the same URL no matter which version is installed.
-        response = urllib2.urlopen('http://localhost/dump1090/data/aircraft.json')
+        response = urlopen('http://localhost/dump1090/data/aircraft.json')
         data = json.load(response)
 
         processor.processAircraftList(data["aircraft"])
