@@ -136,22 +136,24 @@ if [[ `grep -cFx "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-maint.sh &
 fi
 
 # Remove the depreciated adsbexchange-netcat_maint.sh script.
-echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
-if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
-    # Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
-    echo -e "\e[94m  Checking for any running adsbexchange-netcat_maint.sh processes...\e[97m"
-    if [[ $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') ]]; then
-        echo -e "\e[94m  Killing the current adsbexchange-netcat_maint.sh process...\e[97m"
-        sudo kill -9 $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') &> /dev/null
-    fi
-    if [[ $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') ]]; then
-        echo -e "\e[94m  Killing the current feed.adsbexchange.com process...\e[97m"
-        sudo kill -9 $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') &> /dev/null
-    fi
-    # Remove the depreciated netcat script start up line.
-    if [ -f /etc/rc.local ]; then
-        echo -e "\e[94m  Removing the netcat startup script line to the file /etc/rc.local...\e[97m"
-        sudo sed -i /$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-netcat_maint.sh &/d /etc/rc.local 2>&1
+if [ -f /etc/rc.local ]; then
+    echo -e "\e[94m  Checking if the netcat startup line is contained within the file /etc/rc.local...\e[97m"
+    if ! grep -Fxq "$RECEIVER_BUILD_DIRECTORY/adsbexchange/adsbexchange-netcat_maint.sh &" /etc/rc.local; then
+        # Kill any currently running instances of the adsbexchange-netcat_maint.sh script.
+        echo -e "\e[94m  Checking for any running adsbexchange-netcat_maint.sh processes...\e[97m"
+        if [[ $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') ]]; then
+            echo -e "\e[94m  Killing the current adsbexchange-netcat_maint.sh process...\e[97m"
+            sudo kill -9 $(ps -aux | grep '[a]dsbexchange-netcat_maint.sh' | awk '{print $2}') &> /dev/null
+        fi
+        if [[ $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') ]]; then
+            echo -e "\e[94m  Killing the current feed.adsbexchange.com process...\e[97m"
+            sudo kill -9 $(ps -aux | grep '[f]eed.adsbexchange.com' | awk '{print $2}') &> /dev/null
+        fi
+        # Remove the depreciated netcat script start up line.
+        if [ -f /etc/rc.local ]; then
+            echo -e "\e[94m  Removing the netcat startup script line to the file /etc/rc.local...\e[97m"
+            sudo sed -i /$RECEIVER_BUILD_DIRECTORY\/adsbexchange\/adsbexchange-netcat_maint.sh &/d /etc/rc.local 2>&1
+        fi
     fi
 fi
 echo -e ""
