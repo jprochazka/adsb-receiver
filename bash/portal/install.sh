@@ -279,7 +279,7 @@ if [[ "${ADVANCED}" = "true" ]] ; then
             ;;
         "SQLite")
             CheckPackage sqlite3
-            if [ $DISTRO_PHP_VERSION == "7.0" ]; then
+            if [ `bc -l <<< "$DISTRO_PHP_VERSION >= 7.0"` -eq 1 ]; then
                 CheckPackage php${DISTRO_PHP_VERSION}-sqlite3
             else
                 CheckPackage php${DISTRO_PHP_VERSION}-sqlite
