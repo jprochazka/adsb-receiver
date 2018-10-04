@@ -517,6 +517,12 @@ if [ "${DATABASEENGINE}" = "MySQL" ]; then
     export ADSB_DATABASENAME=${DATABASENAME}
 elif [ "${DATABASEENGINE}" = "SQLite" ]; then
     if [ -z "${DATABASENAME}" ] ; then
+        if [ ! -f ${LIGHTTPD_DOCUMENT_ROOT}/data/portal.sqlite ]; then
+            echo -e "\e[94m  Creating an empty SQLite database file...\e[97m"
+            sudo touch ${LIGHTTPD_DOCUMENT_ROOT}/data/portal.sqlite
+            echo -e "\e[94m  Setting write permissions on the empty SQLite database file...\e[97m"
+            sudo chmod 666 ${LIGHTTPD_DOCUMENT_ROOT}/data/portal.sqlite
+        fi
         DATABASENAME="${LIGHTTPD_DOCUMENT_ROOT}/data/portal.sqlite"
     fi
     export ADSB_DATABASEENGINE=${DATABASEENGINE}

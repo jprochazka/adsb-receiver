@@ -73,6 +73,15 @@ function InstallDump1090Fa() {
     fi
 }
 
+# Execute the dump1090-hptoa setup script.
+function InstallDump1090Hptoa() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-hptoa.sh
+    ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-hptoa.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
 # Execute the dump978 setup script.
 function InstallDump978() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump978.sh
@@ -102,10 +111,10 @@ function InstallAdsbExchange() {
     fi
 }
 
-# Execute the PiAware setup script
-function InstallPiAware() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
-    ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
+# Execute the ADSBHub setup script.
+function InstallAdsbhub() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/adsbhub.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/adsbhub.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
@@ -115,6 +124,24 @@ function InstallPiAware() {
 function InstallFlightradar24() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
+# Execute the OpenSky Network setup script.
+function InstallOpenSkyNetwork() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
+# Execute the PiAware setup script
+function InstallPiAware() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
@@ -228,6 +255,33 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     fi
 fi
 
+# Check if dump1090-hptoa is being used.
+if [ -f  ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/dump1090 ] && [ -f ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/faup1090 ] && [ -f ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/view1090 ] && [ -f /etc/init.d/dump1090 ] ; then
+    DUMP1090_FORK="hptoa"
+    DUMP1090_IS_INSTALLED="true"
+    # Skip over this dialog if this installation is set to be automated.
+    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+        # Ask if dump1090-hptoa should be reinstalled.
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-hptoa Installed" --defaultno --yesno "The dump1090-hptoa package appears to be installed on your device, however...\n\nThe dump1090-hptoa source code may have been updated recently.\n\nTo ensure you are running the latest version of dump1090-hptoa you may opt to rebuild these binaries.\n\nDownload and rebuild dump1090-hptoa from source?" 17 65
+
+        case $? in
+            0)
+                DUMP1090_DO_UPGRADE="true"
+                ;;
+            1)
+                DUMP1090_DO_UPGRADE="false"
+                ;;
+        esac
+    else
+        # Refer to the installation configuration to decide if dump1090-hptoa is to be reinstalled or not.
+        if [[ "${DUMP1090_UPGRADE}" = "true" ]] ; then
+            DUMP1090_DO_UPGRADE="true"
+        else
+            DUMP1090_DO_UPGRADE="false"
+        fi
+    fi
+fi
+
 # If no dump1090 fork is installed then attempt to install one.
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
     # If this is not an automated installation ask the user which one to install.
@@ -235,9 +289,9 @@ if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
 
         # Do not show dump 1090-fa option for Ubuntu 17.10 or higher until it is updated to support it.
         if [ ! "$RECEIVER_OS_DISTRIBUTION" == "ubuntu" ] && (( $(bc -l <<<"$RECEIVER_OS_RELEASE < 17.10") )); then
-            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of the following packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF 3>&1 1>&2 2>&3)
+            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 3 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
         else
-            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "The dump1090-mutability or dump1090-fa package does not appear to be installed on this device. In order to continue setup one of the following packages need to be installed. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-mutability" "(Mutability)" ON 3>&1 1>&2 2>&3)
+            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 3 "dump1090-mutability" "(Mutability)" ON "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
         fi
 
         case ${DUMP1090_OPTION} in
@@ -249,13 +303,17 @@ if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
                 DUMP1090_FORK="fa"
                 DUMP1090_DO_INSTALL="true"
                 ;;
+             "dump1090-hptoa")
+                DUMP1090_FORK="hptoa"
+                DUMP1090_DO_INSTALL="true"
+                ;;
             *)
                 DUMP1090_DO_INSTALL="false"
                 ;;
         esac
     else
         # Refer to the installation configuration to check if a dump1090 fork has been specified
-        if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] ; then
+        if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] || [[ "${DUMP1090_FORK}" = "hptoa" ]] ; then
             DUMP1090_DO_INSTALL="true"
         else
             DUMP1090_DO_INSTALL="false"
@@ -416,6 +474,36 @@ else
     fi
 fi
 
+# Check if the ADSBHub client script has been set up.
+if ! grep -q "${BUILDDIR}/adsbexchange/adsbexchange-maint.sh &" /etc/rc.local; then
+    # The ADSBHub client script does not appear to be executed on start up.
+    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADSBHub Client Script' '' OFF)
+    else
+        # Check the installation configuration file to see if the ADSBHub client is to be installed.
+        if [[ -z "${ADSBHUB_INSTALL}" ]] && [[ "${ADSBHUB_INSTALL}" = "true" ]] ; then
+            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+            echo "ADSBHub Client Script" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        fi
+    fi
+fi
+
+# Check for the OpenSky Network package.
+if [[ $(dpkg-query -W -f='${STATUS}' opensky-feeder 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    # The OpenSky Network feeder package appears to not be installed.
+    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'OpenSky Network Feeder' '' OFF)
+    else
+        # Check the installation configuration file to see if the OpenSky Network package is to be installed.
+        if [[ -z "${OPENSKY_NETWORK_INSTALL}" ]] && [[ "${OPENSKY_NETWORK_INSTALL}" = "true" ]] ; then
+            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
+            echo "OpenSky Network Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        fi
+    fi
+fi
+
 # Check for the PiAware package.
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
@@ -526,7 +614,7 @@ fi
 if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     if [[ -n "${FEEDER_LIST}" ]] ; then
         # Display a checklist containing feeders that are not installed if any.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 4 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 6 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     else
         # Since all available feeders appear to be installed inform the user of the fact.
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
@@ -670,6 +758,9 @@ else
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa (upgrade)"
                 ;;
+            "hptoa")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-hptoa (reinstall)"
+                ;;
         esac
     elif [[ "${DUMP1090_DO_INSTALL}" = "true" ]] ; then
         case ${DUMP1090_FORK} in
@@ -678,6 +769,9 @@ else
                 ;;
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa"
+                ;;
+            "hptoa")
+                CONFIRMATION="${CONFIRMATION}\n  * dump1090-hptoa"
                 ;;
         esac
     fi
@@ -705,17 +799,20 @@ else
         while read FEEDER_CHOICE
         do
             case ${FEEDER_CHOICE} in
+                "ADS-B Exchange data export and MLAT Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client"
+                    ;;
+                "ADS-B Exchange data export and MLAT Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
+                    ;;
+                "ADSBHub Client Script")
+                    CONFIRMATION="${CONFIRMATION}\n  * ADSBHub Client Script"
+                    ;;
                 "FlightAware PiAware")
                     CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
                     ;;
                 "FlightAware PiAware (upgrade)")
                     CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware (upgrade)"
-                    ;;
-                "Plane Finder Client")
-                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client"
-                    ;;
-                "Plane Finder Client (upgrade)")
-                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client (upgrade)"
                     ;;
                 "Flightradar24 Client")
                     CONFIRMATION="${CONFIRMATION}\n  * Flightradar24 Client"
@@ -723,11 +820,14 @@ else
                 "Flightradar24 Client (upgrade)")
                     CONFIRMATION="${CONFIRMATION}\n  * Flightradar24 Client (upgrade)"
                     ;;
-                "ADS-B Exchange data export and MLAT Client")
-                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client"
+                "OpenSky Network Feeder")
+                    CONFIRMATION="${CONFIRMATION}\n  * OpenSky Network Feeder"
                     ;;
-                "ADS-B Exchange data export and MLAT Client (upgrade)")
-                    CONFIRMATION="${CONFIRMATION}\n  * ADS-B Exchange data export and MLAT Client (upgrade)"
+                "Plane Finder Client")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client"
+                    ;;
+                "Plane Finder Client (upgrade)")
+                    CONFIRMATION="${CONFIRMATION}\n  * Plane Finder Client (upgrade)"
                     ;;
             esac
         done < ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
@@ -789,6 +889,9 @@ if [[ "${DUMP1090_DO_INSTALL}" = "true" ]] || [[ "${DUMP1090_DO_UPGRADE}" = "tru
         "fa")
              InstallDump1090Fa
              ;;
+        "hptoa")
+             InstallDump1090Hptoa
+             ;;
     esac
 fi
 
@@ -805,45 +908,60 @@ fi
 # Moved execution of functions outside of while loop.
 # Inside the while loop the installation scripts are not stopping at reads.
 
-RUN_PIAWARE_SCRIPT="false"
-RUN_PLANEFINDER_SCRIPT="false"
-RUN_FLIGHTRADAR24_SCRIPT="false"
 RUN_ADSBEXCHANGE_SCRIPT="false"
+RUN_PIAWARE_SCRIPT="false"
+RUN_FLIGHTRADAR24_SCRIPT="false"
+RUN_OPENSKYNETWORK_SCRIPT="false"
+RUN_PLANEFINDER_SCRIPT="false"
 
 if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] ; then
     while read FEEDER_CHOICE
     do
         case ${FEEDER_CHOICE} in
+            "ADS-B Exchange data export and MLAT Client"|"ADS-B Exchange data export and MLAT Client (upgrade)")
+                RUN_ADSBEXCHANGE_SCRIPT="true"
+                ;;
+            "ADSBHub Client Script")
+                RUN_ADSBHUB_SCRIPT="true"
+                ;;
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
                 RUN_PIAWARE_SCRIPT="true"
-                ;;
-            "Plane Finder Client"|"Plane Finder Client (upgrade)")
-                RUN_PLANEFINDER_SCRIPT="true"
                 ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
                 RUN_FLIGHTRADAR24_SCRIPT="true"
                 ;;
-            "ADS-B Exchange data export and MLAT Client"|"ADS-B Exchange data export and MLAT Client (upgrade)")
-                RUN_ADSBEXCHANGE_SCRIPT="true"
+            "OpenSky Network Feeder")
+                RUN_OPENSKYNETWORK_SCRIPT="true"
+                ;;
+            "Plane Finder Client"|"Plane Finder Client (upgrade)")
+                RUN_PLANEFINDER_SCRIPT="true"
                 ;;
         esac
     done < ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+fi
+
+if [[ "${RUN_ADSBEXCHANGE_SCRIPT}" = "true" ]] ; then
+    InstallAdsbExchange
+fi
+
+if [[ "${RUN_ADSBHUB_SCRIPT}" = "true" ]] ; then
+    InstallAdsbhub
 fi
 
 if [[ "${RUN_PIAWARE_SCRIPT}" = "true" ]] || [[ "${FORCE_PIAWARE_INSTALL}" = "true" ]] ; then
     InstallPiAware
 fi
 
-if [[ "${RUN_PLANEFINDER_SCRIPT}" = "true" ]] ; then
-    InstallPlaneFinder
-fi
-
 if [[ "${RUN_FLIGHTRADAR24_SCRIPT}" = "true" ]] ; then
     InstallFlightradar24
 fi
 
-if [[ "${RUN_ADSBEXCHANGE_SCRIPT}" = "true" ]] ; then
-    InstallAdsbExchange
+if [[ "${RUN_OPENSKYNETWORK_SCRIPT}" = "true" ]] ; then
+    InstallOpenSkyNetwork
+fi
+
+if [[ "${RUN_PLANEFINDER_SCRIPT}" = "true" ]] ; then
+    InstallPlaneFinder
 fi
 
 ## ADS-B Receiver Project Web Portal
