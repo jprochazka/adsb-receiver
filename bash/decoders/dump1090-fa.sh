@@ -88,7 +88,9 @@ CheckPackage debhelper
 CheckPackage cron
 CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
+CheckPackage libusb-1.0-0
 CheckPackage libusb-1.0-0-dev
+CheckPackage libtecla1
 CheckPackage pkg-config
 CheckPackage lighttpd
 CheckPackage fakeroot
@@ -103,7 +105,7 @@ CheckPackage pandoc
 ## BUILD AND INSTALL THE BLADERF PACKAGE FROM SOURCE IF NOT INSTALLED
 
 # Check if the needed bladeRF packages are installed.
-if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-udev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+if [[ $(dpkg-query -W -f='${STATUS}' libbladerf2 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-udev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
     echo ""
     echo -e "\e[95m  Preparing the bladeRF Git repository...\e[97m"
     echo ""
@@ -142,10 +144,10 @@ if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok insta
     echo -e "\e[94m  Entering the bladeRF build directory...\e[97m"
     cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
 
-    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf1 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-        echo -e "\e[94m  Installing the libbladerf1 package...\e[97m"
+    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf2 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+        echo -e "\e[94m  Installing the libbladerf2 package...\e[97m"
         echo ""
-        sudo dpkg -i libbladerf1_*.deb
+        sudo dpkg -i libbladerf2_*.deb
         echo ""
     fi
 

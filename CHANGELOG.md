@@ -2,6 +2,14 @@
 
 The following is a history of the changes made to this project.
 
+## v2.7.0 *(pre-release)*
+
+* Added option to install dump1090-hptoa.
+* Added ADSBHub support.
+* Added OpenSky Network support
+* Graph data now restored properly by the backup script.
+* Script now checks for php7.2-sqlite3 instead on php7.2-sqlite on Ubuntu 18.04+.
+
 ## v2.6.3 *(June 23rd, 2018)*
 
 * Fix to navigation bar auto hiding code submitted by @vitaliy-sk.
