@@ -383,6 +383,7 @@ local_trailing_rate_graph() {
   --units-exponent 0 \
   --right-axis 360:0 \
   --slope-mode \
+  --pango-markup \
   "TEXTALIGN:center" \
   "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
   "DEF:a=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE:end=now-86400:start=end-86400" \
@@ -431,6 +432,11 @@ local_trailing_rate_graph() {
   "DEF:positions=$2/dump1090_messages-positions.rrd:value:AVERAGE" \
   "CDEF:y2strong=strong,10,*" \
   "CDEF:y2positions=positions,10,*" \
+  "VDEF:strong_total=strong,TOTAL" \
+  "VDEF:messages_total=messages,TOTAL" \
+  "CDEF:hundred=messages,UN,100,100,IF" \
+  "CDEF:strong_percent=strong_total,hundred,*,messages_total,/" \
+  "VDEF:strong_percent_vdef=strong_percent,LAST" \
   "SHIFT:a1:86400" \
   "SHIFT:b1:172800" \
   "SHIFT:c1:259200" \
@@ -471,7 +477,8 @@ local_trailing_rate_graph() {
   "AREA:maxarea#FFFF99:Min/Max:STACK" \
   "LINE1:7dayaverage#00FF00:7 Day Average" \
   "LINE1:messages#0000FF" \
-  "AREA:y2strong#FF0000:Messages > -3dBFS/Hr (RHS)" \
+  "AREA:y2strong#FF0000:Messages > -3dBFS/Hr (RHS)\g" \
+  "GPRINT:strong_percent_vdef: (%1.1lf<span font='2'> </span>%% of messages)" \
   "LINE1:y2positions#00c0FF:Positions/Hr (RHS)\c" \
   --watermark "Drawn: $nowlit";
 }
