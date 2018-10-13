@@ -361,10 +361,10 @@ local_rate_graph() {
   "DEF:messages=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
   "DEF:strong=$2/dump1090_messages-strong_signals.rrd:value:AVERAGE" \
   "DEF:positions=$2/dump1090_messages-positions.rrd:value:AVERAGE" \
-  "CDEF:y2strong=strong,10,*" \
+  "CDEF:y2strong=strong,1.6666666666666,*" \
   "CDEF:y2positions=positions,10,*" \
   "LINE1:messages#0000FF:Messages Received" \
-  "AREA:y2strong#FF0000:Messages > -3dBFS / Hr (RHS)" \
+  "AREA:y2strong#FF0000:Messages > -3dBFS / 10min (RHS)" \
   "LINE1:y2positions#00c0FF:Positions / Hr (RHS)\c" \
   "COMMENT: \n" \
   --watermark "Drawn: $nowlit";
@@ -430,7 +430,7 @@ local_trailing_rate_graph() {
   "CDEF:gmax1=gmax,UN,0,gmax,IF" \
   "DEF:strong=$2/dump1090_messages-strong_signals.rrd:value:AVERAGE" \
   "DEF:positions=$2/dump1090_messages-positions.rrd:value:AVERAGE" \
-  "CDEF:y2strong=strong,10,*" \
+  "CDEF:y2strong=strong,1.6666666666666,*" \
   "CDEF:y2positions=positions,10,*" \
   "VDEF:strong_total=strong,TOTAL" \
   "VDEF:messages_total=messages,TOTAL" \
@@ -477,7 +477,7 @@ local_trailing_rate_graph() {
   "AREA:maxarea#FFFF99:Min/Max:STACK" \
   "LINE1:7dayaverage#00FF00:7 Day Average" \
   "LINE1:messages#0000FF" \
-  "AREA:y2strong#FF0000:Messages > -3dBFS/Hr (RHS)\g" \
+  "AREA:y2strong#FF0000:Messages > -3dBFS/10min (RHS)\g" \
   "GPRINT:strong_percent_vdef: (%1.1lf<span font='2'> </span>%% of messages)" \
   "LINE1:y2positions#00c0FF:Positions/Hr (RHS)\c" \
   --watermark "Drawn: $nowlit";
