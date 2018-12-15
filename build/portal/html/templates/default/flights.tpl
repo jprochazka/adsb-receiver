@@ -34,8 +34,8 @@
                     {foreach page:flights as flight}
                     <tr>
                         <td><a href="plot.php?flight={flight->flight}">{flight->flight}</a></td>
-                        <td>{flight->lastSeen}</td>
-                        <td>{flight->firstSeen}</td>
+                        <td><a href="plot.php?flight={flight->flight}&index=last">{flight->lastSeen}</a></td>
+                        <td><a href="plot.php?flight={flight->flight}&index=first">{flight->firstSeen}</a></td>
                         <td>
                             <a href="http://flightaware.com/live/flight/{flight->flight}" target="_blank">FlightAware</a> |
                             <a href="https://planefinder.net/flight/{flight->flight}" target="_blank">Planefinder</a> |

@@ -137,9 +137,29 @@
     // Pass the number of seen paths which is equal to the last flight ID.
     $pageData['pathsSeen'] = $pathsSeen;
 
-    if (count($flightPaths) > 0) {
+    $countFlightPaths = count($flightPaths);
+    if ($countFlightPaths > 0) {
         $pageData['flightPathsAvailable'] = "TRUE";
-        $pageData['flightPaths'] = $flightPaths;
+        $selectedFlightPath = $flightPaths;
+
+        if (isset($_GET["index"])) {
+            switch ($_GET["index"]) {
+                case "first":
+                    $selectedFlightPath = [$flightPaths[0]];
+                    break;
+                case "last":
+                    $selectedFlightPath = [$flightPaths[$countFlightPaths - 1]];
+                    break;
+                default:
+                    if (is_numeric($_GET["index"])) {
+                        $selectedFlightPath = [$flightPaths[$_GET["index"]]];
+                    }
+                    break;
+            }
+        } 
+        
+        $pageData['flightPaths'] = $selectedFlightPath;
+
     } else {
         $pageData['flightPathsAvailable'] = "FALSE";
     }
