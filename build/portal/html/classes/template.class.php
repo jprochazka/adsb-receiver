@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015-2019 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -37,7 +37,7 @@
 
             // Check if the portal is installed or needs upgraded.
 
-            $thisVersion = "2.7.0";
+            $thisVersion = "2.7.1";
 
             if (!file_exists($_SERVER['DOCUMENT_ROOT']."/classes/settings.class.php")) {
                 header ("Location: /install/install.php");

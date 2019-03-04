@@ -2,7 +2,11 @@
 
 The following is a history of the changes made to this project.
 
-## v2.7.0 *(pre-release)*
+## v2.7.1 *(pre-release)*
+
+* Added missing purgeAircraft setting to the database. *(advanced)*
+
+## v2.7.0 *(not released)*
 
 * Added option to install dump1090-hptoa.
 * Added ADSBHub support.
