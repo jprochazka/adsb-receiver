@@ -18,6 +18,7 @@ directly. Their time and effort is greatly appreciated by myself as well as many
 * @Romeo-Golf
 * @target-drone
 * @vitaliy-sk
+* @wiedehopf
 
 I would like to thank the members and contributors to the following forums for all the time and effort
 they have put in in order to create a useful and informative place to discuss aircraft tracking.
