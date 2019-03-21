@@ -40,6 +40,7 @@ PORTAL_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal"
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
 COLLECTD_CRON_FILE="/etc/cron.d/adsb-receiver-performance-graphs"
 DUMP1090_MAX_RANGE_RRD="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd"
+DUMP1090_MESSAGES_LOCAL_RRD="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_messages-local_accepted.rrd"
 
 ### INCLUDE EXTERNAL SCRIPTS
 
@@ -391,6 +392,14 @@ if [ -f "/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_r
     if [[ `rrdinfo ${DUMP1090_MAX_RANGE_RRD} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
         echo -e "\e[94m  Removing 500km/270mi limit from max_range.rrd...\e[97m"
         sudo rrdtool tune ${DUMP1090_MAX_RANGE_RRD} --maximum "value:1000000"
+    fi
+fi
+
+# Increase size of weekly messages table to 8 days
+if [ -f ${DUMP1090_MESSAGES_LOCAL_RRD} ]; then
+    if [[ `rrdinfo ${DUMP1090_MESSAGES_LOCAL_RRD} | grep -c "rra\[6\]\.rows = 1260"` -eq 1 ]] ; then
+        echo -e "\e[94m  Increasing weekly table size to 8 days in messages-local_accepted.rrd...\e[97m"
+        sudo rrdtool tune ${DUMP1090_MESSAGES_LOCAL_RRD} 'RRA#6:=1440' 'RRA#7:=1440' 'RRA#8:=1440'
     fi
 fi
 

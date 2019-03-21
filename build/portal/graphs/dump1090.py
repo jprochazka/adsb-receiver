@@ -91,14 +91,6 @@ def read_stats_1min(instance_name, host, url):
                    values = [stats['last1min']['local']['noise']],
                    interval = 60)
 
-        V.dispatch(plugin_instance = instance_name,
-                   host=host,
-                   type='dump1090_messages',
-                   type_instance='strong_signals',
-                   time=T(stats['last1min']['end']),
-                   values = [stats['last1min']['local']['strong_signals']],
-                   interval = 60)
-
 
 def read_stats(instance_name, host, url):
     try:
@@ -123,6 +115,15 @@ def read_stats(instance_name, host, url):
                        type_instance='local_accepted_%d' % i,
                        time=T(stats['total']['end']),
                        values = [counts[i]])
+
+        if stats['total']['local'].has_key('strong_signals'):
+            V.dispatch(plugin_instance = instance_name,
+                       host=host,
+                       type='dump1090_messages',
+                       type_instance='strong_signals',
+                       time=T(stats['total']['end']),
+                       values = [stats['total']['local']['strong_signals']],
+                       interval = 60)
 
     # Remote message counts
     if stats['total'].has_key('remote'):
