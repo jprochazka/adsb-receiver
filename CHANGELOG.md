@@ -2,7 +2,17 @@
 
 The following is a history of the changes made to this project.
 
-## v2.7.1 *(pre-release)*
+## v2.7.2 *(prerelease)*
+
+* Updated current PiAware and dump1090-fa versions to 3.9.3. 
+* When installing dump1090-fa the maintainer packages for libbladerf are used.
+* Removed installation restriction for dump1090-fa on Ubuntu.
+* Fixed reported JSON incompatabilities with dump1090-fa. *(advanced)*
+* Removed Flightradar24 ARM client version from variables file.
+* Fixed issue pertaining to theremoval of old style ADS-B Exchange rc.local enties.
+* Added indexes to tables to improve performance. (thanks to @target-drone) *(advanced)*
+
+## v2.7.1 *(not released)*
 
 * Added missing purgeAircraft setting to the database. *(advanced)*
 

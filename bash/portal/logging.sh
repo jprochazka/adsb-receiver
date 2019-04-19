@@ -79,6 +79,13 @@ echo -e ""
 echo -e "\e[95m  Setting up flight logging...\e[97m"
 echo -e ""
 
+# Dump1090-fa has changed the structure of their JSON and needed a new version of flights.py.
+if [ ] ; then
+    FLIGHTS_FILE='flights.fa.py'
+else
+    FLIGHTS_FILE='flights.mutability.py'
+fi
+
 # Create and set permissions on the flight logging and maintenance maintenance scripts.
 echo -e "\e[94m  Creating the flight logging maintenance script...\e[97m"
 tee ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh > /dev/null <<EOF
@@ -86,7 +93,7 @@ tee ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh > /dev/null <<EOF
 while true
   do
     sleep 30
-        ${PYTHONPATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py
+        ${PYTHONPATH} ${PORTAL_PYTHON_DIRECTORY}/${FLIGHTS_FILE}
   done
 EOF
 

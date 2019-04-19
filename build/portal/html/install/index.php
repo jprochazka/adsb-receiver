@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.7.1";
+    $thisVersion = "2.7.2";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -248,7 +248,8 @@ EOF;
                                           id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                           name VARCHAR(50) NOT NULL,
                                           value VARCHAR(100) NOT NULL);';
-
+                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);'
+                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);'
                     break;
                     case "pgsql":
                         // PostgreSQL
@@ -300,6 +301,8 @@ EOF;
                                         id SERIAL PRIMARY KEY,
                                         name VARCHAR(50) NOT NULL,
                                         value VARCHAR(100) NOT NULL);';
+                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);'
+                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);'
                     break;
                     case "sqlite":
                         // SQLite
@@ -351,6 +354,9 @@ EOF;
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         name TEXT NOT NULL,
                                         value TEXT NOT NULL);';
+                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);'
+                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);'
+
                     break;
                 }
 
