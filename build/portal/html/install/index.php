@@ -248,8 +248,8 @@ EOF;
                                           id INT(11) PRIMARY KEY AUTO_INCREMENT,
                                           name VARCHAR(50) NOT NULL,
                                           value VARCHAR(100) NOT NULL);';
-                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);'
-                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);'
+                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);';
+                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);';
                     break;
                     case "pgsql":
                         // PostgreSQL
@@ -301,8 +301,8 @@ EOF;
                                         id SERIAL PRIMARY KEY,
                                         name VARCHAR(50) NOT NULL,
                                         value VARCHAR(100) NOT NULL);';
-                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);'
-                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);'
+                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);';
+                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);';
                     break;
                     case "sqlite":
                         // SQLite
@@ -354,8 +354,8 @@ EOF;
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         name TEXT NOT NULL,
                                         value TEXT NOT NULL);';
-                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);'
-                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);'
+                        $aircraftIndexSql = 'CREATE INDEX idxIcao ON '.$dbPrefix.'aircraft(icao);';
+                        $positionsIndexSql = 'CREATE INDEX idxFlight ON '.$dbPrefix.'positions(flight);';
 
                     break;
                 }
@@ -396,6 +396,14 @@ EOF;
                 $sth = NULL;
 
                 $sth = $dbh->prepare($settingsSql);
+                $sth->execute();
+                $sth = NULL;
+                
+                $sth = $dbh->prepare($aircraftIndexSql);
+                $sth->execute();
+                $sth = NULL;
+                
+                $sth = $dbh->prepare($positionsIndexSql);
                 $sth->execute();
                 $sth = NULL;
 
