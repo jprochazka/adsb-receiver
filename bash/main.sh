@@ -286,14 +286,7 @@ fi
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
     # If this is not an automated installation ask the user which one to install.
     if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-
-        # Do not show dump 1090-fa option for Ubuntu 17.10 or higher until it is updated to support it.
-        if [ ! "$RECEIVER_OS_DISTRIBUTION" == "ubuntu" ] && (( $(bc -l <<<"$RECEIVER_OS_RELEASE < 17.10") )); then
-            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 3 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
-        else
-            DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 3 "dump1090-mutability" "(Mutability)" ON "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
-        fi
-
+        DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 3 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
         case ${DUMP1090_OPTION} in
             "dump1090-mutability")
                 DUMP1090_FORK="mutability"

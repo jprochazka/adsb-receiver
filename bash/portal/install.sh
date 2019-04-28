@@ -271,6 +271,7 @@ CheckPackage libpython2.7
 # Install packages needed for advanced portal setups.
 if [[ "${ADVANCED}" = "true" ]] ; then
     CheckPackage python-pyinotify
+    CheckPackage python-apt
     case "${DATABASEENGINE}" in
         "MySQL")
             CheckPackage mysql-client

@@ -81,90 +81,16 @@ fi
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
-CheckPackage git
-CheckPackage curl
-CheckPackage build-essential
 CheckPackage debhelper
-CheckPackage cron
-CheckPackage rtl-sdr
 CheckPackage librtlsdr-dev
-CheckPackage libusb-1.0-0
 CheckPackage libusb-1.0-0-dev
-CheckPackage libtecla1
 CheckPackage pkg-config
-CheckPackage lighttpd
-CheckPackage fakeroot
 CheckPackage dh-systemd
 CheckPackage libncurses5-dev
-CheckPackage cmake
-CheckPackage doxygen
-CheckPackage libtecla-dev
-CheckPackage help2man
-CheckPackage pandoc
-
-## BUILD AND INSTALL THE BLADERF PACKAGE FROM SOURCE IF NOT INSTALLED
-
-# Check if the needed bladeRF packages are installed.
-if [[ $(dpkg-query -W -f='${STATUS}' libbladerf2 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]] || [[ $(dpkg-query -W -f='${STATUS}' libbladerf-udev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-    echo ""
-    echo -e "\e[95m  Preparing the bladeRF Git repository...\e[97m"
-    echo ""
-    if [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF/.git" ]] ; then
-        # A directory with a git repository containing the source code already exists.
-        echo -e "\e[94m  Entering the bladeRF git repository directory...\e[97m"
-        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
-        echo -e "\e[94m  Updating the local bladeRF git repository...\e[97m"
-        echo ""
-        git pull
-    else
-        # A directory containing the source code does not exist in the build directory.
-        echo -e "\e[94m  Creating the bladeRF build directory...\e[97m"
-        echo ""
-        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/bladeRF
-        echo ""
-        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
-        echo -e "\e[94m  Cloning the bladeRF git repository locally...\e[97m"
-        echo ""
-        git clone https://github.com/Nuand/bladeRF.git
-    fi
-
-    echo ""
-    echo -e "\e[95m  Building and installing the bladeRF package...\e[97m"
-    echo ""
-    if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF" ]] ; then
-        echo -e "\e[94m  Entering the bladeRF git repository directory...\e[97m"
-        cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF/bladeRF 2>&1
-    fi
-
-    echo -e "\e[94m  Building the bladeRF package...\e[97m"
-    echo ""
-    dpkg-buildpackage -b
-    echo ""
-
-    echo -e "\e[94m  Entering the bladeRF build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/bladeRF 2>&1
-
-    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf2 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-        echo -e "\e[94m  Installing the libbladerf2 package...\e[97m"
-        echo ""
-        sudo dpkg -i libbladerf2_*.deb
-        echo ""
-    fi
-
-    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-        echo -e "\e[94m  Installing the libbladerf-dev package...\e[97m"
-        echo ""
-        sudo dpkg -i libbladerf-dev_*.deb
-        echo ""
-    fi
-
-    if [[ $(dpkg-query -W -f='${STATUS}' libbladerf-udev 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-        echo -e "\e[94m  Installing the libbladerf-udev package...\e[97m"
-        echo ""
-        sudo dpkg -i libbladerf-udev_*.deb
-    fi
-fi
-echo ""
+CheckPackage libbladerf1
+CheckPackage libbladerf-dev
+CheckPackage adduser
+CheckPackage lighttpd
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
 
