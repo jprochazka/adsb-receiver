@@ -313,6 +313,10 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.backup.xml
     echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml...\e[97m"
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/links.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/links.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/links.backup.xml
+    echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/notifications.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/notifications.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/notifications.backup.xml
 fi
 
 if [ -f ${LIGHTTPD_DOCUMENT_ROOT}/index.lighttpd.html ]; then
@@ -333,6 +337,10 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/flightNotifications.xml
     echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml...\e[97m"
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/settings.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/links.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/links.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/links.xml
+    echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/notifications.xml...\e[97m"
+    sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/notifications.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/notifications.xml
 fi
 
 # Set the proper permissions on certain portal directories.
