@@ -94,6 +94,6 @@ The scripts are NOT supported on existing PiAware *image based* installations. T
 ### Useful Links
 
 - Website - https://www.adsbreceiver.net/
-- Forum - https://www.adsbreceiver.net/forums/
+- Forum - https://adsb.discourse.group/
 - Wiki - https://github.com/jprochazka/adsb-receiver/wiki
 - Changelog - https://github.com/jprochazka/adsb-receiver/blob/master/CHANGELOG.md
