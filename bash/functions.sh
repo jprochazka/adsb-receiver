@@ -85,6 +85,12 @@ function CheckPackage {
 # The function expects 3 parameters to be passed to it in the following order.
 # ChangeConfig KEY VALUE FILE
 
+function ChangeSwitch {
+    # Use sed to locate the "SWITCH" then replace the "VALUE", the portion after the equals sign, in the specified "FILE".
+    # This function wil replace the value assigned to a specific swith contained within a file.
+    sudo sed -i -re "s/($1)\s+\w+/\1 $2/g" $3
+}
+
 function ChangeConfig {
     # Use sed to locate the "KEY" then replace the "VALUE", the portion after the equals sign, in the specified "FILE".
     # This function should work with any configuration file with settings formated as KEY="VALUE".

@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2019 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -202,10 +202,10 @@ fi
 
 # Check if the dump1090-mutability package is installed.
 echo -e "\e[94m  Checking if the dump1090-mutability package is installed...\e[97m"
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] || [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
     # The dump1090-mutability package appear to be installed.
     if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR Dongle Assignments" --msgbox "It appears the dump1090-mutability package is installed on this device. In order to run dump978 in tandem with dump1090-mutability you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR Dongle Assignments" --msgbox "It appears one of the dump1090 packages has been installed on this device. In order to run dump978 in tandem with dump1090 you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
         # Ask the user which USB device is to be used for dump1090.
         DUMP1090_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the ID for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         while [[ -z "${DUMP1090_DEVICE_ID}" ]] ; do
@@ -217,13 +217,26 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "
             DUMP978_DEVICE_ID=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the ID for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
         done
     fi
+
     # Assign the specified RTL-SDR dongle to dump1090-mutability.
-    echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP1090_DEVICE_ID}\" to dump1090-mutability...\e[97m"
-    ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
-    echo -e "\e[94m  Restarting dump1090-mutability...\e[97m"
-    echo -e ""
-    sudo service dump1090-mutability force-reload
-    echo -e ""
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP1090_DEVICE_ID}\" to dump1090-mutability...\e[97m"
+        ChangeConfig "DEVICE" ${DUMP1090_DEVICE_ID} "/etc/default/dump1090-mutability"
+        echo -e "\e[94m  Restarting dump1090-mutability...\e[97m"
+        echo -e ""
+        sudo service dump1090-mutability force-reload
+        echo -e ""
+    fi
+
+    # Assign the specified RTL-SDR dongle to dump1090-fa.
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP1090_DEVICE_ID}\" to dump1090-fa...\e[97m"
+        ChangeSwitch "--device-index" "${DUMP1090_DEVICE_ID}" "/etc/default/dump1090-fa"
+        echo -e "\e[94m  Restarting dump1090-fa...\e[97m"
+        echo -e ""
+        sudo service dump1090-fa force-reload
+        echo -e ""
+    fi
 
     # Get the latitude and longitude set in the dump1090-mutability configuration file to be used later.
     echo -e "\e[94m  Retrieving the receiver's latitude from /etc/default/dump1090-mutability...\e[97m"
