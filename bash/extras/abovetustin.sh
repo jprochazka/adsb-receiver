@@ -138,7 +138,7 @@ else
         if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
             # Warn the user of the build time if there is no binary available for download.
             # The user should be allowed to cancel out of the setup process at this time.
-            whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PhantomJS Binary Not Available" --yesno "It appears there is not a precompiled PhantomJS binary available for your devices architecture.\n\nThis script is capable of downloading and compiling the PhantomJS source but THIS MAY TAKE AN EXTREMELY LONG TO TO COMPLETE. Expect the build process to range anywhere from a half our to literally hours.\n\nDo you wish to compile PhantomJS from source?" 13 78
+            whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PhantomJS Binary Not Available" --yesno "It appears there is not a precompiled PhantomJS binary available for your devices architecture.\n\nThis script is capable of downloading and compiling the PhantomJS source but THIS MAY TAKE AN EXTREMELY LONG TO TO COMPLETE. Expect the build process to range anywhere from a half hour to literally hours.\n\nDo you wish to compile PhantomJS from source?" 13 78
             if [[ $? -eq 1 ]] ; then
                 # Setup has been halted by the user.
                 echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
