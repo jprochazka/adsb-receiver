@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2015-2023, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -93,20 +93,27 @@ fi
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for FlightAware PiAware client...\e[97m"
 echo ""
 
+CheckPackage devscripts
 CheckPackage build-essential
 CheckPackage debhelper
 CheckPackage tcl8.6-dev
 CheckPackage autoconf
 CheckPackage python3-dev
 CheckPackage python3-venv
-CheckPackage virtualenv
-CheckPackage dh-systemd
 CheckPackage zlib1g-dev
+CheckPackage libboost-system-dev
+CheckPackage libboost-program-options-dev
+CheckPackage libboost-regex-dev
+CheckPackage libboost-filesystem-dev
+CheckPackage patchelf
+CheckPackage net-tools
 CheckPackage tclx8.4
 CheckPackage tcllib
-CheckPackage tcl-tls
 CheckPackage itcl3
-CheckPackage net-tools
+
+# Build Then Install the tcl-tls package from FlightAware.
+
+#https://github.com/flightaware/tcltls-rebuild.git
 
 ### STOP ANY RUNNING SERVICES
 
@@ -155,12 +162,20 @@ if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
     # Execute build script.
     echo -e "\e[94m  Executing the FlightAware PiAware client build script...\e[97m"
     echo ""
-    ./sensible-build.sh jessie
+
+    # The list of supported Ubuntu codenames does not appear to be up to date so use the latest available.
+    CODENAME=`lsb_release --codename | cut -f2`
+    if [[ ${CODENAME} = "lunar" ]] || [[ ${CODENAME} = "jammy" ]] || [[ ${CODENAME} = "focal" ]] ; then
+        CODENAME="disco"
+    fi
+
+    # Can be one of the following: stretch|buster|bullseye|xenial|bionic|disco
+    ./sensible-build.sh ${CODENAME}
     echo ""
 
     # Change to build script directory.
     echo -e "\e[94m  Entering the FlightAware PiAware client build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-jessie 2>&1
+    cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-${CODENAME} 2>&1
 
     # Build binary package.
     echo -e "\e[94m  Building the FlightAware PiAware client package...\e[97m"
@@ -230,4 +245,3 @@ if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
 fi
 
 exit 0
-

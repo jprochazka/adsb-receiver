@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.0
+
+* Removed support for the now defunct dump1090-mutability decoder.
+
 ## v2.7.2 *(prerelease)*
 
 * Updated current PiAware and dump1090-fa versions to 3.9.3. 
