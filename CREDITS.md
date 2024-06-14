@@ -43,7 +43,6 @@ is being used to develop the portal portion of this project. https://www.jetbrai
 I would also like to thank the developers and contributors to the following projects. Without their
 hard work and dedication this project would not have been possible.
 
-* Dump1090 (mutability):      https://github.com/mutability/dump1090
 * Dump1090 (fa):              https://github.com/flightaware/dump1090
 * Dump978:                    https://github.com/mutability/dump978
 * FlightAware's PiAware:      http://flightaware.com

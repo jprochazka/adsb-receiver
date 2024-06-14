@@ -109,14 +109,49 @@ CheckPackage libboost-program-options-dev
 CheckPackage libboost-regex-dev
 CheckPackage libboost-filesystem-dev
 CheckPackage patchelf
-CheckPackage python3-wheel
-CheckPackage python3-build
 CheckPackage python3-pip
+CheckPackage python3-build
+CheckPackage python3-setuptools
+CheckPackage python3-wheel
 CheckPackage net-tools
 CheckPackage tclx8.4
 CheckPackage tcllib
-CheckPackage tcl-tls
 CheckPackage itcl3
+CheckPackage libssl-dev
+CheckPackage tcl-dev
+CheckPackage chrpath
+
+# TODO: Archive the package.
+
+# Build the FlightAware version of tcl-tls to address network issues with the stock package.
+if [[ -d ${RECEIVER_BUILD_DIRECTORY}/tcltls-rebuild ]] && [[ -d ${RECEIVER_BUILD_DIRECTORY}/tcltls-rebuild/.git ]] ; then
+    # A directory with a git repository containing the source code already exists.
+    echo -e "\e[94m  Entering the tcltls-rebuild git repository directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY}/tcltls-rebuild 2>&1
+    echo -e "\e[94m  Updating the local tcltls-rebuild git repository...\e[97m"
+    echo ""
+    git pull 2>&1
+else
+    # A directory containing the source code does not exist in the build directory.
+    echo -e "\e[94m  Entering the ADS-B Receiver Project build directory...\e[97m"
+    cd ${RECEIVER_BUILD_DIRECTORY} 2>&1
+    echo -e "\e[94m  Cloning the tcltls-rebuild git repository locally...\e[97m"
+    echo ""
+    git clone https://github.com/flightaware/tcltls-rebuild 2>&1
+fi
+
+echo -e "\e[94m  Entering the tcltls-rebuild source directory...\e[97m"
+cd ${RECEIVER_BUILD_DIRECTORY}/tcltls-rebuild/tcltls-1.7.22 2>&1
+
+echo -e "\e[94m  Building the tcltls-rebuild package...\e[97m"
+echo ""
+dpkg-buildpackage -b 2>&1
+echo ""
+
+echo -e "\e[94m  Installing the tcltls-rebuild package...\e[97m"
+echo ""
+sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/tcltls-rebuild/tcl-tls_1.7.22-2+fa1_*.deb 2>&1
+echo ""
 
 ### STOP ANY RUNNING SERVICES
 
@@ -163,14 +198,14 @@ fi
 # Execute build script.
 DIST="bookworm"
 case ${RECEIVER_OS_CODE_NAME} in
-    stretch | xenial)
-        $DIST="strech"
+    buster)
+        DIST="buster"
         ;;
-    buster | bionic | focal)
-        $DIST="buster"
+    bullseye)
+        DIST="bullseye"
         ;;
-    bookworm | jammy | nobel)
-        $DIST="bookworm"
+    bookworm)
+        DIST="bookworm"
         ;;
 esac
 
