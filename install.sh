@@ -44,6 +44,7 @@ ENABLE_LOGGING="false"
 export RECEIVER_ROOT_DIRECTORY="${PWD}"
 export RECEIVER_BASH_DIRECTORY="${PWD}/bash"
 export RECEIVER_BUILD_DIRECTORY="${PWD}/build"
+export RECEIVER_OS_CODE_NAME=`lsb_release -c -s`
 export RECEIVER_OS_DISTRIBUTION=`. /etc/os-release; echo ${ID/*, /}`
 export RECEIVER_OS_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 

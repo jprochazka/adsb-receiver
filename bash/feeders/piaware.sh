@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2015-2024, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -94,19 +94,25 @@ echo -e "\e[95m  Installing packages needed to fulfill dependencies for FlightAw
 echo ""
 
 CheckPackage build-essential
+CheckPackage git
+CheckPackage devscripts
 CheckPackage debhelper
 CheckPackage tcl8.6-dev
 CheckPackage autoconf
 CheckPackage python3-dev
 CheckPackage python3-venv
-CheckPackage virtualenv
-CheckPackage dh-systemd
+CheckPackage python3-setuptools
 CheckPackage zlib1g-dev
-CheckPackage tclx8.4
-CheckPackage tcllib
-CheckPackage tcl-tls
-CheckPackage itcl3
-CheckPackage net-tools
+CheckPackage openssl
+CheckPackage libboost-system-dev
+CheckPackage libboost-program-options-dev
+CheckPackage libboost-regex-dev
+CheckPackage libboost-filesystem-dev
+CheckPackage patchelf
+CheckPackage python3-wheel
+CheckPackage python3-build
+CheckPackage python3-pip
+
 
 ### STOP ANY RUNNING SERVICES
 
@@ -150,64 +156,74 @@ if [[ ! ${PWD} = ${RECEIVER_BUILD_DIRECTORY}/piaware_builder ]] ; then
     cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder 2>&1
 fi
 
-# Dummy test for consistency with other feeder install scripts.
-if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
-    # Execute build script.
-    echo -e "\e[94m  Executing the FlightAware PiAware client build script...\e[97m"
-    echo ""
-    ./sensible-build.sh jessie
-    echo ""
+# Execute build script.
+DIST="bookworm"
+case ${RECEIVER_OS_CODE_NAME} in
+    stretch | xenial)
+        $DIST="strech"
+        ;;
+    buster | bionic | focal)
+        $DIST="buster"
+        ;;
+    bookworm | jammy | nobel)
+        $DIST="bookworm"
+        ;;
+esac
 
-    # Change to build script directory.
-    echo -e "\e[94m  Entering the FlightAware PiAware client build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-jessie 2>&1
+echo -e "\e[94m  Executing the FlightAware PiAware client build script...\e[97m"
+echo ""
+./sensible-build.sh ${DIST}
+echo ""
 
-    # Build binary package.
-    echo -e "\e[94m  Building the FlightAware PiAware client package...\e[97m"
-    echo ""
-    dpkg-buildpackage -b 2>&1
-    echo ""
+# Change to build script directory.
+echo -e "\e[94m  Entering the FlightAware PiAware client build directory...\e[97m"
+cd ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/package-${DIST} 2>&1
 
-    # Install binary package.
-    echo -e "\e[94m  Installing the FlightAware PiAware client package...\e[97m"
-    echo ""
-    sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.deb 2>&1
-    echo ""
+# Build binary package.
+echo -e "\e[94m  Building the FlightAware PiAware client package...\e[97m"
+echo ""
+dpkg-buildpackage -b 2>&1
+echo ""
 
-    # Check that the component package was installed successfully.
-    echo -e "\e[94m  Checking that the FlightAware PiAware client package was installed properly...\e[97m"
+# Install binary package.
+echo -e "\e[94m  Installing the FlightAware PiAware client package...\e[97m"
+echo ""
+sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/piaware_*.deb 2>&1
+echo ""
 
-    if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-        # If the component package could not be installed halt setup.
+# Check that the component package was installed successfully.
+echo -e "\e[94m  Checking that the FlightAware PiAware client package was installed properly...\e[97m"
+
+if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
+    # If the component package could not be installed halt setup.
+    echo ""
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
+    echo -e "  SETUP HAS BEEN TERMINATED!"
+    echo ""
+    echo -e "\e[93mThe package \"piaware\" could not be installed.\e[39m"
+    echo ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
+    echo -e "\e[92m  FlightAware PiAware client setup halted.\e[39m"
+    echo ""
+    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
+        read -p "Press enter to continue..." CONTINUE
+    fi
+    exit 1
+else
+    # Create binary package archive directory.
+    if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+        echo -e "\e[94m  Creating package archive directory...\e[97m"
         echo ""
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-        echo -e "  SETUP HAS BEEN TERMINATED!"
-        echo ""
-        echo -e "\e[93mThe package \"piaware\" could not be installed.\e[39m"
-        echo ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  FlightAware PiAware client setup halted.\e[39m"
-        echo ""
-        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-            read -p "Press enter to continue..." CONTINUE
-        fi
-        exit 1
-    else
-        # Create binary package archive directory.
-        if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
-            echo -e "\e[94m  Creating package archive directory...\e[97m"
-            echo ""
-            mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-            echo ""
-        fi
-
-        # Archive binary package.
-        echo -e "\e[94m  Moving the FlightAware PiAware client binary package into the archive directory...\e[97m"
-        echo ""
-        cp -vf ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive/ 2>&1
+        mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
         echo ""
     fi
+
+    # Archive binary package.
+    echo -e "\e[94m  Moving the FlightAware PiAware client binary package into the archive directory...\e[97m"
+    echo ""
+    cp -vf ${RECEIVER_BUILD_DIRECTORY}/piaware_builder/*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive/ 2>&1
+    echo ""
 fi
 
 ## COMPONENT POST INSTALL ACTIONS

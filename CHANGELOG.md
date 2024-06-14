@@ -2,6 +2,11 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.0 *(in development)*
+
+* Removed option to install dump1090-mutability.
+* The dump1090-fa and piaware_builder install process has been updated.
+
 ## v2.7.2 *(prerelease)*
 
 * Updated current PiAware and dump1090-fa versions to 3.9.3. 

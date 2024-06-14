@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -54,15 +54,6 @@ export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project v${PROJECT_VERSION} In
 ## FUNCTIONS
 
 ## DECODERS
-
-# Execute the dump1090-mutability setup script.
-function InstallDump1090Mutability() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-mutability.sh
-    ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-mutability.sh
-    if [[ $? -ne 0 ]] ; then
-        exit 1
-    fi
-}
 
 # Execute the dump1090-fa setup script.
 function InstallDump1090Fa() {
@@ -201,32 +192,6 @@ function InstallDuckDns() {
 
 ## Decoders
 
-# Check if the dump1090-mutability package is installed.
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    DUMP1090_FORK="mutability"
-    DUMP1090_IS_INSTALLED="true"
-    # Skip over this dialog if this installation is set to be automated.
-    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        # Ask if dump1090-mutability should be reinstalled.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-mutability Installed" --defaultno --yesno "The dump1090-mutability package appears to be installed on your device, however...\n\nThe dump1090-mutability v1.15~dev source code is regularly updated without a change made to the version numbering.\n\nTo ensure you are running the latest version of dump1090-mutability you may opt to rebuild and reinstall this package.\n\nDownload, build, and reinstall this package?" 17 65
-        case $? in
-            0)
-                DUMP1090_DO_UPGRADE="true"
-                ;;
-            1)
-                DUMP1090_DO_UPGRADE="false"
-                ;;
-        esac
-    else
-        # Refer to the installation configuration to decide if dump1090-mutability is to be reinstalled or not.
-        if [[ "${DUMP1090_UPGRADE}" = "true" ]] ; then
-            DUMP1090_DO_UPGRADE="true"
-        else
-            DUMP1090_DO_UPGRADE="false"
-        fi
-    fi
-fi
-
 # Check if the dump1090-fa package is installed.
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     DUMP1090_FORK="fa"
@@ -286,12 +251,8 @@ fi
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
     # If this is not an automated installation ask the user which one to install.
     if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 3 "dump1090-mutability" "(Mutability)" ON "dump1090-fa" "(FlightAware)" OFF "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
+        DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-fa" "(FlightAware)" ON "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
         case ${DUMP1090_OPTION} in
-            "dump1090-mutability")
-                DUMP1090_FORK="mutability"
-                DUMP1090_DO_INSTALL="true"
-                ;;
             "dump1090-fa")
                 DUMP1090_FORK="fa"
                 DUMP1090_DO_INSTALL="true"
@@ -306,7 +267,7 @@ if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
         esac
     else
         # Refer to the installation configuration to check if a dump1090 fork has been specified
-        if [[ "${DUMP1090_FORK}" = "mutability" ]] || [[ "${DUMP1090_FORK}" = "fa" ]] || [[ "${DUMP1090_FORK}" = "hptoa" ]] ; then
+        if [[ "${DUMP1090_FORK}" = "fa" ]] || [[ "${DUMP1090_FORK}" = "hptoa" ]] ; then
             DUMP1090_DO_INSTALL="true"
         else
             DUMP1090_DO_INSTALL="false"
@@ -618,7 +579,7 @@ fi
 
 if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
     # Ask if the web portal should be installed.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090-mutability installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal?" 14 78
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Install The ADS-B Receiver Project Web Portal" --yesno "The ADS-B Receiver Project Web Portal is a lightweight web interface for dump-1090  installations.\n\nCurrent features include the following:\n  Unified navigation between all web pages.\n  System and dump1090 performance graphs.\n\nWould you like to install the ADS-B Receiver Project web portal?" 14 78
     case $? in
         0)
             WEBPORTAL_DO_INSTALL="true"
@@ -745,9 +706,6 @@ else
     # dump1090
     if [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] ; then
         case ${DUMP1090_FORK} in
-            "mutability")
-                CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability (reinstall)"
-                ;;
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa (upgrade)"
                 ;;
@@ -757,9 +715,6 @@ else
         esac
     elif [[ "${DUMP1090_DO_INSTALL}" = "true" ]] ; then
         case ${DUMP1090_FORK} in
-            "mutability")
-                CONFIRMATION="${CONFIRMATION}\n  * dump1090-mutability"
-                ;;
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa"
                 ;;
@@ -876,9 +831,6 @@ fi
 
 if [[ "${DUMP1090_DO_INSTALL}" = "true" ]] || [[ "${DUMP1090_DO_UPGRADE}" = "true" ]] ; then
     case ${DUMP1090_FORK} in
-        "mutability")
-            InstallDump1090Mutability
-            ;;
         "fa")
              InstallDump1090Fa
              ;;

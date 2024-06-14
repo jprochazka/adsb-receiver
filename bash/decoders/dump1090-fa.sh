@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -81,16 +81,19 @@ fi
 
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
+
+CheckPackage build-essential
+CheckPackage fakeroot
 CheckPackage debhelper
 CheckPackage librtlsdr-dev
-CheckPackage libusb-1.0-0-dev
 CheckPackage pkg-config
-CheckPackage dh-systemd
-CheckPackage libncurses5-dev
-CheckPackage libbladerf1
+CheckPackage libncurses-dev
 CheckPackage libbladerf-dev
-CheckPackage adduser
-CheckPackage lighttpd
+CheckPackage libhackrf-dev
+CheckPackage liblimesuite-dev
+CheckPackage libsoapysdr-dev
+
+echo ""
 
 ## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
 
@@ -133,6 +136,7 @@ echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
 cd ${RECEIVER_BUILD_DIRECTORY}/dump1090-fa 2>&1
 echo -e "\e[94m  Installing the dump1090-fa package...\e[97m"
 echo ""
+echo "dump1090-fa_${DUMP1090_FA_VERSION}_*.deb"
 sudo dpkg -i dump1090-fa_${DUMP1090_FA_VERSION}_*.deb
 
 # Check that the package was installed.
