@@ -92,6 +92,7 @@ CheckPackage libbladerf-dev
 CheckPackage libhackrf-dev
 CheckPackage liblimesuite-dev
 CheckPackage libsoapysdr-dev
+CheckPackage lighttpd
 
 echo ""
 

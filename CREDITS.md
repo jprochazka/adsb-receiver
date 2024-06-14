@@ -50,7 +50,7 @@ hard work and dedication this project would not have been possible.
 * Plane Finder ADS-B Client:  https://planefinder.net
 * Flightradar24 Client:       https://www.flightradar24.com
 * Dump1090-Tools:             https://github.com/mutability/dump1090-tools
-* AboveTustin                 https://github.com/kevinbrandon/abovetustin
+* AboveTustin                 https://github.com/kevinabrandon/AboveTustin
 * Beast-Splitter              https://github.com/flightaware/beast-splitter
 * bootpag                     http://botmonster.com/jquery-bootpag
 * Bootstrap:                  http://getbootstrap.com/

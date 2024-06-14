@@ -112,7 +112,11 @@ CheckPackage patchelf
 CheckPackage python3-wheel
 CheckPackage python3-build
 CheckPackage python3-pip
-
+CheckPackage net-tools
+CheckPackage tclx8.4
+CheckPackage tcllib
+CheckPackage tcl-tls
+CheckPackage itcl3
 
 ### STOP ANY RUNNING SERVICES
 
