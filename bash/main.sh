@@ -74,9 +74,9 @@ function InstallDump1090Hptoa() {
 }
 
 # Execute the dump978 setup script.
-function InstallDump978() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump978.sh
-    ${RECEIVER_BASH_DIRECTORY}/decoders/dump978.sh
+function InstallDump978Fa() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump978-fa.sh
+    ${RECEIVER_BASH_DIRECTORY}/decoders/dump978-fa.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
@@ -197,7 +197,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     DUMP1090_FORK="fa"
     DUMP1090_IS_INSTALLED="true"
     # Check if a newer version can be installed.
-    if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]] ; then
+    if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${DUMP1090_FA_VERSION}") -eq 0 ]] ; then
         # Skip over this dialog if this installation is set to be automated.
         if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
             whiptail  --backtitle "RECEIVER_PROJECT_TITLE" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
@@ -282,27 +282,30 @@ if [[ "${DUMP1090_FORK}" = "fa" ]] ; then
     fi
 fi
 
-# Check if the dump978 binaries exist.
-if [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2text" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2esnt" ]] && [[ -f "${RECEIVER_BUILD_DIRECTORY}/dump978/uat2json" ]] ; then
-    # Dump978 appears to have been built already.
+# Check if the dump978-fa package is installed.
+if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+    DUMP978_FORK="fa"
     DUMP978_IS_INSTALLED="true"
-    # Prompt user to confirm if a rebuild is required.
-    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 Installed" --defaultno --yesno "Dump978 appears to be installed on your device, however...\n\nThe dump978 source code may have been updated since it was built last. To ensure you are running the latest version of dump978 you may opt to rebuild the binaries making up dump978.\n\nDownload and rebuild the dump978 binaries?" 14 65
-        case $? in
-            0)
-                DUMP978_DO_UPGRADE="true"
-                ;;
-            1)
-                DUMP978_DO_UPGRADE="false"
-                ;;
-        esac
-    else
-        # Refer to the installation configuration to decide if dump978 is to be rebuilt from source or not.
-        if [[ "${DUMP978_UPGRADE}" = "true" ]] ; then
-            DUMP978_DO_UPGRADE="true"
+    # Check if a newer version can be installed.
+    if [[ $(sudo dpkg -s dump978-fa 2>/dev/null | grep -c "Version: ${DUMP978_FA_VERSION}") -eq 0 ]] ; then
+        # Skip over this dialog if this installation is set to be automated.
+        if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
+            whiptail  --backtitle "RECEIVER_PROJECT_TITLE" --title "Dump978-fa Upgrade Available" --defaultno --yesno "An updated version of dump978-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
+            case $? in
+                0)
+                    DUMP978_DO_UPGRADE="true"
+                    ;;
+                1)
+                    DUMP978_DO_UPGRADE="false"
+                    ;;
+            esac
         else
-            DUMP978_DO_UPGRADE="false"
+            # If a newer version of dump978-fa is available refer to the installation configuration to decide if it should be upgraded or not.
+            if [[ "${DUMP978_UPGRADE}" = "true" ]] ; then
+                DUMP978_DO_UPGRADE="true"
+            else
+                DUMP978_DO_UPGRADE="false"
+            fi
         fi
     fi
 else
@@ -310,7 +313,7 @@ else
     DUMP978_IS_INSTALLED="false"
     # Prompt user to confirm if installation is required.
     if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 Not Installed" --defaultno --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.\n\nDo you wish to install dump978?" 10 65
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978-fa Not Installed" --defaultno --yesno "Dump978 is an experimental demodulator/decoder for 978MHz UAT signals. These scripts can setup dump978 for you. However keep in mind a second RTL-SDR device will be required to feed data to it.\n\nDo you wish to install dump978?" 10 65
         case $? in
             0)
                 DUMP978_DO_INSTALL="true"
@@ -326,7 +329,6 @@ else
         else
             DUMP978_DO_INSTALL="false"
         fi
-
     fi
 fi
 
@@ -739,7 +741,7 @@ else
     fi
 
     # If PiAware is required add it to the list.
-    if [[ "${DUMP1090_FORK}" = "fa" ]] ; then
+    if [[ "${DUMP1090_FORK}" = "fa" && $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 || "${PIAWARE_INSTALL}" = "true" ]] ; then
         CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
     fi
 
@@ -841,7 +843,7 @@ if [[ "${DUMP1090_DO_INSTALL}" = "true" ]] || [[ "${DUMP1090_DO_UPGRADE}" = "tru
 fi
 
 if [[ "${DUMP978_DO_INSTALL}" = "true" ]] || [[ "${DUMP978_DO_UPGRADE}" = "true" ]] ; then
-    InstallDump978
+    InstallDump978Fa
 fi
 
 if [[ "${RTLSDROGN_DO_INSTALL}" = "true" ]] || [[ "${RTLSDROGN_DO_UPGRADE}" = "true" ]] ; then

@@ -6,6 +6,9 @@ The following is a history of the changes made to this project.
 
 * Removed option to install dump1090-mutability.
 * The dump1090-fa and piaware_builder install process has been updated.
+* The dump978 has been rewritten in order to use FlightAwares version of dump978.
+* Version check for dump1090-fa has been fixed.
+* Fix bug where PiAware was installed every run even if already installed.
 
 ## v2.7.2 *(prerelease)*
 
