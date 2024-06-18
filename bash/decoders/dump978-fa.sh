@@ -38,28 +38,24 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ### BEGIN SETUP
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    clear
-    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
-fi
+clear
+echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 echo ""
 echo -e "\e[92m  Setting up dump978-fa..."
 echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978-fa Setup" --yesno "This is the FlightAware 978MHz UAT decoder. It is a reimplementation in C++, loosely based on the demodulator from https://github.com/mutability/dump978.\n\n  https://github.com/flightaware/dump978\n\nContinue setup by installing dump978-fa?" 14 78
-    if [[ $? -eq 1 ]] ; then
-        # Setup has been halted by the user.
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  Setup has been halted at the request of the user."
-        echo ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  Dump978-fa setup halted.\e[39m"
-        echo ""
-        read -p "Press enter to continue..." CONTINUE
-        exit 1
-    fi
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978-fa Setup" --yesno "This is the FlightAware 978MHz UAT decoder. It is a reimplementation in C++, loosely based on the demodulator from https://github.com/mutability/dump978.\n\n  https://github.com/flightaware/dump978\n\nContinue setup by installing dump978-fa?" 14 78
+if [[ $? -eq 1 ]] ; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
+    echo ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
+    echo -e "\e[92m  Dump978-fa setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
 fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -74,10 +70,10 @@ CheckPackage libboost-regex-dev
 CheckPackage libboost-filesystem-dev
 CheckPackage libsoapysdr-dev
 CheckPackage soapysdr-module-rtlsdr
+echo ""
 
 ## DOWNLOAD OR UPDATE THE DUMP978-FA SOURCE
 
-echo ""
 echo -e "\e[95m  Preparing the dump978-fa Git repository...\e[97m"
 echo ""
 if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump978-fa/dump978" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump978-fa/dump978/.git" ]] ; then
@@ -99,16 +95,14 @@ else
     echo ""
     git clone https://github.com/flightaware/dump978.git
 fi
+echo ""
 
 ## BUILD AND INSTALL THE DUMP978-FA PACKAGE
 
-echo ""
 echo -e "\e[95m  Building and installing the dump978-fa package...\e[97m"
 echo ""
-if [[ ! "${PWD}" = "${RECEIVER_BUILD_DIRECTORY}/dump978-fa/dump978" ]] ; then
-    echo -e "\e[94m  Entering the dump978-fa git repository directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/dump978-fa/dump978 2>&1
-fi
+echo -e "\e[94m  Entering the dump978-fa git repository directory...\e[97m"
+cd ${RECEIVER_BUILD_DIRECTORY}/dump978-fa/dump978 2>&1
 echo -e "\e[94m  Building the dump978-fa package...\e[97m"
 echo ""
 dpkg-buildpackage -b
@@ -166,19 +160,17 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     if grep -wq "driver=rtlsdr,serial=" /etc/default/dump978-fa; then
         echo -e "\e[94m  This dump978-fa installation appears to have been configured...\e[97m"
     else
-        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-            whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR Dongle Assignments" --msgbox "It appears one of the dump1090 packages has been installed on this device. In order to run dump978 in tandem with dump1090 you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
-            # Ask the user which USB device is to be used for dump1090.
-            DUMP1090_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the serial number for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z "${DUMP1090_DEVICE_SERIAL}" ]] ; do
-                DUMP1090_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the serial number for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            done
-            # Ask the user which USB device is to be use for dump978.
-            DUMP978_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the serial number for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            while [[ -z "${DUMP978_DEVICE_SERIAL}" ]] ; do
-                DUMP978_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the serial number for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
-            done
-        fi
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR Dongle Assignments" --msgbox "It appears one of the dump1090 packages has been installed on this device. In order to run dump978 in tandem with dump1090 you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." 12 78
+        # Ask the user which USB device is to be used for dump1090.
+        DUMP1090_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the serial number for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DUMP1090_DEVICE_SERIAL}" ]] ; do
+            DUMP1090_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the serial number for your dump1090 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        done
+        # Ask the user which USB device is to be use for dump978.
+        DUMP978_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle" --nocancel --inputbox "\nEnter the serial number for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        while [[ -z "${DUMP978_DEVICE_SERIAL}" ]] ; do
+            DUMP978_DEVICE_SERIAL=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978 RTL-SDR Dongle (REQUIRED)" --nocancel --inputbox "\nEnter the serial number for your dump978 RTL-SDR dongle." 8 78 3>&1 1>&2 2>&3)
+        done
 
         # Assign the specified RTL-SDR dongle to dump978-fa.
         echo -e "\e[94m  Assigning RTL-SDR dongle \"${DUMP978_DEVICE_SERIAL}\" to dump978-fa...\e[97m"
@@ -206,8 +198,6 @@ echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Dump978-fa setup is complete.\e[39m"
 echo ""
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    read -p "Press enter to continue..." CONTINUE
-fi
+read -p "Press enter to continue..." CONTINUE
 
 exit 0
