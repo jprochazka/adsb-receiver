@@ -44,12 +44,11 @@ I would also like to thank the developers and contributors to the following proj
 hard work and dedication this project would not have been possible.
 
 * Dump1090 (fa):              https://github.com/flightaware/dump1090
-* Dump978:                    https://github.com/mutability/dump978
+* Dump978 (fa):               https://github.com/flightaware/dump978
 * FlightAware's PiAware:      http://flightaware.com
 * Plane Finder ADS-B Client:  https://planefinder.net
 * Flightradar24 Client:       https://www.flightradar24.com
 * Dump1090-Tools:             https://github.com/mutability/dump1090-tools
-* AboveTustin                 https://github.com/kevinabrandon/AboveTustin
 * Beast-Splitter              https://github.com/flightaware/beast-splitter
 * bootpag                     http://botmonster.com/jquery-bootpag
 * Bootstrap:                  http://getbootstrap.com/

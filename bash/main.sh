@@ -142,15 +142,6 @@ function InstallWebPortal() {
 
 ## Extras
 
-# Execute the AboveTustin setup script.
-function InstallAboveTustin() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/extras/abovetustin.sh
-    ${RECEIVER_BASH_DIRECTORY}/extras/abovetustin.sh
-    if [[ $? -ne 0 ]] ; then
-        exit 1
-    fi
-}
-
 # Execute the beast-splitter setup script.
 function InstallBeastSplitter() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/extras/beeastsplitter.sh
@@ -492,33 +483,6 @@ fi
 declare array EXTRAS_LIST
 touch ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
 
-# Check if the AboveTustin repository has been cloned.
-if [[ -d "${RECEIVER_BUILD_DIRECTORY}/AboveTustin" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/AboveTustin/.git" ]] ; then
-    # The AboveTustin repository has been cloned to this device.
-    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
-        EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'AboveTustin (reinstall)' '' OFF)
-    else
-        # Check the installation configuration file to see if AboveTustin is to be upgraded.
-        if [[ -z "${ABOVETUSTIN_INSTALL}" ]] && [[ "${ABOVETUSTIN_INSTALL}" = "true" ]] && [[ -z "${ABOVETUSTIN_UPGRADE}" ]] && [[ "${ABOVETUSTIN_UPGRADE}" = "true" ]] ; then
-            # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-            echo "AboveTustin (reinstall)" >> ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
-        fi
-    fi
-else
-    # The AboveTustin repository has not been cloned to this device.
-    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        # Add this choice to the EXTRAS_LIST array to be used by the whiptail menu.
-        EXTRAS_LIST=("${EXTRAS_LIST[@]}" 'AboveTustin' '' OFF)
-    else
-        # Check the installation configuration file to see if AboveTustin is to be installed.
-        if [[ -z "${ABOVETUSTIN_INSTALL}" ]] && [[ "${ABOVETUSTIN_INSTALL}" = "true" ]] ; then
-            # Since the menu will be skipped add this choice directly to the EXTRAS_CHOICES file.
-            echo "AboveTustin" >> ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
-        fi
-    fi
-fi
-
 # Check if the beast-splitter package is installed.
 if [[ $(dpkg-query -W -f='${STATUS}' beast-splitter 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
     # The beast-splitter package appears to not be installed.
@@ -672,12 +636,6 @@ else
         while read EXTRAS_CHOICE
         do
             case ${EXTRAS_CHOICE} in
-                "AboveTustin")
-                    CONFIRMATION="${CONFIRMATION}\n  * AboveTustin"
-                    ;;
-                "AboveTustin (reinstall)")
-                    CONFIRMATION="${CONFIRMATION}\n  * AboveTustin (reinstall)"
-                    ;;
                 "beast-splitter")
                     CONFIRMATION="${CONFIRMATION}\n  * beast-splitter"
                     ;;
@@ -794,7 +752,6 @@ fi
 # Moved execution of functions outside of while loop.
 # Inside the while loop the installation scripts are not stopping at reads.
 
-RUN_ABOVETUSTIN_SCRIPT="false"
 RUN_BEASTSPLITTER_SCRIPT="false"
 RUN_DUCKDNS_SCRIPT="false"
 
@@ -802,9 +759,6 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
     while read EXTRAS_CHOICE
     do
         case ${EXTRAS_CHOICE} in
-            "AboveTustin"|"AboveTustin (reinstall)")
-                RUN_ABOVETUSTIN_SCRIPT="true"
-                ;;
             "beast-splitter"|"beast-splitter (reinstall)")
                 RUN_BEASTSPLITTER_SCRIPT="true"
                 ;;
@@ -813,10 +767,6 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
                 ;;
         esac
     done < ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
-fi
-
-if [[ "${RUN_ABOVETUSTIN_SCRIPT}" = "true" ]] ; then
-    InstallAboveTustin
 fi
 
 if [[ "${RUN_BEASTSPLITTER_SCRIPT}" = "true" ]] ; then
