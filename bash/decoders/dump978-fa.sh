@@ -77,6 +77,7 @@ CheckPackage soapysdr-module-rtlsdr
 
 ## DOWNLOAD OR UPDATE THE DUMP978-FA SOURCE
 
+echo ""
 echo -e "\e[95m  Preparing the dump978-fa Git repository...\e[97m"
 echo ""
 if [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump978-fa/dump978" ]] && [[ -d "${RECEIVER_BUILD_DIRECTORY}/dump978-fa/dump978/.git" ]] ; then

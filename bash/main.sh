@@ -64,28 +64,10 @@ function InstallDump1090Fa() {
     fi
 }
 
-# Execute the dump1090-hptoa setup script.
-function InstallDump1090Hptoa() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-hptoa.sh
-    ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-hptoa.sh
-    if [[ $? -ne 0 ]] ; then
-        exit 1
-    fi
-}
-
 # Execute the dump978 setup script.
 function InstallDump978Fa() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump978-fa.sh
     ${RECEIVER_BASH_DIRECTORY}/decoders/dump978-fa.sh
-    if [[ $? -ne 0 ]] ; then
-        exit 1
-    fi
-}
-
-# Execute the RTL-SDR OGN setup script.
-function InstallRtlsdrOgn() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/rtlsdr-ogn.sh
-    ${RECEIVER_BASH_DIRECTORY}/decoders/rtlsdr-ogn.sh
     if [[ $? -ne 0 ]] ; then
         exit 1
     fi
@@ -220,45 +202,14 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     fi
 fi
 
-# Check if dump1090-hptoa is being used.
-if [ -f  ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/dump1090 ] && [ -f ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/faup1090 ] && [ -f ${RECEIVER_BUILD_DIRECTORY}/dump1090-hptoa/dump1090-hptoa/build/view1090 ] && [ -f /etc/init.d/dump1090 ] ; then
-    DUMP1090_FORK="hptoa"
-    DUMP1090_IS_INSTALLED="true"
-    # Skip over this dialog if this installation is set to be automated.
-    if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        # Ask if dump1090-hptoa should be reinstalled.
-        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-hptoa Installed" --defaultno --yesno "The dump1090-hptoa package appears to be installed on your device, however...\n\nThe dump1090-hptoa source code may have been updated recently.\n\nTo ensure you are running the latest version of dump1090-hptoa you may opt to rebuild these binaries.\n\nDownload and rebuild dump1090-hptoa from source?" 17 65
-
-        case $? in
-            0)
-                DUMP1090_DO_UPGRADE="true"
-                ;;
-            1)
-                DUMP1090_DO_UPGRADE="false"
-                ;;
-        esac
-    else
-        # Refer to the installation configuration to decide if dump1090-hptoa is to be reinstalled or not.
-        if [[ "${DUMP1090_UPGRADE}" = "true" ]] ; then
-            DUMP1090_DO_UPGRADE="true"
-        else
-            DUMP1090_DO_UPGRADE="false"
-        fi
-    fi
-fi
-
 # If no dump1090 fork is installed then attempt to install one.
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
     # If this is not an automated installation ask the user which one to install.
     if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-        DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-fa" "(FlightAware)" ON "dump1090-hptoa" "(OpenSky Network)" OFF 3>&1 1>&2 2>&3)
+        DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-fa" "(FlightAware)" ON 3>&1 1>&2 2>&3)
         case ${DUMP1090_OPTION} in
             "dump1090-fa")
                 DUMP1090_FORK="fa"
-                DUMP1090_DO_INSTALL="true"
-                ;;
-             "dump1090-hptoa")
-                DUMP1090_FORK="hptoa"
                 DUMP1090_DO_INSTALL="true"
                 ;;
             *)
@@ -267,7 +218,7 @@ if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
         esac
     else
         # Refer to the installation configuration to check if a dump1090 fork has been specified
-        if [[ "${DUMP1090_FORK}" = "fa" ]] || [[ "${DUMP1090_FORK}" = "hptoa" ]] ; then
+        if [[ "${DUMP1090_FORK}" = "fa" ]] ; then
             DUMP1090_DO_INSTALL="true"
         else
             DUMP1090_DO_INSTALL="false"
@@ -330,63 +281,6 @@ else
             DUMP978_DO_INSTALL="false"
         fi
     fi
-fi
-
-# Check if the RTL-SDR OGN binaries exist on this device.
-if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
-    RTLSDROGN_IS_INSTALLED="true"
-    # Check if a newer version of the binaries are available.
-    if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/rtlsdr-ogn/rtlsdr-ogn-${RTLSDROGN_VERSION}" ]] ; then
-        # Prompt user to confirm if a rebuild is required.
-        if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-            whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Installed" --defaultno --yesno "A newer version of the RTL-SDR OGN binaries is available.\n\nWould you like to setup the newer binaries on this device?" 14 65
-            case $? in
-                0)
-                    RTLSDROGN_DO_UPGRADE="true"
-                    ;;
-                1)
-                    RTLSDROGN_DO_UPGRADE="false"
-                    ;;
-            esac
-        else
-            # Refer to the installation configuration to decide if RTL-SDR OGN is to be rebuilt from source or not.
-            if [[ "${RTLSDROGN_UPGRADE}" = "true" ]] ; then
-                RTLSDROGN_DO_UPGRADE="true"
-            else
-                RTLSDROGN_DO_UPGRADE="false"
-            fi
-        fi
-    fi
-else
-    # The RTL-SDR OGN binaries do not appear to exist on this device.
-
-    # Support for Open Glider Network has been removed until the script has been rewritten to
-    # utilize the updated software they supply in their GItHub repositories.
-    #
-    #   https://github.com/glidernet
-
-    RTLSDROGN_IS_INSTALLED="false"
-    RTLSDROGN_DO_INSTALL="false"
-
-    ## Prompt user to confirm if installation is required.
-    #if [[ ! "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] ; then
-    #    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "RTL-SDR OGN Not Installed" --defaultno --yesno "RTL-SDR OGN is a combined decoder and feeder for the Open Glider Network which focuses on tracking gilders and other GA aircraft equipped with FLARM, FLARM-compatible devices or OGN tracker.\n\nRTL-SDR OGN will require an additional RTL-SDR dongle to run.\nFLARM is most prevalent within Europe, but new receivers are welcome at any location.\n\nDo you wish to setup RTL-SDR OGN?" 10 65
-    #    case $? in
-    #        0)
-    #            RTLSDROGN_DO_INSTALL="true"
-    #            ;;
-    #        1)
-    #            RTLSDROGN_DO_INSTALL="false"
-    #            ;;
-    #    esac
-    #else
-    #    # Refer to the installation configuration to decide if RTL-SDR OGN is to be installed.
-    #    if [[ "${RTLSDROGN_INSTALL}" = "true" ]] ; then
-    #        RTLSDROGN_DO_INSTALL="true"
-    #    else
-    #        RTLSDROGN_DO_INSTALL="false"
-    #    fi
-    #fi
 fi
 
 ## Feeder Selection Menu
@@ -694,7 +588,7 @@ fi
 declare CONFIRMATION
 
 # Check if anything is to be done before moving on.
-if [[ "${DUMP1090_DO_INSTALL}" = "false" ]] && [[ "${DUMP1090_DO_UPGRADE}" = "false" ]] && [[ "${DUMP978_DO_INSTALL}" = "false" ]] && [[ "${DUMP978_DO_UPGRADE}" = "false" ]] && [[ "${RTLSDROGN_DO_INSTALL}" = "false" ]] && [[ "${RTLSDROGN_DO_UPGRADE}" = "false" ]] && [[ "${WEBPORTAL_DO_INSTALL}" = "false" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
+if [[ "${DUMP1090_DO_INSTALL}" = "false" ]] && [[ "${DUMP1090_DO_UPGRADE}" = "false" ]] && [[ "${DUMP978_DO_INSTALL}" = "false" ]] && [[ "${DUMP978_DO_UPGRADE}" = "false" ]] && [[ "${WEBPORTAL_DO_INSTALL}" = "false" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]] && [[ ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]] ; then
     # Nothing was chosen to be installed.
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Nothing to be done" --msgbox "Nothing has been selected to be installed so the script will exit now." 10 65
     echo -e "\e[31m"
@@ -711,17 +605,11 @@ else
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa (upgrade)"
                 ;;
-            "hptoa")
-                CONFIRMATION="${CONFIRMATION}\n  * dump1090-hptoa (reinstall)"
-                ;;
         esac
     elif [[ "${DUMP1090_DO_INSTALL}" = "true" ]] ; then
         case ${DUMP1090_FORK} in
             "fa")
                 CONFIRMATION="${CONFIRMATION}\n  * dump1090-fa"
-                ;;
-            "hptoa")
-                CONFIRMATION="${CONFIRMATION}\n  * dump1090-hptoa"
                 ;;
         esac
     fi
@@ -731,13 +619,6 @@ else
         CONFIRMATION="${CONFIRMATION}\n  * dump978 (rebuild)"
     elif [[ "${DUMP978_DO_INSTALL}" = "true" ]] ; then
         CONFIRMATION="${CONFIRMATION}\n  * dump978"
-    fi
-
-    # RTL-SDR OGN
-    if [[ "${RTLSDROGN_DO_UPGRADE}" = "true" ]] ; then
-        CONFIRMATION="${CONFIRMATION}\n  * RTL-SDR OGN (upgrade)"
-    elif [[ "${RTLSDROGN_DO_INSTALL}" = "true" ]] ; then
-        CONFIRMATION="${CONFIRMATION}\n  * RTL-SDR OGN"
     fi
 
     # If PiAware is required add it to the list.
@@ -836,18 +717,11 @@ if [[ "${DUMP1090_DO_INSTALL}" = "true" ]] || [[ "${DUMP1090_DO_UPGRADE}" = "tru
         "fa")
              InstallDump1090Fa
              ;;
-        "hptoa")
-             InstallDump1090Hptoa
-             ;;
     esac
 fi
 
 if [[ "${DUMP978_DO_INSTALL}" = "true" ]] || [[ "${DUMP978_DO_UPGRADE}" = "true" ]] ; then
     InstallDump978Fa
-fi
-
-if [[ "${RTLSDROGN_DO_INSTALL}" = "true" ]] || [[ "${RTLSDROGN_DO_UPGRADE}" = "true" ]] ; then
-    InstallRtlsdrOgn
 fi
 
 ## Feeders

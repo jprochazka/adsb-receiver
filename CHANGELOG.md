@@ -4,9 +4,11 @@ The following is a history of the changes made to this project.
 
 ## v2.8.0 *(in development)*
 
-* Removed option to install dump1090-mutability.
 * The dump1090-fa and piaware_builder install process has been updated.
 * The dump978 has been rewritten in order to use FlightAwares version of dump978.
+* Removed the option to install dump1090-mutability.
+* Removed the option to install dump1090 HPTOA.
+* Removed incomplete RTL-SDR OGN setup scripting.
 * Version check for dump1090-fa has been fixed.
 * Fix bug where PiAware was installed every run even if already installed.
 
