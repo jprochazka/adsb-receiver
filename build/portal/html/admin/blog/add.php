@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015-2024 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -89,29 +89,18 @@
                 </div>
                 <input type="submit" class="btn btn-default" value="Publish">
             </form>
-            <script src='//cdn.tinymce.com/4/tinymce.min.js'></script>
+            <script src='https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js'></script>
             <script>
-                tinymce.init({
-                    selector: 'textarea',
-                    height: 500,
-                    plugins: [
-                        'advlist autolink lists link image charmap print preview anchor',
-                        'searchreplace visualblocks code fullscreen',
-                        'insertdatetime media table contextmenu paste code'
-                    ],
-                    toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image moreButton',
-                    setup: function (editor) {
-                        editor.addButton('moreButton', {
-                            type: 'button',
-                            text: 'Read more...',
-                            icon: false,
-                            onclick: function () {
-                                editor.execCommand('mceInsertContent', false, "{more}");
-                            }
-                        });
-                    }
-                });
+                ClassicEditor
+                    .create( document.querySelector( '#contents' ) )
+                    .catch( error => {
+                        console.error( error );
+                    } );
             </script>
+            <style>
+                .ck-editor__editable_inline {
+                min-height: 350px;
+            }
 <?php
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."footer.inc.php");
 ?>
