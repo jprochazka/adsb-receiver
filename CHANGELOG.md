@@ -5,7 +5,8 @@ The following is a history of the changes made to this project.
 ## v2.8.0 *(in development)*
 
 * The dump1090-fa and piaware_builder install process has been updated.
-* The dump978 has been rewritten in order to use FlightAwares version of dump978.
+* The dump978 script has been rewritten in order to use FlightAwares version of dump978.
+* The Flightradar24 script has been updated to work with the current install script.
 * Removed the option to install dump1090-mutability.
 * Removed the option to install dump1090 HPTOA.
 * Removed the option to install AboveTustin.
