@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -79,13 +79,6 @@ echo -e ""
 echo -e "\e[95m  Setting up flight logging...\e[97m"
 echo -e ""
 
-# Dump1090-fa has changed the structure of their JSON and needed a new version of flights.py.
-if [ ] ; then
-    FLIGHTS_FILE='flights.fa.py'
-else
-    FLIGHTS_FILE='flights.mutability.py'
-fi
-
 # Create and set permissions on the flight logging and maintenance maintenance scripts.
 echo -e "\e[94m  Creating the flight logging maintenance script...\e[97m"
 tee ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh > /dev/null <<EOF
@@ -93,7 +86,7 @@ tee ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh > /dev/null <<EOF
 while true
   do
     sleep 30
-        ${PYTHONPATH} ${PORTAL_PYTHON_DIRECTORY}/${FLIGHTS_FILE}
+        ${PYTHONPATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py
   done
 EOF
 
@@ -137,14 +130,18 @@ echo -e "\e[94m  Checking for any running flights-maint.sh processes...\e[97m"
 PIDS=`ps -efww | grep -w "flights-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ -n "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running flights-maint.sh processes...\e[97m"
+    echo ""
     sudo kill ${PIDS}
     sudo kill -9 ${PIDS}
+    echo ""
 fi
 PIDS=`ps -efww | grep -w "maintenance-maint.sh" | awk -vpid=$$ '$2 != pid { print $2 }'`
 if [[ -n "${PIDS}" ]] ; then
     echo -e "\e[94m  Killing any running maintenance-maint.sh processes...\e[97m"
+    echo ""
     sudo kill ${PIDS}
     sudo kill -9 ${PIDS}
+    echo ""
 fi
 
 # Start flight logging.

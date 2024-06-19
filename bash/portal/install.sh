@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -262,12 +262,12 @@ if [ "$RECEIVER_MTA" == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
     CheckPackage postfix
 fi
 
-CheckPackage libpython2.7
+CheckPackage libpython3-stdlib
 
 # Install packages needed for advanced portal setups.
 if [[ "${ADVANCED}" = "true" ]] ; then
-    CheckPackage python-pyinotify
-    CheckPackage python-apt
+    CheckPackage python3-pyinotify
+    CheckPackage python3-apt
     case "${DATABASEENGINE}" in
         "MySQL")
             CheckPackage mysql-client

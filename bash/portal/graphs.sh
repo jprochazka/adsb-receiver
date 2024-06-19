@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -190,7 +190,6 @@ LoadPlugin curl
 <Plugin "df">
         MountPoint "/"
         IgnoreSelected false
-        ReportReserved true
         ReportInodes true
 </Plugin>
 
