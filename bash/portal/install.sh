@@ -375,7 +375,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
 # Add dump1090 as an alias to the dump1090-fa HTML folder.
 alias.url += (
   "/dump1090/data/" => "/run/dump1090-fa/",
-  "/dump1090/" => "/usr/share/dump1090-fa/html/"
+  "/dump1090/" => "/usr/share/skyaware/html/"
 )
 # Redirect the slash-less dump1090 URL
 url.redirect += (

@@ -159,6 +159,8 @@ LoadPlugin table
 LoadPlugin interface
 LoadPlugin memory
 LoadPlugin cpu
+LoadPlugin cpufreq
+LoadPlugin thermal
 LoadPlugin aggregation
 LoadPlugin match_regex
 LoadPlugin df
