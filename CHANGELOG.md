@@ -4,7 +4,9 @@ The following is a history of the changes made to this project.
 
 ## v2.8.0 *(in development)*
 
-* The dump1090-fa and piaware_builder install process has been updated.
+### Installers
+
+* The dump1090-fa and piaware_builder install process has been updated to support the latest versions.
 * The dump978 script has been rewritten in order to use FlightAwares version of dump978.
 * The Beast Splitter script has been updated to work with the current version of Beast Splitter.
 * The Flightradar24 script has been updated to work with the current install script.
@@ -14,6 +16,12 @@ The following is a history of the changes made to this project.
 * Removed incomplete RTL-SDR OGN setup scripting.
 * Version check for dump1090-fa has been fixed.
 * Fix bug where PiAware was installed every run even if already installed.
+
+### Portal
+
+* All portal related Python scripts have been updated to work with Python 3.
+* TinyMCE has been replace by CKeditor in the portal.
+
 
 ## v2.7.2 *(prerelease)*
 
