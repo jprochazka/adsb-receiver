@@ -279,15 +279,39 @@ if [[ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installe
     FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client' '' OFF)
 else
     # Check if a newer version can be installed.
-    if [[ "${CPU_ARCHITECTURE}" = "armv7l" && ! $(sudo dpkg -s pfclient | grep Version | awk '{print $2}') == "$PLANEFINDER_CLIENT_VERSION_ARM" ]]; then
-        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-        FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
-    else
-        if [[ ! $(sudo dpkg -s pfclient | grep Version | awk '{print $2}') == "$PLANEFINDER_CLIENT_VERSION_I386" ]]; then
-            # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
-            FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
-        fi
-    fi
+    PLANEFINDER_CLIENT_INSTALLED_VERSION=$(sudo dpkg -s pfclient | grep Version | awk '{print $2}')
+    case "${CPU_ARCHITECTURE}" in
+        "armv7l"|"armv6l")
+            if [[ ! "$PLANEFINDER_CLIENT_INSTALLED_VERSION" = "${PLANEFINDER_CLIENT_VERSION_ARMHF}" ]]; then
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
+            else
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (reinstall)' '' OFF)
+            fi
+            ;;
+        "aarch64")
+            if [[ ! "$PLANEFINDER_CLIENT_INSTALLED_VERSION" = "${PLANEFINDER_CLIENT_VERSION_ARM64}" ]]; then
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
+            else
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (reinstall)' '' OFF)
+            fi
+            ;;
+        "x86_64")
+            if [[ ! "$PLANEFINDER_CLIENT_INSTALLED_VERSION" = "${PLANEFINDER_CLIENT_VERSION_AMD64}" ]]; then
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
+            else
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (reinstall)' '' OFF)
+            fi
+            ;;
+        "i386")
+            if [[ ! "$PLANEFINDER_CLIENT_INSTALLED_VERSION" = "${PLANEFINDER_CLIENT_VERSION_I386}" ]]; then
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (upgrade)' '' OFF)
+            else
+                FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (reinstall)' '' OFF)
+            fi
+            ;;
+        *)
+            FEEDER_LIST=("${FEEDER_LIST[@]}" 'Plane Finder Client (reinstall)' '' OFF)
+    esac
 fi
 
 if [[ -n "${FEEDER_LIST}" ]] ; then
@@ -460,7 +484,7 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
             "OpenSky Network Feeder")
                 RUN_OPENSKYNETWORK_SCRIPT="true"
                 ;;
-            "Plane Finder Client"|"Plane Finder Client (upgrade)")
+            "Plane Finder Client"|"Plane Finder Client (upgrade)"|"Plane Finder Client (reinstall)")
                 RUN_PLANEFINDER_SCRIPT="true"
                 ;;
         esac
