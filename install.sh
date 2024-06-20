@@ -36,7 +36,6 @@
 
 ## VARIABLES
 
-AUTOMATED_INSTALL="false"
 PROJECT_BRANCH="master"
 CONFIGURATION_FILE="default"
 ENABLE_LOGGING="false"
@@ -60,9 +59,7 @@ function DisplayHelp() {
     echo "Usage: $0 [OPTIONS] [ARGUMENTS]"
     echo ""
     echo "Option        GNU long option        Meaning"
-    echo "-a            --automated-install    Use a configuration file to automate the install process somewhat."
     echo "-b <BRANCH>   --branch=<BRANCH>      Specifies the repository branch to be used."
-    echo "-c <FILE>     --config-file=<FILE>   The configuration file to be use for an unattended installation."
     echo "-d            --development          Skips local repository update so changes are not overwrote."
     echo "-h            --help                 Shows this message."
     echo "-l            --log-output           Logs all output to a file in the logs directory."
@@ -80,11 +77,6 @@ while [[ $# -gt 0 ]] ; do
             # Display a help message.
             DisplayHelp
             exit 0
-            ;;
-        -a|--automated-install)
-            # Automated install.
-            AUTOMATED_INSTALL="true"
-            shift 1
             ;;
         -b)
             # The specified branch of github.
@@ -152,22 +144,7 @@ while [[ $# -gt 0 ]] ; do
     esac
 done
 
-## AUTOMATED INSTALL
-
-# If the automated installation option was selected set the needed environmental variables.
-if [[ "${AUTOMATED_INSTALL}" = "true" ]] ; then
-    # If no configuration file was specified use the default configuration file path and name.
-    if [[ -n "${CONFIGURATION_FILE}" ]] || [[ "${CONFIGURATION_FILE}" = "default" ]] ; then
-        CONFIGURATION_FILE="${RECEIVER_ROOT_DIRECTORY}/install.config"
-    # If either the -c or --config-file= flags were set a valid file must reside there.
-    elif [[ ! -f "${CONFIGURATION_FILE}" ]] ; then
-        echo "Unable to locate the installation configuration file."
-        exit 1
-    fi
-fi
-
 # Add any environmental variables needed by any child scripts.
-export RECEIVER_AUTOMATED_INSTALL=${AUTOMATED_INSTALL}
 export RECEIVER_PROJECT_BRANCH=${PROJECT_BRANCH}
 export RECEIVER_CONFIGURATION_FILE=${CONFIGURATION_FILE}
 export RECEIVER_MTA=${MTA}
@@ -202,7 +179,6 @@ unset RECEIVER_ROOT_DIRECTORY
 unset RECEIVER_BASH_DIRECTORY
 unset RECEIVER_BUILD_DIRECTORY
 unset RECEIVER_PROJECT_BRANCH
-unset RECEIVER_AUTOMATED_INSTALL
 unset RECEIVER_CONFIGURATION_FILE
 unset RECEIVER_FORCE_APT_UPDATE
 unset RECEIVER_VERBOSE

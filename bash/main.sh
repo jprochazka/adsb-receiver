@@ -233,23 +233,29 @@ fi
 if [[ $(dpkg-query -W -f='${STATUS}' opensky-feeder 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
     # The OpenSky Network feeder package appears to not be installed.
     FEEDER_LIST=("${FEEDER_LIST[@]}" 'OpenSky Network Feeder' '' OFF)
+else
+    # Check if a newer version can be installed if this is not a Raspberry Pi device.
+    if [[ $(sudo dpkg -s opensky-feeder 2>/dev/null | grep -c "Version: ${OPENSKY_NETWORK_CLIENT_VERSION}") -eq 0 ]]; then
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'OpenSky Network Feeder (upgrade)' '' OFF)
+    else
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'OpenSky Network Feeder (reinstall)' '' OFF)
+    fi
 fi
 
 # Check for the PiAware package.
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
     # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
     if [[ "${DUMP1090_FORK}" != "fa" ]] ; then
-        # The PiAware package appears to not be installed.
         if [[ -z "${PIAWARE_INSTALL}" && "${PIAWARE_INSTALL}" = "true" ]]; then
-            # Since the menu will be skipped add this choice directly to the FEEDER_CHOICES file.
             echo "FlightAware PiAware" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
         fi
     fi
 else
     # Check if a newer version can be installed.
     if [[ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]]; then
-        # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
         FEEDER_LIST=("${FEEDER_LIST[@]}" 'FlightAware PiAware (upgrade)' '' OFF)
+    else
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'FlightAware PiAware (reinstall)' '' OFF)
     fi
 fi
 
@@ -259,9 +265,11 @@ if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installe
     FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client' '' OFF)
 else
     # Check if a newer version can be installed if this is not a Raspberry Pi device.
-    if [[ "${CPU_ARCHITECTURE}" != "armv7l" && $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]]; then
+    if [[ $(sudo dpkg -s fr24feed 2>/dev/null | grep -c "Version: ${FLIGHTRADAR24_CLIENT_VERSION_I386}") -eq 0 ]]; then
         # Add this choice to the FEEDER_LIST array to be used by the whiptail menu.
         FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client (upgrade)' '' OFF)
+    else
+        FEEDER_LIST=("${FEEDER_LIST[@]}" 'Flightradar24 Client (reinstall)' '' OFF)
     fi
 fi
 
@@ -443,10 +451,10 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
             "ADS-B Exchange Feeder"|"ADS-B Exchange Feeder (upgrade)")
                 RUN_ADSBEXCHANGE_SCRIPT="true"
                 ;;
-            "FlightAware PiAware"|"FlightAware PiAware (upgrade)")
+            "FlightAware PiAware"|"FlightAware PiAware (upgrade)"|"FlightAware PiAware (reinstall)")
                 RUN_PIAWARE_SCRIPT="true"
                 ;;
-            "Flightradar24 Client"|"Flightradar24 Client (upgrade)")
+            "Flightradar24 Client"|"Flightradar24 Client (upgrade)"|"Flightradar24 Client (reinstall)")
                 RUN_FLIGHTRADAR24_SCRIPT="true"
                 ;;
             "OpenSky Network Feeder")

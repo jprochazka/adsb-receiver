@@ -92,7 +92,6 @@ echo -e ""
 echo -e "\e[94m  Downloading the Flightradar24 client installation script...\e[97m"
 echo ""
 wget -v https://fr24.com/install.sh
-echo ""
 
 echo -e "\e[94m  Executing the Flightradar24 client installation script...\e[97m"
 echo ""
@@ -100,7 +99,6 @@ sudo bash ${RECEIVER_BUILD_DIRECTORY}/flightradar24/install.sh
 echo ""
 
 # Check that the component package was installed successfully.
-echo -e ""
 echo -e "\e[94m  Checking that the FlightRadar24 feeder client package was installed properly...\e[97m"
 
 if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
