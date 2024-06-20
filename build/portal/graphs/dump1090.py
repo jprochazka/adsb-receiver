@@ -55,8 +55,8 @@ def read_stats_1min(instance_name, host, url):
         return
 
     # Signal measurements - from the 1 min bucket
-    if stats['last1min'].has_key('local'):
-        if stats['last1min']['local'].has_key('signal'):
+    if 'local' not in stats['last1min']:
+        if 'signal' not in stats['last1min']['local']:
           V.dispatch(plugin_instance = instance_name,
                    host=host,
                    type='dump1090_dbfs',
@@ -65,7 +65,7 @@ def read_stats_1min(instance_name, host, url):
                    values = [stats['last1min']['local']['signal']],
                    interval = 60)
 
-        if stats['last1min']['local'].has_key('peak_signal'):
+        if 'peak_signal' not in stats['last1min']['local']:
           V.dispatch(plugin_instance = instance_name,
                    host=host,
                    type='dump1090_dbfs',
@@ -74,7 +74,7 @@ def read_stats_1min(instance_name, host, url):
                    values = [stats['last1min']['local']['peak_signal']],
                    interval = 60)
 
-        if stats['last1min']['local'].has_key('min_signal'):
+        if 'min_signal' not in stats['last1min']['local']:
           V.dispatch(plugin_instance = instance_name,
                    host=host,
                    type='dump1090_dbfs',
@@ -83,7 +83,7 @@ def read_stats_1min(instance_name, host, url):
                    values = [stats['last1min']['local']['min_signal']],
                    interval = 60)
 
-        if stats['last1min']['local'].has_key('noise'):
+        if 'noise' not in stats['last1min']['local']:
           V.dispatch(plugin_instance = instance_name,
                    host=host,
                    type='dump1090_dbfs',
@@ -101,7 +101,7 @@ def read_stats(instance_name, host, url):
         return
 
     # Local message counts
-    if stats['total'].has_key('local'):
+    if 'local' not in stats['total']:
         counts = stats['total']['local']['accepted']
         V.dispatch(plugin_instance = instance_name,
                    host=host,
@@ -117,7 +117,7 @@ def read_stats(instance_name, host, url):
                        time=T(stats['total']['end']),
                        values = [counts[i]])
 
-        if stats['total']['local'].has_key('strong_signals'):
+        if 'strong_signals' not in stats['total']['local']:
             V.dispatch(plugin_instance = instance_name,
                        host=host,
                        type='dump1090_messages',
@@ -127,7 +127,7 @@ def read_stats(instance_name, host, url):
                        interval = 60)
 
     # Remote message counts
-    if stats['total'].has_key('remote'):
+    if 'remote' not in stats['total']:
         counts = stats['total']['remote']['accepted']
         V.dispatch(plugin_instance = instance_name,
                    host=host,
@@ -186,7 +186,7 @@ def read_aircraft(instance_name, host, url):
         with closing(urlopen(url + '/data/receiver.json', None, 5.0)) as receiver_file:
             receiver = json.load(receiver_file)
 
-        if receiver.has_key('lat'):
+        if 'lat' not in receiver:
             rlat = float(receiver['lat'])
             rlon = float(receiver['lon'])
         else:
@@ -204,7 +204,7 @@ def read_aircraft(instance_name, host, url):
     mlat = 0
     for a in aircraft_data['aircraft']:
         if a['seen'] < 15: total += 1
-        if a.has_key('seen_pos') and a['seen_pos'] < 15:
+        if 'seen_pos' not in a and a['seen_pos'] < 15:
             with_pos += 1
             if rlat is not None:
                 distance = greatcircle(rlat, rlon, a['lat'], a['lon'])

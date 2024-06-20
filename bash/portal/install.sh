@@ -33,9 +33,6 @@
 
 ## VARIABLES
 
-RECEIVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 PORTAL_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal"
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -251,7 +248,9 @@ esac
 
 # Install PHP.
 CheckPackage php${DISTRO_PHP_VERSION}-cgi
-CheckPackage php${DISTRO_PHP_VERSION}-json
+if (( $(echo "${DISTRO_PHP_VERSION} < 8" | bc -l) )); then
+    CheckPackage php${DISTRO_PHP_VERSION}-json
+fi
 
 # Performance graph dependencies.
 CheckPackage collectd-core
@@ -351,7 +350,7 @@ sudo chmod 666 ${LIGHTTPD_DOCUMENT_ROOT}/data/*
 
 # Check if dump978 was setup.
 echo -e "\e[94m  Checking if dump978 was set up...\e[97m"
-if [[ -f "/etc/rc.local" ]] && [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
     # Check if a heywhatsthat.com range file exists in the dump1090 HTML folder.
     echo -e "\e[94m  Checking for the file upintheair.json in the dump1090 HTML folder...\e[97m"
     if [[ -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
@@ -365,22 +364,14 @@ if [[ -f "/etc/rc.local" ]] && [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump97
     fi
 fi
 
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    echo -e "\e[94m  Removing conflicting redirects from the Lighttpd dump1090.conf file...\e[97m"
-    # Remove this line completely.
-    sudo sed -i "/$(echo '  "^/dump1090$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/d" /etc/lighttpd/conf-available/89-dump1090.conf
-    # Remove the trailing coma from this line.
-    sudo sed -i "s/$(echo '"^/dump1090/$" => "/dump1090/gmap.html",' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/$(echo '"^/dump1090/$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/g"  /etc/lighttpd/conf-available/89-dump1090.conf
-fi
-
 # Add to the Lighttpd configuration.
 echo -e "\e[94m  Adding the Lighttpd portal configuration file...\e[97m"
-if [[ -f "/etc/lighttpd/conf-available/89-adsb-portal.conf" ]] ; then
-    sudo rm -f /etc/lighttpd/conf-available/89-adsb-portal.conf
+if [[ -f "/etc/lighttpd/conf-available/87-adsb-portal.conf" ]] ; then
+    sudo rm -f /etc/lighttpd/conf-available/87-adsb-portal.conf
 fi
-sudo touch /etc/lighttpd/conf-available/89-adsb-portal.conf
+sudo touch /etc/lighttpd/conf-available/87-adsb-portal.conf
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
+    sudo tee -a /etc/lighttpd/conf-available/87-adsb-portal.conf > /dev/null <<EOF
 # Add dump1090 as an alias to the dump1090-fa HTML folder.
 alias.url += (
   "/dump1090/data/" => "/run/dump1090-fa/",
@@ -397,7 +388,7 @@ server.modules += ( "mod_setenv" )
 }
 EOF
 fi
-sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
+sudo tee -a /etc/lighttpd/conf-available/87-adsb-portal.conf > /dev/null <<EOF
 # Block all access to the data directory accept for local requests.
 \$HTTP["remoteip"] !~ "127.0.0.1" {
     \$HTTP["url"] =~ "^/data/" {
@@ -406,9 +397,9 @@ sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 }
 EOF
 
-if [[ ! -L "/etc/lighttpd/conf-enabled/89-adsb-portal.conf" ]] ; then
+if [[ ! -L "/etc/lighttpd/conf-enabled/87-adsb-portal.conf" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd portal configuration file...\e[97m"
-    sudo ln -s /etc/lighttpd/conf-available/89-adsb-portal.conf /etc/lighttpd/conf-enabled/89-adsb-portal.conf
+    sudo ln -s /etc/lighttpd/conf-available/87-adsb-portal.conf /etc/lighttpd/conf-enabled/87-adsb-portal.conf
 fi
 
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] ; then

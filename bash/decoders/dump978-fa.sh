@@ -154,7 +154,7 @@ echo ""
 
 # Check if the dump1090-fa package is installed.
 echo -e "\e[94m  Checking if the dump1090-fa package is installed...\e[97m"
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] || [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
     # Check if dump978-fa has already been configured.
     echo -e "\e[94m  Checking if the dump978-fa package has been configured...\e[97m"
     if grep -wq "driver=rtlsdr,serial=" /etc/default/dump978-fa; then
