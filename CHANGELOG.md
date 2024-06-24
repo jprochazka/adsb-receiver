@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.0 *(in development)*
+## v2.8.0 *(June 24th, 2024)*
 
 ### Installers
 
@@ -11,7 +11,9 @@ The following is a history of the changes made to this project.
 * The Beast Splitter script has been updated to work with the current version of Beast Splitter.
 * The Flightradar24 script has been updated to work with the current install script.
 * The Plane Finder script has been updated to work with current client releases.
-* The portal install scriptss have been updated to work on current operation systems.
+* The ADS-B Exchange script has been updated to work with the current install script.
+* The ADSB Exchange script has been updated to work with the current install script.
+* The OpenSky Feeder script has been updated to work with the current install script.
 * Version check for dump1090-fa has been fixed.
 * Fix bug where PiAware was installed every run even if already installed.
 * Removed the unattended install option for the time being.
@@ -23,9 +25,9 @@ The following is a history of the changes made to this project.
 
 ### Portal
 
+* The portal install scripts have been updated to work on current operation systems.
 * All portal related Python scripts have been updated to work with Python 3.
 * TinyMCE has been replace by CKeditor in the portal.
-
 
 ## v2.7.2 *(prerelease)*
 
