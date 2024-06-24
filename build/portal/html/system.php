@@ -71,7 +71,7 @@
     $pageData['osNodeName'] = $osData['nodeName'];
     $pageData['osMachine'] = $osData['machine'];
 
-    // Get CPU information.
+    // Get HDD information.
     $json = file_get_contents("http://localhost/api/system.php?action=getCpuInformation");
     $cpuData = json_decode($json, TRUE);
     $pageData['cpuModel'] = $cpuData['model'];

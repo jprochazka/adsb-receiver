@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,44 +31,30 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## SET INSTALLATION VARIABLES
-
-RECEIVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
-    source ${RECEIVER_CONFIGURATION_FILE}
-fi
-
 ## BEGIN SETUP
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    clear
-    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
-fi
+clear
+echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 echo ""
 echo -e "\e[92m  Setting up Duck DNS..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Duck DNS Dynamic DNS" --yesno "Duck DNS is a free dynamic DNS service hosted on Amazon VPC.\n\nPLEASE NOTE:\n\nBefore continuing this setup it is recommended that you visit the Duck DNS website and signup for then setup a sub domain which will be used by this device. You will need both the domain and token supplied to you after setting up your account.\n\n  http://www.duckdns.org\n\nContinue with Duck DNS update script setup?" 18 78
-    if [[ $? -eq 1 ]] ; then
-        # Setup has been halted by the user.
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  Setup has been halted at the request of the user."
-        echo ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-        echo -e "\e[92m  Duck DNS setup halted.\e[39m"
-        echo ""
-        read -p "Press enter to continue..." CONTINUE
-        exit 1
-    fi
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Duck DNS Dynamic DNS" --yesno "Duck DNS is a free dynamic DNS service hosted on Amazon VPC.\n\nPLEASE NOTE:\n\nBefore continuing this setup it is recommended that you visit the Duck DNS website and signup for then setup a sub domain which will be used by this device. You will need both the domain and token supplied to you after setting up your account.\n\n  http://www.duckdns.org\n\nContinue with Duck DNS update script setup?" 18 78
+if [[ $? -eq 1 ]] ; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
+    echo ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
+    echo -e "\e[92m  Duck DNS setup halted.\e[39m"
+    echo ""
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
 fi
 
 echo -e "\e[95m  Setting up Duck DNS on this device...\e[97m"
@@ -77,29 +63,27 @@ echo ""
 ## CHECK FOR PREREQUISITE PACKAGES
 
 # Check that the required packages are installed.
-echo ""
 echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
 echo ""
 CheckPackage cron
 CheckPackage curl
+exho ""
 
 ## CONFIRM SETTINGS
 
-# Confirm settings with user.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Ask for the user sub domain to be assigned to this device.
-    DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain"
-    while [[ -z "${DUCKDNS_DOMAIN}" ]] ; do
-        DUCKDNS_DOMAIN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_DOMAIN_TITLE}" --nocancel --inputbox "\nPlease enter the Duck DNS sub domain you selected after registering.\nIf you do not have one yet visit http://www.ducknds.org to obtain one." 9 78 3>&1 1>&2 2>&3)
-        DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain (REQUIRED)"
-    done
-    # Ask for the Duck DNS token to be assigned to this receiver.
-    DUCKDNS_TOKEN_TITLE="Duck DNS Token"
-    while [[ -z "${DUCKDNS_TOKEN}" ]] ; do
-        DUCKDNS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_TOKEN_TITLE}" --nocancel --inputbox "\nPlease enter your Duck DNS token." 8 78 3>&1 1>&2 2>&3)
-        DUCKDNS_TOKEN_TITLE="Duck DNS Token (REQUIRED)"
-    done
-fi
+# Ask for the user sub domain to be assigned to this device.
+DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain"
+while [[ -z "${DUCKDNS_DOMAIN}" ]] ; do
+    DUCKDNS_DOMAIN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_DOMAIN_TITLE}" --nocancel --inputbox "\nPlease enter the Duck DNS sub domain you selected after registering.\nIf you do not have one yet visit http://www.ducknds.org to obtain one." 9 78 3>&1 1>&2 2>&3)
+    DUCKDNS_DOMAIN_TITLE="Duck DNS Sub Domain (REQUIRED)"
+done
+
+# Ask for the Duck DNS token to be assigned to this receiver.
+DUCKDNS_TOKEN_TITLE="Duck DNS Token"
+while [[ -z "${DUCKDNS_TOKEN}" ]] ; do
+    DUCKDNS_TOKEN=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DUCKDNS_TOKEN_TITLE}" --nocancel --inputbox "\nPlease enter your Duck DNS token." 8 78 3>&1 1>&2 2>&3)
+    DUCKDNS_TOKEN_TITLE="Duck DNS Token (REQUIRED)"
+done
 
 ## PROJECT BUILD DIRECTORY
 
@@ -117,9 +101,7 @@ if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/duckdns ]] ; then
     echo ""
 fi
 
-## DOWNLOAD SOURCE
-
-## BUILD AND INSTALL
+## CREATE SCRIPT
 
 # Create then set permissions on the file duck.sh.
 echo -e "\e[94m  Creating the Duck DNS update script...\e[97m"
@@ -132,7 +114,7 @@ echo ""
 chmod -v 700 ${RECEIVER_BUILD_DIRECTORY}/duckdns/duck.sh 2>&1
 echo ""
 
-## CREATE SCRIPTS
+## ADD TO CRON
 
 echo -e "\e[94m  Adding the DuckDNS cron file...\e[97m"
 sudo tee /etc/cron.d/duckdns_ip_address_update > /dev/null <<EOF
@@ -143,7 +125,6 @@ echo ""
 
 ## START SCRIPTS
 
-echo ""
 echo -e "\e[95m  Starting Duck DNS...\e[97m"
 echo ""
 
@@ -153,8 +134,10 @@ for PROC in ${PROCS} ; do
     PIDS=`ps -efww | grep -w "${PROC} " | awk -vpid=$$ '$2 != pid { print $2 }'`
     if [[ -n "${PIDS}" ]] ; then
         echo -e "\e[94m  Killing any running ${PROC} processes...\e[97m"
+        echo ""
         sudo kill ${PIDS} 2>&1
         sudo kill -9 ${PIDS} 2>&1
+        echo ""
     fi
     unset PIDS
 done
@@ -175,9 +158,7 @@ echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Duck DNS setup is complete.\e[39m"
 echo ""
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    read -p "Press enter to continue..." CONTINUE
-fi
+read -p "Press enter to continue..." CONTINUE
 
 exit 0
 

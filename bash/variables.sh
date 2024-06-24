@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2017, Joseph A. Prochazka                                      #
+# Copyright (c) 2015-2024, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -34,25 +34,25 @@
 ## SOFTWARE VERSIONS
 
 # The ADS-B Receiver Project
-PROJECT_VERSION="2.7.2"
+PROJECT_VERSION="2.8.0"
 
 # RTL-SDR OGN
 RTLSDROGN_VERSION="0.2.5"
 
-# FlightAware PiAware
-DUMP1090_FA_VERSION="3.7.1"
-PIAWARE_VERSION="3.7.1"
+# FlightAware
+DUMP1090_FA_VERSION="9.0"
+DUMP978_FA_VERSION="9.0"
+PIAWARE_VERSION="9.0.1"
+SKYAWARE978_VERSION="9.0"
 
 # PlaneFinder Client
-PLANEFINDER_CLIENT_VERSION_ARM="4.1.1"
-PLANEFINDER_CLIENT_VERSION_I386="4.1.1"
+PLANEFINDER_CLIENT_VERSION_ARMHF="5.0.161"
+PLANEFINDER_CLIENT_VERSION_ARM64="5.1.440"
+PLANEFINDER_CLIENT_VERSION_AMD64="5.0.162"
+PLANEFINDER_CLIENT_VERSION_I386="5.0.161"
 
 # Flightradar24 Client
-FLIGHTRADAR24_CLIENT_VERSION_I386="1.0.18-5"
+FLIGHTRADAR24_CLIENT_VERSION="1.0.18-5"
 
-# mlat-client
-MLAT_CLIENT_VERSION="0.2.6"
-MLAT_CLIENT_TAG="v0.2.6"
-
-# PhantomJS
-PHANTOMJS_VERSION="2.1.1"
+# OpenSky Network Client
+OPENSKY_NETWORK_CLIENT_VERSION="2.1.7-1"

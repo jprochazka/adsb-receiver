@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -68,18 +68,14 @@ function AptUpdate() {
     echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        echo -e ""
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    echo -e ""
+    read -p "Press enter to continue..." CONTINUE
 }
 
 # Function to check that the packages required by this script are installed.
 function CheckPrerequisites() {
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        clear
-        echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
-    fi
+    clear
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
     echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
@@ -90,10 +86,8 @@ function CheckPrerequisites() {
     echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        echo -e ""
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    echo -e ""
+    read -p "Press enter to continue..." CONTINUE
 }
 
 # Function to update the local git repository.
@@ -101,7 +95,7 @@ function UpdateRepository() {
     # Update lcoal branches which are set to track remote.
     ACTION=$(git remote update 2>&1)
     # Check if local branch is behind remote.
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] && [[ `git status | grep -c "untracked files present"` -gt 0 ]] ; then
+    if [[ `git status | grep -c "untracked files present"` -gt 0 ]] ; then
         # Local branch has untracked files.
         clear
         # Ask if the user wishes to save any changes made to any core files before resetting them.
@@ -150,18 +144,14 @@ function UpdateRepository() {
     echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Finished pulling the latest version of the ADS-B Receiver Project repository....\e[39m"
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        echo -e ""
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    echo -e ""
+    read -p "Press enter to continue..." CONTINUE
 }
 
 # Function to update the operating system.
 function UpdateOperatingSystem() {
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        clear
-        echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
-    fi
+    clear
+    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
     echo -e ""
     echo -e "\e[92m  Downloading and installing the latest updates for your operating system..."
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
@@ -170,10 +160,8 @@ function UpdateOperatingSystem() {
     echo -e ""
     echo -e "\e[93m  ------------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m"
-    if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-        echo -e ""
-        read -p "Press enter to continue..." CONTINUE
-    fi
+    echo -e ""
+    read -p "Press enter to continue..." CONTINUE
 }
 
 ## Update the repository packages and check that prerequisite packages are installed.
@@ -192,18 +180,16 @@ CheckPrerequisites
 
 ## DISPLAY WELCOME SCREEN
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "The ADS-B Receiver Project" --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.net\n\nWould you like to continue setup?" 14 78
-    CONTINUE_SETUP=$?
-    if [[ "${CONTINUE_SETUP}" = 1 ]] ; then
-    # Setup has been halted by the user.
-        echo -e ""
-        echo -e "\e[91m  \e[5mSETUP HALTED!\e[25m"
-        echo -e "  Setup has been halted at the request of the user."
-        echo -e "\e[37m"
-        read -p "Press enter to continue..." CONTINUE
-        exit 1
-    fi
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "The ADS-B Receiver Project" --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.net\n\nWould you like to continue setup?" 14 78
+CONTINUE_SETUP=$?
+if [[ "${CONTINUE_SETUP}" = 1 ]] ; then
+# Setup has been halted by the user.
+    echo -e ""
+    echo -e "\e[91m  \e[5mSETUP HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
+    echo -e "\e[37m"
+    read -p "Press enter to continue..." CONTINUE
+    exit 1
 fi
 
 ## UPDATE THE REPOSITORY
@@ -214,13 +200,12 @@ fi
 
 ## ASK IF OPERATING SYSTEM SHOULD BE UPDATED
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78
-    case $? in
-        0) UPDATE_OPERATING_SYSTEM="true" ;;
-        1) UPDATE_OPERATING_SYSTEM="false" ;;
-    esac
-fi
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Operating System Updates" --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" 11 78
+case $? in
+    0) UPDATE_OPERATING_SYSTEM="true" ;;
+    1) UPDATE_OPERATING_SYSTEM="false" ;;
+esac
+
 if [[ "${UPDATE_OPERATING_SYSTEM}" = "true" ]] ; then
     UpdateOperatingSystem
 fi
@@ -244,9 +229,7 @@ fi
 ## INSTALLATION COMPLETE
 
 # Display the installation complete message box.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\n  https://github.com/jprochazka/adsb-receiver" 20 65
-fi
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Software Installation Complete" --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\n  https://github.com/jprochazka/adsb-receiver" 20 65
 
 echo -e "\e[32m"
 echo -e "\e[91m  Installation complete."

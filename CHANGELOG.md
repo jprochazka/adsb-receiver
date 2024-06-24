@@ -2,6 +2,33 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.0 *(June 24th, 2024)*
+
+### Installers
+
+* The dump1090-fa and piaware_builder install process has been updated to support the latest versions.
+* The dump978 script has been rewritten in order to use FlightAwares version of dump978.
+* The Beast Splitter script has been updated to work with the current version of Beast Splitter.
+* The Flightradar24 script has been updated to work with the current install script.
+* The Plane Finder script has been updated to work with current client releases.
+* The ADS-B Exchange script has been updated to work with the current install script.
+* The ADSB Exchange script has been updated to work with the current install script.
+* The OpenSky Feeder script has been updated to work with the current install script.
+* Version check for dump1090-fa has been fixed.
+* Fix bug where PiAware was installed every run even if already installed.
+* Removed the unattended install option for the time being.
+* Removed the option to install dump1090-mutability.
+* Removed the option to install dump1090 HPTOA.
+* Removed the option to install AboveTustin.
+* Removed the option to install ADSBHub support due to the fact it was incomplete.
+* Removed incomplete RTL-SDR OGN setup scripting.
+
+### Portal
+
+* The portal install scripts have been updated to work on current operation systems.
+* All portal related Python scripts have been updated to work with Python 3.
+* TinyMCE has been replace by CKeditor in the portal.
+
 ## v2.7.2 *(prerelease)*
 
 * Updated current PiAware and dump1090-fa versions to 3.9.3. 

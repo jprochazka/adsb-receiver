@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -33,9 +33,6 @@
 
 ## VARIABLES
 
-RECEIVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 PORTAL_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal"
 
 ## INCLUDE EXTERNAL SCRIPTS
@@ -144,8 +141,8 @@ else
             else
                 # Install the MySQL server package now if it is not already installed.
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time.\n\nPlease note you may be asked questions used to secure your database server installation after the setup process." 12 78
-                CheckPackage mysql-server
-                if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+                CheckPackage mariadb-server
+                if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
                     echo -e "\e[94m  Executing the mysql_secure_installation script...\e[97m"
                     sudo mysql_secure_installation
                     echo ""
@@ -243,20 +240,17 @@ fi
 
 DISTRO_PHP_VERSION="5"
 case $RECEIVER_OS_DISTRIBUTION in
-    debian|raspbian)
-        if [[ $RECEIVER_OS_RELEASE -ge "9" ]]; then DISTRO_PHP_VERSION="7.0"; fi
-        if [[ $RECEIVER_OS_RELEASE -ge "10" ]]; then DISTRO_PHP_VERSION="7.3"; fi
-        ;;
-    ubuntu)
-        if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 16.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.0"; fi
-        if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 17.10"` -eq 1 ]; then DISTRO_PHP_VERSION="7.1"; fi
-        if [ `bc -l <<< "$RECEIVER_OS_RELEASE >= 18.04"` -eq 1 ]; then DISTRO_PHP_VERSION="7.2"; fi
+    debian)
+        if [[ $RECEIVER_OS_CODE_NAME = "bookworm" ]]; then DISTRO_PHP_VERSION="8.2"; fi
+        if [[ $RECEIVER_OS_CODE_NAME = "bullseye" ]]; then DISTRO_PHP_VERSION="7.4"; fi
         ;;
 esac
 
 # Install PHP.
 CheckPackage php${DISTRO_PHP_VERSION}-cgi
-CheckPackage php${DISTRO_PHP_VERSION}-json
+if (( $(echo "${DISTRO_PHP_VERSION} < 8" | bc -l) )); then
+    CheckPackage php${DISTRO_PHP_VERSION}-json
+fi
 
 # Performance graph dependencies.
 CheckPackage collectd-core
@@ -267,16 +261,16 @@ if [ "$RECEIVER_MTA" == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
     CheckPackage postfix
 fi
 
-CheckPackage libpython2.7
+CheckPackage libpython3-stdlib
 
 # Install packages needed for advanced portal setups.
 if [[ "${ADVANCED}" = "true" ]] ; then
-    CheckPackage python-pyinotify
-    CheckPackage python-apt
+    CheckPackage python3-pyinotify
+    CheckPackage python3-apt
     case "${DATABASEENGINE}" in
         "MySQL")
-            CheckPackage mysql-client
-            CheckPackage python-mysqldb
+            CheckPackage mariadb-client
+            CheckPackage python3-mysqldb
             CheckPackage php${DISTRO_PHP_VERSION}-mysql
             ;;
         "SQLite")
@@ -356,7 +350,7 @@ sudo chmod 666 ${LIGHTTPD_DOCUMENT_ROOT}/data/*
 
 # Check if dump978 was setup.
 echo -e "\e[94m  Checking if dump978 was set up...\e[97m"
-if [[ -f "/etc/rc.local" ]] && [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump978/dump978-maint.sh &" /etc/rc.local` -eq 0 ]] ; then
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
     # Check if a heywhatsthat.com range file exists in the dump1090 HTML folder.
     echo -e "\e[94m  Checking for the file upintheair.json in the dump1090 HTML folder...\e[97m"
     if [[ -f "/usr/share/dump1090-mutability/html/upintheair.json" ]] || [[ -f "/usr/share/dump1090-fa/html/upintheair.json" ]] ; then
@@ -370,26 +364,18 @@ if [[ -f "/etc/rc.local" ]] && [[ `grep -cFx "${RECEIVER_BUILD_DIRECTORY}/dump97
     fi
 fi
 
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    echo -e "\e[94m  Removing conflicting redirects from the Lighttpd dump1090.conf file...\e[97m"
-    # Remove this line completely.
-    sudo sed -i "/$(echo '  "^/dump1090$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/d" /etc/lighttpd/conf-available/89-dump1090.conf
-    # Remove the trailing coma from this line.
-    sudo sed -i "s/$(echo '"^/dump1090/$" => "/dump1090/gmap.html",' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/$(echo '"^/dump1090/$" => "/dump1090/gmap.html"' | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/g"  /etc/lighttpd/conf-available/89-dump1090.conf
-fi
-
 # Add to the Lighttpd configuration.
 echo -e "\e[94m  Adding the Lighttpd portal configuration file...\e[97m"
-if [[ -f "/etc/lighttpd/conf-available/89-adsb-portal.conf" ]] ; then
-    sudo rm -f /etc/lighttpd/conf-available/89-adsb-portal.conf
+if [[ -f "/etc/lighttpd/conf-available/87-adsb-portal.conf" ]] ; then
+    sudo rm -f /etc/lighttpd/conf-available/87-adsb-portal.conf
 fi
-sudo touch /etc/lighttpd/conf-available/89-adsb-portal.conf
+sudo touch /etc/lighttpd/conf-available/87-adsb-portal.conf
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-    sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
+    sudo tee -a /etc/lighttpd/conf-available/87-adsb-portal.conf > /dev/null <<EOF
 # Add dump1090 as an alias to the dump1090-fa HTML folder.
 alias.url += (
   "/dump1090/data/" => "/run/dump1090-fa/",
-  "/dump1090/" => "/usr/share/dump1090-fa/html/"
+  "/dump1090/" => "/usr/share/skyaware/html/"
 )
 # Redirect the slash-less dump1090 URL
 url.redirect += (
@@ -402,7 +388,7 @@ server.modules += ( "mod_setenv" )
 }
 EOF
 fi
-sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
+sudo tee -a /etc/lighttpd/conf-available/87-adsb-portal.conf > /dev/null <<EOF
 # Block all access to the data directory accept for local requests.
 \$HTTP["remoteip"] !~ "127.0.0.1" {
     \$HTTP["url"] =~ "^/data/" {
@@ -411,9 +397,9 @@ sudo tee -a /etc/lighttpd/conf-available/89-adsb-portal.conf > /dev/null <<EOF
 }
 EOF
 
-if [[ ! -L "/etc/lighttpd/conf-enabled/89-adsb-portal.conf" ]] ; then
+if [[ ! -L "/etc/lighttpd/conf-enabled/87-adsb-portal.conf" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd portal configuration file...\e[97m"
-    sudo ln -s /etc/lighttpd/conf-available/89-adsb-portal.conf /etc/lighttpd/conf-enabled/89-adsb-portal.conf
+    sudo ln -s /etc/lighttpd/conf-available/87-adsb-portal.conf /etc/lighttpd/conf-enabled/87-adsb-portal.conf
 fi
 
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] ; then

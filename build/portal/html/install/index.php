@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.7.2";
+    $thisVersion = "2.8.0";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -217,7 +217,7 @@ EOF;
                                            title VARCHAR(100) NOT NULL,
                                            date datetime NOT NULL,
                                            author VARCHAR(100) NOT NULL,
-                                           contents VARCHAR(20000) NOT NULL);';
+                                           contents TEXT NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights(
                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
@@ -270,7 +270,7 @@ EOF;
                                          title VARCHAR(100) NOT NULL,
                                          date VARCHAR(20) NOT NULL,
                                          author VARCHAR(100) NOT NULL,
-                                         contents VARCHAR(20000) NOT NULL);';
+                                         contents TEXT NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id SERIAL PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,

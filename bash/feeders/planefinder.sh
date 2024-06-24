@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2018, Joseph A. Prochazka                                      #
+# Copyright (c) 2015-2024, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,60 +31,32 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-### VARIABLES
-
-RECEIVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-## SET INSTALLATION VARIABLES
-
-# Source the automated install configuration file if this is an automated installation.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
-    source ${RECEIVER_CONFIGURATION_FILE}
-fi
-
 ### BEGIN SETUP
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    clear
-    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
-fi
+clear
+echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up PlaneFinder ADS-B Client..."
 echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
 
-# Check for existing component install.
-if [[ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-    COMPONENT_FIRST_INSTALL="true"
-fi
-
 # Confirm component installation.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Interactive install.
-    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PlaneFinder ADS-B Client Setup" --yesno "The PlaneFinder ADS-B Client is an easy and accurate way to share your ADS-B and MLAT data with Plane Finder. It comes with a beautiful user interface that helps you explore and interact with your data in realtime.\n\n  https://planefinder.net/sharing/client\n\nContinue setup by installing PlaneFinder ADS-B Client?" 13 78 3>&1 1>&2 2>&3)
-    if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
-        # Setup has been halted by the user.
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  Setup has been halted at the request of the user."
-        echo -e ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  PlaneFinder ADS-B Client setup halted.\e[39m"
-        echo -e ""
-        read -p "Press enter to continue..." CONTINUE
-        exit 1
-    fi
-else
-    # Warn that automated installation is not supported.
-    echo -e "\e[92m  Automated installation of PlaneFinder ADS-B Client is not yet supported...\e[39m"
+CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PlaneFinder ADS-B Client Setup" --yesno "The PlaneFinder ADS-B Client is an easy and accurate way to share your ADS-B and MLAT data with Plane Finder. It comes with a beautiful user interface that helps you explore and interact with your data in realtime.\n\n  https://planefinder.net/sharing/client\n\nContinue setup by installing PlaneFinder ADS-B Client?" 13 78 3>&1 1>&2 2>&3)
+if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
     echo -e ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
+    echo -e "\e[92m  PlaneFinder ADS-B Client setup halted.\e[39m"
+    echo -e ""
+    read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
@@ -92,23 +64,39 @@ fi
 
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for PlaneFinder ADS-B Client...\e[97m"
 echo -e ""
-
-if [[ "${CPU_ARCHITECTURE}" = "x86_64" ]] ; then
-    if [[ $(dpkg --print-foreign-architectures $1 2>/dev/null | grep -c "i386") -eq 0 ]] ; then
-        echo -e "\e[94m  Adding the i386 architecture...\e[97m"
-        sudo dpkg --add-architecture i386 2>&1
-        echo -e "\e[94m  Downloading latest package lists for enabled repositories and PPAs...\e[97m"
-        echo -e ""
-        sudo apt-get update
-        echo -e ""
-    fi
-    CheckPackage libc6:i386
-else
-    CheckPackage libc6
-fi
 CheckPackage wget
+echo ""
 
-### STOP ANY RUNNING SERVICES
+### DETERMINE WHICH PACACKAGE TO INSTALL
+
+echo -e "\e[94m  Determining the package to install...\e[97m"
+BASE_DOWNLOAD_URL="http://client.planefinder.net/"
+case "${CPU_ARCHITECTURE}" in
+    "armv7l"|"armv6l")
+        PACKAGE_NAME="pfclient_${PLANEFINDER_CLIENT_VERSION_ARMHF}_armhf.deb"
+        ;;
+    "aarch64")
+        PACKAGE_NAME="pfclient_${PLANEFINDER_CLIENT_VERSION_ARM64}_armhf.deb"
+        ;;
+    "x86_64")
+        PACKAGE_NAME="pfclient_${PLANEFINDER_CLIENT_VERSION_AMD64}_amd64.deb"
+        ;;
+    "i386")
+        PACKAGE_NAME="pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb"
+        ;;
+    *)
+        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+        echo -e "  Unsupported CPU archetecture."
+        echo -e ""
+        echo -e "  Archetecture Detected: ${CPU_ARCHITECTURE}"
+        echo -e ""
+        echo -e "\e[93m  ------------------------------------------------------------------------------"
+        echo -e "\e[92m  PlaneFinder ADS-B Client setup halted.\e[39m"
+        echo -e ""
+        read -p "Press enter to continue..." CONTINUE
+        exit 1
+        ;;
+esac
 
 ### START INSTALLATION
 
@@ -123,94 +111,40 @@ if [[ ! -d ${RECEIVER_BUILD_DIRECTORY}/planefinder ]] ; then
     mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/planefinder
     echo ""
 fi
-
-# Change to the component build directory.
-if [[ ! ${PWD} = ${RECEIVER_BUILD_DIRECTORY}/planefinder ]] ; then
-    echo -e "\e[94m  Entering the PlaneFinder ADS-B Client build directory...\e[97m"
-    cd ${RECEIVER_BUILD_DIRECTORY}/planefinder 2>&1
-fi
+echo -e "\e[94m  Entering the PlaneFinder ADS-B Client build directory...\e[97m"
+cd ${RECEIVER_BUILD_DIRECTORY}/planefinder 2>&1
+echo ""
 
 ## BUILD AND INSTALL THE COMPONENT PACKAGE
 
-echo -e ""
-echo -e "\e[95m  Building and installing the PlaneFinder ADS-B Client package...\e[97m"
+echo -e "\e[95m  Installing the PlaneFinder ADS-B Client package...\e[97m"
 echo -e ""
 
-## DOWNLOAD OR UPDATE THE COMPONENT SOURCE
+## DOWNLOAD AND INSTALL THE PACKAGE
 
 # Download the appropriate package depending on the devices architecture.
-if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] ; then
-    # ARM achitecture detected.
-    echo -e "\e[94m  Downloading the PlaneFinder ADS-B Client v${PLANEFINDER_CLIENT_VERSION_ARM} package for ARM devices...\e[97m"
-    echo -e ""
-    wget --no-check-certificate https://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb -O ${RECEIVER_BUILD_DIRECTORY}/planefinder/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb
-else
-    # Otherwise assume i386.
-    echo -e "\e[94m  Downloading the PlaneFinder ADS-B Client v${PLANEFINDER_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
-    echo -e ""
-    wget --no-check-certificate https://client.planefinder.net/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb -O ${RECEIVER_BUILD_DIRECTORY}/planefinder/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb
-fi
-
-## INSTALL THE COMPONENT PACKAGE
+echo -e "\e[94m  Downloading the appropriate deb package...\e[97m"
+echo ""
+wget --no-check-certificate ${BASE_DOWNLOAD_URL}/${PACKAGE_NAME} -O ${RECEIVER_BUILD_DIRECTORY}/planefinder/${PACKAGE_NAME}
 
 # Install the proper package depending on the devices architecture.
-if [[ "${CPU_ARCHITECTURE}" = "armv7l" ]] || [[ "${CPU_ARCHITECTURE}" = "armv6l" ]] || [[ "${CPU_ARCHITECTURE}" = "aarch64" ]] ; then
-    # ARM achitecture detected.
-    echo -e "\e[94m  Installing the PlaneFinder ADS-B Client v${PLANEFINDER_CLIENT_VERSION_ARM} package for ARM devices...\e[97m"
+echo -e "\e[94m  Installing the PlaneFinder Client...\e[97m"
+echo -e ""
+sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/planefinder/${PACKAGE_NAME} 2>&1
+echo ""
+
+# Archive the deb package..
+echo -e "\e[94m  Archiving the deb package...\e[97m"
+if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
+    echo -e "\e[94m  Creating package archive directory...\e[97m"
     echo -e ""
-    sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/planefinder/pfclient_${PLANEFINDER_CLIENT_VERSION_ARM}_armhf.deb 2>&1
-else
-    # Otherwise assume i386.
-    echo -e "\e[94m  Installing the PlaneFinder ADS-B Client v${PLANEFINDER_CLIENT_VERSION_I386} package for i386 devices...\e[97m"
-    if [[ `lsb_release -si` = "Debian" ]] ; then
-        # Force architecture if this is Debian.
-        echo -e "\e[94m  NOTE: dpkg executed with added flag --force-architecture.\e[97m"
-        echo -e ""
-        sudo dpkg -i --force-architecture ${RECEIVER_BUILD_DIRECTORY}/planefinder/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb 2>&1
-    else
-        echo -e ""
-        sudo dpkg -i ${RECEIVER_BUILD_DIRECTORY}/planefinder/pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb 2>&1
-    fi
-fi
-
-# Dummy test for consistency with other feeder install scripts.
-if [[ -n "${CPU_ARCHITECTURE}" ]] ; then
-    # Check that the component package was installed successfully.
+    mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
     echo -e ""
-    echo -e "\e[94m  Checking that the PlaneFinder ADS-B Client package was installed properly...\e[97m"
-
-    if [[ $(dpkg-query -W -f='${STATUS}' pfclient 2>/dev/null | grep -c "ok installed") -eq 0 ]] ; then
-        # If the component package could not be installed halt setup.
-        echo -e ""
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-        echo -e "  SETUP HAS BEEN TERMINATED!"
-        echo -e ""
-        echo -e "\e[93mThe package \"pfclient\" could not be installed.\e[39m"
-        echo -e ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  PlaneFinder ADS-B Client setup halted.\e[39m"
-        echo -e ""
-        if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-            read -p "Press enter to continue..." CONTINUE
-        fi
-        exit 1
-    else
-        # Create binary package archive directory.
-        if [[ ! -d "${RECEIVER_BUILD_DIRECTORY}/package-archive" ]] ; then
-            echo -e "\e[94m  Creating package archive directory...\e[97m"
-            echo -e ""
-            mkdir -vp ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-            echo -e ""
-        fi
-
-        # Archive binary package.
-        echo -e "\e[94m  Moving the PlaneFinder ADS-B Client binary package into the archive directory...\e[97m"
-        echo -e ""
-        mv -vf ${RECEIVER_BUILD_DIRECTORY}/planefinder/pfclient_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
-        echo -e ""
-    fi
 fi
+echo -e "\e[94m  Moving the PlaneFinder ADS-B Client binary package into the archive directory...\e[97m"
+echo -e ""
+mv -vf ${RECEIVER_BUILD_DIRECTORY}/planefinder/pfclient_*.deb ${RECEIVER_BUILD_DIRECTORY}/package-archive 2>&1
+echo -e ""
 
 ## COMPONENT POST INSTALL ACTIONS
 

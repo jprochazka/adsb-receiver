@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2018 Joseph A. Prochazka                                       #
+# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -33,8 +33,6 @@
 
 ### VARIABLES
 
-RECEIVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
 PORTAL_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal"
 
 COLLECTD_CONFIG="/etc/collectd/collectd.conf"
@@ -161,6 +159,8 @@ LoadPlugin table
 LoadPlugin interface
 LoadPlugin memory
 LoadPlugin cpu
+LoadPlugin cpufreq
+LoadPlugin thermal
 LoadPlugin aggregation
 LoadPlugin match_regex
 LoadPlugin df
@@ -190,7 +190,6 @@ LoadPlugin curl
 <Plugin "df">
         MountPoint "/"
         IgnoreSelected false
-        ReportReserved true
         ReportInodes true
 </Plugin>
 

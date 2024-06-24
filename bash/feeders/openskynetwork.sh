@@ -9,7 +9,7 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                   #
-# Copyright (c) 2015-2018, Joseph A. Prochazka                                      #
+# Copyright (c) 2015-2024, Joseph A. Prochazka                                      #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -31,30 +31,15 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-### VARIABLES
-
-RECEIVER_ROOT_DIRECTORY="${PWD}"
-RECEIVER_BASH_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/bash"
-RECEIVER_BUILD_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/build"
-
 ### INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-## SET INSTALLATION VARIABLES
-
-# Source the automated install configuration file if this is an automated installation.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
-    source ${RECEIVER_CONFIGURATION_FILE}
-fi
-
 ### BEGIN SETUP
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    clear
-    echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
-fi
+clear
+echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
 echo -e ""
 echo -e "\e[92m  Setting up OpenSky Network feeder client..."
 echo -e ""
@@ -62,24 +47,16 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 
 # Confirm component installation.
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    # Interactive install.
-    CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "OpenSky Network feeder client Setup" --yesno "The OpenSky Network is a community-based receiver network which continuously collects air traffic surveillance data. Unlike other networks, OpenSky keeps the collected data forever and makes it accessible to researchers. For more information  please see their website:\n\n  https://opensky-network.org/\n\nContinue setup by installing the OpenSky Network feeder client?" 13 78 3>&1 1>&2 2>&3)
-    if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
-        # Setup has been halted by the user.
-        echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-        echo -e "  Setup has been halted at the request of the user."
-        echo -e ""
-        echo -e "\e[93m  ------------------------------------------------------------------------------"
-        echo -e "\e[92m  OpenSky Network feeder client setup halted.\e[39m"
-        echo -e ""
-        read -p "Press enter to continue..." CONTINUE
-        exit 1
-    fi
-else
-    # Warn that automated installation is not supported.
-    echo -e "\e[92m  Automated installation of this script is not yet supported...\e[39m"
+CONTINUE_SETUP=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "OpenSky Network feeder client Setup" --yesno "The OpenSky Network is a community-based receiver network which continuously collects air traffic surveillance data. Unlike other networks, OpenSky keeps the collected data forever and makes it accessible to researchers. For more information  please see their website:\n\n  https://opensky-network.org/\n\nContinue setup by installing the OpenSky Network feeder client?" 13 78 3>&1 1>&2 2>&3)
+if [[ ${CONTINUE_SETUP} -eq 1 ]] ; then
+    # Setup has been halted by the user.
+    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
+    echo -e "  Setup has been halted at the request of the user."
     echo -e ""
+    echo -e "\e[93m  ------------------------------------------------------------------------------"
+    echo -e "\e[92m  OpenSky Network feeder client setup halted.\e[39m"
+    echo -e ""
+    read -p "Press enter to continue..." CONTINUE
     exit 1
 fi
 
@@ -98,10 +75,10 @@ if ! grep -q "^deb .*opensky." /etc/apt/sources.list /etc/apt/sources.list.d/*; 
 else
     echo -e "\e[94m  The OpenSky Network apt repository already exists in /etc/apt/sources.list.d/...\e[97m"
 fi
+echo ""
 
 ### INSTALL THE OPENSKY NETWORK FEEDER PACKAGE USING APT
 
-echo ""
 echo -e "\e[95m  Installing the OpenSky Network fedder package...\e[97m"
 echo ""
 
@@ -122,8 +99,6 @@ echo -e ""
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  OpenSky Network feeder client setup is complete.\e[39m"
 echo -e ""
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    read -p "Press enter to continue..." CONTINUE
-fi
+read -p "Press enter to continue..." CONTINUE
 
 exit 0
