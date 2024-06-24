@@ -217,7 +217,7 @@ EOF;
                                            title VARCHAR(100) NOT NULL,
                                            date datetime NOT NULL,
                                            author VARCHAR(100) NOT NULL,
-                                           contents VARCHAR(20000) NOT NULL);';
+                                           contents TEXT NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights(
                                          id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,
@@ -270,7 +270,7 @@ EOF;
                                          title VARCHAR(100) NOT NULL,
                                          date VARCHAR(20) NOT NULL,
                                          author VARCHAR(100) NOT NULL,
-                                         contents VARCHAR(20000) NOT NULL);';
+                                         contents TEXT NOT NULL);';
                         $flightsSql = 'CREATE TABLE '.$dbPrefix.'flights (
                                          id SERIAL PRIMARY KEY,
                                          aircraft INT(11) NOT NULL,

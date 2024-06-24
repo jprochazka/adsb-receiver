@@ -48,9 +48,3 @@ sudo tee /etc/cron.d/adsb-receiver-flight-logging > /dev/null <<EOF
 * * * * * root ${PYTHON_PATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py; sleep 30; root ${PYTHON_PATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py
 30 * * * * root ${PYTHON_PATH} ${PORTAL_PYTHON_DIRECTORY}/maintenance.py
 EOF
-
-echo -e "\e[94m  Making the flight logging maintenance script executable...\e[97m"
-chmod +x ${PORTAL_PYTHON_DIRECTORY}/flights-maint.sh
-echo -e "\e[94m  Making the maintenance maintenance script executable...\e[97m"
-chmod +x ${PORTAL_PYTHON_DIRECTORY}/maintenance-maint.sh
-

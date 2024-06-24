@@ -18,9 +18,6 @@ The ADS-B Receiver Project website is located at https://www.adsbreceiver.net.
 
 ### Obtaining And Using This Software
 
-Download the latest ADS-B Receiver Rasberry Pi OS Lite image for Raspberry Pi devices.
-https://github.com/jprochazka/adsb-receiver/releases/latest
-
 When setting up the portal you will have to choose between a lite or advanced installation. Advanced features adds flight logging and plotting and should only be chosen on devices running a more sturdy data storage solution.
 
 *It is recommended that anyone using a SD card as they storage medium not attempt to use the advanced features.*
@@ -60,16 +57,17 @@ The following software can be installed using these scripts.
 
 **Site Feeders**
 
-* FlightAware's PiAware:       http://flightaware.com
-* Flightradar24 Feeder Client: http://flightradar24.com
+* ADS-B Exchange:              https://adsbexchange.com
+* FlightAware's PiAware:       https://flightaware.com
+* Flightradar24 Feeder Client: https://flightradar24.com
+* OpenSky Feeder:              https://opensky-network.org
 * Plane Finder ADS-B Client:   https://planefinder.net
-* ADS-B Exchange:              http://adsbexchange.com
 
 **Extras**
 
 * ADS-B Receiver Project Portal: https://www.adsbreceiver.net
 * Beast-Splitter:                https://github.com/flightaware/beast-splitter
-* DuckDNS.org Support:           http://www.duckdns.org/
+* DuckDNS.org Support:           https://www.duckdns.org/
 
 ### Supported Operating Systems
 
@@ -82,6 +80,6 @@ The project currently supports the following Linux distributions.
 
 ### Useful Links
 
-- Website - https://www.adsbreceiver.net/
-- Wiki - https://github.com/jprochazka/adsb-receiver/wiki
+- GitHub Repository - https://github.com/jprochazka/adsb-receiver
+- GitHub Wiki - https://github.com/jprochazka/adsb-receiver/wiki
 - Changelog - https://github.com/jprochazka/adsb-receiver/blob/master/CHANGELOG.md

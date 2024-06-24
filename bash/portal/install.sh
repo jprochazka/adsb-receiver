@@ -141,8 +141,8 @@ else
             else
                 # Install the MySQL server package now if it is not already installed.
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time.\n\nPlease note you may be asked questions used to secure your database server installation after the setup process." 12 78
-                CheckPackage mysql-server
-                if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+                CheckPackage mariadb-server
+                if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
                     echo -e "\e[94m  Executing the mysql_secure_installation script...\e[97m"
                     sudo mysql_secure_installation
                     echo ""
@@ -269,8 +269,8 @@ if [[ "${ADVANCED}" = "true" ]] ; then
     CheckPackage python3-apt
     case "${DATABASEENGINE}" in
         "MySQL")
-            CheckPackage mysql-client
-            CheckPackage python-mysqldb
+            CheckPackage mariadb-client
+            CheckPackage python3-mysqldb
             CheckPackage php${DISTRO_PHP_VERSION}-mysql
             ;;
         "SQLite")

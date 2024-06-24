@@ -11,14 +11,15 @@ The following is a history of the changes made to this project.
 * The Beast Splitter script has been updated to work with the current version of Beast Splitter.
 * The Flightradar24 script has been updated to work with the current install script.
 * The Plane Finder script has been updated to work with current client releases.
+* The portal install scriptss have been updated to work on current operation systems.
+* Version check for dump1090-fa has been fixed.
+* Fix bug where PiAware was installed every run even if already installed.
 * Removed the unattended install option for the time being.
 * Removed the option to install dump1090-mutability.
 * Removed the option to install dump1090 HPTOA.
 * Removed the option to install AboveTustin.
 * Removed the option to install ADSBHub support due to the fact it was incomplete.
 * Removed incomplete RTL-SDR OGN setup scripting.
-* Version check for dump1090-fa has been fixed.
-* Fix bug where PiAware was installed every run even if already installed.
 
 ### Portal
 
