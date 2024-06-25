@@ -65,6 +65,15 @@ fi
 echo -e "\e[95m  Installing packages needed to fulfill dependencies for PlaneFinder ADS-B Client...\e[97m"
 echo -e ""
 CheckPackage wget
+
+# Some architectures require additional packages.
+case "${CPU_ARCHITECTURE}" in
+    "aarch64")
+        echo -e "\e[94m  Adding support for the armhf architecture...\e[97m"
+        sudo dpkg --add-architecture armhf
+        CheckPackage libc6:armhf
+        ;;
+esac
 echo ""
 
 ### DETERMINE WHICH PACACKAGE TO INSTALL
