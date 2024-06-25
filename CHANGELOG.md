@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.1 *(in development)*
+
+* Plane Finder Feeder now installs properly on aarch64 hardware and operating systems.
+
 ## v2.8.0 *(June 24th, 2024)*
 
 ### Installers
