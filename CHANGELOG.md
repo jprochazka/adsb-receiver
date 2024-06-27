@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.1 *(in development)*
+## v2.8.1 *(in development)* :hatched_chick:
 
 ### Installers
 
@@ -14,7 +14,7 @@ The following is a history of the changes made to this project.
 * Addressed portal map centering settings not being added to the database on fresh installs.
 * An issue was addressed allowing existing receviers to upgrade to phoenix properly.
 
-## v2.8.0 *(June 24th, 2024)*
+## v2.8.0 *(June 24th, 2024)* :hatching_chick:
 
 * The dump1090-fa and piaware_builder install process has been updated to support the latest versions.
 * The dump978 script has been rewritten in order to use FlightAwares version of dump978.
