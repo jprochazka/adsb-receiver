@@ -28,10 +28,22 @@
 # SOFTWARE.                                                                      #
 #================================================================================#
 
+import datetime
+import fcntl
 import json
 import os
-import datetime
 import time
+
+# Do not allow another instance of the script to run.
+lock_file = open('/tmp/flights.py.lock','w')
+
+try:
+    fcntl.flock(lock_file, fcntl.LOCK_EX|fcntl.LOCK_NB)
+except (IOError, OSError):
+    quit()
+
+lock_file.write('%d\n'%os.getpid())
+lock_file.flush()
 
 while True:
 

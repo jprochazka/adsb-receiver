@@ -33,8 +33,8 @@
 
 ## VARIABLES
 
-PORTAL_PYTHON_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/python"
-PYTHON_PATH=`which python`
+PORTAL_PYTHON_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal/python"
+PYTHON_PATH=`which python3`
 
 ## SETUP FLIGHT LOGGING
 
@@ -45,6 +45,6 @@ echo -e ""
 # Create the cron jobs responsible for logging and maintenance.
 echo -e "\e[94m  Creating the maintenance maintenance script...\e[97m"
 sudo tee /etc/cron.d/adsb-receiver-flight-logging > /dev/null <<EOF
-* * * * * root ${PYTHON_PATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py; sleep 30; root ${PYTHON_PATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py
+* * * * * root ${PYTHON_PATH} ${PORTAL_PYTHON_DIRECTORY}/flights.py
 30 * * * * root ${PYTHON_PATH} ${PORTAL_PYTHON_DIRECTORY}/maintenance.py
 EOF

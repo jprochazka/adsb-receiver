@@ -382,20 +382,11 @@ url.redirect += (
   "^/dump1090$" => "/dump1090/"
 )
 # Add CORS header
-server.modules += ( "mod_setenv" )
 \$HTTP["url"] =~ "^/dump1090/data/.*\.json$" {
   setenv.add-response-header = ( "Access-Control-Allow-Origin" => "*" )
 }
 EOF
 fi
-sudo tee -a /etc/lighttpd/conf-available/87-adsb-portal.conf > /dev/null <<EOF
-# Block all access to the data directory accept for local requests.
-\$HTTP["remoteip"] !~ "127.0.0.1" {
-    \$HTTP["url"] =~ "^/data/" {
-        url.access-deny = ( "" )
-    }
-}
-EOF
 
 if [[ ! -L "/etc/lighttpd/conf-enabled/87-adsb-portal.conf" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd portal configuration file...\e[97m"
