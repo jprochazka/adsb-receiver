@@ -7,26 +7,34 @@ directly. Their time and effort is greatly appreciated by myself as well as many
 
 **Direct Contributors**
 
-* @adamkaplan
-* @atbPy
-* @charlie-foxtrot
-* @dschaper
-* @g0wfv
+* @mgunther68
 * @jdwall
 * @leearmstrong
-* @mgunther68
-* @Romeo-Golf
-* @target-drone
-* @vitaliy-sk
 * @wiedehopf
+* @vitaliy-sk
+* @target-drone
+* @dschaper
+* @adamkaplan
+* @charlie-foxtrot
+* @jsloyer
+* @kylegordon
+* @BudBundi
+* @kuchel77
+* @atbPy
+* @g0wfv
+* @ttsak
+* @mkrzysztofowicz
+* @espinielli
+* @bitpixdigital
+* @Romeo-Golf
+* @g0wfv
 
 I would like to thank the members and contributors to the following forums for all the time and effort
 they have put in in order to create a useful and informative place to discuss aircraft tracking.
 
-* The ADS-B Receiver Project Forums:  https://www.adsbreceiver.net
 * The FlightAware Forums:             http://discussions.flightaware.com
 * The PlaneFinder Forums:             http://forum.planefinder.net
-* The ADS-B Exchange Forums:          http://www.adsbexchange.com/forums/
+* The ADS-B Exchange Forums:          https://adsbx.discourse.group
 
 The performance graphs were created thanks in part to the great contributions made by members of both
 the FlightAware and PlaneFinder communities. Through their examples and help posted to the following
@@ -37,15 +45,12 @@ threads myself and a couple contributors were able to add these very informative
 
 ## Third Party Software
 
-Thanks to the people over at JetBrains for the complementary licenses for PhpStorm and PyCharms which
-is being used to develop the portal portion of this project. https://www.jetbrains.com
-
-I would also like to thank the developers and contributors to the following projects. Without their
+I would like to thank the developers and contributors to the following projects. Without their
 hard work and dedication this project would not have been possible.
 
 * Dump1090 (fa):              https://github.com/flightaware/dump1090
 * Dump978 (fa):               https://github.com/flightaware/dump978
-* FlightAware's PiAware:      http://flightaware.com
+* FlightAware's PiAware:      https://github.com/flightaware/piaware
 * Plane Finder ADS-B Client:  https://planefinder.net
 * Flightradar24 Client:       https://www.flightradar24.com
 * Dump1090-Tools:             https://github.com/mutability/dump1090-tools
