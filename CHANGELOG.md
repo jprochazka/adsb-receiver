@@ -15,8 +15,6 @@ The following is a history of the changes made to this project.
 
 ## v2.8.0 *(June 24th, 2024)*
 
-### Installers
-
 * The dump1090-fa and piaware_builder install process has been updated to support the latest versions.
 * The dump978 script has been rewritten in order to use FlightAwares version of dump978.
 * The Beast Splitter script has been updated to work with the current version of Beast Splitter.
@@ -33,9 +31,6 @@ The following is a history of the changes made to this project.
 * Removed the option to install AboveTustin.
 * Removed the option to install ADSBHub support due to the fact it was incomplete.
 * Removed incomplete RTL-SDR OGN setup scripting.
-
-### Portal
-
 * The portal install scripts have been updated to work on current operation systems.
 * All portal related Python scripts have been updated to work with Python 3.
 * TinyMCE has been replace by CKeditor in the portal.
