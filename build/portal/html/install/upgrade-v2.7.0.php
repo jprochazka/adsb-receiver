@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2017 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015-2024 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -48,7 +48,7 @@
         $settings = new settings();
 
         try {
-            // Add portal navigation and footer autohide option.
+            // Add map centering longitude and latitude.
             $common->addSetting("advancedMapCenterLatitude", "41.3683798");
             $common->addSetting("advancedMapCenterLongitude", "-82.1076486");
 

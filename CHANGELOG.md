@@ -4,7 +4,14 @@ The following is a history of the changes made to this project.
 
 ## v2.8.1 *(in development)*
 
+### Installers
+
 * Plane Finder Feeder now installs properly on aarch64 hardware and operating systems.
+
+### Portal
+
+* Fix problem where multiple instances of flights.py and maintenance.py were being launched.
+* Addressed portal map centering settings not being added the the database on fresh installs.
 
 ## v2.8.0 *(June 24th, 2024)*
 
