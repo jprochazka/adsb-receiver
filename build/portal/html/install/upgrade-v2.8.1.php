@@ -29,13 +29,12 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////
-    // UPGRADE TO V2.7.0
+    // UPGRADE TO V2.8.1
     ///////////////////////
 
-    // ------------------------------------------------------------------------------------------
-    // Updates the version setting to 2.7.0.
-    // Added options to set the default latitude and longitude for the advanced features map.
-    // ------------------------------------------------------------------------------------------
+    // --------------------------------------------------------
+    // Updates the version setting to 2.8.1.
+    // --------------------------------------------------------
 
     $results = upgrade();
     exit(json_encode($results));
@@ -48,17 +47,14 @@
         $settings = new settings();
 
         try {
-            // Add map centering longitude and latitude.
-            $common->addSetting("advancedMapCenterLatitude", "41.3683798");
-            $common->addSetting("advancedMapCenterLongitude", "-82.1076486");
 
             // Update the version and patch settings..
-            $common->updateSetting("version", "2.7.0");
+            $common->updateSetting("version", "2.8.1");
             $common->updateSetting("patch", "");
 
             // The upgrade process completed successfully.
             $results['success'] = TRUE;
-            $results['message'] = "Upgrade to v2.7.0 successful.";
+            $results['message'] = "Upgrade to v2.8.1 successful.";
             return $results;
 
         } catch(Exception $e) {

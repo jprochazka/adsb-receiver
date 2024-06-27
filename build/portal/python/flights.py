@@ -36,14 +36,28 @@
 # 3) Update the last time the flight was seen.
 
 import datetime
+import fcntl
 import json
-import time
 import os
+import time
+
 from urllib.request import urlopen
 
 def log(string):
     #print(string) # uncomment to enable debug logging
     return
+
+# Do not allow another instance of the script to run.
+lock_file = open('/tmp/flights.py.lock','w')
+
+try:
+    fcntl.flock(lock_file, fcntl.LOCK_EX|fcntl.LOCK_NB)
+except (IOError, OSError):
+    log('another instance already running')
+    quit()
+
+lock_file.write('%d\n'%os.getpid())
+lock_file.flush()
 
 # Read the configuration file.
 with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
@@ -125,7 +139,7 @@ class FlightsProcessor(object):
         log("\tFound Aircraft ID: " + str(aircraft_id))
 
         # Check that a flight is tied to this track.
-        if aircraft.has_key('flight'):
+        if 'flight'  in aircraft:
             self.processFlight(aircraft_id, aircraft)
 
     def processFlight(self, aircraft_id, aircraft):
@@ -166,7 +180,7 @@ class FlightsProcessor(object):
 
         if row == None or row[0] != aircraft["messages"]:
             # Add this position to the database.
-            if aircraft.has_key('squawk'):
+            if 'squawk' in aircraft:
                 params = (flight_id, self.time_now, aircraft["messages"], aircraft["squawk"],
                             aircraft["lat"], aircraft["lon"], aircraft["track"],
                             aircraft["nav_altitude"], aircraft["geom_rate"], aircraft["gs"], aircraft_id,)

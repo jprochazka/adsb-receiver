@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2019 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015-2024 Joseph A. Prochazka                                     //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.8.0";
+    $thisVersion = "2.8.1";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -398,11 +398,11 @@ EOF;
                 $sth = $dbh->prepare($settingsSql);
                 $sth->execute();
                 $sth = NULL;
-                
+
                 $sth = $dbh->prepare($aircraftIndexSql);
                 $sth->execute();
                 $sth = NULL;
-                
+
                 $sth = $dbh->prepare($positionsIndexSql);
                 $sth->execute();
                 $sth = NULL;
@@ -444,6 +444,8 @@ EOF;
             $common->addSetting('googleMapsApiKey', '');
             $common->addSetting("hideNavbarAndFooter", FALSE);
             $common->addSetting("purgeAircraft", FALSE);
+            $common->addSetting("advancedMapCenterLatitude", "41.3683798");
+            $common->addSetting("advancedMapCenterLongitude", "-82.1076486");
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);
