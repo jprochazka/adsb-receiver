@@ -66,6 +66,29 @@ class GetPosts(Resource):
             for result in result:
                 data.append(dict(zip(columns,result)))
 
+        # PostgreSQL
+        if config['database']['use']=="postgresql":
+            connection=psycopg2.connect(
+                host=config['database']['postgresql']['host'],
+                user=config['database']['postgresql']['user'],
+                password=config['database']['postgresql']['password'],
+                database=config['database']['postgresql']['database']
+            )
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM adsb_blogposts ORDER BY date DESC LIMIT %s, %s", (offset, limit))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # SQLite
+        if config['database']['use']=="sqlite":
+            connection=sqlite3.connect(config['database']['sqlite']['path'])
+            cursor=connection.cursor()
+            cursor.execute("SELECT * FROM adsb_blogposts ORDER BY date DESC LIMIT %s, %s", (offset, limit))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
         return jsonify(data)
 
 ## FLIGHT_DATA
@@ -102,6 +125,29 @@ class GetFlight(Resource):
             cursor.execute("SELECT * FROM adsb_flights WHERE flight = %s", (flight))
             columns=[x[0] for x in cursor.description]
             result=cursor.fetchall()
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # PostgreSQL
+        if config['database']['use']=="postgresql":
+            connection=psycopg2.connect(
+                host=config['database']['postgresql']['host'],
+                user=config['database']['postgresql']['user'],
+                password=config['database']['postgresql']['password'],
+                database=config['database']['postgresql']['database']
+            )
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM adsb_flights WHERE flight = %s", (flight))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # SQLite
+        if config['database']['use']=="sqlite":
+            connection=sqlite3.connect(config['database']['sqlite']['path'])
+            cursor=connection.cursor()
+            cursor.execute("SELECT * FROM adsb_flights WHERE flight = %s", (flight))
+            columns=[x[0] for x in cursor.description]
             for result in result:
                 data.append(dict(zip(columns,result)))
             
@@ -195,6 +241,29 @@ class GetFlights(Resource):
             result=cursor.fetchall()
             for result in result:
                 data.append(dict(zip(columns,result)))
+
+        # PostgreSQL
+        if config['database']['use']=="postgresql":
+            connection=psycopg2.connect(
+                host=config['database']['postgresql']['host'],
+                user=config['database']['postgresql']['user'],
+                password=config['database']['postgresql']['password'],
+                database=config['database']['postgresql']['database']
+            )
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM adsb_flights ORDER BY lastSeen DESC, flight LIMIT %s, %s", (offset, limit))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # SQLite
+        if config['database']['use']=="sqlite":
+            connection=sqlite3.connect(config['database']['sqlite']['path'])
+            cursor=connection.cursor()
+            cursor.execute("SELECT * FROM adsb_flights ORDER BY lastSeen DESC, flight LIMIT %s, %s", (offset, limit))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
             
         return jsonify(data)
     
@@ -245,6 +314,29 @@ class GetPositions(Resource):
             for result in result:
                 data.append(dict(zip(columns,result)))
             
+        # PostgreSQL
+        if config['database']['use']=="postgresql":
+            connection=psycopg2.connect(
+                host=config['database']['postgresql']['host'],
+                user=config['database']['postgresql']['user'],
+                password=config['database']['postgresql']['password'],
+                database=config['database']['postgresql']['database']
+            )
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM adsb_positions WHERE flight = %s ORDER BY time LIMIT %s, %s", (flight, offset, limit))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # SQLite
+        if config['database']['use']=="sqlite":
+            connection=sqlite3.connect(config['database']['sqlite']['path'])
+            cursor=connection.cursor()
+            cursor.execute("SELECT * FROM adsb_positions WHERE flight = %s ORDER BY time LIMIT %s, %s", (flight, offset, limit))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
         return jsonify(data)
     
 # LINKS
@@ -284,6 +376,29 @@ class GetLink(Resource):
             for result in result:
                 data.append(dict(zip(columns,result)))
 
+        # PostgreSQL
+        if config['database']['use']=="postgresql":
+            connection=psycopg2.connect(
+                host=config['database']['postgresql']['host'],
+                user=config['database']['postgresql']['user'],
+                password=config['database']['postgresql']['password'],
+                database=config['database']['postgresql']['database']
+            )
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM adsb_links WHERE id = %s", (id))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # SQLite
+        if config['database']['use']=="sqlite":
+            connection=sqlite3.connect(config['database']['sqlite']['path'])
+            cursor=connection.cursor()
+            cursor.execute("SELECT * FROM adsb_links WHERE id = %s", (id))
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
         return jsonify(data)
 
 class GetLinks(Resource):
@@ -312,6 +427,29 @@ class GetLinks(Resource):
             cursor.execute("SELECT * FROM adsb_links ORDER BY name")
             columns=[x[0] for x in cursor.description]
             result=cursor.fetchall()
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # PostgreSQL
+        if config['database']['use']=="postgresql":
+            connection=psycopg2.connect(
+                host=config['database']['postgresql']['host'],
+                user=config['database']['postgresql']['user'],
+                password=config['database']['postgresql']['password'],
+                database=config['database']['postgresql']['database']
+            )
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM adsb_links ORDER BY name")
+            columns=[x[0] for x in cursor.description]
+            for result in result:
+                data.append(dict(zip(columns,result)))
+
+        # SQLite
+        if config['database']['use']=="sqlite":
+            connection=sqlite3.connect(config['database']['sqlite']['path'])
+            cursor=connection.cursor()
+            cursor.execute("SELECT * FROM adsb_links ORDER BY name")
+            columns=[x[0] for x in cursor.description]
             for result in result:
                 data.append(dict(zip(columns,result)))
 
