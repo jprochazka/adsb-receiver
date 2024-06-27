@@ -12,6 +12,7 @@ The following is a history of the changes made to this project.
 
 * Fix problem where multiple instances of flights.py and maintenance.py were being launched.
 * Addressed portal map centering settings not being added to the database on fresh installs.
+* An issue was addressed allowing existing receviers to upgrade to the phoenix properly.
 
 ## v2.8.0 *(June 24th, 2024)*
 
