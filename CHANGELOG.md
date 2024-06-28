@@ -7,6 +7,7 @@ The following is a history of the changes made to this project.
 ### Portal
 
 * Fixed issue where navigation element toggling was not working in lite installs. 
+* Added eno1 and wlo1 to network options in the administration settings section of the portal.
 
 ## v2.8.1 *(June 27th, 2024)* :hatched_chick:
 
