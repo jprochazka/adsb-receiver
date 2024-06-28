@@ -73,7 +73,7 @@
             $dbh = NULL;
             foreach ($savedFlights as $flight) {
                 // Remove flight if not in list.
-                if (!in_array($flight, $notificationArray)) {
+                if (!in_array($flight, $notificationArray ?? [])) {
                     $dbh = $common->pdoOpen();
                     $sql = "DELETE FROM ".$settings::db_prefix."flightNotifications WHERE flight = :flight";
                     $sth = $dbh->prepare($sql);

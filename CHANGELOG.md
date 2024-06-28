@@ -2,9 +2,19 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.0 *(June 24th, 2024)*
+## v2.8.1 *(in development)* :hatched_chick:
 
 ### Installers
+
+* Plane Finder Feeder now installs properly on aarch64 operating systems.
+
+### Portal
+
+* Fix problem where multiple instances of flights.py and maintenance.py were being launched.
+* Addressed portal map centering settings not being added to the database on fresh installs.
+* An issue was addressed allowing existing receivers to upgrade to phoenix properly.
+
+## v2.8.0 *(June 24th, 2024)* :hatching_chick:
 
 * The dump1090-fa and piaware_builder install process has been updated to support the latest versions.
 * The dump978 script has been rewritten in order to use FlightAwares version of dump978.
@@ -22,9 +32,6 @@ The following is a history of the changes made to this project.
 * Removed the option to install AboveTustin.
 * Removed the option to install ADSBHub support due to the fact it was incomplete.
 * Removed incomplete RTL-SDR OGN setup scripting.
-
-### Portal
-
 * The portal install scripts have been updated to work on current operation systems.
 * All portal related Python scripts have been updated to work with Python 3.
 * TinyMCE has been replace by CKeditor in the portal.
