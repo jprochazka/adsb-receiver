@@ -2,14 +2,15 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.1 *(in development)* :hatched_chick:
-
-### Installers
-
-* Plane Finder Feeder now installs properly on aarch64 operating systems.
+## v2.8.2 *(in development)* :baby_chick:
 
 ### Portal
 
+* Fixed issue where navigation element toggling was not working in lite installs. 
+
+## v2.8.1 *(June 27th, 2024)* :hatched_chick:
+
+* Plane Finder Feeder now installs properly on aarch64 operating systems.
 * Fix problem where multiple instances of flights.py and maintenance.py were being launched.
 * Addressed portal map centering settings not being added to the database on fresh installs.
 * An issue was addressed allowing existing receivers to upgrade to phoenix properly.

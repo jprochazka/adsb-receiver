@@ -164,7 +164,8 @@
                     }
                 }
                 $that = $common->extractString($statement[0], " ".$operator." ", "}");
-                if ($that == "TRUE") {
+                if ($that == "TRUE" || $that == "FALSE") {
+                    $ifThis = $common->stringToBoolean($ifThis);
                     $that = $common->stringToBoolean($that);
                 }
                 if ($operator == "eq") {
