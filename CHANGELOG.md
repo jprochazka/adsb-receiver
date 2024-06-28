@@ -4,6 +4,11 @@ The following is a history of the changes made to this project.
 
 ## v2.8.2 *(in development)* :baby_chick:
 
+### Installers
+
+* Added support for Ubuntu Jammy Jellyfish.
+* Added support for Ubuntu Focal Fossa.
+
 ### Portal
 
 * Fixed issue where navigation element toggling was not working in lite installs. 

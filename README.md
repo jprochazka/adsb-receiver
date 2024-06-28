@@ -77,6 +77,8 @@ The project currently supports the following Linux distributions.
 * Debian Bullseye
 * Rasbperry PI OS (Bookworm)
 * Rasbperry PI OS Legacy (Bullseye)
+* Ubuntu Jammy Jellyfish
+* Ubuntu Focal Fossa
 
 ### Useful Links
 
