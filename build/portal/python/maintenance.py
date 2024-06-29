@@ -88,14 +88,14 @@ while True:
     purge_days_old = False
     # MySQL and SQLite
     cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeDaysOld'")
-    row = cursor.fetchone()
+    row = cursor.fetchone()[0]
     if row:
-        purge_days_old = row
+        purge_days_old = int(row)
 
     ## Create the purge date from the age specified.
 
     if purge_days_old:
-        purge_datetime = datetime.datetime.utcnow() - timedelta(days=purge_days_old)
+        purge_datetime = datetime.datetime.utcnow() - datetime.timedelta(days=purge_days_old)
         purge_date = purge_datetime.strftime("%Y/%m/%d %H:%M:%S")
     else:
         purge_datetime = None
