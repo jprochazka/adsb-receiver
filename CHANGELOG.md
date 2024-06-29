@@ -6,6 +6,8 @@ The following is a history of the changes made to this project.
 
 ### Installers
 
+* Added the option to install the ADS-B Exchange stats package after feeder installation.
+* Added the option to install the ADS-B Exchange web interface after feeder installation.
 * Added support for Ubuntu Jammy Jellyfish.
 * Added support for Ubuntu Focal Fossa.
 * Added support for DietPi Bookworm.
