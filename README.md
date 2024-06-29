@@ -75,6 +75,8 @@ The project currently supports the following Linux distributions.
 
 * Debian Bookworm
 * Debian Bullseye
+* DietPi (Bookworm)
+* DietPi (Bullseye)
 * Rasbperry PI OS (Bookworm)
 * Rasbperry PI OS Legacy (Bullseye)
 * Ubuntu Jammy Jellyfish

@@ -8,6 +8,8 @@ The following is a history of the changes made to this project.
 
 * Added support for Ubuntu Jammy Jellyfish.
 * Added support for Ubuntu Focal Fossa.
+* Added support for DietPi Bookworm.
+* Added support for DietPi Bullseye.
 
 ### Portal
 
