@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.2 *(in development)* :baby_chick:
+## v2.8.2 *(June 29th, 2024)* :baby_chick:
 
 ### Installers
 
