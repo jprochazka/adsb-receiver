@@ -15,6 +15,8 @@ The following is a history of the changes made to this project.
 
 * Fixed issue where navigation element toggling was not working in lite installs. 
 * Added eno1 and wlo1 to network options in the administration settings section of the portal.
+* The ADS-B Max Range temperature graph is now displayed in system performace the graphs collection.
+* The Core Temperature graph is now displayed in system performace the graphs collection.
 
 ## v2.8.1 *(June 27th, 2024)* :hatched_chick:
 

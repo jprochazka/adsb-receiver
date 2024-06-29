@@ -186,7 +186,7 @@ def read_aircraft(instance_name, host, url):
         with closing(urlopen(url + '/data/receiver.json', None, 5.0)) as receiver_file:
             receiver = json.load(receiver_file)
 
-        if 'lat' not in receiver:
+        if 'lat' in receiver:
             rlat = float(receiver['lat'])
             rlon = float(receiver['lon'])
         else:
@@ -203,8 +203,8 @@ def read_aircraft(instance_name, host, url):
     max_range = 0
     mlat = 0
     for a in aircraft_data['aircraft']:
-        if a['seen'] < 15: total += 1
-        if 'seen_pos' in a and a['seen_pos'] < 15:
+        if a['seen'] < 60: total += 1
+        if 'seen_pos' in a and a['seen_pos'] < 60:
             with_pos += 1
             if rlat is not None:
                 distance = greatcircle(rlat, rlon, a['lat'], a['lon'])
