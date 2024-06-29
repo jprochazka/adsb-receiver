@@ -37,7 +37,7 @@
 
             // Check if the portal is installed or needs upgraded.
 
-            $thisVersion = "2.8.1";
+            $thisVersion = "2.8.2";
 
             if (!file_exists($_SERVER['DOCUMENT_ROOT']."/classes/settings.class.php")) {
                 header ("Location: /install/install.php");
@@ -164,7 +164,8 @@
                     }
                 }
                 $that = $common->extractString($statement[0], " ".$operator." ", "}");
-                if ($that == "TRUE") {
+                if ($that == "TRUE" || $that == "FALSE") {
+                    $ifThis = $common->stringToBoolean($ifThis);
                     $that = $common->stringToBoolean($that);
                 }
                 if ($operator == "eq") {

@@ -50,45 +50,7 @@ fi
 
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-## SET VARIABLES
-
-RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project Preliminary Setup Process"
-
 ## FUNCTIONS
-
-# Function to update the repository package lists.
-function AptUpdate() {
-    clear
-    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
-    echo -e ""
-    echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
-    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
-    echo -e ""
-    sudo apt-get update
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
-    echo -e ""
-    read -p "Press enter to continue..." CONTINUE
-}
-
-# Function to check that the packages required by this script are installed.
-function CheckPrerequisites() {
-    clear
-    echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
-    echo -e ""
-    echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
-    echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
-    echo -e ""
-    CheckPackage whiptail
-    CheckPackage git
-    CheckPackage bc
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
-    echo -e ""
-    read -p "Press enter to continue..." CONTINUE
-}
 
 # Function to update the local git repository.
 function UpdateRepository() {
@@ -163,20 +125,6 @@ function UpdateOperatingSystem() {
     echo -e ""
     read -p "Press enter to continue..." CONTINUE
 }
-
-## Update the repository packages and check that prerequisite packages are installed.
-
-# Only call AptUpdate if last update was more than ${APT_UPDATE_THRESHOLD} seconds ago or if the user forced the update.
-APT_UPDATE_THRESHOLD="1800"
-APT_UPDATE_CURRENT_EPOCH=`date +%s`
-APT_UPDATE_LAST_EPOCH=`stat -c %Y /var/cache/apt/pkgcache.bin`
-APT_UPDATE_DELTA=`echo $[${APT_UPDATE_CURRENT_EPOCH} - ${APT_UPDATE_LAST_EPOCH}]`
-
-if [[ "${APT_UPDATE_DELTA}" -gt "${APT_UPDATE_THRESHOLD}" ]] || [[ "${RECEIVER_FORCE_APT_UPDATE}" = "true" ]] ; then
-    AptUpdate
-fi
-
-CheckPrerequisites
 
 ## DISPLAY WELCOME SCREEN
 

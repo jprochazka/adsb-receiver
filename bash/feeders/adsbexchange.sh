@@ -92,6 +92,33 @@ chmod -x ${RECEIVER_BUILD_DIRECTORY}/adsbexchange/feed-${ACTION_TO_PERFORM}.sh
 echo -e "\e[94m  Executing the ${ACTION_TO_PERFORM} script...\e[97m"
 echo ""
 sudo bash ${RECEIVER_BUILD_DIRECTORY}/adsbexchange/feed-${ACTION_TO_PERFORM}.sh
+echo ""
+
+## INSTALL THE ADS-B EXCHANGE STATS PACKAGE
+
+if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange offers the option to install their stats package in order to send your stats to their site.\n\nWould you like to install the stats package now?" 12 78; then
+    echo -e "\e[95m  Executing the ADS-B Exchange script to install their web interface...\e[97m"
+    echo ""
+    echo -e "\e[94m  Downloading the stats package installation script...\e[97m"
+    echo ""
+    curl -L -o ${RECEIVER_BUILD_DIRECTORY}/adsbexchange/axstats.sh https://adsbexchange.com/stats.sh
+    echo ""
+    echo -e "\e[94m  Executing the stats package installation script...\e[97m"
+    echo ""
+    sudo bash ${RECEIVER_BUILD_DIRECTORY}/adsbexchange/axstats.sh
+    echo ""
+fi
+
+## INSTALL THE ADS-B EXCHANGE WEB INTERFACE
+
+if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange offers the option to install an additional web interface.\n\nWould you like to install the web interface now?" 12 78; then
+    echo -e "\e[95m  Executing the ADS-B Exchange script to install their web interface...\e[97m"
+    echo ""
+    echo -e "\e[94m  Executing the ADS-B Exchange web interface installation script...\e[97m"
+    echo ""
+    sudo bash /usr/local/share/adsbexchange/git/install-or-update-interface.sh
+    echo ""
+fi
 
 ## ADS-B EXCHANGE FEED SETUP COMPLETE
 

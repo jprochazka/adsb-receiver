@@ -1,4 +1,4 @@
-#!/bin/bash
+\#!/bin/bash
 
 #####################################################################################
 #                                   ADS-B RECEIVER                                  #
@@ -34,22 +34,58 @@
 #                                                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-## VARIABLES
+## SET PROJECT VARIABLES
 
 PROJECT_BRANCH="master"
 CONFIGURATION_FILE="default"
 ENABLE_LOGGING="false"
 
+export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project Preliminary Setup Process"
 export RECEIVER_ROOT_DIRECTORY="${PWD}"
 export RECEIVER_BASH_DIRECTORY="${PWD}/bash"
 export RECEIVER_BUILD_DIRECTORY="${PWD}/build"
-export RECEIVER_OS_CODE_NAME=`lsb_release -c -s`
-export RECEIVER_OS_DISTRIBUTION=`. /etc/os-release; echo ${ID/*, /}`
-export RECEIVER_OS_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 
 ## SOURCE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
+
+## UPDATE PACKAGE LIST AND INSTALL DEPENDENCIES
+
+clear
+echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+echo -e ""
+echo -e "\e[92m  Downloading the latest package lists for all enabled repositories and PPAs..."
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
+echo -e ""
+sudo apt-get update
+echo -e ""
+echo -e "\e[93m  ------------------------------------------------------------------------------"
+echo -e "\e[92m  Finished downloading and updating package lists.\e[39m"
+echo -e ""
+read -p "Press enter to continue..." CONTINUE
+
+clear
+echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}"
+echo -e ""
+echo -e "\e[92m  Checking to make sure the whiptail and git packages are installed..."
+echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m"
+echo -e ""
+CheckPackage whiptail
+CheckPackage git
+CheckPackage bc
+CheckPackage lsb-base
+CheckPackage lsb-release
+echo -e ""
+echo -e "\e[93m  ------------------------------------------------------------------------------"
+echo -e "\e[92m  The whiptail and git packages are installed.\e[39m"
+echo -e ""
+read -p "Press enter to continue..." CONTINUE
+
+## SET OS VARIABLES
+
+export RECEIVER_OS_CODE_NAME=`lsb_release -c -s`
+export RECEIVER_OS_DISTRIBUTION=`. /etc/os-release; echo ${ID/*, /}`
+export RECEIVER_OS_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 
 ## FUNCTIONS
 

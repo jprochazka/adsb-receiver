@@ -2,14 +2,27 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.1 *(in development)* :hatched_chick:
+## v2.8.2 *(June 29th, 2024)* :baby_chick:
 
 ### Installers
 
-* Plane Finder Feeder now installs properly on aarch64 operating systems.
+* Added the option to install the ADS-B Exchange stats package after feeder installation.
+* Added the option to install the ADS-B Exchange web interface after feeder installation.
+* Added support for Ubuntu Jammy Jellyfish.
+* Added support for Ubuntu Focal Fossa.
+* Added support for DietPi Bookworm.
+* Added support for DietPi Bullseye.
 
 ### Portal
 
+* Fixed issue where navigation element toggling was not working in lite installs. 
+* Added eno1 and wlo1 to network options in the administration settings section of the portal.
+* The ADS-B Max Range temperature graph is now displayed in system performace the graphs collection.
+* The Core Temperature graph is now displayed in system performace the graphs collection.
+
+## v2.8.1 *(June 27th, 2024)* :hatched_chick:
+
+* Plane Finder Feeder now installs properly on aarch64 operating systems.
 * Fix problem where multiple instances of flights.py and maintenance.py were being launched.
 * Addressed portal map centering settings not being added to the database on fresh installs.
 * An issue was addressed allowing existing receivers to upgrade to phoenix properly.
