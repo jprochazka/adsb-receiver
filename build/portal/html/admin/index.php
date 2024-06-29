@@ -514,13 +514,13 @@
                         <div class="panel-body">
                             <div class="btn-group" data-toggle="buttons">
                                 <label class="btn btn-default<?php ($measurementRange == "imperialNautical" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="measurementRange" id="imperialNautical" value="imperialNautical" autocomplete="off"<?php ($measurementRange == "imperialNautical" ? print ' checked' : ''); ?>> Imperial (Nautical Miles)
+                                    <input type="radio" name="measurementRange" id="imperialNautical" value="imperialNautical"<?php ($measurementRange == "imperialNautical" ? print ' checked' : ''); ?>> Imperial (Nautical Miles)
                                 </label>
                                 <label class="btn btn-default<?php ($measurementRange == "imperialStatute" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="measurementRange" id="imperialStatute" value="imperialStatute" autocomplete="off"<?php ($measurementRange == "imperialStatute" ? print ' checked' : ''); ?>> Imperial (Statute Miles)
+                                    <input type="radio" name="measurementRange" id="imperialStatute" value="imperialStatute"<?php ($measurementRange == "imperialStatute" ? print ' checked' : ''); ?>> Imperial (Statute Miles)
                                 </label>
                                 <label class="btn btn-default<?php ($measurementRange == "metric" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="measurementRange" id="metric" value="metric" autocomplete="off"<?php ($measurementRange == "metric" ? print ' checked' : ''); ?>> Metric
+                                    <input type="radio" name="measurementRange" id="metric" value="metric"<?php ($measurementRange == "metric" ? print ' checked' : ''); ?>> Metric
                                 </label>
                             </div>
                         </div>
@@ -530,10 +530,10 @@
                         <div class="panel-body">
                             <div class="btn-group" data-toggle="buttons">
                                 <label class="btn btn-default<?php ($measurementTemperature == "imperial" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="measurementTemperature" id="imperial" value="imperial" autocomplete="off"<?php ($measurementTemperature == "imperial" ? print ' checked' : ''); ?>> Imperial
+                                    <input type="radio" name="measurementTemperature" id="imperial" value="imperial"<?php ($measurementTemperature == "imperial" ? print ' checked' : ''); ?>> Imperial
                                 </label>
                                 <label class="btn btn-default<?php ($measurementTemperature == "metric" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="measurementTemperature" id="metric" value="metric" autocomplete="off"<?php ($measurementTemperature == "metric" ? print ' checked' : ''); ?>> Metric
+                                    <input type="radio" name="measurementTemperature" id="metric" value="metric"<?php ($measurementTemperature == "metric" ? print ' checked' : ''); ?>> Metric
                                 </label>
                             </div>
                         </div>
@@ -543,10 +543,10 @@
                         <div class="panel-body">
                             <div class="btn-group" data-toggle="buttons">
                                 <label class="btn btn-default<?php ($measurementBandwidth == "kbps" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="measurementBandwidth" id="imperial" value="kbps" autocomplete="off"<?php ($measurementBandwidth == "kbps" ? print ' checked' : ''); ?>> Kbps
+                                    <input type="radio" name="measurementBandwidth" id="imperial" value="kbps"<?php ($measurementBandwidth == "kbps" ? print ' checked' : ''); ?>> Kbps
                                 </label>
                                 <label class="btn btn-default<?php ($measurementBandwidth == "mbps" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="measurementBandwidth" id="metric" value="mbps" autocomplete="off"<?php ($measurementBandwidth == "mbps" ? print ' checked' : ''); ?>> Mbps
+                                    <input type="radio" name="measurementBandwidth" id="metric" value="mbps"<?php ($measurementBandwidth == "mbps" ? print ' checked' : ''); ?>> Mbps
                                 </label>
                             </div>
                         </div>
@@ -558,10 +558,16 @@
                         <div class="panel-body">
                             <div class="btn-group" data-toggle="buttons">
                                 <label class="btn btn-default<?php ($networkInterface == "eth0" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="networkInterface" id="imperial" value="eth0" autocomplete="off"<?php ($networkInterface == "eth0" ? print ' checked' : ''); ?>> eth0
+                                    <input type="radio" name="networkInterface" id="eth0" value="eth0"<?php ($networkInterface == "eth0" ? print ' checked' : ''); ?>> eth0
+                                </label>
+                                <label class="btn btn-default<?php ($networkInterface == "eno1" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="networkInterface" id="eno1" value="eno1"<?php ($networkInterface == "eno1" ? print ' checked' : ''); ?>> eno1
                                 </label>
                                 <label class="btn btn-default<?php ($networkInterface == "wlan0" ? print ' active' : ''); ?>">
-                                    <input type="radio" name="networkInterface" id="metric" value="wlan0" autocomplete="off"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
+                                    <input type="radio" name="networkInterface" id="wlan0" value="wlan0"<?php ($networkInterface == "wlan0" ? print ' checked' : ''); ?>> wlan0
+                                </label>
+                                <label class="btn btn-default<?php ($networkInterface == "wlo1" ? print ' active' : ''); ?>">
+                                    <input type="radio" name="networkInterface" id="wlo1" value="wlo1"<?php ($networkInterface == "wlo1" ? print ' checked' : ''); ?>> wlo1
                                 </label>
                             </div>
                         </div>
