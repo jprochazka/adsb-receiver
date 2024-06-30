@@ -2,6 +2,11 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.3 *(in development)*
+
+* Miscellaneous refactoring and standards compliance fixes.
+* ADS-B Receiver Project repository updates now work properly when executed by the script.
+
 ## v2.8.2 *(June 29th, 2024)* :baby_chick:
 
 ### Installers
