@@ -8,6 +8,7 @@ The following is a history of the changes made to this project.
 
 * ADS-B Receiver Project repository updates now work properly when executed by the script.
 * Unnecessary RTL-SDR kernel modules are once again blacklisted during decoder installs. 
+* Fixed error in line downloading the duck DNS log during setup.
 * Miscellaneous refactoring and standards compliance rewrites.
 
 ### Portal

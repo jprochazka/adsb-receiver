@@ -140,7 +140,7 @@ CheckPackage lsb-release
 CheckPackage whiptail
 echo -e "\n\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  All required packages are installed.\e[39m\n"
-read -p "Press enter to continue..." CONTINUE
+read -p "Press enter to continue..." discard
 
 
 ## SET OS VARIABLES
@@ -153,7 +153,7 @@ export RECEIVER_OS_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 ## SET HANDWARE VARIABLES
 
 export RECIEVER_CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
-export RECEIVER_CPU_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}`
+export RECEIVER_CPU_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
 
 
 ## FUNCTIONS

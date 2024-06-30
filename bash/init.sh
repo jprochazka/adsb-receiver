@@ -24,7 +24,7 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "The ADS-B Receive
     # Setup has been halted by the user.
     echo -e "\n\e[91m  \e[5mSETUP HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user.\e[37m\n"
-    read -p "Press enter to continue..." CONTINUE
+    read -p "Press enter to continue..." discard
     exit 1
 fi
 
@@ -69,7 +69,7 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
 
     echo -e "\n\e[93m  -----------------------------------------------------------------------------"
     echo -e "\e[92m  Finished fetching the latest version the '${RECEIVER_PROJECT_BRANCH}' branch.\e[39m\n"
-    read -p "Press enter to continue..." CONTINUE
+    read -p "Press enter to continue..." discard
 fi
 
 
@@ -83,7 +83,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Operating System Up
     sudo apt-get -y dist-upgrade
     echo -e "\n\e[93m  ------------------------------------------------------------------------"
     echo -e "\e[92m  Your operating system should now be up to date.\e[39m\n"
-    read -p "Press enter to continue..." CONTINUE
+    read -p "Press enter to continue..." discard
 fi
 
 
