@@ -6,10 +6,13 @@ The following is a history of the changes made to this project.
 
 ### Installers
 
-* ADS-B Receiver Project repository updates now work properly when executed by the script.
 * Unnecessary RTL-SDR kernel modules are once again blacklisted during decoder installs. 
-* Fixed error in line downloading the duck DNS log during setup.
-* Miscellaneous refactoring and standards compliance rewrites.
+* ADS-B Receiver Project repository updates now work properly when executed by the script.
+* Instead of creating a new branch changes to tracked files are now stashed before updating.
+* The --development and -d parameters are now respected by the install scripts.
+* The --branch <branch_name> and -b <branch_name> parameters properly specify the branch to use.
+* Fixed issue noticed in the line downloading the duck DNS log during setup.
+* Refactoring and standards compliance changes were made to multiple bash scripts.
 
 ### Portal
 
