@@ -75,6 +75,10 @@ CheckPackage libsoapysdr-dev
 CheckPackage lighttpd
 echo ""
 
+## BLACKLIST UNWANTED RTL-SDR MODULES
+
+BlacklistModules
+
 ## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
 
 echo -e "\e[95m  Preparing the dump1090-fa Git repository...\e[97m"

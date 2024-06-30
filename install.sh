@@ -148,7 +148,13 @@ read -p "Press enter to continue..." CONTINUE
 export RECEIVER_OS_CODE_NAME=`lsb_release -c -s`
 export RECEIVER_OS_DISTRIBUTION=`. /etc/os-release; echo ${ID/*, /}`
 export RECEIVER_OS_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
+
+
+## SET HANDWARE VARIABLES
+
 export RECIEVER_CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
+export RECEIVER_CPU_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}`
+
 
 ## FUNCTIONS
 
@@ -250,6 +256,7 @@ unset RECEIVER_OS_CODE_NAME
 unset RECEIVER_OS_DISTRIBUTION
 unset RECEIVER_OS_RELEASE
 unset RECIEVER_CPU_ARCHITECTURE
+unset RECEIVER_CPU_REVISION
 unset RECEIVER_PROJECT_BRANCH
 unset RECEIVER_DEVELOPMENT_MODE
 unset RECEIVER_MTA

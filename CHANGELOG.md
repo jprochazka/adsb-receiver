@@ -4,12 +4,17 @@ The following is a history of the changes made to this project.
 
 ## v2.8.3 *(in development)*
 
-* Miscellaneous refactoring and standards compliance fixes.
+### Installers
+
 * ADS-B Receiver Project repository updates now work properly when executed by the script.
+* Unnecessary RTL-SDR kernel modules are once again blacklisted during decoder installs. 
+* Miscellaneous refactoring and standards compliance rewrites.
+
+### Portal
+
+* The proper collectd CPU temperature configuration is inserted for Raspberry PI 4 Model B devices.
 
 ## v2.8.2 *(June 29th, 2024)* :baby_chick:
-
-### Installers
 
 * Added the option to install the ADS-B Exchange stats package after feeder installation.
 * Added the option to install the ADS-B Exchange web interface after feeder installation.
@@ -17,9 +22,6 @@ The following is a history of the changes made to this project.
 * Added support for Ubuntu Focal Fossa.
 * Added support for DietPi Bookworm.
 * Added support for DietPi Bullseye.
-
-### Portal
-
 * Fixed issue where navigation element toggling was not working in lite installs. 
 * Added eno1 and wlo1 to network options in the administration settings section of the portal.
 * The ADS-B Max Range temperature graph is now displayed in system performace the graphs collection.

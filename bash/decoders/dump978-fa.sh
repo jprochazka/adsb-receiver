@@ -72,6 +72,10 @@ CheckPackage libsoapysdr-dev
 CheckPackage soapysdr-module-rtlsdr
 echo ""
 
+## BLACKLIST UNWANTED RTL-SDR MODULES
+
+BlacklistModules
+
 ## DOWNLOAD OR UPDATE THE DUMP978-FA SOURCE
 
 echo -e "\e[95m  Preparing the dump978-fa Git repository...\e[97m"
