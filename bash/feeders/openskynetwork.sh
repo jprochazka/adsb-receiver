@@ -69,7 +69,9 @@ if ! grep -q "^deb .*opensky." /etc/apt/sources.list /etc/apt/sources.list.d/*; 
     echo -e "\e[94m  The OpenSky Network apt repository is not set up...\e[97m"
     CheckPackage apt-transport-https
     echo -e "\e[94m  Downloading the OpenSky Network apt repository GPG key...\e[97m"
+    echo ""
     wget -O - https://opensky-network.org/files/firmware/opensky.gpg.pub | sudo apt-key add -
+    echo ""
     echo -e "\e[94m  Adding the OpenSky Network apt repository...\e[97m"
     sudo bash -c "echo deb https://opensky-network.org/repos/debian opensky custom > /etc/apt/sources.list.d/opensky.list"
 else

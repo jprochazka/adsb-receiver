@@ -240,6 +240,9 @@ fi
 
 DISTRO_PHP_VERSION="5"
 case $RECEIVER_OS_DISTRIBUTION in
+    ubuntu)
+        DISTRO_PHP_VERSION=""
+        ;;
     debian)
         if [[ $RECEIVER_OS_CODE_NAME = "bookworm" ]]; then DISTRO_PHP_VERSION="8.2"; fi
         if [[ $RECEIVER_OS_CODE_NAME = "bullseye" ]]; then DISTRO_PHP_VERSION="7.4"; fi
@@ -382,20 +385,11 @@ url.redirect += (
   "^/dump1090$" => "/dump1090/"
 )
 # Add CORS header
-server.modules += ( "mod_setenv" )
 \$HTTP["url"] =~ "^/dump1090/data/.*\.json$" {
   setenv.add-response-header = ( "Access-Control-Allow-Origin" => "*" )
 }
 EOF
 fi
-sudo tee -a /etc/lighttpd/conf-available/87-adsb-portal.conf > /dev/null <<EOF
-# Block all access to the data directory accept for local requests.
-\$HTTP["remoteip"] !~ "127.0.0.1" {
-    \$HTTP["url"] =~ "^/data/" {
-        url.access-deny = ( "" )
-    }
-}
-EOF
 
 if [[ ! -L "/etc/lighttpd/conf-enabled/87-adsb-portal.conf" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd portal configuration file...\e[97m"
@@ -433,7 +427,7 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]
 
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
-    while ! mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e ";" ; do
+    while ! sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e ";" ; do
         echo -e "\e[94m  Unable to log into the MySQL server using the supplied administrator credentials...\e[97m"
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Create Remote MySQL Database" --msgbox "The script was not able to log into the MySQL server using the administrator credentials you supplied. You will now be asked to reenter the MySQL server administrator credentials." 9 78
         DATABASEADMINPASSWORD1=""
@@ -475,20 +469,20 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]
 
     # Create the database use and database using the information supplied by the user.
     echo -e "\e[94m  Creating the MySQL database \"${DATABASENAME}\"...\e[97m"
-    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE DATABASE ${DATABASENAME};"
+    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE DATABASE ${DATABASENAME};"
     echo -e "\e[94m  Creating the MySQL user \"${DATABASEUSER}\"...\e[97m"
 
     if [[ "${LOCALMYSQLSERVER}" = "false" ]] ; then
         # If the databse resides on a remote server be sure to allow the newly created user access to it remotly.
-        mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'%' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'%' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
     else
         # Since this is a local database we will restrict this login to localhost logins only.
-        mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
     fi
     echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"${DATABASEUSER}\"...\e[97m"
-    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
     echo -e "\e[94m  Flushing priviledges on the MySQL database server...\e[97m"
-    mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "FLUSH PRIVILEGES;"
+    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "FLUSH PRIVILEGES;"
 fi
 
 ## SETUP THE PERFORMANCE GRAPHS USING THE SCRIPT GRAPHS.SH

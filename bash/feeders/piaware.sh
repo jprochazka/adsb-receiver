@@ -86,7 +86,6 @@ CheckPackage libboost-regex-dev
 CheckPackage libboost-filesystem-dev
 CheckPackage patchelf
 CheckPackage python3-pip
-CheckPackage python3-build
 CheckPackage python3-setuptools
 CheckPackage python3-wheel
 CheckPackage net-tools
@@ -96,6 +95,17 @@ CheckPackage itcl3
 CheckPackage libssl-dev
 CheckPackage tcl-dev
 CheckPackage chrpath
+
+# Some older distros may need different packages than newer ones.
+case ${RECEIVER_OS_CODE_NAME} in
+    focal)
+        CheckPackage python3-dev
+        ;;
+    *)
+        CheckPackage python3-build
+        ;;
+esac
+
 echo ""
 
 ## DOWNLOAD OR UPDATE THE TCLTLS REBUILD SOURCE
@@ -185,10 +195,10 @@ fi
 # Execute build script.
 DIST="bookworm"
 case ${RECEIVER_OS_CODE_NAME} in
-    buster)
+    buster | focal)
         DIST="buster"
         ;;
-    bullseye)
+    bullseye | jammy)
         DIST="bullseye"
         ;;
     bookworm)

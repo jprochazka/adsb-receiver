@@ -287,7 +287,7 @@ temp_graph_imperial() {
   --upper-limit 212 \
   --rigid \
   --units-exponent 1 \
-  "DEF:traw=$2/gauge-cpu_temp.rrd:value:MAX" \
+  "DEF:traw=$2/temperature.rrd:value:MAX" \
   "CDEF:tta=traw,1000,/" \
   "CDEF:ttb=tta,1.8,*" \
   "CDEF:ttc=ttb,32,+" \
@@ -310,7 +310,7 @@ temp_graph_metric() {
   --upper-limit 100 \
   --rigid \
   --units-exponent 1 \
-  "DEF:traw=$2/gauge-cpu_temp.rrd:value:MAX" \
+  "DEF:traw=$2/temperature.rrd:value:MAX" \
   "CDEF:tfin=traw,1000,/" \
   "AREA:tfin#ffcc00" \
   "COMMENT: \n" \
@@ -629,8 +629,8 @@ system_graphs() {
   disk_io_octets_graph ${DOCUMENTROOT}/graphs/system-$2-disk_io_octets-$4.png /var/lib/collectd/rrd/$1/disk-mmcblk0 "$3" "$4" "$5"
   eth0_graph ${DOCUMENTROOT}/graphs/system-$2-eth0_bandwidth-$4.png /var/lib/collectd/rrd/$1/interface-eth0 "$3" "$4" "$5"
   memory_graph ${DOCUMENTROOT}/graphs/system-$2-memory-$4.png /var/lib/collectd/rrd/$1/memory "$3" "$4" "$5"
-  temp_graph_imperial ${DOCUMENTROOT}/graphs/system-$2-temperature_imperial-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
-  temp_graph_metric ${DOCUMENTROOT}/graphs/system-$2-temperature_metric-$4.png /var/lib/collectd/rrd/$1/table-$2 "$3" "$4" "$5"
+  temp_graph_imperial ${DOCUMENTROOT}/graphs/system-$2-temperature_imperial-$4.png /var/lib/collectd/rrd/$1/thermal-thermal_zone0 "$3" "$4" "$5"
+  temp_graph_metric ${DOCUMENTROOT}/graphs/system-$2-temperature_metric-$4.png /var/lib/collectd/rrd/$1/thermal-thermal_zone0 "$3" "$4" "$5"
   wlan0_graph ${DOCUMENTROOT}/graphs/system-$2-wlan0_bandwidth-$4.png /var/lib/collectd/rrd/$1/interface-wlan0 "$3" "$4" "$5"
 }
 
