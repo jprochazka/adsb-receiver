@@ -30,7 +30,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateBlogPostRequest'
+              $ref: '#/components/schemas/createBlogPostRequest'
         required: true
       responses:
         '201':
@@ -83,7 +83,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BlogPost'
+                  $ref: '#/components/schemas/blogPost'
         '404':
           description: Not Found
         '500':
@@ -106,7 +106,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateBlogPostRequest'
+              $ref: '#/components/schemas/updateBlogPostRequest'
         required: true
       responses:
         '200':
@@ -116,7 +116,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BlogPost'
+                  $ref: '#/components/schemas/blogPost'
         '400':
           description: Bad Request
         '404':
@@ -141,7 +141,7 @@ paths:
             minimum: 0
         - name: limit
           in: query
-          description: The number of blog posts to be returned
+          description: Maximum number of blog posts to be returned
           required: false
           schema:
             type: integer
@@ -156,52 +156,173 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BlogPosts'
+                  $ref: '#/components/schemas/blogPosts'
         '400':
           description: Bad Request
         '404':
           description: Not Found
         '500':
           description: Internal Server Error
+  /flight/{flight}:
+    get:
+      tags:
+        - flights
+      summary: Get data related to the specified flight
+      description: Returns all data related to the flight assigned the supplied flight
+      operationId: GetFlight
+      parameters:
+        - name: flight
+          in: path
+          description: The name of the flight for which the data is being requested
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/flight'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /flight/{flight}/positions:
+    get:
+      tags:
+        - flights
+      summary: Get postion data for a flight
+      description: Returns recorded positions for the specified flight
+      operationId: GetFlightPositions
+      parameters:
+        - name: flight
+          in: path
+          description: The name of the flight for which the position data is being requested
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: The number of blog posts to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of flights to be returned
+          required: false
+          schema:
+            type: integer
+            default: 500
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/positions'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /flights:
+    get:
+      tags:
+        - flights
+      summary: Get data related to multiple flights
+      description: Returns data for all flights ordered by the date they were created
+      operationId: GetFlights
+      parameters:
+        - name: offset
+          in: query
+          description: The number of blog posts to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of flights to be returned
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/flights'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /flights/count:
+    get:
+      tags:
+        - flights
+      summary: Gets the number of tracked flights
+      description: Returns the total number of flights currently being tracked
+      operationId: GetFlightsCount
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                properties:
+                  flights:
+                    type: integer
+        '500':
+          description: Internal Server Error
 components:
   schemas:
-    BlogPost:
+    blogPost:
       type: object
       properties:
-        blogPostId:
+        id:
           type: integer
-          format: int64
-        dateAdded:
-          type: string
-          format: date-time
         title:
           type: string
+        date:
+          type: string
+          format: date-time
         author:
           type: string
         content:
           type: string
-    BlogPosts:
-      type: object
-      properties:
-        offset:
-          type: integer
-          format: int64
-        limit:
-          type: integer
-          format: int64
-        blogPostId:
-          type: integer
-          format: int64
-        dateAdded:
-          type: string
-          format: date-time
-        title:
-          type: string
-        author:
-          type: string
-        content:
-          type: string
-    CreateBlogPostRequest:
+    blogPosts:
+        type: object
+        properties:
+          offset:
+            type: integer
+          limit:
+            type: integer
+          blogPosts:
+            type: array
+            items:
+              $ref: '#/components/schemas/blogPost'
+    createBlogPostRequest:
       required:
         - title
         - author
@@ -213,7 +334,7 @@ components:
           type: string
         content:
           type: string
-    UpdateBlogPostRequest:
+    updateBlogPostRequest:
       required:
         - title
         - content
@@ -222,17 +343,82 @@ components:
           type: string
         content:
           type: string
+    flight:
+      type: object
+      properties:
+        id:
+          type: integer
+        aircraft:
+          type: string
+        flight:
+          type: string
+        fistSeen:
+          type: string
+          format: date-time
+        lastSeen:
+          type: string
+          format: date-time
+    flights:
+      type: object
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/flight'
+    position:
+      type: object
+      properties:
+        id:
+          type: integer
+        flight:
+          type: integer
+        aircraft:
+          type: integer
+        time:
+          type: string
+          format: date-time
+        message:
+          type: integer
+        squawk:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        track:
+          type: integer
+        altitude:
+          type: integer
+        verticleRate:
+          type: integer
+        speed:
+          type: integer
+    positions:
+        type: object
+        properties:
+          offset:
+            type: integer
+          limit:
+            type: integer
+          positions:
+            type: array
+            items:
+              $ref: '#/components/schemas/position'
   requestBodies:
     CreateBlogPostRequest:
       description: An object containing data to be used to create a new blog post
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CreateBlogPostRequest'
+            $ref: '#/components/schemas/createBlogPostRequest'
     UpdateBlogPostRequest:
       description: An object containing data to be used to update an existing blog post
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CreateBlogPostRequest'
+            $ref: '#/components/schemas/createBlogPostRequest'
     

@@ -1,63 +1,74 @@
-DROP TABLE IF EXISTS Aircraft;
-DROP TABLE IF EXISTS BlogPosts;
-DROP TABLE IF EXISTS FlightNotifications;
-DROP TABLE IF EXISTS Flights;
-DROP TABLE IF EXISTS Links;
-DROP TABLE IF EXISTS Positions;
-DROP TABLE IF EXISTS Settings;
+DROP TABLE IF EXISTS administrators;
+DROP TABLE IF EXISTS aircraft;
+DROP TABLE IF EXISTS blogPosts;
+DROP TABLE IF EXISTS flightNotifications;
+DROP TABLE IF EXISTS flights;
+DROP TABLE IF EXISTS links;
+DROP TABLE IF EXISTS positions;
+DROP TABLE IF EXISTS settings;
 
-CREATE TABLE Aircraft (
-    AircraftId INTEGER PRIMARY KEY AUTOINCREMENT,
-    ICAO TEXT NOT NULL,
-    DateAdded TEXT NOT NULL,
-    LastSeen TEXT
+CREATE TABLE administrators (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `name` TEXT NOT NULL,
+    `email` TEXT NOT NULL,
+    `password` TEXT,
+    `token` TEXT
 );
 
-CREATE TABLE BlogPosts (
-    BlogPostId INTEGER PRIMARY KEY AUTOINCREMENT,
-    Title TEXT Not Null,
-    DateAdded TEXT NOT NULL,
-    Author TEXT NOT NULL,
-    Content TEXT NOT NULL
+CREATE TABLE aircraft (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `icao` TEXT NOT NULL,
+    `firstSeen` TEXT NOT NULL,
+    `lastSeen` TEXT
 );
 
-CREATE TABLE FlightNotifications (
-    FlightNotificationId INTEGER PRIMARY KEY AUTOINCREMENT,
-    Flight TEXT NOT NULL
+CREATE TABLE blogPosts (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `title` TEXT Not Null,
+    `date` TEXT NOT NULL,
+    `author` TEXT NOT NULL,
+    `content` TEXT NOT NULL
 );
 
-CREATE TABLE Flights (
-    FlightId INTEGER PRIMARY KEY AUTOINCREMENT,
-    AircraftId INTEGER NOT NULL,
-    Flight TEXT NOT NULL,
-    DateAdded TEXT NOT NULL,
-    LastSeen TEXT,
-    FOREIGN KEY(AircraftId) REFERENCES Aircraft(AircraftId)
+CREATE TABLE flightNotifications (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `flight` TEXT NOT NULL
 );
 
-CREATE TABLE Links (
-    LinkId INTEGER PRIMARY KEY AUTOINCREMENT,
-    Title TEXT NOT NULL,
-    Destination TEXT NOT NULL
+CREATE TABLE flights (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `aircraft` INTEGER NOT NULL,
+    `flight` TEXT NOT NULL,
+    `firstSeen` TEXT NOT NULL,
+    `lastSeen` TEXT,
+    FOREIGN KEY(aircraft) REFERENCES aircraft(id)
 );
 
-CREATE TABLE Positions (
-    PositionId INTEGER PRIMARY KEY AUTOINCREMENT,
-    AircraftId INTEGER NOT NULL,
-    FlightId INTEGER NOT NULL,
-    DateAdded TEXT NOT NULL,
-    Message INTEGER NOT NULL,
-    Squawk INTEGER,
-    Latitude REAL NOT NULL,
-    Longitude REAL NOT NULL,
-    VerticleRate INTEGER NOT NULL,
-    Speed INTEGER,
-    FOREIGN KEY (AircraftId) REFERENCES Aircraft(AircraftId),
-    FOREIGN KEY (FlightId) REFERENCES Flight(FlightId)
+CREATE TABLE links (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `name` TEXT NOT NULL,
+    `address` TEXT NOT NULL
 );
 
-CREATE TABLE Settings (
-    SettingId INTEGER PRIMARY KEY AUTOINCREMENT,
-    Name TEXT NOT NULL,
-    Value TEXT NOT NULL
+CREATE TABLE positions (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `flight` INTEGER NOT NULL,
+    `aircraft` INTEGER NOT NULL,
+    `time` TEXT NOT NULL,
+    `message` INTEGER NOT NULL,
+    `squawk` INTEGER,
+    `latitude` REAL NOT NULL,
+    `longitude` REAL NOT NULL,
+    `track` INTEGER NOT NULL,
+    `altitude` INTEGER NOT NULL,
+    `verticleRate` INTEGER NOT NULL,
+    `speed` INTEGER,
+    FOREIGN KEY (aircraft) REFERENCES aircraft(id),
+    FOREIGN KEY (flight) REFERENCES flights(id)
+);
+
+CREATE TABLE settings (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `name` TEXT NOT NULL,
+    `value` TEXT NOT NULL
 );

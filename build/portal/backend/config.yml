@@ -7,3 +7,4 @@ database:
         user: "portaluser"
         password: "password"
         database: "adsbportal"
+testing: true
