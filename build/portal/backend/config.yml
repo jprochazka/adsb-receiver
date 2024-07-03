@@ -1,0 +1,14 @@
+database:
+    use: "mysql"
+    sqlite:
+        path: ""
+    mysql:
+        host: "127.0.0.1"
+        user: "portaluser"
+        password: "password"
+        database: "adsbportal"
+    postgresql:
+        host: "127.0.0.1"
+        user: "portaluser"
+        password: "password"
+        database: "adsbportal"

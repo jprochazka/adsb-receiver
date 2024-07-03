@@ -1,0 +1,870 @@
+openapi: 3.1.0
+
+info:
+  title: The ADS-B Portal API
+  description: This API is used to supply data to ADS-B Portal frontends hosted both locally and remotely.
+  license:
+    name: The MIT License (MIT)
+    url: https://raw.githubusercontent.com/jprochazka/adsb-receiver/portal/LICENSE.md
+  version: 1.0.0
+
+externalDocs:
+  description: The ADS-B Receiver Project
+  url: https://github.com/jprochazka/adsb-receiver
+
+servers:
+  - url: http://127.0.0.1:5000/api
+
+tags:
+  - name: blog_posts
+    description: Access and manage blog data
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
+
+paths:
+  /blog/post:
+
+    post:
+      tags:
+        - blog_posts
+      summary: Create a new blog post
+      description: Creates a new blog post
+      operationId: createBlogPost
+      requestBody:
+        description: AN object containing the data needed to create a new blog post
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBlogPostRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /blog/post/{id}:
+
+    delete:
+      tags:
+        - blog_posts
+      summary: Delete an existing blog post
+      description: Deletes an existing blog post assigned the specified blog post ID
+      operationId: deleteBlogPost
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the blog post to be deleted
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+    get:
+      tags:
+        - blog_posts
+      summary: Get data related to the specified blog post ID
+      description: Returns all data related to the blog post assigned the specified ID
+      operationId: getBlogPost
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the blog post for which the data is being requested
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/BlogPost'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+    put:
+      tags:
+        - blog_posts
+      summary: Updates data related to the specified blog post ID
+      description: Updates data related to the blog post assigned the specified ID
+      operationId: updateBlogPost
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the blog post which is to be updated
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Update an existing blog post
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBlogPostRequest'
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /blog/posts:
+
+    get:
+      tags:
+        - blog_posts
+      summary: Get data related to multiple blog posts
+      description: Returns data for all blog posts ordered by the date they were created
+      operationId: getBlogPosts
+      parameters:
+        - name: offset
+          in: query
+          description: The number of blog posts to be skipped before returning the first result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of blog posts to be returned
+          required: false
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetBlogPostsResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /flight/{flight}:
+
+    get:
+      tags:
+        - flights
+      summary: Get data related to the specified flight
+      description: Returns all data related to the flight assigned the specified flight
+      operationId: getFlight
+      parameters:
+        - name: flight
+          in: path
+          description: The name of the flight for which the data is being requested
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Flight'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /flight/{flight}/positions:
+
+    get:
+      tags:
+        - flights
+      summary: Get postion data for a flight
+      description: Returns recorded positions for the specified flight
+      operationId: getFlightPositions
+      parameters:
+        - name: flight
+          in: path
+          description: The name of the flight for which the position data is being requested
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: The number of positions to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of positions to be returned
+          required: false
+          schema:
+            type: integer
+            default: 500
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetFlightPositionsResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /flights:
+
+    get:
+      tags:
+        - flights
+      summary: Get data related to multiple flights
+      description: Returns data for multiple flights ordered by the date they were created
+      operationId: getFlights
+      parameters:
+        - name: offset
+          in: query
+          description: The number of flights to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of flights to be returned
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetFlightsResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /flights/count:
+
+    get:
+      tags:
+        - flights
+      summary: Gets the number of tracked flights
+      description: Returns the total number of flights currently being tracked
+      operationId: GetFlightsCount
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetFlightsCountResponse'
+        '500':
+          description: Internal Server Error
+
+  /link:
+
+    post:
+      tags:
+        - links
+      summary: Create a new link
+      description: Creates a new link using the supplied data
+      operationId: createLink
+      requestBody:
+        description: Data to be used to create the new link
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLinkRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /link/{id}:
+
+    delete:
+      tags:
+        - links
+      summary: Delete an existing link
+      description: Deletes an existing link assigned the specified link ID
+      operationId: deleteLink
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the link to be deleted
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+    get:
+      tags:
+        - links
+      summary: Get data related to the specified link ID
+      description: Returns all link data assigned to the specified ID
+      operationId: getLink
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the link for which the data is being requested
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Link'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+    put:
+      tags:
+        - links
+      summary: Updates data related to the specified link ID
+      description: Updates data related to the link assigned the specified ID
+      operationId: updateLink
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the link for which the data is to be updated
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Data to be used to update the link
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLinkRequest'
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /links:
+
+    get:
+      tags:
+        - links
+      summary: Get data related to multiple links
+      description: Returns data for all currently available links
+      operationId: getLinks
+      parameters:
+        - name: offset
+          in: query
+          description: The number of links to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of links to be returned
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetLinksResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /setting:
+
+    put:
+      tags:
+        - settings
+      summary: Updates data related to the specified setting name
+      description: Updates data related to the setting assigned the supplied name
+      operationId: updateSetting
+      requestBody:
+        description: Setting update data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSettingRequest'
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /setting/{name}:
+
+    get:
+      tags:
+        - settings
+      summary: Get data related to the specified setting name
+      description: Returns all data related to the setting assigned the supplied name
+      operationId: getSetting
+      parameters:
+        - name: name
+          in: path
+          description: The name of the setting for which the data is being requested
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Setting'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+  /user:
+
+    post:
+      tags:
+        - users
+      summary: Create a user
+      description: Creates a new user using the supplied data
+      operationId: createUser
+      requestBody:
+        description: Data to be used to create the new user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+
+  /user/{email}:
+
+    delete:
+      tags:
+        - users
+      summary: Delete an existing user
+      description: Deletes an existing user assigned the specified email address
+      operationId: deleteUser
+      parameters:
+        - name: email
+          in: path
+          description: The email address of the user to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+    get:
+      tags:
+          - users
+      summary: Get data related to the specified user email
+      description: Returns all data related to the setting assigned the supplied email address
+      operationId: getUser
+      parameters:
+        - name: email
+          in: path
+          description: The email address of the user for which the data is being requested
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/User'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+    put:
+      tags:
+          - users
+      summary: Updates data related to the specified user email
+      description: Updates data related to the user assigned the supplied email
+      operationId: updateUser
+      parameters:
+        - name: email
+          in: path
+          description: The email address of the user for which the data is being updated
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: User update data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+
+components:
+  schemas:
+
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        date:
+          type: string
+          format: date-time
+        author:
+          type: string
+        content:
+          type: string
+
+    CreateBlogPostRequest:
+      required:
+        - title
+        - author
+        - content
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        content:
+          type: string
+
+    GetBlogPostsResponse:
+        type: object
+        properties:
+          offset:
+            type: integer
+          limit:
+            type: integer
+          count:
+            type: integer
+          blogPosts:
+            type: array
+            items:
+              $ref: '#/components/schemas/BlogPost'
+              
+    UpdateBlogPostRequest:
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+
+    Flight:
+      type: object
+      properties:
+        id:
+          type: integer
+        aircraft:
+          type: string
+        flight:
+          type: string
+        fistSeen:
+          type: string
+          format: date-time
+        lastSeen:
+          type: string
+          format: date-time
+
+    Position:
+      type: object
+      properties:
+        id:
+          type: integer
+        flight:
+          type: integer
+        aircraft:
+          type: integer
+        time:
+          type: string
+          format: date-time
+        message:
+          type: integer
+        squawk:
+          type: integer
+        latitude:
+          type: number
+        longitude:
+          type: number
+        track:
+          type: integer
+        altitude:
+          type: integer
+        verticleRate:
+          type: integer
+        speed:
+          type: integer
+
+    GetFlightPositionsResponse:
+        type: object
+        properties:
+          offset:
+            type: integer
+          limit:
+            type: integer
+          count:
+            type: integer
+          positions:
+            type: array
+            items:
+              $ref: '#/components/schemas/Position'
+
+    GetFlightsResponse:
+      type: object
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        count:
+            type: integer
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flight'
+
+    GetFlightsCountResponse:
+      type: object
+      properties:
+        flights:
+          type: integer
+
+    CreateLinkRequest:
+      required:
+        - name
+        - address
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+
+    UpdateLinkRequest:
+      required:
+        - name
+        - address
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+
+    Link:
+      type: object
+      properties:
+        id:
+          type integer
+        name:
+          type: string
+        address:
+          type string
+
+    GetLinksResponse:
+      type: object
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        count:
+            type: integer
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+
+    UpdateSettingRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+
+    Setting:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        value:
+          type: string
+
+    CreateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        administrator:
+          type: boolean
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        administrator:
+          type: boolean
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        administrator:
+          type: boolean
+
+  requestBodies:
+
+    CreateBlogPostRequest:
+      description: An object containing data to be used to create a new blog post
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateBlogPostRequest'
+
+    CreateLinkRequest:
+      description: An object containing data to be used to create a new link
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateLinkRequest'
+
+    UpdateSettingRequest:
+      description: An object containing data to be used to update an existing setting
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateSettingRequest'
+
+    CreateUserRequest:
+      description: An object containing data to be used to create a new user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateUserRequest'
+
+    UpdateUserRequest:
+      description: An object containing data to be used to update an existing user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateUserRequest'
