@@ -4,7 +4,7 @@
 
 This project continues to realize that for some, Docker and premade images are not always the solution.
 
-It would seem as of late the move towards Docker and other PaaS images with preinstalled software are the rage within the community. The problem is Docker images require additional software and overhead in order to run. Solutions in the form of a Docker or premade native image also include software you may never wish use as part of the image. What this project offers is the possibility for less overhead and better performance, depending on your installation choices of course, on a wide range of devices by attempting to install only the applications you want natively.
+It would seem as of late the move towards Docker and other PaaS images with preinstalled software are the rage within the community. The problem is Docker images require additional software and overhead in order to run. Solutions in the form of a Docker or premade native image also include software you may never wish to use as part of the image. What this project offers is the possibility for less overhead and better performance, depending on your installation choices of course, on a wide range of devices by installing only the applications you want natively.
 
 ## Obtaining And Using This Software
 
