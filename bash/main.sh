@@ -1,36 +1,5 @@
 #!/bin/bash
 
-#####################################################################################
-#                                  ADS-B RECEIVER                                   #
-#####################################################################################
-#                                                                                   #
-# This script is not meant to be executed directly.                                 #
-# Instead execute install.sh to begin the installation process.                     #
-#                                                                                   #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                                   #
-# Copyright (c) 2015-2024 Joseph A. Prochazka                                       #
-#                                                                                   #
-# Permission is hereby granted, free of charge, to any person obtaining a copy      #
-# of this software and associated documentation files (the "Software"), to deal     #
-# in the Software without restriction, including without limitation the rights      #
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell         #
-# copies of the Software, and to permit persons to whom the Software is             #
-# furnished to do so, subject to the following conditions:                          #
-#                                                                                   #
-# The above copyright notice and this permission notice shall be included in all    #
-# copies or substantial portions of the Software.                                   #
-#                                                                                   #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR        #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,          #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE       #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER            #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,     #
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE     #
-# SOFTWARE.                                                                         #
-#                                                                                   #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
@@ -81,6 +50,16 @@ function InstallFlightradar24() {
         exit 1
     fi
 }
+
+# Execute the Fly Italy ADS-B Feeder client setup script.
+function InstallFlyItalyAdsb() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flyitalyadsb.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/flyitalyadsb.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
 
 # Execute the OpenSky Network setup script.
 function InstallOpenSkyNetwork() {
@@ -227,6 +206,17 @@ else
     # The feeder does not appear to be set up.
     echo "ADS-B Exchange Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange Feeder' '' OFF)
+fi
+
+# Check if the Fly Italy ADS-B feeder has been set up.
+if [[ -f /lib/systemd/system/flyitalyadsb-mlat.service && -f /lib/systemd/system/flyitalyadsb-feed.service ]]; then
+    # The feeder appears to be set up.
+    echo "Fly Italy ADS-B Feeder (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'Fly Italy ADS-B Feeder (upgrade)' '' OFF)
+else
+    # The feeder does not appear to be set up.
+    echo "Fly Italy ADS-B Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'Fly Italy ADS-B Feeder' '' OFF)
 fi
 
 # Check for the OpenSky Network package.
@@ -465,6 +455,7 @@ fi
 RUN_ADSBEXCHANGE_SCRIPT="false"
 RUN_PIAWARE_SCRIPT="false"
 RUN_FLIGHTRADAR24_SCRIPT="false"
+RUN_FLYITALYADSB_SCRIPT
 RUN_OPENSKYNETWORK_SCRIPT="false"
 RUN_PLANEFINDER_SCRIPT="false"
 
@@ -480,6 +471,9 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
                 ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)"|"Flightradar24 Client (reinstall)")
                 RUN_FLIGHTRADAR24_SCRIPT="true"
+                ;;
+            "Fly Italy ADS-B Feeder"|"Fly Italy ADS-B Feeder (upgrade)"
+                RUN_FLYITALYADSB_SCRIPT="true"
                 ;;
             "OpenSky Network Feeder")
                 RUN_OPENSKYNETWORK_SCRIPT="true"
@@ -501,6 +495,10 @@ fi
 
 if [[ "${RUN_FLIGHTRADAR24_SCRIPT}" = "true" ]]; then
     InstallFlightradar24
+fi
+
+if [[ "${RUN_FLYITALYADSB_SCRIPT}" = "true" ]]; then
+    InstallFlyItalyAdsb
 fi
 
 if [[ "${RUN_OPENSKYNETWORK_SCRIPT}" = "true" ]]; then

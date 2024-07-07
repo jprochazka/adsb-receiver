@@ -59,24 +59,10 @@ echo -e ""
 
 if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
     echo -e "\e[94m  Checking which dump1090 fork is installed...\e[97m"
-    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-mutability 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-        DUMP1090_FORK="mutability"
-        DUMP1090_INSTALLED="true"
-    fi
     if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
         DUMP1090_FORK="fa"
         DUMP1090_INSTALLED="true"
     fi
-fi
-if [[ -f "/etc/init.d/rtlsdr-ogn" ]] ; then
-    RTLSDROGN_INSTALLED="true"
-fi
-
-## CONFIRM HARDWARE PLATFORM
-
-if [[ -z "${HARDWARE_PLATFORM}" ]] ; then
-    Check_Platform
-    echo -e ""
 fi
 
 ## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
@@ -200,8 +186,10 @@ LoadPlugin curl
 
 EOF
 
-# Raspberry Pi specific values.
-if [[ "${HARDWARE_PLATFORM}" = "RPI" ]] ; then
+# Device  specific values.
+# Raspberry Pi: b03112
+
+if [[ "${RECEIVER_CPU_REVISION}" = "b03112" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
@@ -221,34 +209,13 @@ if [[ "${HARDWARE_PLATFORM}" = "RPI" ]] ; then
 </Plugin>
 
 EOF
-# CHIP specific values.
-elif [[ "${HARDWARE_PLATFORM}" = "CHIP" ]] ; then
-    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
-<Plugin table>
-        <Table "/sys/class/hwmon/hwmon0/temp1_input">
-                Instance localhost
-                Separator " "
-                <Result>
-                        Type gauge
-                        InstancePrefix "cpu_temp"
-                        ValuesFrom 0
-                </Result>
-        </Table>
-</Plugin>
-
-<Plugin "disk">
-        Disk "ubi0:rootfs"
-        IgnoreSelected false
-</Plugin>
-
-EOF
 fi
 
 # Dump1090 specific values.
 if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
     sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
-# Configure the dump1090 python module.                                      #
+# Configure the dump1090-tools python module.                                #
 #                                                                            #
 # Each Instance block collects statistics from a separate named dump1090.    #
 # The URL should be the base URL of the webmap, i.e. in the examples below,  #
@@ -265,62 +232,6 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
         </Module>
 </Plugin>
 
-EOF
-fi
-
-# RTLSDR-OGN specific values.
-if [[ "${RTLSDROGN_INSTALLED}" = "true" ]] ; then
-    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
-#----------------------------------------------------------------------------#
-# RTLSDR-OGN Graphs                                                          #
-#----------------------------------------------------------------------------#
-<Plugin curl>
-  <Page "rtlsdr-ogn">
-    URL "http://localhost:8080/"
-    # OGN center Frequency
-    <Match>
-      Regex "<tr><td>RF.OGN.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency"
-      Instance "Center-Frequency-OGN"
-    </Match>
-    # GSM  center Frequency
-    <Match>
-      Regex "<tr><td>RF.GSM.CenterFreq</td><td align=right><b>([0-9]*\\.[0-9]+) MHz</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency"
-      Instance "Center-Frequency-GSM"
-    </Match>
-    # OGN Frequency Correction
-    <Match>
-      Regex "<tr><td>Frequency correction</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency_offset"
-      Instance "Frequency-Correction-OGN"
-    </Match>
-    # NTP Frequency Correction
-    <Match>
-      Regex "<tr><td>NTP freq. corr.</td><td align=right><b>([\+\-][0-9]*\\.[0-9]+) ppm</b></td></tr>"
-      DSType "GaugeLast"
-      Type "frequency_offset"
-      Instance "Frequency-Correction-NTP"
-    </Match>
-    # OGN Gain
-    <Match>
-      Regex "<tr><td>RF.OGN.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
-      DSType "GaugeLast"
-      Type "gauge"
-      Instance "Gain-OGN"
-    </Match>
-    # GSM Gain
-    <Match>
-      Regex "<tr><td>RF.GSM.Gain</td><td align=right><b>([0-9]*\\.[0-9]+) dB</b></td></tr>"
-      DSType "GaugeLast"
-      Type "gauge"
-      Instance "Gain-GSM"
-    </Match>
-  </Page>
-</Plugin>
 EOF
 fi
 
