@@ -2,10 +2,13 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.3 *(in development)*
+## v2.8.3 *(July 7th, 2024)* :chicken:
 
 ### Installers
 
+* Added the option to install the Fly Italy ADS-B feeder client.
+* Tested installation processes on Arbian Bookworm.
+* Tested installation processes on Arbian Jammy.
 * Unnecessary RTL-SDR kernel modules are once again blacklisted during decoder installs. 
 * ADS-B Receiver Project repository updates now work properly when executed by the script.
 * Instead of creating a new branch changes to tracked files are now stashed before updating.

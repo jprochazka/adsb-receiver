@@ -2,9 +2,9 @@
 
 ## Run ADS-B/UAT related applications without the overhead!
 
-This project continues to realize that for some, Docker and premade images are not always the solution.
+This project continues to realize that for some, Docker and premade images are not the most optimal solution.
 
-It would seem as of late the move towards Docker and other PaaS images with preinstalled software are the rage within the community. The problem is Docker images require additional software and overhead in order to run. Solutions in the form of a Docker or premade native image also include software you may never wish to use as part of the image. What this project offers is the possibility for less overhead and better performance, depending on your installation choices of course, on a wide range of devices by installing only the applications you want natively.
+It would seem as of late the move towards premade and as well as Docker and other PaaS images with preinstalled software are the rage within the community. The problem is Docker images require additional software and overhead in order to run and premade images lack installation options. Solutions such as these come preinstalled with software you may never wish to use as part of the image. What this project offers is the possibility for less overhead and better performance, depending on your installation choices of course, on a wide range of devices and hardware archetectures while installing only the applications you want natively.
 
 ## Obtaining And Using This Software
 
@@ -44,7 +44,7 @@ Included is the option to install the ADS-B Portal which offers the following fe
 
 When setting up the portal you will have to choose between a lite or advanced installation. Advanced features adds flight logging and plotting and should only be chosen on devices running a more sturdy data storage solution.
 
-*It is recommended that anyone using a SD card as they storage medium not attempt to use the advanced features.*
+*It is highly recommended that anyone using a SD card as they storage medium not attempt to use the advanced features.*
 
 ### Decoders
 
@@ -53,11 +53,12 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 ### Feeders
 
-* ADS-B Exchange:              https://adsbexchange.com
-* FlightAware's PiAware:       https://flightaware.com
-* Flightradar24 Feeder Client: https://flightradar24.com
-* OpenSky Feeder:              https://opensky-network.org
-* Plane Finder ADS-B Client:   https://planefinder.net
+* ADS-B Exchange Feeder Client:  https://adsbexchange.com
+* FlightAware's PiAware:         https://flightaware.com
+* Flightradar24 Feeder Client:   https://flightradar24.com
+* Fly Italy ADS-B Feeder Client: https://flyitalyadsb.com/
+* OpenSky Feeder Client:         https://opensky-network.org
+* Plane Finder ADS-B Client:     https://planefinder.net
 
 ### Extras
 
@@ -68,6 +69,8 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 The project currently supports the following Linux distributions.
 
+* Armbian Bookworm
+* Armbian Jammy
 * Debian Bookworm
 * Debian Bullseye
 * DietPi (Bookworm)

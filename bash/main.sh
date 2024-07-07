@@ -51,6 +51,16 @@ function InstallFlightradar24() {
     fi
 }
 
+# Execute the Fly Italy ADS-B Feeder client setup script.
+function InstallFlyItalyAdsb() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flyitalyadsb.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/flyitalyadsb.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
+
 # Execute the OpenSky Network setup script.
 function InstallOpenSkyNetwork() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
@@ -196,6 +206,17 @@ else
     # The feeder does not appear to be set up.
     echo "ADS-B Exchange Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange Feeder' '' OFF)
+fi
+
+# Check if the Fly Italy ADS-B feeder has been set up.
+if [[ -f /lib/systemd/system/flyitalyadsb-mlat.service && -f /lib/systemd/system/flyitalyadsb-feed.service ]]; then
+    # The feeder appears to be set up.
+    echo "Fly Italy ADS-B Feeder (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'Fly Italy ADS-B Feeder (upgrade)' '' OFF)
+else
+    # The feeder does not appear to be set up.
+    echo "Fly Italy ADS-B Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'Fly Italy ADS-B Feeder' '' OFF)
 fi
 
 # Check for the OpenSky Network package.
@@ -434,6 +455,7 @@ fi
 RUN_ADSBEXCHANGE_SCRIPT="false"
 RUN_PIAWARE_SCRIPT="false"
 RUN_FLIGHTRADAR24_SCRIPT="false"
+RUN_FLYITALYADSB_SCRIPT
 RUN_OPENSKYNETWORK_SCRIPT="false"
 RUN_PLANEFINDER_SCRIPT="false"
 
@@ -449,6 +471,9 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
                 ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)"|"Flightradar24 Client (reinstall)")
                 RUN_FLIGHTRADAR24_SCRIPT="true"
+                ;;
+            "Fly Italy ADS-B Feeder"|"Fly Italy ADS-B Feeder (upgrade)"
+                RUN_FLYITALYADSB_SCRIPT="true"
                 ;;
             "OpenSky Network Feeder")
                 RUN_OPENSKYNETWORK_SCRIPT="true"
@@ -470,6 +495,10 @@ fi
 
 if [[ "${RUN_FLIGHTRADAR24_SCRIPT}" = "true" ]]; then
     InstallFlightradar24
+fi
+
+if [[ "${RUN_FLYITALYADSB_SCRIPT}" = "true" ]]; then
+    InstallFlyItalyAdsb
 fi
 
 if [[ "${RUN_OPENSKYNETWORK_SCRIPT}" = "true" ]]; then
