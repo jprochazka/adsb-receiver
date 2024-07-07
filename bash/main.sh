@@ -472,7 +472,7 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)"|"Flightradar24 Client (reinstall)")
                 RUN_FLIGHTRADAR24_SCRIPT="true"
                 ;;
-            "Fly Italy ADS-B Feeder"|"Fly Italy ADS-B Feeder (upgrade)"
+            "Fly Italy ADS-B Feeder"|"Fly Italy ADS-B Feeder (upgrade)")
                 RUN_FLYITALYADSB_SCRIPT="true"
                 ;;
             "OpenSky Network Feeder")
