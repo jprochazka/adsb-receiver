@@ -63,3 +63,23 @@ def get_setting(name):
         abort(404, description="Not Found")
 
     return jsonify(data[0]), 200
+
+@settings.route('/api/settings', methods=['GET'])
+def get_settings():
+    settings=[]
+
+    try:
+        connection = create_connection()
+        cursor=connection.cursor()
+        cursor.execute("SELECT * FROM settings ORDER BY name")
+        columns=[x[0] for x in cursor.description]
+        result=cursor.fetchall()
+        for result in result:
+            settings.append(dict(zip(columns,result)))
+    except Exception as ex:
+        logging.error(f"Error encountered while trying to get settings", exc_info=ex)
+        abort(500, description="Internal Server Error")
+    finally:
+        connection.close()
+
+    return jsonify(settings), 200

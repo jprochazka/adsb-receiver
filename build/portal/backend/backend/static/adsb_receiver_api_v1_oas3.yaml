@@ -1,5 +1,4 @@
 openapi: 3.1.0
-
 info:
   title: The ADS-B Portal API
   description: This API is used to supply data to ADS-B Portal frontends hosted both locally and remotely.
@@ -7,27 +6,22 @@ info:
     name: The MIT License (MIT)
     url: https://raw.githubusercontent.com/jprochazka/adsb-receiver/portal/LICENSE.md
   version: 1.0.0
-
 externalDocs:
   description: The ADS-B Receiver Project
   url: https://github.com/jprochazka/adsb-receiver
-
 servers:
   - url: http://127.0.0.1:5000/api
-
 tags:
-  - name: blog_posts
+  - name: blog
     description: Access and manage blog data
     externalDocs:
       description: Wiki documentation
       url: https://github.com/jprochazka/adsb-receiver/wiki
-
 paths:
   /blog/post:
-
     post:
       tags:
-        - blog_posts
+        - blog
       summary: Create a new blog post
       description: Creates a new blog post
       operationId: createBlogPost
@@ -45,12 +39,10 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /blog/post/{id}:
-
     delete:
       tags:
-        - blog_posts
+        - blog
       summary: Delete an existing blog post
       description: Deletes an existing blog post assigned the specified blog post ID
       operationId: deleteBlogPost
@@ -68,10 +60,9 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
     get:
       tags:
-        - blog_posts
+        - blog
       summary: Get data related to the specified blog post ID
       description: Returns all data related to the blog post assigned the specified ID
       operationId: getBlogPost
@@ -95,10 +86,9 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
     put:
       tags:
-        - blog_posts
+        - blog
       summary: Updates data related to the specified blog post ID
       description: Updates data related to the blog post assigned the specified ID
       operationId: updateBlogPost
@@ -125,12 +115,10 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
   /blog/posts:
-
     get:
       tags:
-        - blog_posts
+        - blog
       summary: Get data related to multiple blog posts
       description: Returns data for all blog posts ordered by the date they were created
       operationId: getBlogPosts
@@ -165,9 +153,7 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /flight/{flight}:
-
     get:
       tags:
         - flights
@@ -194,9 +180,7 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
   /flight/{flight}/positions:
-
     get:
       tags:
         - flights
@@ -240,9 +224,7 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /flights:
-
     get:
       tags:
         - flights
@@ -280,9 +262,7 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /flights/count:
-
     get:
       tags:
         - flights
@@ -300,9 +280,7 @@ paths:
                   $ref: '#/components/schemas/GetFlightsCountResponse'
         '500':
           description: Internal Server Error
-
   /link:
-
     post:
       tags:
         - links
@@ -323,9 +301,7 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /link/{id}:
-
     delete:
       tags:
         - links
@@ -346,7 +322,6 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
     get:
       tags:
         - links
@@ -373,7 +348,6 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
     put:
       tags:
         - links
@@ -403,9 +377,7 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
   /links:
-
     get:
       tags:
         - links
@@ -443,9 +415,83 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
+  /notification/{flight}:
+    delete:
+      tags:
+        - notifications
+      summary: Delete an existing notification
+      description: Deletes an existing notification assigned the specified flight
+      operationId: deleteNotification
+      parameters:
+        - name: flight
+          in: path
+          description: The flight assigned the notification to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+    post:
+      tags:
+        - notifications
+      parameters:
+        - name: flight
+          in: path
+          description: The flight to be added to the notifications list
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /notifications:
+    get:
+      tags:
+        - notifications
+      summary: Get data related to multiple notifications
+      description: Returns data for all currently available notifications
+      operationId: getNotifications
+      parameters:
+        - name: offset
+          in: query
+          description: The number of links to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of links to be returned
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetNotificationsResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
   /setting:
-
     put:
       tags:
         - settings
@@ -468,9 +514,7 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
   /setting/{name}:
-
     get:
       tags:
         - settings
@@ -497,9 +541,25 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
+  /settings:
+    get:
+      tags:
+        - settings
+      summary: Get data related to all settings
+      description: Returns data for all currently available settings
+      operationId: getSettings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Setting'
+        '500':
+          description: Internal Server Error
   /user:
-
     post:
       tags:
         - users
@@ -520,9 +580,7 @@ paths:
           description: Bad Request
         '500':
           description: Internal Server Error
-
   /user/{email}:
-
     delete:
       tags:
         - users
@@ -569,7 +627,6 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
     put:
       tags:
           - users
@@ -599,10 +656,46 @@ paths:
           description: Not Found
         '500':
           description: Internal Server Error
-
+  /users:
+    get:
+      tags:
+        - users
+      summary: Get data related to multiple users
+      description: Returns data for all currently available users
+      operationId: getUsers
+      parameters:
+        - name: offset
+          in: query
+          description: The number of users to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of users to be returned
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetUsersResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
 components:
   schemas:
-
     BlogPost:
       type: object
       properties:
@@ -617,7 +710,6 @@ components:
           type: string
         content:
           type: string
-
     CreateBlogPostRequest:
       required:
         - title
@@ -630,7 +722,6 @@ components:
           type: string
         content:
           type: string
-
     GetBlogPostsResponse:
         type: object
         properties:
@@ -644,7 +735,6 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/BlogPost'
-              
     UpdateBlogPostRequest:
       required:
         - title
@@ -654,7 +744,6 @@ components:
           type: string
         content:
           type: string
-
     Flight:
       type: object
       properties:
@@ -670,7 +759,6 @@ components:
         lastSeen:
           type: string
           format: date-time
-
     Position:
       type: object
       properties:
@@ -699,7 +787,6 @@ components:
           type: integer
         speed:
           type: integer
-
     GetFlightPositionsResponse:
         type: object
         properties:
@@ -713,7 +800,6 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Position'
-
     GetFlightsResponse:
       type: object
       properties:
@@ -727,13 +813,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Flight'
-
     GetFlightsCountResponse:
       type: object
       properties:
         flights:
           type: integer
-
     CreateLinkRequest:
       required:
         - name
@@ -743,7 +827,6 @@ components:
           type: string
         address:
           type: string
-
     UpdateLinkRequest:
       required:
         - name
@@ -753,7 +836,6 @@ components:
           type: string
         address:
           type: string
-
     Link:
       type: object
       properties:
@@ -763,7 +845,6 @@ components:
           type: string
         address:
           type string
-
     GetLinksResponse:
       type: object
       properties:
@@ -777,7 +858,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Link'
-
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        flight:
+          type: string
+    GetNotificationsResponse:
+      type: object
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        count:
+            type: integer
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
     UpdateSettingRequest:
       type: object
       properties:
@@ -785,7 +885,6 @@ components:
           type: string
         value:
           type: string
-
     Setting:
       type: object
       properties:
@@ -795,7 +894,6 @@ components:
           type: string
         value:
           type: string
-
     CreateUserRequest:
       type: object
       properties:
@@ -807,7 +905,6 @@ components:
           type: string
         administrator:
           type: boolean
-
     UpdateUserRequest:
       type: object
       properties:
@@ -817,7 +914,6 @@ components:
           type: string
         administrator:
           type: boolean
-
     User:
       type: object
       properties:
@@ -831,37 +927,44 @@ components:
           type: string
         administrator:
           type: boolean
-
+    GetUsersResponse:
+      type: object
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        count:
+            type: integer
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
   requestBodies:
-
     CreateBlogPostRequest:
       description: An object containing data to be used to create a new blog post
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CreateBlogPostRequest'
-
     CreateLinkRequest:
       description: An object containing data to be used to create a new link
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CreateLinkRequest'
-
     UpdateSettingRequest:
       description: An object containing data to be used to update an existing setting
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/UpdateSettingRequest'
-
     CreateUserRequest:
       description: An object containing data to be used to create a new user
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CreateUserRequest'
-
     UpdateUserRequest:
       description: An object containing data to be used to update an existing user
       content:

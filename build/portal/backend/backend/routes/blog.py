@@ -55,7 +55,7 @@ def delete_blog_post(blog_post_id):
             cursor.execute("DELETE FROM blog_posts WHERE id = %s", (blog_post_id,))
             connection.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to delete blog post id {blog_post_id}", blog_post_id, exc_info=ex)
+        logging.error(f"Error encountered while trying to delete blog post id {blog_post_id}", exc_info=ex)
         abort(500, description="Internal Server Error")
     finally:
         connection.close()

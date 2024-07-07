@@ -56,7 +56,7 @@ def delete_user(email):
             cursor.execute("DELETE FROM users WHERE email = %s", (email,))
             connection.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to delete user related to email {email}", email, exc_info=ex)
+        logging.error(f"Error encountered while trying to delete user related to email {email}", exc_info=ex)
         abort(500, description="Internal Server Error")
     finally:
         connection.close()
@@ -112,3 +112,34 @@ def put_user(email):
         connection.close()
 
     return "No Content", 204
+
+@users.route('/api/users', methods=['GET'])
+def get_users():
+    offset = request.args.get('offset', default=0, type=int)
+    limit = request.args.get('limit', default=100, type=int)
+    if offset < 0  or limit < 1 or limit > 1000:
+        abort(400, description="Bad Request")
+
+    users=[]
+
+    try:
+        connection = create_connection()
+        cursor=connection.cursor()
+        cursor.execute("SELECT * FROM users ORDER BY name LIMIT %s, %s", (offset, limit))
+        columns=[x[0] for x in cursor.description]
+        result=cursor.fetchall()
+        for result in result:
+            users.append(dict(zip(columns,result)))
+    except Exception as ex:
+        logging.error(f"Error encountered while trying to get users", exc_info=ex)
+        abort(500, description="Internal Server Error")
+    finally:
+        connection.close()
+
+    data={}
+    data['offset'] = offset
+    data['limit'] = limit
+    data['count'] = len(users)
+    data['users'] = users
+
+    return jsonify(data), 200

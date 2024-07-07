@@ -1,13 +1,13 @@
-DROP TABLE IF EXISTS administrators;
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS aircraft;
-DROP TABLE IF EXISTS blogPosts;
-DROP TABLE IF EXISTS flightNotifications;
+DROP TABLE IF EXISTS blog_posts;
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS flights;
 DROP TABLE IF EXISTS links;
 DROP TABLE IF EXISTS positions;
 DROP TABLE IF EXISTS settings;
 
-CREATE TABLE administrators (
+CREATE TABLE users (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `name` TEXT NOT NULL,
     `email` TEXT NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE aircraft (
     `lastSeen` TEXT
 );
 
-CREATE TABLE blogPosts (
+CREATE TABLE blog_posts (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `title` TEXT Not Null,
     `date` TEXT NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE blogPosts (
     `content` TEXT NOT NULL
 );
 
-CREATE TABLE flightNotifications (
+CREATE TABLE notifications (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `flight` TEXT NOT NULL
 );
@@ -39,8 +39,8 @@ CREATE TABLE flights (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `aircraft` INTEGER NOT NULL,
     `flight` TEXT NOT NULL,
-    `firstSeen` TEXT NOT NULL,
-    `lastSeen` TEXT,
+    `first_seen` TEXT NOT NULL,
+    `last_seen` TEXT,
     FOREIGN KEY(aircraft) REFERENCES aircraft(id)
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE positions (
     `longitude` REAL NOT NULL,
     `track` INTEGER NOT NULL,
     `altitude` INTEGER NOT NULL,
-    `verticleRate` INTEGER NOT NULL,
+    `verticle_rate` INTEGER NOT NULL,
     `speed` INTEGER,
     FOREIGN KEY (aircraft) REFERENCES aircraft(id),
     FOREIGN KEY (flight) REFERENCES flights(id)

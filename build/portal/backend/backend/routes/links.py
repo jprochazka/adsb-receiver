@@ -53,7 +53,7 @@ def delete_link(link_id):
             cursor.execute("DELETE FROM links WHERE id = %s", (link_id,))
             connection.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to delete link id {link_id}", link_id, exc_info=ex)
+        logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
         abort(500, description="Internal Server Error")
     finally:
         connection.close()
@@ -130,7 +130,7 @@ def get_links():
         for result in result:
             links.append(dict(zip(columns,result)))
     except Exception as ex:
-        logging.error(f"Error encountered while trying to get flight positions fo flight {flight}", exc_info=ex)
+        logging.error(f"Error encountered while trying to get links", exc_info=ex)
         abort(500, description="Internal Server Error")
     finally:
         connection.close()
@@ -139,6 +139,6 @@ def get_links():
     data['offset'] = offset
     data['limit'] = limit
     data['count'] = len(links)
-    data['blogPosts'] = links
+    data['links'] = links
 
     return jsonify(data), 200

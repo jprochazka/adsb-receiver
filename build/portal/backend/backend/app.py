@@ -19,7 +19,6 @@ def create_app():
 
     @app.route('/api/docs')
     def get_docs():
-        print('sending docs')
         return render_template('swaggerui.html')
     
     return app

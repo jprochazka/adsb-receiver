@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS administrators;
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS aircraft;
 DROP TABLE IF EXISTS logPosts;
 DROP TABLE IF EXISTS flightNotifications;
@@ -7,25 +7,25 @@ DROP TABLE IF EXISTS links;
 DROP TABLE IF EXISTS positions;
 DROP TABLE IF EXISTS settings;
 
-CREATE TABLE `administrators` (
+CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `email` varchar(75) NOT NULL,
   `login` varchar(25) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `token` varchar(10) DEFAULT NULL,
+  `administrator` bit DEFAULT 0,
   PRIMARY KEY (`id`)
 );
 
 CREATE TABLE `aircraft` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `icao` varchar(24) NOT NULL,
-  `firstSeen` datetime NOT NULL,
-  `lastSeen` datetime NOT NULL,
+  `first_seen` datetime NOT NULL,
+  `last_seen` datetime NOT NULL,
   PRIMARY KEY (`id`),
 );
 
-CREATE TABLE `blogPosts` (
+CREATE TABLE `blog_posts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(100) NOT NULL,
   `date` datetime NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE `blogPosts` (
   PRIMARY KEY (`id`)
 );
 
-CREATE TABLE `flightNotifications` (
+CREATE TABLE `notifications` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `flight` varchar(10) NOT NULL,
   PRIMARY KEY (`id`)
@@ -44,8 +44,8 @@ CREATE TABLE `flights` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `aircraft` int(11) NOT NULL,
   `flight` varchar(100) NOT NULL,
-  `firstSeen` datetime NOT NULL,
-  `lastSeen` datetime NOT NULL,
+  `first_seen` datetime NOT NULL,
+  `last_seen` datetime NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (aircraft) REFERENCES aircraft(id)
 );
@@ -68,7 +68,7 @@ CREATE TABLE `positions` (
   `longitude` double NOT NULL,
   `track` int(11) NOT NULL,
   `altitude` int(5) NOT NULL,
-  `verticleRate` int(4) NOT NULL,
+  `verticle_rate` int(4) NOT NULL,
   `speed` int(4) DEFAULT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (aircraft) REFERENCES aircraft(id),
