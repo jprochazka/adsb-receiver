@@ -17,7 +17,7 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo ""
 
 # Confirm component installation
-if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "FlightAware PiAware client Setup" --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" 13 78 3>&1 1>&2 2>&3); then
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "FlightAware PiAware client Setup" --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" 13 78 3>&1 1>&2 2>&3; then
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo ""

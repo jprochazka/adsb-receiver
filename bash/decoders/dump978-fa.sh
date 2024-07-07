@@ -15,7 +15,7 @@ echo -e "\e[92m  Setting up dump978-fa..."
 echo ""
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo ""
-if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978-fa Setup" --yesno "This is the FlightAware 978MHz UAT decoder. It is a reimplementation in C++, loosely based on the demodulator from https://github.com/mutability/dump978.\n\n  https://github.com/flightaware/dump978\n\nContinue setup by installing dump978-fa?" 14 78; then
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978-fa Setup" --yesno "This is the FlightAware 978MHz UAT decoder. It is a reimplementation in C++, loosely based on the demodulator from https://github.com/mutability/dump978.\n\n  https://github.com/flightaware/dump978\n\nContinue setup by installing dump978-fa?" 14 78; then
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo ""

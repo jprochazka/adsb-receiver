@@ -17,7 +17,7 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 
 # Confirm component installation.
-if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "OpenSky Network feeder client Setup" --yesno "The OpenSky Network is a community-based receiver network which continuously collects air traffic surveillance data. Unlike other networks, OpenSky keeps the collected data forever and makes it accessible to researchers. For more information  please see their website:\n\n  https://opensky-network.org/\n\nContinue setup by installing the OpenSky Network feeder client?" 13 78 3>&1 1>&2 2>&3); then
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "OpenSky Network feeder client Setup" --yesno "The OpenSky Network is a community-based receiver network which continuously collects air traffic surveillance data. Unlike other networks, OpenSky keeps the collected data forever and makes it accessible to researchers. For more information  please see their website:\n\n  https://opensky-network.org/\n\nContinue setup by installing the OpenSky Network feeder client?" 13 78 3>&1 1>&2 2>&3; then
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo -e ""

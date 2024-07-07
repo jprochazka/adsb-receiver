@@ -17,7 +17,7 @@ echo -e "\e[93m  ---------------------------------------------------------------
 echo -e ""
 
 # Confirm component installation
-if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PlaneFinder ADS-B Client Setup" --yesno "The PlaneFinder ADS-B Client is an easy and accurate way to share your ADS-B and MLAT data with Plane Finder. It comes with a beautiful user interface that helps you explore and interact with your data in realtime.\n\n  https://planefinder.net/sharing/client\n\nContinue setup by installing PlaneFinder ADS-B Client?" 13 78 3>&1 1>&2 2>&3); then
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "PlaneFinder ADS-B Client Setup" --yesno "The PlaneFinder ADS-B Client is an easy and accurate way to share your ADS-B and MLAT data with Plane Finder. It comes with a beautiful user interface that helps you explore and interact with your data in realtime.\n\n  https://planefinder.net/sharing/client\n\nContinue setup by installing PlaneFinder ADS-B Client?" 13 78 3>&1 1>&2 2>&3; then
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo -e ""
@@ -50,7 +50,7 @@ echo ""
 
 echo -e "\e[94m  Determining the package to install...\e[97m"
 BASE_DOWNLOAD_URL="http://client.planefinder.net/"
-case "${CPU_ARCHITECTURE}" in
+case "${RECIEVER_CPU_ARCHITECTURE}" in
     "armv7l"|"armv6l")
         PACKAGE_NAME="pfclient_${PLANEFINDER_CLIENT_VERSION_ARMHF}_armhf.deb"
         ;;
