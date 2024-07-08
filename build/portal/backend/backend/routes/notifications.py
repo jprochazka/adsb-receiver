@@ -2,15 +2,16 @@ import logging
 import yaml
 
 from flask import abort, Blueprint, jsonify, request
-from marshmallow import Schema, fields, ValidationError
+from flask_jwt_extended import jwt_required
 from backend.db import create_connection
 
 
-notifications = Blueprint('links', __name__)
+notifications = Blueprint('notifications', __name__)
 config=yaml.safe_load(open("config.yml"))
 
 
 @notifications.route('/api/notification/<string:flight>', methods=['DELETE'])
+@jwt_required()
 def delete_notification(flight):
     try:
         connection = create_connection()
@@ -30,6 +31,7 @@ def delete_notification(flight):
     return "No Content", 204
 
 @notifications.route('/api/notification/<string:flight>', methods=['POST'])
+@jwt_required()
 def post_notification(flight):
     try:
         connection = create_connection()
@@ -52,6 +54,7 @@ def post_notification(flight):
     return "Created", 201
 
 @notifications.route('/api/notifications', methods=['GET'])
+@jwt_required()
 def get_notifications():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=100, type=int)

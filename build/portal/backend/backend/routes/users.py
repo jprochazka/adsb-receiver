@@ -2,6 +2,7 @@ import logging
 import yaml
 
 from flask import abort, Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
 from backend.db import create_connection
 
@@ -22,6 +23,7 @@ class UpdateUserRequestSchema(Schema):
 
 
 @users.route('/api/user', methods=['POST'])
+@jwt_required()
 def post_user():
     try:
         payload = CreateUserRequestSchema().load(request.json)
@@ -45,6 +47,7 @@ def post_user():
     return "Created", 201
 
 @users.route('/api/user/<string:email>', methods=['DELETE'])
+@jwt_required()
 def delete_user(email):
     try:
         connection = create_connection()
@@ -64,6 +67,7 @@ def delete_user(email):
     return "No Content", 204
 
 @users.route('/api/user/<string:email>', methods=['GET'])
+@jwt_required()
 def get_user(email):
     data=[]
 
@@ -87,6 +91,7 @@ def get_user(email):
     return jsonify(data[0]), 200
 
 @users.route('/api/user/<string:email>', methods=['PUT'])
+@jwt_required()
 def put_user(email):
     try:
         payload = UpdateUserRequestSchema().load(request.json)
@@ -114,6 +119,7 @@ def put_user(email):
     return "No Content", 204
 
 @users.route('/api/users', methods=['GET'])
+@jwt_required()
 def get_users():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=100, type=int)

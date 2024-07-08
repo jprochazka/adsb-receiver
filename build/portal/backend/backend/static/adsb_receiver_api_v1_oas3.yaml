@@ -17,11 +17,43 @@ tags:
     externalDocs:
       description: Wiki documentation
       url: https://github.com/jprochazka/adsb-receiver/wiki
+  - name: flights
+    description: Access flight data
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
+  - name: links
+    description: Access and manage link data
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
+  - name: notifications
+    description: Access and manage notification data
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
+  - name: settings
+    description: Access and manage setting data
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
+  - name: tokens
+    description: Generate and refresh tokens
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
+  - name: users
+    description: Access and manage user data
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
 paths:
   /blog/post:
     post:
       tags:
         - blog
+      security:
+        - bearerAuth: []
       summary: Create a new blog post
       description: Creates a new blog post
       operationId: createBlogPost
@@ -37,12 +69,16 @@ paths:
           description: Created
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
   /blog/post/{id}:
     delete:
       tags:
         - blog
+      security:
+        - bearerAuth: []
       summary: Delete an existing blog post
       description: Deletes an existing blog post assigned the specified blog post ID
       operationId: deleteBlogPost
@@ -56,6 +92,8 @@ paths:
       responses:
         '204':
           description: No Content
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -63,6 +101,8 @@ paths:
     get:
       tags:
         - blog
+      security:
+        - bearerAuth: []
       summary: Get data related to the specified blog post ID
       description: Returns all data related to the blog post assigned the specified ID
       operationId: getBlogPost
@@ -82,6 +122,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/BlogPost'
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -89,6 +131,8 @@ paths:
     put:
       tags:
         - blog
+      security:
+        - bearerAuth: []
       summary: Updates data related to the specified blog post ID
       description: Updates data related to the blog post assigned the specified ID
       operationId: updateBlogPost
@@ -111,6 +155,8 @@ paths:
           description: No Content
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -119,6 +165,8 @@ paths:
     get:
       tags:
         - blog
+      security:
+        - bearerAuth: []
       summary: Get data related to multiple blog posts
       description: Returns data for all blog posts ordered by the date they were created
       operationId: getBlogPosts
@@ -149,6 +197,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetBlogPostsResponse'
+        '401':
+          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -157,6 +207,8 @@ paths:
     get:
       tags:
         - flights
+      security:
+        - bearerAuth: []
       summary: Get data related to the specified flight
       description: Returns all data related to the flight assigned the specified flight
       operationId: getFlight
@@ -176,6 +228,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/Flight'
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -184,6 +238,8 @@ paths:
     get:
       tags:
         - flights
+      security:
+        - bearerAuth: []
       summary: Get postion data for a flight
       description: Returns recorded positions for the specified flight
       operationId: getFlightPositions
@@ -220,6 +276,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetFlightPositionsResponse'
+        '401':
+          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -228,6 +286,8 @@ paths:
     get:
       tags:
         - flights
+      security:
+        - bearerAuth: []
       summary: Get data related to multiple flights
       description: Returns data for multiple flights ordered by the date they were created
       operationId: getFlights
@@ -258,6 +318,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetFlightsResponse'
+        '401':
+          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -266,6 +328,8 @@ paths:
     get:
       tags:
         - flights
+      security:
+        - bearerAuth: []
       summary: Gets the number of tracked flights
       description: Returns the total number of flights currently being tracked
       operationId: GetFlightsCount
@@ -278,12 +342,16 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetFlightsCountResponse'
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
   /link:
     post:
       tags:
         - links
+      security:
+        - bearerAuth: []
       summary: Create a new link
       description: Creates a new link using the supplied data
       operationId: createLink
@@ -299,12 +367,16 @@ paths:
           description: Created
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
   /link/{id}:
     delete:
       tags:
         - links
+      security:
+        - bearerAuth: []
       summary: Delete an existing link
       description: Deletes an existing link assigned the specified link ID
       operationId: deleteLink
@@ -318,6 +390,8 @@ paths:
       responses:
         '204':
           description: No Content
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -325,6 +399,8 @@ paths:
     get:
       tags:
         - links
+      security:
+        - bearerAuth: []
       summary: Get data related to the specified link ID
       description: Returns all link data assigned to the specified ID
       operationId: getLink
@@ -344,6 +420,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/Link'
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -351,6 +429,8 @@ paths:
     put:
       tags:
         - links
+      security:
+        - bearerAuth: []
       summary: Updates data related to the specified link ID
       description: Updates data related to the link assigned the specified ID
       operationId: updateLink
@@ -373,6 +453,8 @@ paths:
           description: No Content
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -381,6 +463,8 @@ paths:
     get:
       tags:
         - links
+      security:
+        - bearerAuth: []
       summary: Get data related to multiple links
       description: Returns data for all currently available links
       operationId: getLinks
@@ -411,6 +495,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetLinksResponse'
+        '401':
+          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -419,6 +505,8 @@ paths:
     delete:
       tags:
         - notifications
+      security:
+        - bearerAuth: []
       summary: Delete an existing notification
       description: Deletes an existing notification assigned the specified flight
       operationId: deleteNotification
@@ -434,11 +522,15 @@ paths:
           description: No Content
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
     post:
       tags:
         - notifications
+      security:
+        - bearerAuth: []
       parameters:
         - name: flight
           in: path
@@ -451,12 +543,16 @@ paths:
           description: Created
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
   /notifications:
     get:
       tags:
         - notifications
+      security:
+        - bearerAuth: []
       summary: Get data related to multiple notifications
       description: Returns data for all currently available notifications
       operationId: getNotifications
@@ -489,12 +585,16 @@ paths:
                   $ref: '#/components/schemas/GetNotificationsResponse'
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
   /setting:
     put:
       tags:
         - settings
+      security:
+        - bearerAuth: []
       summary: Updates data related to the specified setting name
       description: Updates data related to the setting assigned the supplied name
       operationId: updateSetting
@@ -510,6 +610,8 @@ paths:
           description: No Content
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -518,6 +620,8 @@ paths:
     get:
       tags:
         - settings
+      security:
+        - bearerAuth: []
       summary: Get data related to the specified setting name
       description: Returns all data related to the setting assigned the supplied name
       operationId: getSetting
@@ -537,6 +641,8 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/Setting'
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -545,6 +651,8 @@ paths:
     get:
       tags:
         - settings
+      security:
+        - bearerAuth: []
       summary: Get data related to all settings
       description: Returns data for all currently available settings
       operationId: getSettings
@@ -557,12 +665,52 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Setting'
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
+  /token/login:
+    post:
+      tags:
+        - tokens
+      summary: Generate a refresh and access token
+      description: Returns a new refresh and access token
+      operationId: postLogin
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Token'
+  /token/refresh:
+    post:
+      tags:
+        - tokens
+      security:
+        - bearerAuth: []
+      summary: Refresh an access token token
+      description: Returns a new access token generated using the supplied refresh token
+      operationId: postRefresh
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AccessToken'
+        '401':
+          description: Unauthorized
   /user:
     post:
       tags:
         - users
+      security:
+        - bearerAuth: []
       summary: Create a user
       description: Creates a new user using the supplied data
       operationId: createUser
@@ -578,12 +726,16 @@ paths:
           description: Created
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
   /user/{email}:
     delete:
       tags:
         - users
+      security:
+        - bearerAuth: []
       summary: Delete an existing user
       description: Deletes an existing user assigned the specified email address
       operationId: deleteUser
@@ -597,13 +749,17 @@ paths:
       responses:
         '204':
           description: No Content
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
           description: Internal Server Error
     get:
       tags:
-          - users
+        - users
+      security:
+        - bearerAuth: []
       summary: Get data related to the specified user email
       description: Returns all data related to the setting assigned the supplied email address
       operationId: getUser
@@ -623,13 +779,17 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
           description: Internal Server Error
     put:
       tags:
-          - users
+        - users
+      security:
+        - bearerAuth: []
       summary: Updates data related to the specified user email
       description: Updates data related to the user assigned the supplied email
       operationId: updateUser
@@ -652,6 +812,8 @@ paths:
           description: No Content
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -660,6 +822,8 @@ paths:
     get:
       tags:
         - users
+      security:
+        - bearerAuth: []
       summary: Get data related to multiple users
       description: Returns data for all currently available users
       operationId: getUsers
@@ -692,9 +856,16 @@ paths:
                   $ref: '#/components/schemas/GetUsersResponse'
         '400':
           description: Bad Request
+        '401':
+          description: Unauthorized
         '500':
           description: Internal Server Error
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     BlogPost:
       type: object
@@ -893,6 +1064,18 @@ components:
         name:
           type: string
         value:
+          type: string
+    AccessToken: 
+      type: object
+      properties:
+        access_token:
+          type: string
+    Tokens:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
           type: string
     CreateUserRequest:
       type: object

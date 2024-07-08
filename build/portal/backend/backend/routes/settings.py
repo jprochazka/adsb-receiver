@@ -2,6 +2,7 @@ import logging
 import yaml
 
 from flask import abort, Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
 from backend.db import create_connection
 
@@ -15,6 +16,7 @@ class UpdateSettingRequestSchema(Schema):
 
 
 @settings.route('/api/setting', methods=['PUT'])
+@jwt_required()
 def put_setting():
     try:
         payload = UpdateSettingRequestSchema().load(request.json)
@@ -42,6 +44,7 @@ def put_setting():
     return "No Content", 204
 
 @settings.route('/api/setting/<string:name>', methods=['GET'])
+@jwt_required()
 def get_setting(name):
     data=[]
 
@@ -65,6 +68,7 @@ def get_setting(name):
     return jsonify(data[0]), 200
 
 @settings.route('/api/settings', methods=['GET'])
+@jwt_required()
 def get_settings():
     settings=[]
 

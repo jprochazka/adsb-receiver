@@ -2,6 +2,7 @@ import logging
 import yaml
 
 from flask import abort, Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from backend.db import create_connection
 
 flights = Blueprint('flights', __name__)
@@ -9,6 +10,7 @@ config=yaml.safe_load(open("config.yml"))
         
 
 @flights.route('/api/flight/<string:flight>', methods=['GET'])
+@jwt_required()
 def get_flight(flight):
     data=[]
 
@@ -32,6 +34,7 @@ def get_flight(flight):
     return jsonify(data[0]), 200
 
 @flights.route('/api/flight/<flight>/positions', methods=['GET'])
+@jwt_required()
 def get_flight_positions(flight):
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=500, type=int)
@@ -63,6 +66,7 @@ def get_flight_positions(flight):
     return jsonify(data), 200
 
 @flights.route('/api/flights', methods=['GET'])
+@jwt_required()
 def get_flights():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=50, type=int)
@@ -94,6 +98,7 @@ def get_flights():
     return jsonify(data), 200
 
 @flights.route('/api/flights/count', methods=['GET'])
+@jwt_required()
 def get_flights_count():
     try:
         connection = create_connection()

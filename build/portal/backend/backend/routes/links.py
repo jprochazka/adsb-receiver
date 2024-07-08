@@ -2,6 +2,7 @@ import logging
 import yaml
 
 from flask import abort, Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
 from backend.db import create_connection
 
@@ -19,6 +20,7 @@ class UpdateLinkRequestSchema(Schema):
         
 
 @links.route('/api/link', methods=['POST'])
+@jwt_required()
 def post_link():
     try:
         payload = CreateLinkRequestSchema().load(request.json)
@@ -42,6 +44,7 @@ def post_link():
     return "Created", 201
 
 @links.route('/api/link/<int:link_id>', methods=['DELETE'])
+@jwt_required()
 def delete_link(link_id):
     try:
         connection = create_connection()
@@ -61,6 +64,7 @@ def delete_link(link_id):
     return "No Content", 204
 
 @links.route('/api/link/<int:link_id>', methods=['GET'])
+@jwt_required()
 def get_link(link_id):
     data=[]
 
@@ -84,6 +88,7 @@ def get_link(link_id):
     return jsonify(data[0]), 200
 
 @links.route('/api/link/<int:id>', methods=['PUT'])
+@jwt_required()
 def put_link(id):
     payload = request.json
     payload_schema = UpdateLinkRequestSchema
@@ -113,6 +118,7 @@ def put_link(id):
     return "No Content", 204
 
 @links.route('/api/links', methods=['GET'])
+@jwt_required()
 def get_links():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=50, type=int)
