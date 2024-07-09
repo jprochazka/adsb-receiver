@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { MapComponent } from './map/map.component';
+import { FlightHistoryComponent } from './flight-history/flight-history.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MapComponent],
+  imports: [RouterOutlet, FlightHistoryComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
