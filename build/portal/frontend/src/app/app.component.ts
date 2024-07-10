@@ -1,11 +1,12 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { FlightHistoryComponent } from './flight-history/flight-history.component';
+import { RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
+import { LinksComponent } from './links/links.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, FlightHistoryComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, LinksComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

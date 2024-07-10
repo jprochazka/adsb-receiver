@@ -1,0 +1,43 @@
+<div class="container">
+    <h1>Flights Seen</h1>
+    <hr />
+    <div *ngIf="data">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Flight</th>
+                    <th scope="col">Last Seen</th>
+                    <th scope="col">First Seen</th>
+                    <th scope="col">Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let flight of data.flights">
+                    <td>
+                        <a href="/flight-history/{{ flight.flight }}">{{ flight.flight }}</a>
+                    </td>
+                    <td>
+                        {{ flight.last_seen }}
+                    </td>
+                    <td>
+                        {{ flight.first_seen }}
+                    </td>
+                    <td>
+                        <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
+                        <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
+                        <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="/flights/1">1</a></li>
+            <li class="page-item"><a class="page-link" href="/flights/2">2</a></li>
+            <li class="page-item"><a class="page-link" href="/flights/3">3</a></li>
+            <li class="page-item"><a class="page-link" href="/flights/2">Next</a></li>
+        </ul>
+    </nav>
+    <p class="fw-light">Displaying {{ data.offset + 1 }} through {{ data.offset + data.count }} of a total of {{ count.flights }} flights tracked</p>
+</div>

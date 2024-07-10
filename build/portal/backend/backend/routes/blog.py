@@ -66,7 +66,6 @@ def delete_blog_post(blog_post_id):
     return "No Content", 204
 
 @blog.route('/api/blog/post/<int:blog_post_id>', methods=['GET'])
-@jwt_required()
 def get_blog_post(blog_post_id):
     data=[]
 
@@ -87,7 +86,9 @@ def get_blog_post(blog_post_id):
     if not data:
         abort(404, description="Not Found")
 
-    return jsonify(data[0]), 200
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @blog.route('/api/blog/post/<int:blog_post_id>', methods=['PUT'])
 @jwt_required()
@@ -118,7 +119,6 @@ def put_blog_post(blog_post_id):
     return "No Content", 204
 
 @blog.route('/api/blog/posts', methods=['GET'])
-@jwt_required()
 def get_blog_posts():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=25, type=int)
@@ -147,4 +147,6 @@ def get_blog_posts():
     data['count'] = len(blog_posts)
     data['blog_posts'] = blog_posts
     
-    return jsonify(data), 200
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200

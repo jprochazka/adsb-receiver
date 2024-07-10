@@ -1,0 +1,10 @@
+<li class="nav-item dropdown" *ngIf="data">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Links
+    </a>
+    <ul class="dropdown-menu">
+        <li *ngFor="let link of data.links">
+            <a class="dropdown-item" href="{{ link.address }}">{{ link.name }}</a>
+        </li>
+    </ul>
+</li>

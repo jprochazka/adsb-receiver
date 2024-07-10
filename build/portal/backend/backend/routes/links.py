@@ -118,7 +118,6 @@ def put_link(id):
     return "No Content", 204
 
 @links.route('/api/links', methods=['GET'])
-@jwt_required()
 def get_links():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=50, type=int)
@@ -146,5 +145,7 @@ def get_links():
     data['limit'] = limit
     data['count'] = len(links)
     data['links'] = links
-
-    return jsonify(data), 200
+    
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200

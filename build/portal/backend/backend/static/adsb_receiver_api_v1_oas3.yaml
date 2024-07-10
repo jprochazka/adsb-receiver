@@ -101,8 +101,6 @@ paths:
     get:
       tags:
         - blog
-      security:
-        - bearerAuth: []
       summary: Get data related to the specified blog post ID
       description: Returns all data related to the blog post assigned the specified ID
       operationId: getBlogPost
@@ -165,8 +163,6 @@ paths:
     get:
       tags:
         - blog
-      security:
-        - bearerAuth: []
       summary: Get data related to multiple blog posts
       description: Returns data for all blog posts ordered by the date they were created
       operationId: getBlogPosts
@@ -286,8 +282,6 @@ paths:
     get:
       tags:
         - flights
-      security:
-        - bearerAuth: []
       summary: Get data related to multiple flights
       description: Returns data for multiple flights ordered by the date they were created
       operationId: getFlights
@@ -328,8 +322,6 @@ paths:
     get:
       tags:
         - flights
-      security:
-        - bearerAuth: []
       summary: Gets the number of tracked flights
       description: Returns the total number of flights currently being tracked
       operationId: GetFlightsCount
@@ -463,8 +455,6 @@ paths:
     get:
       tags:
         - links
-      security:
-        - bearerAuth: []
       summary: Get data related to multiple links
       description: Returns data for all currently available links
       operationId: getLinks

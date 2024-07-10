@@ -1,0 +1,21 @@
+<div class="container">
+    <h1>ADS-B Portal Blog</h1>
+    <hr />
+    <div *ngIf="data">
+        <div *ngFor="let post of data.blog_posts">
+            <h2><a href="/blog-post/{{ post.id }}">{{ post.title }}</a></h2>
+            <p class="fs-6">Posted by {{ post.author }} on {{ post.date }}</p>
+            <div class="fs-5">{{ post.content }}</div>
+            <div class="pb-3 text-end"><a href="/blog-post/{{ post.id }}">read more...</a></div>
+        </div>
+    </div>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="/blog/1">1</a></li>
+            <li class="page-item"><a class="page-link" href="/blog/2">2</a></li>
+            <li class="page-item"><a class="page-link" href="/blog/3">3</a></li>
+            <li class="page-item"><a class="page-link" href="/blog/2">Next</a></li>
+        </ul>
+    </nav>
+    <p class="fw-light">There are {{ data.count }} total posts</p>
+</div>

@@ -66,7 +66,6 @@ def get_flight_positions(flight):
     return jsonify(data), 200
 
 @flights.route('/api/flights', methods=['GET'])
-@jwt_required()
 def get_flights():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=50, type=int)
@@ -95,10 +94,11 @@ def get_flights():
     data['count'] = len(flights)
     data['flights'] = flights
 
-    return jsonify(data), 200
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @flights.route('/api/flights/count', methods=['GET'])
-@jwt_required()
 def get_flights_count():
     try:
         connection = create_connection()
@@ -111,4 +111,6 @@ def get_flights_count():
     finally:
         connection.close()
 
-    return jsonify(flights=count), 200
+    response = jsonify(flights=count)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200

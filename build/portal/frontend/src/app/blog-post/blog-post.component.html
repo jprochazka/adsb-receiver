@@ -1,0 +1,8 @@
+<div *ngIf="data">
+    <div class="container">
+        <h1>{{ data[0].title }}</h1>
+        <hr />
+        <p class="fs-6">Posted by {{ data[0].author }} on {{ data[0].date }}</p>
+        <div class="fs-5">{{ data[0].content }}</div>
+    </div>
+</div>

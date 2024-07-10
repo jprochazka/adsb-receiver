@@ -1,3 +1,43 @@
-<router-outlet>
-    <app-flight-history></app-flight-history>
-</router-outlet>
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">ADS-B Portal</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Maps
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/dump1090">Dump1090</a></li>
+              <li><a class="dropdown-item disabled" href="/dump978">Dump978</a></li>
+              <li><a class="dropdown-item" href="/adbsx">ADS-B Exchange</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Information
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item disabled" href="#">System Information</a></li>
+              <li><a class="dropdown-item disabled" href="#">Performance Graphs</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/flights" routerLinkActive="active" ariaCurrentWhenActive="page">Flights</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" routerLink="/blog" routerLinkActive="active" ariaCurrentWhenActive="page">Blog</a>
+          </li>
+          <app-links></app-links>
+        </ul>
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success text-nowrap" type="submit">Search Flights</button>
+        </form>
+      </div>
+    </div>
+  </nav>
+<router-outlet></router-outlet>
