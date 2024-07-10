@@ -1,33 +1,5 @@
 #!/usr/bin/python
 
-#================================================================================#
-#                             ADS-B FEEDER PORTAL                                #
-# ------------------------------------------------------------------------------ #
-# Copyright and Licensing Information:                                           #
-#                                                                                #
-# The MIT License (MIT)                                                          #
-#                                                                                #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                    #
-#                                                                                #
-# Permission is hereby granted, free of charge, to any person obtaining a copy   #
-# of this software and associated documentation files (the "Software"), to deal  #
-# in the Software without restriction, including without limitation the rights   #
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      #
-# copies of the Software, and to permit persons to whom the Software is          #
-# furnished to do so, subject to the following conditions:                       #
-#                                                                                #
-# The above copyright notice and this permission notice shall be included in all #
-# copies or substantial portions of the Software.                                #
-#                                                                                #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  #
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
-# SOFTWARE.                                                                      #
-#================================================================================#
-
 import datetime
 import fcntl
 import json
@@ -66,28 +38,28 @@ while True:
 
     purge_aircraft = False
     # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeAircraft'")
+    cursor.execute("SELECT value FROM settings WHERE name = 'purgeAircraft'")
     row = cursor.fetchone()
     if row:
         purge_aircraft = row
 
     purge_flights = False
     # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeFlights'")
+    cursor.execute("SELECT value FROM settings WHERE name = 'purgeFlights'")
     row = cursor.fetchone()
     if row:
         purge_flights = row
 
     purge_positions = False
     # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgePositions'")
+    cursor.execute("SELECT value FROM settings WHERE name = 'purgePositions'")
     row = cursor.fetchone()
     if row:
         purge_positions = row
 
     purge_days_old = False
     # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeDaysOld'")
+    cursor.execute("SELECT value FROM settings WHERE name = 'purgeDaysOld'")
     row = cursor.fetchone()
     if row:
         purge_days_old = row
@@ -106,56 +78,56 @@ while True:
     if purge_aircraft and purge_date:
         # MySQL
         if config["database"]["type"] == "mysql":
-            cursor.execute("SELECT id FROM adsb_aircraft WHERE lastSeen < %s", purge_date)
+            cursor.execute("SELECT id FROM aircraft WHERE last_seen < %s", purge_date)
             rows = cursor.fetchall()
             for row in rows:
-                cursor.execute("DELETE FROM adsb_positions WHERE aircraft = %s", row[0])
-                cursor.execute("DELETE FROM adsb_flights WHERE aircraft = %s", row[0])
-                cursor.execute("DELETE FROM adsb_aircraft WHERE id = %s", row[0])
+                cursor.execute("DELETE FROM positions WHERE aircraft = %s", row[0])
+                cursor.execute("DELETE FROM flights WHERE aircraft = %s", row[0])
+                cursor.execute("DELETE FROM aircraft WHERE id = %s", row[0])
 
         # SQLite
         if config["database"]["type"] == "sqlite":
             params = (purge_date,)
-            cursor.execute("SELECT id FROM adsb_aircraft WHERE lastSeen < ?", params)
+            cursor.execute("SELECT id FROM aircraft WHERE last_seen < ?", params)
             rows = cursor.fetchall()
             for row in rows:
                 params = (row[0],)
-                cursor.execute("DELETE FROM adsb_positions WHERE aircraft = ?", params)
-                cursor.execute("DELETE FROM adsb_flights WHERE aircraft = ?", params)
-                cursor.execute("DELETE FROM adsb_aircraft WHERE id = ?", params)
+                cursor.execute("DELETE FROM positions WHERE aircraft = ?", params)
+                cursor.execute("DELETE FROM flights WHERE aircraft = ?", params)
+                cursor.execute("DELETE FROM aircraft WHERE id = ?", params)
 
     ## Remove flights not seen since the specified date.
 
     if purge_flights and purge_date:
         # MySQL
         if config["database"]["type"] == "mysql":
-            cursor.execute("SELECT id FROM adsb_flights WHERE lastSeen < %s", purge_date)
+            cursor.execute("SELECT id FROM flights WHERE last_seen < %s", purge_date)
             rows = cursor.fetchall()
             for row in rows:
-                cursor.execute("DELETE FROM adsb_positions WHERE flight = %s", row[0])
-                cursor.execute("DELETE FROM adsb_flights WHERE id = %s", row[0])
+                cursor.execute("DELETE FROM positions WHERE flight = %s", row[0])
+                cursor.execute("DELETE FROM flights WHERE id = %s", row[0])
 
         #SQLite
         if config["database"]["type"] == "sqlite":
             params = (purge_date,)
-            cursor.execute("SELECT id FROM adsb_flights WHERE lastSeen < ?", params)
+            cursor.execute("SELECT id FROM flights WHERE last_seen < ?", params)
             rows = cursor.fetchall()
             for row in rows:
                 params = (row[0],)
-                cursor.execute("DELETE FROM adsb_positions WHERE flight = ?", params)
-                cursor.execute("DELETE FROM adsb_flights WHERE id = ?", params)
+                cursor.execute("DELETE FROM positions WHERE flight = ?", params)
+                cursor.execute("DELETE FROM flights WHERE id = ?", params)
 
     ## Remove positions older than the specified date.
 
     if purge_positions and purge_date:
         # MySQL
         if config["database"]["type"] == "mysql":
-            cursor.execute("DELETE FROM adsb_positions WHERE time < %s", purge_date)
+            cursor.execute("DELETE FROM positions WHERE time < %s", purge_date)
 
         #SQLite
         if config["database"]["type"] == "sqlite":
             params = (purge_date,)
-            cursor.execute("DELETE FROM adsb_positions WHERE time < ?", params)
+            cursor.execute("DELETE FROM positions WHERE time < ?", params)
 
     ## Close the database connection.
 

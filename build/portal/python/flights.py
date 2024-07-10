@@ -1,33 +1,5 @@
 #!/usr/bin/python
 
-#================================================================================#
-#                             ADS-B FEEDER PORTAL                                #
-# ------------------------------------------------------------------------------ #
-# Copyright and Licensing Information:                                           #
-#                                                                                #
-# The MIT License (MIT)                                                          #
-#                                                                                #
-# Copyright (c) 2015-2024 Joseph A. Prochazka                                    #
-#                                                                                #
-# Permission is hereby granted, free of charge, to any person obtaining a copy   #
-# of this software and associated documentation files (the "Software"), to deal  #
-# in the Software without restriction, including without limitation the rights   #
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      #
-# copies of the Software, and to permit persons to whom the Software is          #
-# furnished to do so, subject to the following conditions:                       #
-#                                                                                #
-# The above copyright notice and this permission notice shall be included in all #
-# copies or substantial portions of the Software.                                #
-#                                                                                #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  #
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
-# SOFTWARE.                                                                      #
-#================================================================================#
-
 # WHAT THIS DOES:
 # ---------------------------------------------------------------
 #
@@ -81,17 +53,17 @@ class FlightsProcessor(object):
             return
         mapping = { "s": formatSymbol }
         self.STMTS = {
-            'select_aircraft_count':"SELECT COUNT(*) FROM adsb_aircraft WHERE icao = %(s)s" % mapping,
-            'select_aircraft_id':   "SELECT id FROM adsb_aircraft WHERE icao = %(s)s" % mapping,
-            'select_flight_count':  "SELECT COUNT(*) FROM adsb_flights WHERE flight = %(s)s" % mapping,
-            'select_flight_id':     "SELECT id FROM adsb_flights WHERE flight = %(s)s" % mapping,
-            'select_position':      "SELECT message FROM adsb_positions WHERE flight = %(s)s AND message = %(s)s ORDER BY time DESC LIMIT 1" % mapping,
-            'insert_aircraft':      "INSERT INTO adsb_aircraft (icao, firstSeen, lastSeen) VALUES (%(s)s, %(s)s, %(s)s)" % mapping,
-            'insert_flight':        "INSERT INTO adsb_flights (aircraft, flight, firstSeen, lastSeen) VALUES (%(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
-            'insert_position_sqwk': "INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
-            'insert_position':      "INSERT INTO adsb_positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
-            'update_aircraft_seen': "UPDATE adsb_aircraft SET lastSeen = %(s)s WHERE icao = %(s)s" % mapping,
-            'update_flight_seen':   "UPDATE adsb_flights SET aircraft = %(s)s, lastSeen = %(s)s WHERE flight = %(s)s" % mapping
+            'select_aircraft_count':"SELECT COUNT(*) FROM aircraft WHERE icao = %(s)s" % mapping,
+            'select_aircraft_id':   "SELECT id FROM aircraft WHERE icao = %(s)s" % mapping,
+            'select_flight_count':  "SELECT COUNT(*) FROM flights WHERE flight = %(s)s" % mapping,
+            'select_flight_id':     "SELECT id FROM flights WHERE flight = %(s)s" % mapping,
+            'select_position':      "SELECT message FROM positions WHERE flight = %(s)s AND message = %(s)s ORDER BY time DESC LIMIT 1" % mapping,
+            'insert_aircraft':      "INSERT INTO aircraft (icao, first_seen, last_seen) VALUES (%(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_flight':        "INSERT INTO flights (aircraft, flight, first_seen, last_seen) VALUES (%(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_position_sqwk': "INSERT INTO positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'insert_position':      "INSERT INTO positions (flight, time, message, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s, %(s)s)" % mapping,
+            'update_aircraft_seen': "UPDATE aircraft SET last_seen = %(s)s WHERE icao = %(s)s" % mapping,
+            'update_flight_seen':   "UPDATE flights SET aircraft = %(s)s, last_seen = %(s)s WHERE flight = %(s)s" % mapping
         }
 
     def connectDB(self):
@@ -201,7 +173,7 @@ if __name__ == "__main__":
     # Main run loop
     while True:
         # Read dump1090 aircraft.json.
-        response = urlopen('http://localhost/dump1090/data/aircraft.json')
+        response = urlopen('http://127.0.0.1/dump1090/data/aircraft.json')
         data = json.load(response)
 
         processor.processAircraftList(data["aircraft"])
