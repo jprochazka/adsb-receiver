@@ -36,7 +36,7 @@ echo -e ""
 CheckPackage wget
 
 # Some architectures require additional packages.
-case "${CPU_ARCHITECTURE}" in
+case "${RECIEVER_CPU_ARCHITECTURE}" in
     "aarch64")
         echo -e "\e[94m  Adding support for the armhf architecture...\e[97m"
         sudo dpkg --add-architecture armhf
