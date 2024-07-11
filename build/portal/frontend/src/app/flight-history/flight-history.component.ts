@@ -12,6 +12,7 @@ import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 import { fromLonLat } from 'ol/proj.js';
 import { OSM } from 'ol/source';
+import { ZoomSlider } from 'ol/control.js';
 
 @Component({
   selector: 'app-flight-history',
@@ -78,11 +79,16 @@ export class FlightHistoryComponent implements OnInit {
       zoom: 7,
       maxZoom: 18
     });
+
+    
     this.map = new Map({
       layers: [this.tileLayer, this.vectorLayer],
       target: 'map',
       view: this.view 
     })
+
+    const zoomslider = new ZoomSlider();
+    this.map.addControl(zoomslider);
 
   }
 }

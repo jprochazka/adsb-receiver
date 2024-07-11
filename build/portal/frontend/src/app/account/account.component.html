@@ -1,0 +1,92 @@
+<div class="container">
+    <h1>Account Settings</h1>
+    <hr />
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary" style="width: 280px;">
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item"><a href="/account/profile" class="nav-link link-body-emphasis">Public profile </a></li>
+                        <li class="nav-item"><a href="/account/authentication" class="nav-link link-body-emphasis">Password and authentication</a></li>
+                        <li class="nav-item"><a href="/account/notifications" class="nav-link link-body-emphasis">Notifications</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div *ngIf="!section || section == 'profile'">
+                    <div class="row g-3 align-items-center pb-2">
+                        <h2>Public profile</h2>
+                        <hr>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <div class="col-md-2 align-top">
+                            <label for="name" class="col-form-label">Name</label>
+                        </div>
+                        <div class="col-md-10">
+                            <input type="text" id="name" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <div class="col-md-2 align-top">
+                            <label for="username" class="col-form-label">Username</label>
+                        </div>
+                        <div class="col-md-10">
+                            <input type="text" id="email" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <div class="col-md-2 align-top">
+                            <label for="email" class="col-form-label">Email Address</label>
+                        </div>
+                        <div class="col-md-10">
+                            <input type="text" id="email" class="form-control" aria-describedby="email-warning">
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <button type="button" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+                <div *ngIf="section == 'authentication'">
+                    <div class="row g-3 align-items-center pb-2">
+                        <h2>Password and authentication</h2>
+                        <hr>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <div class="col-md-2 align-top">
+                            <label for="username" class="col-form-label">Password</label>
+                        </div>
+                        <div class="col-md-10">
+                            <input type="text" id="email" class="form-control" aria-describedby="username-warning">
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <div class="col-md-2 align-top">
+                            <label for="email" class="col-form-label">Repeat password</label>
+                        </div>
+                        <div class="col-md-10">
+                            <input type="text" id="email" class="form-control" aria-describedby="email-warning">
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <button type="button" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+                <div *ngIf="section == 'notifications'">
+                    <div class="row g-3 align-items-center pb-2">
+                        <h2>Notifications</h2>
+                        <hr>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="row g-3 align-items-center pb-2">
+                            <span>A comma delimited list of flights</span>
+                            <input type="text" id="notifications" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <button type="button" class="btn btn-primary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
