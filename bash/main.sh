@@ -200,8 +200,8 @@ touch ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
 # Check if the ADS-B Exchange feeder has been set up.
 if [[ -f /lib/systemd/system/adsbexchange-mlat.service && -f /lib/systemd/system/adsbexchange-feed.service ]]; then
     # The feeder appears to be set up.
-    echo "ADS-B Exchange Feeder (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-    FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange Feeder (upgrade)' '' OFF)
+    echo "ADS-B Exchange Feeder (reinstall)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange Feeder (reinstall)' '' OFF)
 else
     # The feeder does not appear to be set up.
     echo "ADS-B Exchange Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
@@ -463,7 +463,7 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
     while read FEEDER_CHOICE
     do
         case ${FEEDER_CHOICE} in
-            "ADS-B Exchange Feeder"|"ADS-B Exchange Feeder (upgrade)")
+            "ADS-B Exchange Feeder"|"ADS-B Exchange Feeder (reinstall)")
                 RUN_ADSBEXCHANGE_SCRIPT="true"
                 ;;
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)"|"FlightAware PiAware (reinstall)")
