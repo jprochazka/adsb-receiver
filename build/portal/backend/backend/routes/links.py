@@ -7,7 +7,6 @@ from marshmallow import Schema, fields, ValidationError
 from backend.db import create_connection
 
 links = Blueprint('links', __name__)
-config=yaml.safe_load(open("config.yml"))
 
 
 class CreateLinkRequestSchema(Schema):

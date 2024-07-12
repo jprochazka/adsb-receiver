@@ -7,7 +7,6 @@ from marshmallow import Schema, fields, ValidationError
 from backend.db import create_connection
 
 users = Blueprint('users', __name__)
-config=yaml.safe_load(open("config.yml"))
 
 
 class CreateUserRequestSchema(Schema):

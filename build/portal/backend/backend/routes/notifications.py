@@ -5,9 +5,7 @@ from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from backend.db import create_connection
 
-
 notifications = Blueprint('notifications', __name__)
-config=yaml.safe_load(open("config.yml"))
 
 
 @notifications.route('/api/notification/<string:flight>', methods=['DELETE'])

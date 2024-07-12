@@ -6,7 +6,6 @@ from flask_jwt_extended import jwt_required
 from backend.db import create_connection
 
 flights = Blueprint('flights', __name__)
-config=yaml.safe_load(open("config.yml"))
         
 
 @flights.route('/api/flight/<string:flight>', methods=['GET'])

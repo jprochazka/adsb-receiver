@@ -3,7 +3,6 @@ import psycopg2
 import sqlite3
 import yaml
 
-
 config=yaml.safe_load(open("config.yml"))
 
 

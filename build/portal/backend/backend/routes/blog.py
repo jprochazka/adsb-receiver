@@ -8,7 +8,6 @@ from marshmallow import Schema, fields, ValidationError
 from backend.db import create_connection
 
 blog = Blueprint('blog', __name__)
-config=yaml.safe_load(open("config.yml"))
 
 
 class CreateBlogPostRequestSchema(Schema):

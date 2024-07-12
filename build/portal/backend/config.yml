@@ -12,3 +12,6 @@ database:
         user: "portaluser"
         password: "password"
         database: "adsbportal"
+    maintenance:
+        purge_old_aircraft: True
+        days_to_save: 30
