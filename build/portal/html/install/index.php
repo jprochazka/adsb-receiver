@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.8.3";
+    $thisVersion = "2.8.4";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -233,7 +233,7 @@ EOF;
                                                      flight VARCHAR(10) NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                           flight BIGINT NOT NULL,
+                                           flight BIGINT NULL,
                                            aircraft BIGINT NOT NULL,
                                            time datetime NOT NULL,
                                            message INT NOT NULL,

@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2024 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015 Joseph A. Prochazka                                          //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -29,11 +29,11 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////
-    // UPGRADE TO V2.8.3
+    // UPGRADE TO V2.8.4
     ///////////////////////
 
     // --------------------------------------------------------
-    // Updates the version setting to 2.8.3.
+    // Updates the version setting to 2.8.4.
     // --------------------------------------------------------
 
     $results = upgrade();
@@ -48,13 +48,20 @@
 
         try {
 
-            // Update the version and patch settings.
-            $common->updateSetting("version", "2.8.3");
+            // Update the version and patch settings..
+            $common->updateSetting("version", "2.8.4");
             $common->updateSetting("patch", "");
+
+            // Allow NULL flights in the positions table.
+            $dbh = $common->pdoOpen();
+            $sql = "ALTER TABLE ".$settings::db_prefix."positions MODIFY flight BIGINT NULL";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $sth = NULL;
 
             // The upgrade process completed successfully.
             $results['success'] = TRUE;
-            $results['message'] = "Upgrade to v2.8.3 successful.";
+            $results['message'] = "Upgrade to v2.8.4 successful.";
             return $results;
 
         } catch(Exception $e) {

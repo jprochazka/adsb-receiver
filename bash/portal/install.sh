@@ -242,7 +242,7 @@ if [[ "${ADVANCED}" = "true" ]] ; then
     case "${DATABASEENGINE}" in
         "MySQL")
             CheckPackage mariadb-client
-            CheckPackage python3-mysql.connector
+            CheckPackage python3-mysqldb
             CheckPackage php${DISTRO_PHP_VERSION}-mysql
             ;;
         "SQLite")
