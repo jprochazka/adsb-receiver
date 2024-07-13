@@ -4,7 +4,7 @@
 
 This project continues to realize that for some, Docker and premade images are not the most optimal solution.
 
-It would seem as of late the move towards premade as well as Docker and other PaaS images with preinstalled software has become popular within the community. Docker images require additional software and overhead in order to run and premade images lack installation options. These solutions come with preinstalled software you may never use as part of the image. This project offers the ability to choose and install only what you want or need across a wide range of devices with minimal command line experience.
+It would seem as of late the move towards premade as well as Docker and other PaaS images with preinstalled software has become popular within the community. Docker images require additional software and overhead in order to run and premade images lack installation options. Most of these solutions come with preinstalled software you may never use as part of the image as well. This project offers the ability to choose and install only what you want or need across a wide range of devices with minimal command line experience.
 
 ## Obtaining And Using This Software
 

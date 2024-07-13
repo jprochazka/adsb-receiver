@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015 Joseph A. Prochazka                                          //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -62,7 +62,7 @@
     }
 
     $dbh = $common->pdoOpen();
-    $sql = "SELECT COUNT(*) FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight";
+    $sql = "SELECT COUNT(*) FROM ".$settings::db_prefix."flights WHERE flight LIKE :like AND EXISTS (SELECT * FROM ".$settings::db_prefix."positions WHERE ".$settings::db_prefix."positions.flight = ".$settings::db_prefix."flights.id)";
     $sth = $dbh->prepare($sql);
     $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
     $sth->execute();
@@ -71,7 +71,7 @@
     $dbh = NULL;
 
     $dbh = $common->pdoOpen();
-    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE :like ORDER BY lastSeen DESC, flight LIMIT :start, :items";
+    $sql = "SELECT * FROM ".$settings::db_prefix."flights WHERE flight LIKE :like AND EXISTS (SELECT * FROM ".$settings::db_prefix."positions WHERE ".$settings::db_prefix."positions.flight = ".$settings::db_prefix."flights.id) ORDER BY lastSeen DESC, flight LIMIT :start, :items";
     $sth = $dbh->prepare($sql);
     $sth->bindValue(':like', "%".$searchString."%", PDO::PARAM_STR);
     $sth->bindValue(':start', $start, PDO::PARAM_INT);
