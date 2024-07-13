@@ -4,7 +4,7 @@ The following is a history of the changes made to this project.
 
 ## v2.8.4 *(in development)* :rooster:
 
-## INSTALLERS
+### INSTALLERS
 
 * Added the option to install the airplanes.live feeder client and web interface.
 
