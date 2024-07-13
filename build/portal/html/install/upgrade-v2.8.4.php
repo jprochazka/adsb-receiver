@@ -59,6 +59,14 @@
             $sth->execute();
             $sth = NULL;
 
+            // Rename purgeAircraft to purge_older_data.
+            $purge_older_data = $common->getSetting('purgeAircraft');
+            $common->deleteSetting('purgeAircraft');
+            $common->addSetting("purge_older_data", $purge_older_data);
+
+            // Add days to save setting.
+            $common->addSetting("days_to_save", "30");
+
             // The upgrade process completed successfully.
             $results['success'] = TRUE;
             $results['message'] = "Upgrade to v2.8.4 successful.";

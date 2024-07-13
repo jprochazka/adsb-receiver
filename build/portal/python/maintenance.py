@@ -37,20 +37,20 @@ class MaintenanceProcessor(object):
         self.log("Getting maintenance settings from the database")
         purge_old_aircraft = False
         try:
-            cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeAircraft'")
+            cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purge_older_data'")
             result = cursor.fetchone()[0]
             purge_old_aircraft = result.lower() in ['true', '1']
         except Exception as ex:
-            logging.error(f"Error encountered while getting value for setting purgeAircraft", exc_info=ex)
+            logging.error(f"Error encountered while getting value for setting purge_older_data", exc_info=ex)
             return
 
         if purge_old_aircraft:
             cutoff_date = datetime.now() - timedelta(years = 20)
             try:
-                cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeDaysOld'")
+                cursor.execute("SELECT value FROM adsb_settings WHERE name = 'days_to_save'")
                 days_to_save = cursor.fetchone()[0]
             except Exception as ex:
-                logging.error(f"Error encountered while getting value for setting purgeDaysOld", exc_info=ex)
+                logging.error(f"Error encountered while getting value for setting days_to_save", exc_info=ex)
                 return
             cutoff_date = datetime.now() - timedelta(days = days_to_save)
 

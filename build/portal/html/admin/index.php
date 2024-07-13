@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2016 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015 Joseph A. Prochazka                                          //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -154,6 +154,10 @@
          if (isset($_POST['hideNavbarAndFooter']) && $_POST['hideNavbarAndFooter'] == "TRUE")
             $hideNavbarAndFooter = TRUE;
 
+        $purgeOlderData = FALSE;
+         if (isset($_POST['purgeOlderData']) && $_POST['purgeOlderData'] == "TRUE")
+            $purgeOlderData = TRUE;
+
         // Update settings using those supplied by the form.
         $common->updateSetting("siteName", $_POST['siteName']);
         $common->updateSetting("template", $_POST['template']);
@@ -183,6 +187,8 @@
         $common->updateSetting("enableWebNotifications", $enableWebNotifications);
         $common->updateSetting("googleMapsApiKey", $_POST['googleMapsApiKey']);
         $common->updateSetting("hideNavbarAndFooter", $hideNavbarAndFooter);
+        $common->updateSetting("purge_older_data", $purgeOlderData);
+        $common->updateSetting("days_to_save", $_POST['daysToSave']);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -223,7 +229,7 @@
     }
     $enableWebNotifications = $common->getSetting("enableWebNotifications");
 
-    // Get general settings from settings.xml.
+    // Get general settings.
     $siteName = $common->getSetting("siteName");
     $currentTemplate = $common->getSetting("template");
     $defaultPage = $common->getSetting("defaultPage");
@@ -231,7 +237,7 @@
     $timeZone = $common->getSetting("timeZone");
     $googleMapsApiKey = $common->getSetting("googleMapsApiKey");
 
-    // Get navigation settings from settings.xml.
+    // Get navigation settings.
     $enableFlights = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
     $enableInfo = $common->getSetting("enableInfo");
@@ -242,7 +248,7 @@
     $enablePfclient = $common->getSetting("enablePfclient");
     $hideNavbarAndFooter = $common->getSetting("hideNavbarAndFooter");
 
-    // Get aggregate site settings from settings.xml.
+    // Get aggregate site settings.
     $enableFlightAwareLink = $common->getSetting("enableFlightAwareLink");
     $flightAwareLogin = $common->getSetting("flightAwareLogin");
     $flightAwareSite = $common->getSetting("flightAwareSite");
@@ -252,13 +258,17 @@
     $flightRadar24Id = $common->getSetting("flightRadar24Id");
     $enableAdsbExchangeLink = $common->getSetting("enableAdsbExchangeLink");
 
-    // Get units of measurement setting from settings.xml.
+    // Get units of measurement settings.
     $measurementRange = $common->getSetting("measurementRange");
     $measurementTemperature = $common->getSetting("measurementTemperature");
     $measurementBandwidth = $common->getSetting("measurementBandwidth");
 
-    // Get the network interface from settings.xml.
+    // Get the network interface settings.
     $networkInterface = $common->getSetting("networkInterface");
+
+    // Get data purge settings.
+    $purgeOlderData = $common->getSetting("purge_older_data");
+    $daysToSave = $common->getSetting("days_to_save");
 
     // Create an array of all directories in the template folder.
     $templates = array();
@@ -578,20 +588,15 @@
                         <div class="panel-heading">Purge Positions</div>
                         <div class="panel-body">
                             <p>Current Database Size: <?php echo $common->getDatabaseSize("mb"); ?>MB</p>
-                            <div class="form-group">
-                                <label for="purgepositionspicker">Purge flight positions old than...</label><br />
-                                <input type="text" class="form-control" id="purgepositionspicker" name="purgepositionspicker" autocomplete="off" <?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>
-                            </div>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" name="purgepositions" value="purge"<?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Check to confirm purge of data.
+                                    <input type="checkbox" id="purgeOlderData" name="purgeOlderData" value="TRUE"<?php ($purgeOlderData == 1 ? print ' checked' : ''); ?><?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>> Enable daily purges of older flight data.
                                 </label>
                             </div>
-                            <script type="text/javascript">
-                                jQuery('#purgepositionspicker').datetimepicker({
-                                    inline:true
-                                });
-                            </script>
+                            <div class="form-group">
+                                <label for="daystosave"">Keep only data newer than X days.</label>
+                                <input type="text" class="form-control" id="daysToSave" name="daysToSave" value="<?php echo $daysToSave; ?>"<?php ($settings::db_driver == "xml" ? print ' disabled' : ''); ?>>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -6,6 +6,7 @@ The following is a history of the changes made to this project.
 
 ### Portal
 
+* Can now toggle daily data purges as well specify the amount of days to keep within the portal.
 * Rewrote the aircraft.py script and fixed issues found with newer versions of dump1090.
 * Rewrote the maintenance.py script and addressed issue mentioned in an incompatible pull request.
 * The flights page now only shows links when position information is present in the database.
