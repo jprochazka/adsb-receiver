@@ -32,15 +32,15 @@ The following software can be installed using these scripts.
 
 Included is the option to install the ADS-B Portal which offers the following features.
 
-* Saves all flights seen as well as displays a plot for the flight. (advanced)
+* Saves all flights seen as well as displays a plot for the flight.
 * Control what is displayed online via a web based administration area.
 * A more uniform website site layout that can be easily navigated.
 * Web accessible dump1090 and system performance graphs.
-* A web accessible live dump1090 map.
-* A web accessible live dump978 map.
+* Easy access to live dump1090 and dump978 maps.
 * A blog which can be used to share your plane tracking experiences with others.
-* Informs visitors when specific flights are being tracked by dump1090.
-* Easily customize the look of your portal using the template system.
+* Visitors can be informed when specific flights are being tracked.
+* Administrators can be informed via email when specific flights are being tracked.
+* Easily customize the look of your portal using the custom template system.
 
 When setting up the portal you will have to choose between a lite or advanced installation. Advanced features adds flight logging and plotting and should only be chosen on devices running a more sturdy data storage solution.
 
@@ -48,22 +48,23 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 ### Decoders
 
-* Dump1090 (FlightAware): https://github.com/flightaware/dump1090
-* Dump978 (FlightAware):  https://github.com/mutability/dump978
+* Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
+* Dump978 (FlightAware):   https://github.com/mutability/dump978
 
 ### Feeders
 
-* ADS-B Exchange Feeder Client:  https://adsbexchange.com
-* FlightAware's PiAware:         https://flightaware.com
-* Flightradar24 Feeder Client:   https://flightradar24.com
-* Fly Italy ADS-B Feeder Client: https://flyitalyadsb.com
-* OpenSky Feeder Client:         https://opensky-network.org
-* Plane Finder ADS-B Client:     https://planefinder.net
+* ADS-B Exchange Feeder Client:   https://adsbexchange.com
+* Airplanes.live Feeder Client:   https://airplanes.live
+* FlightAware's PiAware:          https://flightaware.com
+* Flightradar24 Feeder Client:    https://flightradar24.com
+* Fly Italy ADS-B Feeder Client:  https://flyitalyadsb.com
+* OpenSky Feeder Client:          https://opensky-network.org
+* Plane Finder ADS-B Client:      https://planefinder.net
 
 ### Extras
 
-* Beast-Splitter:                https://github.com/flightaware/beast-splitter
-* DuckDNS.org Support:           https://www.duckdns.org
+* Beast-Splitter:       https://github.com/flightaware/beast-splitter
+* DuckDNS.org Support:  https://www.duckdns.org
 
 ## Supported Operating Systems
 
@@ -80,8 +81,4 @@ The project currently supports the following Linux distributions.
 * Ubuntu Jammy Jellyfish
 * Ubuntu Focal Fossa
 
-## Useful Links
-
-- GitHub Repository - https://github.com/jprochazka/adsb-receiver
-- GitHub Wiki - https://github.com/jprochazka/adsb-receiver/wiki
-- Changelog - https://github.com/jprochazka/adsb-receiver/blob/master/CHANGELOG.md
+_Support is available via this repository through the use of the issue tracker or discussions._

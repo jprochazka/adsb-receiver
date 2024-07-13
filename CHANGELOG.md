@@ -4,9 +4,13 @@ The following is a history of the changes made to this project.
 
 ## v2.8.4 *(in development)* :rooster:
 
+## INSTALLERS
+
+* Added the option to install the airplanes.live feeder client and web interface.
+
 ### Portal
 
-* Can now toggle daily data purges as well specify the amount of days to keep within the portal.
+* Can now toggle daily data purges as well specify the number of days to keep within the portal.
 * Rewrote the aircraft.py script and fixed issues found with newer versions of dump1090.
 * Rewrote the maintenance.py script and addressed issue mentioned in an incompatible pull request.
 * The flights page now only shows links when position information is present in the database.
