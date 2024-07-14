@@ -49,7 +49,7 @@ When setting up the portal you will have to choose between a lite or advanced in
 ### Decoders
 
 * Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
-* Dump978 (FlightAware):   https://github.com/mutability/dump978
+* Dump978 (FlightAware):   https://github.com/flightaware/dump978
 
 ### Feeders
 
