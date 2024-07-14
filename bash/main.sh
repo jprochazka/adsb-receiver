@@ -42,6 +42,15 @@ function InstallAdsbExchange() {
     fi
 }
 
+# Execute the airplanes.live setup script.
+function InstallAirplanesLive() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/airplaneslive.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/airplaneslive.sh
+    if [[ $? -ne 0 ]] ; then
+        exit 1
+    fi
+}
+
 # Execute the Flightradar24 Feeder client setup script.
 function InstallFlightradar24() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
@@ -208,6 +217,17 @@ else
     FEEDER_LIST=("${FEEDER_LIST[@]}" 'ADS-B Exchange Feeder' '' OFF)
 fi
 
+# Check if the airplanes.live feeder has been set up.
+if [[ -f /lib/systemd/system/airplanes-feed.service && -f /lib/systemd/system/airplanes-mlat.service ]]; then
+    # The feeder appears to be set up.
+    echo "Airplanes.live Feeder (reinstall)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'Airplanes.live Feeder (reinstall)' '' OFF)
+else
+    # The feeder does not appear to be set up.
+    echo "Airplanes.live Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'Airplanes.live Feeder' '' OFF)
+fi
+
 # Check if the Fly Italy ADS-B feeder has been set up.
 if [[ -f /lib/systemd/system/flyitalyadsb-mlat.service && -f /lib/systemd/system/flyitalyadsb-feed.service ]]; then
     # The feeder appears to be set up.
@@ -306,7 +326,7 @@ fi
 
 if [[ -n "${FEEDER_LIST}" ]] ; then
     # Display a checklist containing feeders that are not installed if any.
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 13 65 6 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Feeder Installation Options" --checklist --nocancel --separate-output "The following feeders are available for installation.\nChoose the feeders you wish to install." 15 65 7 "${FEEDER_LIST[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
 else
     # Since all available feeders appear to be installed inform the user of the fact.
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "All Feeders Installed" --msgbox "It appears that all the optional feeders available for installation by this script have been installed already." 8 65
@@ -466,6 +486,9 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
             "ADS-B Exchange Feeder"|"ADS-B Exchange Feeder (reinstall)")
                 RUN_ADSBEXCHANGE_SCRIPT="true"
                 ;;
+            "Airplanes.live Feeder"|"Airplanes.live Feeder (reinstall)")
+                RUN_AIRPLANESLIVE_SCRIPT="true"
+                ;;
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)"|"FlightAware PiAware (reinstall)")
                 RUN_PIAWARE_SCRIPT="true"
                 ;;
@@ -487,6 +510,10 @@ fi
 
 if [[ "${RUN_ADSBEXCHANGE_SCRIPT}" = "true" ]]; then
     InstallAdsbExchange
+fi
+
+if [[ "${RUN_AIRPLANESLIVE_SCRIPT}" = "true" ]]; then
+    InstallAirplanesLive
 fi
 
 if [[ "${RUN_PIAWARE_SCRIPT}" = "true" || "${FORCE_PIAWARE_INSTALL}" = "true" ]]; then

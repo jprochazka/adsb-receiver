@@ -7,7 +7,7 @@
     //                                                                                 //
     // The MIT License (MIT)                                                           //
     //                                                                                 //
-    // Copyright (c) 2015-2024 Joseph A. Prochazka                                     //
+    // Copyright (c) 2015 Joseph A. Prochazka                                          //
     //                                                                                 //
     // Permission is hereby granted, free of charge, to any person obtaining a copy    //
     // of this software and associated documentation files (the "Software"), to deal   //
@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.8.3";
+    $thisVersion = "2.8.4";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -233,7 +233,7 @@ EOF;
                                                      flight VARCHAR(10) NOT NULL);';
                         $positionsSql = 'CREATE TABLE '.$dbPrefix.'positions (
                                            id INT(11) AUTO_INCREMENT PRIMARY KEY,
-                                           flight BIGINT NOT NULL,
+                                           flight BIGINT NULL,
                                            aircraft BIGINT NOT NULL,
                                            time datetime NOT NULL,
                                            message INT NOT NULL,
@@ -443,7 +443,8 @@ EOF;
             $common->addSetting('enableWebNotifications', FALSE);
             $common->addSetting('googleMapsApiKey', '');
             $common->addSetting("hideNavbarAndFooter", FALSE);
-            $common->addSetting("purgeAircraft", FALSE);
+            $common->addSetting("purge_older_data", FALSE);
+            $common->addSetting("days_to_save", "30");
             $common->addSetting("advancedMapCenterLatitude", "41.3683798");
             $common->addSetting("advancedMapCenterLongitude", "-82.1076486");
 

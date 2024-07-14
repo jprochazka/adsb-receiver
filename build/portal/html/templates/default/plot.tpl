@@ -1,24 +1,3 @@
-{*
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //                 ADS-B RECEIVER PORTAL TEMPLATE INFORMATION                 //
-    // ========================================================================== //
-    // Template Set: default                                                      //
-    // Template Name: dump1090.tpl                                                //
-    // Version: 2.0.0                                                             //
-    // Release Date:                                                              //
-    // Author: Joe Prochazka                                                      //
-    // Website: https://www.swiftbyte.com                                         //
-    // ========================================================================== //
-    // Copyright and Licensing Information:                                       //
-    //                                                                            //
-    // Copyright (c) 2015-2016 Joseph A. Prochazka                                //
-    //                                                                            //
-    // This template set is licensed under The MIT License (MIT)                  //
-    // A copy of the license can be found package along with these files.         //
-    ////////////////////////////////////////////////////////////////////////////////
-
-*}
 {area:head}
         <link rel="stylesheet" href="templates/{setting:template}/assets/css/dump1090.css">
         <style>
@@ -61,17 +40,19 @@
 
             <div class="sidebar left">
                 <h3>Flight Data</h3>
+                <a href="{page:thumbnailLink}" target="_blank"><img src="{page:thumbnailSrc}" width="{page:thumbnailWidth}" height="{page:thumbnailHeight}"></a>
+                <span>image by {page:thumbnailPhotographer}</span>
                 <p>
-                    <div><strong>ICAO: <span id="icao"></span></strong></div>
-                    <div><strong>Flight Number: <span id="flight"></span></strong></div>
+                    <div><strong>ICAO: <span id="icao">{page:icao}</span></strong></div>
+                    <div><strong>Flight: <span id="flight">{page:flight}</span></strong></div>
                 </p>
                 <p>
-                    <div>Aircraft First Seen: <span id="afs"></span></div>
-                    <div>Aircraft Last Seen: <span id="als"></span></div>
+                    <div>Aircraft First Seen: <span id="afs">{page:aircraftFirstSeen}</span></div>
+                    <div>Aircraft Last Seen: <span id="als">{page:aircraftLastSeen}</span></div>
                 </p>
                 <p>
-                    <div>Flight First Seen: <span id="ffs"></span></div>
-                    <div>Flight Last Seen: <span id="fls"></span></div>
+                    <div>Flight First Seen: <span id="ffs">{page:flightFirstSeen}</span></div>
+                    <div>Flight Last Seen: <span id="fls">{page:flightLastSeen}</span></div>
                 </p>
             </div>
 
@@ -302,8 +283,8 @@
             var i,x,y,ARRcookies=document.cookie.split(";");
             for (i=0;i<ARRcookies.length;i++)
             {
-              x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-              y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+              x=ARRcookies[i].substr(0,ARRcookies[i].toString().indexOf("="));
+              y=ARRcookies[i].substr(ARRcookies[i].toString().indexOf("=")+1);
               x=x.replace(/^\s+|\s+$/g,"");
               if (x==c_name)
                 {

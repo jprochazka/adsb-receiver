@@ -1,167 +1,173 @@
-#!/usr/bin/python
-
-#================================================================================#
-#                             ADS-B FEEDER PORTAL                                #
-# ------------------------------------------------------------------------------ #
-# Copyright and Licensing Information:                                           #
-#                                                                                #
-# The MIT License (MIT)                                                          #
-#                                                                                #
-# Copyright (c) 2015-2016 Joseph A. Prochazka                                    #
-#                                                                                #
-# Permission is hereby granted, free of charge, to any person obtaining a copy   #
-# of this software and associated documentation files (the "Software"), to deal  #
-# in the Software without restriction, including without limitation the rights   #
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell      #
-# copies of the Software, and to permit persons to whom the Software is          #
-# furnished to do so, subject to the following conditions:                       #
-#                                                                                #
-# The above copyright notice and this permission notice shall be included in all #
-# copies or substantial portions of the Software.                                #
-#                                                                                #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR     #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,       #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE    #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER         #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,  #
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  #
-# SOFTWARE.                                                                      #
-#================================================================================#
-
-import datetime
 import fcntl
 import json
+import logging
+import MySQLdb
 import os
+import sqlite3
 import time
 
-# Do not allow another instance of the script to run.
-lock_file = open('/tmp/flights.py.lock','w')
+from datetime import datetime, timedelta
 
-try:
-    fcntl.flock(lock_file, fcntl.LOCK_EX|fcntl.LOCK_NB)
-except (IOError, OSError):
-    quit()
+class MaintenanceProcessor(object):
 
-lock_file.write('%d\n'%os.getpid())
-lock_file.flush()
+    # Log infromation to console
+    def log(self, string):
+        print(f'[{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}] {string}') # uncomment to enable debug logging
+        return
 
-while True:
+    # Create database connection
+    def create_connection(self):
+        self.log("Setting up database connection")
+        with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
+            config = json.load(config_file)
 
-    ## Read the configuration file.
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
-        config = json.load(config_file)
+        match config["database"]["type"].lower():
+            case 'mysql':
+                return MySQLdb.connect(
+                    host=config["database"]["host"],
+                    user=config["database"]["user"],
+                    passwd=config["database"]["passwd"],
+                    db=config["database"]["db"]
+                )
+            case 'sqlite':
+                return sqlite3.connect(config["database"]["db"])
 
-    ## Import the needed database library and set up database connection.
-    if config["database"]["type"] == "mysql":
-        import MySQLdb
-        db = MySQLdb.connect(host=config["database"]["host"], user=config["database"]["user"], passwd=config["database"]["passwd"], db=config["database"]["db"])
+    # Begin maintenance
+    def begin_maintenance(self):
+        self.log("Getting maintenance settings from the database")
+        purge_old_aircraft = False
+        try:
+            cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purge_older_data'")
+            result = cursor.fetchone()[0]
+            purge_old_aircraft = result.lower() in ['true', '1']
+        except Exception as ex:
+            logging.error(f"Error encountered while getting value for setting purge_older_data", exc_info=ex)
+            return
 
-    if config["database"]["type"] == "sqlite":
-        import sqlite3
-        db = sqlite3.connect(config["database"]["db"])
+        if purge_old_aircraft:
+            cutoff_date = datetime.now() - timedelta(years = 20)
+            try:
+                cursor.execute("SELECT value FROM adsb_settings WHERE name = 'days_to_save'")
+                days_to_save = cursor.fetchone()[0]
+            except Exception as ex:
+                logging.error(f"Error encountered while getting value for setting days_to_save", exc_info=ex)
+                return
+            cutoff_date = datetime.now() - timedelta(days = days_to_save)
 
-    cursor = db.cursor()
+        else:
+            self.log("Maintenance is disabled")
 
-    ## Get maintenance settings.
+            connection.commit()
 
-    purge_aircraft = False
-    # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeAircraft'")
-    row = cursor.fetchone()
-    if row:
-        purge_aircraft = row
+        connection.close()
 
-    purge_flights = False
-    # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeFlights'")
-    row = cursor.fetchone()
-    if row:
-        purge_flights = row
+        return
 
-    purge_positions = False
-    # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgePositions'")
-    row = cursor.fetchone()
-    if row:
-        purge_positions = row
+    # Remove aircraft not seen since the specified date
+    def purge_aircraft(self, cutoff_date):
+        try:
+            cursor.execute("SELECT id FROM adsb_aircraft WHERE lastSeen < %s", (cutoff_date,))
+            aircraft_ids = cursor.fetchall()
+        except Exception as ex:
+            logging.error(f"Error encountered while getting aircraft IDs not seen since {cutoff_date}", exc_info=ex)
+            return
 
-    purge_days_old = False
-    # MySQL and SQLite
-    cursor.execute("SELECT value FROM adsb_settings WHERE name = 'purgeDaysOld'")
-    row = cursor.fetchone()
-    if row:
-        purge_days_old = row
+        if len(aircraft_ids) > 0:
+            id = tuple(aircraft_ids)
+            aircraft_id_params = {'id': id}
 
-    ## Create the purge date from the age specified.
+            try:
+                cursor.execute("DELETE FROM adsb_aircraft WHERE id IN %(t)s", aircraft_id_params)
+            except Exception as ex:
+                logging.error(f"Error deleting aircraft not seen since {cutoff_date}", exc_info=ex)
+                return
 
-    if purge_days_old:
-        purge_datetime = datetime.datetime.utcnow() - timedelta(days=purge_days_old)
-        purge_date = purge_datetime.strftime("%Y/%m/%d %H:%M:%S")
-    else:
-        purge_datetime = None
-        purge_date = None
+            self.purge_flights_related_to_aircraft(aircraft_id_params, cutoff_date)
+            self.purge_positions_related_to_aircraft(aircraft_id_params, cutoff_date)
 
-    ## Remove aircraft not seen since the specified date.
+        return
 
-    if purge_aircraft and purge_date:
-        # MySQL
-        if config["database"]["type"] == "mysql":
-            cursor.execute("SELECT id FROM adsb_aircraft WHERE lastSeen < %s", purge_date)
-            rows = cursor.fetchall()
-            for row in rows:
-                cursor.execute("DELETE FROM adsb_positions WHERE aircraft = %s", row[0])
-                cursor.execute("DELETE FROM adsb_flights WHERE aircraft = %s", row[0])
-                cursor.execute("DELETE FROM adsb_aircraft WHERE id = %s", row[0])
+    # Remove flights related to aircraft not seen since the specified date
+    def purge_flights_related_to_aircraft(self, aircraft_id_params, cutoff_date):
+        try:
+            cursor.execute("DELETE FROM adsb_flights WHERE aircraft = %(t)s", aircraft_id_params)
+        except Exception as ex:
+            logging.error(f"Error deleting flights related to aircraft not seen since {cutoff_date}", exc_info=ex)
+            return
 
-        # SQLite
-        if config["database"]["type"] == "sqlite":
-            params = (purge_date,)
-            cursor.execute("SELECT id FROM adsb_aircraft WHERE lastSeen < ?", params)
-            rows = cursor.fetchall()
-            for row in rows:
-                params = (row[0],)
-                cursor.execute("DELETE FROM adsb_positions WHERE aircraft = ?", params)
-                cursor.execute("DELETE FROM adsb_flights WHERE aircraft = ?", params)
-                cursor.execute("DELETE FROM adsb_aircraft WHERE id = ?", params)
+        return
 
-    ## Remove flights not seen since the specified date.
+    # Remove positions related to aircraft not seen since the specified date
+    def purge_positions_related_to_aircraft(self, aircraft_id_params, cutoff_date):
+        try:
+            cursor.execute("DELETE FROM adsb_positions WHERE aircraft = %(t)s", aircraft_id_params)
+        except Exception as ex:
+            logging.error(f"Error deleting positions related to aircraft not seen since {cutoff_date}", exc_info=ex)
+            return
 
-    if purge_flights and purge_date:
-        # MySQL
-        if config["database"]["type"] == "mysql":
-            cursor.execute("SELECT id FROM adsb_flights WHERE lastSeen < %s", purge_date)
-            rows = cursor.fetchall()
-            for row in rows:
-                cursor.execute("DELETE FROM adsb_positions WHERE flight = %s", row[0])
-                cursor.execute("DELETE FROM adsb_flights WHERE id = %s", row[0])
+        return
 
-        #SQLite
-        if config["database"]["type"] == "sqlite":
-            params = (purge_date,)
-            cursor.execute("SELECT id FROM adsb_flights WHERE lastSeen < ?", params)
-            rows = cursor.fetchall()
-            for row in rows:
-                params = (row[0],)
-                cursor.execute("DELETE FROM adsb_positions WHERE flight = ?", params)
-                cursor.execute("DELETE FROM adsb_flights WHERE id = ?", params)
+    # Remove positions older than the specified date
+    def purge_flights(self, cutoff_date):
+        try:
+            cursor.execute("SELECT id FROM adsb_flights WHERE lastSeen < %s", (cutoff_date,))
+            flight_ids = cursor.fetchall()
+        except Exception as ex:
+            logging.error(f"Error encountered while getting aircraft IDs not seen since {cutoff_date}", exc_info=ex)
+            return
 
-    ## Remove positions older than the specified date.
+        if len(flight_ids) > 0:
+            id = tuple(flight_ids)
+            flight_id_params = {'id': id}
 
-    if purge_positions and purge_date:
-        # MySQL
-        if config["database"]["type"] == "mysql":
-            cursor.execute("DELETE FROM adsb_positions WHERE time < %s", purge_date)
+            try:
+                cursor.execute("DELETE FROM adsb_flights WHERE id IN %(t)s", flight_id_params)
+            except Exception as ex:
+                logging.error(f"Error deleting flights older than the cut off date of {cutoff_date}", exc_info=ex)
+                return
 
-        #SQLite
-        if config["database"]["type"] == "sqlite":
-            params = (purge_date,)
-            cursor.execute("DELETE FROM adsb_positions WHERE time < ?", params)
+            self.purge_positions_related_to_flights(flight_id_params, cutoff_date)
 
-    ## Close the database connection.
+            return
 
-    db.commit()
-    db.close()
+    # Remove positions related to aircraft not seen since the specified date
+    def purge_positions_related_to_flights(self, flight_id_params, cutoff_date):
+        try:
+            cursor.execute("DELETE FROM adsb_positions WHERE flight = %(t)s", flight_id_params)
+        except Exception as ex:
+            logging.error(f"Error deleting positions related to flights not seen since {cutoff_date}", exc_info=ex)
+            return
 
-    ## Sleep until the next run.
+        return
 
-    time.sleep(3600)
+    # Remove positions older than the specified date
+    def purge_positions(self, cutoff_date):
+        try:
+            cursor.execute("DELETE FROM adsb_positions WHERE time < %s", (cutoff_date,))
+        except Exception as ex:
+            logging.error(f"Error deleting positions older than the cut off date of {cutoff_date}", exc_info=ex)
+            return
+
+        return
+
+if __name__ == "__main__":
+    processor = MaintenanceProcessor()
+
+    processor.log("-- BEGINING PORTAL MAINTENANCE JOB")
+
+    # Do not allow another instance of the job to run
+    lock_file = open('/tmp/maintenance.py.lock','w')
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX|fcntl.LOCK_NB)
+    except (IOError, OSError):
+        processor.log("-- ANOTHER INSTANCE OF THIS JOB IS RUNNING")
+        quit()
+
+    # Set up database connection
+    connection =  processor.create_connection()
+    cursor = connection.cursor()
+
+    # Begin maintenance job
+    lock_file.write('%d\n'%os.getpid())
+    processor.begin_maintenance()
+    processor.log("-- PORTAL MAINTENANCE JOB COMPLETE")
