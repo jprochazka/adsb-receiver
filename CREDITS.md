@@ -63,3 +63,8 @@ with quality closed source packages which they have made available to the commun
 * Flightradar24:    https://flightradar24.com
 * OpenSky Network:  https://opensky-network.org
 * Plane Finder:     https://planefinder.net
+
+Yet another thanks goes out to those kind enough to share their  photographs the community as well as
+those hosting these images and make them avaiable for us to use in projects such as this.
+
+* https://www.planespotters.net

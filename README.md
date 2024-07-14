@@ -70,15 +70,12 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 The project currently supports the following Linux distributions.
 
-* Armbian (Bookworm)
-* Armbian (Jammy)
-* Debian Bookworm
-* Debian Bullseye
-* DietPi (Bookworm)
-* DietPi (Bullseye)
-* Rasbperry PI OS (Bookworm)
-* Rasbperry PI OS Legacy (Bullseye)
-* Ubuntu Jammy Jellyfish
-* Ubuntu Focal Fossa
+* Armbian _(Bookworm and Jammy)_
+* Debian _(Bookworm and Bullseye)_
+* DietPi _(Bookworm aand Bullseye)_
+* Rasbperry PI OS _(Bookworm and Bullseye)_
+* Ubuntu _(Jammy Jellyfish and Focal Fossa)_
 
 _Support is available via this repository through the use of the issue tracker or discussions._
+
+[Support for Ubuntu Noble Numbat is on hold due to incompatibilities with PiAware's MLAT client.](https://github.com/jprochazka/adsb-receiver/issues/575)
