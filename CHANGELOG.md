@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.4 *(in development)* :rooster:
+## v2.8.4 *(July 13th, 2024)* :rooster:
 
 ### Installers
 
