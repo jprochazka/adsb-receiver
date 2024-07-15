@@ -2,9 +2,22 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.3 *(July 7th, 2024)* :chicken:
+## v2.8.4 *(July 13th, 2024)* :rooster:
 
 ### Installers
+
+* Added the option to install the airplanes.live feeder client and web interface.
+
+### Portal
+
+* Can now toggle daily data purges as well specify the number of days to keep within the portal.
+* Rewrote the aircraft.py script and fixed issues found with newer versions of dump1090.
+* Rewrote the maintenance.py script and addressed issue mentioned in an incompatible pull request.
+* The page displaying plots now shows missing data in the side bar revealing when clicking on marker.
+* Added images to the side bar displayed when the marker is clicked when viewing the plots page.
+* The flights page now only shows links when position information is present in the database.
+
+## v2.8.3 *(July 7th, 2024)* :chicken:
 
 * Added the option to install the Fly Italy ADS-B feeder client.
 * Tested installation processes on Armbian Bookworm.
@@ -16,9 +29,6 @@ The following is a history of the changes made to this project.
 * The --branch <branch_name> and -b <branch_name> parameters properly specify the branch to use.
 * Fixed issue noticed in the line downloading the Duck DNS log during setup.
 * Refactoring and standards compliance changes were made to multiple bash scripts.
-
-### Portal
-
 * The proper collectd CPU temperature configuration is inserted for Raspberry PI 4 Model B devices.
 
 ## v2.8.2 *(June 29th, 2024)* :baby_chick:
