@@ -4,7 +4,6 @@ import logging
 import MySQLdb
 import os
 import sqlite3
-import time
 
 from datetime import datetime, timedelta
 
@@ -53,6 +52,8 @@ class MaintenanceProcessor(object):
                 logging.error(f"Error encountered while getting value for setting days_to_save", exc_info=ex)
                 return
             cutoff_date = datetime.now() - timedelta(days = days_to_save)
+            self.purge_aircraft(cutoff_date)
+            self.purge_positions(cutoff_date)
 
         else:
             self.log("Maintenance is disabled")
