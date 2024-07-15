@@ -1,9 +1,13 @@
-import fcntl
 import logging
-import os
 
 from datetime import datetime, timedelta
+from flask_apscheduler import APScheduler
 from backend.db import create_connection
+
+scheduler = APScheduler()
+connection = None
+cursor = None
+now = None
 
 class MaintenanceProcessor(object):
 
@@ -132,24 +136,12 @@ class MaintenanceProcessor(object):
 
         return
 
-if __name__ == "__main__":
+def maintenance_job():
     processor = MaintenanceProcessor()
 
+    # Setup and begin the maintenance job
     processor.log("-- BEGINING PORTAL MAINTENANCE JOB")
-
-    # Do not allow another instance of the job to run
-    lock_file = open('/tmp/maintenance.py.lock','w')
-    try:
-        fcntl.flock(lock_file, fcntl.LOCK_EX|fcntl.LOCK_NB)
-    except (IOError, OSError):
-        processor.log("-- ANOTHER INSTANCE OF THIS JOB IS RUNNING")
-        quit()
-
-    # Set up database connection
     connection =  create_connection()
     cursor = connection.cursor()
-
-    # Begin maintenance job
-    lock_file.write('%d\n'%os.getpid())
     processor.begin_maintenance()
     processor.log("-- PORTAL MAINTENANCE JOB COMPLETE")

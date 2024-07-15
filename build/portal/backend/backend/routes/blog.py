@@ -1,5 +1,4 @@
 import logging
-import yaml
 
 from datetime import datetime
 from flask import abort, Blueprint, jsonify, request

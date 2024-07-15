@@ -1,37 +1,22 @@
-import fcntl
 import json
 import logging
-import MySQLdb
-import os
-import sqlite3
 
 from datetime import datetime
-from time import sleep
+from flask_apscheduler import APScheduler
 from urllib.request import urlopen
+from backend.db import create_connection
 
-class AircraftProcessor(object):
+scheduler = APScheduler()
+connection = None
+cursor = None
+now = None
+
+class DataProcessor(object):
 
     # Log infromation to console
     def log(self, string):
-        #print(f'[{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}] {string}') # uncomment to enable debug logging
+        print(f'[{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}] {string}') # uncomment to enable debug logging
         return
-
-    # Create database connection
-    def create_connection(self):
-        self.log("Setting up database connection")
-        with open(os.path.dirname(os.path.realpath(__file__)) + '/config.json') as config_file:
-            config = json.load(config_file)
-
-        match config["database"]["type"].lower():
-            case 'mysql':
-                return MySQLdb.connect(
-                    host=config["database"]["host"],
-                    user=config["database"]["user"],
-                    passwd=config["database"]["passwd"],
-                    db=config["database"]["db"]
-                )
-            case 'sqlite':
-                return sqlite3.connect(config["database"]["db"])
 
     # Read JSON supplied by dump1090
     def read_json(self):
@@ -78,7 +63,7 @@ class AircraftProcessor(object):
             self.log(f'Updating aircraft ICAO {aircraft["hex"]}')
             try:
                 cursor.execute(
-                    "UPDATE adsb_aircraft SET lastSeen = %s WHERE icao = %s",
+                    "UPDATE adsb_aircraft SET last_seen = %s WHERE icao = %s",
                     (now, aircraft["hex"])
                 )
                 connection.commit()
@@ -94,7 +79,7 @@ class AircraftProcessor(object):
             self.log(f'Inserting aircraft ICAO {aircraft["hex"]}')
             try:
                 cursor.execute(
-                    "INSERT INTO adsb_aircraft (icao, firstSeen, lastSeen) VALUES (%s, %s, %s)",
+                    "INSERT INTO adsb_aircraft (icao, firstSeen, last_seen) VALUES (%s, %s, %s)",
                     (aircraft["hex"], now, now)
                 )
                 connection.commit()
@@ -128,7 +113,7 @@ class AircraftProcessor(object):
                 self.log(f'  Updating flight {flight} assigned to aircraft ICAO {aircraft["hex"]}')
                 try:
                     cursor.execute(
-                        "UPDATE adsb_flights SET lastSeen = %s WHERE flight = %s",
+                        "UPDATE adsb_flights SET last_seen = %s WHERE flight = %s",
                         (now, flight)
                     )
                     connection.commit()
@@ -144,7 +129,7 @@ class AircraftProcessor(object):
                 self.log(f'Inserting flight {flight} assigned to aircraft ICAO {aircraft["hex"]}')
                 try:
                     cursor.execute(
-                        "INSERT INTO adsb_flights (aircraft, flight, firstSeen, lastSeen) VALUES (%s, %s, %s, %s)",
+                        "INSERT INTO adsb_flights (aircraft, flight, firstSeen, last_seen) VALUES (%s, %s, %s, %s)",
                         (aircraft_id, flight, now, now)
                     )
                     connection.commit()
@@ -205,30 +190,13 @@ class AircraftProcessor(object):
 
         return
 
-if __name__ == "__main__":
-    processor = AircraftProcessor()
+def data_collection_job():
+    processor = DataProcessor()
 
-    processor.log("-- CHECKING IF FLIGHT RECORDER JOB IS ALREADY RUNNING")
-
-    # Do not allow another instance of the job to run
-    lock_file = open('/tmp/flights.py.lock','w')
-    try:
-        fcntl.flock(lock_file, fcntl.LOCK_EX|fcntl.LOCK_NB)
-    except (IOError, OSError):
-        processor.log("-- ANOTHER INSTANCE OF THIS JOB IS RUNNING")
-        quit()
-    lock_file.write('%d\n'%os.getpid())
-
-    while True:
-        processor.log("-- BEGINING FLIGHT RECORDER JOB")
-
-        # Set up database connection
-        connection =  processor.create_connection()
-        cursor = connection.cursor()
-
-        # Begin flight recording job
-        now = datetime.now()
-        processor.process_all_aircraft()
-        processor.log("-- FLIGHT RECORD JOB COMPLETE")
-        processor.log("SLEEPING 15 SECONDS BEFORE NEXT RUN")
-        sleep(15)
+    # Setup and begin the data collection job
+    processor.log("-- BEGINING FLIGHT RECORDER JOB")
+    connection = create_connection()
+    cursor = connection.cursor()
+    now = datetime.now()
+    processor.process_all_aircraft()
+    processor.log("-- FLIGHT RECORD JOB COMPLETE")

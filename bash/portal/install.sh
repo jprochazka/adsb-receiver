@@ -1,13 +1,10 @@
 #!/bin/bash
 
-## VARIABLES
-
-PORTAL_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal"
-
 ## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
+
 
 ## BEGIN SETUP
 
@@ -17,7 +14,7 @@ echo -e ""
 echo -e "\e[92m  Setting up the ADS-B Receiver Project Portal..."
 echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
 echo -e ""
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nTHE ADVANCED PORTAL FEATURES ARE STILL IN DEVELOPMENT\n\nIt is recomended that only those wishing to contribute to the development of these features or those wishing to test out the new features enable them. Do not be surprised if you run into any major bugs after enabling the advanced features at this time!\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B ADS-B Receiver Project Portal Setup" --yesno "The ADS-B ADS-B Receiver Project Portal adds a web accessable portal to your receiver. The portal contains allows you to view performance graphs, system information, and live maps containing the current aircraft being tracked.\n\nBy enabling the portal's advanced features you can also view historical data on flight that have been seen in the past as well as view more detailed information on each of these aircraft.\n\nDo you wish to continue with the ADS-B Receiver Project Portal setup?" 23 78
 CONTINUE_SETUP=$?
 if [[ "${CONTINUE_SETUP}" = 1 ]] ; then
     # Setup has been halted by the user.
@@ -33,41 +30,26 @@ if [[ "${CONTINUE_SETUP}" = 1 ]] ; then
     exit 1
 fi
 
-## GATHER NEEDED INFORMATION FROM THE USER
 
-# We will need to make sure Lighttpd is installed first before we go any further.
-echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
-echo -e ""
-CheckPackage lighttpd
+## GATHER INSTALLATION INFORMATION FROM THE USER
 
-# Assign the Lighthttpd document root directory to a variable.
-RAW_DOCUMENT_ROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-LIGHTTPD_DOCUMENT_ROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAW_DOCUMENT_ROOT}`
-
+# TODO: CHECK IF PORTAL IS INSTALLED
 # Check if there is already an existing portal installation.
-if [[ -f "${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php" ]] ; then
-    RECEIVER_PORTAL_INSTALLED="true"
-else
-    RECEIVER_PORTAL_INSTALLED="false"
+portal_installed="false"
+if [[ -f "" ]] ; then
+    portal_installed="true"
 fi
 
-if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] ; then
-    # Assign needed variables using the driver setting in settings.class.php.
-    DATABASEENGINE=`grep 'db_driver' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-    if [[ "${DATABASEENGINE}" = "xml" ]] ; then
-        ADVANCED="false"
-    else
-        ADVANCED="true"
-    fi
-    if [[ "${ADVANCED}" = "true" ]] ; then
-        case "${DATABASEENGINE}" in
-            "mysql") DATABASEENGINE="MySQL" ;;
-            "sqlite") DATABASEENGINE="SQLite" ;;
-        esac
-        DATABASEHOSTNAME=`grep 'db_host' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASEUSER=`grep 'db_username' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASEPASSWORD1=`grep 'db_password' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-        DATABASENAME=`grep 'db_database' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+if [[ "${portal_installed}" = "true" ]] ; then
+    case "${DATABASEENGINE}" in
+        "mysql") DATABASEENGINE="MySQL" ;;
+        "postgresql") DATABASEENGINE="PostgreSQL" ;;
+        "sqlite") DATABASEENGINE="SQLite" ;;
+    esac
+    database_host_name=`grep 'db_host' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+    DATABASEUSER=`grep 'db_username' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+    DATABASEPASSWORD1=`grep 'db_password' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+    DATABASENAME=`grep 'db_database' ${LIGHTTPD_DOCUMENT_ROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
     fi
 
 
@@ -94,10 +76,10 @@ else
             esac
             if [[ "${LOCALMYSQLSERVER}" = "false" ]] ; then
                 # Ask for the remote MySQL servers hostname.
-                DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname"
-                while [[ -z "${DATABASEHOSTNAME}" ]] ; do
-                    DATABASEHOSTNAME=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEHOSTNAME_TITLE}" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
-                    DATABASEHOSTNAME_TITLE="MySQL Database Server Hostname (REQUIRED)"
+                database_host_name_title="MySQL Database Server Hostname"
+                while [[ -z "${database_host_name}" ]] ; do
+                    database_host_name=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${DATABASEHOSTNAME_TITLE}" --nocancel --inputbox "\nWhat is the remote MySQL server's hostname?" 10 60 3>&1 1>&2 2>&3)
+                    database_host_name_title="MySQL Database Server Hostname (REQUIRED)"
                 done
 
                 # Ask if the remote MySQL database already exists.
@@ -121,7 +103,7 @@ else
                 DATABASEEXISTS="false"
 
                 # Since the MySQL database server will run locally assign localhost as it's hostname.
-                DATABASEHOSTNAME="localhost"
+                database_host_name="localhost"
             fi
 
             # Ask for the MySQL administrator credentials if the database does not already exist.
@@ -271,7 +253,7 @@ echo -e "\e[95m  Setting up the web portal...\e[97m"
 echo -e ""
 
 # If this is an existing Lite installation being upgraded backup the XML data files.
-if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
+if [[ "${portal_installed}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
     echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml...\e[97m"
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.backup.xml
     echo -e "\e[94m  Backing up the file ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.xml...\e[97m"
@@ -292,10 +274,10 @@ if [ -f ${LIGHTTPD_DOCUMENT_ROOT}/index.lighttpd.html ]; then
 fi
 
 echo -e "\e[94m  Placing portal files in Lighttpd's root directory...\e[97m"
-sudo cp -R ${PORTAL_BUILD_DIRECTORY}/html/* ${LIGHTTPD_DOCUMENT_ROOT}
+sudo cp -R ${RECEIVER_BUILD_DIRECTORY}/portal/html/* ${LIGHTTPD_DOCUMENT_ROOT}
 
 # If this is an existing installation being upgraded restore the original XML data files.
-if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
+if [[ "${portal_installed}" = "true" ]] && [[ "${ADVANCED}" = "false" ]] ; then
     echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml...\e[97m"
     sudo mv ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.backup.xml ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml
     echo -e "\e[94m  Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/blogPosts.xml...\e[97m"
@@ -365,7 +347,7 @@ if [[ ! -L "/etc/lighttpd/conf-enabled/87-adsb-portal.conf" ]] ; then
     sudo ln -s /etc/lighttpd/conf-available/87-adsb-portal.conf /etc/lighttpd/conf-enabled/87-adsb-portal.conf
 fi
 
-if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] ; then
+if [[ "${portal_installed}" = "false" ]] ; then
     echo -e "\e[94m  Enabling the Lighttpd fastcgi-php module...\e[97m"
     echo -e ""
     sudo lighty-enable-mod fastcgi-php
@@ -383,20 +365,20 @@ fi
 
 ## SETUP THE MYSQL DATABASE
 
-if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
+if [[ "${portal_installed}" = "false" ]] && [[ "${ADVANCED}" = "true" ]] && [[ "${DATABASEENGINE}" = "MySQL" ]] && [[ "${DATABASEEXISTS}" = "false" ]] ; then
     # If MariaDB is being used we will switch the plugin from unix_socket to mysql_native_password to keep things on the same page as MySQL setups.
     if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server-10.1 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
         echo -e "\e[94m  Switching the default MySQL plugin from unix_socket to mysql_native_password...\e[97m"
-        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE user = 'root' AND plugin = 'unix_socket';"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name}  -e "UPDATE mysql.user SET plugin = 'mysql_native_password' WHERE user = 'root' AND plugin = 'unix_socket';"
         echo -e "\e[94m  Flushing privileges on the  MySQL (MariaDB) server...\e[97m"
-        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e "FLUSH PRIVILEGES;"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name}  -e "FLUSH PRIVILEGES;"
         echo -e "\e[94m  Reloading MySQL (MariaDB)...\e[97m"
         sudo service mysql force-reload
     fi
 
     # Attempt to login with the supplied MySQL administrator credentials.
     echo -e "\e[94m  Attempting to log into the MySQL server using the supplied administrator credentials...\e[97m"
-    while ! sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME}  -e ";" ; do
+    while ! sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name}  -e ";" ; do
         echo -e "\e[94m  Unable to log into the MySQL server using the supplied administrator credentials...\e[97m"
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Create Remote MySQL Database" --msgbox "The script was not able to log into the MySQL server using the administrator credentials you supplied. You will now be asked to reenter the MySQL server administrator credentials." 9 78
         DATABASEADMINPASSWORD1=""
@@ -438,20 +420,20 @@ if [[ "${RECEIVER_PORTAL_INSTALLED}" = "false" ]] && [[ "${ADVANCED}" = "true" ]
 
     # Create the database use and database using the information supplied by the user.
     echo -e "\e[94m  Creating the MySQL database \"${DATABASENAME}\"...\e[97m"
-    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE DATABASE ${DATABASENAME};"
+    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name} -e "CREATE DATABASE ${DATABASENAME};"
     echo -e "\e[94m  Creating the MySQL user \"${DATABASEUSER}\"...\e[97m"
 
     if [[ "${LOCALMYSQLSERVER}" = "false" ]] ; then
         # If the databse resides on a remote server be sure to allow the newly created user access to it remotly.
-        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'%' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name} -e "CREATE USER '${DATABASEUSER}'@'%' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
     else
         # Since this is a local database we will restrict this login to localhost logins only.
-        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
+        sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name} -e "CREATE USER '${DATABASEUSER}'@'localhost' IDENTIFIED BY \"${DATABASEPASSWORD1}\";"
     fi
     echo -e "\e[94m  Granting priviledges on the MySQL database \"DATABASENAME\" to the user \"${DATABASEUSER}\"...\e[97m"
-    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
+    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name} -e "GRANT ALL PRIVILEGES ON ${DATABASENAME}.* TO '${DATABASEUSER}'@'localhost';"
     echo -e "\e[94m  Flushing priviledges on the MySQL database server...\e[97m"
-    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${DATABASEHOSTNAME} -e "FLUSH PRIVILEGES;"
+    sudo mysql -u${DATABASEADMINUSER} -p${DATABASEADMINPASSWORD1} -h ${database_host_name} -e "FLUSH PRIVILEGES;"
 fi
 
 ## SETUP THE PERFORMANCE GRAPHS USING THE SCRIPT GRAPHS.SH

@@ -1,6 +1,10 @@
 from datetime import timedelta
 from flask import Flask, render_template
+from flask_apscheduler import APScheduler
 from flask_jwt_extended import JWTManager
+from backend.jobs.data_collection import data_collection_job
+from backend.jobs.maintenance import maintenance_job
+from backend.routes.flights import flights
 from backend.routes.blog import blog
 from backend.routes.flights import flights
 from backend.routes.links import links
@@ -25,6 +29,16 @@ def create_app():
     app.register_blueprint(settings)
     app.register_blueprint(tokens)
     app.register_blueprint(users)
+
+    # /API/SCHEDULER
+
+    app.config["SCHEDULER_API_ENABLED"] = True
+    app.config["SCHEDULER_API_PREFIX"] = "/api/scheduler"
+    scheduler = APScheduler()
+    scheduler.add_job(id = 'data_collection', func=data_collection_job, trigger="interval", seconds=15)
+    scheduler.add_job(id = 'maintenance', func=maintenance_job, trigger="cron", hour=0)
+    scheduler.init_app(app)
+    scheduler.start()
 
     # /API/DOCS
 
