@@ -46,4 +46,9 @@ def create_app():
     def get_docs():
         return render_template('swaggerui.html')
     
+    # INIT_APP
+
+    from . import db
+    db.init_app(app)
+    
     return app
