@@ -4,7 +4,7 @@ from flask_apscheduler import APScheduler
 from flask_jwt_extended import JWTManager
 from backend.jobs.data_collection import data_collection_job
 from backend.jobs.maintenance import maintenance_job
-from backend.routes.flights import flights
+from backend.routes.aircraft import aircraft
 from backend.routes.blog import blog
 from backend.routes.flights import flights
 from backend.routes.links import links
@@ -22,6 +22,7 @@ def create_app():
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=365)
     jwt = JWTManager(app)
 
+    app.register_blueprint(aircraft)
     app.register_blueprint(blog)
     app.register_blueprint(flights)
     app.register_blueprint(links)
@@ -29,6 +30,7 @@ def create_app():
     app.register_blueprint(settings)
     app.register_blueprint(tokens)
     app.register_blueprint(users)
+
 
     # /API/SCHEDULER
 
@@ -40,11 +42,13 @@ def create_app():
     scheduler.init_app(app)
     scheduler.start()
 
+
     # /API/DOCS
 
     @app.route('/api/docs')
     def get_docs():
         return render_template('swaggerui.html')
+    
     
     # INIT_APP
 

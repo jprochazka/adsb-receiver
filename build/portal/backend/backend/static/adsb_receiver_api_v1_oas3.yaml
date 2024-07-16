@@ -12,6 +12,11 @@ externalDocs:
 servers:
   - url: http://127.0.0.1:5000/api
 tags:
+  - name: aircraft
+    description: Access and manage aircraft data
+    externalDocs:
+      description: Wiki documentation
+      url: https://github.com/jprochazka/adsb-receiver/wiki
   - name: blog
     description: Access and manage blog data
     externalDocs:
@@ -48,6 +53,141 @@ tags:
       description: Wiki documentation
       url: https://github.com/jprochazka/adsb-receiver/wiki
 paths:
+  /aircraft/{icao}:
+    get:
+      tags:
+        - aircraft
+      summary: Get data related to the specified aircraft
+      description: Returns all data related to the aircraft assigned the specified ICAO
+      operationId: getAircraftByIcao
+      parameters:
+        - name: icao
+          in: path
+          description: The ICAO assigned the aircraft in question
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Aircraft'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+  /aircraft/{icao}/positions:
+    get:
+      tags:
+        - aircraft
+      summary: Get postion data for an aircraft
+      description: Returns recorded positions for the specified aircraft assigned the specified ICAO
+      operationId: getAircraftPositions
+      parameters:
+        - name: icao
+          in: path
+          description: The ICAO of the aircraft for which the position data is being requested
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: The number of positions to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of positions to be returned
+          required: false
+          schema:
+            type: integer
+            default: 500
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetAircraftPositionsResponse'
+        '401':
+          description: Unauthorized
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /aircraft:
+    get:
+      tags:
+        - aircraft
+      summary: Get data related to multiple aircraft
+      description: Returns data for multiple aircraft ordered by the date they were created
+      operationId: getAircraft
+      parameters:
+        - name: offset
+          in: query
+          description: The number of aircraft to be skipped before adding the first item to the result
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Maximum number of aircraft to be returned
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetAircraftResponse'
+        '401':
+          description: Unauthorized
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /aircraft/count:
+    get:
+      tags:
+        - aircraft
+      summary: Gets the number of tracked aircraft
+      description: Returns the total number of aircraft currently being tracked
+      operationId: GetAircraftCount
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/GetAircraftCountResponse'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
   /blog/post:
     post:
       tags:
@@ -203,8 +343,6 @@ paths:
     get:
       tags:
         - flights
-      security:
-        - bearerAuth: []
       summary: Get data related to the specified flight
       description: Returns all data related to the flight assigned the specified flight
       operationId: getFlight
@@ -234,8 +372,6 @@ paths:
     get:
       tags:
         - flights
-      security:
-        - bearerAuth: []
       summary: Get postion data for a flight
       description: Returns recorded positions for the specified flight
       operationId: getFlightPositions
@@ -857,6 +993,50 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    Aircraft:
+      type: object
+      properties:
+        id:
+          type: integer
+        icao:
+          type: string
+        first_seen:
+          type: string
+          format: date-time
+        last_seen:
+          type: string
+          format: date-time
+    GetAircraftPositionsResponse:
+        type: object
+        properties:
+          offset:
+            type: integer
+          limit:
+            type: integer
+          count:
+            type: integer
+          positions:
+            type: array
+            items:
+              $ref: '#/components/schemas/Position'
+    GetAircraftResponse:
+      type: object
+      properties:
+        offset:
+          type: integer
+        limit:
+          type: integer
+        count:
+            type: integer
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Aircraft'
+    GetAircraftCountResponse:
+      type: object
+      properties:
+        aircraft:
+          type: integer
     BlogPost:
       type: object
       properties:
