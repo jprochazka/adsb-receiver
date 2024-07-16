@@ -67,6 +67,11 @@ EOF
 
 ## CHANGE SETTINGS IN CONFIGURATION FILES
 
+# Use sed to locate the "KEY" then replace the "VALUE", in a YAML "FILE"
+function ChangeYaml {
+    sudo sed -i -e 's/^\('"$1"': \).*$/\1'"$2"'/' $3
+}
+
 # Use sed to locate the "SWITCH" then replace the "VALUE", the portion after the equals sign, in the specified "FILE"
 # This function will replace the value assigned to a specific switch contained within a file
 function ChangeSwitch {
@@ -97,4 +102,55 @@ function UncommentConfig {
     if [[ `grep -cFx "#${1}" $2` -gt 0 ]]; then
         sudo sed -i "/#${1}*/ s/#*//" $2
     fi
+}
+
+
+## LOGGING
+
+# Logs the "PROJECT NAME" to the console
+function LogProjectName {
+    echo -e "${DISPLAY_PROJECT_NAME}  ${1}${DISPLAY_DEFAULT}"
+    echo ""
+}
+
+# Logs a "HEADING" to the console
+function LogHeading {
+    echo ""
+    echo -e "${DISPLAY_HEADING}  ${1}${DISPLAY_DEFAULT}"
+    echo ""
+}
+
+# Logs a "MESSAGE" to the console
+function LogMessage {
+    echo -e "${DISPLAY_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an alert "HEADING" to the console
+function LogAlertHeading {
+    echo -e "${DISPLAY_ALERT_HEADING}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an alert "MESSAGE" to the console
+function LogAlertMessage {
+    echo -e "${DISPLAY_ALERT_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an title "HEADING" to the console
+function LogTitleHeading {
+    echo -e "${DISPLAY_TITLE_HEADING}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an title "MESSAGE" to the console
+function LogTitleMessage {
+    echo -e "${DISPLAY_TITLE_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs a warning "HEADING" to the console
+function LogWarningHeading {
+    echo -e "${DISPLAY_WARNING_HEADING}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs a warning "MESSAGE" to the console
+function LogWarningMessage {
+    echo -e "${DISPLAY_WARNING_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
 }

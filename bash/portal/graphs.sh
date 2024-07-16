@@ -20,7 +20,6 @@ echo -e ""
 echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
 echo -e ""
 
-
 CheckPackage collectd-core
 CheckPackage rrdtool
 
