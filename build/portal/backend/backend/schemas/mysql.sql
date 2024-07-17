@@ -7,16 +7,6 @@ DROP TABLE IF EXISTS links;
 DROP TABLE IF EXISTS positions;
 DROP TABLE IF EXISTS settings;
 
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(75) NOT NULL,
-  `login` varchar(25) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `administrator` bit DEFAULT 0,
-  PRIMARY KEY (`id`)
-);
-
 CREATE TABLE `aircraft` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `icao` varchar(24) NOT NULL,
@@ -79,5 +69,15 @@ CREATE TABLE `settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `value` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(75) NOT NULL,
+  `login` varchar(25) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `administrator` bit DEFAULT 0,
   PRIMARY KEY (`id`)
 );

@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
-from backend.db import create_connection
+from backend.db import get_db
 
 blog = Blueprint('blog', __name__)
 
@@ -28,18 +28,16 @@ def post_blog_post():
         return jsonify(err.messages), 400
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute(
             "INSERT INTO blog_posts (date, title, author, content) VALUES (%s, %s, %s, %s)",
             (datetime.now(), payload['title'], payload['author'], payload['content'])
         )
-        connection.commit()
+        db.commit()
     except Exception as ex:
         logging.error('Error encountered while trying to add post blog post', exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "Created", 201
 
@@ -47,19 +45,17 @@ def post_blog_post():
 @jwt_required()
 def delete_blog_post(blog_post_id):
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = %s", (blog_post_id,))
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
             cursor.execute("DELETE FROM blog_posts WHERE id = %s", (blog_post_id,))
-            connection.commit()
+            db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to delete blog post id {blog_post_id}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "No Content", 204
 
@@ -68,8 +64,8 @@ def get_blog_post(blog_post_id):
     data=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT * FROM blog_posts WHERE id = %s", (blog_post_id,))
         columns=[x[0] for x in cursor.description]
         results = cursor.fetchall()
@@ -78,8 +74,6 @@ def get_blog_post(blog_post_id):
     except Exception as ex:
         logging.error(f"Error encountered while trying to get blog post id {blog_post_id,}", blog_post_id, exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
             
     if not data:
         abort(404, description="Not Found")
@@ -97,8 +91,8 @@ def put_blog_post(blog_post_id):
         return jsonify(err.messages), 400
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = %s", (blog_post_id,))
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
@@ -107,12 +101,10 @@ def put_blog_post(blog_post_id):
                 "UPDATE blog_posts SET date = %s, title = %s, content = %s WHERE id = %s", 
                 (datetime.now(), payload['title'], payload['content'], blog_post_id)
             )
-        connection.commit()
+        db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to put blog post id {blog_post_id}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "No Content", 204
 
@@ -126,8 +118,8 @@ def get_blog_posts():
     blog_posts=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT * FROM blog_posts ORDER BY date DESC LIMIT %s, %s", (offset, limit))
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
@@ -136,8 +128,6 @@ def get_blog_posts():
     except Exception as ex:
         logging.error('Error encountered while trying to get blog posts', exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     data={}
     data['offset'] = offset

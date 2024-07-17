@@ -1,7 +1,5 @@
 database:
-    use: "mysql"
-    sqlite:
-        path: "adsbportal.sqlite3"
+    use: "sqlite"
     mysql:
         host: "127.0.0.1"
         user: "portaluser"

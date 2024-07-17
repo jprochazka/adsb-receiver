@@ -7,16 +7,6 @@ DROP TABLE IF EXISTS links;
 DROP TABLE IF EXISTS positions;
 DROP TABLE IF EXISTS settings;
 
-CREATE TABLE users (
-  `id` int NOT NULL GENERATED ALWAYS AS IDENTITY,
-  `name` varchar(100) NOT NULL,
-  `email` varchar(75) NOT NULL,
-  `login` varchar(25) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `administrator` bit DEFAULT 0,
-  PRIMARY KEY (id)
-);
-
 CREATE TABLE aircraft (
   `id` int NOT NULL GENERATED ALWAYS AS IDENTITY,
   `icao` varchar(24) NOT NULL,
@@ -66,7 +56,7 @@ CREATE TABLE positions (
   `squawk` int DEFAULT NULL,
   `latitude` double precision NOT NULL,
   `longitude` double precision NOT NULL,
-  `track int` NOT NULL,
+  `track` int NOT NULL,
   `altitude` int NOT NULL,
   `verticle_rate` int NOT NULL,
   `speed` int DEFAULT NULL,
@@ -79,5 +69,15 @@ CREATE TABLE settings (
   `id` int NOT NULL GENERATED ALWAYS AS IDENTITY,
   `name` varchar(50) NOT NULL,
   `value` varchar(100) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE users (
+  `id` int NOT NULL GENERATED ALWAYS AS IDENTITY,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(75) NOT NULL,
+  `login` varchar(25) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `administrator` bit DEFAULT 0,
   PRIMARY KEY (id)
 );

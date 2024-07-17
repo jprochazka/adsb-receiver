@@ -1,8 +1,7 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
-from backend.db import create_connection
+from backend.db import get_db
 
 aircraft = Blueprint('aircraft', __name__)
         
@@ -12,9 +11,12 @@ def get_aircraft_by_icao(icao):
     data=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
-        cursor.execute("SELECT * FROM aircraft WHERE icao = %s", (icao,))
+        db=get_db()
+        cursor=db.cursor()
+
+        cursor.execute("SELECT * FROM aircraft WHERE icao = ?", (icao,))
+        #cursor.execute("SELECT * FROM aircraft WHERE icao = %s", (icao,))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:
@@ -22,8 +24,6 @@ def get_aircraft_by_icao(icao):
     except Exception as ex:
         logging.error(f"Error encountered while trying to get aircraft using ICAO {icao}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     if not data:
         abort(404, description="Not Found")
@@ -40,11 +40,23 @@ def get_aircraft_positions(icao):
     positions=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
-        cursor.execute("SELECT id FROM aircraft WHERE icao = %s", (icao,))
+        db=get_db()
+        cursor=db.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM aircraft WHERE icao = ?", (icao,))
+        #cursor.execute("SELECT COUNT(*) FROM aircraft WHERE icao = %s", (icao,))
+
+        if cursor.fetchone()[0] == 0:
+            return "Not Found", 404
+
+        cursor.execute("SELECT id FROM aircraft WHERE icao = ?", (icao,))
+        #cursor.execute("SELECT id FROM aircraft WHERE icao = %s", (icao,))
+
         aircraft_id = cursor.fetchone()[0]
-        cursor.execute("SELECT * FROM positions WHERE aircraft = %s ORDER BY time LIMIT %s, %s", (aircraft_id, offset, limit))
+
+        cursor.execute("SELECT * FROM positions WHERE aircraft = ? ORDER BY time LIMIT ?, ?", (aircraft_id, offset, limit))
+        #cursor.execute("SELECT * FROM positions WHERE aircraft = %s ORDER BY time LIMIT %s, %s", (aircraft_id, offset, limit))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:
@@ -52,8 +64,6 @@ def get_aircraft_positions(icao):
     except Exception as ex:
         logging.error(f"Error encountered while trying to get flight positions for aircraft ICAO {icao}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     data={}
     data['offset'] = offset
@@ -67,15 +77,19 @@ def get_aircraft_positions(icao):
 def get_aircraft():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=50, type=int)
+    
     if offset < 0 or limit < 1 or limit > 100:
         abort(400, description="Bad Request")
-
+        
     aircraft_data=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
-        cursor.execute("SELECT * FROM aircraft ORDER BY last_seen DESC, icao LIMIT %s, %s", (offset, limit))
+        db=get_db()
+        cursor=db.cursor()
+
+        cursor.execute("SELECT * FROM aircraft ORDER BY last_seen DESC, icao LIMIT ?, ?", (offset, limit))
+        #cursor.execute("SELECT * FROM aircraft ORDER BY last_seen DESC, icao LIMIT %s, %s", (offset, limit))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:
@@ -83,8 +97,6 @@ def get_aircraft():
     except Exception as ex:
         logging.error('Error encountered while trying to get aircraft', exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     data={}
     data['offset'] = offset
@@ -99,15 +111,13 @@ def get_aircraft():
 @aircraft.route('/api/aircraft/count', methods=['GET'])
 def get_aircraft_count():
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM aircraft")
-        count=cursor.fetchone()[0]
+        count = cursor.fetchone()[0]
     except Exception as ex:
         logging.error('Error encountered while trying to get aircraft count', exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     response = jsonify(aircraft=count)
     response.headers.add('Access-Control-Allow-Origin', '*')

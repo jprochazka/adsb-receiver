@@ -7,19 +7,11 @@ DROP TABLE IF EXISTS links;
 DROP TABLE IF EXISTS positions;
 DROP TABLE IF EXISTS settings;
 
-CREATE TABLE users (
-    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-    `name` TEXT NOT NULL,
-    `email` TEXT NOT NULL,
-    `password` TEXT,
-    `token` TEXT
-);
-
 CREATE TABLE aircraft (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `icao` TEXT NOT NULL,
-    `firstSeen` TEXT NOT NULL,
-    `lastSeen` TEXT
+    `first_seen` TEXT NOT NULL,
+    `last_seen` TEXT
 );
 
 CREATE TABLE blog_posts (
@@ -71,4 +63,13 @@ CREATE TABLE settings (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `name` TEXT NOT NULL,
     `value` TEXT NOT NULL
+);
+
+CREATE TABLE users (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `name` TEXT NOT NULL,
+    `email` TEXT NOT NULL,
+    `login` TEXT NOT NULL,
+    `password` TEXT,
+    `administrator` INTEGER DEFAULT 0
 );

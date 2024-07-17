@@ -2,7 +2,7 @@ import logging
 
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from backend.db import create_connection
+from backend.db import get_db
 
 notifications = Blueprint('notifications', __name__)
 
@@ -11,19 +11,17 @@ notifications = Blueprint('notifications', __name__)
 @jwt_required()
 def delete_notification(flight):
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
             cursor.execute("DELETE FROM notifications WHERE flight = %s", (flight,))
-            connection.commit()
+            db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to delete blog post id {flight}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "No Content", 204
 
@@ -31,8 +29,8 @@ def delete_notification(flight):
 @jwt_required()
 def post_notification(flight):
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
         if cursor.fetchone()[0] > 0:
             return "Bad Request", 400
@@ -41,12 +39,10 @@ def post_notification(flight):
                 "INSERT INTO notifications (flight) VALUES (%s)",
                 (flight,)
             )
-        connection.commit()
+        db.commit()
     except Exception as ex:
         logging.error('Error encountered while trying to add notification', exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "Created", 201
 
@@ -61,8 +57,8 @@ def get_notifications():
     notifications=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT * FROM notifications ORDER BY flight LIMIT %s, %s", (offset, limit))
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
@@ -71,8 +67,6 @@ def get_notifications():
     except Exception as ex:
         logging.error(f"Error encountered while trying to get notifications", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     data={}
     data['offset'] = offset

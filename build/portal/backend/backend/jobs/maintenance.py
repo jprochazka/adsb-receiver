@@ -2,11 +2,11 @@ import logging
 
 from datetime import datetime, timedelta
 from flask_apscheduler import APScheduler
-from backend.db import create_connection
+from backend.db import get_db
 
 scheduler = APScheduler()
-connection = None
 cursor = None
+db = None
 now = None
 
 class MaintenanceProcessor(object):
@@ -39,13 +39,10 @@ class MaintenanceProcessor(object):
             cutoff_date = datetime.now() - timedelta(days = days_to_save)
             self.purge_aircraft(cutoff_date)
             self.purge_positions(cutoff_date)
+            db.commit()
 
         else:
             self.log("Maintenance is disabled")
-
-            connection.commit()
-
-        connection.close()
 
         return
 
@@ -141,7 +138,7 @@ def maintenance_job():
 
     # Setup and begin the maintenance job
     processor.log("-- BEGINING PORTAL MAINTENANCE JOB")
-    connection =  create_connection()
-    cursor = connection.cursor()
+    db=get_db()
+    cursor=db.cursor()
     processor.begin_maintenance()
     processor.log("-- PORTAL MAINTENANCE JOB COMPLETE")

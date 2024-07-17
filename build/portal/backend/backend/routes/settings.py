@@ -3,7 +3,7 @@ import logging
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
-from backend.db import create_connection
+from backend.db import get_db
 
 settings = Blueprint('settings', __name__)
 
@@ -22,8 +22,8 @@ def put_setting():
         return jsonify(err.messages), 400
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM settings WHERE name = %s", (payload['name'],))
         if cursor.fetchone()[0] == 0:
             abort(404, description="Not Found")
@@ -32,12 +32,10 @@ def put_setting():
                 "UPDATE settings SET value = %s WHERE name = %s",
                 (payload['value'], payload['name'])
             )
-            connection.commit()
+            db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to put setting named {payload['name']}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "No Content", 204
 
@@ -47,8 +45,8 @@ def get_setting(name):
     data=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT * FROM settings WHERE name = %s", (name,))
         columns=[x[0] for x in cursor.description]
         results = cursor.fetchall()
@@ -57,8 +55,6 @@ def get_setting(name):
     except Exception as ex:
         logging.error(f"Error encountered while trying to get setting named {name}", id, exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
             
     if not data:
         abort(404, description="Not Found")
@@ -71,8 +67,8 @@ def get_settings():
     settings=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT * FROM settings ORDER BY name")
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
@@ -81,7 +77,5 @@ def get_settings():
     except Exception as ex:
         logging.error(f"Error encountered while trying to get settings", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return jsonify(settings), 200

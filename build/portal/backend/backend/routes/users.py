@@ -3,7 +3,7 @@ import logging
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
-from backend.db import create_connection
+from backend.db import get_db
 
 users = Blueprint('users', __name__)
 
@@ -29,18 +29,16 @@ def post_user():
         return jsonify(err.messages), 400
     
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute(
             "INSERT INTO users (name, email, password, administrator) VALUES (%s, %s, %s, %s)",
             (payload['name'], payload['email'], payload['password'], payload['administrator'])
         )
-        connection.commit()
+        db.commit()
     except Exception as ex:
         logging.error('Error encountered while trying to post user', exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "Created", 201
 
@@ -48,19 +46,17 @@ def post_user():
 @jwt_required()
 def delete_user(email):
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
             cursor.execute("DELETE FROM users WHERE email = %s", (email,))
-            connection.commit()
+            db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to delete user related to email {email}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "No Content", 204
 
@@ -70,8 +66,8 @@ def get_user(email):
     data=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         columns=[x[0] for x in cursor.description]
         results = cursor.fetchall()
@@ -80,8 +76,6 @@ def get_user(email):
     except Exception as ex:
         logging.error(f"Error encountered while trying to get user related to email {email,}", email, exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
             
     if not data:
         abort(404, description="Not Found")
@@ -97,8 +91,8 @@ def put_user(email):
         return jsonify(err.messages), 400
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
@@ -107,12 +101,10 @@ def put_user(email):
                 "UPDATE users SET name = %s, password = %s, administrator = %s WHERE email = %s", 
                 (payload['name'], payload['password'], payload['administrator'], email)
             )
-        connection.commit()
+        db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to put user related to email {email}", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     return "No Content", 204
 
@@ -127,8 +119,8 @@ def get_users():
     users=[]
 
     try:
-        connection = create_connection()
-        cursor=connection.cursor()
+        db=get_db()
+        cursor=db.cursor()
         cursor.execute("SELECT * FROM users ORDER BY name LIMIT %s, %s", (offset, limit))
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
@@ -137,8 +129,6 @@ def get_users():
     except Exception as ex:
         logging.error(f"Error encountered while trying to get users", exc_info=ex)
         abort(500, description="Internal Server Error")
-    finally:
-        connection.close()
 
     data={}
     data['offset'] = offset

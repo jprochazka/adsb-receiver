@@ -4,11 +4,11 @@ import logging
 from datetime import datetime
 from flask_apscheduler import APScheduler
 from urllib.request import urlopen
-from backend.db import create_connection
+from backend.db import get_db
 
 scheduler = APScheduler()
-connection = None
 cursor = None
+db = None
 now = None
 
 class DataProcessor(object):
@@ -42,8 +42,8 @@ class DataProcessor(object):
         for aircraft in aircraft_data:
             self.process_aircraft(aircraft)
 
-        connection.close()
-
+        db.commit()
+        
         return
 
     # Process the aircraft
@@ -66,7 +66,6 @@ class DataProcessor(object):
                     "UPDATE adsb_aircraft SET last_seen = %s WHERE icao = %s",
                     (now, aircraft["hex"])
                 )
-                connection.commit()
                 cursor.execute(
                     "SELECT id FROM adsb_aircraft WHERE icao = %s",
                     (aircraft["hex"],)
@@ -82,7 +81,6 @@ class DataProcessor(object):
                     "INSERT INTO adsb_aircraft (icao, firstSeen, last_seen) VALUES (%s, %s, %s)",
                     (aircraft["hex"], now, now)
                 )
-                connection.commit()
                 aircraft_id = cursor.lastrowid
             except Exception as ex:
                 logging.error(f'Error encountered while trying to insert aircraft {aircraft["hex"]}', exc_info=ex)
@@ -116,7 +114,6 @@ class DataProcessor(object):
                         "UPDATE adsb_flights SET last_seen = %s WHERE flight = %s",
                         (now, flight)
                     )
-                    connection.commit()
                     cursor.execute(
                         "SELECT id FROM adsb_flights WHERE flight = %s",
                         (flight,)
@@ -132,7 +129,6 @@ class DataProcessor(object):
                         "INSERT INTO adsb_flights (aircraft, flight, firstSeen, last_seen) VALUES (%s, %s, %s, %s)",
                         (aircraft_id, flight, now, now)
                     )
-                    connection.commit()
                     flight_id = cursor.lastrowid
                 except Exception as ex:
                     logging.error(f'Error encountered while trying to insert flight {flight}', exc_info=ex)
@@ -180,7 +176,6 @@ class DataProcessor(object):
                     "INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
                     (flight_id, now, aircraft["messages"], squawk, aircraft["lat"], aircraft["lon"], aircraft["track"], altitude, aircraft["geom_rate"], aircraft["gs"], aircraft_id)
                 )
-                connection.commit()
             except Exception as ex:
                 logging.error(f'Error encountered while inserting position data for message ID {aircraft["messages"]} related to flight {flight_id}', exc_info=ex)
                 return
@@ -195,8 +190,8 @@ def data_collection_job():
 
     # Setup and begin the data collection job
     processor.log("-- BEGINING FLIGHT RECORDER JOB")
-    connection = create_connection()
-    cursor = connection.cursor()
-    now = datetime.now()
+    db=get_db()
+    cursor=db.cursor()
+    now=datetime.now()
     processor.process_all_aircraft()
     processor.log("-- FLIGHT RECORD JOB COMPLETE")
