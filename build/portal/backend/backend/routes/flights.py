@@ -14,7 +14,10 @@ def get_flight(flight):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM flights WHERE flight = %s", (flight,))
+
+        cursor.execute("SELECT * FROM flights WHERE flight = ?", (flight,))
+        #cursor.execute("SELECT * FROM flights WHERE flight = %s", (flight,))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:
@@ -40,7 +43,21 @@ def get_flight_positions(flight):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM positions WHERE flight = %s ORDER BY time LIMIT %s, %s", (flight, offset, limit))
+
+        cursor.execute("SELECT COUNT(*) FROM flights WHERE flight = ?", (flight,))
+        #cursor.execute("SELECT COUNT(*) FROM flight WHERE flight = %s", (flight,))
+
+        if cursor.fetchone()[0] == 0:
+            return "Not Found", 404
+
+        cursor.execute("SELECT id FROM flights WHERE flight = ?", (flight,))
+        #cursor.execute("SELECT id FROM flights WHERE flight = %s", (flight,))
+
+        flight_id = cursor.fetchone()[0]
+
+        cursor.execute("SELECT * FROM positions WHERE flight = ? ORDER BY time LIMIT ?, ?", (flight_id, offset, limit))
+        #cursor.execute("SELECT * FROM positions WHERE flight = %s ORDER BY time LIMIT %s, %s", (flight, offset, limit))
+        
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:
@@ -69,7 +86,10 @@ def get_flights():
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM flights ORDER BY last_seen DESC, flight LIMIT %s, %s", (offset, limit))
+
+        cursor.execute("SELECT * FROM flights ORDER BY last_seen DESC, flight LIMIT ?, ?", (offset, limit))
+        #cursor.execute("SELECT * FROM flights ORDER BY last_seen DESC, flight LIMIT %s, %s", (offset, limit))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:
