@@ -32,7 +32,10 @@ def post_user():
         db=get_db()
         cursor=db.cursor()
         cursor.execute(
-            "INSERT INTO users (name, email, password, administrator) VALUES (%s, %s, %s, %s)",
+
+            "INSERT INTO users (name, email, password, administrator) VALUES (?, ?, ?, ?)",
+            #"INSERT INTO users (name, email, password, administrator) VALUES (%s, %s, %s, %s)",
+
             (payload['name'], payload['email'], payload['password'], payload['administrator'])
         )
         db.commit()
@@ -48,11 +51,17 @@ def delete_user(email):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
+
+        cursor.execute("SELECT COUNT(*) FROM users WHERE email = ?", (email,))
+        #cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
+
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
-            cursor.execute("DELETE FROM users WHERE email = %s", (email,))
+
+            cursor.execute("DELETE FROM users WHERE email = ?", (email,))
+            #cursor.execute("DELETE FROM users WHERE email = %s", (email,))
+
             db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to delete user related to email {email}", exc_info=ex)
@@ -68,7 +77,10 @@ def get_user(email):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        #cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+
         columns=[x[0] for x in cursor.description]
         results = cursor.fetchall()
         for result in results:
@@ -93,12 +105,18 @@ def put_user(email):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
+
+        cursor.execute("SELECT COUNT(*) FROM users WHERE email = ?", (email,))
+        #cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
+
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
             cursor.execute(
-                "UPDATE users SET name = %s, password = %s, administrator = %s WHERE email = %s", 
+
+                "UPDATE users SET name = ?, password = ?, administrator = ? WHERE email = ?", 
+                #"UPDATE users SET name = %s, password = %s, administrator = %s WHERE email = %s",
+                 
                 (payload['name'], payload['password'], payload['administrator'], email)
             )
         db.commit()
@@ -112,8 +130,8 @@ def put_user(email):
 @jwt_required()
 def get_users():
     offset = request.args.get('offset', default=0, type=int)
-    limit = request.args.get('limit', default=100, type=int)
-    if offset < 0  or limit < 1 or limit > 1000:
+    limit = request.args.get('limit', default=50, type=int)
+    if offset < 0  or limit < 1 or limit > 100:
         abort(400, description="Bad Request")
 
     users=[]
@@ -121,7 +139,10 @@ def get_users():
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM users ORDER BY name LIMIT %s, %s", (offset, limit))
+
+        cursor.execute("SELECT * FROM users ORDER BY name LIMIT ?, ?", (offset, limit))
+        #cursor.execute("SELECT * FROM users ORDER BY name LIMIT %s, %s", (offset, limit))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:

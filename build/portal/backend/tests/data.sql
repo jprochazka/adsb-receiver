@@ -6,12 +6,31 @@ VALUES
   ('icao04', '2024-07-17 04:40:44', '2024-06-17 04:44:04'),
   ('icao05', '2024-07-17 05:50:55', '2024-06-17 05:55:05');
 
+INSERT INTO blog_posts (`title`, `date`, `author`, `content`)
+VALUES
+  ('Title One', '2024-07-03 13:00:01', 'User One', 'Content for blog post one.'),
+  ('Title Two', '2024-07-04 14:30:02', 'User One', 'Content for blog post two.'),
+  ('Title Three', '2024-07-05 15:00:03', 'User Three', 'Content for blog post three.'),
+  ('Title Four', '2024-07-06 16:30:04', 'User Two', 'Content for blog post four.');
+
 INSERT INTO flights (`aircraft`, `flight`, `first_seen`, `last_seen`)
 VALUES
   (1, 'FLT0001', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
   (2, 'FLT0002', '2024-07-17 02:20:22', '2024-06-17 02:22:02'),
   (3, 'FLT0003', '2024-07-17 03:30:33', '2024-06-17 03:33:03'),
   (5, 'FLT0005', '2024-07-17 04:40:44', '2024-06-17 04:44:04');
+
+INSERT INTO links (`name`, `address`)
+VALUES
+  ('Link One', 'https://adsbportal.com/one'),
+  ('Link Two', 'https://adsbportal.com/two'),
+  ('Link Three', 'https://adsbportal.com/four');
+
+INSERT INTO notifications (`flight`)
+VALUES
+  ('FLT0011'),
+  ('FLT0012'),
+  ('FLT0013');
 
 INSERT INTO positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `verticle_rate`, `speed`)
 VALUES
@@ -30,7 +49,14 @@ VALUES
   (4, 5, '2024-07-17 05:50:35', 417, 1317, 41.773464, -83.749737, 91, 36825, 768, 487),
   (4, 5, '2024-07-17 05:50:55', 504, 1317, 41.772903, -83.690727, 91, 37225, 1216, 484);
 
-INSERT INTO users (`name`, `email`, `login`, `password`, `administrator`)
+INSERT INTO settings (`name`, `value`)
 VALUES
-  ('User One', 'noreply@adsbportal.com', 'login_one', '$2y$0htWdxS7PxTvIwJNo2COJ7Rywgif4En0TmJbDvrjLRfWZOBX526yJUKW', 1),
-  ('User Two', 'noreply@adsbreceiver.net', 'login_two', '$2y$ui7QK047JldTekx828J2rfSVQ7N5yo6ETQIYGoBqpfFRbNr3EvWzQzt6', 0);
+  ('SettingOne', 'ValueOne'),
+  ('SettingTwo', 'ValueTwo'),
+  ('SettingThree', 'ValueThree');
+
+INSERT INTO users (`name`, `email`, `password`, `administrator`)
+VALUES
+  ('Name One', 'noreply@email-one.com', '$2y$0htWdxS7PxTvIwJNo2COJ7Rywgif4En0TmJbDvrjLRfWZOBX526yJUKW', 1),
+  ('Name Two', 'noreply@email-two.com', '$2y$ui7QK047JldTekx828J2rfSVQ7N5yo6ETQIYGoBqpfFRbNr3EvWzQzt6', 0),
+  ('Name Three', 'noreply@email-three.com', '$2y$7jiYNNoUa1zNu6dCLxv2mIurCG8nuDgOeUCeCPO9pkjiQ1zr8jfTzdEe', 0);

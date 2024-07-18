@@ -76,7 +76,6 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `email` varchar(75) NOT NULL,
-  `login` varchar(25) NOT NULL,
   `password` varchar(255) NOT NULL,
   `administrator` bit DEFAULT 0,
   PRIMARY KEY (`id`)

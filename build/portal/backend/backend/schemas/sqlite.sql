@@ -69,7 +69,6 @@ CREATE TABLE users (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `name` TEXT NOT NULL,
     `email` TEXT NOT NULL,
-    `login` TEXT NOT NULL,
     `password` TEXT,
     `administrator` INTEGER DEFAULT 0
 );
