@@ -76,8 +76,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/Aircraft'
-        '401':
-          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -122,8 +120,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetAircraftPositionsResponse'
-        '401':
-          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -162,8 +158,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetAircraftResponse'
-        '401':
-          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -184,8 +178,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetAircraftCountResponse'
-        '401':
-          description: Unauthorized
         '500':
           description: Internal Server Error
   /blog/post:
@@ -209,8 +201,6 @@ paths:
           description: Created
         '400':
           description: Bad Request
-        '401':
-          description: Unauthorized
         '500':
           description: Internal Server Error
   /blog/post/{id}:
@@ -260,8 +250,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/BlogPost'
-        '401':
-          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -333,8 +321,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetBlogPostsResponse'
-        '401':
-          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -362,8 +348,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/Flight'
-        '401':
-          description: Unauthorized
         '404':
           description: Not Found
         '500':
@@ -408,8 +392,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetFlightPositionsResponse'
-        '401':
-          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -448,8 +430,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetFlightsResponse'
-        '401':
-          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -470,8 +450,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetFlightsCountResponse'
-        '401':
-          description: Unauthorized
         '500':
           description: Internal Server Error
   /link:
@@ -621,8 +599,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/GetLinksResponse'
-        '401':
-          description: Unauthorized
         '400':
           description: Bad Request
         '500':
@@ -709,8 +685,6 @@ paths:
                   $ref: '#/components/schemas/GetNotificationsResponse'
         '400':
           description: Bad Request
-        '401':
-          description: Unauthorized
         '500':
           description: Internal Server Error
   /setting:
@@ -763,8 +737,6 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/Setting'
-        '401':
-          description: Unauthorized
         '404':
           description: Not Found
         '500':

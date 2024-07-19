@@ -1,8 +1,8 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
 from backend.db import get_db
+from werkzeug.exceptions import HTTPException
 
 flights = Blueprint('flights', __name__)
         
@@ -29,7 +29,9 @@ def get_flight(flight):
     if not data:
         abort(404, description="Not Found")
 
-    return jsonify(data[0]), 200
+    response = jsonify(data[0])
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @flights.route('/api/flight/<flight>/positions', methods=['GET'])
 def get_flight_positions(flight):
@@ -48,7 +50,7 @@ def get_flight_positions(flight):
         #cursor.execute("SELECT COUNT(*) FROM flight WHERE flight = %s", (flight,))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
 
         cursor.execute("SELECT id FROM flights WHERE flight = ?", (flight,))
         #cursor.execute("SELECT id FROM flights WHERE flight = %s", (flight,))
@@ -63,8 +65,11 @@ def get_flight_positions(flight):
         for result in result:
             positions.append(dict(zip(columns,result)))
     except Exception as ex:
-        logging.error(f"Error encountered while trying to get flight positions for flight {flight}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to get flight positions for flight {flight}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     data={}
     data['offset'] = offset
@@ -72,7 +77,9 @@ def get_flight_positions(flight):
     data['count'] = len(positions)
     data['positions'] = positions
 
-    return jsonify(data), 200
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @flights.route('/api/flights', methods=['GET'])
 def get_flights():

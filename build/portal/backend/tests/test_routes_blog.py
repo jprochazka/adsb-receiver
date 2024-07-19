@@ -16,6 +16,15 @@ def test_post_blog_post_200(client, app):
         response = client.post('/api/blog/post', headers=request_headers, json=request_json)
         assert response.status_code == 201
 
+def test_post_blog_post_401(client):
+    request_json = {
+        'title': 'Title Five',
+        'author': 'User Two',
+        'content': 'Content for blog post five.'
+    }
+    response = client.post('/api/blog/post', json=request_json)
+    assert response.status_code == 401
+
 def test_post_blog_post_400_missing_title(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -66,6 +75,10 @@ def test_delete_blog_post_204(client, app):
         response = client.delete('/api/blog/post/2', headers=request_headers)
         assert response.status_code == 204
 
+def test_delete_blog_post_401(client):
+        response = client.delete('/api/blog/post/2')
+        assert response.status_code == 401
+
 def test_delete_blog_post_404(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -92,7 +105,7 @@ def test_get_blog_post_404(client):
 
 # PUT /blog/post/{id}
 
-def test_put_user_204(client, app):
+def test_put_blog_post_204(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
         request_headers = {
@@ -105,7 +118,15 @@ def test_put_user_204(client, app):
         response = client.put('/api/blog/post/1', headers=request_headers, json=request_json)
     assert response.status_code == 204
 
-def test_put_user_400_missing_title(client, app):
+def test_put_blog_post_401(client):
+    request_json = {
+        'title': 'Updated Title One',
+        'content': 'Updated content for blog post one.'
+    }
+    response = client.put('/api/blog/post/1', json=request_json)
+    assert response.status_code == 401
+
+def test_put_blog_post_400_missing_title(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
         request_headers = {
@@ -117,7 +138,7 @@ def test_put_user_400_missing_title(client, app):
         response = client.put('/api/blog/post/1', headers=request_headers, json=request_json)
         assert response.status_code == 400
 
-def test_put_user_400_missing_content(client, app):
+def test_put_blog_post_400_missing_content(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
         request_headers = {
@@ -129,7 +150,7 @@ def test_put_user_400_missing_content(client, app):
         response = client.put('/api/blog/post/1', headers=request_headers, json=request_json)
         assert response.status_code == 400
 
-def test_put_user_404(client, app):
+def test_put_blog_post_404(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
         request_headers = {

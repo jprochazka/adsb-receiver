@@ -3,6 +3,7 @@ import logging
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from backend.db import get_db
+from werkzeug.exceptions import HTTPException
 
 notifications = Blueprint('notifications', __name__)
 
@@ -18,7 +19,7 @@ def delete_notification(flight):
         #cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
         else:
 
             cursor.execute("DELETE FROM notifications WHERE flight = ?", (flight,))
@@ -26,8 +27,11 @@ def delete_notification(flight):
 
             db.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to delete blog post id {flight}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to delete blog post id {flight}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     return "No Content", 204
 
@@ -42,7 +46,7 @@ def post_notification(flight):
         #cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
 
         if cursor.fetchone()[0] > 0:
-            return "Bad Request", 400
+            abort(404, description="Not Found")
         else:
             cursor.execute(
 
@@ -53,8 +57,11 @@ def post_notification(flight):
             )
         db.commit()
     except Exception as ex:
-        logging.error('Error encountered while trying to add notification', exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error('Error encountered while trying to add notification', exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     return "Created", 201
 
@@ -88,4 +95,6 @@ def get_notifications():
     data['count'] = len(notifications)
     data['notifications'] = notifications
 
-    return jsonify(data), 200
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200

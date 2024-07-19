@@ -4,6 +4,7 @@ from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
 from backend.db import get_db
+from werkzeug.exceptions import HTTPException
 
 links = Blueprint('links', __name__)
 
@@ -53,7 +54,7 @@ def delete_link(link_id):
         #cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (link_id,))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
         else:
 
             cursor.execute("DELETE FROM links WHERE id = ?", (link_id,))
@@ -61,8 +62,11 @@ def delete_link(link_id):
 
             db.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     return "No Content", 204
 
@@ -107,7 +111,7 @@ def put_link(id):
         #cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (id,))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
         else:
             cursor.execute(
 
@@ -118,8 +122,11 @@ def put_link(id):
             )
             db.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to put link id {id}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to put link id {id}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     return "No Content", 204
 

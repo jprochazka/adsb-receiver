@@ -2,6 +2,7 @@ import logging
 
 from flask import abort, Blueprint, jsonify, request
 from backend.db import get_db
+from werkzeug.exceptions import HTTPException
 
 aircraft = Blueprint('aircraft', __name__)
         
@@ -28,7 +29,9 @@ def get_aircraft_by_icao(icao):
     if not data:
         abort(404, description="Not Found")
 
-    return jsonify(data[0]), 200
+    response = jsonify(data[0])
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @aircraft.route('/api/aircraft/<icao>/positions', methods=['GET'])
 def get_aircraft_positions(icao):
@@ -47,7 +50,7 @@ def get_aircraft_positions(icao):
         #cursor.execute("SELECT COUNT(*) FROM aircraft WHERE icao = %s", (icao,))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
 
         cursor.execute("SELECT id FROM aircraft WHERE icao = ?", (icao,))
         #cursor.execute("SELECT id FROM aircraft WHERE icao = %s", (icao,))
@@ -62,8 +65,11 @@ def get_aircraft_positions(icao):
         for result in result:
             positions.append(dict(zip(columns,result)))
     except Exception as ex:
-        logging.error(f"Error encountered while trying to get flight positions for aircraft ICAO {icao}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to get flight positions for aircraft ICAO {icao}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     data={}
     data['offset'] = offset
@@ -71,7 +77,9 @@ def get_aircraft_positions(icao):
     data['count'] = len(positions)
     data['positions'] = positions
 
-    return jsonify(data), 200
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @aircraft.route('/api/aircraft', methods=['GET'])
 def get_aircraft():

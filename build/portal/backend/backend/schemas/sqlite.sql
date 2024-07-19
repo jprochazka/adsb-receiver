@@ -17,7 +17,7 @@ CREATE TABLE aircraft (
 CREATE TABLE blog_posts (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `title` TEXT Not Null,
-    `date` TEXT NOT NULL,
+    `date` NUMERIC NOT NULL,
     `author` TEXT NOT NULL,
     `content` TEXT NOT NULL
 );
