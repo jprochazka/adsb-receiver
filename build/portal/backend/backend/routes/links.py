@@ -29,7 +29,10 @@ def post_link():
         db=get_db()
         cursor=db.cursor()
         cursor.execute(
-            "INSERT INTO links (name, address) VALUES (%s, %s)",
+
+            "INSERT INTO links (name, address) VALUES (?, ?)",
+            #"INSERT INTO links (name, address) VALUES (%s, %s)",
+
             (payload['name'], payload['address'])
         )
         db.commit()
@@ -45,11 +48,17 @@ def delete_link(link_id):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (link_id,))
+
+        cursor.execute("SELECT COUNT(*) FROM links WHERE id = ?", (link_id,))
+        #cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (link_id,))
+
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
-            cursor.execute("DELETE FROM links WHERE id = %s", (link_id,))
+
+            cursor.execute("DELETE FROM links WHERE id = ?", (link_id,))
+            #cursor.execute("DELETE FROM links WHERE id = %s", (link_id,))
+
             db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
@@ -65,7 +74,10 @@ def get_link(link_id):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM links WHERE id = %s", (link_id,))
+
+        cursor.execute("SELECT * FROM links WHERE id = ?", (link_id,))
+        #cursor.execute("SELECT * FROM links WHERE id = %s", (link_id,))
+
         columns=[x[0] for x in cursor.description]
         results = cursor.fetchall()
         for result in results:
@@ -82,24 +94,27 @@ def get_link(link_id):
 @links.route('/api/link/<int:id>', methods=['PUT'])
 @jwt_required()
 def put_link(id):
-    payload = request.json
-    payload_schema = UpdateLinkRequestSchema
-
     try:
-        payload_object = payload_schema.load(payload)
+        payload = UpdateLinkRequestSchema().load(request.json)
     except ValidationError as err:
         return jsonify(err.messages), 400
 
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (id))
+
+        cursor.execute("SELECT COUNT(*) FROM links WHERE id = ?", (id,))
+        #cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (id,))
+
         if cursor.fetchone()[0] == 0:
-            abort(404, description="Not Found")
+            return "Not Found", 404
         else:
             cursor.execute(
-                "UPDATE links SET name = %s, address = %s WHERE id = %s",
-                (payload_object['name'], payload_object['address'], id)
+
+                "UPDATE links SET name = ?, address = ? WHERE id = ?",
+                #"UPDATE links SET name = %s, address = %s WHERE id = %s",
+
+                (payload['name'], payload['address'], id)
             )
             db.commit()
     except Exception as ex:
@@ -120,7 +135,10 @@ def get_links():
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM links ORDER BY name LIMIT %s, %s", (offset, limit))
+
+        cursor.execute("SELECT * FROM links ORDER BY name LIMIT ?, ?", (offset, limit))
+        #cursor.execute("SELECT * FROM links ORDER BY name LIMIT %s, %s", (offset, limit))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:

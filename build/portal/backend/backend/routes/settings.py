@@ -24,12 +24,18 @@ def put_setting():
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM settings WHERE name = %s", (payload['name'],))
+
+        cursor.execute("SELECT COUNT(*) FROM settings WHERE name = ?", (payload['name'],))
+        #cursor.execute("SELECT COUNT(*) FROM settings WHERE name = %s", (payload['name'],))
+
         if cursor.fetchone()[0] == 0:
-            abort(404, description="Not Found")
+            return "Not Found", 404
         else:
             cursor.execute(
-                "UPDATE settings SET value = %s WHERE name = %s",
+
+                "UPDATE settings SET value = ? WHERE name = ?",
+                #"UPDATE settings SET value = %s WHERE name = %s",
+
                 (payload['value'], payload['name'])
             )
             db.commit()
@@ -40,14 +46,16 @@ def put_setting():
     return "No Content", 204
 
 @settings.route('/api/setting/<string:name>', methods=['GET'])
-@jwt_required()
 def get_setting(name):
     data=[]
 
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM settings WHERE name = %s", (name,))
+
+        cursor.execute("SELECT * FROM settings WHERE name = ?", (name,))
+        #cursor.execute("SELECT * FROM settings WHERE name = %s", (name,))
+
         columns=[x[0] for x in cursor.description]
         results = cursor.fetchall()
         for result in results:
@@ -79,3 +87,4 @@ def get_settings():
         abort(500, description="Internal Server Error")
 
     return jsonify(settings), 200
+

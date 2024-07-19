@@ -31,7 +31,10 @@ def post_blog_post():
         db=get_db()
         cursor=db.cursor()
         cursor.execute(
-            "INSERT INTO blog_posts (date, title, author, content) VALUES (%s, %s, %s, %s)",
+
+            "INSERT INTO blog_posts (date, title, author, content) VALUES (?, ?, ?, ?)",
+            #"INSERT INTO blog_posts (date, title, author, content) VALUES (%s, %s, %s, %s)",
+
             (datetime.now(), payload['title'], payload['author'], payload['content'])
         )
         db.commit()
@@ -47,11 +50,17 @@ def delete_blog_post(blog_post_id):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = %s", (blog_post_id,))
+
+        cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = ?", (blog_post_id,))
+        #cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = %s", (blog_post_id,))
+
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
-            cursor.execute("DELETE FROM blog_posts WHERE id = %s", (blog_post_id,))
+
+            cursor.execute("DELETE FROM blog_posts WHERE id = ?", (blog_post_id,))
+            #cursor.execute("DELETE FROM blog_posts WHERE id = %s", (blog_post_id,))
+
             db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to delete blog post id {blog_post_id}", exc_info=ex)
@@ -66,7 +75,10 @@ def get_blog_post(blog_post_id):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM blog_posts WHERE id = %s", (blog_post_id,))
+
+        cursor.execute("SELECT * FROM blog_posts WHERE id = ?", (blog_post_id,))
+        #cursor.execute("SELECT * FROM blog_posts WHERE id = %s", (blog_post_id,))
+
         columns=[x[0] for x in cursor.description]
         results = cursor.fetchall()
         for result in results:
@@ -93,12 +105,18 @@ def put_blog_post(blog_post_id):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = %s", (blog_post_id,))
+
+        cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = ?", (blog_post_id,))
+        #cursor.execute("SELECT COUNT(*) FROM blog_posts WHERE id = %s", (blog_post_id,))
+
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
             cursor.execute(
-                "UPDATE blog_posts SET date = %s, title = %s, content = %s WHERE id = %s", 
+
+                "UPDATE blog_posts SET date = ?, title = ?, content = ? WHERE id = ?",
+                #"UPDATE blog_posts SET date = %s, title = %s, content = %s WHERE id = %s",
+
                 (datetime.now(), payload['title'], payload['content'], blog_post_id)
             )
         db.commit()
@@ -120,7 +138,10 @@ def get_blog_posts():
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM blog_posts ORDER BY date DESC LIMIT %s, %s", (offset, limit))
+
+        cursor.execute("SELECT * FROM blog_posts ORDER BY date DESC LIMIT ?, ?", (offset, limit))
+        #cursor.execute("SELECT * FROM blog_posts ORDER BY date DESC LIMIT %s, %s", (offset, limit))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:

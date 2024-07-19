@@ -24,7 +24,7 @@ INSERT INTO links (`name`, `address`)
 VALUES
   ('Link One', 'https://adsbportal.com/one'),
   ('Link Two', 'https://adsbportal.com/two'),
-  ('Link Three', 'https://adsbportal.com/four');
+  ('Link Three', 'https://adsbportal.com/three');
 
 INSERT INTO notifications (`flight`)
 VALUES
@@ -51,9 +51,9 @@ VALUES
 
 INSERT INTO settings (`name`, `value`)
 VALUES
-  ('SettingOne', 'ValueOne'),
-  ('SettingTwo', 'ValueTwo'),
-  ('SettingThree', 'ValueThree');
+  ('setting_one', 'Value One'),
+  ('setting_two', 'Value Two'),
+  ('setting_three', 'Value Three');
 
 INSERT INTO users (`name`, `email`, `password`, `administrator`)
 VALUES

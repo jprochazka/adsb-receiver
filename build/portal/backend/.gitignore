@@ -4,3 +4,4 @@ __pycache__
 instance
 .coverage
 htmlcov
+.pytest_cache

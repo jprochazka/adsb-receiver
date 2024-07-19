@@ -677,8 +677,6 @@ paths:
     get:
       tags:
         - notifications
-      security:
-        - bearerAuth: []
       summary: Get data related to multiple notifications
       description: Returns data for all currently available notifications
       operationId: getNotifications
@@ -746,8 +744,6 @@ paths:
     get:
       tags:
         - settings
-      security:
-        - bearerAuth: []
       summary: Get data related to the specified setting name
       description: Returns all data related to the setting assigned the supplied name
       operationId: getSetting
@@ -1072,7 +1068,7 @@ components:
             type: integer
           count:
             type: integer
-          blogPosts:
+          blog_posts:
             type: array
             items:
               $ref: '#/components/schemas/BlogPost'

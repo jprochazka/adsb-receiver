@@ -13,11 +13,17 @@ def delete_notification(flight):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
+
+        cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = ?", (flight,))
+        #cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
+
         if cursor.fetchone()[0] == 0:
             return "Not Found", 404
         else:
-            cursor.execute("DELETE FROM notifications WHERE flight = %s", (flight,))
+
+            cursor.execute("DELETE FROM notifications WHERE flight = ?", (flight,))
+            #cursor.execute("DELETE FROM notifications WHERE flight = %s", (flight,))
+
             db.commit()
     except Exception as ex:
         logging.error(f"Error encountered while trying to delete blog post id {flight}", exc_info=ex)
@@ -31,12 +37,18 @@ def post_notification(flight):
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
+
+        cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = ?", (flight,))
+        #cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
+
         if cursor.fetchone()[0] > 0:
             return "Bad Request", 400
         else:
             cursor.execute(
-                "INSERT INTO notifications (flight) VALUES (%s)",
+
+                "INSERT INTO notifications (flight) VALUES (?)",
+                #"INSERT INTO notifications (flight) VALUES (%s)",
+
                 (flight,)
             )
         db.commit()
@@ -47,7 +59,6 @@ def post_notification(flight):
     return "Created", 201
 
 @notifications.route('/api/notifications', methods=['GET'])
-@jwt_required()
 def get_notifications():
     offset = request.args.get('offset', default=0, type=int)
     limit = request.args.get('limit', default=100, type=int)
@@ -59,7 +70,10 @@ def get_notifications():
     try:
         db=get_db()
         cursor=db.cursor()
-        cursor.execute("SELECT * FROM notifications ORDER BY flight LIMIT %s, %s", (offset, limit))
+
+        cursor.execute("SELECT * FROM notifications ORDER BY flight LIMIT ?, ?", (offset, limit))
+        #cursor.execute("SELECT * FROM notifications ORDER BY flight LIMIT %s, %s", (offset, limit))
+
         columns=[x[0] for x in cursor.description]
         result=cursor.fetchall()
         for result in result:
