@@ -2,6 +2,15 @@
 
 # THE FLIGHTAWARE PIAWARE CLIENT SETUP SCRIPT
 
+# TCLTLS-REBUILD
+# ---------------------------------------------------------------------------------
+# Along with PiAware, a version of tcltls maintained by FlightAware is installed.
+# The source code making up this version of tcltls has been modified to resolve 
+# networking issues found in the maintained version. It was noted that newer 
+# versions of the maintained tcltls packages do not experience this issue. Sometime
+# in the future the option to install this package will be removed from the script
+# once it has been confirmed the issue is resolved.
+
 
 ## PRE INSTALLATION OPERATIONS
 
