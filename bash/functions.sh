@@ -98,3 +98,54 @@ function UncommentConfig {
         sudo sed -i "/#${1}*/ s/#*//" $2
     fi
 }
+
+
+## LOGGING
+
+# Logs the "PROJECT NAME" to the console
+function LogProjectName {
+    echo -e "${DISPLAY_PROJECT_NAME}  ${1}${DISPLAY_DEFAULT}"
+    echo ""
+}
+
+# Logs a "HEADING" to the console
+function LogHeading {
+    echo ""
+    echo -e "${DISPLAY_HEADING}  ${1}${DISPLAY_DEFAULT}"
+    echo ""
+}
+
+# Logs a "MESSAGE" to the console
+function LogMessage {
+    echo -e "${DISPLAY_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an alert "HEADING" to the console
+function LogAlertHeading {
+    echo -e "${DISPLAY_ALERT_HEADING}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an alert "MESSAGE" to the console
+function LogAlertMessage {
+    echo -e "${DISPLAY_ALERT_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an title "HEADING" to the console
+function LogTitleHeading {
+    echo -e "${DISPLAY_TITLE_HEADING}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs an title "MESSAGE" to the console
+function LogTitleMessage {
+    echo -e "${DISPLAY_TITLE_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs a warning "HEADING" to the console
+function LogWarningHeading {
+    echo -e "${DISPLAY_WARNING_HEADING}  ${1}${DISPLAY_DEFAULT}"
+}
+
+# Logs a warning "MESSAGE" to the console
+function LogWarningMessage {
+    echo -e "${DISPLAY_WARNING_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+}
