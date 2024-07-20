@@ -94,6 +94,10 @@ while [[ $# > 0 ]] ; do
             fi
             shift 2
             ;;
+        --version | -v)
+            # Display the version
+            echo $PROJECT_VERSION
+            exit 0
         *)
             # Unknown options were set so exit
             echo -e "Error: Unknown option: $1" >&2
@@ -154,82 +158,6 @@ export RECEIVER_OS_RELEASE=`. /etc/os-release; echo ${VERSION_ID/*, /}`
 
 export RECIEVER_CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
 export RECEIVER_CPU_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
-
-
-## FUNCTIONS
-
-# Display the help message
-function DisplayHelp() {
-    echo "                                                                                           "
-    echo "Usage: $0 [OPTIONS] [ARGUMENTS]                                                            "
-    echo "                                                                                           "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "Option       GNU long option    Description                                                "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "-b <BRANCH>  --branch=<BRANCH>  Specifies the repository branch to be used.                "
-    echo "-d           --development      Skips local repository update so changes are not overwrote."
-    echo "-h           --help             Shows this message.                                        "
-    echo "-m <MTA>     --mta=<MTA>        Specify which email MTA to use currently Exim or Postfix.  "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "                                                                                           "
-}
-
-
-## CHECK FOR OPTIONS AND ARGUMENTS
-
-while [[ $# > 0 ]] ; do
-    echo "SWITCH: ${1}"
-    case $1 in
-        --branch*)
-            # The specified branch of github
-            project_branch=`echo $1 | sed -e 's/^[^=]*=//g'`
-            shift 1
-            ;;
-        -b)
-            # The specified branch of github
-            project_branch=$2
-            shift 2
-            ;;
-        --development | -d)
-            # Skip adsb-receiver repository update
-            development_mode="true"
-            shift 1
-            ;;
-        --help | -h)
-            # Display a help message
-            DisplayHelp
-            exit 0
-            ;;
-        --mta*)
-            mta=`echo ${1^^} | sed -e 's/^[^=]*=//g'`
-            if [[ "${mta}" != "EXIM" && "${mta}" != "POSTFIX" ]]; then
-                echo "MTA can only be either EXIM or POSTFIX."
-                exit 1
-            fi
-            shift 1
-            ;;
-        -m)
-           # The MTA to use
-            mta=${2^^}
-            if [[ "${mta}" != "EXIM" && "${mta}" != "POSTFIX" ]]; then
-                echo "MTA can only be either EXIM or POSTFIX."
-                exit 1
-            fi
-            shift 2
-            ;;
-        *)
-            # Unknown options were set so exit
-            echo -e "Error: Unknown option: $1" >&2
-            DisplayHelp
-            exit 1
-            ;;
-    esac
-done
-
-# Add any environmental variables needed by any child scripts
-export RECEIVER_PROJECT_BRANCH=$project_branch
-export RECEIVER_DEVELOPMENT_MODE=$development_mode
-export RECEIVER_MTA=$mta
 
 
 ## EXECUTE BASH/INIT.SH
