@@ -245,12 +245,8 @@ fi
 
 # Check for the PiAware package.
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-    # Do not show the PiAware install option if the FlightAware fork of dump1090 has been chosen.
-    if [[ "${DUMP1090_FORK}" != "fa" ]] ; then
-        if [[ -z "${PIAWARE_INSTALL}" && "${PIAWARE_INSTALL}" = "true" ]]; then
-            echo "FlightAware PiAware" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-        fi
-    fi
+    # The OpenSky Network feeder package appears to not be installed.
+    FEEDER_LIST=("${FEEDER_LIST[@]}" 'FlightAware PiAware' '' OFF)
 else
     # Check if a newer version can be installed.
     if [[ $(sudo dpkg -s piaware 2>/dev/null | grep -c "Version: ${PIAWARE_VERSION}") -eq 0 ]]; then

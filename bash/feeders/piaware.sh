@@ -21,11 +21,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up the FlightAware PiAware client"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightAware PiAware client Setup" \
               --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" \
               13 78; then
+echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""
@@ -167,9 +167,8 @@ else
     cd $RECEIVER_BUILD_DIRECTORY
     LogMessage "Cloning the piaware_builder git repository locally"
     echo ""
-    git clone https://github.com/flightaware/dump978.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
-echo ""
 
 
 ## BUILD AND INSTALL THE PIAWARE CLIENT PACKAGE
