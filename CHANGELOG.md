@@ -2,6 +2,16 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.5 *(in development)*
+
+* Added the --version and -v arguments in order to display the current project version.
+* Added logging functions which in the future will offer a way to log output to files.
+* Added variables which can be modified to adjust text colors used by the Bash scripts.
+* The installation of PiAware is no longer required when choosing to install dump1090-fa.
+* The dump1090-fa installation script to match current installation dump1090-fa instructions.
+* Modified the dump1090-fa installation script so that it utilizes the new logging functions.
+* The PiAware installation script now supports Ubuntu Noble Numbat.
+
 ## v2.8.4 *(July 13th, 2024)* :rooster:
 
 ### Installers

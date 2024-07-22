@@ -153,7 +153,7 @@ fi
 
 # If no dump1090 fork is installed then attempt to install one.
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
-    DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below.\n\nPlease note that in order to run dump1090-fa PiAware will need to be installed as well." 16 65 2 "dump1090-fa" "(FlightAware)" ON 3>&1 1>&2 2>&3)
+    DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below." 16 65 2 "dump1090-fa" "(FlightAware)" ON 3>&1 1>&2 2>&3)
     case ${DUMP1090_OPTION} in
         "dump1090-fa")
             DUMP1090_FORK="fa"
@@ -163,11 +163,6 @@ if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
             DUMP1090_DO_INSTALL="false"
             ;;
     esac
-fi
-
-# If the FlightAware fork of dump1090 is or has been chosen to be installed PiAware must be installed.
-if [[ "${DUMP1090_FORK}" = "fa" && "${DUMP1090_DO_INSTALL}" = "true" || "${DUMP1090_DO_UPGRADE}" = "true" ]]; then
-     FORCE_PIAWARE_INSTALL="true"
 fi
 
 # Check if the dump978-fa package is installed.
@@ -416,11 +411,6 @@ else
         CONFIRMATION="${CONFIRMATION}\n  * dump978"
     fi
 
-    # If PiAware is required add it to the list.
-    if [[ "${DUMP1090_FORK}" = "fa" && $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 || "${PIAWARE_INSTALL}" = "true" ]]; then
-        CONFIRMATION="${CONFIRMATION}\n  * FlightAware PiAware"
-    fi
-
     if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
         while read FEEDER_CHOICE
         do
@@ -516,7 +506,7 @@ if [[ "${RUN_AIRPLANESLIVE_SCRIPT}" = "true" ]]; then
     InstallAirplanesLive
 fi
 
-if [[ "${RUN_PIAWARE_SCRIPT}" = "true" || "${FORCE_PIAWARE_INSTALL}" = "true" ]]; then
+if [[ "${RUN_PIAWARE_SCRIPT}" = "true" ]]; then
     InstallPiAware
 fi
 

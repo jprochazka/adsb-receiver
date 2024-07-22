@@ -23,12 +23,15 @@ LogTitleHeading "Setting up the FlightAware PiAware Client"
 LogTitleMessage "------------------------------------------------------------------------------"
 echo ""
 
-if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "FlightAware PiAware client Setup" --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" 13 78 3>&1 1>&2 2>&3; then
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+              --title "FlightAware PiAware client Setup" \
+              --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" \
+              13 78; then
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""
     LogTitleMessage "------------------------------------------------------------------------------"
-    LogTitleHeading "ADS-B Receiver Portal setup halted"
+    LogTitleHeading "FlightAware PiAware Client setup halted"
     echo ""
     exit 1
 fi
@@ -38,32 +41,31 @@ fi
 
 LogHeading "Installing packages needed to fulfill dependencies for FlightAware PiAware client"
 
-CheckPackage build-essential
-CheckPackage git
-CheckPackage devscripts
-CheckPackage debhelper
-CheckPackage tcl8.6-dev
 CheckPackage autoconf
-CheckPackage python3-dev
-CheckPackage python3-venv
-CheckPackage python3-setuptools
-CheckPackage zlib1g-dev
-CheckPackage openssl
-CheckPackage libboost-system-dev
+CheckPackage build-essential
+CheckPackage chrpath
+CheckPackage debhelper
+CheckPackage devscripts
+CheckPackage git
+CheckPackage itcl3
+CheckPackage libboost-filesystem-dev
 CheckPackage libboost-program-options-dev
 CheckPackage libboost-regex-dev
-CheckPackage libboost-filesystem-dev
+CheckPackage libboost-system-dev
+CheckPackage libssl-dev
+CheckPackage net-tools
+CheckPackage openssl
 CheckPackage patchelf
+CheckPackage python3-dev
 CheckPackage python3-pip
 CheckPackage python3-setuptools
+CheckPackage python3-venv
 CheckPackage python3-wheel
-CheckPackage net-tools
-CheckPackage tclx8.4
-CheckPackage tcllib
-CheckPackage itcl3
-CheckPackage libssl-dev
 CheckPackage tcl-dev
-CheckPackage chrpath
+CheckPackage tcl8.6-dev
+CheckPackage tcllib
+CheckPackage tclx8.4
+CheckPackage zlib1g-dev
 
 if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
     CheckPackage python3-pyasyncore
@@ -72,8 +74,8 @@ fi
 if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
     CheckPackage python3-dev
 else
-    CheckPackage tcl-tls
     CheckPackage python3-build
+    CheckPackage tcl-tls
 fi
 
 echo ""
@@ -162,7 +164,7 @@ else
     cd $RECEIVER_BUILD_DIRECTORY
     LogMessage "Cloning the piaware_builder git repository locally"
     echo ""
-    git clone https://github.com/flightaware/piaware_builder.git
+    git clone https://github.com/flightaware/dump978.git
 fi
 echo ""
 

@@ -74,8 +74,6 @@ The project currently supports the following Linux distributions.
 * Debian _(Bookworm and Bullseye)_
 * DietPi _(Bookworm aand Bullseye)_
 * Rasbperry PI OS _(Bookworm and Bullseye)_
-* Ubuntu _(Jammy Jellyfish and Focal Fossa)_
+* Ubuntu _(Jammy Jellyfish, Focal Fossa and Noble Numbat)_
 
 _Support is available via this repository through the use of the issue tracker or discussions._
-
-[Support for Ubuntu Noble Numbat is on hold due to incompatibilities with PiAware's MLAT client.](https://github.com/jprochazka/adsb-receiver/issues/575)

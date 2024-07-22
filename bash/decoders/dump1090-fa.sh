@@ -9,176 +9,188 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
+LogProjectName ${RECEIVER_PROJECT_TITLE}
+LogTitleHeading "Setting up the FlightAware Dump1090 decoder"
+LogTitleMessage "------------------------------------------------------------------------------"
 echo ""
-echo -e "\e[92m  Setting up dump1090-fa..."
-echo ""
-echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo ""
-if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-fa Setup" --yesno "Dump 1090 is a Mode-S decoder specifically designed for RTL-SDR devices. Dump1090-fa is a fork of the dump1090-mutability version of dump1090 that is specifically designed for FlightAware's PiAware software.\n\nIn order to use this version of dump1090 FlightAware's PiAware software must be installed as well.\n\n  https://github.com/flightaware/dump1090\n\nContinue setup by installing dump1090-fa?" 14 78; then
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
+
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+              --title "FlightAware Dump1090 Decoder Setup" \
+              --yesno "FlightAware Dump1090 is an ADS-B, Mode S, and Mode 3A/3C demodulator and decoder that will receive and decode aircraft transponder messages received via a directly connected software defined radio, or from data provided over a network connection.\n\nWebsite: https://www.flightaware.com/\nGitHub Repository: https://github.com/flightaware/dump1090\n\nWould you like to begin the setup process now?" \
+              14 78; then
+LogAlertHeading "INSTALLATION HALTED"
+    LogAlertMessage "Setup has been halted at the request of the user"
     echo ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
+    LogTitleMessage "------------------------------------------------------------------------------"
+    LogTitleHeading "FlightAware Dump1090 decoder setup halted"
     echo ""
-    read -p "Press enter to continue..." discard
     exit 1
 fi
 
-
 ## CHECK FOR PREREQUISITE PACKAGES
 
-echo -e "\e[95m  Installing packages needed to build and fulfill dependencies...\e[97m"
-echo ""
+LogHeading "Installing packages needed to fulfill FlightAware Dump1090 decoder dependencies"
+
 CheckPackage build-essential
-CheckPackage fakeroot
 CheckPackage debhelper
-CheckPackage librtlsdr-dev
-CheckPackage pkg-config
-CheckPackage libncurses-dev
+CheckPackage fakeroot
 CheckPackage libbladerf-dev
 CheckPackage libhackrf-dev
 CheckPackage liblimesuite-dev
+CheckPackage libncurses-dev
+CheckPackage librtlsdr-dev
 CheckPackage libsoapysdr-dev
 CheckPackage lighttpd
+CheckPackage pkg-config
 echo ""
 
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES
 
+LogHeading "Blacklist unwanted RTL-SDR kernel modules.
+
+LogMessage "Blacklisting problematic kernel modules"
 BlacklistModules
 
 
-## DOWNLOAD OR UPDATE THE DUMP1090-FA SOURCE
+## CLONE OR PULL THE FLIGHTAWARE DUMP1090 DECODER SOURCE
 
-echo -e "\e[95m  Preparing the dump1090-fa Git repository...\e[97m"
-echo ""
-if [[ -d $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090 && -d $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/.git ]]; then
-    # A directory with a git repository containing the source code already exists
-    echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090 2>&1
-    echo -e "\e[94m  Updating the local dump1090-fa git repository...\e[97m"
+LogHeading "Preparing the FlightAware Dump1090 Git repository"
+
+if [[ -d $RECEIVER_BUILD_DIRECTORY/dump1090-fa && -d $RECEIVER_BUILD_DIRECTORY/dump1090.fa/.git ]]; then
+    LogMessage "Entering the dump1090 git repository directory"
+    cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa
+    LogMessage "Pulling the dump1090 git repository"
     echo ""
     git pull
 else
-    # A directory containing the source code does not exist in the build directory
-    echo -e "\e[94m  Creating the ADS-B Receiver Project build directory...\e[97m"
-    echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/dump1090-fa
-    echo ""
-    echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
-    cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa 2>&1
-    echo -e "\e[94m  Cloning the dump1090-fa git repository locally...\e[97m"
+    LogMessage "Entering the ADS-B Receiver Project build directory"
+    cd $RECEIVER_BUILD_DIRECTORY
+    LogMessage "Cloning the dump1090 git repository"
     echo ""
     git clone https://github.com/flightaware/dump1090.git
 fi
+echo ""
 
 
 ## BUILD AND INSTALL THE DUMP1090-FA PACKAGE
 
-echo ""
-echo -e "\e[95m  Building and installing the dump1090-fa package...\e[97m"
-echo ""
-echo -e "\e[94m  Entering the dump1090-fa git repository directory...\e[97m"
-cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090 2>&1
-echo -e "\e[94m  Building the dump1090-fa package...\e[97m"
-echo ""
-dpkg-buildpackage -b
-echo ""
-echo -e "\e[94m  Entering the dump1090-fa build directory...\e[97m"
-cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa 2>&1
-echo -e "\e[94m  Installing the dump1090-fa package...\e[97m"
-echo ""
-echo "dump1090-fa_${DUMP1090_FA_VERSION}_*.deb"
-sudo dpkg -i dump1090-fa_${DUMP1090_FA_VERSION}_*.deb
+LogMessage "Entering the Git repository"
+cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090
 
-# Check that the package was installed
-echo ""
-echo -e "\e[94m  Checking that the dump1090-fa package was installed properly...\e[97m"
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") = 0 ]]; then
-    # If the dump1090-fa package could not be installed halt setup
+LogMessage "Determining which distribution to build the package tree for"
+case $RECEIVER_OS_CODE_NAME in
+    focal)
+        distro="buster"
+        ;;
+    bullseye | jammy)
+        distro="bullseye"
+        ;;
+    bookworm | noble)
+        distro="bookworm"
+        ;;
+esac
+LogMessage "Entering the package/${distro} directory"
+cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/package/$distro
+LogMessage "Building the dump1090-fa Debian package"
+dpkg-buildpackage -b --no-sign
+
+# TODO: Figure out a better way than using a variable to determine which package to install
+LogMessage "Installing the dump1090-fa Debian package"
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/dump1090-fa_${DUMP1090_FA_VERSION}_*.deb
+
+LogMessage "Checking that the dump1090-fa Debian package was installed"
+if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
     echo ""
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-    echo -e "  SETUP HAS BEEN TERMINATED!"
+    LogAlertHeading "INSTALLATION HALTED"
     echo ""
-    echo -e "\e[93mThe package \"dump1090-fa\" could not be installed.\e[39m"
+    LogAlertMessage "The dump1090-fa Debian package failed to install"
+    LogAlertMessage "Setup has been terminated"
     echo ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  Dump1090-fa setup halted.\e[39m"
+    LogTitleMessage "------------------------------------------------------------------------------"
+    LogTitleHeading "FlightAware Dump1090 decoder setup halted"
     echo ""
     read -p "Press enter to continue..." discard
     exit 1
 fi
 
-# Create binary package archive directory
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
-    echo -e "\e[94m  Creating package archive directory...\e[97m"
-    echo -e ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1
-    echo -e ""
+    LogMessage "Creating the Debian package archive directory"
+    echo ""
+    mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive
+    echo ""
 fi
-
-# Archive binary package
-echo -e "\e[94m  Moving the dump1090-mutability binary package into the archive directory...\e[97m"
+LogMessage "Copying the dump1090-fa Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/dump1090-fa/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1
+cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
 echo ""
 
-## DUMP1090-FA POST INSTALLATION CONFIGURATION
 
-# Ask for a Bing Maps API key
-bing_maps_key=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Bing Maps API Key" --nocancel --inputbox "\nProvide a Bing Maps API key here to enable the Bing imagery layer.\nYou can obtain a free key at https://www.bingmapsportal.com/\n\nProviding a Bing Maps API key is not required to continue." 11 78 "${DUMP1090_BING_MAPS_KEY}" 3>&1 1>&2 2>&3)
-if [[ -n $bing_maps_key ]]; then
-    echo -e "\e[94m  Setting the Bing Maps API Key to ${DUMP1090_BING_MAPS_KEY}...\e[97m"
-    ChangeConfig "BingMapsAPIKey" $bing_maps_key "/usr/share/dump1090-fa/html/config.js"
-fi
+## POST INSTALLATION OPERATIONS
 
-# Download Heywhatsthat.com maximum range rings
+LogHeading "Performing post installation operations"
+
+LogMessage "Checking if a heywhatsthat upintheair.json file exists"
 if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
-    if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Heywhaststhat.com Maximum Range Rings" --yesno "Maximum range rings can be added to dump1090-fa usings data obtained from Heywhatsthat.com. In order to add these rings to your dump1090-fa map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view id which is the series of letters and/or numbers after \"?view=\" in this URL.\n\nWould you like to add heywhatsthat.com maximum range rings to your map?" 16 78); then
-        setup_heywhatsthat="true"
-
-        # Ask the user for the Heywhatsthat.com panorama ID
-        heywhatsthat_id_title="Heywhatsthat.com Panorama ID"
-        while [[ -z $heywhatsthat_id ]] ; do
-            heywhatsthat_id=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${heywhatsthat_id_title}" --nocancel --inputbox "\nEnter your Heywhatsthat.com panorama ID." 8 78 3>&1 1>&2 2>&3)
-            heywhatsthat_id_title="Heywhatsthat.com Panorama ID (REQUIRED)"
+    LogMessage "Asking the user if they want to add heywhatsthat maximum range rings"
+    if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                 --title "Setup heywhaststhat Maximum Range Rings" \
+                 --yesno "Maximum range rings can be added to the FlightAware Dump1090 map usings data obtained from heywhatsthat. In order to add these rings to your FlightAware dump1090 map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view ID which is the series of letters and  numbers after \"?view=\" in the URL.\n\nWould you like to add heywhatsthat maximum range rings to your map?" \
+                 16 78); then
+        heywhatsthat_panorama_id_title="Enter the heywhatsthat Panorama ID"
+        while [[ -z $heywhatsthat_panorama_id ]] ; do
+            heywhatsthat_panorama_id=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                                --title "${heywhatsthat_panorama_id_title}" \
+                                                --inputbox "\nPlease enter your Heywhatsthat panorama ID." \
+                                                8 78)
+            whiptail_exit_status=$?
+            if [[ $whiptail_exit_status == 0 ]]; then
+                LogAlertMessage "Setup of heywhatsthat maximum range rings was cancelled"
+                break
+            heywhatsthat_panorama_id_title="Enter the Heywhatsthat Panorama ID (REQUIRED)"
         done
+	if [[ $whiptail_exit_status != 0 ]]; then
+            LogMessage "Asking the user what the altitude is for the first ring"
+            heywhatsthat_ring_one_altitude_title="First heywhatsthat Ring Altitude"
+            while [[ -z $heywhatsthat_ring_one_altitude ]] ; do
+                heywhatsthat_ring_one_altitude=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                                 --title "${heywhatsthat_ring_one_title}" \
+                                                 --nocancel \
+                                                 --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" \
+                                                 8 78 \
+                                                 "3048")
+                heywhatsthat_ring_one_altitude_title="First heywhatsthat Ring Altitude (REQUIRED)"
+            done
+            LogMessage "Asking the user what the altitude is for the second ring"
+            heywhatsthat_ring_two_altitude_title="Second heywhatsthat Ring Altitude"
+            while [[ -z $heywhatsthat_ring_two ]] ; do
+                heywhatsthat_ring_two_altitude=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                                 --title "${heywhatsthat_ring_two_title}" \
+                                                 --nocancel \
+                                                 --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" \
+                                                 8 78 \
+                                                 "12192")
+                heywhatsthat_ring_two_altitude_title="Second heywhatsthat Ring Altitude (REQUIRED)"
+            done
 
-        # Ask the user what altitude in meters to set the first range ring
-        heywhatsthat_ring_one_title="Heywhatsthat.com First Ring Altitude"
-        while [[ -z $heywhatsthat_ring_one ]] ; do
-            heywhatsthat_ring_one=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${heywhatsthat_ring_one_title}" --nocancel --inputbox "\nEnter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" 8 78 "3048" 3>&1 1>&2 2>&3)
-            heywhatsthat_ring_one_title="Heywhatsthat.com First Ring Altitude (REQUIRED)"
-        done
-
-        # Ask the user what altitude in meters to set the second range ring
-        heywhatsthat_ring_two_title="Heywhatsthat.com Second Ring Altitude"
-        while [[ -z $heywhatsthat_ring_two ]] ; do
-            heywhatsthat_ring_two=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "${heywhatsthat_ring_two_title}" --nocancel --inputbox "\nEnter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" 8 78 "12192" 3>&1 1>&2 2>&3)
-            heywhatsthat_ring_two_title="Heywhatsthat.com Second Ring Altitude (REQUIRED)"
-        done
-    fi
-    # If the Heywhatsthat.com maximum range rings are to be added download them now
-    if [[ "${setup_heywhatsthat}" = "true" ]]; then
-        echo -e "\e[94m  Downloading JSON data pertaining to the supplied panorama ID...\e[97m"
-        echo ""
-        sudo wget -O /usr/share/dump1090-fa/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${heywhatsthat_id}&refraction=0.25&alts=${heywhatsthat_ring_one},${heywhatsthat_ring_two}"
-        echo ""
+            LogMessage "Downloading JSON data file assigned to panorama ID ${heywhatsthat_panorama_id}"
+            echo ""
+            sudo wget -O /usr/share/skyaware/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${heywhatsthat_panarama_id}&refraction=0.25&alts=${heywhatsthat_ring_one_altitude},${heywhatsthat_ring_two_altitude}"
+            echo ""
+            LogMessage "
+        fi
     fi
 fi
 
-### SETUP COMPLETE
 
-# Return to the project root directory
-echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY 2>&1
+## SETUP COMPLETE
+
+LogMessage "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
+cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
-echo -e "\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  Dump1090-fa setup is complete.\e[39m"
+LogTitleMessage "------------------------------------------------------------------------------"
+LogTitleHeading "FlightAware Dump1090 decoder setup is complete"
 echo ""
 read -p "Press enter to continue..." discard
 

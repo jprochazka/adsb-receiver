@@ -34,12 +34,17 @@
 #                                                                                   #
 #####################################################################################
 
+
+## ASSIGN VERSION VARIABLE
+
+project_version="2.8.5"
+
 ## FUNCTIONS
 
 # Display the help message
 function DisplayHelp() {
     echo "                                                                                           "
-    echo "Usage: $0 [OPTION] [ARGUMENT]                                                            "
+    echo "Usage: $0 [OPTION] [ARGUMENT]                                                              "
     echo "                                                                                           "
     echo "-------------------------------------------------------------------------------------------"
     echo "Option       GNU long option    Description                                                "
@@ -48,6 +53,7 @@ function DisplayHelp() {
     echo "-d           --development      Skips local repository update so changes are not overwrote."
     echo "-h           --help             Shows this message.                                        "
     echo "-m <MTA>     --mta=<MTA>        Specify which email MTA to use currently Exim or Postfix.  "
+    echo "-v           --version          Displays the version being used.                           "
     echo "-------------------------------------------------------------------------------------------"
     echo "                                                                                           "
 }
@@ -96,8 +102,9 @@ while [[ $# > 0 ]] ; do
             ;;
         --version | -v)
             # Display the version
-            echo $PROJECT_VERSION
+            echo $project_version
             exit 0
+            ;;
         *)
             # Unknown options were set so exit
             echo -e "Error: Unknown option: $1" >&2
@@ -117,7 +124,7 @@ export RECEIVER_MTA=$mta
 
 project_branch="master"
 
-export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project Preliminary Setup Process"
+export RECEIVER_PROJECT_TITLE="ADS-B Receiver Installer v${project_version}"
 export RECEIVER_ROOT_DIRECTORY=$PWD
 export RECEIVER_BASH_DIRECTORY=$PWD/bash
 export RECEIVER_BUILD_DIRECTORY=$PWD/build
@@ -126,24 +133,34 @@ export RECEIVER_BUILD_DIRECTORY=$PWD/build
 ## SOURCE EXTERNAL SCRIPTS
 
 source $RECEIVER_BASH_DIRECTORY/functions.sh
+source $RECEIVER_BASH_DIRECTORY/variables.sh
 
 
 ## UPDATE PACKAGE LISTS AND INSTALL DEPENDENCIES
 
 clear
-echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}\n"
-echo -e "\e[92m  ADS-B Receiver Project Package Dependency Check"
-echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m\n"
-echo -e "\e[94m  Downloading the latest package lists for all enabled repositories and PPAs...\e[97m\n"
+LogProjectTitle
+LogTitleHeading "Starting ADS-B Receiver Installer package dependency check"
+LogTitleMessage "------------------------------------------------------------------------------"
+
+LogHeading "Updating package lists for all enabled repositories and PPAs"
+
+LogMessage "Downloading the latest package lists for all enabled repositories and PPAs"
+echo ""
 sudo apt-get update
-echo -e "\n\e[94m  Ensuring that all required packages are installed...\e[97m\n"
+
+LogHeading "Ensuring that all required packages are installed"
+
 CheckPackage bc
 CheckPackage git
 CheckPackage lsb-base
 CheckPackage lsb-release
 CheckPackage whiptail
-echo -e "\n\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  All required packages are installed.\e[39m\n"
+echo ""
+
+LogTitleMessage "------------------------------------------------------------------------------"
+LogTitleHeading "ADS-B Receiver Installer package dependency check complete"
+echo ""
 read -p "Press enter to continue..." discard
 
 
