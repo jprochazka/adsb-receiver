@@ -1,99 +1,94 @@
 #!/bin/bash
 
-## INCLUDE EXTERNAL SCRIPTS
+## PRE INSTALLATION OPERATIONS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
-
-## BEGIN SETUP
-
 clear
-echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
-echo -e ""
-echo -e "\e[92m  Setting up the Fly Italy ADS-B feeder client..."
-echo -e ""
-echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo -e ""
+LogProjectName ${RECEIVER_PROJECT_TITLE}
+LogTitleHeading "Setting up the Fly Italy ADS-B client"
+LogTitleMessage "------------------------------------------------------------------------------"
+echo ""
 
-# Confirm component installation.
-if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Fly Italy ADS-B feeder client Setup" --yesno "The Fly Italy ADS-B feeder client takes data from a local dump1090 instance and shares this with Fly Italy ADS-B. for more information please see their website:\n\n  https://flyitalyadsb.com/come-condividere-la-propria-antenna/\n\nContinue setup by installing the Fly Italy ADS-B feeder client?" 13 78 3>&1 1>&2 2>&3; then
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  Fly Italy ADS-B feeder client setup halted.\e[39m"
-    echo -e ""
-    read -p "Press enter to continue..." discard
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+              --title "Fly Italy ADS-B feeder client Setup" \
+              --yesno "The Fly Italy ADS-B feeder client takes data from a local dump1090 instance and shares this with Fly Italy ADS-B. for more information please see their website:\n\n  https://flyitalyadsb.com/come-condividere-la-propria-antenna/\n\nContinue setup by installing the Fly Italy ADS-B feeder client?" \
+              13 78; then
+    LogAlertHeading "INSTALLATION HALTED"
+    LogAlertMessage "Setup has been halted at the request of the user"
+    echo ""
+    LogTitleMessage "------------------------------------------------------------------------------"
+    LogTitleHeading "Fly Italy ADS-B client setup halted"
+    echo ""
     exit 1
 fi
 
 
-## START FEEDER
+## DOWNLOAD AND EXECUTE THE PROPER FLY ITALY ADS-B CLIENT SCRIPT
 
-echo -e ""
-echo -e "\e[95m  Begining the Fly Italy ADS-B feeder client installation process...\e[97m"
-echo -e ""
+LogHeading "Begining the Fly Italy ADS-B client installation process"
 
-# Create the component build directory if it does not exist
+LogMessage "Informing the user of how the installation process will work"
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+         --title "Fly Italy ADS-B Client Setup" \
+         --msgbox "Scripts supplied by airplanes.live will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." \
+         10 78
+
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/flyitalyadsb ]]; then
-    echo -e "\e[94m  Creating the Fly Italy ADS-B feeder client build directory...\e[97m"
+    LogMessage "Creating the Fly Italy ADS-B build directory"
     echo ""
     mkdir -vp $RECEIVER_BUILD_DIRECTORY/flyitalyadsb
     echo ""
 fi
+LogMessage "Entering the Fly Italy ADS-B build directory"
+cd $RECEIVER_BUILD_DIRECTORY/flyitalyadsb
 
-# Change to the component build directory
-echo -e "\e[94m  Entering the Fly Italy ADS-B feeder client build directory...\e[97m"
-cd $RECEIVER_BUILD_DIRECTORY/flyitalyadsb 2>&1
+LogMessage "Downloading the Fly Italy ADS-B installation script"
 echo ""
-
-# Download the official Fly Italy ADS-B feeder installation script
-echo -e "\e[95m  Beginning the Fly Italy ADS-B feeder client installation...\e[97m"
-echo -e ""
-
-echo -e "\e[94m  Downloading the Fly Italy ADS-B feeder client installation script...\e[97m"
+wget -v -O$RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install.sh
 echo ""
-wget -v https://raw.githubusercontent.com/flyitalyadsb/fly-italy-adsb/master/install.sh
-
-echo -e "\e[94m  Executing the Fly Italy ADS-B feeder client installation script...\e[97m"
+LogMessage "Executing the Fly Italy ADS-B feeder installation script"
 echo ""
 sudo bash $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install.sh
 echo ""
 
-
-## INSTALL UPDATER
-
-if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Install The Fly Italy ADS-B Updater" --yesno "It is recommended that the Fly Italy ADS-B updater be installed as well.\n\nWould you like to install the updater at this time?" 12 78;
-    # Download the official Fly Italy ADS-B feeder updater script
-    echo -e "\e[95m  Beginning the Fly Italy ADS-B feeder updater installation...\e[97m"
-    echo -e ""
-
-    echo -e "\e[94m  Downloading the Fly Italy ADS-B feeder updater installation script...\e[97m"
+LogMessage "Asking if the user wishes to install the Fly Italy ADS-B updater"
+if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+            --title "Install The Fly Italy ADS-B Updater" \
+            --yesno "It is recommended that the Fly Italy ADS-B updater be installed as well.\n\nWould you like to install the updater at this time?" \
+            12 78;
+    LogMessage "Downloading the Fly Italy ADS-B updater script"
     echo ""
-    wget -v wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install_updater.sh
-
-    echo -e "\e[94m  Executing the Fly Italy ADS-B feeder updater installation script...\e[97m"
+    wget -v -O$RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install_updater.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install_updater.sh
+    echo ""
+    LogMessage "Executing the Fly Italy ADS-B feeder updater script"
     echo ""
     sudo bash $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install_updater.sh
     echo ""
 fi
 
 
-## POST INSTALLATION INFORMATION
+## POST INSTALLATION OPERATIONS
 
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Fly Italy ADS-B Feeder Setup Complete" --msgbox "To check the status of your installation vist https://flyitalyadsb.com/stato-ricevitore/.\n\nFor information on configuring your Fly Italy ADS-B feeder visit https://flyitalyadsb.com/configurazione-script/" 12 78
+LogHeading "Performing post installation operations"
+
+LogMessage "Informing user as to how to check client status"
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+         --title "Fly Italy ADS-B Feeder Setup Complete" \
+         --msgbox "To check the status of your installation vist https://flyitalyadsb.com/stato-ricevitore/.\n\nFor information on configuring your Fly Italy ADS-B feeder visit https://flyitalyadsb.com/configurazione-script/" \
+         12 78
+
 
 ## SETUP COMPLETE
 
-# Return to the project root directory
-echo -e "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY 2>&1
+LogMessage "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
+cd $RECEIVER_ROOT_DIRECTORY
 
-echo -e ""
-echo -e "\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  Fly Italy ADS-B feeder client setup is complete.\e[39m"
-echo -e ""
+echo ""
+LogTitleMessage "------------------------------------------------------------------------------"
+LogTitleHeading "Fly Italy ADS-B client setup is complete"
+echo ""
 read -p "Press enter to continue..." discard
 
 exit 0

@@ -26,11 +26,11 @@ fi
 
 ## DOWNLOAD AND EXECUTE THE AIRPLANES.LIVE CLIENT INSTALL SCRIPT
 
-LogHeading "Begining the airplanes.live feeder client installation process"
+LogHeading "Begining the airplanes.live client installation process"
 
 LogMessage "Informing the user of how the installation process will work"
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-         --title "ADS-B Exchange Feed Setup" \
+         --title "Airplanes.live Client Setup" \
          --msgbox "Scripts supplied by airplanes.live will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." \
          10 78
 

@@ -14,6 +14,7 @@ The following is a history of the changes made to this project.
 * Modified the ADS-B Exchange client installation script so it utilizes the new logging functions.
 * Modified the airplanes.live client installation script so it utilizes the new logging functions.
 * Modified the FlightRadar24 client installation script so it utilizes the new logging functions.
+* Modified the Fly Italy ADS-B client installation script so it utilizes the new logging functions.
 * Added the --version and -v arguments in order to display the current project version.
 
 ## v2.8.4 *(July 13th, 2024)* :rooster:
