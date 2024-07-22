@@ -9,16 +9,7 @@ The following is a history of the changes made to this project.
 * The dump1090-fa installation script now mimics the current dump1090-fa installation instructions.
 * Added logging functions which in the future will offer a way to log output to files.
 * Added variables which can be modified to adjust text colors used by the bash scripts.
-* Modified the dump1090-fa installation script so that it utilizes the new logging functions.
-* Modified the dump978-fa installation script so that it utilizes the new logging functions.
-* Modified the ADS-B Exchange client installation script so it utilizes the new logging functions.
-* Modified the airplanes.live client installation script so it utilizes the new logging functions.
-* Modified the FlightRadar24 client installation script so it utilizes the new logging functions.
-* Modified the Fly Italy ADS-B client installation script so it utilizes the new logging functions.
-* Modified the OpenSky Network client installation script so it utilizes the new logging functions.
-* Modified the PlaneFinder client installation script so it utilizes the new logging functions.
-* Modified the beast-splitter installation script so it utilizes the new logging functions.
-* Modified the Duck DNS installation script so it utilizes the new logging functions.
+* All installation scripts now utilize the new logging functions.
 * Added the --version and -v arguments in order to display the current project version.
 * Removed scripting used for image setup.
 
