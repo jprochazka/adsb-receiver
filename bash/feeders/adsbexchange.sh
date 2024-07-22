@@ -29,8 +29,9 @@ fi
 
 ## DOWNLOAD AND EXECUTE THE ADS-B EXCHANGE CLIENT INSTALL SCRIPT
 
-LogHeading "Executing either the install or upgrade script"
+LogHeading "Downloading the proper ADS-B Exchange client script"
 
+LogMessage "Informing the user of how the installation process will work"
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "ADS-B Exchange Feed Setup" \
          --msgbox "Scripts supplied by ADS-B Exchange will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." \
@@ -45,7 +46,7 @@ fi
 LogMessage "Entering the ADSBExchange build directory"
 cd $RECEIVER_BUILD_DIRECTORY/adsbexchange
 
-LogMessage "Determining if the installation or upgrade script should be executed"
+LogMessage "Determining whether the installation or upgrade script should be used"
 action_to_perform="install"
 if [[ -f /lib/systemd/system/adsbexchange-mlat.service && -f /lib/systemd/system/adsbexchange-feed.service ]]; then
     action_to_perform="upgrade"
@@ -54,10 +55,8 @@ fi
 LogMessage "Downloading the ADS-B Exchange client ${action_to_perform} script"
 echo ""
 if [[ "${action_to_perform}" = "install" ]]; then
-    echo ""
     wget -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed.sh
 else
-    echo ""
     wget -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed-update.sh
 fi
 echo ""
@@ -86,7 +85,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     sudo bash $RECEIVER_BUILD_DIRECTORY/adsbexchange/axstats.sh
     echo ""
 else
-    LogMessage "The user opted out of installing the ADS-B Exchange stats package""
+    LogMessage "The user opted out of installing the ADS-B Exchange stats package"
 fi
 
 
@@ -103,6 +102,8 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     echo ""
     sudo bash /usr/local/share/adsbexchange/git/install-or-update-interface.sh
     echo ""
+else
+    LogMessage "The user opted out of installing the ADS-B Exchange web interface"
 fi
 
 
