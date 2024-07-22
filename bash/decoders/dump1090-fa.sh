@@ -148,7 +148,7 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
             heywhatsthat_panorama_id=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                 --title "${heywhatsthat_panorama_id_title}" \
                                                 --inputbox "Please enter your Heywhatsthat panorama ID." \
-                                                8 78)
+                                                8 78 3>&1 1>&2 2>&3)
             whiptail_exit_status=$?
             if [[ $whiptail_exit_status == 0 ]]; then
                 LogAlertMessage "Setup of heywhatsthat maximum range rings was cancelled"
@@ -165,7 +165,7 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
                                                           --nocancel \
                                                           --inputbox "Enter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" \
                                                           8 78 \
-                                                          "3048")
+                                                          "3048" 3>&1 1>&2 2>&3)
                 heywhatsthat_ring_one_altitude_title="First heywhatsthat Ring Altitude [REQUIRED]"
             done
             LogMessage "Asking the user what the altitude is for the second ring"
@@ -176,7 +176,7 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
                                                           --nocancel \
                                                           --inputbox "Enter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" \
                                                           8 78 \
-                                                          "12192")
+                                                          "12192" 3>&1 1>&2 2>&3)
                 heywhatsthat_ring_two_altitude_title="Second heywhatsthat Ring Altitude [REQUIRED]"
             done
 

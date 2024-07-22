@@ -12,11 +12,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up the FlightAware Dump978 decoder"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightAware Dump978 Setup" \
               --yesno "This is the FlightAware 978MHz UAT decoder. It is a reimplementation in C++, loosely based on the demodulator from https://github.com/mutability/dump978.\n\n  https://github.com/flightaware/dump978\n\nContinue setup by installing dump978-fa?" \
               14 78; then
+    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""
@@ -34,25 +34,28 @@ LogHeading "Gather information required to configure the ADS-B decoder and dump9
 LogMessage "Checking if an ADS-B decoder is installed"
 adsb_decoder_installed="false"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+    LogMessage "An ADS-B decoder appears to be installed"
     adsb_decoder_installed="true"
 fi
 
 if [[ "${adsb_decoder_installed}" == "true" ]]; then
     LogMessage "Checking if dump978-fa has been configured"
-    if grep -wq "driver=rtlsdr,serial=" /etc/default/dump978-fa; then
-        LogMessage "The dump978-fa installation appears to have been configured"
+    if [[ -f /etc/default/dump978-fa ]]; then
+        LogMessage "A dump978-fa configuration file exists"
     else
+        LogMessage "Informing the user an ADS-B decoder appears to be installed"
         whiptail --backtitle "FlightAware Dump978 Configuration" \
                  --title "RTL-SDR Dongle Assignments" \
-                 --msgbox "It appears one of the dump1090 packages has been installed on this device. In order to run dump978 in tandem with dump1090 you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." \
+                 --msgbox "It appears one of the dump1090 decoder packages has been installed on this device. In order to run dump978 in tandem with dump1090 you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." \
                  12 78
 
+        LogMessage "Asking the user to assign a RTL-SDR device serial number to the ADS-B decoder"
         dump1090_device_serial_title="Enter the Dump1090 RTL-SDR Device Serial"
         while [[ -z $dump1090_device_serial ]] ; do
-        dump1090_device_serial=$(whiptail --backtitle "FlightAware Dump978 Configuration" \
-                                          --title "${dump1090_device_serial_title}" \
-                                          --inputbox "\nEnter the serial number for your dump1090 RTL-SDR device." \
-                                          8 78)
+            dump1090_device_serial=$(whiptail --backtitle "FlightAware Dump978 Configuration" \
+                                              --title "${dump1090_device_serial_title}" \
+                                              --inputbox "\nEnter the serial number for your dump1090 RTL-SDR device." \
+                                              8 78 3>&1 1>&2 2>&3)
             if [[ $dump1090_device_serial == 0 ]]; then
                 LogAlertHeading "INSTALLATION HALTED"
                 LogAlertMessage "Setup has been halted due to lack of required information"
@@ -64,12 +67,13 @@ if [[ "${adsb_decoder_installed}" == "true" ]]; then
             dump1090_device_serial_title="Enter the Dump1090 RTL-SDR Device Serial (REQUIRED)"
         done
 
+        LogMessage "Asking the user to assign a RTL-SDR device serial number to dump978-fa"
         dump978_device_serial_title="Enter the Dump978 RTL-SDR Device Serial"
-        while [[ -z $dump1090_device_serial ]] ; do
-        dump978_device_serial=$(whiptail --backtitle "FlightAware Dump978 Configuration" \
-                                          --title "${dump978_device_serial_title}" \
-                                          --inputbox "\nEnter the serial number for your dump978 RTL-SDR device." \
-                                          8 78)
+        while [[ -z $dump978_device_serial ]] ; do
+            dump978_device_serial=$(whiptail --backtitle "FlightAware Dump978 Configuration" \
+                                             --title "${dump978_device_serial_title}" \
+                                             --inputbox "\nEnter the serial number for your dump978 RTL-SDR device." \
+                                             8 78 3>&1 1>&2 2>&3)
             if [[ $dump978_device_serial == 0 ]]; then
                 LogAlertHeading "INSTALLATION HALTED"
                 LogAlertMessage "Setup has been halted due to lack of required information"
@@ -118,7 +122,7 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978 && -d $RECEIVER_BUILD_DIRE
 else
     LogMessage "Creating the FlightAware dump978 Project build directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/dump1090-fa 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/dump978-fa 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
     LogMessage "Entering the ADS-B Receiver Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY/dump978-fa
@@ -126,7 +130,6 @@ else
     echo ""
     git clone https://github.com/flightaware/dump978.git 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
-echo ""
 
 
 ## BUILD AND INSTALL THE DUMP978-FA and SKYAWARE978 PACKAGES
@@ -141,10 +144,14 @@ echo ""
 dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
-LogMessage "Installing the dump1090-fa Debian package"
+LogMessage "Installing the dump978-fa Debian package"
+echo ""
 sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_${DUMP978_FA_VERSION}_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+echo ""
 LogMessage "Installing the skyaware978 Debian package"
-sudo dpkg -i $$RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_${DUMP978_FA_VERSION}_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+echo ""
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_${DUMP978_FA_VERSION}_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+echo ""
 
 LogMessage "Checking that the dump978-fa Debian package was installed"
 if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
@@ -184,12 +191,11 @@ if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
 fi
 LogMessage "Copying the dump978-fa Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
+cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 LogMessage "Copying the skyaware978 Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
-echo ""
+cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 
 
 ## CONFIGURATION
@@ -201,13 +207,13 @@ if [[ "${adsb_decoder_installed}" == "true" ]]; then
     LogMessage "Assigning RTL-SDR device with serial ${dump978_device_serial} to dump978-fa"
     sudo sed -i -e "s/driver=rtlsdr/driver=rtlsdr,serial=${dump978_device_serial}/g" /etc/default/dump978-fa
     LogMessage "Restarting dump978-fa...\e[97m"
-    sudo servicectl restart dump978-fa
+    sudo systemctl restart dump978-fa
 
-    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+    if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
         LogMessage "Assigning RTL-SDR device with serial ${dump1090_device_serial} to the FlightAware Dump1090 decoder"
         ChangeConfig "RECEIVER_SERIAL" $dump1090_device_serial "/etc/default/dump1090-fa"
         LogMessage "Restarting dump1090-fa"
-        sudo servicectl restart dump1090-fa
+        sudo systemctl restart dump1090-fa
     fi
 fi
 

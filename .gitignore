@@ -1,3 +1,6 @@
-logs/
-build/package-archive
+EXTRAS_CHOICES
+FEEDER_CHOICES
 build/dump1090*
+build/dump978*
+build/package-archive
+logs/
