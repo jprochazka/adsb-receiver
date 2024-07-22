@@ -53,8 +53,7 @@ if [[ "${adsb_decoder_installed}" == "true" ]]; then
                                           --title "${dump1090_device_serial_title}" \
                                           --inputbox "\nEnter the serial number for your dump1090 RTL-SDR device." \
                                           8 78)
-            whiptail_exit_status=$?
-            if [[ $whiptail_exit_status == 0 ]]; then
+            if [[ $dump1090_device_serial == 0 ]]; then
                 LogAlertHeading "INSTALLATION HALTED"
                 LogAlertMessage "Setup has been halted due to lack of required information"
                 echo ""
@@ -71,8 +70,7 @@ if [[ "${adsb_decoder_installed}" == "true" ]]; then
                                           --title "${dump978_device_serial_title}" \
                                           --inputbox "\nEnter the serial number for your dump978 RTL-SDR device." \
                                           8 78)
-            whiptail_exit_status=$?
-            if [[ $whiptail_exit_status == 0 ]]; then
+            if [[ $dump978_device_serial == 0 ]]; then
                 LogAlertHeading "INSTALLATION HALTED"
                 LogAlertMessage "Setup has been halted due to lack of required information"
                 echo ""

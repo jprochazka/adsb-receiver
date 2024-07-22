@@ -231,7 +231,10 @@ fi
 LogHeading "Performing post installation operations"
 
 LogMessage "Displaying the message informing the user on how to claim their device"
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Claiming Your PiAware Device" --msgbox "FlightAware requires you claim your feeder online using the following URL:\n\n  http://flightaware.com/adsb/piaware/claim\n\nTo claim your device simply visit the address listed above." 12 78
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+         --title "Claiming Your PiAware Device" \
+         --msgbox "FlightAware requires you claim your feeder online using the following URL:\n\n  http://flightaware.com/adsb/piaware/claim\n\nTo claim your device simply visit the address listed above." \
+         12 78
 
 
 ## SETUP COMPLETE
