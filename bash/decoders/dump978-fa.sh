@@ -196,7 +196,6 @@ echo ""
 
 ## CONFIGURATION
 
-
 if [[ "${adsb_decoder_installed}" == "true" ]]; then
 
     LogHeading "Configuring the ADS-B decoder and dump978-fa so they can work in tandem"

@@ -1,12 +1,9 @@
 #!/bin/bash
 
-### INCLUDE EXTERNAL SCRIPTS
+## PRE INSTALLATION OPERATIONS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
-
-
-## BEGIN SETUP
 
 clear
 LogProjectName ${RECEIVER_PROJECT_TITLE}

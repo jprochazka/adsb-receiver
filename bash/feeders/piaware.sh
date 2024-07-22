@@ -140,9 +140,7 @@ if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
         LogMessage "Copying the FlightAware tcltls-rebuild Debian package into the archive directory"
         echo ""
         cp -vf $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
-        echo ""
     fi
-
 fi
 
 
