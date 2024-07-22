@@ -18,7 +18,7 @@ source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 clear
-LogProjectName ${RECEIVER_PROJECT_TITLE}
+LogProjectTitle
 LogTitleHeading "Setting up the FlightAware PiAware client"
 LogTitleMessage "------------------------------------------------------------------------------"
 echo ""

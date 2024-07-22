@@ -139,7 +139,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     DUMP1090_IS_INSTALLED="true"
     # Check if a newer version can be installed.
     if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${DUMP1090_FA_VERSION}") -eq 0 ]] ; then
-        whiptail  --backtitle "RECEIVER_PROJECT_TITLE" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
+        whiptail  --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump1090-fa Upgrade Available" --defaultno --yesno "An updated version of dump1090-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
         case $? in
             0)
                 DUMP1090_DO_UPGRADE="true"
@@ -153,7 +153,7 @@ fi
 
 # If no dump1090 fork is installed then attempt to install one.
 if [[ ! "${DUMP1090_IS_INSTALLED}" = "true" ]] ; then
-    DUMP1090_OPTION=$(whiptail --nocancel --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below." 16 65 2 "dump1090-fa" "(FlightAware)" ON 3>&1 1>&2 2>&3)
+    DUMP1090_OPTION=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Choose Dump1090 Version To Install" --nocancel --radiolist "Dump1090 does not appear to be present on this device. In order to continue setup dump1090 will need to exist on this device. Please select your prefered dump1090 version from the list below." 16 65 2 "dump1090-fa" "(FlightAware)" ON 3>&1 1>&2 2>&3)
     case ${DUMP1090_OPTION} in
         "dump1090-fa")
             DUMP1090_FORK="fa"
@@ -171,7 +171,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok instal
     DUMP978_FORK="fa"
     DUMP978_IS_INSTALLED="true"
     if [[ $(sudo dpkg -s dump978-fa 2>/dev/null | grep -c "Version: ${DUMP978_FA_VERSION}") -eq 0 ]]; then
-        whiptail  --backtitle "RECEIVER_PROJECT_TITLE" --title "Dump978-fa Upgrade Available" --defaultno --yesno "An updated version of dump978-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
+        whiptail  --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Dump978-fa Upgrade Available" --defaultno --yesno "An updated version of dump978-fa is available.\n\nWould you like to download, build, then install the new version?" 16 65
         case $? in
             0)
                 DUMP978_DO_UPGRADE="true"

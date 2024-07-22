@@ -27,7 +27,7 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
     current_branch=`git rev-parse --abbrev-ref HEAD`
 
     clear
-    LogProjectName ${RECEIVER_PROJECT_TITLE}
+    LogProjectTitle
     LogTitleHeading "Fetching the latest version of the ${RECEIVER_PROJECT_BRANCH} branch"
     LogTitleMessage "------------------------------------------------------------------------------"
     echo ""
@@ -52,7 +52,9 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
 
     if [[ "${current_branch}" != "${RECEIVER_PROJECT_BRANCH}" ]]; then
         LogMessage "Switching to branch ${RECEIVER_PROJECT_BRANCH}"
+        echo ""
         git checkout $RECEIVER_PROJECT_BRANCH
+        echo ""
     fi
 
     if [[ `git ls-remote --heads https://github.com/jprochazka/adsb-receiver.git refs/heads/$RECEIVER_PROJECT_BRANCH | wc -l` = 1 ]]; then
@@ -84,7 +86,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
             --yesno "It is recommended that you update your system before building and/or installing any ADS-B receiver related packages. This script can do this for you at this time if you like.\n\nWould you like to update your operating system now?" \
             11 78; then
     clear
-    LogProjectName ${RECEIVER_PROJECT_TITLE}
+    LogProjectTitle
     LogTitleHeading "Downloading and installing the latest updates for your operating system"
     LogTitleMessage "------------------------------------------------------------------------------"
     echo ""
@@ -109,7 +111,9 @@ chmod +x $RECEIVER_BASH_DIRECTORY/main.sh
 LogMessage "Executing bash/main"
 bash $RECEIVER_BASH_DIRECTORY/main.sh
 if [[ $? -ne 0 ]] ; then
+    echo ""
     LogAlertHeading "ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED"
+    echo ""
     exit 1
 fi
 

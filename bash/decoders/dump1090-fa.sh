@@ -9,7 +9,7 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 ## BEGIN SETUP
 
 clear
-LogProjectName ${RECEIVER_PROJECT_TITLE}
+LogProjectTitle
 LogTitleHeading "Setting up the FlightAware Dump1090 decoder"
 LogTitleMessage "------------------------------------------------------------------------------"
 echo ""
