@@ -19,6 +19,7 @@ The following is a history of the changes made to this project.
 * Modified the PlaneFinder client installation script so it utilizes the new logging functions.
 * Modified the beast-splitter installation script so it utilizes the new logging functions.
 * Added the --version and -v arguments in order to display the current project version.
+* Removed scripting used for image setup.
 
 ## v2.8.4 *(July 13th, 2024)* :rooster:
 

@@ -1,18 +1,5 @@
 #!/bin/bash
 
-## CHECK IF THIS IS THE FIRST RUN USING AN IMAGE RELEASE
-
-if [[ -f $RECEIVER_ROOT_DIRECTORY/image ]] ; then
-    chmod +x $RECEIVER_BASH_DIRECTORY/image.sh
-    $RECEIVER_BASH_DIRECTORY/image.sh
-    if [[ $? != 0 ]] ; then
-        echo -e "\n\n  \e[91m  IMAGE SETUP HAS BEEN TERMINATED.\e[39m\n"
-        exit 1
-    fi
-    exit 0
-fi
-
-
 ## INCLUDE EXTERNAL SCRIPTS
 
 source $RECEIVER_BASH_DIRECTORY/functions.sh
