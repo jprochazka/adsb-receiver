@@ -32,7 +32,7 @@ LogHeading "Begining the FlightRadar24 client installation process"
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/flightradar24 ]]; then
     LogMessage "Creating the FlightRadar24 build directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/flightradar24
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/flightradar24 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 LogMessage "Entering the FlightRadar24 build directory"
@@ -40,7 +40,7 @@ cd $RECEIVER_BUILD_DIRECTORY/flightradar24
 
 LogMessage "Downloading the airplanes.live client installation script"
 echo ""
-wget -v -O $RECEIVER_BUILD_DIRECTORY/flightradar24/install.sh https://fr24.com/install.sh
+wget -v -O $RECEIVER_BUILD_DIRECTORY/flightradar24/install.sh https://fr24.com/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 LogMessage "Executing the airplanes.live client installation script"

@@ -40,7 +40,7 @@ fi
 if [[ "${adsb_decoder_installed}" == "true" ]]; then
     LogMessage "Checking if dump978-fa has been configured"
     if grep -wq "driver=rtlsdr,serial=" /etc/default/dump978-fa; then
-        echo -e "The dump978-fa installation appears to have been configured"
+        LogMessage "The dump978-fa installation appears to have been configured"
     else
         whiptail --backtitle "FlightAware Dump978 Configuration" \
                  --title "RTL-SDR Dongle Assignments" \
@@ -114,17 +114,17 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978 && -d $RECEIVER_BUILD_DIRE
     cd $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978
     LogMessage "Pulling the dump1090 git repository"
     echo ""
-    git pull
+    git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
 else
     LogMessage "Creating the FlightAware dump978 Project build directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/dump1090-fa
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/dump1090-fa 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
     LogMessage "Entering the ADS-B Receiver Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY/dump978-fa
     LogMessage "Cloning the FlightAware dump978 git repository"
     echo ""
-    git clone https://github.com/flightaware/dump978.git
+    git clone https://github.com/flightaware/dump978.git 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
 echo ""
 
@@ -138,13 +138,13 @@ cd $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978
 
 LogMessage "Building the dump978-fa package"
 echo ""
-dpkg-buildpackage -b
+dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 LogMessage "Installing the dump1090-fa Debian package"
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_${DUMP978_FA_VERSION}_*.deb
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_${DUMP978_FA_VERSION}_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
 LogMessage "Installing the skyaware978 Debian package"
-sudo dpkg -i $$RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_${DUMP978_FA_VERSION}_*.deb
+sudo dpkg -i $$RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_${DUMP978_FA_VERSION}_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
 
 LogMessage "Checking that the dump978-fa Debian package was installed"
 if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
@@ -179,16 +179,16 @@ fi
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     LogMessage "Creating the Debian package archive directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 LogMessage "Copying the dump978-fa Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
+cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 LogMessage "Copying the skyaware978 Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
+cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 

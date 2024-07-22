@@ -2,14 +2,36 @@
 
 ## LOGGING FUNCTIONS
 
+# LogToFile <message> <append_timestamp> <inline>
+function LogToFile {
+    if [[ "${RECEIVER_LOGGING_ENABLED}" == "true" ]]; then
+        time_stamp=''
+        if [[ -z $2 || "${2}" == "true" ]]; then
+            printf -v time_stamp '[%(%Y-%m-%d %H:%M:%S)T]' -1
+        fi
+
+        if [[ ! -z $3 && "${3}" == "inline" ]]; then
+            printf "${time_stamp} ${1}" >> $RECEIVER_LOG_FILE
+        else
+            echo "${time_stamp} ${1}" >> $RECEIVER_LOG_FILE
+        fi
+    fi
+}
+
+function LogOutput {
+    LogToFile "${1}"
+}
+
 # Logs the "PROJECT TITLE" to the console
 function LogProjectTitle {
+    LogToFile "${RECEIVER_PROJECT_TITLE}"
     echo -e "${DISPLAY_PROJECT_NAME}  ${RECEIVER_PROJECT_TITLE}${DISPLAY_DEFAULT}"
     echo ""
 }
 
 # Logs a "HEADING" to the console
 function LogHeading {
+    LogToFile "${1}"
     echo ""
     echo -e "${DISPLAY_HEADING}  ${1}${DISPLAY_DEFAULT}"
     echo ""
@@ -17,48 +39,58 @@ function LogHeading {
 
 # Logs a "MESSAGE" to the console
 function LogMessage {
+    LogToFile "${1}"
     echo -e "${DISPLAY_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
 }
 
 # Logs an alert "HEADING" to the console
 function LogAlertHeading {
+    LogToFile "${1}"
     echo -e "${DISPLAY_ALERT_HEADING}  ${1}${DISPLAY_DEFAULT}"
 }
 
 # Logs an alert "MESSAGE" to the console
 function LogAlertMessage {
+    LogToFile "${1}"
     echo -e "${DISPLAY_ALERT_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
 }
 
 # Logs an title "HEADING" to the console
 function LogTitleHeading {
+    LogToFile "${1}"
     echo -e "${DISPLAY_TITLE_HEADING}  ${1}${DISPLAY_DEFAULT}"
 }
 
 # Logs an title "MESSAGE" to the console
 function LogTitleMessage {
+    LogToFile "${1}"
     echo -e "${DISPLAY_TITLE_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
 }
 
 # Logs a warning "HEADING" to the console
 function LogWarningHeading {
+    LogToFile "${1}"
     echo -e "${DISPLAY_WARNING_HEADING}  ${1}${DISPLAY_DEFAULT}"
 }
 
 # Logs a warning "MESSAGE" to the console
 function LogWarningMessage {
+    LogToFile "${1}"
     echo -e "${DISPLAY_WARNING_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
 }
 
 function LogMessageInline {
+    LogToFile "${1}" "true" "inline"
     printf "${DISPLAY_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
 }
 
 function LogFalseInline {
+    LogToFile "${1}" "false"
     echo -e "${DISPLAY_FALSE_INLINE} ${1}${DISPLAY_DEFAULT}"
 }
 
 function LogTrueInline {
+    LogToFile "${1}" "false"
     echo -e "${DISPLAY_TRUE_INLINE} ${1}${DISPLAY_DEFAULT}"
 }
 
@@ -90,7 +122,7 @@ function CheckPackage {
             fi
             echo ""
             attempt=$((attempt+1))
-            sudo apt-get install -y $1
+            sudo apt-get install -y $1 2>&1 | tee -a $RECEIVER_LOG_FILE
             echo ""
         else
             LogTrueInline "[OK]"

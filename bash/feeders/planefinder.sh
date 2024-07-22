@@ -85,22 +85,22 @@ cd $RECEIVER_BUILD_DIRECTORY/planefinder
 
 LogMessage "Downloading the appropriate PlaneFinder client Debian package"
 echo ""
-wget -v -O --no-check-certificate http://client.planefinder.net/$PACKAGE_NAME $RECEIVER_BUILD_DIRECTORY/planefinder/$PACKAGE_NAME
+wget -v -O --no-check-certificate http://client.planefinder.net/$PACKAGE_NAME $RECEIVER_BUILD_DIRECTORY/planefinder/$PACKAGE_NAME 2>&1 | tee -a $RECEIVER_LOG_FILE
 
 LogMessage "Installing the PlaneFinder Client Debian package"
 echo -e ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     LogMessage "Creating the package archive directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 LogMessage "Copying the PlaneFinder client Debian package into the archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name $RECEIVER_BUILD_DIRECTORY/package-archive/
+cp -vf $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 

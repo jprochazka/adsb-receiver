@@ -11,12 +11,14 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 LogHeading "Displaying the welcome message"
 
 LogMessage "Displaying the welcome message to the user"
+echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "The ADS-B Receiver Project" \
               --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.net\n\nWould you like to continue setup?" \
               14 78; then
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
+    echo ""
     exit 1
 fi
 
@@ -41,11 +43,12 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
                     --yesno "There appears to be changes to the current branch. In order to switch to or fetch the ${current_branch} branch these changes will need to be stashed. Would you like to stash these changes now?" \
                     14 78; then
             LogMessage "Stashing changes made to the ${current_branch} branch"
-            git stash
+            git stash 2>&1 | tee -a $RECEIVER_LOG_FILE
             echo ""
         else
             LogAlertHeading "INSTALLATION HALTED"
             LogAlertMessage "Setup has been halted at the request of the user"
+            echo ""
             exit 1
         fi
     fi
@@ -53,14 +56,14 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
     if [[ "${current_branch}" != "${RECEIVER_PROJECT_BRANCH}" ]]; then
         LogMessage "Switching to branch ${RECEIVER_PROJECT_BRANCH}"
         echo ""
-        git checkout $RECEIVER_PROJECT_BRANCH
+        git checkout $RECEIVER_PROJECT_BRANCH 2>&1 | tee -a $RECEIVER_LOG_FILE
         echo ""
     fi
 
     if [[ `git ls-remote --heads https://github.com/jprochazka/adsb-receiver.git refs/heads/$RECEIVER_PROJECT_BRANCH | wc -l` = 1 ]]; then
         LogMessage "Fetching branch ${RECEIVER_PROJECT_BRANCH} from origin"
         echo ""
-        git fetch origin
+        git fetch origin 2>&1 | tee -a $RECEIVER_LOG_FILE
         echo ""
         LogMessage "Performing hard reset of branch ${RECEIVER_PROJECT_BRANCH} so it matches origin/${RECEIVER_PROJECT_BRANCH}"
         echo ""
@@ -92,7 +95,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     echo ""
     LogMessage "Updating the operating system using apt-get"
     echo ""
-    sudo apt-get -y dist-upgrade
+    sudo apt-get -y dist-upgrade 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
     LogTitleMessage "------------------------------------------------------------------------"
     LogTitleHeading "Your operating system should now be up to date"
@@ -124,6 +127,9 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "Software Installation Complete" \
          --msgbox "INSTALLATION COMPLETE\n\nDO NOT DELETE THIS DIRECTORY!\n\nFiles needed for certain items to run properly are contained within this directory. Deleting this directory may result in your receiver not working properly.\n\nHopefully, these scripts and files were found useful while setting up your ADS-B Receiver. Feedback regarding this software is always welcome. If you have any issues or wish to submit feedback, feel free to do so on GitHub.\n\n  https://github.com/jprochazka/adsb-receiver" \
          20 65
-LogProjectName "Installation complete"
+
+echo ""
+LogAlertHeading "Installation complete"
+echo ""
 
 exit 0

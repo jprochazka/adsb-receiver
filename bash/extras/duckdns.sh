@@ -80,7 +80,7 @@ LogHeading "Creating the Duck DNS script"
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/duckdns ]]; then
     LogMessage "Creating the Duck DNS build directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/duckdns
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/duckdns 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 
@@ -91,7 +91,7 @@ EOF
 
 LogMessage "Adding execute permissions for only this user to the Duck DNS update script"
 echo ""
-chmod -v 700 $RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh
+chmod -v 700 $RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 LogMessage "Creating the Duck DNS cron file"

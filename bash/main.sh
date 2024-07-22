@@ -69,7 +69,6 @@ function InstallFlyItalyAdsb() {
     fi
 }
 
-
 # Execute the OpenSky Network setup script.
 function InstallOpenSkyNetwork() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
@@ -465,7 +464,7 @@ fi
 RUN_ADSBEXCHANGE_SCRIPT="false"
 RUN_PIAWARE_SCRIPT="false"
 RUN_FLIGHTRADAR24_SCRIPT="false"
-RUN_FLYITALYADSB_SCRIPT
+RUN_FLYITALYADSB_SCRIPT="false"
 RUN_OPENSKYNETWORK_SCRIPT="false"
 RUN_PLANEFINDER_SCRIPT="false"
 

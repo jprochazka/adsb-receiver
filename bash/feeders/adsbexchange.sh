@@ -37,7 +37,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/adsbexchange ]]; then
     LogMessage "Creating the ADSBExchange build directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/adsbexchange
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/adsbexchange 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 LogMessage "Entering the ADSBExchange build directory"
@@ -52,9 +52,9 @@ fi
 LogMessage "Downloading the ADS-B Exchange client ${action_to_perform} script"
 echo ""
 if [[ "${action_to_perform}" = "install" ]]; then
-    wget -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed.sh
+    wget -v -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 else
-    wget -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed-update.sh
+    wget -v -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed-update.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
 echo ""
 
@@ -75,7 +75,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
             12 78; then
     LogMessage "Downloading the ADS-B Exchange stats package installation script"
     echo ""
-    curl -L -o $RECEIVER_BUILD_DIRECTORY/adsbexchange/axstats.sh https://adsbexchange.com/stats.sh
+    wget -v -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/axstats.sh https://adsbexchange.com/stats.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
     echo -e "Executing the ADS-B Exchange stats package installation script"
     echo ""

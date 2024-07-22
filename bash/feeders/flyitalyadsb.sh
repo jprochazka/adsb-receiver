@@ -37,7 +37,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/flyitalyadsb ]]; then
     LogMessage "Creating the Fly Italy ADS-B build directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/flyitalyadsb
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/flyitalyadsb 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 LogMessage "Entering the Fly Italy ADS-B build directory"
@@ -45,7 +45,7 @@ cd $RECEIVER_BUILD_DIRECTORY/flyitalyadsb
 
 LogMessage "Downloading the Fly Italy ADS-B installation script"
 echo ""
-wget -v -O$RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install.sh
+wget -v -O $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 LogMessage "Executing the Fly Italy ADS-B feeder installation script"
 echo ""
@@ -59,7 +59,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
             12 78;
     LogMessage "Downloading the Fly Italy ADS-B updater script"
     echo ""
-    wget -v -O$RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install_updater.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install_updater.sh
+    wget -v -O $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install_updater.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install_updater.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
     LogMessage "Executing the Fly Italy ADS-B feeder updater script"
     echo ""

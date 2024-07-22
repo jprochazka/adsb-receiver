@@ -89,13 +89,17 @@ if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
         cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild
         LogMessage "Updating the local tcltls-rebuild git repository"
         echo ""
-        git pull
+        git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
     else
-        LogMessage "Entering the ADS-B Receiver Project build directory"
-        cd $RECEIVER_BUILD_DIRECTORY
+        LogMessage "Creating the tcltls-rebuild build directory"
+        echo ""
+        mkdir -v $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild 2>&1 | tee -a $RECEIVER_LOG_FILE
+        echo ""
+        LogMessage "Entering the tcltls-rebuild build directory"
+        cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild
         LogMessage "Cloning the tcltls-rebuild git repository locally"
         echo ""
-        git clone https://github.com/flightaware/tcltls-rebuild
+        git clone https://github.com/flightaware/tcltls-rebuild 2>&1 | tee -a $RECEIVER_LOG_FILE
     fi
     echo ""
 
@@ -110,11 +114,11 @@ if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
     cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/tcltls-1.7.22
     LogMessage "Building the tcltls-rebuild package"
     echo ""
-    dpkg-buildpackage -b
+    dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
     LogMessage "Installing the tcltls-rebuild package"
     echo ""
-    sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/tcl-tls_1.7.22-2+fa1_*.deb
+    sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/tcl-tls_1.7.22-2+fa1_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 
     LogMessage "Checking that the FlightAware tcltls-rebuild package was installed properly"
@@ -134,12 +138,12 @@ if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
         if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
             LogMessage "Creating the package archive directory"
             echo ""
-            mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive
+            mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
             echo ""
         fi
         LogMessage "Copying the FlightAware tcltls-rebuild Debian package into the archive directory"
         echo ""
-        cp -vf $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
+        cp -vf $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
     fi
 fi
 
@@ -153,13 +157,17 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/piaware_builder && -d $RECEIVER_BUILD_DIRECTO
     cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
     LogMessage "Updating the local piaware_builder git repository"
     echo ""
-    git pull
+    git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
 else
+    LogMessage "Creating the FlightAware piaware_builder build directory"
+    echo ""
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/piaware_builder 2>&1 | tee -a $RECEIVER_LOG_FILE
+    echo ""
     LogMessage "Entering the ADS-B Receiver Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY
     LogMessage "Cloning the piaware_builder git repository locally"
     echo ""
-    git clone https://github.com/flightaware/dump978.git
+    git clone https://github.com/flightaware/dump978.git 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
 echo ""
 
@@ -184,20 +192,21 @@ case $RECEIVER_OS_CODE_NAME in
         distro="bookworm"
         ;;
 esac
+LogMessage "Setting distribution to build for to ${distro}"
 
 LogMessage "Executing the FlightAware PiAware client build script"
 echo ""
-./sensible-build.sh $distro
+./sensible-build.sh $distro 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 LogMessage "Entering the FlightAware PiAware client build directory"
 cd $RECEIVER_BUILD_DIRECTORY/piaware_builder/package-${distro}
 LogMessage "Building the FlightAware PiAware client package"
 echo ""
-dpkg-buildpackage -b
+dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 LogMessage "Installing the FlightAware PiAware client package"
 echo ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/piaware_builder/piaware_*.deb 2>&1
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/piaware_builder/piaware_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 LogMessage "Checking that the FlightAware PiAware client package was installed properly"
@@ -216,12 +225,12 @@ else
     if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
         LogMessage "Creating the package archive directory"
         echo ""
-        mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive
+        mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
         echo ""
     fi
     LogMessage "Copying the FlightAware PiAware client binary package into the archive directory"
     echo ""
-    cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
+    cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 

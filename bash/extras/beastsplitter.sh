@@ -87,17 +87,17 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter && -d $RECEIVER
     cd $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter
     LogMessage "Pulling the beast-splitter git repository"
     echo ""
-    git pull
+    git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
 else
     LogMessage "Creating the beast-splitter build directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/beast-splitter
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/beast-splitter 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
     LogMessage "Entering the beast-splitter build directory"
     cd $RECEIVER_BUILD_DIRECTORY/beast-splitter
     LogMessage "Cloning the FlightAware dump978 git repository"
     echo ""
-    git clone https://github.com/flightaware/beast-splitter.git
+    git clone https://github.com/flightaware/beast-splitter.git 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
 
 
@@ -110,11 +110,11 @@ cd $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter
 
 LogMessage "Building the beast-splitter package"
 echo ""
-dpkg-buildpackage -b
+dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 LogMessage "Installing the beast-splitter Debian package"
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_*.deb
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
 
 LogMessage "Checking that the beast-splitter Debian package was installed"
 if [[ $(dpkg-query -W -f='${STATUS}' beast-splitter 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
@@ -134,12 +134,12 @@ fi
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     LogMessage "Creating the Debian package archive directory"
     echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
 LogMessage "Copying the beast-splitter Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/beast-splitter/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
+cp -vf $RECEIVER_BUILD_DIRECTORY/beast-splitter/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 
