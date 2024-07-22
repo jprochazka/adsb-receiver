@@ -10,7 +10,6 @@ LogProjectName ${RECEIVER_PROJECT_TITLE}
 LogTitleHeading "Setting up the Fly Italy ADS-B client"
 LogTitleMessage "------------------------------------------------------------------------------"
 echo ""
-
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "Fly Italy ADS-B feeder client Setup" \
               --yesno "The Fly Italy ADS-B feeder client takes data from a local dump1090 instance and shares this with Fly Italy ADS-B. for more information please see their website:\n\n  https://flyitalyadsb.com/come-condividere-la-propria-antenna/\n\nContinue setup by installing the Fly Italy ADS-B feeder client?" \

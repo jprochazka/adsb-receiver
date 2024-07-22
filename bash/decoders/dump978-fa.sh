@@ -98,7 +98,6 @@ CheckPackage libboost-regex-dev
 CheckPackage libboost-system-dev
 CheckPackage libsoapysdr-dev
 CheckPackage soapysdr-module-rtlsdr
-echo ""
 
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES

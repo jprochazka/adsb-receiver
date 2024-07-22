@@ -38,7 +38,7 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-LogHeading "Installing packages needed to fulfill dependencies for FlightAware PiAware client"
+LogHeading "Installing packages needed to fulfill FlightAware PiAware client dependencies"
 
 CheckPackage autoconf
 CheckPackage build-essential
@@ -76,8 +76,6 @@ else
     CheckPackage python3-build
     CheckPackage tcl-tls
 fi
-
-echo ""
 
 
 ## CLONE OR PULL THE TCLTLS REBUILD GIT REPOSITORY
