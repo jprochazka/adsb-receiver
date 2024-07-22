@@ -19,10 +19,9 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 clear
 LogProjectName ${RECEIVER_PROJECT_TITLE}
-LogTitleHeading "Setting up the FlightAware PiAware Client"
+LogTitleHeading "Setting up the FlightAware PiAware client"
 LogTitleMessage "------------------------------------------------------------------------------"
 echo ""
-
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightAware PiAware client Setup" \
               --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" \
@@ -31,7 +30,7 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""
     LogTitleMessage "------------------------------------------------------------------------------"
-    LogTitleHeading "FlightAware PiAware Client setup halted"
+    LogTitleHeading "FlightAware PiAware client setup halted"
     echo ""
     exit 1
 fi

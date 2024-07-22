@@ -9,58 +9,60 @@ source $RECEIVER_BASH_DIRECTORY/functions.sh
 ## BEGIN SETUP
 
 clear
-echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
-echo -e ""
-echo -e "\e[92m  Setting up the ADS-B Exchange feed..."
-echo -e ""
-echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo -e ""
-if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" 18 78 3>&1 1>&2 2>&3; then
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  ADS-B Exchange feed setup halted.\e[39m"
-    echo -e ""
-    read -p "Press enter to continue..." discard
+LogProjectName ${RECEIVER_PROJECT_TITLE}
+LogTitleHeading "Setting up the ADS-B Exchange client"
+LogTitleMessage "------------------------------------------------------------------------------"
+echo ""
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+              --title "ADS-B Exchange Feed Setup" \
+              --yesno "ADS-B Exchange is a co-op of ADS-B/Mode S/MLAT feeders from around the world, and the world’s largest source of unfiltered flight data.\n\n  http://www.adsbexchange.com/how-to-feed/\n\nContinue setting up the ADS-B Exchange feed?" \
+              18 78; then
+    LogAlertHeading "INSTALLATION HALTED"
+    LogAlertMessage "Setup has been halted at the request of the user"
+    echo ""
+    LogTitleMessage "------------------------------------------------------------------------------"
+    LogTitleHeading "ADS-B Exchange client setup halted"
+    echo ""
     exit 1
 fi
 
 
-## DOWNLOAD AND EXECUTE THE INSTALL SCRIPT
+## DOWNLOAD AND EXECUTE THE ADS-B EXCHANGE CLIENT INSTALL SCRIPT
 
-# Explain the process
-whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --msgbox "Scripts supplied by ADS-B Exchange will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." 10 78
+LogHeading "Executing either the install or upgrade script"
 
-echo -e "\e[95m  Preparing to execute either the install or upgrade script...\e[97m"
-echo ""
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+         --title "ADS-B Exchange Feed Setup" \
+         --msgbox "Scripts supplied by ADS-B Exchange will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." \
+         10 78
 
-# Create the build directory if needed then enter it
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/adsbexchange ]]; then
-    echo -e "\e[94m  Creating the ADSBExchange build directory...\e[97m"
-    mkdir $RECEIVER_BUILD_DIRECTORY/adsbexchange
+    LogMessage "Creating the ADSBExchange build directory"
+    echo ""
+    mkdir -vp $RECEIVER_BUILD_DIRECTORY/adsbexchange
+    echo ""
 fi
-echo -e "\e[94m  Entering the ADSBExchange build directory...\e[97m"
+LogMessage "Entering the ADSBExchange build directory"
 cd $RECEIVER_BUILD_DIRECTORY/adsbexchange
 
-# Determine if the feeder is already installed or not
+LogMessage "Determining if the installation or upgrade script should be executed"
 action_to_perform="install"
 if [[ -f /lib/systemd/system/adsbexchange-mlat.service && -f /lib/systemd/system/adsbexchange-feed.service ]]; then
     action_to_perform="upgrade"
 fi
 
-# Begin the install or upgrade process
-echo -e "\e[94m  Downloading the ${action_to_perform} script...\e[97m"
+LogMessage "Downloading the ADS-B Exchange client ${action_to_perform} script"
 echo ""
 if [[ "${action_to_perform}" = "install" ]]; then
+    echo ""
     wget -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed.sh
 else
+    echo ""
     wget -O $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh https://www.adsbexchange.com/feed-update.sh
 fi
+echo ""
 
-echo -e "\e[94m  Making the ${action_to_perform} script executable...\e[97m"
-chmod -x $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh
-echo -e "\e[94m  Executing the ${action_to_perform} script...\e[97m"
+LogMessage "Executing the ADS-B Exchange client ${action_to_perform} script"
 echo ""
 sudo bash $RECEIVER_BUILD_DIRECTORY/adsbexchange/feed-${action_to_perform}.sh
 echo ""
@@ -68,41 +70,50 @@ echo ""
 
 ## INSTALL THE ADS-B EXCHANGE STATS PACKAGE
 
-if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange offers the option to install their stats package in order to send your stats to their site.\n\nWould you like to install the stats package now?" 12 78; then
-    echo -e "\e[95m  Executing the ADS-B Exchange script to install their web interface...\e[97m"
-    echo ""
-    echo -e "\e[94m  Downloading the stats package installation script...\e[97m"
+LogHeading "Starting the ADS-B Exchange stats package setup process"
+
+LogMessage "Asking if the user wishes to install the ADS-B Exchange stats package"
+if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+            --title "ADS-B Exchange Feed Setup" \
+            --yesno "ADS-B Exchange offers the option to install their stats package in order to send your stats to their site.\n\nWould you like to install the stats package now?" \
+            12 78; then
+    LogMessage "Downloading the ADS-B Exchange stats package installation script"
     echo ""
     curl -L -o $RECEIVER_BUILD_DIRECTORY/adsbexchange/axstats.sh https://adsbexchange.com/stats.sh
     echo ""
-    echo -e "\e[94m  Executing the stats package installation script...\e[97m"
+    echo -e "Executing the ADS-B Exchange stats package installation script"
     echo ""
     sudo bash $RECEIVER_BUILD_DIRECTORY/adsbexchange/axstats.sh
     echo ""
+else
+    LogMessage "The user opted out of installing the ADS-B Exchange stats package""
 fi
 
 
 ## INSTALL THE ADS-B EXCHANGE WEB INTERFACE
 
-if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "ADS-B Exchange Feed Setup" --yesno "ADS-B Exchange offers the option to install an additional web interface.\n\nWould you like to install the web interface now?" 12 78; then
-    echo -e "\e[95m  Executing the ADS-B Exchange script to install their web interface...\e[97m"
-    echo ""
-    echo -e "\e[94m  Executing the ADS-B Exchange web interface installation script...\e[97m"
+LogHeading "Starting the ADS-B Exchange web interface setup process"
+
+LogMessage "Asking if the user wishes to install the ADS-B Exchange web interface"
+if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+            --title "ADS-B Exchange Feed Setup" \
+            --yesno "ADS-B Exchange offers the option to install an additional web interface.\n\nWould you like to install the web interface now?" \
+            12 78; then
+    echo -e "Executing the ADS-B Exchange web interface installation script"
     echo ""
     sudo bash /usr/local/share/adsbexchange/git/install-or-update-interface.sh
     echo ""
 fi
 
 
-## ADS-B EXCHANGE FEED SETUP COMPLETE
+## SETUP COMPLETE
 
-# Enter into the project root directory.
-echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
+LogMessage "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
 cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
-echo -e "\e[93m-------------------------------------------------------------------------------------------------------"
-echo -e "\e[92m  ADS-B Exchange feed setup is complete.\e[39m"
+LogTitleMessage "------------------------------------------------------------------------------"
+LogTitleHeading "ADS-B Exchange client client setup is complete"
 echo ""
 read -p "Press enter to continue..." discard
 

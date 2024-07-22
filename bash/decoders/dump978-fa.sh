@@ -13,7 +13,6 @@ LogProjectTitle
 LogTitleHeading "Setting up the FlightAware Dump978 decoder"
 LogTitleMessage "------------------------------------------------------------------------------"
 echo ""
-
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightAware Dump978 Setup" \
               --yesno "This is the FlightAware 978MHz UAT decoder. It is a reimplementation in C++, loosely based on the demodulator from https://github.com/mutability/dump978.\n\n  https://github.com/flightaware/dump978\n\nContinue setup by installing dump978-fa?" \

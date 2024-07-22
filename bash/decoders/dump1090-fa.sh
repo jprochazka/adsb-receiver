@@ -13,7 +13,6 @@ LogProjectName ${RECEIVER_PROJECT_TITLE}
 LogTitleHeading "Setting up the FlightAware Dump1090 decoder"
 LogTitleMessage "------------------------------------------------------------------------------"
 echo ""
-
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightAware Dump1090 Decoder Setup" \
               --yesno "FlightAware Dump1090 is an ADS-B, Mode S, and Mode 3A/3C demodulator and decoder that will receive and decode aircraft transponder messages received via a directly connected software defined radio, or from data provided over a network connection.\n\nWebsite: https://www.flightaware.com/\nGitHub Repository: https://github.com/flightaware/dump1090\n\nWould you like to begin the setup process now?" \
