@@ -9,11 +9,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up the Fly Italy ADS-B client"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "Fly Italy ADS-B feeder client Setup" \
               --yesno "The Fly Italy ADS-B feeder client takes data from a local dump1090 instance and shares this with Fly Italy ADS-B. for more information please see their website:\n\n  https://flyitalyadsb.com/come-condividere-la-propria-antenna/\n\nContinue setup by installing the Fly Italy ADS-B feeder client?" \
               13 78; then
+    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""
@@ -45,26 +45,22 @@ cd $RECEIVER_BUILD_DIRECTORY/flyitalyadsb
 
 LogMessage "Downloading the Fly Italy ADS-B installation script"
 echo ""
-wget -v -O $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
-echo ""
+wget -v -O $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install.sh https://raw.githubusercontent.com/flyitalyadsb/fly-italy-adsb/master/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 LogMessage "Executing the Fly Italy ADS-B feeder installation script"
 echo ""
 sudo bash $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install.sh
-echo ""
 
 LogMessage "Asking if the user wishes to install the Fly Italy ADS-B updater"
 if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
             --title "Install The Fly Italy ADS-B Updater" \
             --yesno "It is recommended that the Fly Italy ADS-B updater be installed as well.\n\nWould you like to install the updater at this time?" \
-            12 78;
+            12 78; then
     LogMessage "Downloading the Fly Italy ADS-B updater script"
     echo ""
-    wget -v -O $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install_updater.sh wget https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install_updater.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
-    echo ""
+    wget -v -O $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install_updater.sh https://raw.githubusercontent.com/flyitalyadsb/mlat-client/master/scripts/install_updater.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
     LogMessage "Executing the Fly Italy ADS-B feeder updater script"
     echo ""
     sudo bash $RECEIVER_BUILD_DIRECTORY/flyitalyadsb/install_updater.sh
-    echo ""
 fi
 
 

@@ -230,7 +230,6 @@ else
     LogMessage "Copying the FlightAware PiAware client binary package into the archive directory"
     echo ""
     cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
-    echo ""
 fi
 
 

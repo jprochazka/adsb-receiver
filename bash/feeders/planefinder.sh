@@ -9,11 +9,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up the PlaneFinder client"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "PlaneFinder ADS-B Client Setup" \
               --yesno "The PlaneFinder ADS-B Client is an easy and accurate way to share your ADS-B and MLAT data with Plane Finder. It comes with a beautiful user interface that helps you explore and interact with your data in realtime.\n\n  https://planefinder.net/sharing/client\n\nContinue setup by installing PlaneFinder ADS-B Client?" \
               13 78; then
+    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""
@@ -85,7 +85,8 @@ cd $RECEIVER_BUILD_DIRECTORY/planefinder
 
 LogMessage "Downloading the appropriate PlaneFinder client Debian package"
 echo ""
-wget -v -O --no-check-certificate http://client.planefinder.net/$PACKAGE_NAME $RECEIVER_BUILD_DIRECTORY/planefinder/$PACKAGE_NAME 2>&1 | tee -a $RECEIVER_LOG_FILE
+wget -v -O $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name http://client.planefinder.net/$package_name 2>&1 | tee -a $RECEIVER_LOG_FILE
+echo ""
 
 LogMessage "Installing the PlaneFinder Client Debian package"
 echo -e ""

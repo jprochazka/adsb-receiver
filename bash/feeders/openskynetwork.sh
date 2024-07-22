@@ -69,7 +69,9 @@ echo ""
 sudo apt-get update 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 LogMessage "Installing the OpenSky Network fedder package using apt"
-CheckPackage opensky-feeder
+echo ""
+sudo apt-get install opensky-feeder
+echo ""
 
 
 ## SETUP COMPLETE
