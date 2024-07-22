@@ -137,7 +137,7 @@ if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
             mkdir -vp $RECEIVER_BUILD_DIRECTORY/package-archive
             echo ""
         fi
-        LogMessage "Copying the FlightAware tcltls-rebuild binary package into the archive directory"
+        LogMessage "Copying the FlightAware tcltls-rebuild Debian package into the archive directory"
         echo ""
         cp -vf $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/
         echo ""
