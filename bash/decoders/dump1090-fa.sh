@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## INCLUDE EXTERNAL SCRIPTS
+## PRE INSTALLATION OPERATIONS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
@@ -49,7 +49,6 @@ echo ""
 
 LogHeading "Blacklist unwanted RTL-SDR kernel modules.
 
-LogMessage "Blacklisting problematic kernel modules"
 BlacklistModules
 
 
@@ -57,15 +56,19 @@ BlacklistModules
 
 LogHeading "Preparing the FlightAware Dump1090 Git repository"
 
-if [[ -d $RECEIVER_BUILD_DIRECTORY/dump1090-fa && -d $RECEIVER_BUILD_DIRECTORY/dump1090.fa/.git ]]; then
+if [[ -d $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090 && -d $RECEIVER_BUILD_DIRECTORY/dump1090.fa/dump1090/.git ]]; then
     LogMessage "Entering the dump1090 git repository directory"
-    cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa
+    cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090
     LogMessage "Pulling the dump1090 git repository"
     echo ""
     git pull
 else
-    LogMessage "Entering the ADS-B Receiver Project build directory"
-    cd $RECEIVER_BUILD_DIRECTORY
+    LogMessage "Creating the FlightAware dump1090 Project build directory"
+    echo ""
+    mkdir -vp $RECEIVER_BUILD_DIRECTORY/dump1090-fa
+    echo ""
+    LogMessage "Entering the FlightAware dump1090 Project build directory"
+    cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa
     LogMessage "Cloning the dump1090 git repository"
     echo ""
     git clone https://github.com/flightaware/dump1090.git
@@ -75,7 +78,9 @@ echo ""
 
 ## BUILD AND INSTALL THE DUMP1090-FA PACKAGE
 
-LogMessage "Entering the Git repository"
+LogHeading "Building the FlightAware dump1090-fa package"
+
+LogMessage "Entering the dump1090 Git repository"
 cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090
 
 LogMessage "Determining which distribution to build the package tree for"
@@ -95,7 +100,6 @@ cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/package/$distro
 LogMessage "Building the dump1090-fa Debian package"
 dpkg-buildpackage -b --no-sign
 
-# TODO: Figure out a better way than using a variable to determine which package to install
 LogMessage "Installing the dump1090-fa Debian package"
 sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/dump1090-fa_${DUMP1090_FA_VERSION}_*.deb
 
