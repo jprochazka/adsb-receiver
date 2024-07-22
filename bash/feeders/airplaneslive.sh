@@ -34,7 +34,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --msgbox "Scripts supplied by airplanes.live will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." \
          10 78
 
-if [[ ! -d $RECEIVER_BUILD_DIRECTORY/adsbexchange ]]; then
+if [[ ! -d $RECEIVER_BUILD_DIRECTORY/airplaneslive ]]; then
     LogMessage "Creating the airplanes.live build directory"
     echo ""
     mkdir -vp $RECEIVER_BUILD_DIRECTORY/airplaneslive
@@ -45,7 +45,7 @@ cd $RECEIVER_BUILD_DIRECTORY/airplaneslive
 
 LogMessage "Downloading the airplanes.live client installation script"
 echo ""
-wget -O $RECEIVER_BUILD_DIRECTORY/airplaneslive/install.sh https://raw.githubusercontent.com/airplanes-live/feed/main/install.sh
+wget -v -O $RECEIVER_BUILD_DIRECTORY/airplaneslive/install.sh https://raw.githubusercontent.com/airplanes-live/feed/main/install.sh
 echo ""
 
 LogMessage "Executing the airplanes.live client installation script"
@@ -54,7 +54,7 @@ sudo bash $RECEIVER_BUILD_DIRECTORY/airplaneslive/install.sh
 echo ""
 
 
-## CHECK THE STATUS OF THE FEEDER
+## CHECK THE STATUS OF THE CLIENT
 
 LogHeading "Checking if the reciver is now feeding airplanes.live"
 

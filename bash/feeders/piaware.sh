@@ -206,7 +206,6 @@ echo ""
 
 LogMessage "Checking that the FlightAware PiAware client package was installed properly"
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     echo ""
     LogAlertMessage "FlightAware PiAware package installation failed"
