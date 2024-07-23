@@ -70,7 +70,7 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 The project currently supports the following Linux distributions.
 
-* Armbian _(Bookworm and Jammy)_
+* Armbian _(Bookworm, Jammy and Noble)_
 * Debian _(Bookworm and Bullseye)_
 * DietPi _(Bookworm aand Bullseye)_
 * Rasbperry PI OS _(Bookworm and Bullseye)_

@@ -9,11 +9,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up beast-splitter"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "Beast-Splitter Setup" \
               --yesno "beast-splitter is a helper utility for the Mode-S Beast.\n\nThe Beast provides a single data stream over a (USB) serial port. If you have more than one thing that wants to read that data stream, you need something to redistribute the data. This is what beast-splitter does.\n\n  https://github.com/flightaware/beast-splitter\n\nContinue beast-splitter setup?" \
               15 78; then
+    echo ""
     echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
     echo -e "  Setup has been halted at the request of the user."
     echo -e ""

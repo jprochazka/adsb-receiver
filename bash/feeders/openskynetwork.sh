@@ -9,11 +9,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up the OpenSky Network client"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "OpenSky Network feeder client Setup" \
               --yesno "The OpenSky Network is a community-based receiver network which continuously collects air traffic surveillance data. Unlike other networks, OpenSky keeps the collected data forever and makes it accessible to researchers. For more information  please see their website:\n\n  https://opensky-network.org/\n\nContinue setup by installing the OpenSky Network feeder client?" \
               13 78; then
+    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""

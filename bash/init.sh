@@ -32,7 +32,6 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
     LogProjectTitle
     LogTitleHeading "Fetching the latest version of the ${RECEIVER_PROJECT_BRANCH} branch"
     LogTitleMessage "------------------------------------------------------------------------------"
-    echo ""
 
     LogHeading "Checking out and updating the appropriate branch"
 
@@ -92,7 +91,9 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     LogProjectTitle
     LogTitleHeading "Downloading and installing the latest updates for your operating system"
     LogTitleMessage "------------------------------------------------------------------------------"
-    echo ""
+    
+    LogHeading "Updating the operating system"
+    
     LogMessage "Updating the operating system using apt-get"
     echo ""
     sudo apt-get -y dist-upgrade 2>&1 | tee -a $RECEIVER_LOG_FILE

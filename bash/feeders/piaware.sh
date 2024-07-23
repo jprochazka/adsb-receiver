@@ -25,7 +25,7 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightAware PiAware client Setup" \
               --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" \
               13 78; then
-echo ""
+    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""

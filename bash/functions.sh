@@ -3,7 +3,7 @@
 ## LOGGING FUNCTIONS
 
 # LogToFile <message> <append_timestamp> <inline>
-function LogToFile {
+function LogToFile() {
     if [[ "${RECEIVER_LOGGING_ENABLED}" == "true" ]]; then
         time_stamp=''
         if [[ -z $2 || "${2}" == "true" ]]; then
@@ -18,86 +18,86 @@ function LogToFile {
     fi
 }
 
-function LogOutput {
+function LogOutput() {
     LogToFile "${1}"
 }
 
 # Logs the "PROJECT TITLE" to the console
 function LogProjectTitle {
     LogToFile "${RECEIVER_PROJECT_TITLE}"
-    echo -e "${DISPLAY_PROJECT_NAME}  ${RECEIVER_PROJECT_TITLE}${DISPLAY_DEFAULT}"
+    echo -e "${display_project_name}  ${RECEIVER_PROJECT_TITLE}${display_default}"
     echo ""
 }
 
 # Logs a "HEADING" to the console
-function LogHeading {
+function LogHeading() {
     LogToFile "${1}"
     echo ""
-    echo -e "${DISPLAY_HEADING}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_heading}  ${1}${display_default}"
     echo ""
 }
 
 # Logs a "MESSAGE" to the console
-function LogMessage {
+function LogMessage() {
     LogToFile "${1}"
-    echo -e "${DISPLAY_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_message}  ${1}${display_default}"
 }
 
 # Logs an alert "HEADING" to the console
-function LogAlertHeading {
+function LogAlertHeading() {
     LogToFile "${1}"
-    echo -e "${DISPLAY_ALERT_HEADING}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_alert_heading}  ${1}${display_default}"
 }
 
 # Logs an alert "MESSAGE" to the console
-function LogAlertMessage {
+function LogAlertMessage() {
     LogToFile "${1}"
-    echo -e "${DISPLAY_ALERT_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_alert_message}  ${1}${display_default}"
 }
 
 # Logs an title "HEADING" to the console
-function LogTitleHeading {
+function LogTitleHeading() {
     LogToFile "${1}"
-    echo -e "${DISPLAY_TITLE_HEADING}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_title_heading}  ${1}${display_default}"
 }
 
 # Logs an title "MESSAGE" to the console
-function LogTitleMessage {
+function LogTitleMessage() {
     LogToFile "${1}"
-    echo -e "${DISPLAY_TITLE_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_title_message}  ${1}${display_default}"
 }
 
 # Logs a warning "HEADING" to the console
-function LogWarningHeading {
+function LogWarningHeading() {
     LogToFile "${1}"
-    echo -e "${DISPLAY_WARNING_HEADING}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_warning_heading}  ${1}${display_default}"
 }
 
 # Logs a warning "MESSAGE" to the console
-function LogWarningMessage {
+function LogWarningMessage() {
     LogToFile "${1}"
-    echo -e "${DISPLAY_WARNING_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_warning_message}  ${1}${display_default}"
 }
 
-function LogMessageInline {
+function LogMessageInline() {
     LogToFile "${1}" "true" "inline"
-    printf "${DISPLAY_MESSAGE}  ${1}${DISPLAY_DEFAULT}"
+    printf "${display_message}  ${1}${display_default}"
 }
 
-function LogFalseInline {
+function LogFalseInline() {
     LogToFile "${1}" "false"
-    echo -e "${DISPLAY_FALSE_INLINE} ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_false_inline} ${1}${display_default}"
 }
 
-function LogTrueInline {
+function LogTrueInline() {
     LogToFile "${1}" "false"
-    echo -e "${DISPLAY_TRUE_INLINE} ${1}${DISPLAY_DEFAULT}"
+    echo -e "${display_true_inline} ${1}${display_default}"
 }
 
 
 ## CHECK IF THE SUPPLIED PACKAGE IS INSTALLED AND IF NOT ATTEMPT TO INSTALL IT
 
-function CheckPackage {
+function CheckPackage() {
     attempt=1
     max_attempts=5
     wait_time=5
@@ -134,7 +134,7 @@ function CheckPackage {
 
 ## BLACKLIST DVB-T DRIVERS FOR RTL-SDR DEVICES
 
-function BlacklistModules {
+function BlacklistModules() {
     if [[ ! -f /etc/modprobe.d/rtlsdr-blacklist.conf || `cat /etc/modprobe.d/rtlsdr-blacklist.conf | wc -l` < 9 ]]; then
         LogMessage "Blacklisting unwanted RTL-SDR kernel modules so they are not loaded"
         sudo tee /etc/modprobe.d/rtlsdr-blacklist.conf  > /dev/null <<EOF
@@ -158,31 +158,31 @@ EOF
 
 # Use sed to locate the "SWITCH" then replace the "VALUE", the portion after the equals sign, in the specified "FILE"
 # This function will replace the value assigned to a specific switch contained within a file
-function ChangeSwitch {
+function ChangeSwitch() {
     sudo sed -i -re "s/($1)\s+\w+/\1 $2/g" $3
 }
 
 # Use sed to locate the "KEY" then replace the "VALUE", the portion after the equals sign, in the specified "FILE"
 # This function should work with any configuration file with settings formated as KEY="VALUE"
-function ChangeConfig {
+function ChangeConfig() {
     sudo sed -i -e "s/\($1 *= *\).*/\1\"$2\"/" $3
 }
 
 # Use sed to locate the "KEY" then read the "VALUE", the portion after the equals sign, in the specified "FILE"
 # This function should work with any configuration file with settings formated as KEY="VALUE"
-function GetConfig {
+function GetConfig() {
     echo `sed -n "/^$1 *= *\"\(.*\)\"$/s//\1/p" $2`
 }
 
 # Use sed to locate the "KEY" then comment out the line containing it in the specified "FILE"
-function CommentConfig {
+function CommentConfig() {
     if [[ ! `grep -cFx "#${1}" $2` -gt 0 ]]; then
         sudo sed -i "/${1}/ s/^/#/" $2
     fi
 }
 
 # Use sed to locate the "KEY" then uncomment the line containing it in the specified "FILE"
-function UncommentConfig {
+function UncommentConfig() {
     if [[ `grep -cFx "#${1}" $2` -gt 0 ]]; then
         sudo sed -i "/#${1}*/ s/#*//" $2
     fi

@@ -2,35 +2,34 @@
 
 ## DISPLAY COLORS
 
-DISPLAY_DEFAULT="\033[0m"
-DISPLAY_HEADING="\033[1;36m"
-DISPLAY_MESSAGE="\033[2;36m"
-DISPLAY_PROJECT_NAME="\033[1;31m"
-DISPLAY_TITLE_HEADING="\033[1;32m"
-DISPLAY_TITLE_MESSAGE="\033[2;32m"
-DISPLAY_WARNING_HEADING="\033[1;33m"
-DISPLAY_WARNING_MESSAGE="\033[2;33m"
-DISPLAY_ALERT_HEADING="\033[1;31m"
-DISPLAY_ALERT_MESSAGE="\033[2;31m"
-DISPLAY_FALSE_INLINE="\033[2;31m"
-DISPLAY_TRUE_INLINE="\033[2;32m"
+display_default="\033[0m"
+display_heading="\033[1;36m"
+display_message="\033[2;36m"
+display_project_name="\033[1;31m"
+display_title_heading="\033[1;32m"
+display_title_message="\033[2;32m"
+display_warning_heading="\033[1;33m"
+display_warning_message="\033[2;33m"
+display_alert_heading="\033[1;31m"
+display_alert_message="\033[2;31m"
+display_false_inline="\033[2;31m"
+display_true_inline="\033[2;32m"
 
 ## SOFTWARE VERSIONS
 
 # FlightAware
-DUMP1090_FA_VERSION="9.0"
-DUMP978_FA_VERSION="9.0"
-PIAWARE_VERSION="9.0.1"
-SKYAWARE978_VERSION="9.0"
+dump1090-fa_current_version="9.0"
+dump978-fa_current_version="9.0"
+piaware_current_version="9.0.1"
 
 # PlaneFinder Client
-PLANEFINDER_CLIENT_VERSION_ARMHF="5.0.161"
-PLANEFINDER_CLIENT_VERSION_ARM64="5.1.440"
-PLANEFINDER_CLIENT_VERSION_AMD64="5.0.162"
-PLANEFINDER_CLIENT_VERSION_I386="5.0.161"
+pfclient_current_version_armhf="5.0.161"
+pfclient_current_version_arm64="5.1.440"
+pfclient_current_version_amd64="5.0.162"
+pfclient_current_version_i386="5.0.161"
 
 # Flightradar24 Client
-FLIGHTRADAR24_CLIENT_VERSION="1.0.18-5"
+fr24feed_current_version="1.0.18-5"
 
 # OpenSky Network Client
-OPENSKY_NETWORK_CLIENT_VERSION="2.1.7-1"
+opensky-feeder_current_version="2.1.7-1"

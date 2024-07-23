@@ -9,11 +9,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up the Airplanes.live client"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "Airplanes.live Feeder Client Setup" \
               --yesno "The airplanes.live feeder client takes data from a local dump1090 instance and shares this with airplanes.live. for more information please see their website:\n\n  https://airplanes.live/how-to-feed/\n\nContinue setup by installing the airplanes.live feeder client?" \
               13 78; then
+    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""

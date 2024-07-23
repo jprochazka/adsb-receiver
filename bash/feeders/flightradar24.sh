@@ -9,12 +9,11 @@ clear
 LogProjectTitle
 LogTitleHeading "Setting up the FlightRadar24 client"
 LogTitleMessage "------------------------------------------------------------------------------"
-echo ""
-
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightRadar24 feeder client Setup" \
               --yesno "The FlightRadar24 feeder client takes data from a local dump1090 instance and shares this with FlightRadar24 using the fr24feed package, for more information please see their website:\n\n  https://www.flightradar24.com/share-your-data\n\nContinue setup by installing the FlightRadar24 feeder client?" \
               13 78; then
+    echo ""
     LogAlertHeading "INSTALLATION HALTED"
     LogAlertMessage "Setup has been halted at the request of the user"
     echo ""

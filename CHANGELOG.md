@@ -8,9 +8,10 @@ The following is a history of the changes made to this project.
 * The installation of PiAware is no longer required when choosing to install dump1090-fa.
 * The dump1090-fa installation script now mimics the current dump1090-fa installation instructions.
 * All scripts excluding those related to the portal now utilize the new logging functions.
-* Logging to the logs directory is enabled by default but can be disabled with --no-log or -n.
+* Logging to the logs directory is enabled by default but can be disabled with --no-logging or -n.
 * Added variables which can be modified to adjust text colors used by the bash scripts.
 * Added the --version and -v arguments in order to display the current project version.
+* Additional script cleanup done to various files.
 * Removed scripting used for image setup.
 
 ## v2.8.4 *(July 13th, 2024)* :rooster:
