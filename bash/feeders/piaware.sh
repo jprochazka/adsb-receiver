@@ -2,6 +2,15 @@
 
 # THE FLIGHTAWARE PIAWARE CLIENT SETUP SCRIPT
 
+# JPROCHAZKA/PIAWARE_BUILDER REPOSITORY
+# -----------------------------------------------------------------------------------
+# I submitted a fix to support Debian Trixie and Ubuntu Noble Numbat to FlightAware's
+# piaware_builder repository. Until the changes are merged into their Git reposiory
+# the installation will be done using the fork I created along with the branch which
+# contains the changes needed in order to build the package.
+#
+# https://github.com/flightaware/piaware_builder/pull/26
+
 # TCLTLS-REBUILD
 # -----------------------------------------------------------------------------------
 # Along with PiAware, a version of tcltls maintained by FlightAware can be installed.
@@ -167,7 +176,16 @@ else
     cd $RECEIVER_BUILD_DIRECTORY
     log_message "Cloning the piaware_builder git repository locally"
     echo ""
-    git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+
+    # --- START TEMPORARY NOBLE FIX ---
+    if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
+        git clone https://github.com/jprochazka/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    else
+        git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    fi
+
+    #git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    # --- END TEMPORARY NOBLE FIX ---
 fi
 
 
@@ -177,6 +195,12 @@ log_heading "Beginning the FlightAware PiAware installation process"
 
 log_message "Entering the piaware_builder git repository directory"
 cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
+
+# --- START TEMPORARY NOBLE FIX ---
+if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
+    git checkout trixie
+fi
+# --- END TEMPORARY NOBLE FIX ---
 
 log_message "Determining which piaware_builder build strategy should be use"
 distro="bookworm"
