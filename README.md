@@ -28,7 +28,7 @@ Your local repositories master branch will be updated each time install.sh is ex
 
 The following software can be installed using these scripts.
 
-### The ADS-B Receiver Web Portal
+### The ADS-B Portal
 
 Included is the option to install the ADS-B Portal which offers the following features.
 

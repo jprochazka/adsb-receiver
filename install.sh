@@ -147,7 +147,7 @@ source $RECEIVER_BASH_DIRECTORY/variables.sh
 if [[ "${RECEIVER_LOGGING_ENABLED}" == "true" ]]; then
     export RECEIVER_LOG_FILE=$PWD/logs/$log_file
     if [ ! -d "$DIRECTORY" ]; then
-        LogMessage "Creating logs directory"
+        log_message "Creating logs directory"
         mkdir $PWD/logs
     fi
 fi
@@ -156,27 +156,27 @@ fi
 ## UPDATE PACKAGE LISTS AND INSTALL DEPENDENCIES
 
 clear
-LogProjectTitle
-LogTitleHeading "Starting ADS-B Receiver Installer package dependency check"
-LogTitleMessage "------------------------------------------------------------------------------"
+log_project_title
+log_title_heading "Starting ADS-B Receiver Installer package dependency check"
+log_title_message "------------------------------------------------------------------------------"
 
-LogHeading "Updating package lists for all enabled repositories and PPAs"
+log_heading "Updating package lists for all enabled repositories and PPAs"
 
-LogMessage "Downloading the latest package lists for all enabled repositories and PPAs"
+log_message "Downloading the latest package lists for all enabled repositories and PPAs"
 echo ""
 sudo apt-get update 2>&1 | tee -a $RECEIVER_LOG_FILE
 
-LogHeading "Ensuring that all required packages are installed"
+log_heading "Ensuring that all required packages are installed"
 
-CheckPackage bc
-CheckPackage git
-CheckPackage lsb-base
-CheckPackage lsb-release
-CheckPackage whiptail
+check_package bc
+check_package git
+check_package lsb-base
+check_package lsb-release
+check_package whiptail
 echo ""
 
-LogTitleMessage "------------------------------------------------------------------------------"
-LogTitleHeading "ADS-B Receiver Installer package dependency check complete"
+log_title_message "------------------------------------------------------------------------------"
+log_title_heading "ADS-B Receiver Installer package dependency check complete"
 echo ""
 read -p "Press enter to continue..." discard
 

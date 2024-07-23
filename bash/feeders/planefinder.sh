@@ -6,19 +6,19 @@ source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 clear
-LogProjectTitle
-LogTitleHeading "Setting up the PlaneFinder client"
-LogTitleMessage "------------------------------------------------------------------------------"
+log_project_title
+log_title_heading "Setting up the PlaneFinder client"
+log_title_message "------------------------------------------------------------------------------"
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "PlaneFinder ADS-B Client Setup" \
               --yesno "The PlaneFinder ADS-B Client is an easy and accurate way to share your ADS-B and MLAT data with Plane Finder. It comes with a beautiful user interface that helps you explore and interact with your data in realtime.\n\n  https://planefinder.net/sharing/client\n\nContinue setup by installing PlaneFinder ADS-B Client?" \
               13 78; then
     echo ""
-    LogAlertHeading "INSTALLATION HALTED"
-    LogAlertMessage "Setup has been halted at the request of the user"
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "Setup has been halted at the request of the user"
     echo ""
-    LogTitleMessage "------------------------------------------------------------------------------"
-    LogTitleHeading "PlaneFinder client setup halted"
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "PlaneFinder client setup halted"
     echo ""
     exit 1
 fi
@@ -26,14 +26,14 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-LogHeading "Installing packages needed to fulfill PlaneFinder client dependencies"
+log_heading "Installing packages needed to fulfill PlaneFinder client dependencies"
 
-CheckPackage wget
+check_package wget
 
 case "${RECIEVER_CPU_ARCHITECTURE}" in
     "aarch64")
         sudo dpkg --add-architecture armhf
-        CheckPackage libc6:armhf
+        check_package libc6:armhf
         ;;
 esac
 
@@ -41,10 +41,10 @@ esac
 ## DOWNLOAD AND INSTALL THE PROPER PLANEFINDER CLIENT DEBIAN PACKAGE
 
 
-LogHeading "Begining the PlaneFinder client installation process"
+log_heading "Begining the PlaneFinder client installation process"
 
 
-LogMessage "Determining which Debian package to install"
+log_message "Determining which Debian package to install"
 case "${RECIEVER_CPU_ARCHITECTURE}" in
     "armv7l"|"armv6l")
         package_name="pfclient_${PLANEFINDER_CLIENT_VERSION_ARMHF}_armhf.deb"
@@ -60,14 +60,14 @@ case "${RECIEVER_CPU_ARCHITECTURE}" in
         ;;
     *)
         echo ""
-        LogAlertHeading "INSTALLATION HALTED"
+        log_alert_heading "INSTALLATION HALTED"
         echo ""
-        LogAlertMessage "Unsupported CPU Archetecture"
-        LogAlertMessage "Archetecture Detected: ${CPU_ARCHITECTURE}"
-        LogAlertMessage "Setup has been terminated"
+        log_alert_message "Unsupported CPU Archetecture"
+        log_alert_message "Archetecture Detected: ${CPU_ARCHITECTURE}"
+        log_alert_message "Setup has been terminated"
         echo ""
-        LogTitleMessage "------------------------------------------------------------------------------"
-        LogTitleHeading "PlaneFinder client setup failed"
+        log_title_message "------------------------------------------------------------------------------"
+        log_title_heading "PlaneFinder client setup failed"
         echo ""
         read -p "Press enter to continue..." discard
         exit 1
@@ -75,31 +75,31 @@ case "${RECIEVER_CPU_ARCHITECTURE}" in
 esac
 
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/planefinder ]]; then
-    LogMessage "Creating the PlaneFinder build directory"
+    log_message "Creating the PlaneFinder build directory"
     echo ""
     mkdir -vp $RECEIVER_BUILD_DIRECTORY/planefinder
     echo ""
 fi
-LogMessage "Entering the PlaneFinder build directory"
+log_message "Entering the PlaneFinder build directory"
 cd $RECEIVER_BUILD_DIRECTORY/planefinder
 
-LogMessage "Downloading the appropriate PlaneFinder client Debian package"
+log_message "Downloading the appropriate PlaneFinder client Debian package"
 echo ""
 wget -v -O $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name http://client.planefinder.net/$package_name 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
-LogMessage "Installing the PlaneFinder Client Debian package"
+log_message "Installing the PlaneFinder Client Debian package"
 echo -e ""
 sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
-    LogMessage "Creating the package archive directory"
+    log_message "Creating the package archive directory"
     echo ""
     mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 fi
-LogMessage "Copying the PlaneFinder client Debian package into the archive directory"
+log_message "Copying the PlaneFinder client Debian package into the archive directory"
 echo ""
 cp -vf $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
@@ -107,9 +107,9 @@ echo ""
 
 ## POST INSTALLATION OPERATIONS
 
-LogHeading "Performing post installation operations"
+log_heading "Performing post installation operations"
 
-LogMessage "Displaying the message informing the user on how to complete setup"
+log_message "Displaying the message informing the user on how to complete setup"
 RECEIVER_IP_ADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "PlaneFinder ADS-B Client Setup Instructions" \
@@ -119,12 +119,12 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
 ## SETUP COMPLETE
 
-LogMessage "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
+log_message "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
 cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
-LogTitleMessage "------------------------------------------------------------------------------"
-LogTitleHeading "PlaneFinder client setup is complete"
+log_title_message "------------------------------------------------------------------------------"
+log_title_heading "PlaneFinder client setup is complete"
 echo ""
 read -p "Press enter to continue..." discard
 

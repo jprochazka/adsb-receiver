@@ -310,7 +310,7 @@ if [[ "${install_1090mhz_decoder}" == "false" && "${install_1090mhz_decoder}" ==
              --msgbox "Nothing has been selected to be installed so the script will exit now." \
              10 65
     echo ""
-    LogAlertHeading "Nothing was selected to do or be installed"
+    log_alert_heading "Nothing was selected to do or be installed"
     echo ""
     exit 1
 else
@@ -361,7 +361,7 @@ fi
 confirmation_message="${confirmation_message}Do you wish to continue setup?"
 if ! (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Confirm You Wish To Continue" --yesno "${confirmation_message}" 21 78); then
     echo ""
-    LogAlertHeading "Installation cancelled by user"
+    log_alert_heading "Installation cancelled by user"
     echo ""
     exit 1
 fi

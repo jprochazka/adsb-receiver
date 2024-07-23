@@ -69,9 +69,9 @@ fi
 
 if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability" ]] ; then
     echo -e "\e[94m  Modifying the dump1090-mutability configuration file to add noise measurements...\e[97m"
-    EXTRA_ARGS=`GetConfig "EXTRA_ARGS" "/etc/default/dump1090-mutability"`
+    EXTRA_ARGS=`get_config "EXTRA_ARGS" "/etc/default/dump1090-mutability"`
     EXTRA_ARGS=$(sed -e 's/^[[:space:]]*//' <<<"EXTRA_ARGS --measure-noise")
-    ChangeConfig "EXTRA_ARGS" "${RECEIVER_LONGITUDE}" "/etc/default/dump1090-mutability"
+    change_config "EXTRA_ARGS" "${RECEIVER_LONGITUDE}" "/etc/default/dump1090-mutability"
 
     echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
     sudo systemctl daemon-reload

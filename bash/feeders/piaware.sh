@@ -18,19 +18,19 @@ source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 clear
-LogProjectTitle
-LogTitleHeading "Setting up the FlightAware PiAware client"
-LogTitleMessage "------------------------------------------------------------------------------"
+log_project_title
+log_title_heading "Setting up the FlightAware PiAware client"
+log_title_message "------------------------------------------------------------------------------"
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "FlightAware PiAware client Setup" \
               --yesno "The FlightAware PiAware client takes data from a local dump1090 instance and shares this with FlightAware using the piaware package, for more information please see their website:\n\n  https://www.flightaware.com/adsb/piaware/\n\nContinue setup by installing the FlightAware PiAware client?" \
               13 78; then
     echo ""
-    LogAlertHeading "INSTALLATION HALTED"
-    LogAlertMessage "Setup has been halted at the request of the user"
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "Setup has been halted at the request of the user"
     echo ""
-    LogTitleMessage "------------------------------------------------------------------------------"
-    LogTitleHeading "FlightAware PiAware client setup halted"
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "FlightAware PiAware client setup halted"
     echo ""
     exit 1
 fi
@@ -38,43 +38,43 @@ fi
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-LogHeading "Installing packages needed to fulfill FlightAware PiAware client dependencies"
+log_heading "Installing packages needed to fulfill FlightAware PiAware client dependencies"
 
-CheckPackage autoconf
-CheckPackage build-essential
-CheckPackage chrpath
-CheckPackage debhelper
-CheckPackage devscripts
-CheckPackage git
-CheckPackage itcl3
-CheckPackage libboost-filesystem-dev
-CheckPackage libboost-program-options-dev
-CheckPackage libboost-regex-dev
-CheckPackage libboost-system-dev
-CheckPackage libssl-dev
-CheckPackage net-tools
-CheckPackage openssl
-CheckPackage patchelf
-CheckPackage python3-dev
-CheckPackage python3-pip
-CheckPackage python3-setuptools
-CheckPackage python3-venv
-CheckPackage python3-wheel
-CheckPackage tcl-dev
-CheckPackage tcl8.6-dev
-CheckPackage tcllib
-CheckPackage tclx8.4
-CheckPackage zlib1g-dev
+check_package autoconf
+check_package build-essential
+check_package chrpath
+check_package debhelper
+check_package devscripts
+check_package git
+check_package itcl3
+check_package libboost-filesystem-dev
+check_package libboost-program-options-dev
+check_package libboost-regex-dev
+check_package libboost-system-dev
+check_package libssl-dev
+check_package net-tools
+check_package openssl
+check_package patchelf
+check_package python3-dev
+check_package python3-pip
+check_package python3-setuptools
+check_package python3-venv
+check_package python3-wheel
+check_package tcl-dev
+check_package tcl8.6-dev
+check_package tcllib
+check_package tclx8.4
+check_package zlib1g-dev
 
 if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
-    CheckPackage python3-pyasyncore
+    check_package python3-pyasyncore
 fi
 
 if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
-    CheckPackage python3-dev
+    check_package python3-dev
 else
-    CheckPackage python3-build
-    CheckPackage tcl-tls
+    check_package python3-build
+    check_package tcl-tls
 fi
 
 
@@ -82,22 +82,22 @@ fi
 
 if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
 
-    LogHeading "Preparing the FlightAware tcltls-rebuild Git repository"
+    log_heading "Preparing the FlightAware tcltls-rebuild Git repository"
 
     if [[ -d $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild && -d $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/.git ]]; then
-        LogMessage "Entering the tcltls-rebuild git repository directory"
+        log_message "Entering the tcltls-rebuild git repository directory"
         cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild
-        LogMessage "Updating the local tcltls-rebuild git repository"
+        log_message "Updating the local tcltls-rebuild git repository"
         echo ""
         git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
     else
-        LogMessage "Creating the tcltls-rebuild build directory"
+        log_message "Creating the tcltls-rebuild build directory"
         echo ""
         mkdir -v $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild 2>&1 | tee -a $RECEIVER_LOG_FILE
         echo ""
-        LogMessage "Entering the tcltls-rebuild build directory"
+        log_message "Entering the tcltls-rebuild build directory"
         cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild
-        LogMessage "Cloning the tcltls-rebuild git repository locally"
+        log_message "Cloning the tcltls-rebuild git repository locally"
         echo ""
         git clone https://github.com/flightaware/tcltls-rebuild 2>&1 | tee -a $RECEIVER_LOG_FILE
     fi
@@ -106,42 +106,42 @@ if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
 
     ## BUILD AND INSTALL THE TCLTLS-REBUILD PACKAGE
 
-    LogHeading "Beginning the FlightAware tcltls-rebuild installation process"
+    log_heading "Beginning the FlightAware tcltls-rebuild installation process"
 
-    LogMessage "Checking if the FlightAware tcltls-rebuild is required"
+    log_message "Checking if the FlightAware tcltls-rebuild is required"
 
-    LogMessage "Entering the tcltls-rebuild source directory"
+    log_message "Entering the tcltls-rebuild source directory"
     cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/tcltls-1.7.22
-    LogMessage "Building the tcltls-rebuild package"
+    log_message "Building the tcltls-rebuild package"
     echo ""
     dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
-    LogMessage "Installing the tcltls-rebuild package"
+    log_message "Installing the tcltls-rebuild package"
     echo ""
     sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/tcl-tls_1.7.22-2+fa1_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
 
-    LogMessage "Checking that the FlightAware tcltls-rebuild package was installed properly"
+    log_message "Checking that the FlightAware tcltls-rebuild package was installed properly"
     if [[ $(dpkg-query -W -f='${STATUS}' tcltls 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
         echo ""
-        LogAlertHeading "INSTALLATION HALTED"
+        log_alert_heading "INSTALLATION HALTED"
         echo ""
-        LogAlertMessage "FlightAware tcltls-rebuild package installation failed"
-        LogAlertMessage "Setup has been terminated"
+        log_alert_message "FlightAware tcltls-rebuild package installation failed"
+        log_alert_message "Setup has been terminated"
         echo ""
-        LogTitleMessage "------------------------------------------------------------------------------"
-        LogTitleHeading "FlightAware PiAware client setup failed"
+        log_title_message "------------------------------------------------------------------------------"
+         "FlightAware PiAware client setup failed"
         echo ""
         read -p "Press enter to continue..." discard
         exit 1
     else
         if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
-            LogMessage "Creating the package archive directory"
+            log_message "Creating the package archive directory"
             echo ""
             mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
             echo ""
         fi
-        LogMessage "Copying the FlightAware tcltls-rebuild Debian package into the archive directory"
+        log_message "Copying the FlightAware tcltls-rebuild Debian package into the archive directory"
         echo ""
         cp -vf $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
     fi
@@ -150,22 +150,22 @@ fi
 
 ## CLONE OR PULL THE PIAWARE_BUILDER GIT REPOSITORY
 
-LogHeading "Preparing the FlightAware piaware_builder Git repository"
+log_heading "Preparing the FlightAware piaware_builder Git repository"
 
 if [[ -d $RECEIVER_BUILD_DIRECTORY/piaware_builder && -d $RECEIVER_BUILD_DIRECTORY/piaware_builder/.git ]]; then
-    LogMessage "Entering the piaware_builder git repository directory"
+    log_message "Entering the piaware_builder git repository directory"
     cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
-    LogMessage "Updating the local piaware_builder git repository"
+    log_message "Updating the local piaware_builder git repository"
     echo ""
     git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
 else
-    LogMessage "Creating the FlightAware piaware_builder build directory"
+    log_message "Creating the FlightAware piaware_builder build directory"
     echo ""
     mkdir -v $RECEIVER_BUILD_DIRECTORY/piaware_builder 2>&1 | tee -a $RECEIVER_LOG_FILE
     echo ""
-    LogMessage "Entering the ADS-B Receiver Project build directory"
+    log_message "Entering the ADS-B Receiver Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY
-    LogMessage "Cloning the piaware_builder git repository locally"
+    log_message "Cloning the piaware_builder git repository locally"
     echo ""
     git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
@@ -173,12 +173,12 @@ fi
 
 ## BUILD AND INSTALL THE PIAWARE CLIENT PACKAGE
 
-LogHeading "Beginning the FlightAware PiAware installation process"
+log_heading "Beginning the FlightAware PiAware installation process"
 
-LogMessage "Entering the piaware_builder git repository directory"
+log_message "Entering the piaware_builder git repository directory"
 cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
 
-LogMessage "Determining which piaware_builder build strategy should be use"
+log_message "Determining which piaware_builder build strategy should be use"
 distro="bookworm"
 case $RECEIVER_OS_CODE_NAME in
     focal)
@@ -191,43 +191,43 @@ case $RECEIVER_OS_CODE_NAME in
         distro="bookworm"
         ;;
 esac
-LogMessage "Setting distribution to build for to ${distro}"
+log_message "Setting distribution to build for to ${distro}"
 
-LogMessage "Executing the FlightAware PiAware client build script"
+log_message "Executing the FlightAware PiAware client build script"
 echo ""
 ./sensible-build.sh $distro 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
-LogMessage "Entering the FlightAware PiAware client build directory"
+log_message "Entering the FlightAware PiAware client build directory"
 cd $RECEIVER_BUILD_DIRECTORY/piaware_builder/package-${distro}
-LogMessage "Building the FlightAware PiAware client package"
+log_message "Building the FlightAware PiAware client package"
 echo ""
 dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
-LogMessage "Installing the FlightAware PiAware client package"
+log_message "Installing the FlightAware PiAware client package"
 echo ""
 sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/piaware_builder/piaware_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
-LogMessage "Checking that the FlightAware PiAware client package was installed properly"
+log_message "Checking that the FlightAware PiAware client package was installed properly"
 if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-    LogAlertHeading "INSTALLATION HALTED"
+    log_alert_heading "INSTALLATION HALTED"
     echo ""
-    LogAlertMessage "FlightAware PiAware package installation failed"
-    LogAlertMessage "Setup has been terminated"
+    log_alert_message "FlightAware PiAware package installation failed"
+    log_alert_message "Setup has been terminated"
     echo ""
-    LogTitleMessage "------------------------------------------------------------------------------"
-    LogTitleHeading "FlightAware PiAware client setup failed"
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "FlightAware PiAware client setup failed"
     echo ""
     read -p "Press enter to continue..." discard
     exit 1
 else
     if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
-        LogMessage "Creating the package archive directory"
+        log_message "Creating the package archive directory"
         echo ""
         mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
         echo ""
     fi
-    LogMessage "Copying the FlightAware PiAware client binary package into the archive directory"
+    log_message "Copying the FlightAware PiAware client binary package into the archive directory"
     echo ""
     cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
@@ -235,9 +235,9 @@ fi
 
 ## POST INSTALLATION OPERATIONS
 
-LogHeading "Performing post installation operations"
+log_heading "Performing post installation operations"
 
-LogMessage "Displaying the message informing the user on how to claim their device"
+log_message "Displaying the message informing the user on how to claim their device"
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "Claiming Your PiAware Device" \
          --msgbox "FlightAware requires you claim your feeder online using the following URL:\n\n  http://flightaware.com/adsb/piaware/claim\n\nTo claim your device simply visit the address listed above." \
@@ -246,12 +246,12 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
 ## SETUP COMPLETE
 
-LogMessage "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
+log_message "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
 cd $RECEIVER_ROOT_DIRECTORY
 
 echo ""
-LogTitleMessage "------------------------------------------------------------------------------"
-LogTitleHeading "FlightAware PiAware client setup is complete"
+log_title_message "------------------------------------------------------------------------------"
+log_title_heading "FlightAware PiAware client setup is complete"
 echo ""
 read -p "Press enter to continue..." discard
 
