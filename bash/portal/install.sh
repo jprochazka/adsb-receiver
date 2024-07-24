@@ -38,7 +38,7 @@ fi
 # We will need to make sure Lighttpd is installed first before we go any further.
 echo -e "\e[95m  Installing packages needed to fulfill dependencies...\e[97m"
 echo -e ""
-CheckPackage lighttpd
+check_package lighttpd
 
 # Assign the Lighthttpd document root directory to a variable.
 RAW_DOCUMENT_ROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
@@ -110,7 +110,7 @@ else
             else
                 # Install the MySQL server package now if it is not already installed.
                 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "MySQL Server Setup" --msgbox "This script will now check for the MySQL server package. If the MySQL server package is not installed it will be installed at this time.\n\nPlease note you may be asked questions used to secure your database server installation after the setup process." 12 78
-                CheckPackage mariadb-server
+                check_package mariadb-server
                 if [[ $(dpkg-query -W -f='${STATUS}' mariadb-server 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
                     echo -e "\e[94m  Executing the mysql_secure_installation script...\e[97m"
                     sudo mysql_secure_installation
@@ -219,44 +219,44 @@ case $RECEIVER_OS_DISTRIBUTION in
 esac
 
 # Install PHP.
-CheckPackage php${DISTRO_PHP_VERSION}-cgi
+check_package php${DISTRO_PHP_VERSION}-cgi
 if (( $(echo "${DISTRO_PHP_VERSION} < 8" | bc -l) )); then
-    CheckPackage php${DISTRO_PHP_VERSION}-json
+    check_package php${DISTRO_PHP_VERSION}-json
 fi
 
 # Performance graph dependencies.
-CheckPackage collectd-core
-CheckPackage rrdtool
+check_package collectd-core
+check_package rrdtool
 
 # Portal dependencies.
 if [ "$RECEIVER_MTA" == "POSTFIX" ] || [ -z "$RECEIVER_MTA" ]; then
-    CheckPackage postfix
+    check_package postfix
 fi
 
-CheckPackage libpython3-stdlib
+check_package libpython3-stdlib
 
 # Install packages needed for advanced portal setups.
 if [[ "${ADVANCED}" = "true" ]] ; then
-    CheckPackage python3-pyinotify
-    CheckPackage python3-apt
+    check_package python3-pyinotify
+    check_package python3-apt
     case "${DATABASEENGINE}" in
         "MySQL")
-            CheckPackage mariadb-client
-            CheckPackage python3-mysqldb
-            CheckPackage php${DISTRO_PHP_VERSION}-mysql
+            check_package mariadb-client
+            check_package python3-mysqldb
+            check_package php${DISTRO_PHP_VERSION}-mysql
             ;;
         "SQLite")
-            CheckPackage sqlite3
+            check_package sqlite3
             if [ `bc -l <<< "$DISTRO_PHP_VERSION >= 7.0"` -eq 1 ]; then
-                CheckPackage php${DISTRO_PHP_VERSION}-sqlite3
+                check_package php${DISTRO_PHP_VERSION}-sqlite3
             else
-                CheckPackage php${DISTRO_PHP_VERSION}-sqlite
+                check_package php${DISTRO_PHP_VERSION}-sqlite
             fi
             ;;
     esac
 else
     if [ ! $DISTRO_PHP_VERSION == "5" ]; then
-        CheckPackage php${DISTRO_PHP_VERSION}-xml
+        check_package php${DISTRO_PHP_VERSION}-xml
     fi
 fi
 

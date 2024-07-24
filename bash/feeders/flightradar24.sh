@@ -1,105 +1,97 @@
 #!/bin/bash
 
-## INCLUDE EXTERNAL SCRIPTS
+## PRE INSTALLATION OPERATIONS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
-
-## BEGIN SETUP
-
 clear
-echo -e "\n\e[91m   ${RECEIVER_PROJECT_TITLE}"
-echo -e ""
-echo -e "\e[92m  Setting up FlightRadar24 feeder client..."
-echo -e ""
-echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
-echo -e ""
+log_project_title
+log_title_heading "Setting up the FlightRadar24 client"
+log_title_message "------------------------------------------------------------------------------"
+if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+              --title "FlightRadar24 feeder client Setup" \
+              --yesno "The FlightRadar24 feeder client takes data from a local dump1090 instance and shares this with FlightRadar24 using the fr24feed package, for more information please see their website:\n\n  https://www.flightradar24.com/share-your-data\n\nContinue setup by installing the FlightRadar24 feeder client?" \
+              13 78; then
+    echo ""
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "Setup has been halted at the request of the user"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "FlightRadar24 client setup halted"
+    echo ""
+    exit 1
+fi
 
-# Confirm component installation.
-if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "FlightRadar24 feeder client Setup" --yesno "The FlightRadar24 feeder client takes data from a local dump1090 instance and shares this with FlightRadar24 using the fr24feed package, for more information please see their website:\n\n  https://www.flightradar24.com/share-your-data\n\nContinue setup by installing the FlightRadar24 feeder client?" 13 78 3>&1 1>&2 2>&3; then
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  Setup has been halted at the request of the user."
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  FlightRadar24 feeder client setup halted.\e[39m"
-    echo -e ""
+
+## DOWNLOAD AND EXECUTE THE FLIGHTRADAR24 CLIENT INSTALL SCRIPT
+
+log_heading "Begining the FlightRadar24 client installation process"
+
+if [[ ! -d $RECEIVER_BUILD_DIRECTORY/flightradar24 ]]; then
+    log_message "Creating the FlightRadar24 build directory"
+    echo ""
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/flightradar24 2>&1 | tee -a $RECEIVER_LOG_FILE
+    echo ""
+fi
+log_message "Entering the FlightRadar24 build directory"
+cd $RECEIVER_BUILD_DIRECTORY/flightradar24
+
+log_message "Downloading the airplanes.live client installation script"
+echo ""
+wget -v -O $RECEIVER_BUILD_DIRECTORY/flightradar24/install.sh https://fr24.com/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
+echo ""
+
+log_message "Executing the airplanes.live client installation script"
+echo ""
+sudo bash $RECEIVER_BUILD_DIRECTORY/flightradar24/install.sh
+echo ""
+
+
+## CHECK THE STATUS OF THE CLIENT
+
+log_heading "Checking if the FlightRadar24 client was installed successfully"
+
+echo -e "\e[94m  Checking that the FlightRadar24 client package was installed"
+if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+    echo ""
+    log_alert_heading "INSTALLATION HALTED"
+    echo ""
+    log_alert_message "FlightRadar24 package installation failed"
+    log_alert_message "Setup has been terminated"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "FlightRadar24 client setup failed"
+    echo ""
     read -p "Press enter to continue..." discard
     exit 1
 fi
 
 
-## START INSTALLATION
+## POST INSTALLATION OPERATIONS
 
-echo -e ""
-echo -e "\e[95m  Begining the FlightRadar24 feeder client installation process...\e[97m"
-echo -e ""
+log_heading "Performing post installation operations"
 
-# Create the component build directory if it does not exist
-if [[ ! -d $RECEIVER_BUILD_DIRECTORY/flightradar24 ]]; then
-    echo -e "\e[94m  Creating the FlightRadar24 feeder client build directory...\e[97m"
-    echo ""
-    mkdir -vp $RECEIVER_BUILD_DIRECTORY/flightradar24
-    echo ""
-fi
-
-# Change to the component build directory
-echo -e "\e[94m  Entering the FlightRadar24 feeder client build directory...\e[97m"
-cd $RECEIVER_BUILD_DIRECTORY/flightradar24 2>&1
-echo ""
-
-# Download the official Flightradar24 installation script
-echo -e "\e[95m  Beginning the Flightradar24 client installation...\e[97m"
-echo -e ""
-
-echo -e "\e[94m  Downloading the Flightradar24 client installation script...\e[97m"
-echo ""
-wget -v https://fr24.com/install.sh
-
-echo -e "\e[94m  Executing the Flightradar24 client installation script...\e[97m"
-echo ""
-sudo bash $RECEIVER_BUILD_DIRECTORY/flightradar24/install.sh
-echo ""
-
-# Check that the component package was installed successfully.
-echo -e "\e[94m  Checking that the FlightRadar24 feeder client package was installed properly...\e[97m"
-
-if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-    echo -e ""
-    echo -e "\e[91m  \e[5mINSTALLATION HALTED!\e[25m"
-    echo -e "  UNABLE TO INSTALL A REQUIRED PACKAGE."
-    echo -e "  SETUP HAS BEEN TERMINATED!"
-    echo -e ""
-    echo -e "\e[93mThe package \"fr24feed\" could not be installed.\e[39m"
-    echo -e ""
-    echo -e "\e[93m  ------------------------------------------------------------------------------"
-    echo -e "\e[92m  FlightRadar24 feeder client setup halted.\e[39m"
-    echo -e ""
-    read -p "Press enter to continue..." CONTINUE
-    exit 1
-fi
-
-
-## COMPONENT POST INSTALL ACTIONS
-
-# If sharing to other networks alongside Flightradar24 make sure MLAT is disabled
-echo -e "\e[94m  Flightradar24 asks that MLAT be disabled if sharing with other networks...\e[97m"
-ChangeConfig "mlat" "no" "/etc/fr24feed.ini"
-ChangeConfig "mlat-without-gps" "no" "/etc/fr24feed.ini"
-echo -e "\e[94m  Restarting the Flightradar24 client...\e[97m"
+log_message "Flightradar24 asks that MLAT be disabled if sharing with other networks"
+change_config "mlat" "no" "/etc/fr24feed.ini"
+change_config "mlat-without-gps" "no" "/etc/fr24feed.ini"
+log_message "Restarting the Flightradar24 client"
 sudo systemctl restart fr24feed
+
+log_warning_message "If the Flightradar24 client is the only feeder utilizing MLAT execute the following commands to enable MLAT"
+log_warning_message 'sudo sed -i -e "s/\(mlat *= *\).*/\1\"yes\"/" /etc/fr24feed.ini'
+log_warning_message 'sudo sed -i -e "s/\(mlat-without-gps *= *\).*/\1\"yes\"/" /etc/fr24feed.ini'
 
 
 ## SETUP COMPLETE
 
-# Return to the project root directory
-echo -e "\e[94m  Returning to ${RECEIVER_PROJECT_TITLE} root directory...\e[97m"
-cd $RECEIVER_ROOT_DIRECTORY 2>&1
+log_message "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
+cd $RECEIVER_ROOT_DIRECTORY
 
-echo -e ""
-echo -e "\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  FlightRadar24 feeder client setup is complete.\e[39m"
-echo -e ""
+echo ""
+log_title_message "------------------------------------------------------------------------------"
+log_title_heading "FlightRadar24 client setup is complete"
+echo ""
 read -p "Press enter to continue..." discard
 
 exit 0
