@@ -28,7 +28,24 @@ fi
 
 ## PRE INSTALLATION OPERATIONS
 
-# TODO: Ask which device to build the ACARSDEC decoder for
+device=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                    --title "Device Type" \
+                    --menu "Choose an option" \
+                    25 78 16 \
+                    "RTL-SDR" "" \
+                    "AirSpy" "" \
+                    "SDRPlay" "")
+exit_status=$?
+if [[ $exitstatus == 1 ]]; then
+    echo ""
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "Setup has been halted at the request of the user"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "ACARSDEC decoder setup halted"
+    echo ""
+    exit 1
+fi
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -36,17 +53,26 @@ fi
 log_heading "Installing packages needed to fulfill dependencies for FlightAware PiAware client"
 
 check_package cmake
-check_package zlib1g-dev
-check_package libxml2-dev
 check_package libjansson-dev
-check_package libusb-1.0-0-dev
-check_package pkg-config
-check_package libsndfile-dev
 check_package libpaho-mqtt-dev
+check_package libsndfile-dev
+check_package libsqlite3-dev
+check_package libusb-1.0-0-dev
+check_package libxml2-dev
+check_package pkg-config
+check_package zlib1g-dev
 
-check_package librtlsdr-dev
-check_package libairspy-dev
-check_package libmirisdr-dev
+case "${device}" in
+    "RTL-SDR")
+        check_package librtlsdr-dev
+        ;;
+    "AirSpy")
+        check_package libairspy-dev
+        ;;
+    "SDRPlay")
+        check_package libmirisdr-dev
+        ;;
+esac
 
 
 ## CLONE OR PULL THE LIBACARS GIT REPOSITORY
@@ -114,7 +140,7 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/acarsdec && -d $RECEIVER_BUILD_DIRECTORY/acar
     echo ""
     git pull
 else
-    log_message "Entering the ACARSDEC build directory"
+    log_message "Entering the build directory"
     cd $RECEIVER_BUILD_DIRECTORY
     log_message "Cloning the ACARSDEC git repository locally"
     echo ""
@@ -139,13 +165,22 @@ if [[ -n "$(ls -A $RECEIVER_BUILD_DIRECTORY/acarsdec/build 2>/dev/null)" ]]
 fi
 log_message "Entering the ACARSDEC build directory"
 cd $RECEIVER_BUILD_DIRECTORY/acarsdec/build
+
 log_message "Executing cmake"
 echo ""
-
-# TODO: Choose the proper parameters depending on the chosen device
-
-cmake .. -Drtl=ON or -Dairspy=ON or -Dsdrplay=ON
+case "${device}" in
+    "RTL-SDR")
+        cmake .. -Drtl=ON
+        ;;
+    "AirSpy")
+        cmake .. -Dairspy=ON
+        ;;
+    "SDRPlay")
+        cmake .. -Dsdrplay=ON
+        ;;
+esac
 echo ""
+
 log_message "Executing make"
 echo ""
 make
@@ -155,7 +190,41 @@ echo ""
 sudo make install
 echo ""
 
-# TODO: Configure the application to run
+
+## CLONE OR PULL THE ACARSDEC GIT REPOSITORY
+
+log_heading "Preparing the acarsserv Git repository"
+
+if [[ -d $RECEIVER_BUILD_DIRECTORY/acarsserv && -d $RECEIVER_BUILD_DIRECTORY/acarsserv/.git ]]; then
+    log_message "Entering the acarsserv git repository directory"
+    cd $RECEIVER_BUILD_DIRECTORY/acarsserv
+    log_message "Updating the local acarsserv git repository"
+    echo ""
+    git pull
+else
+    log_message "Entering the build directory"
+    cd $RECEIVER_BUILD_DIRECTORY
+    log_message "Cloning the acarsserv git repository locally"
+    echo ""
+    git clone https://github.com/TLeconte/acarsserv.git
+fi
+echo ""
+
+
+## BUILD AND INSTALL THE ACARSDEC BINARY
+
+log_heading "Building the ACARSDEC binary"
+
+log_message "Entering the acarsserv build directory"
+cd $RECEIVER_BUILD_DIRECTORY/acarsserv
+log_message "Executing make"
+echo ""
+make -f Makefile
+
+
+## RUN ACARSDECO AND ACARSSERV
+
+# TODO: Create a way to run the decoder and server automatically.
 
 
 ## SETUP COMPLETE
