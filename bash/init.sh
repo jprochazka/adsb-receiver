@@ -91,9 +91,9 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     log_project_title
     log_title_heading "Downloading and installing the latest updates for your operating system"
     log_title_message "------------------------------------------------------------------------------"
-    
+
     log_heading "Updating the operating system"
-    
+
     log_message "Updating the operating system using apt-get"
     echo ""
     sudo apt-get -y dist-upgrade 2>&1 | tee -a $RECEIVER_LOG_FILE
@@ -107,10 +107,9 @@ fi
 
 ## EXECUTE BASH/MAIN.SH
 
-log_heading "Executing the script bash/main.sh"
+clear
 
-log_message "Adding execute permissions to bash/main"
-chmod +x $RECEIVER_BASH_DIRECTORY/main.sh
+log_heading "Executing the script bash/main.sh"
 
 log_message "Executing bash/main"
 bash $RECEIVER_BASH_DIRECTORY/main.sh

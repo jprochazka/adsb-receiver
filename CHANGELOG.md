@@ -13,6 +13,7 @@ The following is a history of the changes made to this project.
 * Added the --version and -v arguments in order to display the current project version.
 * Additional script cleanup done to various files.
 * Removed scripting used for image setup.
+* Updated the latest Flightradar24 Client version to 1.0.48-0.
 
 ## v2.8.4 *(July 13th, 2024)* :rooster:
 

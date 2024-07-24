@@ -12,7 +12,7 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 install_1090mhz_decoder="false"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") == 1 ]] ; then
     chosen_1090mhz_decoder="dump1090-fa"
-    if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${dump1090-fa_current_version}") == 0 ]] ; then
+    if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${dump1090_fa_current_version}") == 0 ]] ; then
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                  --title "FlightAware Dump1090 Upgrade Available" \
                  --defaultno \
@@ -47,7 +47,7 @@ function install_dump1090-fa() {
 install_978mhz_decoder="false"
 if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") == 1 ]]; then
     chosen_978mhz_decoder="dump978-fa"
-    if [[ $(sudo dpkg -s dump978-fa 2>/dev/null | grep -c "Version: ${dump978-fa_current_version}") == 0 ]]; then
+    if [[ $(sudo dpkg -s dump978-fa 2>/dev/null | grep -c "Version: ${dump978_fa_current_version}") == 0 ]]; then
         whiptail  --backtitle "${RECEIVER_PROJECT_TITLE}" \
                   --title "FlightAware dump978 Upgrade Available" \
                   --defaultno --yesno "An updated version of FlightAware dump978 is available.\n\nWould you like to install the new version?" \
@@ -74,6 +74,7 @@ function install_dump978-fa() {
     fi
 }
 
+
 ## AGGREGATE SITE CLIENTS
 
 declare array feeder_list
@@ -82,7 +83,7 @@ touch ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
 # ADS-B Exchange
 if [[ -f /lib/systemd/system/adsbexchange-mlat.service && -f /lib/systemd/system/adsbexchange-feed.service ]]; then
     echo "ADS-B Exchange Feed Client (reinstall)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-    feeder_list=("${feeder_list[@]}" 'ADS-B Exchange Feed Client (reinstall)' '' OFF)
+    feeder_list=("${feeder_list[@]}" 'ADS-B Exchange Feed Client (reinstall/update)' '' OFF)
 else
     echo "ADS-B Exchange Feed Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     feeder_list=("${feeder_list[@]}" 'ADS-B Exchange Feed Client' '' OFF)
@@ -149,7 +150,7 @@ function install_flightradar24_client() {
 # Fly Italy ADS-B
 if [[ -f /lib/systemd/system/flyitalyadsb-mlat.service && -f /lib/systemd/system/flyitalyadsb-feed.service ]]; then
     echo "Fly Italy ADS-B Feeder (upgrade)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
-    feeder_list=("${feeder_list[@]}" 'Fly Italy ADS-B Feeder (upgrade)' '' OFF)
+    feeder_list=("${feeder_list[@]}" 'Fly Italy ADS-B Feeder (reinstall)' '' OFF)
 else
     echo "Fly Italy ADS-B Feeder" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     feeder_list=("${feeder_list[@]}" 'Fly Italy ADS-B Feeder' '' OFF)
@@ -166,9 +167,7 @@ function install_flyitalyadsb_client() {
 if [[ $(dpkg-query -W -f='${STATUS}' opensky-feeder 2>/dev/null | grep -c "ok installed") == 0 ]]; then
     feeder_list=("${feeder_list[@]}" 'OpenSky Network Feeder' '' OFF)
 else
-    if [[ $(sudo dpkg -s opensky-feeder 2>/dev/null | grep -c "Version: ${opensky-feeder_current_version}") == 0 ]]; then
-        feeder_list=("${feeder_list[@]}" 'OpenSky Network Feeder (upgrade)' '' OFF)
-    else
+    if [[ $(sudo dpkg -s opensky-feeder 2>/dev/null | grep -c "Version: ${opensky_feeder_current_version}") == 0 ]]; then
         feeder_list=("${feeder_list[@]}" 'OpenSky Network Feeder (reinstall)' '' OFF)
     fi
 fi
@@ -245,6 +244,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          14 78
 if [[ $? == 0 ]]; then
     install_portal="true"
+fi
 
 function install_adsb-portal() {
     ${RECEIVER_BASH_DIRECTORY}/portal/install.sh
@@ -266,7 +266,7 @@ else
     extras_list=("${extras_list[@]}" 'beast-splitter (reinstall)' '' OFF)
 fi
 
-function install_beast-splitter() {
+function install_beastsplitter() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/extras/beeastsplitter.sh
     ${RECEIVER_BASH_DIRECTORY}/extras/beastsplitter.sh
     if [[ $? != 0 ]] ; then
@@ -283,7 +283,7 @@ else
     extras_list=("${extras_list[@]}" 'Duck DNS Free Dynamic DNS Hosting (reinstall)' '' OFF)
 fi
 
-function install_duck-dns() {
+function install_duckdns() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/extras/duckdns.sh
     ${RECEIVER_BASH_DIRECTORY}/extras/duckdns.sh
     if [[ $? -ne 0 ]] ; then
@@ -387,34 +387,70 @@ if [[ "${install_978mhz_decoder}" == "true" ]]; then
     esac
 fi
 
+run_adsbexchange_script="false"
+run_airplaneslive_script="false"
+run_flightaware_script="false"
+run_flightradar24_script="false"
+run_flyitalyadsb_script="false"
+run_openskynetwork_script="false"
+run_planefinder_script="false"
+
 # Aggragate site clients
 if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
     while read feeder_choice
     do
         case ${feeder_choice} in
-            "ADS-B Exchange Feeder"|"ADS-B Exchange Feeder (reinstall)")
-                install_adsbexchange_client
+            "ADS-B Exchange Feed Client"|"ADS-B Exchange Feed Client (reinstall/update)")
+                run_adsbexchange_script="true"
                 ;;
             "Airplanes.live Feeder"|"Airplanes.live Feeder (reinstall)")
-                install_airplaneslive_client
+                run_airplaneslive_script="true"
                 ;;
             "FlightAware PiAware"|"FlightAware PiAware (upgrade)"|"FlightAware PiAware (reinstall)")
-                install_flightaware_client
+                run_flightaware_script="true"
                 ;;
             "Flightradar24 Client"|"Flightradar24 Client (upgrade)"|"Flightradar24 Client (reinstall)")
-                install_flightradar24_client
+                run_flightradar24_script="true"
                 ;;
-            "Fly Italy ADS-B Feeder"|"Fly Italy ADS-B Feeder (upgrade)")
-                install_flyitalyadsb_client
+            "Fly Italy ADS-B Feeder"|"Fly Italy ADS-B Feeder (reinstall)")
+                run_flyitalyadsb_script="true"
                 ;;
-            "OpenSky Network Feeder")
-                install_openskynetwork_client
+            "OpenSky Network Feeder"|"OpenSky Network Feeder (reinstall)")
+                run_openskynetwork_script="true"
                 ;;
             "Plane Finder Client"|"Plane Finder Client (upgrade)"|"Plane Finder Client (reinstall)")
-                install_planefinder_client
+                run_planefinder_script="true"
                 ;;
         esac
     done < ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+fi
+
+if [[ "${run_adsbexchange_script}" == "true" ]]; then
+    install_adsbexchange_client
+fi
+
+if [[ "${run_airplaneslive_script}" == "true" ]]; then
+    install_airplaneslive_client
+fi
+
+if [[ "${run_flightaware_script}" == "true" ]]; then
+    install_flightaware_client
+fi
+
+if [[ "${run_flightradar24_script}" == "true" ]]; then
+    install_flightradar24_client
+fi
+
+if [[ "${run_flyitalyadsb_script}" == "true" ]]; then
+    install_flyitalyadsb_client
+fi
+
+if [[ "${run_openskynetwork_script}" == "true" ]]; then
+    install_openskynetwork_client
+fi
+
+if [[ "${run_planefinder_script}" == "true" ]]; then
+    install_planefinder_client
 fi
 
 # Portals
@@ -423,18 +459,30 @@ if [[ "${install_portal}" == "true" ]]; then
 fi
 
 # Extras
+
+run_beastsplitter_script="false"
+run_duckdns_script="false"
+
 if [[ -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
     while read extras_choice
     do
         case ${extras_choice} in
             "beast-splitter"|"beast-splitter (reinstall)")
-                install_beast-splitter
+                run_beastsplitter_script="true"
                 ;;
             "Duck DNS Free Dynamic DNS Hosting"|"Duck DNS Free Dynamic DNS Hosting (reinstall)")
-                install_duck-dns
+                run_duckdns_script="true"
                 ;;
         esac
     done < ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
+fi
+
+if [[ "${run_adsbexchange_script}" == "true" ]]; then
+    install_beastsplitter
+fi
+
+if [[ "${run_duckdns_script}" == "true" ]]; then
+    install_duckdns
 fi
 
 exit 0

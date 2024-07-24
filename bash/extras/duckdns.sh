@@ -37,13 +37,13 @@ check_package curl
 log_heading "Gather information required to configure Duck DNS support"
 
 log_message "Asking the user for the sub domain to be assigned to this device"
-domain_title="Duck DNS Sub Domain"
-while [[ -z $domain ]] ; do
-    domain=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-                      --title $domain_title \
+duckdns_domain_title="Duck DNS Sub Domain"
+while [[ -z $duckdns_domain ]]; do
+    duckdns_domain=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                      --title "${duckdns_domain_title}" \
                       --inputbox "\nPlease enter the Duck DNS sub domain you selected after registering.\nIf you do not have one yet visit http://www.ducknds.org to obtain one." \
-                      9 78)
-    if [[ $domain == 0 ]]; then
+                      9 78 3>&1 1>&2 2>&3)
+    if [[ $duckdns_domain == 0 ]]; then
         log_alert_heading "INSTALLATION HALTED"
         log_alert_message "Setup has been halted due to lack of required information"
         echo ""
@@ -51,17 +51,17 @@ while [[ -z $domain ]] ; do
         log_title_heading "Duck DNS decoder setup halted"
         exit 1
     fi
-    domain_title="Duck DNS Sub Domain (REQUIRED)"
+    duckdns_domain_title="Duck DNS Sub Domain (REQUIRED)"
 done
 
 log_message "Asking the user for the Duck DNS token"
-token_title="Duck DNS Token"
-while [[ -z "${DUCKDNS_TOKEN}" ]] ; do
-    token=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-                     --title $token_title \
+duckdns_token_title="Duck DNS Token"
+while [[ -z $duckdns_token ]]; do
+    duckdns_token=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                     --title "${duckdns_token_title}" \
                      --inputbox "\nPlease enter your Duck DNS token." \
-                     8 78)
-    if [[ $domain == 0 ]]; then
+                     8 78 3>&1 1>&2 2>&3)
+    if [[ $duckdns_domain == 0 ]]; then
         log_alert_heading "INSTALLATION HALTED"
         log_alert_message "Setup has been halted due to lack of required information"
         echo ""
@@ -69,7 +69,7 @@ while [[ -z "${DUCKDNS_TOKEN}" ]] ; do
         log_title_heading "Duck DNS setup halted"
         exit 1
     fi
-    token_title="Duck DNS Token (REQUIRED)"
+    duckdns_token_title="Duck DNS Token (REQUIRED)"
 done
 
 
@@ -86,7 +86,7 @@ fi
 
 log_message "Creating the Duck DNS update script"
 tee $RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh > /dev/null <<EOF
-echo url="https://www.duckdns.org/update?domains=${DUCKDNS_DOMAIN}&token=${DUCKDNS_TOKEN}&ip=" | curl -k -o $RECEIVER_BUILD_DIRECTORY/duckdns/duck.log
+echo url="https://www.duckdns.org/update?domains=${duckdns_domain}&token=${duckdns_token}&ip=" | curl -k -o $RECEIVER_BUILD_DIRECTORY/duckdns/duck.log
 EOF
 
 log_message "Adding execute permissions for only this user to the Duck DNS update script"
@@ -99,7 +99,6 @@ sudo tee /etc/cron.d/duckdns_ip_address_update > /dev/null <<EOF
 # Updates IP address with duckdns.org
 */5 * * * * $RECEIVER_BUILD_DIRECTORY/duckdns/duck.sh >/dev/null 2>&1
 EOF
-echo ""
 
 log_message "Executing the Duck DNS update script"
 echo ""

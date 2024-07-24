@@ -27,6 +27,8 @@ fi
 
 ## GATHER REQUIRED INFORMATION FROM THE USER
 
+log_heading "Gather information required to configure beast-splitter"
+
 log_message "Asking user if beast-splitter should be enabled"
 if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
             --title "Enable Beast Splitter" \
@@ -41,7 +43,7 @@ log_message "Asking user for the beast-splitter input option"
 input_options=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                          --title "Input Options for Beast Splitter" \
                          --inputbox "Enter the option telling Beast Splitter where to read data from. You should provide one of the following either --net or --serial.\n\nExamples:\n--serial /dev/beast\n--net remotehost:remoteport" \
-                         8 78)
+                         8 78 3>&1 1>&2 2>&3)
 if [[ $input_options == 0 ]]; then
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted due to lack of required information"
@@ -55,7 +57,7 @@ log_message "Asking user for the beast-splitter output option"
 output_options=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                           --title "Output Options for Beast Splitter" \
                           --nocancel --inputbox "Enter the option to tell Beast Splitter where to send output data. You can do so by establishing an outgoing connection or accepting inbound connections.\\Examples:\n--connect remotehost:remoteport\n --listen remotehost:remoteport" \
-                          8 78)
+                          8 78 3>&1 1>&2 2>&3)
 if [[ $output_options == 0 ]]; then
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted due to lack of required information"
@@ -114,7 +116,9 @@ dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 log_message "Installing the beast-splitter Debian package"
+echo ""
 sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+echo ""
 
 log_message "Checking that the beast-splitter Debian package was installed"
 if [[ $(dpkg-query -W -f='${STATUS}' beast-splitter 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
@@ -140,7 +144,6 @@ fi
 log_message "Copying the beast-splitter Debian package into the Debian package archive directory"
 echo ""
 cp -vf $RECEIVER_BUILD_DIRECTORY/beast-splitter/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
-echo ""
 
 
 ## CONFIGURATION

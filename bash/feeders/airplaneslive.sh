@@ -24,6 +24,13 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 fi
 
 
+## CHECK FOR PREREQUISITE PACKAGES
+
+log_heading "Installing packages needed to fulfill FlightAware Dump1090 decoder dependencies"
+
+check_package net-tools
+
+
 ## DOWNLOAD AND EXECUTE THE AIRPLANES.LIVE CLIENT INSTALL SCRIPT
 
 log_heading "Begining the airplanes.live client installation process"
@@ -46,7 +53,6 @@ cd $RECEIVER_BUILD_DIRECTORY/airplaneslive
 log_message "Downloading the airplanes.live client installation script"
 echo ""
 wget -v -O $RECEIVER_BUILD_DIRECTORY/airplaneslive/install.sh https://raw.githubusercontent.com/airplanes-live/feed/main/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
-echo ""
 
 log_message "Executing the airplanes.live client installation script"
 echo ""
@@ -59,13 +65,14 @@ echo ""
 log_heading "Checking if the reciver is now feeding airplanes.live"
 
 log_message "Checking for connections on ports 30004 and 31090 to IP address 78.46.234.18"
-netstat_output = `netstat -t -n | grep -E '30004|31090'`
-if [[ $netstat_output == *"78.46.234.18:30004 ESTABLISHED"* && $netstat_output == *"78.46.234.18:31090 ESTABLISHED"* ]]
+netstat_output=`netstat -t -n | grep -E '30004|31090'`
+if [[ $netstat_output == *"78.46.234.18:30004 ESTABLISHED"* && $netstat_output == *"78.46.234.18:31090 ESTABLISHED"* ]]; then
     log_message "This device appears to be connected to  airplanes.live"
 else
-    log_alert_message "The receiver does not appear to be feeding airplanes.live at this time...\e[97m"
-    log_alert_message "Please reboot your device and run the command 'netstat -t -n | grep -E '30004|31090' to see if a connection has been astablished."
-    log_alert_message "If the issue presists supply the last 20 lines given by the following command on the airplanes.live discord."
+    echo ""
+    log_alert_message "The receiver does not appear to be feeding airplanes.live at this time"
+    log_alert_message "Please reboot your device and run the command 'netstat -t -n | grep -E '30004|31090' to see if a connection has been astablished"
+    log_alert_message "If the issue presists supply the last 20 lines given by the following command on the airplanes.live discord"
     log_alert_message "  'sudo journalctl -u airplanes-feed --no-pager'"
     log_alert_message "  'sudo journalctl -u airplanes-mlat --no-pager'"
 fi

@@ -31,9 +31,8 @@ log_heading "Begining the Fly Italy ADS-B client installation process"
 log_message "Informing the user of how the installation process will work"
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "Fly Italy ADS-B Client Setup" \
-         --msgbox "Scripts supplied by airplanes.live will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." \
+         --msgbox "Scripts supplied by Fly Italy ADS-B will be used in order to install or upgrade this system. Interaction with the script exececuted will be required in order to complete the installation." \
          10 78
-
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/flyitalyadsb ]]; then
     log_message "Creating the Fly Italy ADS-B build directory"
     echo ""

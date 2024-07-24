@@ -18,8 +18,8 @@ display_true_inline="\033[2;32m"
 ## SOFTWARE VERSIONS
 
 # FlightAware
-dump1090-fa_current_version="9.0"
-dump978-fa_current_version="9.0"
+dump1090_fa_current_version="9.0"
+dump978_fa_current_version="9.0"
 piaware_current_version="9.0.1"
 
 # PlaneFinder Client
@@ -29,7 +29,7 @@ pfclient_current_version_amd64="5.0.162"
 pfclient_current_version_i386="5.0.161"
 
 # Flightradar24 Client
-fr24feed_current_version="1.0.18-5"
+fr24feed_current_version="1.0.48-0"
 
 # OpenSky Network Client
-opensky-feeder_current_version="2.1.7-1"
+opensky_feeder_current_version="2.1.7-1"

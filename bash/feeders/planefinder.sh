@@ -46,17 +46,14 @@ log_heading "Begining the PlaneFinder client installation process"
 
 log_message "Determining which Debian package to install"
 case "${RECIEVER_CPU_ARCHITECTURE}" in
-    "armv7l"|"armv6l")
-        package_name="pfclient_${PLANEFINDER_CLIENT_VERSION_ARMHF}_armhf.deb"
-        ;;
-    "aarch64")
-        package_name="pfclient_${PLANEFINDER_CLIENT_VERSION_ARM64}_armhf.deb"
+    "armv7l"|"armv6l"|"aarch64")
+        package_name="pfclient_${pfclient_current_version_armhf}_armhf.deb"
         ;;
     "x86_64")
-        package_name="pfclient_${PLANEFINDER_CLIENT_VERSION_AMD64}_amd64.deb"
+        package_name="pfclient_${pfclient_current_version_amd64}_amd64.deb"
         ;;
     "i386")
-        package_name="pfclient_${PLANEFINDER_CLIENT_VERSION_I386}_i386.deb"
+        package_name="pfclient_${pfclient_current_version_amd64}_i386.deb"
         ;;
     *)
         echo ""
