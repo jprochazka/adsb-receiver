@@ -2,9 +2,9 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.5 *(in development)*
+## v2.8.5 *(July 23rd, 2024)*
 
-* The PiAware installation script now supports Ubuntu Noble Numbat.
+* The PiAware installation script now supports Ubuntu Noble Numbat. *(unofficial fix)*
 * The installation of PiAware is no longer required when choosing to install dump1090-fa.
 * The dump1090-fa installation script now mimics the current dump1090-fa installation instructions.
 * All scripts excluding those related to the portal now utilize the new logging functions.
