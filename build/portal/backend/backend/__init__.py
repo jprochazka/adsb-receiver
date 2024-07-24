@@ -53,7 +53,7 @@ def create_app(test_config=None):
     scheduler.add_job(id = 'data_collection', func=data_collection_job, trigger="interval", seconds=15)
     scheduler.add_job(id = 'maintenance', func=maintenance_job, trigger="cron", hour=0)
     scheduler.init_app(app)
-    scheduler.start()
+    #scheduler.start()
 
 
     # /API/DOCS

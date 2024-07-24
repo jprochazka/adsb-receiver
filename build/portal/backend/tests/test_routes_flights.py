@@ -68,3 +68,106 @@ def test_get_flight_positions_200(client):
     assert response.json['positions'][3]['altitude'] == 37225
     assert response.json['positions'][3]['verticle_rate'] == 1216
     assert response.json['positions'][3]['speed'] == 484
+
+def test_get_flight_404(client):
+    response = client.get('/api/flight/FLT0000/positions')
+    assert response.status_code == 404
+
+# GET /api/flights
+
+def test_get_flights_200(client):
+    response = client.get('/api/flights')
+    assert response.status_code == 200
+    assert response.json['offset'] == 0
+    assert response.json['limit'] == 50
+    assert response.json['count'] == 4
+    assert response.json['flights'][0]['id'] == 4
+    assert response.json['flights'][0]['aircraft'] == 5
+    assert response.json['flights'][0]['flight'] == "FLT0005"
+    assert response.json['flights'][0]['first_seen'] == "2024-07-17 04:40:44"
+    assert response.json['flights'][0]['last_seen'] == "2024-06-17 04:44:04"
+    assert response.json['flights'][1]['id'] == 3
+    assert response.json['flights'][1]['aircraft'] == 3
+    assert response.json['flights'][1]['flight'] == "FLT0003"
+    assert response.json['flights'][1]['first_seen'] == "2024-07-17 03:30:33"
+    assert response.json['flights'][1]['last_seen'] == "2024-06-17 03:33:03"
+    assert response.json['flights'][2]['id'] == 2
+    assert response.json['flights'][2]['aircraft'] == 2
+    assert response.json['flights'][2]['flight'] == "FLT0002"
+    assert response.json['flights'][2]['first_seen'] == "2024-07-17 02:20:22"
+    assert response.json['flights'][2]['last_seen'] == "2024-06-17 02:22:02"
+    assert response.json['flights'][3]['id'] == 1
+    assert response.json['flights'][3]['aircraft'] == 1
+    assert response.json['flights'][3]['flight'] == "FLT0001"
+    assert response.json['flights'][3]['first_seen'] == "2024-07-17 01:10:11"
+    assert response.json['flights'][3]['last_seen'] == "2024-06-17 01:11:01"
+    
+def test_get_flights_200_offset(client):
+    response = client.get('/api/flights?offset=2')
+    assert response.status_code == 200
+    assert response.json['offset'] == 2
+    assert response.json['limit'] == 50
+    assert response.json['count'] == 2
+    assert response.json['flights'][0]['id'] == 2
+    assert response.json['flights'][0]['aircraft'] == 2
+    assert response.json['flights'][0]['flight'] == "FLT0002"
+    assert response.json['flights'][0]['first_seen'] == "2024-07-17 02:20:22"
+    assert response.json['flights'][0]['last_seen'] == "2024-06-17 02:22:02"
+    assert response.json['flights'][1]['id'] == 1
+    assert response.json['flights'][1]['aircraft'] == 1
+    assert response.json['flights'][1]['flight'] == "FLT0001"
+    assert response.json['flights'][1]['first_seen'] == "2024-07-17 01:10:11"
+    assert response.json['flights'][1]['last_seen'] == "2024-06-17 01:11:01"
+
+def test_get_flights_200_limit(client):
+    response = client.get('/api/flights?limit=2')
+    assert response.status_code == 200
+    assert response.json['offset'] == 0
+    assert response.json['limit'] == 2
+    assert response.json['count'] == 2
+    assert response.json['flights'][0]['id'] == 4
+    assert response.json['flights'][0]['aircraft'] == 5
+    assert response.json['flights'][0]['flight'] == "FLT0005"
+    assert response.json['flights'][0]['first_seen'] == "2024-07-17 04:40:44"
+    assert response.json['flights'][0]['last_seen'] == "2024-06-17 04:44:04"
+    assert response.json['flights'][1]['id'] == 3
+    assert response.json['flights'][1]['aircraft'] == 3
+    assert response.json['flights'][1]['flight'] == "FLT0003"
+    assert response.json['flights'][1]['first_seen'] == "2024-07-17 03:30:33"
+    assert response.json['flights'][1]['last_seen'] == "2024-06-17 03:33:03"
+
+def test_get_flights_200_offset_and_limit(client):
+    response = client.get('/api/flights?offset=1&limit=2')
+    assert response.status_code == 200
+    assert response.json['offset'] == 1
+    assert response.json['limit'] == 2
+    assert response.json['count'] == 2
+    assert response.json['flights'][0]['id'] == 3
+    assert response.json['flights'][0]['aircraft'] == 3
+    assert response.json['flights'][0]['flight'] == "FLT0003"
+    assert response.json['flights'][0]['first_seen'] == "2024-07-17 03:30:33"
+    assert response.json['flights'][0]['last_seen'] == "2024-06-17 03:33:03"
+    assert response.json['flights'][1]['id'] == 2
+    assert response.json['flights'][1]['aircraft'] == 2
+    assert response.json['flights'][1]['flight'] == "FLT0002"
+    assert response.json['flights'][1]['first_seen'] == "2024-07-17 02:20:22"
+    assert response.json['flights'][1]['last_seen'] == "2024-06-17 02:22:02"
+
+def test_get_flights_400_offset_less_than_0(client):
+    response = client.get('/api/flights?offset=-1')
+    assert response.status_code == 400
+
+def test_get_flights_400_limit_less_than_0(client):
+    response = client.get('/api/flights?limit=-1')
+    assert response.status_code == 400
+
+def test_get_flights_400_limit_greater_than_100(client):
+    response = client.get('/api/flights?limit=101')
+    assert response.status_code == 400
+
+# GET /api/flights/count
+
+def test_get_flights_count(client):
+    response = client.get('/api/flights/count')
+    assert response.status_code == 200
+    assert response.json["flights"] == 4

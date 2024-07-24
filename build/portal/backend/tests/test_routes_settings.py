@@ -15,6 +15,14 @@ def test_put_setting_204(client, app):
         response = client.put('/api/setting', headers=request_headers, json=request_json)
     assert response.status_code == 204
 
+def test_put_setting_401(client):
+    request_json = {
+        'name': 'setting_three',
+        'value': 'Updated Setting Three'
+    }
+    response = client.put('/api/setting', json=request_json)
+    assert response.status_code == 401
+
 def test_put_setting_400_missing_name(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -85,3 +93,7 @@ def test_get_settings_200(client, app):
         assert response.json[2]['id'] == 2
         assert response.json[2]['name'] == "setting_two"
         assert response.json[2]['value'] == "Value Two"
+
+def test_get_settings_401(client):
+    response = client.get('/api/settings')
+    assert response.status_code == 401

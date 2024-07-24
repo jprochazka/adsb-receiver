@@ -4,6 +4,7 @@ from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
 from backend.db import get_db
+from werkzeug.exceptions import HTTPException
 
 users = Blueprint('users', __name__)
 
@@ -56,7 +57,7 @@ def delete_user(email):
         #cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
         else:
 
             cursor.execute("DELETE FROM users WHERE email = ?", (email,))
@@ -64,8 +65,11 @@ def delete_user(email):
 
             db.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to delete user related to email {email}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to delete user related to email {email}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     return "No Content", 204
 
@@ -92,7 +96,9 @@ def get_user(email):
     if not data:
         abort(404, description="Not Found")
 
-    return jsonify(data[0]), 200
+    response = jsonify(data[0])
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @users.route('/api/user/<string:email>', methods=['PUT'])
 @jwt_required()
@@ -110,7 +116,7 @@ def put_user(email):
         #cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (email,))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
         else:
             cursor.execute(
 
@@ -121,8 +127,11 @@ def put_user(email):
             )
         db.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to put user related to email {email}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to put user related to email {email}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     return "No Content", 204
 
@@ -157,4 +166,6 @@ def get_users():
     data['count'] = len(users)
     data['users'] = users
 
-    return jsonify(data), 200
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200

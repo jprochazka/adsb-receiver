@@ -17,6 +17,16 @@ def test_post_user_200(client, app):
         response = client.post('/api/user', headers=request_headers, json=request_json)
         assert response.status_code == 201
 
+def test_post_user_401(client):
+    request_json = {
+        'name': 'Name Four', 
+        'email': 'noreply@email-four.com',
+        'password': '$2y$LFLCJxrho1eGVPp9p9ygc5fuK1XWzLWS6nsWVJvJNbtZOeMVkuBJzTXG',
+        'administrator': False
+    }
+    response = client.post('/api/user', json=request_json)
+    assert response.status_code == 401
+
 def test_post_user_200_as_administrator(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -99,6 +109,10 @@ def test_delete_user_204(client, app):
         response = client.delete('/api/user/noreply@email-three.com', headers=request_headers)
         assert response.status_code == 204
 
+def test_delete_user_401(client):
+    response = client.delete('/api/user/noreply@email-three.com')
+    assert response.status_code == 401
+
 def test_delete_user_404(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -124,6 +138,10 @@ def test_get_user_200(client, app):
         assert response.json['password'] == "$2y$0htWdxS7PxTvIwJNo2COJ7Rywgif4En0TmJbDvrjLRfWZOBX526yJUKW"
         assert response.json['administrator'] == 1
 
+def test_get_user_401(client):
+    response = client.get('/api/user/noreply@email-one.com')
+    assert response.status_code == 401
+
 def test_get_user_404(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -148,6 +166,15 @@ def test_put_user_204(client, app):
         }
         response = client.put('/api/user/noreply@email-two.com', headers=request_headers, json=request_json)
     assert response.status_code == 204
+
+def test_put_user_401(client):
+    request_json = {
+        'name': 'Name Two',
+        'password': '$2y$VxTtlJcPlXFj3eHzZTAvGKHXVyHWqK12TXXdUT9SHaAXKC6l7spI7sqv',
+        'administrator': 1
+    }
+    response = client.put('/api/user/noreply@email-two.com', json=request_json)
+    assert response.status_code == 401
 
 def test_put_user_400_missing_name(client, app):
     with app.app_context():
@@ -231,6 +258,10 @@ def test_get_users_200(client, app):
         assert response.json['users'][2]['email'] == "noreply@email-two.com"
         assert response.json['users'][2]['password'] == "$2y$ui7QK047JldTekx828J2rfSVQ7N5yo6ETQIYGoBqpfFRbNr3EvWzQzt6"
         assert response.json['users'][2]['administrator'] == 0
+
+def test_get_users_401(client):
+    response = client.get('/api/users')
+    assert response.status_code == 401
 
 def test_get_users_200_offset(client, app):
     with app.app_context():

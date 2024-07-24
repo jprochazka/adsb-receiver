@@ -11,6 +11,10 @@ def test_delete_notification_204(client, app):
         response = client.delete('/api/notification/FLT0013', headers=request_headers)
         assert response.status_code == 204
 
+def test_delete_notification_401(client):
+    response = client.delete('/api/notification/FLT0013')
+    assert response.status_code == 401
+
 def test_delete_notification_404(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -30,6 +34,10 @@ def test_post_notification_200(client, app):
         }
         response = client.post('/api/notification/FLT0014', headers=request_headers)
         assert response.status_code == 201
+
+def test_post_notification_401(client):
+    response = client.post('/api/notification/FLT0014')
+    assert response.status_code == 401
 
 # GET /notifications
 

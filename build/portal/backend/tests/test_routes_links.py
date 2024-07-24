@@ -15,6 +15,14 @@ def test_post_link_200(client, app):
         response = client.post('/api/link', headers=request_headers, json=request_json)
         assert response.status_code == 201
 
+def test_post_link_401(client):
+    request_json = {
+        'name': 'Link Four', 
+        'address': 'https://adsbportal.com/four'
+    }
+    response = client.post('/api/link', json=request_json)
+    assert response.status_code == 401
+
 def test_post_link_400_missing_name(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -50,6 +58,10 @@ def test_delete_link_204(client, app):
         response = client.delete('/api/link/1', headers=request_headers)
         assert response.status_code == 204
 
+def test_delete_link_401(client):
+    response = client.delete('/api/link/1')
+    assert response.status_code == 401
+
 def test_delete_link_404(client, app):
     with app.app_context():
         access_token = create_access_token(identity="developer")
@@ -71,6 +83,10 @@ def test_get_link_200(client, app):
         assert response.status_code == 200
         assert response.json['id'] == 2
         assert response.json['address'] == "https://adsbportal.com/two"
+
+def test_get_link_401(client, app):
+    response = client.get('/api/link/2')
+    assert response.status_code == 401
 
 def test_get_user_404(client, app):
     with app.app_context():
@@ -95,6 +111,14 @@ def test_put_link_204(client, app):
         }
         response = client.put('/api/link/3', headers=request_headers, json=request_json)
     assert response.status_code == 204
+
+def test_put_link_401(client):
+    request_json = {
+        'name': 'Link Three Updated',
+        'address': 'https://adsbportal.com/three-updated'
+    }
+    response = client.put('/api/link/3', json=request_json)
+    assert response.status_code == 401
 
 def test_put_link_400_missing_name(client, app):
     with app.app_context():

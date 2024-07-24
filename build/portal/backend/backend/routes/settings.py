@@ -4,6 +4,7 @@ from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, ValidationError
 from backend.db import get_db
+from werkzeug.exceptions import HTTPException
 
 settings = Blueprint('settings', __name__)
 
@@ -29,7 +30,7 @@ def put_setting():
         #cursor.execute("SELECT COUNT(*) FROM settings WHERE name = %s", (payload['name'],))
 
         if cursor.fetchone()[0] == 0:
-            return "Not Found", 404
+            abort(404, description="Not Found")
         else:
             cursor.execute(
 
@@ -40,8 +41,11 @@ def put_setting():
             )
             db.commit()
     except Exception as ex:
-        logging.error(f"Error encountered while trying to put setting named {payload['name']}", exc_info=ex)
-        abort(500, description="Internal Server Error")
+        if isinstance(ex, HTTPException):
+            abort(ex.code)
+        else:
+            logging.error(f"Error encountered while trying to put setting named {payload['name']}", exc_info=ex)
+            abort(500, description="Internal Server Error")
 
     return "No Content", 204
 
@@ -67,7 +71,9 @@ def get_setting(name):
     if not data:
         abort(404, description="Not Found")
 
-    return jsonify(data[0]), 200
+    response = jsonify(data[0])
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 @settings.route('/api/settings', methods=['GET'])
 @jwt_required()
@@ -86,5 +92,7 @@ def get_settings():
         logging.error(f"Error encountered while trying to get settings", exc_info=ex)
         abort(500, description="Internal Server Error")
 
-    return jsonify(settings), 200
+    response = jsonify(settings)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
