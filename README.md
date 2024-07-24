@@ -28,7 +28,7 @@ Your local repositories master branch will be updated each time install.sh is ex
 
 The following software can be installed using these scripts.
 
-### The ADS-B Receiver Web Portal
+### The ADS-B Portal
 
 Included is the option to install the ADS-B Portal which offers the following features.
 
@@ -70,12 +70,12 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 The project currently supports the following Linux distributions.
 
-* Armbian _(Bookworm and Jammy)_
-* Debian _(Bookworm and Bullseye)_
+* Armbian _(Bookworm, Jammy and Noble)_
+* Debian _(Bookworm, Bullseye and Trixie)_
 * DietPi _(Bookworm aand Bullseye)_
 * Rasbperry PI OS _(Bookworm and Bullseye)_
-* Ubuntu _(Jammy Jellyfish and Focal Fossa)_
+* Ubuntu _(Jammy Jellyfish, Focal Fossa and Noble Numbat)_
 
 _Support is available via this repository through the use of the issue tracker or discussions._
 
-[Support for Ubuntu Noble Numbat is on hold due to incompatibilities with PiAware's MLAT client.](https://github.com/jprochazka/adsb-receiver/issues/575)
+_At this time support for PiAware on distributions based on Debian Trixie and Ubuntu Noble Numbat employ an unofficial fix._

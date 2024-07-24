@@ -2,14 +2,22 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.5 *(July 23rd, 2024)*
+
+* The PiAware installation script now supports Ubuntu Noble Numbat. *(unofficial fix)*
+* The installation of PiAware is no longer required when choosing to install dump1090-fa.
+* The dump1090-fa installation script now mimics the current dump1090-fa installation instructions.
+* All scripts excluding those related to the portal now utilize the new logging functions.
+* Logging to the logs directory is enabled by default but can be disabled with --no-logging or -n.
+* Added variables which can be modified to adjust text colors used by the bash scripts.
+* Added the --version and -v arguments in order to display the current project version.
+* Additional script cleanup done to various files.
+* Removed scripting used for image setup.
+* Updated the latest Flightradar24 Client version to 1.0.48-0.
+
 ## v2.8.4 *(July 13th, 2024)* :rooster:
 
-### Installers
-
 * Added the option to install the airplanes.live feeder client and web interface.
-
-### Portal
-
 * Can now toggle daily data purges as well specify the number of days to keep within the portal.
 * Rewrote the aircraft.py script and fixed issues found with newer versions of dump1090.
 * Rewrote the maintenance.py script and addressed issue mentioned in an incompatible pull request.

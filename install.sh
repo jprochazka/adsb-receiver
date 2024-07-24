@@ -34,12 +34,22 @@
 #                                                                                   #
 #####################################################################################
 
+
+## ASSIGN VARIABLE
+
+project_version="2.8.5"
+
+printf -v date_time '%(%Y-%m-%d_%H-%M-%S)T' -1
+log_file="adsb-installer_${date_time}.log"
+logging_enabled="true"
+
+
 ## FUNCTIONS
 
 # Display the help message
 function DisplayHelp() {
     echo "                                                                                           "
-    echo "Usage: $0 [OPTION] [ARGUMENT]                                                            "
+    echo "Usage: $0 [OPTION] [ARGUMENT]                                                              "
     echo "                                                                                           "
     echo "-------------------------------------------------------------------------------------------"
     echo "Option       GNU long option    Description                                                "
@@ -48,6 +58,8 @@ function DisplayHelp() {
     echo "-d           --development      Skips local repository update so changes are not overwrote."
     echo "-h           --help             Shows this message.                                        "
     echo "-m <MTA>     --mta=<MTA>        Specify which email MTA to use currently Exim or Postfix.  "
+    echo "-n           --no-logging       Disables writing output to a log file.                     "
+    echo "-v           --version          Displays the version being used.                           "
     echo "-------------------------------------------------------------------------------------------"
     echo "                                                                                           "
 }
@@ -58,22 +70,18 @@ function DisplayHelp() {
 while [[ $# > 0 ]] ; do
     case $1 in
         --branch*)
-            # The specified branch of github
             project_branch=`echo $1 | sed -e 's/^[^=]*=//g'`
             shift 1
             ;;
         -b)
-            # The specified branch of github
             project_branch=$2
             shift 2
             ;;
         --development | -d)
-            # Skip adsb-receiver repository update
             development_mode="true"
             shift 1
             ;;
         --help | -h)
-            # Display a help message
             DisplayHelp
             exit 0
             ;;
@@ -85,6 +93,10 @@ while [[ $# > 0 ]] ; do
             fi
             shift 1
             ;;
+        --no-logging | -n)
+            logging_enabled="false"
+            shift 1
+            ;;
         -m)
            # The MTA to use
             mta=${2^^}
@@ -93,6 +105,11 @@ while [[ $# > 0 ]] ; do
                 exit 1
             fi
             shift 2
+            ;;
+        --version | -v)
+            # Display the version
+            echo $project_version
+            exit 0
             ;;
         *)
             # Unknown options were set so exit
@@ -103,9 +120,9 @@ while [[ $# > 0 ]] ; do
     esac
 done
 
-# Add any environmental variables needed by any child scripts
 export RECEIVER_PROJECT_BRANCH=$project_branch
 export RECEIVER_DEVELOPMENT_MODE=$development_mode
+export RECEIVER_LOGGING_ENABLED=$logging_enabled
 export RECEIVER_MTA=$mta
 
 
@@ -113,7 +130,7 @@ export RECEIVER_MTA=$mta
 
 project_branch="master"
 
-export RECEIVER_PROJECT_TITLE="The ADS-B Receiver Project Preliminary Setup Process"
+export RECEIVER_PROJECT_TITLE="ADS-B Receiver Installer v${project_version}"
 export RECEIVER_ROOT_DIRECTORY=$PWD
 export RECEIVER_BASH_DIRECTORY=$PWD/bash
 export RECEIVER_BUILD_DIRECTORY=$PWD/build
@@ -122,24 +139,45 @@ export RECEIVER_BUILD_DIRECTORY=$PWD/build
 ## SOURCE EXTERNAL SCRIPTS
 
 source $RECEIVER_BASH_DIRECTORY/functions.sh
+source $RECEIVER_BASH_DIRECTORY/variables.sh
+
+
+## CREATE THE LOG DIRECTORY
+
+if [[ "${RECEIVER_LOGGING_ENABLED}" == "true" ]]; then
+    export RECEIVER_LOG_FILE=$PWD/logs/$log_file
+    if [ ! -d "$DIRECTORY" ]; then
+        log_message "Creating logs directory"
+        mkdir $PWD/logs
+    fi
+fi
 
 
 ## UPDATE PACKAGE LISTS AND INSTALL DEPENDENCIES
 
 clear
-echo -e "\n\e[91m  ${RECEIVER_PROJECT_TITLE}\n"
-echo -e "\e[92m  ADS-B Receiver Project Package Dependency Check"
-echo -e "\e[93m  ------------------------------------------------------------------------------\e[97m\n"
-echo -e "\e[94m  Downloading the latest package lists for all enabled repositories and PPAs...\e[97m\n"
-sudo apt-get update
-echo -e "\n\e[94m  Ensuring that all required packages are installed...\e[97m\n"
-CheckPackage bc
-CheckPackage git
-CheckPackage lsb-base
-CheckPackage lsb-release
-CheckPackage whiptail
-echo -e "\n\e[93m  ------------------------------------------------------------------------------"
-echo -e "\e[92m  All required packages are installed.\e[39m\n"
+log_project_title
+log_title_heading "Starting ADS-B Receiver Installer package dependency check"
+log_title_message "------------------------------------------------------------------------------"
+
+log_heading "Updating package lists for all enabled repositories and PPAs"
+
+log_message "Downloading the latest package lists for all enabled repositories and PPAs"
+echo ""
+sudo apt-get update 2>&1 | tee -a $RECEIVER_LOG_FILE
+
+log_heading "Ensuring that all required packages are installed"
+
+check_package bc
+check_package git
+check_package lsb-base
+check_package lsb-release
+check_package whiptail
+echo ""
+
+log_title_message "------------------------------------------------------------------------------"
+log_title_heading "ADS-B Receiver Installer package dependency check complete"
+echo ""
 read -p "Press enter to continue..." discard
 
 
@@ -156,82 +194,6 @@ export RECIEVER_CPU_ARCHITECTURE=`uname -m | tr -d "\n\r"`
 export RECEIVER_CPU_REVISION=`grep "^Revision" /proc/cpuinfo | awk '{print $3}'`
 
 
-## FUNCTIONS
-
-# Display the help message
-function DisplayHelp() {
-    echo "                                                                                           "
-    echo "Usage: $0 [OPTIONS] [ARGUMENTS]                                                            "
-    echo "                                                                                           "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "Option       GNU long option    Description                                                "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "-b <BRANCH>  --branch=<BRANCH>  Specifies the repository branch to be used.                "
-    echo "-d           --development      Skips local repository update so changes are not overwrote."
-    echo "-h           --help             Shows this message.                                        "
-    echo "-m <MTA>     --mta=<MTA>        Specify which email MTA to use currently Exim or Postfix.  "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "                                                                                           "
-}
-
-
-## CHECK FOR OPTIONS AND ARGUMENTS
-
-while [[ $# > 0 ]] ; do
-    echo "SWITCH: ${1}"
-    case $1 in
-        --branch*)
-            # The specified branch of github
-            project_branch=`echo $1 | sed -e 's/^[^=]*=//g'`
-            shift 1
-            ;;
-        -b)
-            # The specified branch of github
-            project_branch=$2
-            shift 2
-            ;;
-        --development | -d)
-            # Skip adsb-receiver repository update
-            development_mode="true"
-            shift 1
-            ;;
-        --help | -h)
-            # Display a help message
-            DisplayHelp
-            exit 0
-            ;;
-        --mta*)
-            mta=`echo ${1^^} | sed -e 's/^[^=]*=//g'`
-            if [[ "${mta}" != "EXIM" && "${mta}" != "POSTFIX" ]]; then
-                echo "MTA can only be either EXIM or POSTFIX."
-                exit 1
-            fi
-            shift 1
-            ;;
-        -m)
-           # The MTA to use
-            mta=${2^^}
-            if [[ "${mta}" != "EXIM" && "${mta}" != "POSTFIX" ]]; then
-                echo "MTA can only be either EXIM or POSTFIX."
-                exit 1
-            fi
-            shift 2
-            ;;
-        *)
-            # Unknown options were set so exit
-            echo -e "Error: Unknown option: $1" >&2
-            DisplayHelp
-            exit 1
-            ;;
-    esac
-done
-
-# Add any environmental variables needed by any child scripts
-export RECEIVER_PROJECT_BRANCH=$project_branch
-export RECEIVER_DEVELOPMENT_MODE=$development_mode
-export RECEIVER_MTA=$mta
-
-
 ## EXECUTE BASH/INIT.SH
 
 chmod +x $RECEIVER_BASH_DIRECTORY/init.sh
@@ -240,14 +202,12 @@ $RECEIVER_BASH_DIRECTORY/init.sh
 
 ## CLEAN UP
 
-# Remove any files created by whiptail.
 for choice in FEEDER_CHOICES EXTRAS_CHOICES ; do
     if [[ -f ${RECEIVER_ROOT_DIRECTORY}/${choice} ]] ; then
         rm -f ${RECEIVER_ROOT_DIRECTORY}/${choice}
     fi
 done
 
-# Remove any global variables assigned by this script
 unset RECEIVER_PROJECT_TITLE
 unset RECEIVER_ROOT_DIRECTORY
 unset RECEIVER_BASH_DIRECTORY
@@ -259,6 +219,8 @@ unset RECIEVER_CPU_ARCHITECTURE
 unset RECEIVER_CPU_REVISION
 unset RECEIVER_PROJECT_BRANCH
 unset RECEIVER_DEVELOPMENT_MODE
+unset RECEIVER_LOGGING_ENABLED
+unset RECEIVER_LOG_FILE
 unset RECEIVER_MTA
 
 # Check if any errors were encountered by any child scripts
