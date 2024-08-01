@@ -25,10 +25,10 @@ def get_db():
                 )
             case 'postgresql':
                 g.db = psycopg2.connect(
-                    host=config['database']['mysql']['host'],
-                    user=config['database']['mysql']['user'],
-                    password=config['database']['mysql']['password'],
-                    database=config['database']['mysql']['database']
+                    host=config['database']['postgresql']['host'],
+                    user=config['database']['postgresql']['user'],
+                    password=config['database']['postgresql']['password'],
+                    database=config['database']['postgresql']['database']
                 )
             case 'sqlite':
                 g.db = sqlite3.connect(os.path.join(current_app.instance_path, 'adsbportal.sqlite3'))

@@ -12,6 +12,7 @@ from backend.routes.flights import flights
 from backend.routes.links import links
 from backend.routes.notifications import notifications
 from backend.routes.settings import settings
+from backend.routes.system import system
 from backend.routes.tokens import tokens
 from backend.routes.users import users
 
@@ -41,6 +42,7 @@ def create_app(test_config=None):
     app.register_blueprint(links)
     app.register_blueprint(notifications)
     app.register_blueprint(settings)
+    app.register_blueprint(system)
     app.register_blueprint(tokens)
     app.register_blueprint(users)
 
