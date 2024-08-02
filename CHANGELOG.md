@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.5 *(in development)*
+
+* The ability to assign RTL-SDR devices to all decoder installation scripts has been added.
+
 ## v2.8.5 *(July 23rd, 2024)*
 
 * The PiAware installation script now supports Ubuntu Noble Numbat. *(unofficial fix)*
