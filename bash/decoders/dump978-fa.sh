@@ -64,7 +64,8 @@ if [[ "${adsb_decoder_installed}" == "true" || "${acars_decoder_installed}" == "
                                               --title "${adsb_device_number_title}" \
                                               --inputbox "\nEnter the RTL-SDR device number to assign your ADS-B decoder." \
                                               8 78 3>&1 1>&2 2>&3)
-                if [[ $adsb_device_number == 0 ]]; then
+                exitstatus=$?
+                if [[ $exitstatus == 0 ]]; then
                     log_alert_heading "INSTALLATION HALTED"
                     log_alert_message "Setup has been halted due to lack of required information"
                     echo ""
@@ -84,7 +85,8 @@ if [[ "${adsb_decoder_installed}" == "true" || "${acars_decoder_installed}" == "
                                                --title "${acars_device_number_title}" \
                                                --inputbox "\nEnter the RTL-SDR device number to assign your ACARS decoder." \
                                                8 78 3>&1 1>&2 2>&3)
-                if [[ $acars_device_number == 0 ]]; then
+                exitstatus=$?
+                if [[ $exitstatus == 0 ]]; then
                     log_alert_heading "INSTALLATION HALTED"
                     log_alert_message "Setup has been halted due to lack of required information"
                     echo ""
@@ -103,7 +105,8 @@ if [[ "${adsb_decoder_installed}" == "true" || "${acars_decoder_installed}" == "
                                              --title "${uat_device_number_title}" \
                                              --inputbox "\nEnter the RTL-SDR device number to assign your FlightAware Dump978 decoder." \
                                              8 78 3>&1 1>&2 2>&3)
-            if [[ $uat_device_number == 0 ]]; then
+            exitstatus=$?
+            if [[ $exitstatus == 0 ]]; then
                 log_alert_heading "INSTALLATION HALTED"
                 log_alert_message "Setup has been halted due to lack of required information"
                 echo ""
@@ -233,17 +236,24 @@ if [[ "${adsb_decoder_installed}" == "true" || "${acars_decoder_installed}" == "
 
     log_heading "Configuring the decoders so they can work in tandem"
 
-    log_message "Assigning RTL-SDR device with serial ${uat_device_number} to dump978-fa"
+    if [[ "${adsb_decoder_installed}" == "true" ]]; then
+        log_message "Assigning RTL-SDR device number ${adsb_device_number} to the FlightAware Dump1090 decoder"
+        change_config "RECEIVER_SERIAL" $adsb_device_number "/etc/default/dump1090-fa"
+        log_message "Restarting dump1090-fa"
+        sudo systemctl restart dump1090-fa
+    fi
+
+    if [[ "${acars_decoder_installed}" == "true" ]]; then
+        log_message "Assigning RTL-SDR device number ${acars_device_number} to ACARSDEC"
+        sudo sed -i -e "s/\(.*-r \)\([0-9]\+\)\( .*\)/\1${acars_device_number}\3/g" /etc/systemd/system/acarsdec.service
+        log_message "Restarting ACARSDEC"
+        sudo systemctl restart acarsdec
+    fi
+
+    log_message "Assigning RTL-SDR device number ${uat_device_number} to the FlightAware Dump978 decoder"
     sudo sed -i -e "s/driver=rtlsdr/driver=rtlsdr,serial=${uat_device_number}/g" /etc/default/dump978-fa
-    log_message "Restarting dump978-fa...\e[97m"
+    log_message "Restarting dump978-fa"
     sudo systemctl restart dump978-fa
-
-    log_message "Assigning RTL-SDR device with serial ${adsb_device_number} to the FlightAware Dump1090 decoder"
-    change_config "RECEIVER_SERIAL" $adsb_device_number "/etc/default/dump1090-fa"
-    log_message "Restarting dump1090-fa"
-    sudo systemctl restart dump1090-fa
-
-    # TODO: ADD ACARS CONFIGURATION
 fi
 
 

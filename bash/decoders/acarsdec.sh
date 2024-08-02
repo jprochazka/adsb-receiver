@@ -85,7 +85,8 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
                                               --title "${adsb_device_number_title}" \
                                               --inputbox "\nEnter the RTL-SDR device number to assign your ADS-B decoder." \
                                               8 78 3>&1 1>&2 2>&3)
-                if [[ $adsb_device_number == 0 ]]; then
+                exitstatus=$?
+                if [[ $exitstatus == 0 ]]; then
                     log_alert_heading "INSTALLATION HALTED"
                     log_alert_message "Setup has been halted due to lack of required information"
                     echo ""
@@ -105,7 +106,8 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
                                              --title "${uat_device_number_title}" \
                                              --inputbox "\nEnter the RTL-SDR device number to assign your UAT decoder." \
                                              8 78 3>&1 1>&2 2>&3)
-                if [[ $uat_device_number == 0 ]]; then
+                exitstatus=$?
+                if [[ $exitstatus == 0 ]]; then
                     log_alert_heading "INSTALLATION HALTED"
                     log_alert_message "Setup has been halted due to lack of required information"
                     echo ""
@@ -124,7 +126,8 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
                                              --title "${acars_device_number_title}" \
                                              --inputbox "\nEnter the RTL-SDR device number to assign your ACARSDEC decoder." \
                                              8 78 3>&1 1>&2 2>&3)
-            if [[ $acars_device_number == 0 ]]; then
+            exitstatus=$?
+            if [[ $exitstatus == 0 ]]; then
                 log_alert_heading "INSTALLATION HALTED"
                 log_alert_message "Setup has been halted due to lack of required information"
                 echo ""
@@ -137,8 +140,20 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
     fi
 fi
 
-# TODO: CHOOSE DEVICE NUMBERS DUMP1090, DUMP978, ACARSDEC DEPENDING ON WHAT IS INSTALLED
-# TODO: ASK FOR A LIST OF FREQUENCIES SEPARATED BY SPACES
+log_message "Asking the user for ACARS frequencies to monitor"
+acars_fequencies=$(whiptail --backtitle "ACARS Frequencies" \
+                            --title "${acars_device_number_title}" \
+                            --inputbox "\nEnter the ACARS frequencies you would like to monitor." \
+                            8 78 3>&1 1>&2 2>&3)
+exitstatus=$?
+if [[ $exitstatus == 0 ]]; then
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "Setup has been halted due to lack of required information"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "ACARSDEC decoder setup halted"
+    exit 1
+fi
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -331,7 +346,7 @@ Description=ARCARSDEC multi-channel acars decoder.
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/acarsdec -A -p 0 -r 0 -o 0 -j 127.0.0.1:5555 131.525 131.550 131.725 131.825
+ExecStart=/usr/local/bin/acarsdec -r 0 -A -p 0 -o 0 -j 127.0.0.1:5555 ${acars_fequencies}
 WorkingDirectory=/usr/local/bin
 StandardOutput=null
 StandardError=syslog
@@ -346,7 +361,7 @@ WantedBy=multi-user.target
 EOF
 
 log_message "Creating the ACARSSERV systemd service script"
-sudo tee /etc/systemd/system/acarsdeco.service > /dev/null <<EOF
+sudo tee /etc/systemd/system/acarsserv.service > /dev/null <<EOF
 [Unit]
 Description=ARCARSSERV saves acars data to SQLite.
 After=network.target
@@ -366,6 +381,12 @@ StartLimitBurst=10
 WantedBy=multi-user.target
 EOF
 
+log_message "Enabling then starting the ACARSDEC service"
+sudo systemctl enable --now acarsdec.service
+
+log_message "Enabling then starting the acarsserv service"
+sudo systemctl enable --now acarsserv.service
+
 
 ## CONFIGURATION
 
@@ -373,23 +394,33 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
 
     log_heading "Configuring the decoders so they can work in tandem"
 
-    log_message "Assigning RTL-SDR device with serial ${adsb_device_number} to the FlightAware Dump1090 decoder"
-    change_config "RECEIVER_SERIAL" $adsb_device_number "/etc/default/dump1090-fa"
-    log_message "Restarting dump1090-fa"
-    sudo systemctl restart dump1090-fa
+    if [[ "${adsb_decoder_installed}" == "true" ]]; then
+        log_message "Assigning RTL-SDR device number ${adsb_device_number} to the FlightAware Dump1090 decoder"
+        change_config "RECEIVER_SERIAL" $adsb_device_number "/etc/default/dump1090-fa"
+        log_message "Restarting dump1090-fa"
+        sudo systemctl restart dump1090-fa
+    fi
 
-    log_message "Assigning RTL-SDR device with serial ${uat_device_number} to dump978-fa"
-    sudo sed -i -e "s/driver=rtlsdr/driver=rtlsdr,serial=${uat_device_number}/g" /etc/default/dump978-fa
-    log_message "Restarting dump978-fa...\e[97m"
-    sudo systemctl restart dump978-fa
+    if [[ "${uat_decoder_installed}" == "true" ]]; then
+        log_message "Assigning RTL-SDR device number ${uat_device_number} to the FlightAware Dump978 decoder"
+        sudo sed -i -e "s/driver=rtlsdr/driver=rtlsdr,serial=${uat_device_number}/g" /etc/default/dump978-fa
+        log_message "Restarting dump978-fa"
+        sudo systemctl restart dump978-fa
+    fi
 
-    # TODO: ADD ACARS CONFIGURATION
+    log_message "Assigning RTL-SDR device number ${acars_device_number} to ACARSDEC"
+    sudo sed -i -e "s/\(.*-r \)\([0-9]\+\)\( .*\)/\1${acars_device_number}\3/g" /etc/systemd/system/acarsdec.service
+    log_message "Restarting ACARSDEC"
+    sudo systemctl restart acarsdec
 fi
 
 
 ## POST INSTALLATION OPERATIONS
 
-# TODO: INFORM USERS THIS IS A BASIC SETUP WHICH CAN BE FINE TUNED IN THE SYSTEMCTL FILE
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+         --title "ACARSDEC Decoder Setup Complete" \
+         --msgbox "The setup process currently sets basic parameters needed to feed acarsserv. You can fine tune your installation by modifying the startup command found in the file /etc/systemd/system/acarsdec.service. Usage information for ACARSDEC can be found in the projects README at https://github.com/TLeconte/acarsdec." \
+         12 78
 
 
 ## SETUP COMPLETE

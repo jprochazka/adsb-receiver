@@ -6,12 +6,12 @@ source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 
-## 1090MHZ DECODERS
+## ADS-B DECODERS
 
 # FlightAware dump1090
-install_1090mhz_decoder="false"
+install_adsb_decoder="false"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") == 1 ]] ; then
-    chosen_1090mhz_decoder="dump1090-fa"
+    chosen_adsb_decoder="dump1090-fa"
     if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${dump1090_fa_current_version}") == 0 ]] ; then
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                  --title "FlightAware Dump1090 Upgrade Available" \
@@ -19,7 +19,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
                  --yesno "An updated version of FlightAware dump1090 is available.\n\nWould you like to install the new version?" \
                  16 65
         if [[ $? == 0 ]]; then
-            install_1090mhz_decoder="true"
+            install_adsb_decoder="true"
         fi
     fi
 else
@@ -29,11 +29,11 @@ else
              --yesno "FlightAware dump1090 is capable of demodulating ADS-B, Mode S, Mode 3A/3C signals received by an SDR device.\n\nGitHub Repository: https://github.com/flightaware/dump1090\n\nWould you like to install FlightAware dump1090?" \
              10 65
     if [[ $? == 0 ]]; then
-        install_978mhz_decoder="true"
+        install_adsb_decoder="true"
     fi
 fi
 
-function install_dump1090-fa() {
+function install_dump1090_fa() {
     ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-fa.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -41,19 +41,19 @@ function install_dump1090-fa() {
 }
 
 
-## 978MHZ DECODERS
+## UAT DECODERS
 
 # Flightaware dump978
-install_978mhz_decoder="false"
+install_uat_decoder="false"
 if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") == 1 ]]; then
-    chosen_978mhz_decoder="dump978-fa"
+    chosen_uat_decoder="dump978-fa"
     if [[ $(sudo dpkg -s dump978-fa 2>/dev/null | grep -c "Version: ${dump978_fa_current_version}") == 0 ]]; then
         whiptail  --backtitle "${RECEIVER_PROJECT_TITLE}" \
                   --title "FlightAware dump978 Upgrade Available" \
                   --defaultno --yesno "An updated version of FlightAware dump978 is available.\n\nWould you like to install the new version?" \
                   16 65
         if [[ $? == 0 ]]; then
-            install_978mhz_decoder="true"
+            install_uat_decoder="true"
         fi
     fi
 else
@@ -63,12 +63,43 @@ else
              --yesno "FlightAware dump978 is capable of demodulating UAT received by an SDR device.\n\nGitHub Repository: https://github.com/flightaware/dump978\n\nWould you like to install FlightAware dump978?" \
              10 65
     if [[ $? == 0 ]]; then
-        install_978mhz_decoder="true"
+        install_uat_decoder="true"
     fi
 fi
 
-function install_dump978-fa() {
+function install_dump978_fa() {
     ${RECEIVER_BASH_DIRECTORY}/decoders/dump978-fa.sh
+    if [[ $? != 0 ]] ; then
+        exit 1
+    fi
+}
+
+## ACARS DECODERS
+
+# ACARSDEC
+install_acars_decoder="false"
+if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+    chosen_acars_decoder="acarsdec"
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+             --title "Reinstall ACARSDEC Decoder" \
+             --defaultno --yesno "The option to rebuild and reinstall ACARSDEC is available.\n\nWould you like to reinstall ACARSDEC?" \
+             16 65
+    if [[ $? == 0 ]]; then
+        install_acars_decoder="true"
+    fi
+else
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+             --title "ACARSDEC Decoder" \
+             --defaultno \
+             --yesno "ACARSDEC is a multi-channels acars decoder with built-in rtl_sdr, airspy front end or sdrplay device.\n\nGitHub Repository: https://github.com/TLeconte/acarsdec\n\nWould you like to install ACARSDEC?" \
+             10 65
+    if [[ $? == 0 ]]; then
+        install_acars_decoder="true"
+    fi
+fi
+
+function install_acarsdec() {
+    ${RECEIVER_BASH_DIRECTORY}/decoders/acarsdec.sh
     if [[ $? != 0 ]] ; then
         exit 1
     fi
@@ -304,7 +335,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
 declare confirmation_message
 
-if [[ "${install_1090mhz_decoder}" == "false" && "${install_1090mhz_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" && ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
+if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" && ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Nothing to be done" \
              --msgbox "Nothing has been selected to be installed so the script will exit now." \
@@ -316,20 +347,29 @@ if [[ "${install_1090mhz_decoder}" == "false" && "${install_1090mhz_decoder}" ==
 else
     confirmation_message="The following software will be installed:\n"
 
-    # 1090MHz decoders
-    if [[ "${install_1090mhz_decoder}" == "true" ]]; then
-        case ${chosen_1090mhz_decoder} in
+    # ADS-B decoders
+    if [[ "${install_adsb_decoder}" == "true" ]]; then
+        case ${chosen_adsb_decoder} in
             "dump1090-fa")
                 confirmation_message="${confirmation_message}\n  * FlightAware dump1090"
                 ;;
         esac
     fi
 
-    # 978MHz decoders
-    if [[ "${install_978mhz_decoder}" = "true" ]]; then
-        case ${chosen_978mhz_decoder} in
+    # UAT decoders
+    if [[ "${install_uat_decoder}" = "true" ]]; then
+        case ${chosen_uat_decoder} in
             "dump978-fa")
                 confirmation_message="${confirmation_message}\n  * FlightAware dump978"
+                ;;
+        esac
+    fi
+
+    # ACARS decoders
+    if [[ "${install_acars_decoder}" = "true" ]]; then
+        case ${chosen_acars_decoder} in
+            "acarsdec")
+                confirmation_message="${confirmation_message}\n  * ACARSDEC"
                 ;;
         esac
     fi
@@ -369,20 +409,29 @@ fi
 
 ## BEGIN SETUP
 
-# 1090MHz Decoders
-if [[ "${install_1090mhz_decoder}" == "true" ]]; then
-    case ${chosen_1090mhz_decoder} in
+# ADS-B Decoders
+if [[ "${install_adsb_decoder}" == "true" ]]; then
+    case ${chosen_adsb_decoder} in
         "dump1090-fa")
-             install_dump1090-fa
+             install_dump1090_fa
              ;;
     esac
 fi
 
-# 978MHz Decoders
-if [[ "${install_978mhz_decoder}" == "true" ]]; then
-    case ${chosen_978mhz_decoder} in
+# UAT Decoders
+if [[ "${install_uat_decoder}" == "true" ]]; then
+    case ${chosen_uat_decoder} in
         "dump978-fa")
-             install_dump978-fa
+             install_dump978_fa
+             ;;
+    esac
+fi
+
+# ACARS Decoders
+if [[ "${install_acars_decoder}" == "true" ]]; then
+    case ${chosen_acars_decoder} in
+        "acarsdec")
+             install_acarsdec
              ;;
     esac
 fi
