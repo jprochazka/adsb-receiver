@@ -106,6 +106,10 @@
         if (isset($_POST['enableBlog']) && $_POST['enableBlog'] == "TRUE")
             $enableBlog = TRUE;
 
+        $enableAcars = FALSE;
+        if (isset($_POST['enableAcars']) && $_POST['enableAcars'] == "TRUE")
+            $enableAcars = TRUE;
+
         $enableInfo = FALSE;
         if (isset($_POST['enableInfo']) && $_POST['enableInfo'] == "TRUE")
             $enableInfo = TRUE;
@@ -165,6 +169,7 @@
         $common->updateSetting("dateFormat", $_POST['dateFormat']);
         $common->updateSetting("enableFlights", $enableFlights);
         $common->updateSetting("enableBlog", $enableBlog);
+        $common->updateSetting("enableAcars", $enableAcars);
         $common->updateSetting("enableInfo", $enableInfo);
         $common->updateSetting("enableGraphs", $enableGraphs);
         $common->updateSetting("enableLinks", $enableLinks);
@@ -189,6 +194,7 @@
         $common->updateSetting("hideNavbarAndFooter", $hideNavbarAndFooter);
         $common->updateSetting("purge_older_data", $purgeOlderData);
         $common->updateSetting("days_to_save", $_POST['daysToSave']);
+        $common->updateSetting("acarsserv_database", $_POST['acarsservDatabase']);
 
         // Purge older flight positions.
         if (isset($_POST['purgepositions'])) {
@@ -240,6 +246,7 @@
     // Get navigation settings.
     $enableFlights = $common->getSetting("enableFlights");
     $enableBlog = $common->getSetting("enableBlog");
+    $enableAcars = $common->getSetting("enableAcars");
     $enableInfo = $common->getSetting("enableInfo");
     $enableGraphs = $common->getSetting("enableGraphs");
     $enableLinks = $common->getSetting("enableLinks");
@@ -257,6 +264,9 @@
     $enableFlightRadar24Link = $common->getSetting("enableFlightRadar24Link");
     $flightRadar24Id = $common->getSetting("flightRadar24Id");
     $enableAdsbExchangeLink = $common->getSetting("enableAdsbExchangeLink");
+
+    // ACARS settings.
+    $acarsservDatabase = $common->getSetting("acarsserv_database");
 
     // Get units of measurement settings.
     $measurementRange = $common->getSetting("measurementRange");
@@ -410,7 +420,7 @@
                         <div class="panel-heading">Flight Notifications</div>
                         <div class="panel-body">
                             <div class="form-group">
-                                <label for="flightNotifications"">Flight names. (coma delimited)</label>
+                                <label for="flightNotifications">Flight names. (coma delimited)</label>
                                 <input type="text" class="form-control" id="flightNotifications" name="flightNotifications" value="<?php echo $flightNotifications; ?>">
                             </div>
                             <div class="checkbox">
@@ -439,6 +449,11 @@
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" name="enableBlog" value="TRUE"<?php ($enableBlog == 1? print ' checked' : ''); ?>> Enable blog link.
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="enableAcars" value="TRUE"<?php ($enableAcars == 1? print ' checked' : ''); ?>> Enable ACARS link.
                                 </label>
                             </div>
                             <div class="checkbox">
@@ -514,6 +529,15 @@
                                         <input type="checkbox" name="enableAdsbExchangeLink" value="TRUE"<?php ($enableAdsbExchangeLink == 1 ? print ' checked' : ''); ?>> Enable ADSB-Exchange Link.
                                     </label>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">ACARS Settings</div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="acarsservDatabase">ACARSSERV Database Path</label>
+                                <input type="text" class="form-control" id="acarsservDatabase" name="acarsservDatabase" value="<?php echo $acarsservDatabase; ?>">
                             </div>
                         </div>
                     </div>

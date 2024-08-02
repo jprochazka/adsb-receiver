@@ -48,6 +48,7 @@
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
                             {if setting:enableBlog eq TRUE}<li id="blog-link"><a href="/blog.php">Blog</a></li>{/if}
+                            {if setting:enableAcars eq TRUE}<li id="acars-link"><a href="/acars.php">ACARS</a></li>{/if}
                             {if setting:enableFlights eq TRUE}<li id="flights-link"><a href="/flights.php">Flights</a></li>{/if}
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>

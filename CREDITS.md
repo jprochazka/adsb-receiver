@@ -49,6 +49,7 @@ I would like to thank the maintainers and contributors of the following projects
 hard work and dedication to their respective projects this project would not have been possible.
 
 * ACARSDEC Decoder:        https://github.com/TLeconte/acarsdec
+* ACARSSERV:               https://github.com/TLeconte/acarsserv
 * ADS-B Exchange Client:   https://github.com/adsbexchange/feedclient
 * Airplanes.live Client:   https://github.com/airplanes-live/feed
 * Beast-Splitter:          https://github.com/flightaware/beast-splitter

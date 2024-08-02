@@ -33,6 +33,7 @@ The following software can be installed using these scripts.
 Included is the option to install the ADS-B Portal which offers the following features.
 
 * Saves all flights seen as well as displays a plot for the flight.
+* Saves all ACARS messages received as well as the ability to view these messages.
 * Control what is displayed online via a web based administration area.
 * A more uniform website site layout that can be easily navigated.
 * Web accessible dump1090 and system performance graphs.

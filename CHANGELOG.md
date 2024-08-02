@@ -5,6 +5,7 @@ The following is a history of the changes made to this project.
 ## v2.8.5 *(in development)*
 
 * The option to install ACARSDEC and ACARSERV in now available as a decoder option.
+* The ability to view ACARS messages via the existing PHP portal has been added.
 * The ability to assign devices to additional decoder installations have been added to all scripts.
 
 ## v2.8.5 *(July 23rd, 2024)*

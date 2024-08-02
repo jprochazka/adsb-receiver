@@ -29,7 +29,7 @@
     /////////////////////////////////////////////////////////////////////////////////////
 
     // The most current stable release.
-    $thisVersion = "2.8.5";
+    $thisVersion = "2.8.6";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if (file_exists($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."settings.class.php")) {
@@ -419,6 +419,7 @@ EOF;
             $common->addSetting('defaultPage', 'blog.php');
             $common->addSetting('dateFormat', 'F jS, Y g:i A');
             $common->addSetting('enableBlog', TRUE);
+            $common->addSetting('enableAcars', FALSE);
             $common->addSetting('enableInfo', TRUE);
             $common->addSetting('enableLinks', FALSE);
             $common->addSetting('enableGraphs', TRUE);
@@ -447,6 +448,7 @@ EOF;
             $common->addSetting("days_to_save", "30");
             $common->addSetting("advancedMapCenterLatitude", "41.3683798");
             $common->addSetting("advancedMapCenterLongitude", "-82.1076486");
+            $common->addSetting('acarsserv_database', "");
 
             if ($_POST['driver'] == "xml")
                 $common->addSetting('enableFlights', FALSE);
