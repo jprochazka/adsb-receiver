@@ -1,11 +1,13 @@
 EXTRAS_CHOICES
 FEEDER_CHOICES
+build/acarsdec
+build/acarsserv
 build/adsbexchange
 build/airplaneslive
 build/beast-splitter
 build/duckdns
-build/dump1090*
-build/dump978*
+build/dump1090-fa
+build/dump978-fa
 build/flightradar24
 build/flyitalyadsb
 build/piaware_builder
