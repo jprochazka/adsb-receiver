@@ -38,12 +38,12 @@ Included is the option to install the ADS-B Portal which offers the following fe
 * A more uniform website site layout that can be easily navigated.
 * Web accessible dump1090 and system performance graphs.
 * Easy access to live dump1090 and dump978 maps.
-* A blog which can be used to share your plane tracking experiences with others.
+* A blog which can be used to share your aircraft tracking experiences with others.
 * Visitors can be informed when specific flights are being tracked.
 * Administrators can be informed via email when specific flights are being tracked.
 * Easily customize the look of your portal using the custom template system.
 
-When setting up the portal you will have to choose between a lite or advanced installation. Advanced features adds flight logging and plotting and should only be chosen on devices running a more sturdy data storage solution.
+When setting up the portal you will have to choose between a lite or advanced installation. Advanced features add flight logging and plotting and should only be chosen on devices running a sturdy data storage solution.
 
 *It is highly recommended that anyone using a SD card as they storage medium not attempt to use the advanced features.*
 
@@ -73,11 +73,11 @@ When setting up the portal you will have to choose between a lite or advanced in
 The project currently supports the following Linux distributions.
 
 * Armbian _(Bookworm, Jammy and Noble)_
-* Debian _(Bookworm, Bullseye and Trixie)_
-* DietPi _(Bookworm aand Bullseye)_
-* Rasbperry PI OS _(Bookworm and Bullseye)_
+* Debian _(Bookworm and Bullseye)_
+* DietPi _(Bookworm and Bullseye)_
+* Raspberry PI OS _(Bookworm and Bullseye)_
 * Ubuntu _(Jammy Jellyfish, Focal Fossa and Noble Numbat)_
 
 Support is available via this repository through the use of the issue tracker or discussions.
 
-_Please Nnte that Debian Trixie and Ubuntu Noble Numbat employ an unofficial fix for PiAware._
+_Please Note that Ubuntu Noble Numbat support employs an unofficial fix for PiAware._

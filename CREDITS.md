@@ -32,9 +32,9 @@ the project directly. Their time and effort is greatly appreciated by myself as 
 I would like to thank the members and contributors to the following forums for all the time and effort
 they have put in in order to create useful and informative places to discuss aircraft tracking.
 
-* The FlightAware Forums:             https://discussions.flightaware.com
-* The PlaneFinder Forums:             https://forum.planefinder.net
-* The ADS-B Exchange Forums:          https://adsbx.discourse.group
+* The FlightAware Forums:     https://discussions.flightaware.com
+* The PlaneFinder Forums:     https://forum.planefinder.net
+* The ADS-B Exchange Forums:  https://adsbx.discourse.group
 
 The performance graphs were created thanks in part to the great contributions made by members of both
 the FlightAware and PlaneFinder communities. Through their examples and help posted to the following

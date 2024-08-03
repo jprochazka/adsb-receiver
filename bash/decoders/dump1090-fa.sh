@@ -119,6 +119,7 @@ if [[ "${uat_decoder_installed}" == "true" || "${acars_decoder_installed}" == "t
     fi
 fi
 
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 log_heading "Installing packages needed to fulfill FlightAware Dump1090 decoder dependencies"
