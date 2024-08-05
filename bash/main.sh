@@ -21,6 +21,14 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
         if [[ $? == 0 ]]; then
             install_adsb_decoder="true"
         fi
+    else
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                 --title "Reinstall FlightAware dump1090" \
+                 --defaultno --yesno "The option to rebuild and reinstall FlightAware dump1090 is available.\n\nWould you like to rebuild and reinstall FlightAware dump1090?" \
+                 9 65
+        if [[ $? == 0 ]]; then
+            install_adsb_decoder="true"
+        fi
     fi
 else
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
@@ -50,10 +58,18 @@ install_uat_decoder="false"
 if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") == 1 ]]; then
     chosen_uat_decoder="dump978-fa"
     if [[ $(sudo dpkg -s dump978-fa 2>/dev/null | grep -c "Version: ${dump978_fa_current_version}") == 0 ]]; then
-        whiptail  --backtitle "${RECEIVER_PROJECT_TITLE}" \
-                  --title "FlightAware dump978 Upgrade Available" \
-                  --defaultno --yesno "An updated version of FlightAware dump978 is available.\n\nWould you like to install the new version?" \
-                  16 65
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                 --title "FlightAware dump978 Upgrade Available" \
+                 --defaultno --yesno "An updated version of FlightAware dump978 is available.\n\nWould you like to install the new version?" \
+                 16 65
+        if [[ $? == 0 ]]; then
+            install_uat_decoder="true"
+        fi
+    else
+        whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                 --title "Reinstall FlightAware dump978" \
+                 --defaultno --yesno "The option to rebuild and reinstall FlightAware dump978 is available.\n\nWould you like to rebuild and reinstall FlightAware dump978?" \
+                 9 65
         if [[ $? == 0 ]]; then
             install_uat_decoder="true"
         fi

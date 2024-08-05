@@ -49,7 +49,7 @@ if [[ $exit_status != 0 ]]; then
     exit 1
 fi
 
-log_heading "Gather information required to configure the ADS-B decoder and dump978-fa if needed"
+log_heading "Gather information required to configure the decoder(s)"
 
 log_message "Checking if an ADS-B decoder is installed"
 adsb_decoder_installed="false"
@@ -65,15 +65,23 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok instal
     uat_decoder_installed="true"
 fi
 
+log_message "Checking if an ACARS decoder is installed"
+acars_decoder_installed="false"
+if [[ -f /usr/local/bin/acarsdec ]]; then
+    log_message "An ACARS decoder appears to be installed"
+    acars_decoder_installed="true"
+fi
+
 if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "true" ]]; then
     log_message "Informing the user that existing decoder(s) appears to be installed"
     whiptail --backtitle "ACARSDEC Decoder Configuration" \
              --title "RTL-SDR Dongle Assignments" \
              --msgbox "It appears that existing decoder(s) have been installed on this device. In order to run ACARSDEC in tandem with other decoders you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run multiple decoders on a single device you will need to have multiple RTL-SDR devices connected to your device." \
              12 78
+
     if [[ "${adsb_decoder_installed}" == "true" ]]; then
         current_adsb_device_number=""
-        if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+        if [[ "${acars_decoder_installed}" == "true" ]]; then
             log_message "Determining which device is currently assigned to the ADS-B decoder"
             current_adsb_device_number=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
         fi
@@ -100,7 +108,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
 
     if [[ "${uat_decoder_installed}" == "true" ]]; then
         current_uat_device_number=""
-        if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+        if [[ "${acars_decoder_installed}" == "true" ]]; then
             log_message "Determining which device is currently assigned to the UAT decoder"
             receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
             current_uat_device_number=$receiver_options | grep -o -P '(?<=serial=).*(?= --)'
@@ -127,7 +135,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
     fi
 
     current_acars_device_number=""
-    if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+    if [[ "${acars_decoder_installed}" == "true" ]]; then
         log_message "Determining which device is currently assigned to the UAT decoder"
         exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
         current_acars_device_number=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
@@ -154,7 +162,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
 fi
 
 current_acars_frequencies=""
-if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+if [[ "${acars_decoder_installed}" == "true" ]]; then
     log_message "Determining which frequencies are currently assigned"
     exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
     current_acars_frequencies=`sed -e 's#.*:5555 \(\)#\1#' <<< "${exec_start}"`
@@ -428,7 +436,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
 
     log_message "Assigning RTL-SDR device number ${acars_device_number} to ACARSDEC"
     sudo sed -i -e "s|\(.*-r \)\([0-9]\+\)\( .*\)|\1${acars_device_number}\3|g" /etc/systemd/system/acarsdec.service
-    log_message "Reload systemd units"
+    log_message "Reloading systemd units"
     sudo systemctl daemon-reload
     log_message "Restarting ACARSDEC"
     sudo systemctl restart acarsdec
