@@ -30,10 +30,12 @@ else
              10 65
     if [[ $? == 0 ]]; then
         install_adsb_decoder="true"
+        chosen_adsb_decoder="dump1090-fa"
     fi
 fi
 
 function install_dump1090_fa() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-fa.sh
     ${RECEIVER_BASH_DIRECTORY}/decoders/dump1090-fa.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -64,10 +66,12 @@ else
              10 65
     if [[ $? == 0 ]]; then
         install_uat_decoder="true"
+        chosen_uat_decoder="dump978-fa"
     fi
 fi
 
 function install_dump978_fa() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dump978-fa.sh
     ${RECEIVER_BASH_DIRECTORY}/decoders/dump978-fa.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -82,8 +86,8 @@ if [[ -f /etc/systemd/system/acarsdec.service ]]; then
     chosen_acars_decoder="acarsdec"
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Reinstall ACARSDEC Decoder" \
-             --defaultno --yesno "The option to rebuild and reinstall ACARSDEC is available.\n\nWould you like to reinstall ACARSDEC?" \
-             16 65
+             --defaultno --yesno "The option to rebuild and reinstall ACARSDEC is available.\n\nWould you like to rebuild and reinstall ACARSDEC?" \
+             9 65
     if [[ $? == 0 ]]; then
         install_acars_decoder="true"
     fi
@@ -95,10 +99,12 @@ else
              10 65
     if [[ $? == 0 ]]; then
         install_acars_decoder="true"
+        chosen_acars_decoder="acarsdec"
     fi
 fi
 
 function install_acarsdec() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/acarsdec.sh
     ${RECEIVER_BASH_DIRECTORY}/decoders/acarsdec.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -120,6 +126,7 @@ else
     feeder_list=("${feeder_list[@]}" 'ADS-B Exchange Feed Client' '' OFF)
 fi
 function install_adsbexchange_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -136,6 +143,7 @@ else
 fi
 
 function install_airplaneslive_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/airplaneslive.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/airplaneslive.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -154,6 +162,7 @@ else
 fi
 
 function install_flightaware_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/piaware.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -172,6 +181,7 @@ else
 fi
 
 function install_flightradar24_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/flightradar24.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -188,6 +198,7 @@ else
 fi
 
 function install_flyitalyadsb_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/flyitalyadsb.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/flyitalyadsb.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -204,6 +215,7 @@ else
 fi
 
 function install_openskynetwork_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/openskynetwork.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -250,6 +262,7 @@ else
 fi
 
 function install_planefinder_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/planefinder.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -272,12 +285,13 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "Install The ADS-B Portal" \
          --defaultno \
          --yesno "The ADS-B Portal is a web interface for your receiver. More information can be found in the ADS-B Receiver Project GitHub repository.\n\nhttps://github.com/jprochazka/adsb-receiver\n\nWould you like to install the ADS-B Portal?" \
-         14 78
+         12 78
 if [[ $? == 0 ]]; then
     install_portal="true"
 fi
 
 function install_adsb-portal() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/install.sh
     ${RECEIVER_BASH_DIRECTORY}/portal/install.sh
     if [[ $? != 0 ]] ; then
         exit 1
@@ -327,7 +341,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --checklist \
          --nocancel \
          --separate-output "The following extras are available for installation, please select any which you wish to install." \
-         13 65 4 "${extras_list[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
+         11 65 4 "${extras_list[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
 
 
 
@@ -339,7 +353,7 @@ if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Nothing to be done" \
              --msgbox "Nothing has been selected to be installed so the script will exit now." \
-             10 65
+             8 65
     echo ""
     log_alert_heading "Nothing was selected to do or be installed"
     echo ""

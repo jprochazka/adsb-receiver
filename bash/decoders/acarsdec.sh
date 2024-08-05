@@ -6,35 +6,13 @@ source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
 clear
-log_project_title ${RECEIVER_PROJECT_TITLE}
+log_project_title
 log_title_heading "Setting up the ACARSDEC decoder"
 log_title_message "------------------------------------------------------------------------------"
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "ACARSDEC decoder Setup" \
-              --yesno "Continue setup?" \
-              13 78; then
-    echo ""
-    log_alert_heading "INSTALLATION HALTED"
-    log_alert_message "Setup has been halted at the request of the user"
-    echo ""
-    log_title_message "------------------------------------------------------------------------------"
-    log_title_heading "ACARSDEC decoder setup halted"
-    echo ""
-    exit 1
-fi
-
-
-## PRE INSTALLATION OPERATIONS
-
-device=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-                    --title "Device Type" \
-                    --menu "Choose an option" \
-                    25 78 16 \
-                    "RTL-SDR" "" \
-                    "AirSpy" "" \
-                    "SDRPlay" "")
-exit_status=$?
-if [[ $exitstatus == 1 ]]; then
+              --yesno "ACARSDEC is a multi-channels acars decoder with built-in rtl_sdr, airspy front end or sdrplay device. Since 3.0, It comes with a database backend : acarsserv to store received acars messages.\n\nWould you like to begin the setup process now?" \
+              11 78; then
     echo ""
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted at the request of the user"
@@ -47,6 +25,29 @@ fi
 
 
 ## GATHER REQUIRED INFORMATION FROM THE USER
+
+log_heading "Determine the device type to build ACARSDEC for"
+
+log_message "Asking which type of device will be used by ACARSDEC"
+device=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                  --title "Device Type" \
+                  --menu "Please choose the RTL-SDR device type which is to be used by ACARSDEC." \
+                  11 78 3 \
+                  "RTL-SDR" "" \
+                  "AirSpy" "" \
+                  "SDRPlay" "" \
+                  3>&1 1>&2 2>&3)
+exit_status=$?
+if [[ $exit_status != 0 ]]; then
+    echo ""
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "Setup has been halted at the request of the user"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "ACARSDEC decoder setup halted"
+    echo ""
+    exit 1
+fi
 
 log_heading "Gather information required to configure the ADS-B decoder and dump978-fa if needed"
 
@@ -65,67 +66,27 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok instal
 fi
 
 if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "true" ]]; then
-    log_message "Checking if ACARSDEC has been setup"
-    if [[ -f /etc/systemd/system/acarsdec.service ]]; then
-        log_message "An ACARSDEC systemd service script exists"
-    else
-        log_message "Informing the user that existing decoder(s) appears to be installed"
-        whiptail --backtitle "ACARSDEC Decoder Configuration" \
-                 --title "RTL-SDR Dongle Assignments" \
-                 --msgbox "It appears that existing decoder(s) have been installed on this device. In order to run ACARSDEC in tandem with other decoders you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run multiple decoders on a single device you will need to have multiple RTL-SDR devices connected to your device." \
-                 12 78
-
-        if [[ "${adsb_decoder_installed}" == "true" ]]; then
-            log_message "Asking the user to assign a RTL-SDR device number to the ADS-B decoder"
-            adsb_device_number_title="Enter the ADS-B Decoder RTL-SDR Device Number"
-            while [[ -z $adsb_device_number ]] ; do
-                adsb_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
-                                              --title "${adsb_device_number_title}" \
-                                              --inputbox "\nEnter the RTL-SDR device number to assign your ADS-B decoder." \
-                                              8 78 3>&1 1>&2 2>&3)
-                exitstatus=$?
-                if [[ $exitstatus == 0 ]]; then
-                    log_alert_heading "INSTALLATION HALTED"
-                    log_alert_message "Setup has been halted due to lack of required information"
-                    echo ""
-                    log_title_message "------------------------------------------------------------------------------"
-                    log_title_heading "ACARSDEC decoder setup halted"
-                    exit 1
-                fi
-                adsb_device_number_title="Enter the ADS-B Decoder RTL-SDR Device Number (REQUIRED)"
-            done
+    log_message "Informing the user that existing decoder(s) appears to be installed"
+    whiptail --backtitle "ACARSDEC Decoder Configuration" \
+             --title "RTL-SDR Dongle Assignments" \
+             --msgbox "It appears that existing decoder(s) have been installed on this device. In order to run ACARSDEC in tandem with other decoders you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run multiple decoders on a single device you will need to have multiple RTL-SDR devices connected to your device." \
+             12 78
+    if [[ "${adsb_decoder_installed}" == "true" ]]; then
+        current_adsb_device_number=""
+        if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+            log_message "Determining which device is currently assigned to the ADS-B decoder"
+            current_adsb_device_number=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
         fi
-
-        if [[ "${uat_decoder_installed}" == "true" ]]; then
-            log_message "Asking the user to assign a RTL-SDR device number to the UAT decoder"
-            uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number"
-            while [[ -z $uat_device_number ]] ; do
-                uat_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
-                                             --title "${uat_device_number_title}" \
-                                             --inputbox "\nEnter the RTL-SDR device number to assign your UAT decoder." \
-                                             8 78 3>&1 1>&2 2>&3)
-                exitstatus=$?
-                if [[ $exitstatus == 0 ]]; then
-                    log_alert_heading "INSTALLATION HALTED"
-                    log_alert_message "Setup has been halted due to lack of required information"
-                    echo ""
-                    log_title_message "------------------------------------------------------------------------------"
-                    log_title_heading "ACARSDEC decoder setup halted"
-                    exit 1
-                fi
-                uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number (REQUIRED)"
-            done
-        fi
-
-        log_message "Asking the user to assign a RTL-SDR device number to ACARSDEC"
-        acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number"
-        while [[ -z $acars_device_number ]] ; do
-            acars_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
-                                             --title "${acars_device_number_title}" \
-                                             --inputbox "\nEnter the RTL-SDR device number to assign your ACARSDEC decoder." \
-                                             8 78 3>&1 1>&2 2>&3)
-            exitstatus=$?
-            if [[ $exitstatus == 0 ]]; then
+        log_message "Asking the user to assign a RTL-SDR device number to the ADS-B decoder"
+        adsb_device_number_title="Enter the ADS-B Decoder RTL-SDR Device Number"
+        while [[ -z $adsb_device_number ]] ; do
+            adsb_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
+                                          --title "${adsb_device_number_title}" \
+                                          --inputbox "\nEnter the RTL-SDR device number to assign your ADS-B decoder." \
+                                          8 78 \
+                                          "${current_adsb_device_number}" 3>&1 1>&2 2>&3)
+            exit_status=$?
+            if [[ $exit_status != 0 ]]; then
                 log_alert_heading "INSTALLATION HALTED"
                 log_alert_message "Setup has been halted due to lack of required information"
                 echo ""
@@ -133,25 +94,90 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
                 log_title_heading "ACARSDEC decoder setup halted"
                 exit 1
             fi
-            acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number (REQUIRED)"
+            adsb_device_number_title="Enter the ADS-B Decoder RTL-SDR Device Number (REQUIRED)"
         done
     fi
+
+    if [[ "${uat_decoder_installed}" == "true" ]]; then
+        current_uat_device_number=""
+        if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+            log_message "Determining which device is currently assigned to the UAT decoder"
+            receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
+            current_uat_device_number=$receiver_options | grep -o -P '(?<=serial=).*(?= --)'
+        fi
+        log_message "Asking the user to assign a RTL-SDR device number to the UAT decoder"
+        uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number"
+        while [[ -z $uat_device_number ]] ; do
+            uat_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
+                                         --title "${uat_device_number_title}" \
+                                         --inputbox "\nEnter the RTL-SDR device number to assign your UAT decoder." \
+                                         8 78 \
+                                         "${current_uat_device_number}" 3>&1 1>&2 2>&3)
+            exit_status=$?
+            if [[ $exit_status != 0 ]]; then
+                log_alert_heading "INSTALLATION HALTED"
+                log_alert_message "Setup has been halted due to lack of required information"
+                echo ""
+                log_title_message "------------------------------------------------------------------------------"
+                log_title_heading "ACARSDEC decoder setup halted"
+                exit 1
+            fi
+            uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number (REQUIRED)"
+        done
+    fi
+
+    current_acars_device_number=""
+    if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+        log_message "Determining which device is currently assigned to the UAT decoder"
+        exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
+        current_acars_device_number=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
+    fi
+    log_message "Asking the user to assign a RTL-SDR device number to ACARSDEC"
+    acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number"
+    while [[ -z $acars_device_number ]] ; do
+        acars_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
+                                       --title "${acars_device_number_title}" \
+                                       --inputbox "\nEnter the RTL-SDR device number to assign your ACARSDEC decoder." \
+                                       8 78 \
+                                       "${current_acars_device_number}" 3>&1 1>&2 2>&3)
+        exit_status=$?
+        if [[ $exit_status != 0 ]]; then
+            log_alert_heading "INSTALLATION HALTED"
+            log_alert_message "Setup has been halted due to lack of required information"
+            echo ""
+            log_title_message "------------------------------------------------------------------------------"
+            log_title_heading "ACARSDEC decoder setup halted"
+            exit 1
+        fi
+        acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number (REQUIRED)"
+    done
 fi
 
-log_message "Asking the user for ACARS frequencies to monitor"
-acars_fequencies=$(whiptail --backtitle "ACARS Frequencies" \
-                            --title "${acars_device_number_title}" \
-                            --inputbox "\nEnter the ACARS frequencies you would like to monitor." \
-                            8 78 3>&1 1>&2 2>&3)
-exitstatus=$?
-if [[ $exitstatus == 0 ]]; then
-    log_alert_heading "INSTALLATION HALTED"
-    log_alert_message "Setup has been halted due to lack of required information"
-    echo ""
-    log_title_message "------------------------------------------------------------------------------"
-    log_title_heading "ACARSDEC decoder setup halted"
-    exit 1
+current_acars_frequencies=""
+if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+    log_message "Determining which frequencies are currently assigned"
+    exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
+    current_acars_frequencies=`sed -e 's#.*:5555 \(\)#\1#' <<< "${exec_start}"`
 fi
+log_message "Asking the user for ACARS frequencies to monitor"
+acars_fequencies_title="Enter ACARS Frequencies"
+while [[ -z $acars_fequencies ]] ; do
+    acars_fequencies=$(whiptail --backtitle "ACARS Frequencies" \
+                                --title "${acars_fequencies_title}" \
+                                --inputbox "\nEnter the ACARS frequencies you would like to monitor." \
+                                8 78 \
+                                "${current_acars_frequencies}" 3>&1 1>&2 2>&3)
+    exit_status=$?
+    if [[ $exit_status != 0 ]]; then
+        log_alert_heading "INSTALLATION HALTED"
+        log_alert_message "Setup has been halted due to lack of required information"
+        echo ""
+        log_title_message "------------------------------------------------------------------------------"
+        log_title_heading "ACARSDEC decoder setup halted"
+        exit 1
+    fi
+    acars_fequencies_title="Enter ACARS Frequencies (REQUIRED)"
+done
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -161,7 +187,7 @@ log_heading "Installing packages needed to fulfill dependencies for FlightAware 
 check_package cmake
 check_package libjansson-dev
 check_package libpaho-mqtt-dev
-check_package libsndfile-dev
+check_package libsndfile1-dev
 check_package libsqlite3-dev
 check_package libusb-1.0-0-dev
 check_package libxml2-dev
@@ -205,7 +231,6 @@ else
     echo ""
     git clone https://github.com/szpajder/libacars.git
 fi
-echo ""
 
 
 ## BUILD AND INSTALL THE LIBACARS LIBRARY
@@ -218,7 +243,7 @@ if [[ ! -d $RECEIVER_BUILD_DIRECTORY/libacars/build ]]; then
         mkdir -vp $RECEIVER_BUILD_DIRECTORY/libacars/build
     echo ""
 fi
-if [[ -n "$(ls -A $RECEIVER_BUILD_DIRECTORY/libacars/build 2>/dev/null)" ]]
+if [[ -n "$(ls -A $RECEIVER_BUILD_DIRECTORY/libacars/build 2>/dev/null)" ]]; then
     log_message "Deleting all files currently residing in the libacars build directory"
     rm -rf $RECEIVER_BUILD_DIRECTORY/libacars/build/*
 fi
@@ -237,9 +262,7 @@ echo ""
 sudo make install
 echo ""
 log_message "Running ldconfig"
-echo ""
 sudo ldconfig
-echo ""
 
 
 ## CLONE OR PULL THE ACARSDEC GIT REPOSITORY
@@ -259,7 +282,6 @@ else
     echo ""
     git clone https://github.com/TLeconte/acarsdec.git
 fi
-echo ""
 
 
 ## BUILD AND INSTALL THE ACARSDEC BINARY
@@ -272,7 +294,7 @@ if [[ ! -d $RECEIVER_BUILD_DIRECTORY/acarsdec/build ]]; then
         mkdir -vp $RECEIVER_BUILD_DIRECTORY/acarsdec/build
     echo ""
 fi
-if [[ -n "$(ls -A $RECEIVER_BUILD_DIRECTORY/acarsdec/build 2>/dev/null)" ]]
+if [[ -n "$(ls -A $RECEIVER_BUILD_DIRECTORY/acarsdec/build 2>/dev/null)" ]]; then
     log_message "Deleting all files currently residing in the ACARSDEC build directory"
     rm -rf $RECEIVER_BUILD_DIRECTORY/acarsdec/build/*
 fi
@@ -301,7 +323,6 @@ echo ""
 log_message "Executing make install"
 echo ""
 sudo make install
-echo ""
 
 
 ## CLONE OR PULL THE ACARSSERV GIT REPOSITORY
@@ -321,7 +342,6 @@ else
     echo ""
     git clone https://github.com/TLeconte/acarsserv.git
 fi
-echo ""
 
 
 ## BUILD AND INSTALL THE ACARSDEC BINARY
@@ -333,6 +353,7 @@ cd $RECEIVER_BUILD_DIRECTORY/acarsserv
 log_message "Executing make"
 echo ""
 make -f Makefile
+echo ""
 
 
 ## RUN ACARSDECO AND ACARSSERV
@@ -381,7 +402,6 @@ EOF
 
 log_message "Enabling then starting the ACARSDEC service"
 sudo systemctl enable --now acarsdec.service
-
 log_message "Enabling then starting the acarsserv service"
 sudo systemctl enable --now acarsserv.service
 
@@ -401,13 +421,15 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
 
     if [[ "${uat_decoder_installed}" == "true" ]]; then
         log_message "Assigning RTL-SDR device number ${uat_device_number} to the FlightAware Dump978 decoder"
-        sudo sed -i -e "s/driver=rtlsdr/driver=rtlsdr,serial=${uat_device_number}/g" /etc/default/dump978-fa
+        sudo sed -i -e "s|driver=rtlsdr|driver=rtlsdr,serial=${uat_device_number}|g" /etc/default/dump978-fa
         log_message "Restarting dump978-fa"
         sudo systemctl restart dump978-fa
     fi
 
     log_message "Assigning RTL-SDR device number ${acars_device_number} to ACARSDEC"
-    sudo sed -i -e "s/\(.*-r \)\([0-9]\+\)\( .*\)/\1${acars_device_number}\3/g" /etc/systemd/system/acarsdec.service
+    sudo sed -i -e "s|\(.*-r \)\([0-9]\+\)\( .*\)|\1${acars_device_number}\3|g" /etc/systemd/system/acarsdec.service
+    log_message "Reload systemd units"
+    sudo systemctl daemon-reload
     log_message "Restarting ACARSDEC"
     sudo systemctl restart acarsdec
 fi

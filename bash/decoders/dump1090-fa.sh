@@ -64,8 +64,8 @@ if [[ "${uat_decoder_installed}" == "true" || "${acars_decoder_installed}" == "t
                                              --title "${uat_device_number_title}" \
                                              --inputbox "\nEnter the RTL-SDR device number to assign your UAT decoder." \
                                              8 78 3>&1 1>&2 2>&3)
-                exitstatus=$?
-                if [[ $exitstatus == 0 ]]; then
+                exit_status=$?
+                if [[ $exit_status != 0 ]]; then
                     log_alert_heading "INSTALLATION HALTED"
                     log_alert_message "Setup has been halted due to lack of required information"
                     echo ""
@@ -85,8 +85,8 @@ if [[ "${uat_decoder_installed}" == "true" || "${acars_decoder_installed}" == "t
                                                --title "${acars_device_number_title}" \
                                                --inputbox "\nEnter the RTL-SDR device number to assign your ACARS decoder." \
                                                8 78 3>&1 1>&2 2>&3)
-                exitstatus=$?
-                if [[ $exitstatus == 0 ]]; then
+                exit_status=$?
+                if [[ $exit_status != 0 ]]; then
                     log_alert_heading "INSTALLATION HALTED"
                     log_alert_message "Setup has been halted due to lack of required information"
                     echo ""
@@ -105,8 +105,8 @@ if [[ "${uat_decoder_installed}" == "true" || "${acars_decoder_installed}" == "t
                                           --title "${adsb_device_number_title}" \
                                           --inputbox "\nEnter the RTL-SDR device number to assign your FlightAware Dump1090 decoder." \
                                           8 78 3>&1 1>&2 2>&3)
-            exitstatus=$?
-            if [[ $exitstatus == 0 ]]; then
+            exit_status=$?
+            if [[ $exit_status != 0 ]]; then
                 log_alert_heading "INSTALLATION HALTED"
                 log_alert_message "Setup has been halted due to lack of required information"
                 echo ""
