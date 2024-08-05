@@ -136,7 +136,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
     fi
     log_message "Asking the user to assign a RTL-SDR device number to ACARSDEC"
     acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number"
-    while [[ -z $acars_device_number ]] ; do
+    while [[ -z $acars_device_number ]]; do
         acars_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
                                        --title "${acars_device_number_title}" \
                                        --inputbox "\nEnter the RTL-SDR device number to assign your ACARSDEC decoder." \
@@ -155,11 +155,15 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
     done
 fi
 
+if [[ -z $acars_device_number ]]; then
+    acars_device_number="0"
+fi
+
 current_acars_frequencies=""
 if [[ "${acars_decoder_installed}" == "true" ]]; then
     log_message "Determining which frequencies are currently assigned"
     exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
-    current_acars_frequencies=`sed -e 's#.*:5555 \(\)#\1#' <<< "${exec_start}"`
+    current_acars_frequencies=`sed -e "s#.*-r ${acars_device_number} \(\)#\1#" <<< "${exec_start}"`
 fi
 log_message "Asking the user for ACARS frequencies to monitor"
 acars_fequencies_title="Enter ACARS Frequencies"
@@ -367,10 +371,9 @@ Description=ARCARSDEC multi-channel acars decoder.
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/acarsdec -r 0 -A -p 0 -o 0 -j 127.0.0.1:5555 ${acars_fequencies}
+ExecStart=/usr/local/bin/acarsdec -j 127.0.0.1:5555 -o2 -g280 -r 0 130.025 130.425 130.450 131.125 131.550
 WorkingDirectory=/usr/local/bin
 StandardOutput=null
-StandardError=syslog
 TimeoutSec=30
 Restart=on-failure
 RestartSec=30
@@ -391,7 +394,6 @@ After=network.target
 ExecStart=${RECEIVER_BUILD_DIRECTORY}/acarsserv/acarsserv -j 127.0.0.1:5555
 WorkingDirectory=${RECEIVER_BUILD_DIRECTORY}/acarsserv
 StandardOutput=null
-StandardError=syslog
 TimeoutSec=30
 Restart=on-failure
 RestartSec=30
