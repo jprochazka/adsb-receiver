@@ -413,7 +413,7 @@ else
     fi
 
     # Portals
-    if [[ "${WEBPORTAL_DO_INSTALL}" == "true" ]]; then
+    if [[ "${install_portal}" == "true" ]]; then
         confirmation_message="${confirmation_message}\n  * ADS-B Receiver Project Web Portal"
     fi
 

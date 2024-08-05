@@ -218,7 +218,7 @@ esac
 
 # Install PHP.
 check_package php${DISTRO_PHP_VERSION}-cgi
-if (( $(echo "${DISTRO_PHP_VERSION} < 8" | bc -l) )); then
+if [[ ! "${DISTRO_PHP_VERSION}" == "" && "${DISTRO_PHP_VERSION}" < "8" ]]; then
     check_package php${DISTRO_PHP_VERSION}-json
 fi
 
@@ -253,9 +253,7 @@ if [[ "${ADVANCED}" = "true" ]] ; then
             ;;
     esac
 else
-    if [ ! $DISTRO_PHP_VERSION == "5" ]; then
-        check_package php${DISTRO_PHP_VERSION}-xml
-    fi
+    check_package php${DISTRO_PHP_VERSION}-xml
 fi
 
 # Reload Lighttpd after installing the prerequisite packages.
