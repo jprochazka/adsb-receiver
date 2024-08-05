@@ -60,12 +60,9 @@ if [[ "${uat_decoder_installed}" == "true" || "${acars_decoder_installed}" == "t
              12 78
 
     if [[ "${uat_decoder_installed}" == "true" ]]; then
-        current_uat_device_number=""
-        if [[ "${adsb_decoder_installed}" == "true" ]]; then
-            log_message "Determining which device is currently assigned to the UAT decoder"
-            receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
-            current_uat_device_number=$receiver_options | grep -o -P '(?<=serial=).*(?= --)'
-        fi
+        log_message "Determining which device is currently assigned to the UAT decoder"
+        receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
+        current_uat_device_number=$receiver_options | grep -o -P '(?<=serial=).*(?= --)'
         log_message "Asking the user to assign a RTL-SDR device number to the UAT decoder"
         uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number"
         while [[ -z $uat_device_number ]] ; do
@@ -88,12 +85,9 @@ if [[ "${uat_decoder_installed}" == "true" || "${acars_decoder_installed}" == "t
     fi
 
     if [[ "${acars_decoder_installed}" == "true" ]]; then
-        current_acars_device_number=""
-        if [[ "${adsb_decoder_installed}" == "true" ]]; then
-            log_message "Determining which device is currently assigned to the UAT decoder"
-            exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
-            current_acars_device_number=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
-        fi
+        log_message "Determining which device is currently assigned to the UAT decoder"
+        exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
+        current_acars_device_number=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
         log_message "Asking the user to assign a RTL-SDR device number to ACARSDEC"
         acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number"
         while [[ -z $acars_device_number ]] ; do
@@ -116,7 +110,7 @@ if [[ "${uat_decoder_installed}" == "true" || "${acars_decoder_installed}" == "t
     fi
 
     current_adsb_device_number=""
-    if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+    if [[ "${absb_decoder_installed}" == "true" ]]; then
         log_message "Determining which device is currently assigned to the ADS-B decoder"
         current_adsb_device_number=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
     fi

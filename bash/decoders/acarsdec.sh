@@ -80,11 +80,8 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
              12 78
 
     if [[ "${adsb_decoder_installed}" == "true" ]]; then
-        current_adsb_device_number=""
-        if [[ "${acars_decoder_installed}" == "true" ]]; then
-            log_message "Determining which device is currently assigned to the ADS-B decoder"
-            current_adsb_device_number=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
-        fi
+        log_message "Determining which device is currently assigned to the ADS-B decoder"
+        current_adsb_device_number=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
         log_message "Asking the user to assign a RTL-SDR device number to the ADS-B decoder"
         adsb_device_number_title="Enter the ADS-B Decoder RTL-SDR Device Number"
         while [[ -z $adsb_device_number ]] ; do
@@ -107,12 +104,9 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
     fi
 
     if [[ "${uat_decoder_installed}" == "true" ]]; then
-        current_uat_device_number=""
-        if [[ "${acars_decoder_installed}" == "true" ]]; then
-            log_message "Determining which device is currently assigned to the UAT decoder"
-            receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
-            current_uat_device_number=$receiver_options | grep -o -P '(?<=serial=).*(?= --)'
-        fi
+        log_message "Determining which device is currently assigned to the UAT decoder"
+        receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
+        current_uat_device_number=$receiver_options | grep -o -P '(?<=serial=).*(?= --)'
         log_message "Asking the user to assign a RTL-SDR device number to the UAT decoder"
         uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number"
         while [[ -z $uat_device_number ]] ; do

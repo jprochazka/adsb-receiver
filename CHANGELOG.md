@@ -5,8 +5,9 @@ The following is a history of the changes made to this project.
 ## v2.8.6 *(in development)*
 
 * The option to install ACARSDEC and ACARSERV is now available as a decoder option.
-* The ability to view ACARS messages via the existing PHP portal has been added.
-* All scripts now ask that devices be assigned when additional decoder installations are executed.
+* ACARS data can be viewed via the existing PHP portal has been added.
+* Added the ability to reconfigure, rebuild, and reinstall both dump1090-fa and dump978.fa.
+* Decoder scripts now ask for device assignments when additional decoders are being installed.
 * Added "Contributors" to the copyright notice in the software license.
 
 ## v2.8.5 *(July 23rd, 2024)*
