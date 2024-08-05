@@ -11,9 +11,10 @@
             $dsn = "sqlite:".$settings::acarsserv_database;
             $dbh = new PDO($dsn);
             $sql = "
-                SELECT * FROM Messages ORDER BY [Time] DESC LIMIT :limit OFFSET :offset
-                JOIN Flights ON Flights.FlightID = Messages.FlightID
-                JOIN Stations ON Stations.StID = Messages.StID
+                SELECT * FROM Messages
+                JOIN Flights USING(FlightID)
+                JOIN Stations USING(StID)
+                ORDER BY LastTime DESC LIMIT 100 OFFSET 0
             ";
             $sth = $dbh->prepare($sql);
             $sth->bindValue(':limit', $limit);
