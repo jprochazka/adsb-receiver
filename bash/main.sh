@@ -102,7 +102,8 @@ if [[ -f /etc/systemd/system/acarsdec.service ]]; then
     chosen_acars_decoder="acarsdec"
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Reinstall ACARSDEC Decoder" \
-             --defaultno --yesno "The option to rebuild and reinstall ACARSDEC is available.\n\nWould you like to rebuild and reinstall ACARSDEC?" \
+             --defaultno \
+             --yesno "The option to rebuild and reinstall ACARSDEC is available.\n\nWould you like to rebuild and reinstall ACARSDEC?" \
              9 65
     if [[ $? == 0 ]]; then
         install_acars_decoder="true"
@@ -306,7 +307,7 @@ if [[ $? == 0 ]]; then
     install_portal="true"
 fi
 
-function install_adsb-portal() {
+function install_adsb_portal() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/install.sh
     ${RECEIVER_BASH_DIRECTORY}/portal/install.sh
     if [[ $? != 0 ]] ; then
@@ -358,7 +359,6 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --nocancel \
          --separate-output "The following extras are available for installation, please select any which you wish to install." \
          11 65 4 "${extras_list[@]}" 2>${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
-
 
 
 ## Setup Confirmation
@@ -466,6 +466,7 @@ if [[ "${install_acars_decoder}" == "true" ]]; then
     esac
 fi
 
+# Aggragate site clients
 run_adsbexchange_script="false"
 run_airplaneslive_script="false"
 run_flightaware_script="false"
@@ -474,7 +475,6 @@ run_flyitalyadsb_script="false"
 run_openskynetwork_script="false"
 run_planefinder_script="false"
 
-# Aggragate site clients
 if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
     while read feeder_choice
     do
@@ -534,7 +534,7 @@ fi
 
 # Portals
 if [[ "${install_portal}" == "true" ]]; then
-    install_adsb-portal
+    install_adsb_portal
 fi
 
 # Extras
@@ -556,7 +556,7 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
     done < ${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES
 fi
 
-if [[ "${run_adsbexchange_script}" == "true" ]]; then
+if [[ "${run_beastsplitter_script}" == "true" ]]; then
     install_beastsplitter
 fi
 
