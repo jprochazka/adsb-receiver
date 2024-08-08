@@ -9,6 +9,7 @@
 
     $common = new common();
     $template = new template();
+    $acars = new acars();
 
     $pageData = array();
 

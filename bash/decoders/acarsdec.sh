@@ -200,6 +200,18 @@ check_package libxml2-dev
 check_package pkg-config
 check_package zlib1g-dev
 
+case $RECEIVER_OS_DISTRIBUTION in
+    ubuntu)
+        distro_php_version=""
+        ;;
+    debian)
+        if [[ "${RECEIVER_OS_CODE_NAME}" == "bookworm" ]]; then distro_php_version="8.2"; fi
+        if [[ "${RECEIVER_OS_CODE_NAME}" == "bullseye" ]]; then distro_php_version="7.4"; fi
+        ;;
+esac
+check_package sqlite3
+check_package php${distro_php_version}-sqlite3
+
 case "${device}" in
     "RTL-SDR")
         check_package librtlsdr-dev

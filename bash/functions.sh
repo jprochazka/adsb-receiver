@@ -118,7 +118,7 @@ function check_package() {
             fi
             echo ""
             attempt=$((attempt+1))
-            sudo apt-get install -y $1 2>&1 | tee -a $RECEIVER_LOG_FILE
+            sudo apt-get install -y $1 #2>&1 | tee -a $RECEIVER_LOG_FILE
             echo ""
         else
             log_true_inline "[OK]"

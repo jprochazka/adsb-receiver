@@ -24,6 +24,17 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 fi
 
 
+## INSTALL LIGHTTPD IF IT IS NOT ALREADY INSTALLED
+
+log_heading "Installing Lighttpd if not already installed"
+
+check_package lighttpd
+
+log_message "Determining the lighttpd document root"
+RAW_DOCUMENT_ROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
+LIGHTTPD_DOCUMENT_ROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAW_DOCUMENT_ROOT}`
+
+
 ## GATHER REQUIRED INFORMATION
 
 log_heading "Gather information required to configure the portal"
@@ -346,7 +357,7 @@ if [ -f $LIGHTTPD_DOCUMENT_ROOT/index.lighttpd.html ]; then
 fi
 
 log_message "Placing portal files in Lighttpd's root directory"
-sudo cp -R $PORTAL_BUILD_DIRECTORY/html/* $LIGHTTPD_DOCUMENT_ROOT
+sudo cp -R $RECEIVER_BUILD_DIRECTORY/portal//html/* $LIGHTTPD_DOCUMENT_ROOT
 
 if [[ "${RECEIVER_PORTAL_INSTALLED}" = "true" && "${ADVANCED}" = "false" ]]; then
     log_message "Restoring the backup copy of the file ${LIGHTTPD_DOCUMENT_ROOT}/data/administrators.xml"

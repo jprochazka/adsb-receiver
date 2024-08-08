@@ -9,6 +9,7 @@ The following is a history of the changes made to this project.
 * Added the ability to reconfigure, rebuild, and reinstall both dump1090-fa and dump978.fa.
 * Decoder scripts now ask for device assignments when additional decoders are being installed.
 * Added "Contributors" to the copyright notice in the software license.
+* Had to remove logging of check_package output due to whiptail issue encountered with pipe.
 
 ## v2.8.5 *(July 23rd, 2024)*
 
