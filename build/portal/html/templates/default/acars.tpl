@@ -4,7 +4,7 @@
                 <h1>ACARS Messages</h1>
                 <hr />
                 {foreach page:acarsMessages as message}
-                    <h2>{message->FlightNumber}<h2>
+                    <h2>{message->FlightNumber}</h2>
                     <p>
                         Aircarft Registration: {message->Registration}<br/>
                         The first message was received on {message->StartTime} with the last seen {message->LastTime}.<br/>
@@ -26,6 +26,11 @@
                         </ul>
                     </div>
                 {/foreach}
+                <ul class="pagination">
+                    {for pageNumber eq 1 to page:pageLinks}
+                        <li><a href="acars.php?page={pageNumber}">{pageNumber}</a></li>
+                    {/for}
+                </ul>
             </div>
 {/area}
 {area:scripts}

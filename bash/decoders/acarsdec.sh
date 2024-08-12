@@ -87,7 +87,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
         while [[ -z $adsb_device_number ]] ; do
             adsb_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
                                           --title "${adsb_device_number_title}" \
-                                          --inputbox "\nEnter the RTL-SDR device number to assign your ADS-B decoder." \
+                                          --inputbox "Enter the RTL-SDR device number to assign your ADS-B decoder." \
                                           8 78 \
                                           "${current_adsb_device_number}" 3>&1 1>&2 2>&3)
             exit_status=$?
@@ -112,7 +112,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
         while [[ -z $uat_device_number ]] ; do
             uat_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
                                          --title "${uat_device_number_title}" \
-                                         --inputbox "\nEnter the RTL-SDR device number to assign your UAT decoder." \
+                                         --inputbox "Enter the RTL-SDR device number to assign your UAT decoder." \
                                          8 78 \
                                          "${current_uat_device_number}" 3>&1 1>&2 2>&3)
             exit_status=$?
@@ -139,7 +139,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${uat_decoder_installed}" == "tr
     while [[ -z $acars_device_number ]]; do
         acars_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
                                        --title "${acars_device_number_title}" \
-                                       --inputbox "\nEnter the RTL-SDR device number to assign your ACARSDEC decoder." \
+                                       --inputbox "Enter the RTL-SDR device number to assign your ACARSDEC decoder." \
                                        8 78 \
                                        "${current_acars_device_number}" 3>&1 1>&2 2>&3)
         exit_status=$?
@@ -159,7 +159,7 @@ if [[ -z $acars_device_number ]]; then
     acars_device_number="0"
 fi
 
-current_acars_frequencies=""
+current_acars_frequencies="130.025 130.425 130.450 131.125 131.550"
 if [[ "${acars_decoder_installed}" == "true" ]]; then
     log_message "Determining which frequencies are currently assigned"
     exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`

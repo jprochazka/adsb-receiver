@@ -19,5 +19,22 @@
 
             return $acarsMessages;
         }
+
+        function getAcarsMessageCount() {
+            require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."classes".DIRECTORY_SEPARATOR."common.class.php");
+            $common = new common();
+
+            $dsn = "sqlite:".$common->getSetting('acarsserv_database');
+            $dbh = new PDO($dsn, null, null, [PDO::SQLITE_ATTR_OPEN_FLAGS => PDO::SQLITE_OPEN_READONLY]);
+            $sql = "SELECT COUNT(*) FROM Messages";
+            $sth = $dbh->prepare($sql);
+            $sth->execute();
+            $number_of_rows = $sth->fetchColumn();
+            $sth = NULL;
+            $dbh = NULL;
+            $dsn = NULL;
+
+            return $number_of_rows;
+        }
     }
 ?>
