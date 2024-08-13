@@ -231,6 +231,15 @@
         $version = "2.8.5";
     }
 
+    // UPGRADE TO V2.8.6
+    if ($common->getSetting("version") == "2.8.5" && $success) {
+        $json = file_get_contents("http://localhost/install/upgrade-v2.8.6.php");
+        $results = json_decode($json, TRUE);
+        $success = $results['success'];
+        $message = $results['message'];
+        $version = "2.8.6";
+    }
+
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");
 
     // Display the instalation wizard.

@@ -12,7 +12,7 @@
 #                                                                                   #
 #  -------------------------------------------------------------------------------  #
 #                                                                                   #
-# Copyright (c) 2015 Joseph A. Prochazka                                            #
+# Copyright (c) 2015 Joseph A. Prochazka and Contributors                           #
 #                                                                                   #
 # Permission is hereby granted, free of charge, to any person obtaining a copy      #
 # of this software and associated documentation files (the "Software"), to deal     #
@@ -37,7 +37,7 @@
 
 ## ASSIGN VARIABLE
 
-project_version="2.8.5"
+project_version="2.8.6"
 
 printf -v date_time '%(%Y-%m-%d_%H-%M-%S)T' -1
 log_file="adsb-installer_${date_time}.log"
