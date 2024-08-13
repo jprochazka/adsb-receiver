@@ -5,9 +5,6 @@
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
-
-## BEGIN SETUP
-
 clear
 log_project_title
 log_title_heading "Setting up the FlightAware Dump1090 decoder"
