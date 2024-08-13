@@ -616,7 +616,7 @@ unset ADSB_PORTAL_DATABASE_USER
 unset ADSB_PORTAL_DATABASE_PASSWORD1
 unset ADSB_PORTAL_DATABASE_NAME
 
-pi_address=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
+ip_address=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "ADS-B Receiver Project Portal Setup" \
