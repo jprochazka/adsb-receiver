@@ -286,13 +286,13 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
                                                 --inputbox "Please enter your Heywhatsthat panorama ID." \
                                                 8 78 3>&1 1>&2 2>&3)
             whiptail_exit_status=$?
-            if [[ $whiptail_exit_status == 0 ]]; then
+            if [[ $whiptail_exit_status != 0 ]]; then
                 log_alert_message "Setup of heywhatsthat maximum range rings was cancelled"
                 break
             fi
             heywhatsthat_panorama_id_title="Enter the Heywhatsthat Panorama ID [REQUIRED]"
         done
-	if [[ $whiptail_exit_status != 0 ]]; then
+	if [[ $whiptail_exit_status == 0 ]]; then
             log_message "Asking the user what the altitude is for the first ring"
             heywhatsthat_ring_one_altitude_title="First heywhatsthat Ring Altitude"
             while [[ -z $heywhatsthat_ring_one_altitude ]] ; do
