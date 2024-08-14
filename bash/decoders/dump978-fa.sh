@@ -5,9 +5,6 @@
 source $RECEIVER_BASH_DIRECTORY/variables.sh
 source $RECEIVER_BASH_DIRECTORY/functions.sh
 
-
-## BEGIN SETUP
-
 clear
 log_project_title
 log_title_heading "Setting up the FlightAware Dump978 decoder"
@@ -29,7 +26,7 @@ fi
 
 ## GATHER REQUIRED INFORMATION FROM THE USER
 
-log_heading "Gather information required to configure the ADS-B decoder and dump978-fa if needed"
+log_heading "Gather information required to configure the decoder(s)"
 
 log_message "Checking if an ADS-B decoder is installed"
 adsb_decoder_installed="false"
@@ -38,25 +35,40 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
     adsb_decoder_installed="true"
 fi
 
-if [[ "${adsb_decoder_installed}" == "true" ]]; then
-    log_message "Checking if dump978-fa has been configured"
-    if [[ -f /etc/default/dump978-fa ]]; then
-        log_message "A dump978-fa configuration file exists"
-    else
-        log_message "Informing the user an ADS-B decoder appears to be installed"
-        whiptail --backtitle "FlightAware Dump978 Configuration" \
-                 --title "RTL-SDR Dongle Assignments" \
-                 --msgbox "It appears one of the dump1090 decoder packages has been installed on this device. In order to run dump978 in tandem with dump1090 you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run both decoders on a single device you will need to have two separate RTL-SDR devices connected to your device." \
-                 12 78
+log_message "Checking if a UAT decoder is installed"
+uat_decoder_installed="false"
+if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+    log_message "An ADS-B decoder appears to be installed"
+    uat_decoder_installed="true"
+fi
 
-        log_message "Asking the user to assign a RTL-SDR device serial number to the ADS-B decoder"
-        dump1090_device_serial_title="Enter the Dump1090 RTL-SDR Device Serial"
-        while [[ -z $dump1090_device_serial ]] ; do
-            dump1090_device_serial=$(whiptail --backtitle "FlightAware Dump978 Configuration" \
-                                              --title "${dump1090_device_serial_title}" \
-                                              --inputbox "\nEnter the serial number for your dump1090 RTL-SDR device." \
-                                              8 78 3>&1 1>&2 2>&3)
-            if [[ $dump1090_device_serial == 0 ]]; then
+log_message "Checking if an ACARS decoder is installed"
+acars_decoder_installed="false"
+if [[ -f /usr/local/bin/acarsdec ]]; then
+    log_message "An ACARS decoder appears to be installed"
+    acars_decoder_installed="true"
+fi
+
+if [[ "${adsb_decoder_installed}" == "true" || "${acars_decoder_installed}" == "true" ]]; then
+    log_message "Informing the user that existing decoder(s) appears to be installed"
+    whiptail --backtitle "FlightAware Dump978 Decoder Configuration" \
+             --title "RTL-SDR Dongle Assignments" \
+             --msgbox "It appears that existing decoder(s) have been installed on this device. In order to run FlightAware Dump978 in tandem with other decoders you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run multiple decoders on a single device you will need to have multiple RTL-SDR devices connected to your device." \
+             12 78
+
+    if [[ "${adsb_decoder_installed}" == "true" ]]; then
+        log_message "Determining which device is currently assigned to the ADS-B decoder"
+        current_adsb_device_number=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
+        log_message "Asking the user to assign a RTL-SDR device number to the ADS-B decoder"
+        adsb_device_number_title="Enter the ADS-B Decoder RTL-SDR Device Number"
+        while [[ -z $adsb_device_number ]] ; do
+            adsb_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
+                                          --title "${adsb_device_number_title}" \
+                                          --inputbox "\nEnter the RTL-SDR device number to assign your ADS-B decoder." \
+                                          8 78 \
+                                          "${current_adsb_device_number}" 3>&1 1>&2 2>&3)
+            exit_status=$?
+            if [[ $exit_status != 0 ]]; then
                 log_alert_heading "INSTALLATION HALTED"
                 log_alert_message "Setup has been halted due to lack of required information"
                 echo ""
@@ -64,27 +76,60 @@ if [[ "${adsb_decoder_installed}" == "true" ]]; then
                 log_title_heading "FlightAware Dump978 decoder setup halted"
                 exit 1
             fi
-            dump1090_device_serial_title="Enter the Dump1090 RTL-SDR Device Serial (REQUIRED)"
-        done
-
-        log_message "Asking the user to assign a RTL-SDR device serial number to dump978-fa"
-        dump978_device_serial_title="Enter the Dump978 RTL-SDR Device Serial"
-        while [[ -z $dump978_device_serial ]] ; do
-            dump978_device_serial=$(whiptail --backtitle "FlightAware Dump978 Configuration" \
-                                             --title "${dump978_device_serial_title}" \
-                                             --inputbox "\nEnter the serial number for your dump978 RTL-SDR device." \
-                                             8 78 3>&1 1>&2 2>&3)
-            if [[ $dump978_device_serial == 0 ]]; then
-                log_alert_heading "INSTALLATION HALTED"
-                log_alert_message "Setup has been halted due to lack of required information"
-                echo ""
-                log_title_message "------------------------------------------------------------------------------"
-                log_title_heading "FlightAware Dump978 decoder setup halted"
-                exit 1
-            fi
-            dump978_device_serial_title="Enter the Dump1090 RTL-SDR Device Serial (REQUIRED)"
+            adsb_device_number_title="Enter the ADS-B Decoder RTL-SDR Device Number (REQUIRED)"
         done
     fi
+
+    if [[ "${acars_decoder_installed}" == "true" ]]; then
+        log_message "Determining which device is currently assigned to the UAT decoder"
+        exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
+        current_acars_device_number=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
+        log_message "Asking the user to assign a RTL-SDR device number to ACARSDEC"
+        acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number"
+        while [[ -z $acars_device_number ]] ; do
+            acars_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
+                                           --title "${acars_device_number_title}" \
+                                           --inputbox "\nEnter the RTL-SDR device number to assign your ACARSDEC decoder." \
+                                           8 78 \
+                                           "${current_acars_device_number}" 3>&1 1>&2 2>&3)
+            exit_status=$?
+            if [[ $exit_status != 0 ]]; then
+                log_alert_heading "INSTALLATION HALTED"
+                log_alert_message "Setup has been halted due to lack of required information"
+                echo ""
+                log_title_message "------------------------------------------------------------------------------"
+                log_title_heading "FlightAware Dump978 decoder setup halted"
+                exit 1
+            fi
+            acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number (REQUIRED)"
+        done
+    fi
+
+    current_uat_device_number=""
+    if [[ "${uat_decoder_installed}" == "true" ]]; then
+        log_message "Determining which device is currently assigned to the UAT decoder"
+        receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
+        current_uat_device_number=$receiver_options | grep -o -P '(?<=serial=).*(?= --)'
+    fi
+    log_message "Asking the user to assign a RTL-SDR device number to the UAT decoder"
+    uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number"
+    while [[ -z $uat_device_number ]] ; do
+        uat_device_number=$(whiptail --backtitle "ACARSDEC Decoder Configuration" \
+                                     --title "${uat_device_number_title}" \
+                                     --inputbox "\nEnter the RTL-SDR device number to assign your UAT decoder." \
+                                     8 78 \
+                                     "${current_uat_device_number}" 3>&1 1>&2 2>&3)
+        exit_status=$?
+        if [[ $exit_status != 0 ]]; then
+            log_alert_heading "INSTALLATION HALTED"
+            log_alert_message "Setup has been halted due to lack of required information"
+            echo ""
+            log_title_message "------------------------------------------------------------------------------"
+            log_title_heading "FlightAware Dump978 decoder setup halted"
+            exit 1
+        fi
+        uat_device_number_title="Enter the UAT Decoder RTL-SDR Device Number (REQUIRED)"
+    done
 fi
 
 
@@ -146,11 +191,11 @@ echo ""
 
 log_message "Installing the dump978-fa Debian package"
 echo ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_${DUMP978_FA_VERSION}_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 log_message "Installing the skyaware978 Debian package"
 echo ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_${DUMP978_FA_VERSION}_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
 echo ""
 
 log_message "Checking that the dump978-fa Debian package was installed"
@@ -200,21 +245,30 @@ cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb $RECEIVER_BUILD_DI
 
 ## CONFIGURATION
 
-if [[ "${adsb_decoder_installed}" == "true" ]]; then
+if [[ "${adsb_decoder_installed}" == "true" || "${acars_decoder_installed}" == "true" ]]; then
 
-    log_heading "Configuring the ADS-B decoder and dump978-fa so they can work in tandem"
+    log_heading "Configuring the decoders so they can work in tandem"
 
-    log_message "Assigning RTL-SDR device with serial ${dump978_device_serial} to dump978-fa"
-    sudo sed -i -e "s/driver=rtlsdr/driver=rtlsdr,serial=${dump978_device_serial}/g" /etc/default/dump978-fa
-    log_message "Restarting dump978-fa...\e[97m"
-    sudo systemctl restart dump978-fa
-
-    if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-        log_message "Assigning RTL-SDR device with serial ${dump1090_device_serial} to the FlightAware Dump1090 decoder"
-        change_config "RECEIVER_SERIAL" $dump1090_device_serial "/etc/default/dump1090-fa"
+    if [[ "${adsb_decoder_installed}" == "true" ]]; then
+        log_message "Assigning RTL-SDR device number ${adsb_device_number} to the FlightAware Dump1090 decoder"
+        change_config "RECEIVER_SERIAL" $adsb_device_number "/etc/default/dump1090-fa"
         log_message "Restarting dump1090-fa"
         sudo systemctl restart dump1090-fa
     fi
+
+    if [[ "${acars_decoder_installed}" == "true" ]]; then
+        log_message "Assigning RTL-SDR device number ${acars_device_number} to ACARSDEC"
+        sudo sed -i -e "s/\(.*-r \)\([0-9]\+\)\( .*\)/\1${acars_device_number}\3/g" /etc/systemd/system/acarsdec.service
+        log_message "Reload systemd units"
+        sudo systemctl daemon-reload
+        log_message "Restarting ACARSDEC"
+        sudo systemctl restart acarsdec
+    fi
+
+    log_message "Assigning RTL-SDR device number ${uat_device_number} to the FlightAware Dump978 decoder"
+    sudo sed -i -e "s/driver=rtlsdr/driver=rtlsdr,serial=${uat_device_number}/g" /etc/default/dump978-fa
+    log_message "Restarting dump978-fa"
+    sudo systemctl restart dump978-fa
 fi
 
 
