@@ -129,6 +129,73 @@ function install_acarsdec() {
 }
 
 
+## VDL DECODERS
+
+# VDLM2DEC
+install_vdl_decoder="false"
+if [[ -f /etc/systemd/system/vdlm2dec.service ]]; then
+    chosen_vdl_decoder="vdlm2dec"
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+             --title "Reinstall VDLM2DEC Decoder" \
+             --defaultno \
+             --yesno "The option to rebuild and reinstall VDLM2DEC is available.\n\nWould you like to rebuild and reinstall VDLM2DEC?" \
+             9 65
+    if [[ $? == 0 ]]; then
+        install_vdl_decoder="true"
+    fi
+else
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+             --title "VDLM2DEC Decoder" \
+             --defaultno \
+             --yesno "VDLM2DEC is a vdl mode 2 decoder with built-in rtl_sdr or airspy front end.\n\nGitHub Repository: https://github.com/TLeconte/vdlm2dec\n\nWould you like to install VDLM2DEC?" \
+             10 65
+    if [[ $? == 0 ]]; then
+        install_vdl_decoder="true"
+        chosen_vdl_decoder="vdlm2dec"
+    fi
+fi
+
+function install_vdlm2dec() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/vdlm2dec.sh
+    ${RECEIVER_BASH_DIRECTORY}/decoders/vdlm2dec.sh
+    if [[ $? != 0 ]] ; then
+        exit 1
+    fi
+}
+
+# DUMPVDL2
+install_vdl_decoder="false"
+if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
+    chosen_vdl_decoder="dumpvdl2"
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+             --title "Reinstall dumpvdl2 Decoder" \
+             --defaultno \
+             --yesno "The option to rebuild and reinstall dumpvdl2 is available.\n\nWould you like to rebuild and reinstall dumpvdl2?" \
+             9 65
+    if [[ $? == 0 ]]; then
+        install_vdl_decoder="true"
+    fi
+else
+    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+             --title "Dumpvdl2 Decoder" \
+             --defaultno \
+             --yesno "Dumpvdl2 is a VDL Mode 2 message decoder and protocol analyzer.\n\nGitHub Repository: https://github.com/szpajder/dumpvdl2\n\nWould you like to install dumpvdl2?" \
+             10 65
+    if [[ $? == 0 ]]; then
+        install_vdl_decoder="true"
+        chosen_vdl_decoder="dumpvdl2"
+    fi
+fi
+
+function install_dumpvdl2() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dumpvdl2.sh
+    ${RECEIVER_BASH_DIRECTORY}/decoders/dumpvdl2.sh
+    if [[ $? != 0 ]] ; then
+        exit 1
+    fi
+}
+
+
 ## AGGREGATE SITE CLIENTS
 
 declare array feeder_list
@@ -365,7 +432,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
 declare confirmation_message
 
-if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" && ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
+if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_vdl_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" && ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Nothing to be done" \
              --msgbox "Nothing has been selected to be installed so the script will exit now." \
@@ -400,6 +467,15 @@ else
         case ${chosen_acars_decoder} in
             "acarsdec")
                 confirmation_message="${confirmation_message}\n  * ACARSDEC"
+                ;;
+        esac
+    fi
+
+    # VDL decoders
+    if [[ "${install_vdl_decoder}" = "true" ]]; then
+        case ${chosen_vdl_decoder} in
+            "dumpvdl2")
+                confirmation_message="${confirmation_message}\n  * dumpvdl2"
                 ;;
         esac
     fi
@@ -462,6 +538,15 @@ if [[ "${install_acars_decoder}" == "true" ]]; then
     case ${chosen_acars_decoder} in
         "acarsdec")
              install_acarsdec
+             ;;
+    esac
+fi
+
+# VDL Decoders
+if [[ "${install_vdl_decoder}" == "true" ]]; then
+    case ${chosen_vdl_decoder} in
+        "dumpvdl2")
+             install_dumpvdl2
              ;;
     esac
 fi

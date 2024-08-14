@@ -1,65 +1,45 @@
 #!/bin/bash
 
-### VARIABLES
-
-PORTAL_BUILD_DIRECTORY="${RECEIVER_BUILD_DIRECTORY}/portal"
-
-COLLECTD_CONFIG="/etc/collectd/collectd.conf"
-COLLECTD_CRON_FILE="/etc/cron.d/adsb-receiver-performance-graphs"
-DUMP1090_MAX_RANGE_RRD="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd"
-DUMP1090_MESSAGES_LOCAL_RRD="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_messages-local_accepted.rrd"
-
-### INCLUDE EXTERNAL SCRIPTS
+## INCLUDE EXTERNAL SCRIPTS
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "true" ]] && [[ -s "${RECEIVER_CONFIGURATION_FILE}" ]] ; then
-    source ${RECEIVER_CONFIGURATION_FILE}
-fi
+
+### VARIABLES
+
+collectd_config="/etc/collectd/collectd.conf"
+collectd_cron_file="/etc/cron.d/adsb-receiver-performance-graphs"
+dump1090_max_range_rrd="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd"
+dump1090_messages_local_rrd="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_messages-local_accepted.rrd"
+
 
 ### BEGIN SETUP
 
-echo -e ""
-echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
-echo -e ""
+log_heading "Setting up collectd performance graphs"
 
 ## CONFIRM INSTALLED PACKAGES
 
-if [[ -z "${DUMP1090_INSTALLED}" ]] || [[ -z "${DUMP1090_FORK}" ]] ; then
-    echo -e "\e[94m  Checking which dump1090 fork is installed...\e[97m"
+if [[ -z "${dump1090_installed}" || -z "${dump1090_fork}" ]] ; then
+    log_message "Checking which dump1090 fork is installed"
     if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
-        DUMP1090_FORK="fa"
-        DUMP1090_INSTALLED="true"
+        dump1090_fork="fa"
+        dump1090_installed="true"
     fi
 fi
 
-## MODIFY THE DUMP1090-MUTABILITY INIT SCRIPT TO MEASURE AND RETAIN NOISE DATA
-
-if [[ "${DUMP1090_INSTALLED}" = "true" ]] && [[ "${DUMP1090_FORK}" = "mutability" ]] ; then
-    echo -e "\e[94m  Modifying the dump1090-mutability configuration file to add noise measurements...\e[97m"
-    EXTRA_ARGS=`get_config "EXTRA_ARGS" "/etc/default/dump1090-mutability"`
-    EXTRA_ARGS=$(sed -e 's/^[[:space:]]*//' <<<"EXTRA_ARGS --measure-noise")
-    change_config "EXTRA_ARGS" "${RECEIVER_LONGITUDE}" "/etc/default/dump1090-mutability"
-
-    echo -e "\e[94m  Reloading the systemd manager configuration...\e[97m"
-    sudo systemctl daemon-reload
-
-    echo -e "\e[94m  Reloading dump1090-mutability...\e[97m"
-    sudo service dump1090-mutability force-reload
-fi
 
 ## BACKUP AND REPLACE COLLECTD.CONF
 
 # Check if the collectd config file exists and if so back it up.
-if [[ -f "${COLLECTD_CONFIG}" ]] ; then
-    echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
-    sudo cp ${COLLECTD_CONFIG} ${COLLECTD_CONFIG}.bak
+if [[ -f "${collectd_config}" ]] ; then
+    log_message "Backing up the current collectd.conf file"
+    sudo cp ${collectd_config} ${collectd_config}.bak
 fi
 
 # Generate new collectd config.
-echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
-sudo tee ${COLLECTD_CONFIG} > /dev/null <<EOF
+log_message "Replacing the current collectd.conf file"
+sudo tee ${collectd_config} > /dev/null <<EOF
 # Config file for collectd(1).
 
 ##############################################################################
@@ -82,19 +62,19 @@ WriteThreads 1
 EOF
 
 # Dump1090 specific values.
-if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
-    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+if [[ "${dump1090_installed}" == "true" ]] ; then
+    sudo tee -a ${collectd_config} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Added types for dump1090.                                                  #
 # Make sure the path to dump1090.db is correct.                              #
 #----------------------------------------------------------------------------#
-TypesDB "${PORTAL_BUILD_DIRECTORY}/graphs/dump1090.db" "/usr/share/collectd/types.db"
+TypesDB "${RECEIVER_BUILD_DIRECTORY}/portal/graphs/dump1090.db" "/usr/share/collectd/types.db"
 
 EOF
 fi
 
 # Config for all installations.
-sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+sudo tee -a ${collectd_config} > /dev/null <<EOF
 ##############################################################################
 # Logging                                                                    #
 ##############################################################################
@@ -157,9 +137,8 @@ EOF
 
 # Device  specific values.
 # Raspberry Pi: b03112
-
 if [[ "${RECEIVER_CPU_REVISION}" = "b03112" ]] ; then
-    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+    sudo tee -a ${collectd_config} > /dev/null <<EOF
 <Plugin table>
 	<Table "/sys/class/thermal/thermal_zone0/temp">
 		Instance localhost
@@ -181,8 +160,8 @@ EOF
 fi
 
 # Dump1090 specific values.
-if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
-    sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+if [[ "${dump1090_installed}" == "true" ]] ; then
+    sudo tee -a ${collectd_config} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Configure the dump1090-tools python module.                                #
 #                                                                            #
@@ -191,7 +170,7 @@ if [[ "${DUMP1090_INSTALLED}" = "true" ]] ; then
 # statistics will be loaded from http://localhost/dump1090/data/stats.json   #
 #----------------------------------------------------------------------------#
 <Plugin python>
-        ModulePath "${PORTAL_BUILD_DIRECTORY}/graphs"
+        ModulePath "${RECEIVER_BUILD_DIRECTORY}/portal/graphs"
         LogTraces true
         Import "dump1090"
         <Module dump1090>
@@ -205,7 +184,7 @@ EOF
 fi
 
 # Remaining config for all installations.
-sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
+sudo tee -a ${collectd_config} > /dev/null <<EOF
 <Chain "PostCache">
 	<Rule>
 		<Match regex>
@@ -221,32 +200,27 @@ sudo tee -a ${COLLECTD_CONFIG} > /dev/null <<EOF
 </Chain>
 EOF
 
+
 ## RELOAD COLLECTD
 
-echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
+log_message "Reloading collectd so the new configuration is used"
 sudo service collectd force-reload
+
 
 ## EDIT CRONTAB
 
-if [[ ! -x "${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh" ]] ; then
-    echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
-    chmod +x ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh
+if [[ ! -x "${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh" ]] ; then
+    log_message "Making the make-collectd-graphs.sh script executable"
+    chmod +x ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh
 fi
 
-# The next block is temporary in order to insure this file is
-# deleted on older installation before the project renaming.
-if [[ -f "/etc/cron.d/adsb-feeder-performance-graphs" ]] ; then
-    echo -e "\e[94m  Removing outdated performance graphs cron file...\e[97m"
-    sudo rm -f /etc/cron.d/adsb-feeder-performance-graphs
+if [[ -f "${collectd_cron_file}" ]] ; then
+    log_message "Removing previously installed performance graphs cron file"
+    sudo rm -f ${collectd_cron_file}
 fi
 
-if [[ -f "${COLLECTD_CRON_FILE}" ]] ; then
-    echo -e "\e[94m  Removing previously installed performance graphs cron file...\e[97m"
-    sudo rm -f ${COLLECTD_CRON_FILE}
-fi
-
-echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
-sudo tee ${COLLECTD_CRON_FILE} > /dev/null <<EOF
+log_message "Adding performance graphs cron file"
+sudo tee ${collectd_cron_file} > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
 # Every 5 minutes new hourly graphs are generated.
@@ -258,32 +232,26 @@ sudo tee ${COLLECTD_CRON_FILE} > /dev/null <<EOF
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
-*/10 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
-2,12,22,32,42,52 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
-4,24,44 * * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
-6 * * *	* root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
-8 */12 * * * root bash ${PORTAL_BUILD_DIRECTORY}/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
+*/5 * * * * root bash ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh 1h >/dev/null 2>&1
+*/10 * * * * root bash ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh 6h >/dev/null 2>&1
+2,12,22,32,42,52 * * * * root bash ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh 24h >/dev/null 2>&1
+4,24,44 * * * * root bash ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh 7d >/dev/null 2>&1
+6 * * *	* root bash ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh 30d >/dev/null 2>&1
+8 */12 * * * root bash ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh 365d >/dev/null 2>&1
 EOF
 
 # Update max_range.rrd to remove the 500 km / ~270 nmi limit.
 if [ -f "/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd" ]; then
-    if [[ `rrdinfo ${DUMP1090_MAX_RANGE_RRD} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
-        echo -e "\e[94m  Removing 500km/270mi limit from max_range.rrd...\e[97m"
-        sudo rrdtool tune ${DUMP1090_MAX_RANGE_RRD} --maximum "value:1000000"
+    if [[ `rrdinfo ${dump1090_max_range_rrd} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
+        log_message "Removing 500km/270mi limit from max_range.rrd"
+        sudo rrdtool tune ${dump1090_max_range_rrd} --maximum "value:1000000"
     fi
 fi
 
 # Increase size of weekly messages table to 8 days
-if [ -f ${DUMP1090_MESSAGES_LOCAL_RRD} ]; then
-    if [[ `rrdinfo ${DUMP1090_MESSAGES_LOCAL_RRD} | grep -c "rra\[6\]\.rows = 1260"` -eq 1 ]] ; then
-        echo -e "\e[94m  Increasing weekly table size to 8 days in messages-local_accepted.rrd...\e[97m"
-        sudo rrdtool tune ${DUMP1090_MESSAGES_LOCAL_RRD} 'RRA#6:=1440' 'RRA#7:=1440' 'RRA#8:=1440'
+if [[ -f ${dump1090_messages_local_rrd} ]]; then
+    if [[ `rrdinfo ${dump1090_messages_local_rrd} | grep -c "rra\[6\]\.rows = 1260"` -eq 1 ]] ; then
+        log_message "Increasing weekly table size to 8 days in messages-local_accepted.rrd"
+        sudo rrdtool tune ${dump1090_messages_local_rrd} 'RRA#6:=1440' 'RRA#7:=1440' 'RRA#8:=1440'
     fi
 fi
-
-### SETUP COMPLETE
-
-# Return to the project root directory.
-echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
-cd ${RECEIVER_ROOT_DIRECTORY}

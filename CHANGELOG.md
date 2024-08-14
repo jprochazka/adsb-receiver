@@ -2,6 +2,12 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.7 *(in development)*
+
+* The option to install dumpvdl2 is now available as a decoder option.
+* Cleanup and consolidation performed on the PHP ADS-B Portal installation scripts.
+* Merged the dump1090-tools copyright notice into the file dump1090.py.
+
 ## v2.8.6 *(August 13th, 2024)*
 
 * The option to install ACARSDEC and ACARSSERV is now available as a decoder option.

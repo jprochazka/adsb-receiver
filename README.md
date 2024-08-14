@@ -51,7 +51,9 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 * Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
+* Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * ACARSDEC:                https://github.com/TLeconte/acarsdec
+* VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 ### Feeders
 
