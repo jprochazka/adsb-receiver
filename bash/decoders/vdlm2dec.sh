@@ -48,38 +48,223 @@ if [[ $exit_status != 0 ]]; then
     exit 1
 fi
 
-log_heading "Gather information required to configure the decoder(s)"
 
-log_message "Checking if an ACARS decoder is installed"
-acars_decoder_installed="false"
-if [[ -f /usr/local/bin/acarsdec ]]; then
-    log_message "An ACARS decoder appears to be installed"
-    acars_decoder_installed="true"
+## BLACKLIST UNWANTED RTL-SDR MODULES
+
+log_heading "Blacklist unwanted RTL-SDR kernel modules"
+
+blacklist_modules
+
+
+## CLONE OR PULL THE LIBACARS GIT REPOSITORY
+
+log_heading "Preparing the libacars Git repository"
+
+if [[ -d $RECEIVER_BUILD_DIRECTORY/libacars && -d $RECEIVER_BUILD_DIRECTORY/libacars/.git ]]; then
+    log_message "Entering the libacars git repository directory"
+    cd $RECEIVER_BUILD_DIRECTORY/libacars
+    log_message "Updating the local libacars git repository"
+    echo ""
+    git pull
+else
+    log_message "Entering the libacars build directory"
+    cd $RECEIVER_BUILD_DIRECTORY
+    log_message "Cloning the libacars git repository locally"
+    echo ""
+    git clone https://github.com/szpajder/libacars.git
 fi
 
-log_message "Checking if an ADS-B decoder is installed"
-adsb_decoder_installed="false"
-if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-    log_message "An ADS-B decoder appears to be installed"
-    adsb_decoder_installed="true"
+
+## BUILD AND INSTALL THE LIBACARS LIBRARY
+
+log_heading "Building the libacars library"
+
+if [[ ! -d $RECEIVER_BUILD_DIRECTORY/libacars/build ]]; then
+    log_message "Creating the libacars build directory"
+    echo ""
+        mkdir -vp $RECEIVER_BUILD_DIRECTORY/libacars/build
+    echo ""
+fi
+if [[ -n "$(ls -A $RECEIVER_BUILD_DIRECTORY/libacars/build 2>/dev/null)" ]]; then
+    log_message "Deleting all files currently residing in the libacars build directory"
+    rm -rf $RECEIVER_BUILD_DIRECTORY/libacars/build/*
+fi
+log_message "Entering the libacars build directory"
+cd $RECEIVER_BUILD_DIRECTORY/libacars/build
+log_message "Executing cmake"
+echo ""
+cmake ../
+echo ""
+log_message "Executing make"
+echo ""
+make
+echo ""
+log_message "Executing make install"
+echo ""
+sudo make install
+echo ""
+log_message "Running ldconfig"
+sudo ldconfig
+
+
+## CLONE OR PULL THE VDLM2DEC GIT REPOSITORY
+
+log_heading "Preparing the VDLM2DEC Git repository"
+
+if [[ -d $RECEIVER_BUILD_DIRECTORY/vdlm2dec && -d $RECEIVER_BUILD_DIRECTORY/vdlm2dec/.git ]]; then
+    log_message "Entering the VDLM2DEC git repository directory"
+    cd $RECEIVER_BUILD_DIRECTORY/vdlm2dec
+    log_message "Updating the local VDLM2DEC git repository"
+    echo ""
+    git pull
+else
+    log_message "Entering the build directory"
+    cd $RECEIVER_BUILD_DIRECTORY
+    log_message "Cloning the VDLM2DEC git repository locally"
+    echo ""
+    git clone https://github.com/TLeconte/vdlm2dec.git
 fi
 
-log_message "Checking if a UAT decoder is installed"
-uat_decoder_installed="false"
-if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-    log_message "An ADS-B decoder appears to be installed"
-    uat_decoder_installed="true"
+
+## BUILD AND INSTALL THE VDLM2DEC BINARY
+
+log_heading "Building the VDLM2DEC binary"
+
+if [[ ! -d $RECEIVER_BUILD_DIRECTORY/vdlm2dec/build ]]; then
+    log_message "Creating the VDLM2DEC build directory"
+    echo ""
+        mkdir -vp $RECEIVER_BUILD_DIRECTORY/vdlm2dec/build
+    echo ""
+fi
+if [[ -n "$(ls -A $RECEIVER_BUILD_DIRECTORY/vdlm2dec/build 2>/dev/null)" ]]; then
+    log_message "Deleting all files currently residing in the VDLM2DEC build directory"
+    rm -rf $RECEIVER_BUILD_DIRECTORY/vdlm2dec/build/*
+fi
+log_message "Entering the VDLM2DEC build directory"
+cd $RECEIVER_BUILD_DIRECTORY/vdlm2dec/build
+
+log_message "Executing cmake"
+echo ""
+case "${device}" in
+    "RTL-SDR")
+        cmake .. -Drtl=ON
+        ;;
+    "AirSpy")
+        cmake .. -Dairspy=ON
+        ;;
+esac
+echo ""
+
+log_message "Executing make"
+echo ""
+make
+echo ""
+log_message "Executing make install"
+echo ""
+sudo make install
+
+
+## CLONE OR PULL THE ACARSSERV GIT REPOSITORY
+
+log_heading "Preparing the acarsserv Git repository"
+
+if [[ -d $RECEIVER_BUILD_DIRECTORY/acarsserv && -d $RECEIVER_BUILD_DIRECTORY/acarsserv/.git ]]; then
+    log_message "Entering the acarsserv git repository directory"
+    cd $RECEIVER_BUILD_DIRECTORY/acarsserv
+    log_message "Updating the local acarsserv git repository"
+    echo ""
+    git pull
+else
+    log_message "Entering the build directory"
+    cd $RECEIVER_BUILD_DIRECTORY
+    log_message "Cloning the acarsserv git repository locally"
+    echo ""
+    git clone https://github.com/TLeconte/acarsserv.git
 fi
 
-log_message "Checking if a VDL decoder is installed"
-vdl_decoder_installed="false"
-if [[ -f /usr/local/bin/dumpvdl2 ]]; then
-    log_message "A VDL decoder appears to be installed (dumpvdl2)"
-    vdl_decoder_installed="true"
-    vdl_decoder="dumpvdl2"
-fi
-if [[ -f /usr/local/bin/vdlm2dec ]]; then
-    log_message "A VDL decoder appears to be installed (VDLM2DEC)"
-    vdl_decoder_installed="true"
-    vdl_decoder="vdlm2dec"
-fi
+
+## BUILD AND INSTALL THE ACARSSERV BINARY
+
+log_heading "Building the ACARSSERV binary"
+
+log_message "Entering the acarsserv build directory"
+cd $RECEIVER_BUILD_DIRECTORY/acarsserv
+log_message "Executing make"
+echo ""
+make -f Makefile
+echo ""
+
+
+## RUN VDLM2DEC AND ACARSSERV
+
+log_message "Creating the VDLM2DEC systemd service script"
+sudo tee /etc/systemd/system/vdlm2dec.service > /dev/null <<EOF
+[Unit]
+Description=ARCARSDEC multi-channel acars decoder.
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/vdlm2dec -j 127.0.0.1:5555 -G -g280 -r 0 136.725 136.775 136.875 136.975
+WorkingDirectory=/usr/local/bin
+StandardOutput=null
+TimeoutSec=30
+Restart=on-failure
+RestartSec=30
+StartLimitInterval=350
+StartLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+log_message "Creating the ACARSSERV systemd service script"
+sudo tee /etc/systemd/system/acarsserv.service > /dev/null <<EOF
+[Unit]
+Description=ARCARSSERV saves acars data to SQLite.
+After=network.target
+
+[Service]
+ExecStart=${RECEIVER_BUILD_DIRECTORY}/acarsserv/acarsserv -j 127.0.0.1:5555
+WorkingDirectory=${RECEIVER_BUILD_DIRECTORY}/acarsserv
+StandardOutput=null
+TimeoutSec=30
+Restart=on-failure
+RestartSec=30
+StartLimitInterval=350
+StartLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+log_message "Enabling then starting the ACARSDEC service"
+sudo systemctl enable --now vdlm2dec.service
+log_message "Enabling then starting the acarsserv service"
+sudo systemctl enable --now acarsserv.service
+
+
+## CONFIGURATION
+
+assign_devices_to_decoders
+
+
+## POST INSTALLATION OPERATIONS
+
+whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+         --title "VDLM2DEC Decoder Setup Complete" \
+         --msgbox "The setup process currently sets basic parameters needed to feed acarsserv. You can fine tune your installation by modifying the startup command found in the file /etc/systemd/system/vdlm2dec.service. Usage information for VDLM2DEC can be found in the projects README at https://github.com/TLeconte/vdlm2dec." \
+         12 78
+
+
+## SETUP COMPLETE
+
+log_message "Returning to ${RECEIVER_PROJECT_TITLE} root directory"
+cd $RECEIVER_ROOT_DIRECTORY
+
+echo ""
+log_title_message "------------------------------------------------------------------------------"
+log_title_heading "VDLM2DEC decoder setup is complete"
+echo ""
+read -p "Press enter to continue..." discard
+
+exit 0

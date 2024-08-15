@@ -8,9 +8,11 @@ source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
 ## ADS-B DECODERS
 
-# FlightAware dump1090
+adsb_decoder_installed="false"
 install_adsb_decoder="false"
+
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") == 1 ]] ; then
+    adsb_decoder_installed="true"
     chosen_adsb_decoder="dump1090-fa"
     if [[ $(sudo dpkg -s dump1090-fa 2>/dev/null | grep -c "Version: ${dump1090_fa_current_version}") == 0 ]] ; then
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
@@ -30,15 +32,19 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok insta
             install_adsb_decoder="true"
         fi
     fi
-else
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-             --title "FlightAware dump978" \
-             --defaultno \
-             --yesno "FlightAware dump1090 is capable of demodulating ADS-B, Mode S, Mode 3A/3C signals received by an SDR device.\n\nGitHub Repository: https://github.com/flightaware/dump1090\n\nWould you like to install FlightAware dump1090?" \
-             10 65
-    if [[ $? == 0 ]]; then
-        install_adsb_decoder="true"
-        chosen_adsb_decoder="dump1090-fa"
+fi
+
+if [[ "${adsb_decoder_installed}" == "false" ]]; then
+    chosen_adsb_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                   --title "ADS-B Decoder Selection" \
+                                   --menu "The following ADS-B decoders are available for installation." \
+                                   16 100 9 \
+                                   "None" "Do not install an ADS-B decoder." \
+                                   "dump1090-fa" "FlightAware's version of the dump1090 decoder." \
+                                   3>&2 2>&1 1>&3)
+    exit_status=$?
+    if [[ $exit_status != 0 || "${chosen_uat_decoder}" == "None" ]]; then
+        install_uat_decoder="false"
     fi
 fi
 
@@ -53,9 +59,11 @@ function install_dump1090_fa() {
 
 ## UAT DECODERS
 
-# Flightaware dump978
+uat_decoder_installed="false"
 install_uat_decoder="false"
+
 if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") == 1 ]]; then
+    uat_decoder_installed="true"
     chosen_uat_decoder="dump978-fa"
     if [[ $(sudo dpkg -s dump978-fa 2>/dev/null | grep -c "Version: ${dump978_fa_current_version}") == 0 ]]; then
         whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
@@ -74,15 +82,19 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok instal
             install_uat_decoder="true"
         fi
     fi
-else
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-             --title "FlightAware dump978" \
-             --defaultno \
-             --yesno "FlightAware dump978 is capable of demodulating UAT received by an SDR device.\n\nGitHub Repository: https://github.com/flightaware/dump978\n\nWould you like to install FlightAware dump978?" \
-             10 65
-    if [[ $? == 0 ]]; then
-        install_uat_decoder="true"
-        chosen_uat_decoder="dump978-fa"
+fi
+
+if [[ "${uat_decoder_installed}" == "false" ]]; then
+    chosen_uat_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                  --title "UAT Decoder Selection" \
+                                  --menu "The following UAT decoders are available for installation." \
+                                  16 100 9 \
+                                  "None" "Do not install a UAT decoder." \
+                                  "dump978-fa" "FlightAware's version of the dump978 decoder." \
+                                  3>&2 2>&1 1>&3)
+    exit_status=$?
+    if [[ $exit_status != 0 || "${chosen_uat_decoder}" == "None" ]]; then
+        install_uat_decoder="false"
     fi
 fi
 
@@ -94,11 +106,14 @@ function install_dump978_fa() {
     fi
 }
 
+
 ## ACARS DECODERS
 
-# ACARSDEC
+acars_decoder_installed="false"
 install_acars_decoder="false"
+
 if [[ -f /etc/systemd/system/acarsdec.service ]]; then
+    acars_decoder_installed="true"
     chosen_acars_decoder="acarsdec"
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Reinstall ACARSDEC Decoder" \
@@ -108,15 +123,19 @@ if [[ -f /etc/systemd/system/acarsdec.service ]]; then
     if [[ $? == 0 ]]; then
         install_acars_decoder="true"
     fi
-else
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-             --title "ACARSDEC Decoder" \
-             --defaultno \
-             --yesno "ACARSDEC is a multi-channels acars decoder with built-in rtl_sdr, airspy front end or sdrplay device.\n\nGitHub Repository: https://github.com/TLeconte/acarsdec\n\nWould you like to install ACARSDEC?" \
-             10 65
-    if [[ $? == 0 ]]; then
-        install_acars_decoder="true"
-        chosen_acars_decoder="acarsdec"
+fi
+
+if [[ "${acars_decoder_installed}" == "false" ]]; then
+    chosen_acars_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                    --title "ACARS Decoder Selection" \
+                                    --menu "The following ACARS decoders are available for installation." \
+                                    16 100 9 \
+                                    "None" "Do not install an ACARS decoder." \
+                                    "acarsdec" "Acarsdec is a multi-channels acars decoder." \
+                                    3>&2 2>&1 1>&3)
+    exit_status=$?
+    if [[ $exit_status != 0 || "${chosen_acars_decoder}" == "None" ]]; then
+        install_acars_decoder="false"
     fi
 fi
 
@@ -129,67 +148,63 @@ function install_acarsdec() {
 }
 
 
-## VDL DECODERS
+## VDL MODE 2 DECODERS
 
-# VDLM2DEC
-install_vdl_decoder="false"
-if [[ -f /etc/systemd/system/vdlm2dec.service ]]; then
-    chosen_vdl_decoder="vdlm2dec"
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-             --title "Reinstall VDLM2DEC Decoder" \
-             --defaultno \
-             --yesno "The option to rebuild and reinstall VDLM2DEC is available.\n\nWould you like to rebuild and reinstall VDLM2DEC?" \
-             9 65
-    if [[ $? == 0 ]]; then
-        install_vdl_decoder="true"
-    fi
-else
-    whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-             --title "VDLM2DEC Decoder" \
-             --defaultno \
-             --yesno "VDLM2DEC is a vdl mode 2 decoder with built-in rtl_sdr or airspy front end.\n\nGitHub Repository: https://github.com/TLeconte/vdlm2dec\n\nWould you like to install VDLM2DEC?" \
-             10 65
-    if [[ $? == 0 ]]; then
-        install_vdl_decoder="true"
-        chosen_vdl_decoder="vdlm2dec"
-    fi
-fi
+vdlm2_decoder_installed="false"
+install_vdlm2_decoder="false"
 
-function install_vdlm2dec() {
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/vdlm2dec.sh
-    ${RECEIVER_BASH_DIRECTORY}/decoders/vdlm2dec.sh
-    if [[ $? != 0 ]] ; then
-        exit 1
-    fi
-}
-
-# DUMPVDL2
-install_vdl_decoder="false"
 if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
-    chosen_vdl_decoder="dumpvdl2"
+    vdlm2_decoder_installed="true"
+    chosen_vdlm2_decoder="dumpvdl2"
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Reinstall dumpvdl2 Decoder" \
              --defaultno \
              --yesno "The option to rebuild and reinstall dumpvdl2 is available.\n\nWould you like to rebuild and reinstall dumpvdl2?" \
              9 65
     if [[ $? == 0 ]]; then
-        install_vdl_decoder="true"
+        install_vdlm2_decoder="true"
     fi
-else
+fi
+
+if [[ -f /etc/systemd/system/vdlm2dec.service ]]; then
+    vdlm2_decoder_installed="true"
+    chosen_vdlm2_decoder="vdlm2dec"
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-             --title "Dumpvdl2 Decoder" \
+             --title "Reinstall VDLM2DEC Decoder" \
              --defaultno \
-             --yesno "Dumpvdl2 is a VDL Mode 2 message decoder and protocol analyzer.\n\nGitHub Repository: https://github.com/szpajder/dumpvdl2\n\nWould you like to install dumpvdl2?" \
-             10 65
+             --yesno "The option to rebuild and reinstall VDLM2DEC is available.\n\nWould you like to rebuild and reinstall VDLM2DEC?" \
+             9 65
     if [[ $? == 0 ]]; then
-        install_vdl_decoder="true"
-        chosen_vdl_decoder="dumpvdl2"
+        install_vdlm2_decoder="true"
+    fi
+fi
+
+if [[ "${vdlm2_decoder_installed}" == "false" ]]; then
+    chosen_vdlm2_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+             --title "VLD Mode 2 Decoder Selection" \
+             --menu "The following VLD Mode 2 decoders are available for installation." \
+             16 100 9 \
+             "None" "Do not install a VLD decoder." \
+             "vdlm2dec" "vdlm2dec is a VDL Mode 2 decoder." \
+             "dumpvdl2" "dumpvdl2 is a VDL Mode 2 message decoder." \
+             3>&2 2>&1 1>&3)
+    exit_status=$?
+    if [[ $exit_status != 0 || "${chosen_vdlm2_decoder}" == "None" ]]; then
+        install_vdlm2_decoder="false"
     fi
 fi
 
 function install_dumpvdl2() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/dumpvdl2.sh
     ${RECEIVER_BASH_DIRECTORY}/decoders/dumpvdl2.sh
+    if [[ $? != 0 ]] ; then
+        exit 1
+    fi
+}
+
+function install_vdlm2dec() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/decoders/vdlm2dec.sh
+    ${RECEIVER_BASH_DIRECTORY}/decoders/vdlm2dec.sh
     if [[ $? != 0 ]] ; then
         exit 1
     fi
@@ -432,7 +447,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
 declare confirmation_message
 
-if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_vdl_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" && ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
+if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_vdlm2_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" && ! -s "${RECEIVER_ROOT_DIRECTORY}/EXTRAS_CHOICES" ]]; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Nothing to be done" \
              --msgbox "Nothing has been selected to be installed so the script will exit now." \
@@ -471,11 +486,14 @@ else
         esac
     fi
 
-    # VDL decoders
-    if [[ "${install_vdl_decoder}" = "true" ]]; then
-        case ${chosen_vdl_decoder} in
+    # VDL Mode 2 decoders
+    if [[ "${install_vdlm2_decoder}" = "true" ]]; then
+        case ${chosen_vdlm2_decoder} in
             "dumpvdl2")
                 confirmation_message="${confirmation_message}\n  * dumpvdl2"
+                ;;
+            "vdlm2dec")
+                confirmation_message="${confirmation_message}\n  * vdlm2dec"
                 ;;
         esac
     fi
@@ -543,11 +561,14 @@ if [[ "${install_acars_decoder}" == "true" ]]; then
 fi
 
 # VDL Decoders
-if [[ "${install_vdl_decoder}" == "true" ]]; then
-    case ${chosen_vdl_decoder} in
+if [[ "${install_vdlm2_decoder}" == "true" ]]; then
+    case ${chosen_vdlm2_decoder} in
         "dumpvdl2")
-             install_dumpvdl2
-             ;;
+            install_dumpvdl2
+            ;;
+        "vdlm2dec")
+            install_vdlm2dec
+            ;;
     esac
 fi
 

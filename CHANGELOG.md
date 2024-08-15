@@ -4,7 +4,9 @@ The following is a history of the changes made to this project.
 
 ## v2.8.7 *(in development)*
 
-* The option to install dumpvdl2 is now available as a decoder option.
+* The ability to install dumpvdl2 is now available as a decoder option.
+* The ability to install vdlm2dec is now available as a decoder option.
+* All decoder menus have been modified to support additional options in the future.
 * Cleanup and consolidation performed on the PHP ADS-B Portal installation scripts.
 * Merged the dump1090-tools copyright notice into the file dump1090.py.
 
