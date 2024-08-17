@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source $RECEIVER_BASH_DIRECTORY/variables.sh
+source $RECEIVER_BASH_DIRECTORY/functions.sh
+
 ## VARIABLES
 
 python_path=`which python3`
