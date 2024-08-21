@@ -45,7 +45,7 @@ Included is the option to install the ADS-B Portal which offers the following fe
 
 When setting up the portal you will have to choose between a lite or advanced installation. Advanced features add flight logging and plotting and should only be chosen on devices running a sturdy data storage solution.
 
-*It is highly recommended that anyone using a SD card as they storage medium not attempt to use the advanced features.*
+*It is highly recommended that anyone using a SD card as thier storage medium not attempt to use the advanced features.*
 
 ### Decoders
 
