@@ -195,6 +195,11 @@ function ask_for_device_assignments() {
         adsb_decoder_installed="true"
         adsb_decoder="dump1090-fa"
     fi
+    if [[ $(dpkg-query -W -f='${STATUS}' readsb 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+        log_message "The Readsb decoder appears to be installed"
+        adsb_decoder_installed="true"
+        adsb_decoder="readsb"
+    fi
     if [[ "${adsb_decoder_installed}" == "true" && "${adsb_decoder}" != "${decoder_being_installed}" ]]; then
         decoder_count=$((decoder_count+1))
     fi
@@ -234,7 +239,7 @@ function ask_for_device_assignments() {
                 12 78
 
         if [[ "${acars_decoder_installed}" == "true" && "${acars_decoder}" == "acarsdec" ]]; then
-            log_message "Determining which device is currently assigned to the ACARS decoder"
+            log_message "Determining which device is currently assigned to ACARSDEC"
             exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
             RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
             log_message "Asking the user to assign a RTL-SDR device number to ACARSDEC"
@@ -242,7 +247,7 @@ function ask_for_device_assignments() {
             while [[ -z $acars_device_number ]]; do
                 acars_device_number=$(whiptail --backtitle "Decoder Configuration" \
                                                --title "${acars_device_number_title}" \
-                                               --inputbox "\nEnter the RTL-SDR device number to assign your ACARSDEC decoder." \
+                                               --inputbox "\nEnter the RTL-SDR device number to assign to ACARSDEC." \
                                                8 78 \
                                                "${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER}" 3>&1 1>&2 2>&3)
                 exit_status=$?
@@ -254,7 +259,7 @@ function ask_for_device_assignments() {
         fi
 
         if [[ "${adsb_decoder_installed}" == "true" && "${adsb_decoder}" == "dump1090-fa" ]]; then
-            log_message "Determining which device is currently assigned to the dump1090-fa decoder"
+            log_message "Determining which device is currently assigned to dump1090-fa"
             RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
             log_message "Asking the user to assign a RTL-SDR device number to dump1090-fa"
             adsb_device_number_title="Enter the dump1090-fa RTL-SDR Device Number"
@@ -311,6 +316,45 @@ function ask_for_device_assignments() {
                 vdlm2_device_number_title="Enter the dumpvdl2 RTL-SDR Device Number (REQUIRED)"
             done
         fi
+
+        if [[ "${adsb_decoder_installed}" == "true" && "${adsb_decoder}" == "readsb" ]]; then
+            log_message "Determining which device is currently assigned to Readsb"
+            RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER=`get_config "RECEIVER_SERIAL" "/etc/default/readsb"`
+            log_message "Asking the user to assign a RTL-SDR device number to Readsb"
+            adsb_device_number_title="Enter the Readsb RTL-SDR Device Number"
+            while [[ -z $adsb_device_number ]]; do
+                adsb_device_number=$(whiptail --backtitle "Decoder Configuration" \
+                                            --title "${adsb_device_number_title}" \
+                                            --inputbox "\nEnter the RTL-SDR device number to assign to Readsb." \
+                                            8 78 \
+                                            "${RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER}" 3>&1 1>&2 2>&3)
+                exit_status=$?
+                if [[ $exit_status != 0 ]]; then
+                    exit 1
+                fi
+                adsb_device_number_title="Enter the Readsb RTL-SDR Device Number (REQUIRED)"
+            done
+        fi
+
+        if [[ "${vdlm2_decoder_installed}" == "true" && "${vdlm2_decoder}" == "vdlm2dec" ]]; then
+            log_message "Determining which device is currently assigned to VDLM2DEC"
+            exec_start=`get_config "ExecStart" "/etc/systemd/system/vdlm2dec.service"`
+            RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
+            log_message "Asking the user to assign a RTL-SDR device number to VDLM2DEC"
+            vdlm2_device_number_title="Enter the VDLM2DEC RTL-SDR Device Number"
+            while [[ -z $vdlm2_device_number ]]; do
+                vdlm2_device_number=$(whiptail --backtitle "Decoder Configuration" \
+                                               --title "${vdlm2_device_number_title}" \
+                                               --inputbox "\nEnter the RTL-SDR device number to assign to VDLM2DEC." \
+                                               8 78 \
+                                               "${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}" 3>&1 1>&2 2>&3)
+                exit_status=$?
+                if [[ $exit_status != 0 ]]; then
+                    exit 1
+                fi
+                vdlm2_device_number_title="Enter the ACARSDEC RTL-SDR Device Number (REQUIRED)"
+            done
+        fi
     fi
 }
 
@@ -348,6 +392,13 @@ function assign_devices_to_decoders() {
         sudo systemctl daemon-reload
         log_message "Restarting dumpvdl2"
         sudo systemctl restart dumpvdl2
+    fi
+
+    if [[ ! -z $RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER && "${RECEIVER_ADSB_DECODER_SOFTWARE}" == "readsb" ]]; then
+        log_message "Assigning RTL-SDR device number ${RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER} to the Readsb decoder"
+        change_config "RECEIVER_SERIAL" $RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER "/etc/default/readsb"
+        log_message "Restarting Readsb"
+        sudo systemctl restart readsb
     fi
 
     if [[ ! -z "${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "vdlm2dec" ]]; then
