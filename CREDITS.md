@@ -58,7 +58,10 @@ hard work and dedication to their respective projects this project would not hav
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
 * Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * Fly Italy ADS-B Client:  https://github.com/flyitalyadsb/fly-italy-adsb
+* Graphs1090:              https://github.com/wiedehopf/graphs1090
 * PiAware (FlightAware):   https://github.com/flightaware/piaware
+* Readsb (wiedehopf):      https://github.com/wiedehopf/readsb
+* tar1090:                 https://github.com/wiedehopf/tar1090
 * VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 Thanks also goes out to the developers and the businesses that employ them who work to supply us

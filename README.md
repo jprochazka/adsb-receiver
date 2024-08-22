@@ -49,10 +49,11 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 ### Decoders
 
+* ACARSDEC:                https://github.com/TLeconte/acarsdec
 * Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
 * Dumpvdl2:                https://github.com/szpajder/dumpvdl2
-* ACARSDEC:                https://github.com/TLeconte/acarsdec
+* Readsb:                  https://github.com/wiedehopf/readsb
 * VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 ### Feeders
@@ -69,6 +70,8 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 * Beast-Splitter:       https://github.com/flightaware/beast-splitter
 * DuckDNS.org Support:  https://www.duckdns.org
+* Graphs1090:           https://github.com/wiedehopf/graphs1090
+* tar1090:              https://github.com/wiedehopf/tar1090
 
 ## Supported Operating Systems
 

@@ -6,6 +6,9 @@ The following is a history of the changes made to this project.
 
 * The ability to install dumpvdl2 is now available as a decoder option.
 * The ability to install vdlm2dec is now available as a decoder option.
+* The ability to install Readsb is now available as a decoder option.
+* The ability to install Graphs1090 is now available as an extras option.
+* The ability to install tar1090 is now available as an extras option.
 * All decoder menus have been modified to support additional options in the future.
 * Cleanup and consolidation performed on the PHP ADS-B Portal installation scripts.
 * Merged the dump1090-tools copyright notice into the file dump1090.py.
