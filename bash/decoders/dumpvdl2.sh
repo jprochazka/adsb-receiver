@@ -26,7 +26,7 @@ fi
 
 ## GATHER REQUIRED INFORMATION FROM THE USER
 
-ask_for_device_assignments "acarsdec"
+ask_for_device_assignments "dumpvdl2"
 if [[ $? -ne 0 ]] ; then
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted due to lack of required information"

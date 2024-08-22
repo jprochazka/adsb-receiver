@@ -26,7 +26,7 @@ fi
 
 ## GATHER REQUIRED INFORMATION FROM THE USER
 
-ask_for_device_assignments "acarsdec"
+ask_for_device_assignments "dump978-fa"
 if [[ $? -ne 0 ]] ; then
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted due to lack of required information"
@@ -48,6 +48,7 @@ check_package libboost-program-options-dev
 check_package libboost-regex-dev
 check_package libboost-system-dev
 check_package libsoapysdr-dev
+check_package lighttpd
 check_package soapysdr-module-rtlsdr
 
 

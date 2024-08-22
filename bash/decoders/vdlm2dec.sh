@@ -48,6 +48,38 @@ if [[ $exit_status != 0 ]]; then
     exit 1
 fi
 
+ask_for_device_assignments "vdlm2dec"
+if [[ $? -ne 0 ]] ; then
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "Setup has been halted due to lack of required information"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "ACARSDEC decoder setup halted"
+    exit 1
+fi
+
+
+## CHECK FOR PREREQUISITE PACKAGES
+
+check_package cmake
+check_package libjansson-dev
+check_package libsqlite3-dev
+check_package libxml2-dev
+check_package zlib1g-dev
+
+
+case $RECEIVER_OS_DISTRIBUTION in
+    ubuntu)
+        distro_php_version=""
+        ;;
+    debian)
+        if [[ "${RECEIVER_OS_CODE_NAME}" == "bookworm" ]]; then distro_php_version="8.2"; fi
+        if [[ "${RECEIVER_OS_CODE_NAME}" == "bullseye" ]]; then distro_php_version="7.4"; fi
+        ;;
+esac
+check_package sqlite3
+check_package php${distro_php_version}-sqlite3
+
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES
 
@@ -237,7 +269,7 @@ StartLimitBurst=10
 WantedBy=multi-user.target
 EOF
 
-log_message "Enabling then starting the ACARSDEC service"
+log_message "Enabling then starting the VDLM2DEC service"
 sudo systemctl enable --now vdlm2dec.service
 log_message "Enabling then starting the acarsserv service"
 sudo systemctl enable --now acarsserv.service

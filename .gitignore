@@ -17,4 +17,5 @@ build/planefinder
 build/package-archive
 build/portal/graphs/__pycache__
 build/readsb
+build/vdlm2dec
 logs
