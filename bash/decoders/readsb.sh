@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# LIBRTLSDR SO VERSION ISSUE
-# -----------------------------------------------------------------------------------
-# Ubuntu Noble Numbat is currently built on librtlsdr v2.0.1 which mislabled the SO
-# version as 2 instead of 0 causing a package naming problem between Debain Bookworm
-# and Ubuntu Noble Numbat. Until the Noble package is built using v2.0.2 a temporary
-# hack/fix was put in place to change references to the package librtlsdr0 to 
-# librtlsdr2 when Ubuntu Noble Numbat is detected.
-
 ## PRE INSTALLATION OPERATIONS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
@@ -90,12 +82,6 @@ else
     log_message "Cloning the readsb git repository"
     echo ""
     git clone https://github.com/wiedehopf/readsb.git 2>&1 | tee -a $RECEIVER_LOG_FILE
-fi
-
-# Temporary fix for package name issue.
-if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
-    log_message "Applying fix for Noble librtlsdr package name issue"
-    sed -i -e 's/librtlsdr0/librtlsdr2/g' $RECEIVER_BUILD_DIRECTORY/readsb/readsb/debian/control
 fi
 
 
