@@ -24,17 +24,24 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     exit 1
 fi
 
+
+## CHECK FOR PREREQUISITE PACKAGES
+
+check_package curl
+
+
 ## DOWNLOAD THEN EXECUTE THE INSTALLATION SCRIPT
 
 log_heading "Preparing to install tar1090"
 
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/tar1090 ]]; then
     log_message "Creating the tar1090 build directory"
-    cd $RECEIVER_BUILD_DIRECTORY/tar1090
+    mkdir $RECEIVER_BUILD_DIRECTORY/tar1090
 fi
 log_message "Entering the tar1090 build directory"
 cd $RECEIVER_BUILD_DIRECTORY/tar1090
 log_message "Downloading the tar1090 install script"
+echo ""
 wget -v -O $RECEIVER_BUILD_DIRECTORY/tar1090/install.sh https://raw.githubusercontent.com/wiedehopf/tar1090/master/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 log_message "Executing the tar1090 install script"
 echo ""

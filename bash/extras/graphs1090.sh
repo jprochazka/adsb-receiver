@@ -30,11 +30,12 @@ log_heading "Preparing to install graphs1090"
 
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/graphs1090 ]]; then
     log_message "Creating the Graphs1090 build directory"
-    cd $RECEIVER_BUILD_DIRECTORY/graphs1090
+    mkdir $RECEIVER_BUILD_DIRECTORY/graphs1090
 fi
 log_message "Entering the Graphs1090 build directory"
 cd $RECEIVER_BUILD_DIRECTORY/graphs1090
 log_message "Downloading the Graphs1090 install script"
+echo ""
 wget -v -O $RECEIVER_BUILD_DIRECTORY/graphs1090/install.sh https://github.com/wiedehopf/graphs1090/raw/master/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
 log_message "Executing the Graphs1090 install script"
 echo ""
