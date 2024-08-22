@@ -90,7 +90,7 @@ fi
 log_heading "Building the FlightAware dump1090-fa package"
 
 log_message "Entering the dump1090 Git repository"
-cd $RECEIVER_BUILD_DIRECTORY/readsb
+cd $RECEIVER_BUILD_DIRECTORY/readsb/readsb
 log_message "Setting build options"
 export DEB_BUILD_OPTIONS=noddebs
 log_message "Building the Readsb Debian package"
@@ -100,6 +100,7 @@ echo ""
 log_message "Installing the Readsb Debian package"
 echo ""
 sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/readsb/readsb_*.deb
+echo ""
 
 log_message "Checking that the Readsb Debian package was installed"
 if [[ $(dpkg-query -W -f='${STATUS}' readsb 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then

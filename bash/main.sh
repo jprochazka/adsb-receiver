@@ -48,6 +48,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' readsb 2>/dev/null | grep -c "ok installed"
 fi
 
 if [[ "${adsb_decoder_installed}" == "false" ]]; then
+    install_adsb_decoder="true"
     chosen_adsb_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                    --title "ADS-B Decoder Selection" \
                                    --menu "The following ADS-B decoders are available for installation." \
@@ -58,7 +59,7 @@ if [[ "${adsb_decoder_installed}" == "false" ]]; then
                                    3>&2 2>&1 1>&3)
     exit_status=$?
     if [[ $exit_status != 0 || "${chosen_uat_decoder}" == "None" ]]; then
-        install_uat_decoder="false"
+        install_adsb_decoder="false"
     fi
 fi
 
@@ -107,6 +108,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok instal
 fi
 
 if [[ "${uat_decoder_installed}" == "false" ]]; then
+    install_uat_decoder="true"
     chosen_uat_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                   --title "UAT Decoder Selection" \
                                   --menu "The following UAT decoders are available for installation." \
@@ -148,6 +150,7 @@ if [[ -f /etc/systemd/system/acarsdec.service ]]; then
 fi
 
 if [[ "${acars_decoder_installed}" == "false" ]]; then
+    install_acars_decoder="true"
     chosen_acars_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                     --title "ACARS Decoder Selection" \
                                     --menu "The following ACARS decoders are available for installation." \
@@ -202,6 +205,7 @@ if [[ -f /etc/systemd/system/vdlm2dec.service ]]; then
 fi
 
 if [[ "${vdlm2_decoder_installed}" == "false" ]]; then
+    install_vdlm2_decoder="true"
     chosen_vdlm2_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "VLD Mode 2 Decoder Selection" \
              --menu "The following VLD Mode 2 decoders are available for installation." \
@@ -592,7 +596,7 @@ if [[ "${install_adsb_decoder}" == "true" ]]; then
         "dump1090-fa")
              install_dump1090_fa
              ;;
-        "Readsb")
+        "readsb")
              install_readsb
              ;;
     esac

@@ -15,5 +15,6 @@ build/libacars
 build/piaware_builder
 build/planefinder
 build/package-archive
-build/portal/graphs/__pycache__/
+build/portal/graphs/__pycache__
+build/readsb
 logs
