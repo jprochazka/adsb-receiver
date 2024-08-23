@@ -2,15 +2,17 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.7 *(in development)*
+## v2.8.7 *(August 23rd)*
 
 * The ability to install dumpvdl2 is now available as a decoder option.
 * The ability to install vdlm2dec is now available as a decoder option.
 * The ability to install Readsb is now available as a decoder option.
 * The ability to install Graphs1090 is now available as an extras option.
 * The ability to install tar1090 is now available as an extras option.
-* All decoder menus have been modified to support additional options in the future.
-* Added missing dependency to PiAware install script.
+* Added missing Noble dependency to PiAware install script.
+* Fixed Noble detection problem found within the PiAware install script.
+* All decoder menus have been modified to support additional installation options.
+* Device assignment scripting has been modified to work within functions.sh.
 * Cleanup and consolidation performed on the PHP ADS-B Portal installation scripts.
 * Merged the dump1090-tools copyright notice into the file dump1090.py.
 

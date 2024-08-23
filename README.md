@@ -4,11 +4,11 @@
 
 This project continues to realize that for some, Docker and premade images are not the most optimal solution.
 
-It would seem as of late the move towards premade as well as Docker and other PaaS images with preinstalled software has become popular within the community. Docker images require additional software and in some cases result in additional overhead when running. Most of these solutions also come with preinstalled software one may never use as part of the image as well. This project offers the ability to choose and install only what you want or need natively across a wide range of devices with minimal command line experience.
+It would seem as of late the move towards premade as well as Docker and other PaaS images with preinstalled software has become popular within the community. Docker images require additional software and, in some cases, result in additional overhead as well as making trivial configuration changes more complicated than they should be. Most of these solutions also come with preinstalled software one may never use as part of the image as well. This project offers the ability to choose and install only what you want or need natively across a wide range of devices with minimal command line experience.
 
 ## Obtaining And Using This Software
 
-### Manual installations...
+### New installations...
 
     sudo apt-get update
     sudo apt-get install git
@@ -33,7 +33,7 @@ The following software can be installed using these scripts.
 Included is the option to install the ADS-B Portal which offers the following features.
 
 * Saves all flights seen as well as displays a plot for the flight.
-* Saves all ACARS messages received as well as the ability to view these messages.
+* Saves all ACARS and VDLM2 messages received and offers the ability to view them.
 * Control what is displayed online via a web based administration area.
 * A more uniform website site layout that can be easily navigated.
 * Web accessible dump1090 and system performance graphs.
