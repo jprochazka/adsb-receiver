@@ -179,8 +179,8 @@ function ask_for_device_assignments() {
 
     log_message "Checking if an ACARS decoder is installed"
     acars_decoder_installed="false"
-    if [[ "${decoder_being_installed}" == "acarsdec" || -f /usr/local/bin/acarsdec ]]; then
-        [[ "${decoder_being_installed}" != "acarsdec" ]] && log_message "The ACARSDEC decoder appears to be installed"
+    if [[ -f /usr/local/bin/acarsdec ]]; then
+        log_message "The ACARSDEC decoder appears to be installed"
         acars_decoder_installed="true"
         RECEIVER_ACARS_DECODER_SOFTWARE="acarsdec"
     fi
@@ -190,13 +190,13 @@ function ask_for_device_assignments() {
 
     log_message "Checking if an ADS-B decoder is installed"
     adsb_decoder_installed="false"
-    if [[ "${decoder_being_installed}" == "dump1090-fa" || $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-        [[ "${decoder_being_installed}" != "dump1090-fa" ]] && log_message "The FlightAware dump1090 decoder appears to be installed"
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+        log_message "The FlightAware dump1090 decoder appears to be installed"
         adsb_decoder_installed="true"
         RECEIVER_ADSB_DECODER_SOFTWARE="dump1090-fa"
     fi
-    if [[ "${decoder_being_installed}" == "readsb" || $(dpkg-query -W -f='${STATUS}' readsb 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-        [[ "${decoder_being_installed}" == "readsb" ]] && log_message "The Readsb decoder appears to be installed"
+    if [[ $(dpkg-query -W -f='${STATUS}' readsb 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+        log_message "The Readsb decoder appears to be installed"
         adsb_decoder_installed="true"
         RECEIVER_ADSB_DECODER_SOFTWARE="readsb"
     fi
@@ -206,8 +206,8 @@ function ask_for_device_assignments() {
 
     log_message "Checking if a UAT decoder is installed"
     uat_decoder_installed="false"
-    if [[ "${decoder_being_installed}" == "dump978-fa" || $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-        [[ "${decoder_being_installed}" != "dump978-fa" ]] && log_message "The FlightAware dump978 decoder appears to be installed"
+    if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+        log_message "The FlightAware dump978 decoder appears to be installed"
         uat_decoder_installed="true"
         RECEIVER_UAT_DECODER_SOFTWARE="dump978-fa"
     fi
@@ -217,13 +217,13 @@ function ask_for_device_assignments() {
 
     log_message "Checking if a VDL Mode 2 decoder is installed"
     vdlm2_decoder_installed="false"
-    if [[ "${decoder_being_installed}" == "dumpvdl2" || -f /usr/local/bin/dumpvdl2 ]]; then
-        [[ "${decoder_being_installed}" != "dumpvdl2" ]] && log_message "The dumpvdl2 decoder appears to be installed"
+    if [[ -f /usr/local/bin/dumpvdl2 ]]; then
+        log_message "The dumpvdl2 decoder appears to be installed"
         vdlm2_decoder_installed="true"
         RECEIVER_VDLM2_DECODER_SOFTWARE="dumpvdl2"
     fi
-    if [[ "${decoder_being_installed}" == "vdlm2dec" || -f /usr/local/bin/vdlm2dec ]]; then
-        [[ "${decoder_being_installed}" != "vdlm2dec" ]] && log_message "The VDLM2DEC decoder appears to be installed"
+    if [[ -f /usr/local/bin/vdlm2dec ]]; then
+        log_message "The VDLM2DEC decoder appears to be installed"
         vdlm2_decoder_installed="true"
         RECEIVER_VDLM2_DECODER_SOFTWARE="vdlm2dec"
     fi
