@@ -54,9 +54,35 @@ if [[ $? -ne 0 ]] ; then
     log_alert_message "Setup has been halted due to lack of required information"
     echo ""
     log_title_message "------------------------------------------------------------------------------"
-    log_title_heading "ACARSDEC decoder setup halted"
+    log_title_heading "VDLM2DEC decoder setup halted"
     exit 1
 fi
+
+current_vdlm2_frequencies="136.100 136.650 136.700 136.800 136.975"
+if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
+    log_message "Determining which frequencies are currently assigned"
+    exec_start=`get_config "ExecStart" "/etc/systemd/system/vdlm2dec.service"`
+    current_vdlm2_frequencies=`sed -e "s#.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER} \(\)#\1#" <<< "${exec_start}"`
+fi
+log_message "Asking the user for VDL Mode 2 frequencies to monitor"
+vdlm2_fequencies_title="Enter VDL Mode 2 Frequencies"
+while [[ -z $vdlm2_fequencies ]] ; do
+    vdlm2_fequencies=$(whiptail --backtitle "VDL Mode 2 Frequencies" \
+                              --title "${vdlm2_fequencies_title}" \
+                              --inputbox "\nEnter the VDL Mode 2 frequencies you would like to monitor." \
+                              8 78 \
+                              "${current_vdlm2_frequencies}" 3>&1 1>&2 2>&3)
+    exit_status=$?
+    if [[ $exit_status != 0 ]]; then
+        log_alert_heading "INSTALLATION HALTED"
+        log_alert_message "Setup has been halted due to lack of required information"
+        echo ""
+        log_title_message "------------------------------------------------------------------------------"
+        log_title_heading "VDLM2DEC decoder setup halted"
+        exit 1
+    fi
+    vdlm2_fequencies_title="Enter VDL Frequencies (REQUIRED)"
+done
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -236,7 +262,7 @@ Description=ARCARSDEC multi-channel acars decoder.
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/vdlm2dec -j 127.0.0.1:5555 -G -g280 -r 0 136.725 136.775 136.875 136.975
+ExecStart=/usr/local/bin/vdlm2dec -j 127.0.0.1:5555 -G -g280 -r 0 ${current_vdlm2_frequencies}
 WorkingDirectory=/usr/local/bin
 StandardOutput=null
 TimeoutSec=30

@@ -36,11 +36,7 @@ if [[ $? -ne 0 ]] ; then
     exit 1
 fi
 
-if [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER ]]; then
-    RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER="0"
-fi
-
-current_vdlm2_frequencies="136725000 136975000 136875000"
+current_vdlm2_frequencies="136.100 136.650 136.700 136.800 136.975"
 if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
     log_message "Determining which frequencies are currently assigned"
     exec_start=`get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service"`
@@ -213,7 +209,7 @@ Description=Dumpvdl2 VDL Mode 2 message decoder and protocol analyzer.
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/dumpvdl2 --rtlsdr 0 --gain 40 --correction 42 136.975
+ExecStart=/usr/local/bin/dumpvdl2 --rtlsdr 0 --gain 40 --correction 42 ${current_vdlm2_frequencies}
 WorkingDirectory=/usr/local/bin
 StandardOutput=null
 TimeoutSec=30
