@@ -179,8 +179,8 @@ function ask_for_device_assignments() {
 
     log_message "Checking if an ACARS decoder is installed"
     acars_decoder_installed="false"
-    if [[ -f /usr/local/bin/acarsdec ]]; then
-        log_message "The ACARSDEC decoder appears to be installed"
+    if [[ "${decoder_being_installed}" == "acarsdec" || -f /usr/local/bin/acarsdec ]]; then
+        [[ "${decoder_being_installed}" != "acarsdec" ]] && log_message "The ACARSDEC decoder appears to be installed"
         acars_decoder_installed="true"
         RECEIVER_ACARS_DECODER_SOFTWARE="acarsdec"
     fi
@@ -190,13 +190,13 @@ function ask_for_device_assignments() {
 
     log_message "Checking if an ADS-B decoder is installed"
     adsb_decoder_installed="false"
-    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-        log_message "The FlightAware dump1090 decoder appears to be installed"
+    if [[ "${decoder_being_installed}" == "dump1090-fa" || $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+        [[ "${decoder_being_installed}" != "dump1090-fa" ]] && log_message "The FlightAware dump1090 decoder appears to be installed"
         adsb_decoder_installed="true"
         RECEIVER_ADSB_DECODER_SOFTWARE="dump1090-fa"
     fi
-    if [[ $(dpkg-query -W -f='${STATUS}' readsb 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-        log_message "The Readsb decoder appears to be installed"
+    if [[ "${decoder_being_installed}" == "readsb" || $(dpkg-query -W -f='${STATUS}' readsb 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+        [[ "${decoder_being_installed}" == "readsb" ]] && log_message "The Readsb decoder appears to be installed"
         adsb_decoder_installed="true"
         RECEIVER_ADSB_DECODER_SOFTWARE="readsb"
     fi
@@ -206,8 +206,8 @@ function ask_for_device_assignments() {
 
     log_message "Checking if a UAT decoder is installed"
     uat_decoder_installed="false"
-    if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
-        log_message "The FlightAware dump978 decoder appears to be installed"
+    if [[ "${decoder_being_installed}" == "dump978-fa" || $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]]; then
+        [[ "${decoder_being_installed}" != "dump978-fa" ]] && log_message "The FlightAware dump978 decoder appears to be installed"
         uat_decoder_installed="true"
         RECEIVER_UAT_DECODER_SOFTWARE="dump978-fa"
     fi
@@ -217,13 +217,13 @@ function ask_for_device_assignments() {
 
     log_message "Checking if a VDL Mode 2 decoder is installed"
     vdlm2_decoder_installed="false"
-    if [[ -f /usr/local/bin/dumpvdl2 ]]; then
-        log_message "The dumpvdl2 decoder appears to be installed"
+    if [[ "${decoder_being_installed}" == "dumpvdl2" || -f /usr/local/bin/dumpvdl2 ]]; then
+        [[ "${decoder_being_installed}" != "dumpvdl2" ]] && log_message "The dumpvdl2 decoder appears to be installed"
         vdlm2_decoder_installed="true"
         RECEIVER_VDLM2_DECODER_SOFTWARE="dumpvdl2"
     fi
-    if [[ -f /usr/local/bin/vdlm2dec ]]; then
-        log_message "The VDLM2DEC decoder appears to be installed"
+    if [[ "${decoder_being_installed}" == "vdlm2dec" || -f /usr/local/bin/vdlm2dec ]]; then
+        [[ "${decoder_being_installed}" != "vdlm2dec" ]] && log_message "The VDLM2DEC decoder appears to be installed"
         vdlm2_decoder_installed="true"
         RECEIVER_VDLM2_DECODER_SOFTWARE="vdlm2dec"
     fi
@@ -238,10 +238,12 @@ function ask_for_device_assignments() {
                 --msgbox "It appears that existing decoder(s) have been installed on this device. In order to run this decoder in tandem with other decoders you will need to specifiy which RTL-SDR dongle each decoder is to use.\n\nKeep in mind in order to run multiple decoders on a single device you will need to have multiple RTL-SDR devices connected to your device." \
                 12 78
 
-        if [[ "${acars_decoder_installed}" == "true" && "${RECEIVER_ACARS_DECODER_SOFTWARE}" == "acarsdec" ]]; then
-            log_message "Determining which device is currently assigned to ACARSDEC"
-            exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
-            device_assigned_to_acars_decoder=`echo $exec_start | grep -o -P '(?<=-r ).*(?= -A)'`
+        if [[ "${decoder_being_installed}" == "acarsdec" || "${acars_decoder_installed}" == "true" && "${RECEIVER_ACARS_DECODER_SOFTWARE}" == "acarsdec" ]]; then
+            if [[ "${acars_decoder_installed}" == "true" ]]; then
+                log_message "Determining which device is currently assigned to ACARSDEC"
+                exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
+                device_assigned_to_acars_decoder=`echo $exec_start | grep -o -P '(?<=-r )[0-9]+'`
+            fi
             log_message "Asking the user to assign a RTL-SDR device number to ACARSDEC"
             acars_device_number_title="Enter the ACARSDEC RTL-SDR Device Number"
             while [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER ]]; do
@@ -258,9 +260,11 @@ function ask_for_device_assignments() {
             done
         fi
 
-        if [[ "${adsb_decoder_installed}" == "true" && "${RECEIVER_ADSB_DECODER_SOFTWARE}" == "dump1090-fa" ]]; then
-            log_message "Determining which device is currently assigned to dump1090-fa"
-            device_assigned_to_adsb_decoder=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
+        if [[ "${decoder_being_installed}" == "dump1090-fa" || "${adsb_decoder_installed}" == "true" && "${RECEIVER_ADSB_DECODER_SOFTWARE}" == "dump1090-fa" ]]; then
+            if [[ "${adsb_decoder_installed}" == "true" ]]; then
+                log_message "Determining which device is currently assigned to dump1090-fa"
+                device_assigned_to_adsb_decoder=`get_config "RECEIVER_SERIAL" "/etc/default/dump1090-fa"`
+            fi
             log_message "Asking the user to assign a RTL-SDR device number to dump1090-fa"
             adsb_device_number_title="Enter the dump1090-fa RTL-SDR Device Number"
             while [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER ]]; do
@@ -277,10 +281,12 @@ function ask_for_device_assignments() {
             done
         fi
 
-        if [[ "${uat_decoder_installed}" == "true" && "${RECEIVER_UAT_DECODER_SOFTWARE}" == "dump978-fa" ]]; then
-            log_message "Determining which device is currently assigned to dump978-fa"
-            receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
-            device_assigned_to_uat_decoder=`echo $receiver_options | grep -o -P '(?<=serial=).*(?= --)'`
+        if [[ "${decoder_being_installed}" == "dump978-fa" || "${uat_decoder_installed}" == "true" && "${RECEIVER_UAT_DECODER_SOFTWARE}" == "dump978-fa" ]]; then
+            if [[ "${uat_decoder_installed}" == "true" ]]; then
+                log_message "Determining which device is currently assigned to dump978-fa"
+                receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/dump978-fa"`
+                device_assigned_to_uat_decoder=`echo $receiver_options | grep -o -P '(?<=serial=)[0-9]+'`
+            fi
             log_message "Asking the user to assign a RTL-SDR device number to dump978-fa"
             uat_device_number_title="Enter the dump978-fa RTL-SDR Device Number"
             while [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER ]] ; do
@@ -297,10 +303,12 @@ function ask_for_device_assignments() {
             done
         fi
 
-        if [[ "${vdlm2_decoder_installed}" == "true" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "dumpvdl2" ]]; then
-            log_message "Determining which device is currently assigned to dumpvdl2"
-            exec_start=`get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service"`
-            device_assigned_to_vdlm2_decoder=`echo $exec_start | grep -o -P '(?<=--rtlsdr ).*(?= --gain)'`
+        if [[ "${decoder_being_installed}" == "dumpvdl2" || "${vdlm2_decoder_installed}" == "true" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "dumpvdl2" ]]; then
+            if [[ "${vdlm2_decoder_installed}" == "true" ]]; then
+                log_message "Determining which device is currently assigned to dumpvdl2"
+                exec_start=`get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service"`
+                device_assigned_to_vdlm2_decoder=`echo $exec_start | grep -o -P '(?<=--rtlsdr )[0-9]+'`
+            fi
             log_message "Asking the user to assign a RTL-SDR device number to dumpvdl2"
             vdlm2_device_number_title="Enter the dumpvdl2 RTL-SDR Device Number"
             while [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER ]]; do
@@ -317,10 +325,12 @@ function ask_for_device_assignments() {
             done
         fi
 
-        if [[ "${adsb_decoder_installed}" == "true" && "${RECEIVER_ADSB_DECODER_SOFTWARE}" == "readsb" ]]; then
-            log_message "Determining which device is currently assigned to Readsb"
-            receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/readsb"`
-            device_assigned_to_adsb_decoder=`echo $receiver_options | grep -o -P '(?<=--device ).*(?= )'`
+        if [[ "${decoder_being_installed}" == "readsb" || "${adsb_decoder_installed}" == "true" && "${RECEIVER_ADSB_DECODER_SOFTWARE}" == "readsb" ]]; then
+            if [[  "${adsb_decoder_installed}" == "true" ]]; then
+                log_message "Determining which device is currently assigned to Readsb"
+                receiver_options=`get_config "RECEIVER_OPTIONS" "/etc/default/readsb"`
+                device_assigned_to_adsb_decoder=`echo $receiver_options | grep -o -P '(?<=--device )[0-9]+'`
+            fi
             log_message "Asking the user to assign a RTL-SDR device number to Readsb"
             adsb_device_number_title="Enter the Readsb RTL-SDR Device Number"
             while [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER ]]; do
@@ -337,10 +347,12 @@ function ask_for_device_assignments() {
             done
         fi
 
-        if [[ "${vdlm2_decoder_installed}" == "true" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "vdlm2dec" ]]; then
-            log_message "Determining which device is currently assigned to VDLM2DEC"
-            exec_start=`get_config "ExecStart" "/etc/systemd/system/vdlm2dec.service"`
-            device_assigned_to_vdlm2_decoder=`echo $exec_start | grep -o -P '(?<=-r ).*(?= )'`
+        if [[ "${decoder_being_installed}" == "vdlm2dec" || "${vdlm2_decoder_installed}" == "true" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "vdlm2dec" ]]; then
+            if [[ "${vdlm2_decoder_installed}" == "true" ]]; then
+                log_message "Determining which device is currently assigned to VDLM2DEC"
+                exec_start=`get_config "ExecStart" "/etc/systemd/system/vdlm2dec.service"`
+                device_assigned_to_vdlm2_decoder=`echo $exec_start | grep -o -P '(?<=-r )[0-9]+'`
+            fi
             log_message "Asking the user to assign a RTL-SDR device number to VDLM2DEC"
             vdlm2_device_number_title="Enter the VDLM2DEC RTL-SDR Device Number"
             while [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER ]]; do
@@ -381,7 +393,12 @@ function assign_devices_to_decoders() {
 
     if [[ ! -z $RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER && "${RECEIVER_UAT_DECODER_SOFTWARE}" == "dump978-fa" ]]; then
         log_message "Assigning RTL-SDR device number ${RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER} to FlightAware Dump978"
-        sudo sed -i -e "s|driver=rtlsdr|driver=rtlsdr,serial=${RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER}|g" /etc/default/dump978-fa
+        serial_assigned=$(cat /etc/default/dump978-fa | grep -c "driver=rtlsdr,serial=")
+        if [[ $serial_assigned == 1 ]]; then
+            sudo sed -i -e "s|\(.*driver=rtlsdr,serial=\)\([0-9]\+\)\( .*\)|\1${RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER}\3|g" /etc/default/dump978-fa
+        else
+            sudo sed -i -e "s|driver=rtlsdr|driver=rtlsdr,serial=${RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER}|g" /etc/default/dump978-fa
+        fi
         log_message "Restarting dump978-fa"
         sudo systemctl restart dump978-fa
     fi

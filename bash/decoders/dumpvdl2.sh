@@ -32,7 +32,7 @@ if [[ $? -ne 0 ]] ; then
     log_alert_message "Setup has been halted due to lack of required information"
     echo ""
     log_title_message "------------------------------------------------------------------------------"
-    log_title_heading "ACARSDEC decoder setup halted"
+    log_title_heading "Dumpvdl2 decoder setup halted"
     exit 1
 fi
 
@@ -41,17 +41,17 @@ if [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER ]]; then
 fi
 
 current_vdlm2_frequencies="136725000 136975000 136875000"
-if [[ "${vdlm2_decoder_installed}" == "true" ]]; then
+if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
     log_message "Determining which frequencies are currently assigned"
     exec_start=`get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service"`
     current_vdlm2_frequencies=`sed -e "s#.*--correction ${vdlm2_correction} \(\)#\1#" <<< "${exec_start}"`
 fi
-log_message "Asking the user for VDL frequencies to monitor"
-acars_fequencies_title="Enter VDL Frequencies"
-while [[ -z $acars_fequencies ]] ; do
-    vdlm2_fequencies=$(whiptail --backtitle "VDL Frequencies" \
+log_message "Asking the user for VDL Mode 2 frequencies to monitor"
+vdlm2_fequencies_title="Enter VDL Mode 2 Frequencies"
+while [[ -z $vdlm2_fequencies ]] ; do
+    vdlm2_fequencies=$(whiptail --backtitle "VDL Mode 2 Frequencies" \
                               --title "${vdlm2_fequencies_title}" \
-                              --inputbox "\nEnter the VDL frequencies you would like to monitor." \
+                              --inputbox "\nEnter the VDL Mode 2 frequencies you would like to monitor." \
                               8 78 \
                               "${current_vdlm2_frequencies}" 3>&1 1>&2 2>&3)
     exit_status=$?

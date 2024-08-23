@@ -58,7 +58,7 @@ if [[ $? -ne 0 ]] ; then
     log_title_heading "ACARSDEC decoder setup halted"
     exit 1
 fi
-
+echo "DEVICE: ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER}"
 if [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER ]]; then
     RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER="0"
 fi
