@@ -1,5 +1,6 @@
 #!/bin/bash
 
+<<<<<<< HEAD
 ### VARIABLES
 
 collectd_config="/etc/collectd/collectd.conf"
@@ -9,26 +10,47 @@ dump1090_messages_local_rrd_database="/var/lib/collectd/rrd/localhost/dump1090-l
 
 
 ### INCLUDE EXTERNAL SCRIPTS
+=======
+## INCLUDE EXTERNAL SCRIPTS
+>>>>>>> master
 
 source ${RECEIVER_BASH_DIRECTORY}/variables.sh
 source ${RECEIVER_BASH_DIRECTORY}/functions.sh
 
+<<<<<<< HEAD
+=======
+
+### VARIABLES
+
+collectd_config="/etc/collectd/collectd.conf"
+collectd_cron_file="/etc/cron.d/adsb-receiver-performance-graphs"
+dump1090_max_range_rrd="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd"
+dump1090_messages_local_rrd="/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_messages-local_accepted.rrd"
+
+>>>>>>> master
 
 ### BEGIN SETUP
 
-echo -e ""
-echo -e "\e[95m  Setting up collectd performance graphs...\e[97m"
-echo -e ""
+log_heading "Setting up collectd performance graphs"
 
 CheckPackage collectd-core
 CheckPackage rrdtool
 
 ## CONFIRM INSTALLED PACKAGES
 
+<<<<<<< HEAD
 echo -e "\e[94m  Checking which dump1090 fork is installed...\e[97m"
 if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
     dump1090_fork="fa"
     dump1090_is_installed="true"
+=======
+if [[ -z "${dump1090_installed}" || -z "${dump1090_fork}" ]] ; then
+    log_message "Checking which dump1090 fork is installed"
+    if [[ $(dpkg-query -W -f='${STATUS}' dump1090-fa 2>/dev/null | grep -c "ok installed") -eq 1 ]] ; then
+        dump1090_fork="fa"
+        dump1090_installed="true"
+    fi
+>>>>>>> master
 fi
 
 
@@ -36,12 +58,20 @@ fi
 
 # Check if the collectd config file exists and if so back it up.
 if [[ -f "${collectd_config}" ]] ; then
+<<<<<<< HEAD
     echo -e "\e[94m  Backing up the current collectd.conf file...\e[97m"
+=======
+    log_message "Backing up the current collectd.conf file"
+>>>>>>> master
     sudo cp ${collectd_config} ${collectd_config}.bak
 fi
 
 # Generate new collectd config.
+<<<<<<< HEAD
 echo -e "\e[94m  Replacing the current collectd.conf file...\e[97m"
+=======
+log_message "Replacing the current collectd.conf file"
+>>>>>>> master
 sudo tee ${collectd_config} > /dev/null <<EOF
 # Config file for collectd(1).
 
@@ -65,7 +95,11 @@ WriteThreads 1
 EOF
 
 # Dump1090 specific values.
+<<<<<<< HEAD
 if [[ "${dump1090_is_installed}" = "true" ]] ; then
+=======
+if [[ "${dump1090_installed}" == "true" ]] ; then
+>>>>>>> master
     sudo tee -a ${collectd_config} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Added types for dump1090.                                                  #
@@ -140,7 +174,6 @@ EOF
 
 # Device  specific values.
 # Raspberry Pi: b03112
-
 if [[ "${RECEIVER_CPU_REVISION}" = "b03112" ]] ; then
     sudo tee -a ${collectd_config} > /dev/null <<EOF
 <Plugin table>
@@ -164,7 +197,11 @@ EOF
 fi
 
 # Dump1090 specific values.
+<<<<<<< HEAD
 if [[ "${dump1090_is_installed}" = "true" ]] ; then
+=======
+if [[ "${dump1090_installed}" == "true" ]] ; then
+>>>>>>> master
     sudo tee -a ${collectd_config} > /dev/null <<EOF
 #----------------------------------------------------------------------------#
 # Configure the dump1090-tools python module.                                #
@@ -207,12 +244,13 @@ EOF
 
 ## RELOAD COLLECTD
 
-echo -e "\e[94m  Reloading collectd so the new configuration is used...\e[97m"
+log_message "Reloading collectd so the new configuration is used"
 sudo service collectd force-reload
 
 
 ## EDIT CRONTAB
 
+<<<<<<< HEAD
 echo -e "\e[94m  Making the make-collectd-graphs.sh script executable...\e[97m"
 chmod +x ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh
 
@@ -222,6 +260,19 @@ if [[ -f "${collectd_cron_file}" ]] ; then
 fi
 
 echo -e "\e[94m  Adding performance graphs cron file...\e[97m"
+=======
+if [[ ! -x "${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh" ]] ; then
+    log_message "Making the make-collectd-graphs.sh script executable"
+    chmod +x ${RECEIVER_BUILD_DIRECTORY}/portal/graphs/make-collectd-graphs.sh
+fi
+
+if [[ -f "${collectd_cron_file}" ]] ; then
+    log_message "Removing previously installed performance graphs cron file"
+    sudo rm -f ${collectd_cron_file}
+fi
+
+log_message "Adding performance graphs cron file"
+>>>>>>> master
 sudo tee ${collectd_cron_file} > /dev/null <<EOF
 # Updates the portal's performance graphs.
 #
@@ -244,13 +295,20 @@ EOF
 
 # Update max_range.rrd to remove the 500 km / ~270 nmi limit.
 if [ -f "/var/lib/collectd/rrd/localhost/dump1090-localhost/dump1090_range-max_range.rrd" ]; then
+<<<<<<< HEAD
     if [[ `rrdinfo ${dump1090_max_range_rrd_database} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
         echo -e "\e[94m  Removing 500km/270mi limit from max_range.rrd...\e[97m"
         sudo rrdtool tune ${dump1090_max_range_rrd_database} --maximum "value:1000000"
+=======
+    if [[ `rrdinfo ${dump1090_max_range_rrd} | grep -c "ds\[value\].max = 1.0000000000e+06"` -eq 0 ]] ; then
+        log_message "Removing 500km/270mi limit from max_range.rrd"
+        sudo rrdtool tune ${dump1090_max_range_rrd} --maximum "value:1000000"
+>>>>>>> master
     fi
 fi
 
 # Increase size of weekly messages table to 8 days
+<<<<<<< HEAD
 if [ -f ${dump1090_messages_local_rrd_database} ]; then
     if [[ `rrdinfo ${dump1090_messages_local_rrd_database} | grep -c "rra\[6\]\.rows = 1260"` -eq 1 ]] ; then
         echo -e "\e[94m  Increasing weekly table size to 8 days in messages-local_accepted.rrd...\e[97m"
@@ -264,3 +322,11 @@ fi
 # Return to the project root directory.
 echo -e "\e[94m  Entering the ADS-B Receiver Project root directory...\e[97m"
 cd ${RECEIVER_ROOT_DIRECTORY}
+=======
+if [[ -f ${dump1090_messages_local_rrd} ]]; then
+    if [[ `rrdinfo ${dump1090_messages_local_rrd} | grep -c "rra\[6\]\.rows = 1260"` -eq 1 ]] ; then
+        log_message "Increasing weekly table size to 8 days in messages-local_accepted.rrd"
+        sudo rrdtool tune ${dump1090_messages_local_rrd} 'RRA#6:=1440' 'RRA#7:=1440' 'RRA#8:=1440'
+    fi
+fi
+>>>>>>> master

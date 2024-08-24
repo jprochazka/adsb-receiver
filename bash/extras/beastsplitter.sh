@@ -80,9 +80,9 @@ check_package libboost-program-options-dev
 check_package libboost-regex-dev
 
 
-## CLONE OR PULL THE FLIGHTAWARE DUMP978 DECODER SOURCE
+## CLONE OR PULL THE BEAST-SPLITTER DECODER SOURCE
 
-log_heading "Preparing the FlightAware Dump978 Git repository"
+log_heading "Preparing the beast-splitter Git repository"
 
 if [[ -d $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter && -d $RECEIVER_BUILD_DIRECTORY/beast-splitter/beast-splitter/.git ]]; then
     log_message "Entering the beast-splitter git repository directory"
@@ -97,7 +97,7 @@ else
     echo ""
     log_message "Entering the beast-splitter build directory"
     cd $RECEIVER_BUILD_DIRECTORY/beast-splitter
-    log_message "Cloning the FlightAware dump978 git repository"
+    log_message "Cloning the beast-splitter git repository"
     echo ""
     git clone https://github.com/flightaware/beast-splitter.git 2>&1 | tee -a $RECEIVER_LOG_FILE
 fi
