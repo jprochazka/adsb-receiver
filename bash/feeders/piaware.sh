@@ -76,6 +76,7 @@ check_package tclx8.4
 check_package zlib1g-dev
 
 if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
+    check_package python3-filelock
     check_package python3-pyasyncore
 fi
 
@@ -211,8 +212,11 @@ case $RECEIVER_OS_CODE_NAME in
     bullseye | jammy)
         distro="bullseye"
         ;;
-    bookworm | noble)
+    bookworm | Focal)
         distro="bookworm"
+        ;;
+    noble)
+        distro="trixie"
         ;;
 esac
 log_message "Setting distribution to build for to ${distro}"

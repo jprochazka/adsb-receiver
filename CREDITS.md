@@ -5,27 +5,27 @@
 First and foremost I would like to thank the collaborators and contributors who have contributed to
 the project directly. Their time and effort is greatly appreciated by myself as well as many others.
 
-* @mgunther68
-* @jdwall
-* @leearmstrong
-* @wiedehopf
-* @vitaliy-sk
-* @target-drone
-* @dschaper
 * @adamkaplan
-* @charlie-foxtrot
-* @jsloyer
-* @kylegordon
-* @BudBundi
-* @kuchel77
 * @atbPy
-* @g0wfv
-* @ttsak
-* @mkrzysztofowicz
-* @espinielli
 * @bitpixdigital
-* @Romeo-Golf
+* @BudBundi
+* @charlie-foxtrot
+* @dschaper
+* @espinielli
 * @g0wfv
+* @jdwall
+* @jsloyer
+* @kuchel77
+* @kylegordon
+* @leearmstrong
+* @mgunther68
+* @mkrzysztofowicz
+* @RensHijdra
+* @Romeo-Golf
+* @target-drone
+* @ttsak
+* @vitaliy-sk
+* @wiedehopf
 
 ## The Flight Tracking Community
 
@@ -56,8 +56,13 @@ hard work and dedication to their respective projects this project would not hav
 * Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
 * Dump1090-Tools:          https://github.com/mutability/dump1090-tools
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
+* Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * Fly Italy ADS-B Client:  https://github.com/flyitalyadsb/fly-italy-adsb
+* Graphs1090:              https://github.com/wiedehopf/graphs1090
 * PiAware (FlightAware):   https://github.com/flightaware/piaware
+* Readsb (wiedehopf):      https://github.com/wiedehopf/readsb
+* tar1090:                 https://github.com/wiedehopf/tar1090
+* VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 Thanks also goes out to the developers and the businesses that employ them who work to supply us
 with quality closed source packages which they have made available to the community.

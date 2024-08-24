@@ -564,9 +564,9 @@ if [ "${database_engine}" = "MySQL" ]; then
 elif [ "${database_engine}" = "SQLite" ]; then
     if [ -z $database_name ] ; then
         if [ ! -f $lighttpd_document_root/data/portal.sqlite ]; then
-            echo -e "\e[94m  Creating an empty SQLite database file...\e[97m"
+            log_message "Creating an empty SQLite database file"
             sudo touch $lighttpd_document_root/data/portal.sqlite
-            echo -e "\e[94m  Setting write permissions on the empty SQLite database file...\e[97m"
+            log_message "Setting write permissions on the empty SQLite database file"
             sudo chmod 666 $lighttpd_document_root/data/portal.sqlite
         fi
         database_name="${lighttpd_document_root}/data/portal.sqlite"
@@ -584,24 +584,15 @@ else
     export ADSB_PORTAL_DATABASE_NAME=""
 fi
 
-chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/core.sh
-${RECEIVER_BASH_DIRECTORY}/portal/core.sh
-if [[ $? -ne 0 ]] ; then
-    echo ""
-    log_alert_message "THE SCRIPT CORE.SH ENCOUNTERED AN ERROR"
-    echo ""
-    exit 1
-fi
-
 
 ## SETUP ADVANCED PORTAL FEATURES
 
-if [ "${advanced_installation}" = "true" ] ; then
-    chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
-    ${RECEIVER_BASH_DIRECTORY}/portal/logging.sh
+if [[ "${advanced_installation}" == "true" ]] ; then
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/portal/advanced.sh
+    ${RECEIVER_BASH_DIRECTORY}/portal/advanced.sh
     if [[ $? -ne 0 ]] ; then
         echo ""
-        log_alert_message "THE SCRIPT LOGGING.SH ENCOUNTERED AN ERROR"
+        log_alert_message "THE SCRIPT ADVANCED.SH ENCOUNTERED AN ERROR"
         echo ""
         exit 1
     fi
