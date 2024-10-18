@@ -178,7 +178,7 @@ else
 
     # --- START TEMPORARY NOBLE FIX ---
     if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
-        git clone https://github.com/jprochazka/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+        git clone -b trixie https://github.com/jprochazka/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
     else
         git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
     fi
@@ -194,12 +194,6 @@ log_heading "Beginning the FlightAware PiAware installation process"
 
 log_message "Entering the piaware_builder git repository directory"
 cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
-
-# --- START TEMPORARY NOBLE FIX ---
-if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
-    git checkout trixie
-fi
-# --- END TEMPORARY NOBLE FIX ---
 
 log_message "Determining which piaware_builder build strategy should be use"
 distro="bookworm"
