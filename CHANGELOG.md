@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.8 *(August 23rd)*
+
+* FlightAware's version of the tcl-tls is now built and installed on Bullseye.
+
 ## v2.8.7 *(August 23rd)*
 
 * The ability to install dumpvdl2 is now available as a decoder option.
