@@ -3,7 +3,7 @@
 # THE FLIGHTAWARE PIAWARE CLIENT SETUP SCRIPT
 
 # JPROCHAZKA/PIAWARE_BUILDER REPOSITORY
-# -----------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
 # I submitted a fix to support Debian Trixie and Ubuntu Noble Numbat to FlightAware's
 # piaware_builder repository. Until the changes are merged into their Git reposiory
 # the installation will be done using the fork I created along with the branch which
@@ -12,13 +12,11 @@
 # https://github.com/flightaware/piaware_builder/pull/26
 
 # TCLTLS-REBUILD
-# -----------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
 # Along with PiAware, a version of tcltls maintained by FlightAware can be installed.
-# This package is only needed for Debian Buster and possibly Ubuntu Focal Fossa. Once 
-# these releases pass their end of life date the scripting will be removed.
+# This package is only needed for any distribution utilizing tcl-tls 1.7.22-2 or older.
 #
-# Debian Buster's end of life occured June 30, 2024 and is no longer supported.
-# Ubuntu Focal Fossa's end of life is scheduled for April 2025.
+# This fix may need to remain in place until Debian Bullseye hits end of life.
 
 
 ## PRE INSTALLATION OPERATIONS
@@ -90,7 +88,7 @@ fi
 
 ## CLONE OR PULL THE TCLTLS REBUILD GIT REPOSITORY
 
-if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
+if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" || "${RECEIVER_OS_CODE_NAME}" == "bullseye" ]]; then
 
     log_heading "Preparing the FlightAware tcltls-rebuild Git repository"
 
