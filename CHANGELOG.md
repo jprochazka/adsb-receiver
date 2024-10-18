@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.8 *(August 23rd)*
+## v2.8.8 *(next release)*
 
 * FlightAware's version of the tcl-tls is now built and installed on Bullseye.
 
