@@ -2,10 +2,11 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.8 *(next release)*
+## v2.8.8 *(October 18th, 2024)*
 
 * FlightAware's version of the tcl-tls is now built and installed on Bullseye.
-* Clones athe trixie branch directly when using the forked version of piaware_builder.
+* Clones the trixie branch directly when using the forked version of piaware_builder.
+* The portal upgrade path to v2.8.7 was missing.
 
 ## v2.8.7 *(August 23rd, 2024)*
 

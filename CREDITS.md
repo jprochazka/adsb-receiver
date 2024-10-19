@@ -3,7 +3,8 @@
 ## Collaborators and Contributors
 
 First and foremost I would like to thank the collaborators and contributors who have contributed to
-the project directly. Their time and effort is greatly appreciated by myself as well as many others.
+the project directly through code contributions made directly to the repository. Their time and effort
+is greatly appreciated by myself as well as many others I am sure.
 
 * @adamkaplan
 * @atbPy
