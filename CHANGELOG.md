@@ -2,7 +2,13 @@
 
 The following is a history of the changes made to this project.
 
-## v2.8.7 *(August 23rd)*
+## v2.8.8 *(October 18th, 2024)*
+
+* FlightAware's version of the tcl-tls is now built and installed on Bullseye.
+* Clones the trixie branch directly when using the forked version of piaware_builder.
+* The portal upgrade path to v2.8.7 was missing.
+
+## v2.8.7 *(August 23rd, 2024)*
 
 * The ability to install dumpvdl2 is now available as a decoder option.
 * The ability to install vdlm2dec is now available as a decoder option.

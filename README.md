@@ -81,8 +81,8 @@ The project currently supports the following Linux distributions.
 * Debian _(Bookworm and Bullseye)_
 * DietPi _(Bookworm and Bullseye)_
 * Raspberry PI OS _(Bookworm and Bullseye)_
-* Ubuntu _(Jammy Jellyfish, Focal Fossa and Noble Numbat)_
+* Ubuntu _(Jammy Jellyfish, Focal Fossa and Noble Numbat*)_
 
 Support is available via this repository through the use of the issue tracker or discussions.
 
-_Please Note that Ubuntu Noble Numbat support employs an unofficial fix for PiAware._
+_* Please Note that Ubuntu Noble Numbat support employs an unofficial fix for PiAware._
