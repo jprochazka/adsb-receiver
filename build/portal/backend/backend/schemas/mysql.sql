@@ -1,6 +1,8 @@
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS aircraft;
-DROP TABLE IF EXISTS logPosts;
+  `altitude` int(4) NOT NULL,
+  `vertical_rate` int(4) NOT NULL,
+  `speed` int(3) DEFAULT NULL,P TABLE IF EXISTS logPosts;
 DROP TABLE IF EXISTS flightNotifications;
 DROP TABLE IF EXISTS flights;
 DROP TABLE IF EXISTS links;
@@ -58,7 +60,7 @@ CREATE TABLE `positions` (
   `longitude` double NOT NULL,
   `track` int(11) NOT NULL,
   `altitude` int(5) NOT NULL,
-  `verticle_rate` int(4) NOT NULL,
+  `vertical_rate` int(4) NOT NULL,
   `speed` int(4) DEFAULT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (aircraft) REFERENCES aircraft(id),
@@ -75,8 +77,15 @@ CREATE TABLE `settings` (
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
-  `email` varchar(75) NOT NULL,
+  `email` varchar(75) NOT NULL UNIQUE,
   `password` varchar(255) NOT NULL,
   `administrator` bit DEFAULT 0,
+  `role` varchar(20) DEFAULT 'User',
   PRIMARY KEY (`id`)
 );
+
+-- Sample users for testing role-based authentication
+INSERT INTO `users` (`name`, `email`, `password`, `administrator`, `role`) VALUES 
+('Admin User', 'admin@example.com', 'admin123', 1, 'Admin'),
+('Regular User', 'user@example.com', 'user123', 0, 'User'),
+('Test Admin', 'testadmin@example.com', 'test123', 1, 'Admin');

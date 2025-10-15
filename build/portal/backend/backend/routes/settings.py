@@ -2,11 +2,33 @@ import logging
 
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
+from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
-from backend.db import get_db
+from backend.models import db, Setting
+from backend.auth import require_admin, require_user_or_admin
 from werkzeug.exceptions import HTTPException
+from sqlalchemy import select
 
 settings = Blueprint('settings', __name__)
+
+# Create Flask-RESTX namespaces for settings management
+setting_ns = Namespace('setting', description='Individual setting management')
+settings_ns = Namespace('settings', description='Settings list management')
+
+# Define API models for documentation - shared across namespaces
+setting_model = setting_ns.model('Setting', {
+    'name': restx_fields.String(description='Setting name'),
+    'value': restx_fields.String(description='Setting value')
+})
+
+update_setting_model = setting_ns.model('UpdateSetting', {
+    'name': restx_fields.String(required=True, description='Setting name to update'),
+    'value': restx_fields.String(required=True, description='New setting value')
+})
+
+settings_list_model = settings_ns.model('SettingsList', {
+    'settings': restx_fields.List(restx_fields.Nested(setting_model))
+})
 
 
 class UpdateSettingRequestSchema(Schema):
@@ -14,85 +36,73 @@ class UpdateSettingRequestSchema(Schema):
     value = fields.String(required=True)
 
 
-@settings.route('/api/setting', methods=['PUT'])
-@jwt_required()
-def put_setting():
-    try:
-        payload = UpdateSettingRequestSchema().load(request.json)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
+@setting_ns.route('')
+class SettingResource(Resource):
+    @setting_ns.expect(update_setting_model)
+    @setting_ns.response(204, 'Setting updated successfully')
+    @setting_ns.response(400, 'Bad request - validation error')
+    @setting_ns.response(404, 'Setting not found')
+    @setting_ns.response(401, 'Unauthorized - admin access required')
+    @setting_ns.response(500, 'Internal server error')
+    @setting_ns.doc('update_setting')
+    @require_admin()
+    def put(self):
+        """Update a setting value (Admin only)"""
+        try:
+            payload = UpdateSettingRequestSchema().load(request.json)
+        except ValidationError as err:
+            return {'msg': 'Validation error', 'errors': err.messages}, 400
 
-    try:
-        db=get_db()
-        cursor=db.cursor()
-
-        cursor.execute("SELECT COUNT(*) FROM settings WHERE name = ?", (payload['name'],))
-        #cursor.execute("SELECT COUNT(*) FROM settings WHERE name = %s", (payload['name'],))
-
-        if cursor.fetchone()[0] == 0:
-            abort(404, description="Not Found")
-        else:
-            cursor.execute(
-
-                "UPDATE settings SET value = ? WHERE name = ?",
-                #"UPDATE settings SET value = %s WHERE name = %s",
-
-                (payload['value'], payload['name'])
-            )
-            db.commit()
-    except Exception as ex:
-        if isinstance(ex, HTTPException):
-            abort(ex.code)
-        else:
-            logging.error(f"Error encountered while trying to put setting named {payload['name']}", exc_info=ex)
-            abort(500, description="Internal Server Error")
-
-    return "No Content", 204
-
-@settings.route('/api/setting/<string:name>', methods=['GET'])
-def get_setting(name):
-    data=[]
-
-    try:
-        db=get_db()
-        cursor=db.cursor()
-
-        cursor.execute("SELECT * FROM settings WHERE name = ?", (name,))
-        #cursor.execute("SELECT * FROM settings WHERE name = %s", (name,))
-
-        columns=[x[0] for x in cursor.description]
-        results = cursor.fetchall()
-        for result in results:
-            data.append(dict(zip(columns,result)))
-    except Exception as ex:
-        logging.error(f"Error encountered while trying to get setting named {name}", id, exc_info=ex)
-        abort(500, description="Internal Server Error")
+        try:
+            setting = db.session.execute(select(Setting).filter_by(name=payload['name'])).scalar_one_or_none()
             
-    if not data:
-        abort(404, description="Not Found")
+            if not setting:
+                return {'msg': 'Setting not found'}, 404
+                
+            setting.value = payload['value']
+            db.session.commit()
+            return {'msg': 'Setting updated successfully'}, 204
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error encountered while trying to put setting named {payload['name']}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-    response = jsonify(data[0])
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response, 200
 
-@settings.route('/api/settings', methods=['GET'])
-@jwt_required()
-def get_settings():
-    settings=[]
+@setting_ns.route('/<string:name>')
+class SettingByNameResource(Resource):
+    @setting_ns.response(200, 'Setting retrieved successfully', setting_model)
+    @setting_ns.response(404, 'Setting not found')
+    @setting_ns.response(500, 'Internal server error')
+    @setting_ns.doc('get_setting_by_name')
+    def get(self, name):
+        """Get setting value by name"""
+        try:
+            setting = db.session.execute(select(Setting).filter_by(name=name)).scalar_one_or_none()
+            
+            if not setting:
+                return {'msg': 'Setting not found'}, 404
+                
+            return setting.to_dict(), 200
+        except Exception as ex:
+            logging.error(f"Error encountered while trying to get setting named {name}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-    try:
-        db=get_db()
-        cursor=db.cursor()
-        cursor.execute("SELECT * FROM settings ORDER BY name")
-        columns=[x[0] for x in cursor.description]
-        result=cursor.fetchall()
-        for result in result:
-            settings.append(dict(zip(columns,result)))
-    except Exception as ex:
-        logging.error(f"Error encountered while trying to get settings", exc_info=ex)
-        abort(500, description="Internal Server Error")
 
-    response = jsonify(settings)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response, 200
+@settings_ns.route('', strict_slashes=False)
+class SettingsListResource(Resource):
+    @settings_ns.response(200, 'Settings list retrieved successfully', [setting_model])
+    @settings_ns.response(401, 'Unauthorized - authentication required')
+    @settings_ns.response(500, 'Internal server error')
+    @settings_ns.doc('get_settings_list')
+    @require_user_or_admin()
+    def get(self):
+        """Get all settings (Authentication required)"""
+        try:
+            settings_result = db.session.execute(select(Setting).order_by(Setting.name))
+            settings_data = [setting.to_dict() for setting in settings_result.scalars()]
+            return settings_data, 200
+        except Exception as ex:
+            logging.error('Error encountered while trying to get settings', exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
 

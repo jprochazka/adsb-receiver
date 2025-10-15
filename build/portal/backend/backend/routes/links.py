@@ -2,11 +2,42 @@ import logging
 
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
+from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
-from backend.db import get_db
+from backend.models import db, Link
+from backend.auth import require_user_or_admin
 from werkzeug.exceptions import HTTPException
+from sqlalchemy import select
 
 links = Blueprint('links', __name__)
+
+# Create Flask-RESTX namespaces for links management
+links_ns = Namespace('links', description='Links list operations')
+link_ns = Namespace('link', description='Individual link operations')
+
+# Define API models for documentation
+link_model = link_ns.model('Link', {
+    'id': restx_fields.Integer(description='Link ID'),
+    'name': restx_fields.String(description='Link name'),
+    'address': restx_fields.String(description='Link URL address')
+})
+
+create_link_model = link_ns.model('CreateLink', {
+    'name': restx_fields.String(required=True, description='Link name', example='FlightAware'),
+    'address': restx_fields.String(required=True, description='Link URL address', example='https://flightaware.com')
+})
+
+update_link_model = link_ns.model('UpdateLink', {
+    'name': restx_fields.String(required=True, description='Updated link name'),
+    'address': restx_fields.String(required=True, description='Updated link URL address')
+})
+
+links_list_model = links_ns.model('LinksList', {
+    'links': restx_fields.List(restx_fields.Nested(link_model)),
+    'offset': restx_fields.Integer(description='Pagination offset'),
+    'limit': restx_fields.Integer(description='Pagination limit'),
+    'count': restx_fields.Integer(description='Number of links returned')
+})
 
 
 class CreateLinkRequestSchema(Schema):
@@ -18,148 +49,145 @@ class UpdateLinkRequestSchema(Schema):
     address = fields.String(required=True)
         
 
-@links.route('/api/link', methods=['POST'])
-@jwt_required()
-def post_link():
-    try:
-        payload = CreateLinkRequestSchema().load(request.json)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
+@link_ns.route('')
+class LinksResource(Resource):
+    @link_ns.expect(create_link_model)
+    @link_ns.response(201, 'Link created successfully')
+    @link_ns.response(400, 'Bad request - validation error')
+    @link_ns.response(401, 'Unauthorized - authentication required')
+    @link_ns.response(500, 'Internal server error')
+    @link_ns.doc('create_link')
+    @require_user_or_admin()
+    def post(self):
+        """Create a new link (Authentication required)"""
+        try:
+            payload = CreateLinkRequestSchema().load(request.json)
+        except ValidationError as err:
+            return {'msg': 'Validation error', 'errors': err.messages}, 400
 
-    try:
-        db=get_db()
-        cursor=db.cursor()
-        cursor.execute(
-
-            "INSERT INTO links (name, address) VALUES (?, ?)",
-            #"INSERT INTO links (name, address) VALUES (%s, %s)",
-
-            (payload['name'], payload['address'])
-        )
-        db.commit()
-    except Exception as ex:
-        logging.error(f"Error encountered while trying to post link", exc_info=ex)
-        abort(500, description="Internal Server Error")
-
-    return "Created", 201
-
-@links.route('/api/link/<int:link_id>', methods=['DELETE'])
-@jwt_required()
-def delete_link(link_id):
-    try:
-        db=get_db()
-        cursor=db.cursor()
-
-        cursor.execute("SELECT COUNT(*) FROM links WHERE id = ?", (link_id,))
-        #cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (link_id,))
-
-        if cursor.fetchone()[0] == 0:
-            abort(404, description="Not Found")
-        else:
-
-            cursor.execute("DELETE FROM links WHERE id = ?", (link_id,))
-            #cursor.execute("DELETE FROM links WHERE id = %s", (link_id,))
-
-            db.commit()
-    except Exception as ex:
-        if isinstance(ex, HTTPException):
-            abort(ex.code)
-        else:
-            logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
-            abort(500, description="Internal Server Error")
-
-    return "No Content", 204
-
-@links.route('/api/link/<int:link_id>', methods=['GET'])
-@jwt_required()
-def get_link(link_id):
-    data=[]
-
-    try:
-        db=get_db()
-        cursor=db.cursor()
-
-        cursor.execute("SELECT * FROM links WHERE id = ?", (link_id,))
-        #cursor.execute("SELECT * FROM links WHERE id = %s", (link_id,))
-
-        columns=[x[0] for x in cursor.description]
-        results = cursor.fetchall()
-        for result in results:
-            data.append(dict(zip(columns,result)))
-    except Exception as ex:
-        logging.error(f"Error encountered while trying to get link id {link_id}", link_id, exc_info=ex)
-        abort(500, description="Internal Server Error")
-            
-    if not data:
-        abort(404, description="Not Found")
-
-    return jsonify(data[0]), 200
-
-@links.route('/api/link/<int:id>', methods=['PUT'])
-@jwt_required()
-def put_link(id):
-    try:
-        payload = UpdateLinkRequestSchema().load(request.json)
-    except ValidationError as err:
-        return jsonify(err.messages), 400
-
-    try:
-        db=get_db()
-        cursor=db.cursor()
-
-        cursor.execute("SELECT COUNT(*) FROM links WHERE id = ?", (id,))
-        #cursor.execute("SELECT COUNT(*) FROM links WHERE id = %s", (id,))
-
-        if cursor.fetchone()[0] == 0:
-            abort(404, description="Not Found")
-        else:
-            cursor.execute(
-
-                "UPDATE links SET name = ?, address = ? WHERE id = ?",
-                #"UPDATE links SET name = %s, address = %s WHERE id = %s",
-
-                (payload['name'], payload['address'], id)
+        try:
+            new_link = Link(
+                name=payload['name'],
+                address=payload['address']
             )
-            db.commit()
-    except Exception as ex:
-        if isinstance(ex, HTTPException):
-            abort(ex.code)
-        else:
-            logging.error(f"Error encountered while trying to put link id {id}", exc_info=ex)
-            abort(500, description="Internal Server Error")
+            db.session.add(new_link)
+            db.session.commit()
+            return {'msg': 'Link created successfully'}, 201
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error encountered while trying to post link", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-    return "No Content", 204
 
-@links.route('/api/links', methods=['GET'])
-def get_links():
-    offset = request.args.get('offset', default=0, type=int)
-    limit = request.args.get('limit', default=50, type=int)
-    if offset < 0  or limit < 1 or limit > 100:
-        abort(400, description="Bad Request")
+@link_ns.route('/<int:link_id>')
+class LinkResource(Resource):
+    @link_ns.marshal_with(link_model, code=200)
+    @link_ns.response(404, 'Link not found')
+    @link_ns.response(401, 'Unauthorized - authentication required')
+    @link_ns.response(500, 'Internal server error')
+    @link_ns.doc('get_link')
+    @require_user_or_admin()
+    def get(self, link_id):
+        """Get link by ID (Authentication required)"""
+        try:
+            link = db.session.get(Link, link_id)
+            
+            if not link:
+                return {'msg': 'Link not found'}, 404
+                
+            return link.to_dict(), 200
+        except Exception as ex:
+            logging.error(f"Error encountered while trying to get link id {link_id}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-    links=[]
+    @link_ns.expect(update_link_model)
+    @link_ns.response(204, 'Link updated successfully')
+    @link_ns.response(400, 'Bad request - validation error')
+    @link_ns.response(404, 'Link not found')
+    @link_ns.response(401, 'Unauthorized - authentication required')
+    @link_ns.response(500, 'Internal server error')
+    @link_ns.doc('update_link')
+    @require_user_or_admin()
+    def put(self, link_id):
+        """Update link by ID (Authentication required)"""
+        try:
+            payload = UpdateLinkRequestSchema().load(request.json)
+        except ValidationError as err:
+            return {'msg': 'Validation error', 'errors': err.messages}, 400
 
-    try:
-        db=get_db()
-        cursor=db.cursor()
+        try:
+            link = db.session.get(Link, link_id)
+            
+            if not link:
+                return {'msg': 'Link not found'}, 404
+                
+            link.name = payload['name']
+            link.address = payload['address']
+            
+            db.session.commit()
+            return {'msg': 'Link updated successfully'}, 204
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error encountered while trying to put link id {link_id}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-        cursor.execute("SELECT * FROM links ORDER BY name LIMIT ?, ?", (offset, limit))
-        #cursor.execute("SELECT * FROM links ORDER BY name LIMIT %s, %s", (offset, limit))
+    @link_ns.response(204, 'Link deleted successfully')
+    @link_ns.response(404, 'Link not found')
+    @link_ns.response(401, 'Unauthorized - authentication required')
+    @link_ns.response(500, 'Internal server error')
+    @link_ns.doc('delete_link')
+    @require_user_or_admin()
+    def delete(self, link_id):
+        """Delete link by ID (Authentication required)"""
+        try:
+            link = db.session.get(Link, link_id)
+            
+            if not link:
+                return {'msg': 'Link not found'}, 404
+                
+            db.session.delete(link)
+            db.session.commit()
+            return {'msg': 'Link deleted successfully'}, 204
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-        columns=[x[0] for x in cursor.description]
-        result=cursor.fetchall()
-        for result in result:
-            links.append(dict(zip(columns,result)))
-    except Exception as ex:
-        logging.error(f"Error encountered while trying to get links", exc_info=ex)
-        abort(500, description="Internal Server Error")
 
-    data={}
-    data['offset'] = offset
-    data['limit'] = limit
-    data['count'] = len(links)
-    data['links'] = links
-    
-    response = jsonify(data)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response, 200
+@links_ns.route('')
+class LinksListResource(Resource):
+    @links_ns.marshal_with(links_list_model, code=200)
+    @links_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @links_ns.response(500, 'Internal server error')
+    @links_ns.doc('get_links_list', params={
+        'offset': 'Pagination offset (default: 0)',
+        'limit': 'Number of links to return (default: 50, max: 100)'
+    })
+    def get(self):
+        """Get list of links with pagination"""
+        offset = request.args.get('offset', default=0, type=int)
+        limit = request.args.get('limit', default=50, type=int)
+        
+        if offset < 0 or limit < 1 or limit > 100:
+            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+            
+        try:
+            links_result = db.session.execute(
+                select(Link)
+                .order_by(Link.name)
+                .offset(offset)
+                .limit(limit)
+            )
+            links_data = [link.to_dict() for link in links_result.scalars()]
+            
+            return {
+                'offset': offset,
+                'limit': limit,
+                'count': len(links_data),
+                'links': links_data
+            }, 200
+        except Exception as ex:
+            logging.error('Error encountered while trying to get links', exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+

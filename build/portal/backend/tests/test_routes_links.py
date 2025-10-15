@@ -1,10 +1,10 @@
-from flask_jwt_extended import create_access_token
+from tests.conftest import create_admin_token
 
 # POST /link
 
 def test_post_link_200(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -25,7 +25,7 @@ def test_post_link_401(client):
 
 def test_post_link_400_missing_name(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -37,7 +37,7 @@ def test_post_link_400_missing_name(client, app):
 
 def test_post_link_400_missing_address(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -51,7 +51,7 @@ def test_post_link_400_missing_address(client, app):
 
 def test_delete_link_204(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -64,7 +64,7 @@ def test_delete_link_401(client):
 
 def test_delete_link_404(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -75,7 +75,7 @@ def test_delete_link_404(client, app):
 
 def test_get_link_200(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -90,7 +90,7 @@ def test_get_link_401(client, app):
 
 def test_get_user_404(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -101,7 +101,7 @@ def test_get_user_404(client, app):
 
 def test_put_link_204(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -122,7 +122,7 @@ def test_put_link_401(client):
 
 def test_put_link_400_missing_name(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -134,7 +134,7 @@ def test_put_link_400_missing_name(client, app):
 
 def test_put_link_400_missing_address(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -146,7 +146,7 @@ def test_put_link_400_missing_address(client, app):
 
 def test_put_link_404(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }

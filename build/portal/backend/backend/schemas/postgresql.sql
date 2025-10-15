@@ -58,7 +58,7 @@ CREATE TABLE positions (
   `longitude` double precision NOT NULL,
   `track` int NOT NULL,
   `altitude` int NOT NULL,
-  `verticle_rate` int NOT NULL,
+  `vertical_rate` int NOT NULL,
   `speed` int DEFAULT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (aircraft) REFERENCES aircraft(id),
@@ -75,8 +75,15 @@ CREATE TABLE settings (
 CREATE TABLE users (
   `id` int NOT NULL GENERATED ALWAYS AS IDENTITY,
   `name` varchar(100) NOT NULL,
-  `email` varchar(75) NOT NULL,
+  `email` varchar(75) NOT NULL UNIQUE,
   `password` varchar(255) NOT NULL,
   `administrator` bit DEFAULT 0,
+  `role` varchar(20) DEFAULT 'User',
   PRIMARY KEY (id)
 );
+
+-- Sample users for testing role-based authentication
+INSERT INTO users (`name`, `email`, `password`, `administrator`, `role`) VALUES 
+('Admin User', 'admin@example.com', 'admin123', 1, 'Admin'),
+('Regular User', 'user@example.com', 'user123', 0, 'User'),
+('Test Admin', 'testadmin@example.com', 'test123', 1, 'Admin');

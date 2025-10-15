@@ -1,10 +1,10 @@
-from flask_jwt_extended import create_access_token
+from tests.conftest import create_admin_token, create_user_token
 
 # PUT /setting/{id}
 
 def test_put_setting_204(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -25,7 +25,7 @@ def test_put_setting_401(client):
 
 def test_put_setting_400_missing_name(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -37,7 +37,7 @@ def test_put_setting_400_missing_name(client, app):
 
 def test_put_setting_400_missing_value(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -49,18 +49,16 @@ def test_put_setting_400_missing_value(client, app):
 
 def test_put_setting_404(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
         request_json = {
-            'name': 'setting_four', 
+            'name': 'setting_four',
             'value': 'Updated Setting Four'
         }
         response = client.put('/api/setting', headers=request_headers, json=request_json)
-        assert response.status_code == 404
-
-# GET /setting
+        assert response.status_code == 404# GET /setting
 
 def test_get_links_200(client):
     response = client.get('/api/setting/setting_three')
@@ -77,7 +75,7 @@ def test_get_link_404(client):
 
 def test_get_settings_200(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': f"Bearer {access_token}",
             'accept': 'application/json'

@@ -32,7 +32,7 @@ VALUES
   ('FLT0012'),
   ('FLT0013');
 
-INSERT INTO positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `verticle_rate`, `speed`)
+INSERT INTO positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `vertical_rate`, `speed`)
 VALUES
   (1, 1, '2024-06-17 01:11:01', 204, 6523, 42.649292, -84.960896, 98, 46975, 0, 477),
   (1, 1, '2024-06-17 01:11:46', 289, 6523, 42.646408, -84.934304, 98, 46975, 0, 477),
@@ -55,8 +55,8 @@ VALUES
   ('setting_two', 'Value Two'),
   ('setting_three', 'Value Three');
 
-INSERT INTO users (`name`, `email`, `password`, `administrator`)
+INSERT INTO users (`name`, `email`, `password`, `administrator`, `role`)
 VALUES
-  ('Name One', 'noreply@email-one.com', '$2y$0htWdxS7PxTvIwJNo2COJ7Rywgif4En0TmJbDvrjLRfWZOBX526yJUKW', 1),
-  ('Name Two', 'noreply@email-two.com', '$2y$ui7QK047JldTekx828J2rfSVQ7N5yo6ETQIYGoBqpfFRbNr3EvWzQzt6', 0),
-  ('Name Three', 'noreply@email-three.com', '$2y$7jiYNNoUa1zNu6dCLxv2mIurCG8nuDgOeUCeCPO9pkjiQ1zr8jfTzdEe', 0);
+  ('Admin User', 'noreply@email-one.com', 'password123', 1, 'Admin'),
+  ('Regular User', 'noreply@email-two.com', 'password456', 0, 'User'),
+  ('Another User', 'noreply@email-three.com', 'password789', 0, 'User');

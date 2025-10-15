@@ -2,99 +2,115 @@ import logging
 
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
-from backend.db import get_db
+from flask_restx import Namespace, Resource, fields as restx_fields
+from backend.models import db, Notification
+from backend.auth import require_admin, require_user_or_admin
 from werkzeug.exceptions import HTTPException
+from sqlalchemy import select
 
 notifications = Blueprint('notifications', __name__)
 
+# Create Flask-RESTX namespaces for notifications management
+notification_ns = Namespace('notification', description='Individual notification management')
+notifications_ns = Namespace('notifications', description='Notifications list management')
 
-@notifications.route('/api/notification/<string:flight>', methods=['DELETE'])
-@jwt_required()
-def delete_notification(flight):
-    try:
-        db=get_db()
-        cursor=db.cursor()
+# Define API models for documentation - shared across namespaces
+notification_model = notification_ns.model('Notification', {
+    'id': restx_fields.Integer(description='Notification ID'),
+    'flight': restx_fields.String(description='Flight number/callsign to monitor')
+})
 
-        cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = ?", (flight,))
-        #cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
+notifications_list_model = notifications_ns.model('NotificationsList', {
+    'notifications': restx_fields.List(restx_fields.Nested(notification_model)),
+    'offset': restx_fields.Integer(description='Pagination offset'),
+    'limit': restx_fields.Integer(description='Pagination limit'),
+    'count': restx_fields.Integer(description='Number of notifications returned')
+})
 
-        if cursor.fetchone()[0] == 0:
-            abort(404, description="Not Found")
-        else:
 
-            cursor.execute("DELETE FROM notifications WHERE flight = ?", (flight,))
-            #cursor.execute("DELETE FROM notifications WHERE flight = %s", (flight,))
+@notification_ns.route('/<string:flight>')
+class NotificationResource(Resource):
+    @notification_ns.response(201, 'Notification created successfully')
+    @notification_ns.response(409, 'Conflict - notification already exists')
+    @notification_ns.response(401, 'Unauthorized - authentication required')
+    @notification_ns.response(500, 'Internal server error')
+    @notification_ns.doc('create_notification')
+    @require_user_or_admin()
+    def post(self, flight):
+        """Create a flight notification (User or Admin required)"""
+        try:
+            # Check if notification already exists
+            existing_notification = db.session.execute(select(Notification).filter_by(flight=flight)).scalar_one_or_none()
+            
+            if existing_notification:
+                return {'msg': 'Conflict - Notification already exists'}, 409
+                
+            new_notification = Notification(flight=flight)
+            db.session.add(new_notification)
+            db.session.commit()
+            return {'msg': 'Notification created successfully'}, 201
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error encountered while trying to post notification for flight {flight}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-            db.commit()
-    except Exception as ex:
-        if isinstance(ex, HTTPException):
-            abort(ex.code)
-        else:
-            logging.error(f"Error encountered while trying to delete blog post id {flight}", exc_info=ex)
-            abort(500, description="Internal Server Error")
+    @notification_ns.response(204, 'Notification deleted successfully')
+    @notification_ns.response(404, 'Notification not found')
+    @notification_ns.response(401, 'Unauthorized - admin access required')
+    @notification_ns.response(500, 'Internal server error')
+    @notification_ns.doc('delete_notification')
+    @require_admin()
+    def delete(self, flight):
+        """Delete a flight notification (Admin only)"""
+        try:
+            notification = db.session.execute(select(Notification).filter_by(flight=flight)).scalar_one_or_none()
+            
+            if not notification:
+                return {'msg': 'Notification not found'}, 404
+                
+            db.session.delete(notification)
+            db.session.commit()
+            return {'msg': 'Notification deleted successfully'}, 204
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error encountered while trying to delete notification for flight {flight}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-    return "No Content", 204
 
-@notifications.route('/api/notification/<string:flight>', methods=['POST'])
-@jwt_required()
-def post_notification(flight):
-    try:
-        db=get_db()
-        cursor=db.cursor()
-
-        cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = ?", (flight,))
-        #cursor.execute("SELECT COUNT(*) FROM notifications WHERE flight = %s", (flight,))
-
-        if cursor.fetchone()[0] > 0:
-            abort(404, description="Not Found")
-        else:
-            cursor.execute(
-
-                "INSERT INTO notifications (flight) VALUES (?)",
-                #"INSERT INTO notifications (flight) VALUES (%s)",
-
-                (flight,)
+@notifications_ns.route('', strict_slashes=False)
+class NotificationsListResource(Resource):
+    @notifications_ns.marshal_with(notifications_list_model, code=200)
+    @notifications_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @notifications_ns.response(500, 'Internal server error')
+    @notifications_ns.doc('get_notifications_list', params={
+        'offset': 'Pagination offset (default: 0)',
+        'limit': 'Number of notifications to return (default: 100, max: 1000)'
+    })
+    def get(self):
+        """Get list of flight notifications with pagination"""
+        offset = request.args.get('offset', default=0, type=int)
+        limit = request.args.get('limit', default=100, type=int)
+        
+        if offset < 0 or limit < 1 or limit > 1000:
+            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+            
+        try:
+            notifications_result = db.session.execute(
+                select(Notification)
+                .order_by(Notification.id)
+                .offset(offset)
+                .limit(limit)
             )
-        db.commit()
-    except Exception as ex:
-        if isinstance(ex, HTTPException):
-            abort(ex.code)
-        else:
-            logging.error('Error encountered while trying to add notification', exc_info=ex)
-            abort(500, description="Internal Server Error")
+            notifications_data = [notification.to_dict() for notification in notifications_result.scalars()]
+            
+            return {
+                'offset': offset,
+                'limit': limit,
+                'count': len(notifications_data),
+                'notifications': notifications_data
+            }, 200
+        except Exception as ex:
+            logging.error('Error encountered while trying to get notifications', exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
-    return "Created", 201
 
-@notifications.route('/api/notifications', methods=['GET'])
-def get_notifications():
-    offset = request.args.get('offset', default=0, type=int)
-    limit = request.args.get('limit', default=100, type=int)
-    if offset < 0  or limit < 1 or limit > 1000:
-        abort(400, description="Bad Request")
-
-    notifications=[]
-
-    try:
-        db=get_db()
-        cursor=db.cursor()
-
-        cursor.execute("SELECT * FROM notifications ORDER BY flight LIMIT ?, ?", (offset, limit))
-        #cursor.execute("SELECT * FROM notifications ORDER BY flight LIMIT %s, %s", (offset, limit))
-
-        columns=[x[0] for x in cursor.description]
-        result=cursor.fetchall()
-        for result in result:
-            notifications.append(dict(zip(columns,result)))
-    except Exception as ex:
-        logging.error(f"Error encountered while trying to get notifications", exc_info=ex)
-        abort(500, description="Internal Server Error")
-
-    data={}
-    data['offset'] = offset
-    data['limit'] = limit
-    data['count'] = len(notifications)
-    data['notifications'] = notifications
-
-    response = jsonify(data)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response, 200

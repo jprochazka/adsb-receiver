@@ -1,10 +1,10 @@
-from flask_jwt_extended import create_access_token
+from tests.conftest import create_admin_token, create_user_token
 
 # DELETE /notification/{id}
 
 def test_delete_notification_204(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -17,7 +17,7 @@ def test_delete_notification_401(client):
 
 def test_delete_notification_404(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -28,7 +28,7 @@ def test_delete_notification_404(client, app):
 
 def test_post_notification_200(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }

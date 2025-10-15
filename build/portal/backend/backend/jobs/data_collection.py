@@ -4,11 +4,11 @@ import logging
 from datetime import datetime
 from flask_apscheduler import APScheduler
 from urllib.request import urlopen
-from backend.db import get_db
+from flask import current_app
+from sqlalchemy import select
+from backend.models import db, Aircraft, Flight, Position
 
 scheduler = APScheduler()
-cursor = None
-db = None
 now = None
 
 class DataProcessor(object):
@@ -38,23 +38,25 @@ class DataProcessor(object):
             self.log(f'There is no aircraft data to process at this time')
             return
 
-        self.log(f'Begining to proocess {len(aircraft_data)} aircraft')
+        self.log(f'Beginning to process {len(aircraft_data)} aircraft')
         for aircraft in aircraft_data:
-            self.process_aircraft(aircraft)
-
-        db.commit()
+            aircraft_id = self.process_aircraft(aircraft)
+            if aircraft_id:
+                self.process_flight(aircraft_id, aircraft)
         
         return
 
     # Process the aircraft
     def process_aircraft(self, aircraft):
-        tracked=False
-        aircraft_id=None
+        tracked = False
+        aircraft_id = None
 
         try:
-            cursor.execute("SELECT COUNT(*) FROM adsb_aircraft WHERE icao = %s", (aircraft["hex"],))
-            if cursor.fetchone()[0] > 0:
-                tracked=True
+            existing_aircraft = db.session.execute(
+                select(Aircraft).filter_by(icao=aircraft["hex"])
+            ).scalar_one_or_none()
+            if existing_aircraft:
+                tracked = True
         except Exception as ex:
             logging.error(f'Error encountered while checking if aircraft {aircraft["hex"]} has already been added', exc_info=ex)
             return
@@ -62,26 +64,22 @@ class DataProcessor(object):
         if tracked:
             self.log(f'Updating aircraft ICAO {aircraft["hex"]}')
             try:
-                cursor.execute(
-                    "UPDATE adsb_aircraft SET last_seen = %s WHERE icao = %s",
-                    (now, aircraft["hex"])
-                )
-                cursor.execute(
-                    "SELECT id FROM adsb_aircraft WHERE icao = %s",
-                    (aircraft["hex"],)
-                )
-                aircraft_id = cursor.fetchone()[0]
+                existing_aircraft.last_seen = str(now)
+                aircraft_id = existing_aircraft.id
             except Exception as ex:
                 logging.error(f'Error encountered while trying to update aircraft {aircraft["hex"]}', exc_info=ex)
                 return
         else:
             self.log(f'Inserting aircraft ICAO {aircraft["hex"]}')
             try:
-                cursor.execute(
-                    "INSERT INTO adsb_aircraft (icao, firstSeen, last_seen) VALUES (%s, %s, %s)",
-                    (aircraft["hex"], now, now)
+                new_aircraft = Aircraft(
+                    icao=aircraft["hex"],
+                    first_seen=str(now),
+                    last_seen=str(now)
                 )
-                aircraft_id = cursor.lastrowid
+                db.session.add(new_aircraft)
+                db.session.flush()  # Get the ID without committing
+                aircraft_id = new_aircraft.id
             except Exception as ex:
                 logging.error(f'Error encountered while trying to insert aircraft {aircraft["hex"]}', exc_info=ex)
                 return
@@ -91,18 +89,22 @@ class DataProcessor(object):
         else:
             self.process_positions(aircraft_id , None, aircraft)
 
-        return
+        return aircraft_id
 
     # Process the flight
     def process_flight(self, aircraft_id, aircraft):
+        flight_id = None
+        
         if 'flight' in aircraft:
             flight = aircraft["flight"].strip()
 
-            tracked=False
+            tracked = False
             try:
-                cursor.execute("SELECT COUNT(*) FROM adsb_flights WHERE flight = %s", (flight,))
-                if cursor.fetchone()[0] > 0:
-                    tracked=True
+                existing_flight = db.session.execute(
+                    select(Flight).filter_by(flight=flight)
+                ).scalar_one_or_none()
+                if existing_flight:
+                    tracked = True
             except Exception as ex:
                 logging.error(f'Error encountered while checking if flight {flight} has already been added', exc_info=ex)
                 return
@@ -110,26 +112,23 @@ class DataProcessor(object):
             if tracked:
                 self.log(f'  Updating flight {flight} assigned to aircraft ICAO {aircraft["hex"]}')
                 try:
-                    cursor.execute(
-                        "UPDATE adsb_flights SET last_seen = %s WHERE flight = %s",
-                        (now, flight)
-                    )
-                    cursor.execute(
-                        "SELECT id FROM adsb_flights WHERE flight = %s",
-                        (flight,)
-                    )
-                    flight_id = cursor.fetchone()[0]
+                    existing_flight.last_seen = str(now)
+                    flight_id = existing_flight.id
                 except Exception as ex:
                     logging.error(f'Error encountered while trying to update flight {flight}', exc_info=ex)
                     return
             else:
                 self.log(f'Inserting flight {flight} assigned to aircraft ICAO {aircraft["hex"]}')
                 try:
-                    cursor.execute(
-                        "INSERT INTO adsb_flights (aircraft, flight, firstSeen, last_seen) VALUES (%s, %s, %s, %s)",
-                        (aircraft_id, flight, now, now)
+                    new_flight = Flight(
+                        aircraft=aircraft_id,
+                        flight=flight,
+                        first_seen=str(now),
+                        last_seen=str(now)
                     )
-                    flight_id = cursor.lastrowid
+                    db.session.add(new_flight)
+                    db.session.flush()  # Get the ID without committing
+                    flight_id = new_flight.id
                 except Exception as ex:
                     logging.error(f'Error encountered while trying to insert flight {flight}', exc_info=ex)
                     return
@@ -142,16 +141,21 @@ class DataProcessor(object):
         return
 
     # Process positions
-    def process_positions(self, aircraft_id , flight_id, aircraft):
+    def process_positions(self, aircraft_id, flight_id, aircraft):
 
         position_keys = ('lat', 'lon', 'alt_baro', 'gs', 'track', 'geom_rate', 'hex')
         if (all(key in aircraft for key in position_keys)):
 
-            tracked=False
+            tracked = False
             try:
-                cursor.execute("SELECT COUNT(*) FROM adsb_positions WHERE flight = %s AND message = %s", (flight_id, aircraft["messages"]))
-                if cursor.fetchone()[0] > 0:
-                    tracked=True
+                existing_position = db.session.execute(
+                    select(Position).filter_by(
+                        flight=flight_id, 
+                        message=aircraft["messages"]
+                    )
+                ).scalar_one_or_none()
+                if existing_position:
+                    tracked = True
             except Exception as ex:
                 logging.error(f'Error encountered while checking if position has already been added for message ID {aircraft["messages"]} related to flight {flight_id}', exc_info=ex)
                 return
@@ -172,10 +176,21 @@ class DataProcessor(object):
                     self.log(f'  Inserting position for aircraft ICAO {aircraft["hex"]}')
                 else:
                     self.log(f'  Inserting position for aircraft ICAO {aircraft["hex"]} assigned flight {flight_id}')
-                cursor.execute(
-                    "INSERT INTO adsb_positions (flight, time, message, squawk, latitude, longitude, track, altitude, verticleRate, speed, aircraft) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-                    (flight_id, now, aircraft["messages"], squawk, aircraft["lat"], aircraft["lon"], aircraft["track"], altitude, aircraft["geom_rate"], aircraft["gs"], aircraft_id)
+                
+                new_position = Position(
+                    flight=flight_id,
+                    time=str(now),
+                    message=aircraft["messages"],
+                    squawk=squawk,
+                    latitude=aircraft["lat"],
+                    longitude=aircraft["lon"],
+                    track=aircraft["track"],
+                    altitude=altitude,
+                    vertical_rate=aircraft["geom_rate"],
+                    speed=aircraft["gs"],
+                    aircraft=aircraft_id
                 )
+                db.session.add(new_position)
             except Exception as ex:
                 logging.error(f'Error encountered while inserting position data for message ID {aircraft["messages"]} related to flight {flight_id}', exc_info=ex)
                 return
@@ -186,12 +201,23 @@ class DataProcessor(object):
         return
 
 def data_collection_job():
-    processor = DataProcessor()
+    """Main data collection job function."""
+    global now
+    
+    with current_app.app_context():
+        processor = DataProcessor()
 
-    # Setup and begin the data collection job
-    processor.log("-- BEGINING FLIGHT RECORDER JOB")
-    db=get_db()
-    cursor=db.cursor()
-    now=datetime.now()
-    processor.process_all_aircraft()
-    processor.log("-- FLIGHT RECORD JOB COMPLETE")
+        # Setup and begin the data collection job
+        processor.log("-- BEGINING FLIGHT RECORDER JOB")
+        now = datetime.now()
+        processor.process_all_aircraft()
+        
+        # Commit all changes
+        try:
+            db.session.commit()
+            processor.log("-- Database changes committed successfully")
+        except Exception as ex:
+            db.session.rollback()
+            logging.error("Error committing database changes", exc_info=ex)
+        
+        processor.log("-- FLIGHT RECORD JOB COMPLETE")

@@ -30,7 +30,7 @@ def test_get_flight_positions_200(client):
     assert response.json['positions'][0]['longitude'] == -83.827344
     assert response.json['positions'][0]['track'] == 91
     assert response.json['positions'][0]['altitude'] == 36475
-    assert response.json['positions'][0]['verticle_rate'] == 832
+    assert response.json['positions'][0]['vertical_rate'] == 832
     assert response.json['positions'][0]['speed'] == 486
     assert response.json['positions'][1]['id'] == 12
     assert response.json['positions'][1]['flight'] == 4
@@ -42,7 +42,7 @@ def test_get_flight_positions_200(client):
     assert response.json['positions'][1]['longitude'] == -83.788828
     assert response.json['positions'][1]['track'] == 91
     assert response.json['positions'][1]['altitude'] == 36625
-    assert response.json['positions'][1]['verticle_rate'] == 960
+    assert response.json['positions'][1]['vertical_rate'] == 960
     assert response.json['positions'][1]['speed'] == 487
     assert response.json['positions'][2]['id'] == 13
     assert response.json['positions'][2]['flight'] == 4
@@ -54,7 +54,7 @@ def test_get_flight_positions_200(client):
     assert response.json['positions'][2]['longitude'] == -83.749737
     assert response.json['positions'][2]['track'] == 91
     assert response.json['positions'][2]['altitude'] == 36825
-    assert response.json['positions'][2]['verticle_rate'] == 768
+    assert response.json['positions'][2]['vertical_rate'] == 768
     assert response.json['positions'][2]['speed'] == 487
     assert response.json['positions'][3]['id'] == 14
     assert response.json['positions'][3]['flight'] == 4
@@ -66,7 +66,7 @@ def test_get_flight_positions_200(client):
     assert response.json['positions'][3]['longitude'] == -83.690727
     assert response.json['positions'][3]['track'] == 91
     assert response.json['positions'][3]['altitude'] == 37225
-    assert response.json['positions'][3]['verticle_rate'] == 1216
+    assert response.json['positions'][3]['vertical_rate'] == 1216
     assert response.json['positions'][3]['speed'] == 484
 
 def test_get_flight_404(client):

@@ -5,5 +5,8 @@ def test_config():
     assert create_app({'TESTING': True}).testing
 
 def test_api_docs(client):
-    response = client.get('/api/docs')
-    assert b'adsb_receiver_api_v1_oas3.yaml' in response.data
+    # Test Flask-RESTX API documentation endpoint
+    response = client.get('/api/docs/')
+    assert response.status_code == 200
+    # Check for Swagger UI content
+    assert b'swagger-ui' in response.data or b'redoc' in response.data

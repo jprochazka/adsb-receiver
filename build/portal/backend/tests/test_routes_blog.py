@@ -1,10 +1,10 @@
-from flask_jwt_extended import create_access_token
+from tests.conftest import create_admin_token, create_user_token
 
 # POST /blog/post
 
 def test_post_blog_post_200(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -27,7 +27,7 @@ def test_post_blog_post_401(client):
 
 def test_post_blog_post_400_missing_title(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -40,7 +40,7 @@ def test_post_blog_post_400_missing_title(client, app):
 
 def test_post_blog_post_400_missing_author(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -53,7 +53,7 @@ def test_post_blog_post_400_missing_author(client, app):
 
 def test_post_blog_post_400_missing_content(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -68,7 +68,7 @@ def test_post_blog_post_400_missing_content(client, app):
 
 def test_delete_blog_post_204(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -81,7 +81,7 @@ def test_delete_blog_post_401(client):
 
 def test_delete_blog_post_404(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -107,7 +107,7 @@ def test_get_blog_post_404(client):
 
 def test_put_blog_post_204(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -128,7 +128,7 @@ def test_put_blog_post_401(client):
 
 def test_put_blog_post_400_missing_title(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -140,7 +140,7 @@ def test_put_blog_post_400_missing_title(client, app):
 
 def test_put_blog_post_400_missing_content(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token()
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
@@ -152,18 +152,16 @@ def test_put_blog_post_400_missing_content(client, app):
 
 def test_put_blog_post_404(client, app):
     with app.app_context():
-        access_token = create_access_token(identity="developer")
+        access_token = create_admin_token(app)
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
         request_json = {
-            'title': 'Updated Title five', 
+            'title': 'Updated Title five',
             'content': 'Updated content for blog post five.'
         }
         response = client.put('/api/blog/post/5', headers=request_headers, json=request_json)
-        assert response.status_code == 404
-
-# GET /blog/posts
+        assert response.status_code == 404# GET /blog/posts
 
 def test_get_blog_post_200(client):
     response = client.get('/api/blog/posts')

@@ -53,7 +53,7 @@ CREATE TABLE positions (
     `longitude` REAL NOT NULL,
     `track` INTEGER NOT NULL,
     `altitude` INTEGER NOT NULL,
-    `verticle_rate` INTEGER NOT NULL,
+    `vertical_rate` INTEGER NOT NULL,
     `speed` INTEGER,
     FOREIGN KEY (aircraft) REFERENCES aircraft(id),
     FOREIGN KEY (flight) REFERENCES flights(id)
@@ -68,7 +68,14 @@ CREATE TABLE settings (
 CREATE TABLE users (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `name` TEXT NOT NULL,
-    `email` TEXT NOT NULL,
+    `email` TEXT NOT NULL UNIQUE,
     `password` TEXT,
-    `administrator` INTEGER DEFAULT 0
+    `administrator` INTEGER DEFAULT 0,
+    `role` TEXT DEFAULT 'User'
 );
+
+-- Sample users for testing role-based authentication
+INSERT INTO users (`name`, `email`, `password`, `administrator`, `role`) VALUES 
+('Admin User', 'admin@example.com', 'admin123', 1, 'Admin'),
+('Regular User', 'user@example.com', 'user123', 0, 'User'),
+('Test Admin', 'testadmin@example.com', 'test123', 1, 'Admin');

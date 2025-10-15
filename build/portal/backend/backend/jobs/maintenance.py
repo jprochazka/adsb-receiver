@@ -2,11 +2,11 @@ import logging
 
 from datetime import datetime, timedelta
 from flask_apscheduler import APScheduler
-from backend.db import get_db
+from flask import current_app
+from backend.models import db, Aircraft, Flight, Position, Setting
+from sqlalchemy import select, delete
 
 scheduler = APScheduler()
-cursor = None
-db = None
 now = None
 
 class MaintenanceProcessor(object):
@@ -21,25 +21,26 @@ class MaintenanceProcessor(object):
         self.log("Getting maintenance settings from the database")
         purge_old_aircraft = False
         try:
-            cursor.execute("SELECT value FROM settings WHERE name = 'purge_older_data'")
-            result = cursor.fetchone()[0]
-            purge_old_aircraft = result.lower() in ['true', '1']
+            setting = db.session.execute(select(Setting).filter_by(name='purge_older_data')).scalar_one_or_none()
+            if setting:
+                purge_old_aircraft = setting.value.lower() in ['true', '1']
         except Exception as ex:
             logging.error(f"Error encountered while getting value for setting purge_older_data", exc_info=ex)
             return
 
         if purge_old_aircraft:
-            cutoff_date = datetime.now() - timedelta(years = 20)
+            cutoff_date = datetime.now() - timedelta(days=7300)  # ~20 years
             try:
-                cursor.execute("SELECT value FROM settings WHERE name = 'days_to_save'")
-                days_to_save = cursor.fetchone()[0]
+                days_setting = db.session.execute(select(Setting).filter_by(name='days_to_save')).scalar_one_or_none()
+                if days_setting:
+                    days_to_save = int(days_setting.value)
+                    cutoff_date = datetime.now() - timedelta(days=days_to_save)
             except Exception as ex:
                 logging.error(f"Error encountered while getting value for setting days_to_save", exc_info=ex)
                 return
-            cutoff_date = datetime.now() - timedelta(days = days_to_save)
+            
             self.purge_aircraft(cutoff_date)
             self.purge_positions(cutoff_date)
-            db.commit()
 
         else:
             self.log("Maintenance is disabled")
@@ -49,31 +50,40 @@ class MaintenanceProcessor(object):
     # Remove aircraft not seen since the specified date
     def purge_aircraft(self, cutoff_date):
         try:
-            cursor.execute("SELECT id FROM aircraft WHERE last_seen < %s", (cutoff_date,))
-            aircraft_ids = cursor.fetchall()
+            # Convert cutoff_date to string for comparison
+            cutoff_str = str(cutoff_date)
+            old_aircraft_result = db.session.execute(
+                select(Aircraft).filter(Aircraft.last_seen < cutoff_str)
+            )
+            aircraft_ids = [aircraft.id for aircraft in old_aircraft_result.scalars()]
         except Exception as ex:
             logging.error(f"Error encountered while getting aircraft IDs not seen since {cutoff_date}", exc_info=ex)
             return
 
         if len(aircraft_ids) > 0:
-            id = tuple(aircraft_ids)
-            aircraft_id_params = {'id': id}
-
+            self.log(f"Purging {len(aircraft_ids)} aircraft not seen since {cutoff_date}")
+            
             try:
-                cursor.execute("DELETE FROM aircraft WHERE id IN %(t)s", aircraft_id_params)
+                # Delete related flights and positions first
+                self.purge_flights_related_to_aircraft(aircraft_ids, cutoff_date)
+                self.purge_positions_related_to_aircraft(aircraft_ids, cutoff_date)
+                
+                # Delete aircraft
+                db.session.execute(
+                    delete(Aircraft).where(Aircraft.id.in_(aircraft_ids))
+                )
             except Exception as ex:
                 logging.error(f"Error deleting aircraft not seen since {cutoff_date}", exc_info=ex)
                 return
 
-            self.purge_flights_related_to_aircraft(aircraft_id_params, cutoff_date)
-            self.purge_positions_related_to_aircraft(aircraft_id_params, cutoff_date)
-
         return
 
     # Remove flights related to aircraft not seen since the specified date
-    def purge_flights_related_to_aircraft(self, aircraft_id_params, cutoff_date):
+    def purge_flights_related_to_aircraft(self, aircraft_ids, cutoff_date):
         try:
-            cursor.execute("DELETE FROM flights WHERE aircraft = %(t)s", aircraft_id_params)
+            db.session.execute(
+                delete(Flight).where(Flight.aircraft.in_(aircraft_ids))
+            )
         except Exception as ex:
             logging.error(f"Error deleting flights related to aircraft not seen since {cutoff_date}", exc_info=ex)
             return
@@ -81,42 +91,52 @@ class MaintenanceProcessor(object):
         return
 
     # Remove positions related to aircraft not seen since the specified date
-    def purge_positions_related_to_aircraft(self, aircraft_id_params, cutoff_date):
+    def purge_positions_related_to_aircraft(self, aircraft_ids, cutoff_date):
         try:
-            cursor.execute("DELETE FROM positions WHERE aircraft = %(t)s", aircraft_id_params)
+            db.session.execute(
+                delete(Position).where(Position.aircraft.in_(aircraft_ids))
+            )
         except Exception as ex:
             logging.error(f"Error deleting positions related to aircraft not seen since {cutoff_date}", exc_info=ex)
             return
 
         return
 
-    # Remove positions older than the specified date
+    # Remove flights older than the specified date
     def purge_flights(self, cutoff_date):
         try:
-            cursor.execute("SELECT id FROM flights WHERE last_seen < %s", (cutoff_date,))
-            flight_ids = cursor.fetchall()
+            cutoff_str = str(cutoff_date)
+            old_flights_result = db.session.execute(
+                select(Flight).filter(Flight.last_seen < cutoff_str)
+            )
+            flight_ids = [flight.id for flight in old_flights_result.scalars()]
         except Exception as ex:
-            logging.error(f"Error encountered while getting aircraft IDs not seen since {cutoff_date}", exc_info=ex)
+            logging.error(f"Error encountered while getting flight IDs not seen since {cutoff_date}", exc_info=ex)
             return
 
         if len(flight_ids) > 0:
-            id = tuple(flight_ids)
-            flight_id_params = {'id': id}
-
+            self.log(f"Purging {len(flight_ids)} flights not seen since {cutoff_date}")
+            
             try:
-                cursor.execute("DELETE FROM flights WHERE id IN %(t)s", flight_id_params)
+                # Delete related positions first
+                self.purge_positions_related_to_flights(flight_ids, cutoff_date)
+                
+                # Delete flights
+                db.session.execute(
+                    delete(Flight).where(Flight.id.in_(flight_ids))
+                )
             except Exception as ex:
                 logging.error(f"Error deleting flights older than the cut off date of {cutoff_date}", exc_info=ex)
                 return
 
-            self.purge_positions_related_to_flights(flight_id_params, cutoff_date)
-
             return
 
-    # Remove positions related to aircraft not seen since the specified date
-    def purge_positions_related_to_flights(self, flight_id_params, cutoff_date):
+    # Remove positions related to flights not seen since the specified date
+    def purge_positions_related_to_flights(self, flight_ids, cutoff_date):
         try:
-            cursor.execute("DELETE FROM positions WHERE flight = %(t)s", flight_id_params)
+            db.session.execute(
+                delete(Position).where(Position.flight.in_(flight_ids))
+            )
         except Exception as ex:
             logging.error(f"Error deleting positions related to flights not seen since {cutoff_date}", exc_info=ex)
             return
@@ -126,7 +146,11 @@ class MaintenanceProcessor(object):
     # Remove positions older than the specified date
     def purge_positions(self, cutoff_date):
         try:
-            cursor.execute("DELETE FROM positions WHERE time < %s", (cutoff_date,))
+            cutoff_str = str(cutoff_date)
+            db.session.execute(
+                delete(Position).where(Position.time < cutoff_str)
+            )
+            self.log(f"Purged positions older than {cutoff_date}")
         except Exception as ex:
             logging.error(f"Error deleting positions older than the cut off date of {cutoff_date}", exc_info=ex)
             return
@@ -134,11 +158,23 @@ class MaintenanceProcessor(object):
         return
 
 def maintenance_job():
-    processor = MaintenanceProcessor()
+    """Main maintenance job function."""
+    global now
+    
+    with current_app.app_context():
+        processor = MaintenanceProcessor()
 
-    # Setup and begin the maintenance job
-    processor.log("-- BEGINING PORTAL MAINTENANCE JOB")
-    db=get_db()
-    cursor=db.cursor()
-    processor.begin_maintenance()
-    processor.log("-- PORTAL MAINTENANCE JOB COMPLETE")
+        # Setup and begin the maintenance job
+        processor.log("-- BEGINNING PORTAL MAINTENANCE JOB")
+        now = datetime.now()
+        processor.begin_maintenance()
+        
+        # Commit all changes
+        try:
+            db.session.commit()
+            processor.log("-- Database changes committed successfully")
+        except Exception as ex:
+            db.session.rollback()
+            logging.error("Error committing database changes", exc_info=ex)
+        
+        processor.log("-- PORTAL MAINTENANCE JOB COMPLETE")
