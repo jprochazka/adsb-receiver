@@ -11,13 +11,6 @@
 #
 # https://github.com/flightaware/piaware_builder/pull/26
 
-# TCLTLS-REBUILD
-# -------------------------------------------------------------------------------------
-# Along with PiAware, a version of tcltls maintained by FlightAware can be installed.
-# This package is only needed for any distribution utilizing tcl-tls 1.7.22-2 or older.
-#
-# This fix may need to remain in place until Debian Bullseye hits end of life.
-
 
 ## PRE INSTALLATION OPERATIONS
 
@@ -62,12 +55,14 @@ check_package libssl-dev
 check_package net-tools
 check_package openssl
 check_package patchelf
+check_package python3-build
 check_package python3-dev
 check_package python3-pip
 check_package python3-setuptools
 check_package python3-venv
 check_package python3-wheel
 check_package tcl-dev
+check_package tcl-tls
 check_package tcl8.6-dev
 check_package tcllib
 check_package tclx8.4
@@ -76,83 +71,6 @@ check_package zlib1g-dev
 if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
     check_package python3-filelock
     check_package python3-pyasyncore
-fi
-
-if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" ]]; then
-    check_package python3-dev
-else
-    check_package python3-build
-    check_package tcl-tls
-fi
-
-
-## CLONE OR PULL THE TCLTLS REBUILD GIT REPOSITORY
-
-if [[ "${RECEIVER_OS_CODE_NAME}" == "focal" || "${RECEIVER_OS_CODE_NAME}" == "bullseye" ]]; then
-
-    log_heading "Preparing the FlightAware tcltls-rebuild Git repository"
-
-    if [[ -d $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild && -d $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/.git ]]; then
-        log_message "Entering the tcltls-rebuild git repository directory"
-        cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild
-        log_message "Updating the local tcltls-rebuild git repository"
-        echo ""
-        git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
-    else
-        log_message "Creating the tcltls-rebuild build directory"
-        echo ""
-        mkdir -v $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild 2>&1 | tee -a $RECEIVER_LOG_FILE
-        echo ""
-        log_message "Entering the tcltls-rebuild build directory"
-        cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild
-        log_message "Cloning the tcltls-rebuild git repository locally"
-        echo ""
-        git clone https://github.com/flightaware/tcltls-rebuild 2>&1 | tee -a $RECEIVER_LOG_FILE
-    fi
-    echo ""
-
-
-    ## BUILD AND INSTALL THE TCLTLS-REBUILD PACKAGE
-
-    log_heading "Beginning the FlightAware tcltls-rebuild installation process"
-
-    log_message "Checking if the FlightAware tcltls-rebuild is required"
-
-    log_message "Entering the tcltls-rebuild source directory"
-    cd $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/tcltls-1.7.22
-    log_message "Building the tcltls-rebuild package"
-    echo ""
-    dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
-    echo ""
-    log_message "Installing the tcltls-rebuild package"
-    echo ""
-    sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/tcl-tls_1.7.22-2+fa1_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
-    echo ""
-
-    log_message "Checking that the FlightAware tcltls-rebuild package was installed properly"
-    if [[ $(dpkg-query -W -f='${STATUS}' tcltls 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
-        echo ""
-        log_alert_heading "INSTALLATION HALTED"
-        echo ""
-        log_alert_message "FlightAware tcltls-rebuild package installation failed"
-        log_alert_message "Setup has been terminated"
-        echo ""
-        log_title_message "------------------------------------------------------------------------------"
-         "FlightAware PiAware client setup failed"
-        echo ""
-        read -p "Press enter to continue..." discard
-        exit 1
-    else
-        if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
-            log_message "Creating the package archive directory"
-            echo ""
-            mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
-            echo ""
-        fi
-        log_message "Copying the FlightAware tcltls-rebuild Debian package into the archive directory"
-        echo ""
-        cp -vf $RECEIVER_BUILD_DIRECTORY/tcltls-rebuild/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
-    fi
 fi
 
 
@@ -198,13 +116,10 @@ cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
 log_message "Determining which piaware_builder build strategy should be use"
 distro="bookworm"
 case $RECEIVER_OS_CODE_NAME in
-    focal)
-        distro="buster"
-        ;;
     bullseye | jammy)
         distro="bullseye"
         ;;
-    bookworm | Focal)
+    bookworm)
         distro="bookworm"
         ;;
     noble)

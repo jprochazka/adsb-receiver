@@ -68,6 +68,7 @@ hard work and dedication to their respective projects this project would not hav
 Thanks also goes out to the developers and the businesses that employ them who work to supply us
 with quality closed source packages which they have made available to the community.
 
+* AirNav Radar      https://airnavradar.com
 * Flightradar24:    https://flightradar24.com
 * OpenSky Network:  https://opensky-network.org
 * Plane Finder:     https://planefinder.net

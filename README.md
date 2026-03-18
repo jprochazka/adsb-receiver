@@ -59,6 +59,7 @@ When setting up the portal you will have to choose between a lite or advanced in
 ### Feeders
 
 * ADS-B Exchange Feeder Client:   https://adsbexchange.com
+* AirNav Radar Client:            https://airnavradar.com
 * Airplanes.live Feeder Client:   https://airplanes.live
 * FlightAware's PiAware:          https://flightaware.com
 * Flightradar24 Feeder Client:    https://flightradar24.com
@@ -77,11 +78,11 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 The project currently supports the following Linux distributions.
 
-* Armbian _(Bookworm, Jammy and Noble)_
+* Armbian _(Bookworm and Noble)_
 * Debian _(Bookworm and Bullseye)_
 * DietPi _(Bookworm and Bullseye)_
 * Raspberry PI OS _(Bookworm and Bullseye)_
-* Ubuntu _(Jammy Jellyfish, Focal Fossa and Noble Numbat*)_
+* Ubuntu _(Jammy Jellyfish and Noble Numbat*)_
 
 Support is available via this repository through the use of the issue tracker or discussions.
 

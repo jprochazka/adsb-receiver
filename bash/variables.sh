@@ -18,18 +18,18 @@ display_true_inline="\033[2;32m"
 ## SOFTWARE VERSIONS
 
 # FlightAware
-dump1090_fa_current_version="9.0"
-dump978_fa_current_version="9.0"
-piaware_current_version="9.0.1"
+dump1090_fa_current_version="10.2"
+dump978_fa_current_version="10.2"
+piaware_current_version="10.2"
 
 # PlaneFinder Client
-pfclient_current_version_armhf="5.0.161"
-pfclient_current_version_arm64="5.1.440"
+pfclient_current_version_armhf="5.3.2"
+pfclient_current_version_arm64="5.3.2"
 pfclient_current_version_amd64="5.0.162"
 pfclient_current_version_i386="5.0.161"
 
 # Flightradar24 Client
-fr24feed_current_version="1.0.48-0"
+fr24feed_current_version="1.0.51-0"
 
 # OpenSky Network Client
 opensky_feeder_current_version="2.1.7-1"

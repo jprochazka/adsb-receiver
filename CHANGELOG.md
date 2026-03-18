@@ -2,6 +2,13 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.9 *(November 11th, 2025)*
+
+* Added the option to install the AirNav Radar rbfeeder client.
+* Removed scripting for FlightAware's version of the tcl-tls package.
+* Updated current feeder client versions in the variables file.
+* Removed support for Ubuntu 20.04 Focal Fossa.
+
 ## v2.8.8 *(October 18th, 2024)*
 
 * FlightAware's version of the tcl-tls is now built and installed on Bullseye.

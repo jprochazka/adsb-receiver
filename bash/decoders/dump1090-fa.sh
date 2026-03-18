@@ -94,9 +94,6 @@ cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090
 
 log_message "Determining which distribution to build the package tree for"
 case $RECEIVER_OS_CODE_NAME in
-    focal)
-        distro="buster"
-        ;;
     bullseye|jammy|bookworm|noble)
         distro="bullseye"
         ;;

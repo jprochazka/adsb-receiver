@@ -250,9 +250,26 @@ else
     echo "ADS-B Exchange Feed Client" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
     feeder_list=("${feeder_list[@]}" 'ADS-B Exchange Feed Client' '' OFF)
 fi
+
 function install_adsbexchange_client() {
     chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
     ${RECEIVER_BASH_DIRECTORY}/feeders/adsbexchange.sh
+    if [[ $? != 0 ]] ; then
+        exit 1
+    fi
+}
+
+# AirNav Radar rbfeeder
+if [[ $(dpkg-query -W -f='${STATUS}' rbfeeder 2>/dev/null | grep -c "ok installed") == 0 ]]; then
+    feeder_list=("${feeder_list[@]}" 'AirNav Radar RBFeeder' '' OFF)
+else
+    echo "AirNav Radar RBFeeder (reinstall)" >> ${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES
+    feeder_list=("${feeder_list[@]}" 'AirNav Radar RBFeeder (reinstall/update)' '' OFF)
+fi
+
+function install_airnavradar_client() {
+    chmod +x ${RECEIVER_BASH_DIRECTORY}/feeders/airnavradar.sh
+    ${RECEIVER_BASH_DIRECTORY}/feeders/airnavradar.sh
     if [[ $? != 0 ]] ; then
         exit 1
     fi
@@ -634,6 +651,7 @@ fi
 
 # Aggragate site clients
 run_adsbexchange_script="false"
+run_airnavradar_script="false"
 run_airplaneslive_script="false"
 run_flightaware_script="false"
 run_flightradar24_script="false"
@@ -647,6 +665,9 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/FEEDER_CHOICES" ]]; then
         case ${feeder_choice} in
             "ADS-B Exchange Feed Client"|"ADS-B Exchange Feed Client (reinstall/update)")
                 run_adsbexchange_script="true"
+                ;;
+            "AirNav Radar RBFeeder"|"AirNav Radar RBFeeder (reinstall/update)")
+                run_airnavradar_script="true"
                 ;;
             "Airplanes.live Feeder"|"Airplanes.live Feeder (reinstall)")
                 run_airplaneslive_script="true"
@@ -672,6 +693,10 @@ fi
 
 if [[ "${run_adsbexchange_script}" == "true" ]]; then
     install_adsbexchange_client
+fi
+
+if [[ "${run_airnavradar_script}" == "true" ]]; then
+    install_airnavradar_client
 fi
 
 if [[ "${run_airplaneslive_script}" == "true" ]]; then
