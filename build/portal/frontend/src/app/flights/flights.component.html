@@ -4,7 +4,7 @@
     <hr />
     <app-spinner *ngIf="loading"></app-spinner>
     <div *ngIf="!loading && data">
-        <table class="table table-striped">
+        <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th scope="col">Flight</th>
@@ -16,14 +16,10 @@
             <tbody>
                 <tr *ngFor="let flight of data.flights">
                     <td>
-                        <a href="/flight-history/{{ flight.flight }}">{{ flight.flight }}</a>
+                        <a [routerLink]="['/flight-history', flight.flight]">{{ flight.flight }}</a>
                     </td>
-                    <td>
-                        {{ flight.last_seen }}
-                    </td>
-                    <td>
-                        {{ flight.first_seen }}
-                    </td>
+                    <td>{{ flight.last_seen }}</td>
+                    <td>{{ flight.first_seen }}</td>
                     <td>
                         <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
                         <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
@@ -32,15 +28,33 @@
                 </tr>
             </tbody>
         </table>
+
+        <!-- Pagination (hidden during search) -->
+        <nav *ngIf="!searchQuery && totalPages > 1" aria-label="Flight list pages">
+            <ul class="pagination flex-wrap">
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                    <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
+                </li>
+                <ng-container *ngFor="let p of pageNumbers; let i = index">
+                    <!-- Ellipsis gap -->
+                    <li class="page-item disabled" *ngIf="i > 0 && p !== pageNumbers[i - 1] + 1">
+                        <span class="page-link">…</span>
+                    </li>
+                    <li class="page-item" [class.active]="p === currentPage">
+                        <a class="page-link" (click)="goToPage(p)" style="cursor:pointer">{{ p }}</a>
+                    </li>
+                </ng-container>
+                <li class="page-item" [class.disabled]="currentPage === totalPages">
+                    <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor:pointer">Next &#8250;</a>
+                </li>
+            </ul>
+        </nav>
+
+        <p *ngIf="!searchQuery" class="fw-light text-secondary small">
+            Displaying {{ data.offset + 1 }}–{{ data.offset + data.count }} of {{ totalFlights }} flights &mdash; page {{ currentPage }} of {{ totalPages }}
+        </p>
+        <p *ngIf="searchQuery" class="fw-light text-secondary small">
+            {{ data.count }} result(s) found for "{{ searchQuery }}"
+        </p>
     </div>
-    <nav aria-label="Page navigation example">
-        <ul class="pagination">
-            <li class="page-item"><a class="page-link" href="/flights/1">1</a></li>
-            <li class="page-item"><a class="page-link" href="/flights/2">2</a></li>
-            <li class="page-item"><a class="page-link" href="/flights/3">3</a></li>
-            <li class="page-item"><a class="page-link" href="/flights/2">Next</a></li>
-        </ul>
-    </nav>
-    <p *ngIf="!searchQuery" class="fw-light">Displaying {{ data.offset + 1 }} through {{ data.offset + data.count }} of a total of {{ count?.flights }} flights tracked</p>
-    <p *ngIf="searchQuery" class="fw-light">{{ data.count }} result(s) found for "{{ searchQuery }}"</p>
 </div>

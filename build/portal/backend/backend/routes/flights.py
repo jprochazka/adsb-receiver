@@ -18,6 +18,7 @@ flight_ns = Namespace('flight', description='Individual flight operations')
 flight_model = flight_ns.model('Flight', {
     'id': restx_fields.Integer(description='Flight ID'),
     'aircraft': restx_fields.Integer(description='Aircraft ID'),
+    'icao': restx_fields.String(description='Aircraft ICAO hex'),
     'flight': restx_fields.String(description='Flight number/callsign'),
     'first_seen': restx_fields.String(description='First seen timestamp'),
     'last_seen': restx_fields.String(description='Last seen timestamp')
@@ -71,8 +72,10 @@ class FlightResource(Resource):
             
             if not flight_obj:
                 return {'msg': 'Flight not found'}, 404
-                
-            return flight_obj.to_dict(), 200
+
+            data = flight_obj.to_dict()
+            data['icao'] = flight_obj.aircraft_ref.icao if flight_obj.aircraft_ref else None
+            return data, 200
         except Exception as ex:
             logging.error(f"Error encountered while trying to get flight {flight}", exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500

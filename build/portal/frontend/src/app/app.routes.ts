@@ -2,29 +2,35 @@ import { Routes } from '@angular/router';
 import { AccountComponent } from './account/account.component';
 import { AdminBlogComponent } from './admin-blog/admin-blog.component';
 import { AdminFlightsComponent } from './admin-flights/admin-flights.component';
+import { AdminInformationComponent } from './admin-information/admin-information.component';
 import { AdminLinksComponent } from './admin-links/admin-links.component';
+import { AdminMapsComponent } from './admin-maps/admin-maps.component';
 import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { BlogComponent } from './blog/blog.component';
 import { BlogPostComponent } from './blog-post/blog-post.component';
 import { FlightHistoryComponent } from './flight-history/flight-history.component';
 import { FlightsComponent } from './flights/flights.component';
 import { LoginComponent } from './login/login.component';
+import { PerformanceGraphsComponent } from './performance-graphs/performance-graphs.component';
 import { RegisterComponent } from './register/register.component';
 import { SystemInformationComponent } from './system-information/system-information.component';
 
 export const routes: Routes = [
     { path: 'account', component: AccountComponent },
-    { path: 'account/:section', component: AccountComponent },
     { path: 'admin/blog', component: AdminBlogComponent },
     { path: 'admin/flights', component: AdminFlightsComponent },
+    { path: 'admin/information', component: AdminInformationComponent },
     { path: 'admin/links', component: AdminLinksComponent },
+    { path: 'admin/maps', component: AdminMapsComponent },
     { path: 'admin/users', component: AdminUsersComponent },
     { path: 'blog', component: BlogComponent },
+    { path: 'blog/:page', component: BlogComponent },
     { path: 'blog-post/:id', component: BlogPostComponent },
     { path: 'flight-history/:flight', component: FlightHistoryComponent },
     { path: 'flights', component: FlightsComponent },
     { path: 'flights/:page', component: FlightsComponent },
     { path: 'login', component: LoginComponent },
+    { path: 'performance-graphs', component: PerformanceGraphsComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'system-information', component: SystemInformationComponent }
 ];

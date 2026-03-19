@@ -17,6 +17,12 @@ export class AdminUsersComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  // Pagination
+  currentPage = 1;
+  totalPages  = 1;
+  total       = 0;
+  readonly perPage = 10;
+
   // Create form state
   showCreateForm = false;
   creating = false;
@@ -41,9 +47,13 @@ export class AdminUsersComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
-    this.dataService.getUsers().subscribe({
+    const offset = (this.currentPage - 1) * this.perPage;
+    this.dataService.getUsers(offset, this.perPage).subscribe({
       next: (data) => {
-        this.users = data.users;
+        this.users      = data.users;
+        this.total      = data.total ?? data.count ?? 0;
+        this.totalPages = Math.max(1, Math.ceil(this.total / this.perPage));
+        if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
         this.loading = false;
       },
       error: () => {
@@ -51,6 +61,20 @@ export class AdminUsersComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
+  get pageNumbers(): number[] {
+    const start = Math.max(1, this.currentPage - 2);
+    const end   = Math.min(this.totalPages, this.currentPage + 2);
+    const range: number[] = [];
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
   }
 
   toggleCreateForm() {
@@ -84,6 +108,7 @@ export class AdminUsersComponent implements OnInit {
         this.creating = false;
         this.showCreateForm = false;
         this.successMessage = 'User created successfully.';
+        this.currentPage = 1;
         this.loadUsers();
       },
       error: (err) => {
@@ -144,6 +169,7 @@ export class AdminUsersComponent implements OnInit {
     this.dataService.deleteUser(user.id).subscribe({
       next: () => {
         this.successMessage = `User "${user.name}" deleted.`;
+        if (this.users.length === 1 && this.currentPage > 1) this.currentPage--;
         this.loadUsers();
       },
       error: (err) => {

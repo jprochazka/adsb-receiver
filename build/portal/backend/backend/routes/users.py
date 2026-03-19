@@ -7,7 +7,7 @@ from marshmallow import Schema, fields, ValidationError
 from backend.models import db, User
 from backend.auth import require_admin, require_user_or_admin, validate_role
 from werkzeug.exceptions import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 users = Blueprint('users', __name__)
 
@@ -43,7 +43,8 @@ users_list_model = users_ns.model('UsersList', {
     'users': restx_fields.List(restx_fields.Nested(user_model)),
     'offset': restx_fields.Integer(description='Pagination offset'),
     'limit': restx_fields.Integer(description='Pagination limit'),
-    'count': restx_fields.Integer(description='Number of users returned')
+    'count': restx_fields.Integer(description='Number of users returned'),
+    'total': restx_fields.Integer(description='Total number of users')
 })
 
 user_response_model = users_ns.model('UserResponse', {
@@ -325,6 +326,7 @@ class UsersListResource(Resource):
             return {'msg': 'Invalid offset or limit parameters'}, 400
 
         try:
+            total = db.session.execute(select(func.count()).select_from(User)).scalar()
             users_result = db.session.execute(
                 select(User)
                 .order_by(User.name)
@@ -342,7 +344,8 @@ class UsersListResource(Resource):
                 'users': users_data,
                 'offset': offset,
                 'limit': limit,
-                'count': len(users_data)
+                'count': len(users_data),
+                'total': total
             }, 200
             
         except Exception as ex:

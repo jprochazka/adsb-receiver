@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
@@ -17,6 +18,16 @@ export class AdminBlogComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  blogNavEnabled  = true;
+  savingNav       = false;
+  navSuccessMessage = '';
+  navErrorMessage   = '';
+
+  // Pagination
+  currentPage = 1;
+  totalPages  = 1;
+  total       = 0;
+  readonly perPage = 10;
   // Create form state
   showCreateForm = false;
   creating = false;
@@ -33,14 +44,43 @@ export class AdminBlogComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
+    this.loadNavSetting();
     this.loadPosts();
+  }
+
+  loadNavSetting() {
+    this.dataService.getSetting('blog_nav_enabled').pipe(catchError(() => of({ value: 'true' }))).subscribe(res => {
+      this.blogNavEnabled = res?.value !== 'false';
+    });
+  }
+
+  saveNavSetting() {
+    this.savingNav = true;
+    this.navSuccessMessage = '';
+    this.navErrorMessage = '';
+    this.dataService.updateSetting('blog_nav_enabled', String(this.blogNavEnabled)).subscribe({
+      next: () => {
+        this.savingNav = false;
+        this.navSuccessMessage = 'Blog management settings saved successfully.';
+      },
+      error: () => {
+        this.savingNav = false;
+        this.navErrorMessage = 'Failed to save settings.';
+      }
+    });
   }
 
   loadPosts() {
     this.loading = true;
-    this.dataService.getBlogPosts().subscribe({
+    const offset = (this.currentPage - 1) * this.perPage;
+    this.dataService.getBlogPosts(offset, this.perPage).subscribe({
       next: (data) => {
-        this.posts = data.blog_posts;
+        this.posts      = data.blog_posts;
+        this.total      = data.total ?? data.count ?? 0;
+        this.totalPages = Math.max(1, Math.ceil(this.total / this.perPage));
+        if (this.currentPage > this.totalPages) {
+          this.currentPage = this.totalPages;
+        }
         this.loading = false;
       },
       error: () => {
@@ -48,6 +88,20 @@ export class AdminBlogComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    this.currentPage = page;
+    this.loadPosts();
+  }
+
+  get pageNumbers(): number[] {
+    const start = Math.max(1, this.currentPage - 2);
+    const end   = Math.min(this.totalPages, this.currentPage + 2);
+    const range: number[] = [];
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
   }
 
   toggleCreateForm() {
@@ -75,6 +129,7 @@ export class AdminBlogComponent implements OnInit {
         this.creating = false;
         this.showCreateForm = false;
         this.successMessage = 'Blog post created successfully.';
+        this.currentPage = 1;
         this.loadPosts();
       },
       error: () => {
@@ -128,6 +183,8 @@ export class AdminBlogComponent implements OnInit {
       next: () => {
         this.successMessage = `"${post.title}" was deleted.`;
         if (this.editingPost?.id === post.id) this.editingPost = null;
+        // If we deleted the last item on a non-first page, step back
+        if (this.posts.length === 1 && this.currentPage > 1) this.currentPage--;
         this.loadPosts();
       },
       error: () => {

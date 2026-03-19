@@ -7,7 +7,7 @@ from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Link
 from backend.auth import require_user_or_admin
 from werkzeug.exceptions import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 links = Blueprint('links', __name__)
 
@@ -36,7 +36,8 @@ links_list_model = links_ns.model('LinksList', {
     'links': restx_fields.List(restx_fields.Nested(link_model)),
     'offset': restx_fields.Integer(description='Pagination offset'),
     'limit': restx_fields.Integer(description='Pagination limit'),
-    'count': restx_fields.Integer(description='Number of links returned')
+    'count': restx_fields.Integer(description='Number of links returned'),
+    'total': restx_fields.Integer(description='Total number of links')
 })
 
 
@@ -172,6 +173,7 @@ class LinksListResource(Resource):
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
             
         try:
+            total = db.session.execute(select(func.count()).select_from(Link)).scalar()
             links_result = db.session.execute(
                 select(Link)
                 .order_by(Link.name)
@@ -184,6 +186,7 @@ class LinksListResource(Resource):
                 'offset': offset,
                 'limit': limit,
                 'count': len(links_data),
+                'total': total,
                 'links': links_data
             }, 200
         except Exception as ex:

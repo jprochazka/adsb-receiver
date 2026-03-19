@@ -1,10 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
-import { forkJoin, of } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-account',
@@ -14,7 +13,6 @@ import { forkJoin, of } from 'rxjs';
   styleUrl: './account.component.scss'
 })
 export class AccountComponent implements OnInit {
-  section!: any;
   userId!: number;
 
   loading = true;
@@ -38,34 +36,33 @@ export class AccountComponent implements OnInit {
   notifSuccess = '';
   notifError = '';
 
-  private route = inject(ActivatedRoute);
-
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
-    this.route.paramMap.subscribe((params) => {
-      this.section = params.get('section');
-    });
-
     const token = localStorage.getItem('access_token');
     if (token) {
       const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
       const payload = JSON.parse(atob(base64));
       this.userId = payload.user_id;
 
-      forkJoin({
-        user: this.dataService.getUser(this.userId),
-        notifs: this.dataService.getNotifications()
-      }).subscribe({
-        next: ({ user, notifs }) => {
-          this.name = user.name;
+      this.dataService.getUser(this.userId).subscribe({
+        next: (user) => {
+          this.name  = user.name;
           this.email = user.email;
-          const flights: string[] = notifs.notifications.map((n: any) => n.flight);
-          this.originalNotifications = flights;
-          this.notifications = flights.join(', ');
           this.loading = false;
         },
-        error: () => { this.loading = false; }
+        error: () => {
+          this.profileError = 'Failed to load profile from the server.';
+          this.loading = false;
+        }
+      });
+
+      this.dataService.getNotifications().pipe(
+        catchError(() => of({ notifications: [] }))
+      ).subscribe((notifs) => {
+        const flights: string[] = notifs.notifications.map((n: any) => n.flight);
+        this.originalNotifications = flights;
+        this.notifications = flights.join(', ');
       });
     }
   }

@@ -118,5 +118,22 @@
     </table>
     <p *ngIf="users.length === 0" class="text-muted">No users found.</p>
 
+    <nav *ngIf="totalPages > 1" aria-label="User list pages">
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage - 1)">&#8249; Prev</a>
+        </li>
+        <li *ngFor="let p of pageNumbers" class="page-item" [class.active]="p === currentPage">
+          <a class="page-link" style="cursor:pointer" (click)="goToPage(p)">{{ p }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage + 1)">Next &#8250;</a>
+        </li>
+      </ul>
+    </nav>
+    <p class="fw-light text-secondary small" *ngIf="total > 0">
+      Page {{ currentPage }} of {{ totalPages }} &mdash; {{ total }} total user{{ total === 1 ? '' : 's' }}
+    </p>
+
   </div>
 </div>

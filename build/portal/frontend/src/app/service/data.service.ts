@@ -33,9 +33,9 @@ export class DataService {
     });
   }
 
-  getUsers(): Observable<any> {
+  getUsers(offset = 0, limit = 10): Observable<any> {
     const token = localStorage.getItem('access_token');
-    return this.http.get(`${this.apiUrl}/users/users`, {
+    return this.http.get(`${this.apiUrl}/users/users?offset=${offset}&limit=${limit}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
   }
@@ -58,8 +58,8 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/blog/post/` + id);
   }
 
-  getBlogPosts(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/blog/posts`);
+  getBlogPosts(offset = 0, limit = 10): Observable<any> {
+    return this.http.get(`${this.apiUrl}/blog/posts?offset=${offset}&limit=${limit}`);
   }
 
   createBlogPost(data: { title: string; author: string; content: string }): Observable<any> {
@@ -83,8 +83,20 @@ export class DataService {
     });
   }
 
-  getFlights(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/flights`);
+  getFlights(offset = 0, limit = 50): Observable<any> {
+    return this.http.get(`${this.apiUrl}/flights`, { params: { offset, limit } });
+  }
+
+  getFlightDetails(flight: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/flight/${encodeURIComponent(flight)}`);
+  }
+
+  getAircraftPhoto(icao: string): Observable<any> {
+    return this.http.get(`https://api.planespotters.net/pub/photos/hex/${encodeURIComponent(icao)}`);
+  }
+
+  getFlightPositions(flight: string, limit = 1000): Observable<any> {
+    return this.http.get(`${this.apiUrl}/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
   }
 
   searchFlights(q: string): Observable<any> {
@@ -95,8 +107,8 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/flights/count`);
   }
 
-  getLinks(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/links`);
+  getLinks(offset = 0, limit = 10): Observable<any> {
+    return this.http.get(`${this.apiUrl}/links?offset=${offset}&limit=${limit}`);
   }
 
   createLink(data: { name: string; address: string }): Observable<any> {
@@ -172,6 +184,17 @@ export class DataService {
   purgeFlights(days: number): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/flights/purge?days=${days}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
+  getSetting(name: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/setting/${encodeURIComponent(name)}`);
+  }
+
+  updateSetting(name: string, value: string): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.put(`${this.apiUrl}/setting`, { name, value }, {
       headers: { Authorization: `Bearer ${token}` }
     });
   }

@@ -79,3 +79,29 @@ INSERT INTO users (`name`, `email`, `password`, `administrator`, `role`) VALUES
 ('Admin User', 'admin@example.com', 'admin123', 1, 'Admin'),
 ('Regular User', 'user@example.com', 'user123', 0, 'User'),
 ('Test Admin', 'testadmin@example.com', 'test123', 1, 'Admin');
+
+-- Default performance graph settings
+INSERT INTO settings (`name`, `value`) VALUES
+('graphs_measurement_range', 'imperialNautical'),
+('graphs_measurement_temperature', 'imperial'),
+('graphs_network_interface', 'eth0');
+
+-- Default flights visibility settings
+INSERT INTO settings (`name`, `value`) VALUES
+('flights_nav_enabled', 'true'),
+('blog_nav_enabled', 'true'),
+('links_nav_enabled', 'true');
+
+-- Default information visibility settings
+INSERT INTO settings (`name`, `value`) VALUES
+('info_nav_enabled', 'true'),
+('info_system_enabled', 'true'),
+('info_graphs_enabled', 'true');
+
+-- Default map visibility settings
+INSERT INTO settings (`name`, `value`) VALUES
+('map_nav_enabled', 'true'),
+('map_dump1090_enabled', 'true'),
+('map_dump978_enabled', 'true'),
+('map_adsbx_enabled', 'true'),
+('map_pfclient_enabled', 'false');

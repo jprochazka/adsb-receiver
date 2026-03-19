@@ -1,3 +1,141 @@
-<main>
-    <div id="map" class="map"></div>
-</main>
+<div class="map-page">
+  <div id="map"></div>
+
+  <!-- Left flyout info panel -->
+  <div class="flyout" [class.flyout--closed]="!flyoutOpen" *ngIf="flightId">
+    <div class="flyout-panel">
+
+      <!-- Aircraft photo / placeholder -->
+      <div class="flyout-img" [class.flyout-img--loaded]="photoUrl">
+        <img *ngIf="photoUrl" [src]="photoUrl" class="flyout-photo"
+             alt="Aircraft photo" (error)="photoUrl = null">
+        <ng-container *ngIf="!photoUrl">
+          <svg class="flyout-img-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+            <path d="M6.428 1.151C6.708.591 7.239 0 8 0s1.292.592 1.572 1.151C9.861 1.73 10 2.431 10 3v3.691l5.17 2.585a1.5 1.5 0 0 1 .83 1.342V12a.5.5 0 0 1-.582.493l-5.507-.088-.375 2.44a1 1 0 0 1-1.967 0l-.375-2.44-5.507.088A.5.5 0 0 1 1 12v-1.382a1.5 1.5 0 0 1 .83-1.342L7 6.691V3c0-.569.14-1.271.428-1.849z"/>
+          </svg>
+        </ng-container>
+        <span class="flyout-photo-credit" *ngIf="photoUrl && photoAttribution">
+          &copy; {{ photoAttribution }}
+        </span>
+      </div>
+
+      <!-- Flight details -->
+      <div class="flyout-info">
+        <div class="flyout-callsign">{{ flightId }}</div>
+
+        <div class="flyout-loading" *ngIf="loading">
+          <div class="spinner-border spinner-border-sm"></div>
+        </div>
+
+        <ng-container *ngIf="flightInfo">
+          <div class="flyout-row">
+            <span class="flyout-label">ICAO</span>
+            <span class="flyout-value mono">{{ flightInfo.icao }}</span>
+          </div>
+
+          <!-- Track selector dropdown -->
+          <div class="flyout-select-wrap" *ngIf="tracks.length > 0">
+            <span class="flyout-select-swatch"
+                  [style.background]="activeTrack ? activeTrack.color : 'transparent'"
+                  [style.opacity]="activeTrack ? '1' : '0'"></span>
+            <select class="flyout-select"
+                    (change)="selectTrack($any($event.target).value)">
+              <option value="-1">All Sightings</option>
+              <option *ngFor="let t of tracks; let i = index" [value]="i">
+                Sighting {{ i + 1 }} — {{ t.dateLabel }}
+              </option>
+            </select>
+          </div>
+
+          <hr class="flyout-hr">
+
+          <!-- Overall stats (no track selected) -->
+          <ng-container *ngIf="!activeTrack">
+            <div class="flyout-row">
+              <span class="flyout-label">First Seen</span>
+              <span class="flyout-value">{{ flightInfo.firstSeen }}</span>
+            </div>
+            <div class="flyout-row">
+              <span class="flyout-label">Last Seen</span>
+              <span class="flyout-value">{{ flightInfo.lastSeen }}</span>
+            </div>
+
+            <hr class="flyout-hr">
+
+            <div class="flyout-row">
+              <span class="flyout-label">Sightings</span>
+              <span class="flyout-value">{{ flightInfo.trackCount }}</span>
+            </div>
+            <div class="flyout-row">
+              <span class="flyout-label">Positions</span>
+              <span class="flyout-value">{{ flightInfo.totalPositions }}</span>
+            </div>
+
+            <ng-container *ngIf="flightInfo.lastAltitude !== null">
+              <hr class="flyout-hr">
+              <div class="flyout-section-label">Last Known</div>
+              <div class="flyout-row">
+                <span class="flyout-label">Altitude</span>
+                <span class="flyout-value">{{ flightInfo.lastAltitude }} ft</span>
+              </div>
+              <div class="flyout-row" *ngIf="flightInfo.lastSpeed !== null">
+                <span class="flyout-label">Speed</span>
+                <span class="flyout-value">{{ flightInfo.lastSpeed }} kts</span>
+              </div>
+              <div class="flyout-row" *ngIf="flightInfo.lastSquawk">
+                <span class="flyout-label">Squawk</span>
+                <span class="flyout-value mono">{{ flightInfo.lastSquawk }}</span>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Per-track stats (a specific sighting is selected) -->
+          <ng-container *ngIf="activeTrack">
+            <div class="flyout-row">
+              <span class="flyout-label">From</span>
+              <span class="flyout-value">{{ activeTrack.startTime }}</span>
+            </div>
+            <div class="flyout-row">
+              <span class="flyout-label">To</span>
+              <span class="flyout-value">{{ activeTrack.endTime }}</span>
+            </div>
+
+            <hr class="flyout-hr">
+
+            <div class="flyout-row">
+              <span class="flyout-label">Positions</span>
+              <span class="flyout-value">{{ activeTrack.positionCount }}</span>
+            </div>
+
+            <ng-container *ngIf="activeTrack.lastAltitude !== null">
+              <hr class="flyout-hr">
+              <div class="flyout-section-label">Last Known</div>
+              <div class="flyout-row">
+                <span class="flyout-label">Altitude</span>
+                <span class="flyout-value">{{ activeTrack.lastAltitude }} ft</span>
+              </div>
+              <div class="flyout-row" *ngIf="activeTrack.lastSpeed !== null">
+                <span class="flyout-label">Speed</span>
+                <span class="flyout-value">{{ activeTrack.lastSpeed }} kts</span>
+              </div>
+              <div class="flyout-row" *ngIf="activeTrack.lastSquawk">
+                <span class="flyout-label">Squawk</span>
+                <span class="flyout-value mono">{{ activeTrack.lastSquawk }}</span>
+              </div>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Collapse / expand tab -->
+    <button class="flyout-tab" (click)="toggleFlyout()"
+            [attr.aria-label]="flyoutOpen ? 'Collapse panel' : 'Expand panel'">
+      <svg class="flyout-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 14" width="8" height="14">
+        <polyline points="6,1 1,7 6,13" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+</div>

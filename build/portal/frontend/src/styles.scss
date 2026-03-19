@@ -1,7 +1,342 @@
-/* You can add global styles to this file, and also import other style files */
+// ── Typography ───────────────────────────────────────────────────────────────
+$font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$headings-font-family:   'Rajdhani', sans-serif;
+$headings-font-weight:   600;
 
-/* Importing Bootstrap SCSS file. */
+// ── Color palette ────────────────────────────────────────────────────────────
+$primary:   #0ea5e9;   // radar/sky blue
+$secondary: #475569;   // slate
+$success:   #22c55e;
+$info:      #06b6d4;
+$warning:   #f59e0b;   // amber — cockpit warning
+$danger:    #ef4444;
+$light:     #1e293b;
+$dark:      #0b0f1e;
+
+// ── Body ─────────────────────────────────────────────────────────────────────
+$body-bg:    #0b0f1e;
+$body-color: #cbd5e1;
+
+// ── Headings ─────────────────────────────────────────────────────────────────
+$headings-color: #e2e8f0;
+
+// ── Links ────────────────────────────────────────────────────────────────────
+$link-color:       #38bdf8;
+$link-hover-color: #7dd3fc;
+
+// ── Cards ────────────────────────────────────────────────────────────────────
+$card-bg:           #111827;
+$card-border-color: rgba(56, 189, 248, 0.12);
+$card-cap-bg:       rgba(14, 165, 233, 0.07);
+$card-cap-color:    #38bdf8;
+
+// ── Tables ───────────────────────────────────────────────────────────────────
+$table-color:         #cbd5e1;
+$table-bg:            transparent;
+$table-border-color:  rgba(56, 189, 248, 0.1);
+$table-striped-bg:    rgba(14, 165, 233, 0.04);
+$table-striped-color: #cbd5e1;
+$table-hover-bg:      rgba(14, 165, 233, 0.08);
+$table-hover-color:   #f8fafc;
+
+// ── Form inputs ──────────────────────────────────────────────────────────────
+$input-bg:                 #111d36;
+$input-color:              #e2e8f0;
+$input-border-color:       rgba(56, 189, 248, 0.22);
+$input-placeholder-color:  #475569;
+$input-focus-bg:           #1a2f5a;
+$input-focus-border-color: #0ea5e9;
+$input-focus-color:        #f8fafc;
+$input-group-addon-bg:           #0d1526;
+$input-group-addon-color:        #94a3b8;
+$input-group-addon-border-color: rgba(56, 189, 248, 0.22);
+
+// ── Form select ──────────────────────────────────────────────────────────────
+$form-select-bg:                 #111d36;
+$form-select-color:              #e2e8f0;
+$form-select-border-color:       rgba(56, 189, 248, 0.22);
+$form-select-focus-border-color: #0ea5e9;
+
+// ── Dropdowns ────────────────────────────────────────────────────────────────
+$dropdown-bg:               #111827;
+$dropdown-border-color:     rgba(56, 189, 248, 0.15);
+$dropdown-link-color:       #cbd5e1;
+$dropdown-link-hover-color: #f8fafc;
+$dropdown-link-hover-bg:    rgba(14, 165, 233, 0.12);
+$dropdown-link-active-bg:   #0ea5e9;
+$dropdown-link-active-color: #fff;
+$dropdown-divider-bg:       rgba(56, 189, 248, 0.1);
+
+// ── Navbar (dark variant) ────────────────────────────────────────────────────
+$navbar-dark-color:                rgba(203, 213, 225, 0.82);
+$navbar-dark-hover-color:          #f8fafc;
+$navbar-dark-active-color:         #38bdf8;
+$navbar-dark-brand-color:          #f8fafc;
+$navbar-dark-toggler-border-color: rgba(56, 189, 248, 0.25);
+
+// ── Alerts ───────────────────────────────────────────────────────────────────
+$alert-bg-scale:     -85%;
+$alert-border-scale: -75%;
+$alert-color-scale:  30%;
+
+// ── Pagination ───────────────────────────────────────────────────────────────
+$pagination-bg:                   transparent;
+$pagination-border-color:         rgba(56, 189, 248, 0.15);
+$pagination-color:                #38bdf8;
+$pagination-hover-bg:             rgba(14, 165, 233, 0.12);
+$pagination-hover-color:          #f8fafc;
+$pagination-hover-border-color:   rgba(56, 189, 248, 0.3);
+$pagination-active-bg:            #0ea5e9;
+$pagination-active-border-color:  #0ea5e9;
+$pagination-disabled-bg:          transparent;
+$pagination-disabled-color:       #334155;
+$pagination-disabled-border-color: rgba(56, 189, 248, 0.07);
+
+// ── HR ───────────────────────────────────────────────────────────────────────
+$hr-color:   rgba(56, 189, 248, 0.18);
+$hr-opacity: 1;
+
+// ── Badges ───────────────────────────────────────────────────────────────────
+$badge-font-size:   0.7em;
+$badge-font-weight: 600;
+
+// ── Border radius ────────────────────────────────────────────────────────────
+$border-radius:    0.375rem;
+$border-radius-lg: 0.5rem;
+$border-radius-sm: 0.25rem;
+
+// ── Bootstrap import ──────────────────────────────────────────────────────────
 @import 'bootstrap/scss/bootstrap';
 
-/* Importing Bootstrap SCSS file. */
-@import 'bootstrap/scss/bootstrap';
+// ═════════════════════════════════════════════════════════════════════════════
+// AVIATION THEME — custom overrides
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+.navbar {
+  background: linear-gradient(90deg, #05081a 0%, #0b142e 50%, #05081a 100%) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.7);
+  padding-top: 0;
+  padding-bottom: 0;
+
+  .container-fluid {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.2rem 0;
+  text-decoration: none;
+
+  .brand-icon {
+    font-size: 1.25rem;
+    color: #38bdf8;
+    display: inline-block;
+    transform: rotate(-20deg);
+    line-height: 1;
+  }
+  .brand-main {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    color: #f8fafc;
+  }
+  .brand-suffix {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 400;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    color: #38bdf8;
+  }
+}
+
+.navbar-nav .nav-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.5rem 0.75rem;
+  transition: color 0.15s ease;
+}
+
+.navbar-nav .dropdown-menu {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(56, 189, 248, 0.08);
+  .dropdown-item {
+    font-size: 0.875rem;
+    padding: 0.45rem 1rem;
+    transition: background 0.12s ease;
+  }
+}
+
+// Search form inside navbar
+.nav-search {
+  .form-control {
+    background: rgba(17, 29, 54, 0.9) !important;
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    border-right: none !important;
+    color: #e2e8f0 !important;
+    font-size: 0.85rem;
+    min-width: 155px;
+    border-radius: 0.375rem 0 0 0.375rem !important;
+
+    &::placeholder { color: #475569; }
+    &:focus {
+      background: rgba(26, 47, 90, 0.9) !important;
+      border-color: #0ea5e9 !important;
+      box-shadow: none !important;
+      color: #f8fafc !important;
+    }
+  }
+  .btn {
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    border: none;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    border-radius: 0 0.375rem 0.375rem 0 !important;
+    &:hover { background: linear-gradient(135deg, #0369a1, #0284c7); color: #fff; }
+    &:active { background: #0369a1 !important; color: #fff !important; }
+  }
+}
+
+// ── Tracked flights alert bar ────────────────────────────────────────────────
+.tracked-alert-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.45rem 1.25rem;
+  background: rgba(251, 191, 36, 0.05);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.22);
+  font-size: 0.82rem;
+  color: #94a3b8;
+
+  .pulse-dot {
+    width: 7px;
+    height: 7px;
+    background: #f59e0b;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: pulse-blink 1.6s ease-in-out infinite;
+  }
+  .tracked-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    color: #f59e0b;
+  }
+  a {
+    color: #fbbf24;
+    font-weight: 600;
+    text-decoration: none;
+    &:hover { color: #fde68a; text-decoration: underline; }
+  }
+}
+
+@keyframes pulse-blink {
+  0%, 100% { opacity: 1;    transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
+}
+
+// ── Page containers ──────────────────────────────────────────────────────────
+.container,
+.container-lg,
+.container-xl {
+  padding-top: 1.75rem;
+  padding-bottom: 2rem;
+}
+
+// ── HR ───────────────────────────────────────────────────────────────────────
+hr {
+  height: 1px;
+  border: none;
+  opacity: 1;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.3) 25%,
+    rgba(56, 189, 248, 0.3) 75%,
+    transparent 100%);
+  margin: 0.75rem 0 1.5rem;
+}
+
+// ── Tables ───────────────────────────────────────────────────────────────────
+.table {
+  --bs-table-bg:            transparent;
+  --bs-table-color:         #cbd5e1;
+  --bs-table-border-color:  rgba(56, 189, 248, 0.1);
+  --bs-table-striped-bg:    rgba(14, 165, 233, 0.04);
+  --bs-table-striped-color: #cbd5e1;
+  --bs-table-hover-bg:      rgba(14, 165, 233, 0.08);
+  --bs-table-hover-color:   #f8fafc;
+}
+
+thead th {
+  font-family: 'Rajdhani', sans-serif !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: #38bdf8 !important;
+  background-color: rgba(14, 165, 233, 0.05) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+}
+
+.table a {
+  color: #38bdf8;
+  font-weight: 500;
+  text-decoration: none;
+  &:hover { color: #7dd3fc; text-decoration: underline; }
+}
+
+// ── Cards ────────────────────────────────────────────────────────────────────
+.card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+.card-header {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem;
+}
+
+// ── Alerts ───────────────────────────────────────────────────────────────────
+.alert {
+  border-left: 3px solid currentColor;
+}
+
+// ── Badges ───────────────────────────────────────────────────────────────────
+.badge {
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+.btn {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+// ── Progress bars ────────────────────────────────────────────────────────────
+.progress {
+  background-color: rgba(56, 189, 248, 0.1);
+  border-radius: 4px;
+  height: 0.6rem;
+}
+
+// ── Spinner ──────────────────────────────────────────────────────────────────
+.spinner-border { color: #0ea5e9 !important; }
+
+// ── Scrollbar (webkit) ───────────────────────────────────────────────────────
+::-webkit-scrollbar         { width: 6px; height: 6px; }
+::-webkit-scrollbar-track   { background: #06091a; }
+::-webkit-scrollbar-thumb   { background: #1e3a5f; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }

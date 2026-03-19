@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
@@ -17,6 +18,12 @@ export class AdminFlightsComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  flightsNavEnabled = true;
+  blogNavEnabled    = true;
+  savingNav = false;
+  navSuccessMessage = '';
+  navErrorMessage = '';
+
   purgeDays = 30;
   purging = false;
   purgeConfirm = false;
@@ -24,7 +31,33 @@ export class AdminFlightsComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
+    this.loadNavSetting();
     this.loadStats();
+  }
+
+  loadNavSetting() {
+    this.dataService.getSetting('flights_nav_enabled').pipe(catchError(() => of({ value: 'true' }))).subscribe(res => {
+      this.flightsNavEnabled = res?.value !== 'false';
+    });
+    this.dataService.getSetting('blog_nav_enabled').pipe(catchError(() => of({ value: 'true' }))).subscribe(res => {
+      this.blogNavEnabled = res?.value !== 'false';
+    });
+  }
+
+  saveNavSetting() {
+    this.savingNav = true;
+    this.navSuccessMessage = '';
+    this.navErrorMessage = '';
+    Promise.all([
+      this.dataService.updateSetting('flights_nav_enabled', String(this.flightsNavEnabled)).toPromise(),
+      this.dataService.updateSetting('blog_nav_enabled',    String(this.blogNavEnabled)).toPromise(),
+    ]).then(() => {
+      this.savingNav = false;
+      this.navSuccessMessage = 'Flights management settings saved successfully.';
+    }).catch(() => {
+      this.savingNav = false;
+      this.navErrorMessage = 'Failed to save settings.';
+    });
   }
 
   loadStats() {

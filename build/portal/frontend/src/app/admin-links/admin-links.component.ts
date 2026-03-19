@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
@@ -17,6 +18,16 @@ export class AdminLinksComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  linksNavEnabled   = true;
+  savingNav         = false;
+  navSuccessMessage = '';
+  navErrorMessage   = '';
+
+  // Pagination
+  currentPage = 1;
+  totalPages  = 1;
+  total       = 0;
+  readonly perPage = 10;
   // Create form state
   showCreateForm = false;
   creating = false;
@@ -32,14 +43,41 @@ export class AdminLinksComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
+    this.loadNavSetting();
     this.loadLinks();
+  }
+
+  loadNavSetting() {
+    this.dataService.getSetting('links_nav_enabled').pipe(catchError(() => of({ value: 'true' }))).subscribe(res => {
+      this.linksNavEnabled = res?.value !== 'false';
+    });
+  }
+
+  saveNavSetting() {
+    this.savingNav = true;
+    this.navSuccessMessage = '';
+    this.navErrorMessage = '';
+    this.dataService.updateSetting('links_nav_enabled', String(this.linksNavEnabled)).subscribe({
+      next: () => {
+        this.savingNav = false;
+        this.navSuccessMessage = 'Links management settings saved successfully.';
+      },
+      error: () => {
+        this.savingNav = false;
+        this.navErrorMessage = 'Failed to save settings.';
+      }
+    });
   }
 
   loadLinks() {
     this.loading = true;
-    this.dataService.getLinks().subscribe({
+    const offset = (this.currentPage - 1) * this.perPage;
+    this.dataService.getLinks(offset, this.perPage).subscribe({
       next: (data) => {
-        this.links = data.links;
+        this.links      = data.links;
+        this.total      = data.total ?? data.count ?? 0;
+        this.totalPages = Math.max(1, Math.ceil(this.total / this.perPage));
+        if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
         this.loading = false;
       },
       error: () => {
@@ -47,6 +85,20 @@ export class AdminLinksComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    this.currentPage = page;
+    this.loadLinks();
+  }
+
+  get pageNumbers(): number[] {
+    const start = Math.max(1, this.currentPage - 2);
+    const end   = Math.min(this.totalPages, this.currentPage + 2);
+    const range: number[] = [];
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
   }
 
   toggleCreateForm() {
@@ -72,6 +124,7 @@ export class AdminLinksComponent implements OnInit {
         this.creating = false;
         this.showCreateForm = false;
         this.successMessage = 'Link created successfully.';
+        this.currentPage = 1;
         this.loadLinks();
       },
       error: () => {
@@ -125,6 +178,7 @@ export class AdminLinksComponent implements OnInit {
       next: () => {
         this.successMessage = `"${link.name}" was deleted.`;
         if (this.editingLink?.id === link.id) this.editingLink = null;
+        if (this.links.length === 1 && this.currentPage > 1) this.currentPage--;
         this.loadLinks();
       },
       error: () => {

@@ -5,7 +5,7 @@ from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
-from sqlalchemy import select
+from sqlalchemy import select, func
 from backend.models import db, BlogPost
 from backend.auth import require_admin, require_user_or_admin
 from werkzeug.exceptions import HTTPException
@@ -39,7 +39,8 @@ blog_posts_list_model = blog_ns.model('BlogPostsList', {
     'blog_posts': restx_fields.List(restx_fields.Nested(blog_post_model)),
     'offset': restx_fields.Integer(description='Pagination offset'),
     'limit': restx_fields.Integer(description='Pagination limit'),
-    'count': restx_fields.Integer(description='Number of blog posts returned')
+    'count': restx_fields.Integer(description='Number of blog posts returned'),
+    'total': restx_fields.Integer(description='Total number of blog posts')
 })
 
 
@@ -177,6 +178,7 @@ class BlogPostsListResource(Resource):
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
             
         try:
+            total = db.session.execute(select(func.count()).select_from(BlogPost)).scalar()
             blog_posts_result = db.session.execute(
                 select(BlogPost)
                 .order_by(BlogPost.date.desc())
@@ -189,6 +191,7 @@ class BlogPostsListResource(Resource):
                 'offset': offset,
                 'limit': limit,
                 'count': len(blog_posts_data),
+                'total': total,
                 'blog_posts': blog_posts_data
             }, 200
         except Exception as ex:
