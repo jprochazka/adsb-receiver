@@ -33,7 +33,8 @@ create_user_model = users_ns.model('CreateUserRequest', {
 
 update_user_model = users_ns.model('UpdateUserRequest', {
     'name': restx_fields.String(required=True, description='User full name', example='John Doe Updated'),
-    'password': restx_fields.String(required=True, description='New password', example='newsecurepassword123'),
+    'email': restx_fields.String(description='User email address', example='john@example.com'),
+    'password': restx_fields.String(description='New password (optional)', example='newsecurepassword123'),
     'role': restx_fields.String(description='User role (Admin/User)', example='User'),
     'administrator': restx_fields.Boolean(description='Administrator flag (true/false) for backward compatibility', example=False)
 })
@@ -64,7 +65,8 @@ class CreateUserRequestSchema(Schema):
 
 class UpdateUserRequestSchema(Schema):
     name = fields.String(required=True)
-    password = fields.String(required=True)
+    email = fields.Email()
+    password = fields.String()
     administrator = fields.Boolean()  # Keep for backward compatibility
     role = fields.String()  # New role field
 
@@ -123,6 +125,59 @@ class UserCreateResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
+class RegisterUserRequestSchema(Schema):
+    name = fields.String(required=True)
+    email = fields.Email(required=True)
+    password = fields.String(required=True)
+
+
+register_user_model = users_ns.model('RegisterUserRequest', {
+    'name': restx_fields.String(required=True, description='Full name', example='Jane Doe'),
+    'email': restx_fields.String(required=True, description='Email address', example='jane@example.com'),
+    'password': restx_fields.String(required=True, description='Password', example='securepassword123')
+})
+
+
+@users_ns.route('/register')
+class UserRegisterResource(Resource):
+    @users_ns.expect(register_user_model, validate=True)
+    @users_ns.marshal_with(user_response_model, code=201)
+    @users_ns.response(400, 'Invalid request data or email already in use', error_model)
+    @users_ns.response(500, 'Internal server error', error_model)
+    @users_ns.doc('register_user')
+    def post(self):
+        """Register a new user account (no authentication required)"""
+        try:
+            payload = RegisterUserRequestSchema().load(request.json)
+        except ValidationError as err:
+            return {'msg': 'Invalid request data', 'errors': err.messages}, 400
+
+        if not payload.get('name', '').strip():
+            return {'msg': 'Name is required'}, 400
+        if len(payload.get('password', '')) < 8:
+            return {'msg': 'Password must be at least 8 characters'}, 400
+
+        try:
+            existing = db.session.execute(select(User).filter_by(email=payload['email'])).scalar_one_or_none()
+            if existing:
+                return {'msg': 'An account with that email address already exists'}, 400
+
+            new_user = User(
+                name=payload['name'].strip(),
+                email=payload['email'],
+                password=payload['password'],
+                administrator=0,
+                role='User'
+            )
+            db.session.add(new_user)
+            db.session.commit()
+
+            return {'msg': 'Account created successfully', 'user': new_user.to_dict()}, 201
+
+        except Exception as ex:
+            db.session.rollback()
+            logging.error('Error encountered while trying to register user', exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
 
 
 @users_ns.route('/user/<int:user_id>')
@@ -190,7 +245,10 @@ class UserResource(Resource):
             
             # Update basic fields
             user.name = payload['name']
-            user.password = payload['password']  # In production, hash this password
+            if 'email' in payload:
+                user.email = payload['email']
+            if 'password' in payload:
+                user.password = payload['password']  # In production, hash this password
             
             # Only admins can change roles
             if 'role' in payload and validate_role(payload['role']):

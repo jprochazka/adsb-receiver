@@ -1,7 +1,9 @@
 <div class="container">
-    <h1>Flights Seen</h1>
+    <h1 *ngIf="!searchQuery">Flights Seen</h1>
+    <h1 *ngIf="searchQuery">Search Results for "{{ searchQuery }}"</h1>
     <hr />
-    <div *ngIf="data">
+    <app-spinner *ngIf="loading"></app-spinner>
+    <div *ngIf="!loading && data">
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -39,5 +41,6 @@
             <li class="page-item"><a class="page-link" href="/flights/2">Next</a></li>
         </ul>
     </nav>
-    <p class="fw-light">Displaying {{ data.offset + 1 }} through {{ data.offset + data.count }} of a total of {{ count.flights }} flights tracked</p>
+    <p *ngIf="!searchQuery" class="fw-light">Displaying {{ data.offset + 1 }} through {{ data.offset + data.count }} of a total of {{ count?.flights }} flights tracked</p>
+    <p *ngIf="searchQuery" class="fw-light">{{ data.count }} result(s) found for "{{ searchQuery }}"</p>
 </div>

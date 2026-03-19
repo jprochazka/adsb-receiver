@@ -1,0 +1,248 @@
+<div class="container">
+    <h1>System Information</h1>
+    <hr />
+    <app-spinner *ngIf="loading"></app-spinner>
+    <div *ngIf="!loading">
+        <div class="row g-4">
+
+            <!-- CPU -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">CPU</div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Usage</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                [style.width]="cpu?.cpu_percent + '%'"
+                                                [class.bg-danger]="cpu?.cpu_percent > 80"
+                                                [class.bg-warning]="cpu?.cpu_percent > 50 && cpu?.cpu_percent <= 80"
+                                                [attr.aria-valuenow]="cpu?.cpu_percent"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                {{ cpu?.cpu_percent | number:'1.1-1' }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Physical cores</td>
+                                    <td>{{ cpu?.cpu_count }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Logical cores</td>
+                                    <td>{{ cpu?.cpu_count_logical }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Frequency (current)</td>
+                                    <td>{{ cpu?.cpu_frequency_current | number:'1.0-0' }} MHz</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Frequency (max)</td>
+                                    <td>{{ cpu?.cpu_frequency_max | number:'1.0-0' }} MHz</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Load avg (1/5/15 min)</td>
+                                    <td>
+                                        {{ cpu?.cpu_load_averages[0] | number:'1.2-2' }} /
+                                        {{ cpu?.cpu_load_averages[1] | number:'1.2-2' }} /
+                                        {{ cpu?.cpu_load_averages[2] | number:'1.2-2' }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Context switches</td>
+                                    <td>{{ cpu?.cpu_stats_context_switches_since_boot | number }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Interrupts</td>
+                                    <td>{{ cpu?.cpu_stats_interupts_since_boot | number }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">Memory</div>
+                    <div class="card-body">
+                        <h6 class="text-muted">Virtual Memory</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar"
+                                [style.width]="memory?.memory_virtual_percent + '%'"
+                                [class.bg-danger]="memory?.memory_virtual_percent > 80"
+                                [class.bg-warning]="memory?.memory_virtual_percent > 50 && memory?.memory_virtual_percent <= 80"
+                                [attr.aria-valuenow]="memory?.memory_virtual_percent"
+                                aria-valuemin="0" aria-valuemax="100">
+                                {{ memory?.memory_virtual_percent | number:'1.1-1' }}%
+                            </div>
+                        </div>
+                        <table class="table table-sm mb-3">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Total</td>
+                                    <td>{{ formatBytes(memory?.memory_virtual_total) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Used</td>
+                                    <td>{{ formatBytes(memory?.memory_virtual_used) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Available</td>
+                                    <td>{{ formatBytes(memory?.memory_virtual_available) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h6 class="text-muted">Swap</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-secondary" role="progressbar"
+                                [style.width]="memory?.memory_swap_percent + '%'"
+                                [attr.aria-valuenow]="memory?.memory_swap_percent"
+                                aria-valuemin="0" aria-valuemax="100">
+                                {{ memory?.memory_swap_percent | number:'1.1-1' }}%
+                            </div>
+                        </div>
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Total</td>
+                                    <td>{{ formatBytes(memory?.memory_swap_total) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Used</td>
+                                    <td>{{ formatBytes(memory?.memory_swap_used) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Free</td>
+                                    <td>{{ formatBytes(memory?.memory_swap_free) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disk -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">Disk</div>
+                    <div class="card-body">
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar"
+                                [style.width]="disk?.disk_usage_percent + '%'"
+                                [class.bg-danger]="disk?.disk_usage_percent > 80"
+                                [class.bg-warning]="disk?.disk_usage_percent > 50 && disk?.disk_usage_percent <= 80"
+                                [attr.aria-valuenow]="disk?.disk_usage_percent"
+                                aria-valuemin="0" aria-valuemax="100">
+                                {{ disk?.disk_usage_percent | number:'1.1-1' }}%
+                            </div>
+                        </div>
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Total</td>
+                                    <td>{{ formatBytes(disk?.disk_usage_total) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Used</td>
+                                    <td>{{ formatBytes(disk?.disk_usage_used) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Free</td>
+                                    <td>{{ formatBytes(disk?.disk_usage_free) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Reads</td>
+                                    <td>{{ disk?.disk_io_read_count | number }} ({{ formatBytes(disk?.disk_io_read_bytes) }})</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Writes</td>
+                                    <td>{{ disk?.disk_io_write_count | number }} ({{ formatBytes(disk?.disk_io_write_bytes) }})</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">Network</div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Bytes sent</td>
+                                    <td>{{ formatBytes(network?.network_io_bytes_sent) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Bytes received</td>
+                                    <td>{{ formatBytes(network?.network_io_bytes_received) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Packets sent</td>
+                                    <td>{{ network?.network_io_packets_sent | number }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Packets received</td>
+                                    <td>{{ network?.network_io_packets_received | number }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Errors in / out</td>
+                                    <td>{{ network?.network_io_errors_in | number }} / {{ network?.network_io_errors_out | number }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Dropped in / out</td>
+                                    <td>{{ network?.network_io_dropped_in | number }} / {{ network?.network_io_dropped_out | number }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System & Database -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">System</div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Boot time</td>
+                                    <td>{{ bootTime() | date:'medium' }}</td>
+                                </tr>
+                                <tr *ngFor="let user of other?.other_users">
+                                    <td class="text-muted">Logged-in user</td>
+                                    <td>{{ user.name }} ({{ user.terminal }})</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">Database</div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">Size</td>
+                                    <td>{{ formatBytes(database?.size) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

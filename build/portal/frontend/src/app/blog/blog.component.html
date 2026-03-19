@@ -1,7 +1,8 @@
 <div class="container">
     <h1>ADS-B Portal Blog</h1>
     <hr />
-    <div *ngIf="data">
+    <app-spinner *ngIf="loading"></app-spinner>
+    <div *ngIf="!loading && data">
         <div *ngFor="let post of data.blog_posts">
             <h2><a href="/blog-post/{{ post.id }}">{{ post.title }}</a></h2>
             <p class="fs-6">Posted by {{ post.author }} on {{ post.date }}</p>

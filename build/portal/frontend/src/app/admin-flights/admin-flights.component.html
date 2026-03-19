@@ -1,0 +1,80 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1>Flight Management</h1>
+  </div>
+  <hr />
+
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage=''"></button>
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+  </div>
+
+  <app-spinner *ngIf="loading"></app-spinner>
+
+  <div *ngIf="!loading">
+    <div class="row g-4">
+
+      <!-- Stats card -->
+      <div class="col-md-4">
+        <div class="card h-100">
+          <div class="card-header fw-semibold">Statistics</div>
+          <div class="card-body">
+            <p class="mb-1 text-muted small">Total Flights in Database</p>
+            <p class="fs-3 fw-bold mb-0">{{ totalFlights }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purge card -->
+      <div class="col-md-8">
+        <div class="card h-100 border-danger">
+          <div class="card-header fw-semibold text-danger">Purge Old Flights</div>
+          <div class="card-body">
+            <p class="text-muted">
+              Permanently delete all flights — and their associated position data — where
+              <code>last_seen</code> is older than the specified number of days.
+              <strong>This action cannot be undone.</strong>
+            </p>
+
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <label class="form-label mb-0 text-nowrap fw-semibold">Delete flights older than</label>
+              <input
+                type="number"
+                class="form-control"
+                style="width: 90px"
+                [(ngModel)]="purgeDays"
+                min="1"
+                [disabled]="purgeConfirm || purging">
+              <span class="text-nowrap">days</span>
+            </div>
+
+            <div *ngIf="!purgeConfirm && !purging">
+              <button class="btn btn-danger" (click)="requestPurge()" [disabled]="purgeDays < 1">
+                Purge Flights
+              </button>
+            </div>
+
+            <div *ngIf="purgeConfirm" class="alert alert-warning d-flex flex-wrap align-items-center gap-2 mb-0">
+              <span class="flex-grow-1">
+                Are you sure? This will permanently delete all flights older than
+                <strong>{{ purgeDays }} day(s)</strong> and all their position data.
+              </span>
+              <button class="btn btn-danger btn-sm text-nowrap" (click)="confirmPurge()">Yes, Delete</button>
+              <button class="btn btn-secondary btn-sm text-nowrap" (click)="cancelPurge()">Cancel</button>
+            </div>
+
+            <div *ngIf="purging" class="d-flex align-items-center gap-2 text-danger">
+              <div class="spinner-border spinner-border-sm"></div>
+              <span>Purging flights&hellip;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

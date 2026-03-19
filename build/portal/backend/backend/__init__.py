@@ -4,6 +4,7 @@ import yaml
 from datetime import timedelta
 from flask import Flask, jsonify, redirect
 from flask_apscheduler import APScheduler
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_restx import Api
 from backend.jobs.data_collection import data_collection_job
@@ -33,6 +34,8 @@ def create_app(test_config=None):
         pass
 
     app.json.sort_keys = False
+
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     @app.route('/')
     def index():

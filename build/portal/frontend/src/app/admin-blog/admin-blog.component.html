@@ -1,0 +1,95 @@
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h1>Blog Management</h1>
+        <button class="btn btn-primary" (click)="toggleCreateForm()" *ngIf="!showCreateForm">
+            + New Post
+        </button>
+        <button class="btn btn-secondary" (click)="toggleCreateForm()" *ngIf="showCreateForm">
+            Cancel
+        </button>
+    </div>
+    <hr />
+
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage=''"></button>
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+    </div>
+
+    <!-- Create form -->
+    <div *ngIf="showCreateForm" class="card mb-4">
+        <div class="card-header fw-semibold">New Post</div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-control" [(ngModel)]="newTitle" placeholder="Post title">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Author</label>
+                <input type="text" class="form-control" [(ngModel)]="newAuthor" placeholder="Author name">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Content</label>
+                <textarea class="form-control" rows="8" [(ngModel)]="newContent" placeholder="Post content"></textarea>
+            </div>
+            <button class="btn btn-primary" (click)="createPost()" [disabled]="creating">
+                {{ creating ? 'Saving...' : 'Create Post' }}
+            </button>
+        </div>
+    </div>
+
+    <app-spinner *ngIf="loading"></app-spinner>
+
+    <div *ngIf="!loading">
+
+        <!-- Edit form -->
+        <div *ngIf="editingPost" class="card mb-4 border-warning">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span>Editing: {{ editingPost.title }}</span>
+                <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Cancel</button>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-control" [(ngModel)]="editTitle">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Content</label>
+                    <textarea class="form-control" rows="8" [(ngModel)]="editContent"></textarea>
+                </div>
+                <button class="btn btn-warning" (click)="saveEdit()" [disabled]="saving">
+                    {{ saving ? 'Saving...' : 'Save Changes' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Posts table -->
+        <table class="table table-striped align-middle" *ngIf="posts.length > 0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let post of posts">
+                    <td>
+                        <a href="/blog-post/{{ post.id }}">{{ post.title }}</a>
+                    </td>
+                    <td>{{ post.author }}</td>
+                    <td>{{ post.date }}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(post)">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="deletePost(post)">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p *ngIf="posts.length === 0" class="text-muted">No blog posts yet.</p>
+    </div>
+</div>

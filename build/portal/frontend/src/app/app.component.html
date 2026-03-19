@@ -21,7 +21,7 @@
               Information
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item disabled" href="#">System Information</a></li>
+              <li><a class="dropdown-item" routerLink="/system-information">System Information</a></li>
               <li><a class="dropdown-item disabled" href="#">Performance Graphs</a></li>
             </ul>
           </li>
@@ -32,18 +32,43 @@
             <a class="nav-link active" routerLink="/blog" routerLinkActive="active" ariaCurrentWhenActive="page">Blog</a>
           </li>
           <app-links></app-links>
-          <li class="nav-item">
-            <a class="nav-link active" routerLink="/account" routerLinkActive="active" ariaCurrentWhenActive="page">Account</a>
+          <li class="nav-item" *ngIf="isLoggedIn">
+            <a class="nav-link" routerLink="/account" routerLinkActive="active" ariaCurrentWhenActive="page">Account</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link active" routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</a>
+          <li class="nav-item dropdown" *ngIf="isAdmin">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Admin
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/links">Links Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/flights">Flight Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/users">User Management</a></li>
+            </ul>
+          </li>
+          <li class="nav-item" *ngIf="!isLoggedIn">
+            <a class="nav-link" routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</a>
+          </li>
+          <li class="nav-item" *ngIf="!isLoggedIn">
+            <a class="nav-link" routerLink="/register" routerLinkActive="active" ariaCurrentWhenActive="page">Register</a>
+          </li>
+          <li class="nav-item" *ngIf="isLoggedIn">
+            <app-logout></app-logout>
           </li>
         </ul>
-        <form class="d-flex" role="search">
-          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <form class="d-flex" role="search" (ngSubmit)="search()">
+          <input class="form-control me-2" type="search" placeholder="Flight number" aria-label="Search" [(ngModel)]="searchQuery" name="searchQuery">
           <button class="btn btn-outline-success text-nowrap" type="submit">Search Flights</button>
         </form>
       </div>
     </div>
   </nav>
+<div *ngIf="trackedFlights.length > 0" class="alert alert-warning mb-0 rounded-0 border-start-0 border-end-0" role="alert">
+  <strong>Tracked {{ trackedFlights.length === 1 ? 'Flight' : 'Flights' }} In Range:</strong>
+  <ng-container *ngFor="let flight of trackedFlights; let i = index">
+    <span *ngIf="i > 0">, </span>
+    <a [routerLink]="['/flight-history', flight.flight]" class="alert-link fw-bold">{{ flight.flight }}</a>
+  </ng-container>
+  &mdash; {{ trackedFlights.length === 1 ? 'this flight is' : 'these flights are' }} currently in range and being tracked.
+</div>
 <router-outlet></router-outlet>

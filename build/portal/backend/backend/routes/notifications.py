@@ -1,9 +1,10 @@
 import logging
+import datetime
 
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
-from backend.models import db, Notification
+from backend.models import db, Notification, Flight, Setting
 from backend.auth import require_admin, require_user_or_admin
 from werkzeug.exceptions import HTTPException
 from sqlalchemy import select
@@ -111,6 +112,65 @@ class NotificationsListResource(Resource):
             }, 200
         except Exception as ex:
             logging.error('Error encountered while trying to get notifications', exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+
+recent_flight_model = notifications_ns.model('RecentFlight', {
+    'id': restx_fields.Integer(description='Flight ID'),
+    'flight': restx_fields.String(description='Flight number/callsign'),
+    'first_seen': restx_fields.String(description='First seen timestamp'),
+    'last_seen': restx_fields.String(description='Last seen timestamp')
+})
+
+recent_notifications_model = notifications_ns.model('RecentNotifications', {
+    'flights': restx_fields.List(restx_fields.Nested(recent_flight_model)),
+    'count': restx_fields.Integer(description='Number of matching flights'),
+    'lookback_minutes': restx_fields.Integer(description='Lookback window used in minutes')
+})
+
+
+@notifications_ns.route('/recent')
+class RecentNotificationsResource(Resource):
+    @notifications_ns.marshal_with(recent_notifications_model, code=200)
+    @notifications_ns.response(500, 'Internal server error')
+    @notifications_ns.doc('get_recent_notifications')
+    def get(self):
+        """Get flights seen recently that match a notification entry"""
+        try:
+            lookback_setting = db.session.execute(
+                select(Setting).filter_by(name='notification_lookback_minutes')
+            ).scalar_one_or_none()
+            lookback_minutes = int(lookback_setting.value) if lookback_setting else 30
+
+            cutoff = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=lookback_minutes)
+            cutoff_str = cutoff.strftime('%Y-%m-%d %H:%M:%S')
+
+            # Get all monitored callsigns from the notifications table
+            monitored = [
+                n.flight for n in db.session.execute(select(Notification)).scalars()
+            ]
+
+            if not monitored:
+                return {'flights': [], 'count': 0, 'lookback_minutes': lookback_minutes}, 200
+
+            # Find flights seen within the lookback window whose callsign is monitored
+            flights_result = db.session.execute(
+                select(Flight)
+                .filter(
+                    Flight.flight.in_(monitored),
+                    Flight.last_seen >= cutoff_str
+                )
+                .order_by(Flight.last_seen.desc())
+            )
+            flights_data = [f.to_dict() for f in flights_result.scalars()]
+
+            return {
+                'flights': flights_data,
+                'count': len(flights_data),
+                'lookback_minutes': lookback_minutes
+            }, 200
+        except Exception as ex:
+            logging.error('Error encountered while trying to get recent notifications', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
 

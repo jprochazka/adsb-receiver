@@ -1,0 +1,87 @@
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h1>Links Management</h1>
+        <button class="btn btn-primary" (click)="toggleCreateForm()" *ngIf="!showCreateForm">
+            + New Link
+        </button>
+        <button class="btn btn-secondary" (click)="toggleCreateForm()" *ngIf="showCreateForm">
+            Cancel
+        </button>
+    </div>
+    <hr />
+
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage=''"></button>
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+    </div>
+
+    <!-- Create form -->
+    <div *ngIf="showCreateForm" class="card mb-4">
+        <div class="card-header fw-semibold">New Link</div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" [(ngModel)]="newName" placeholder="e.g. FlightAware">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <input type="url" class="form-control" [(ngModel)]="newAddress" placeholder="https://example.com">
+            </div>
+            <button class="btn btn-primary" (click)="createLink()" [disabled]="creating">
+                {{ creating ? 'Saving...' : 'Create Link' }}
+            </button>
+        </div>
+    </div>
+
+    <app-spinner *ngIf="loading"></app-spinner>
+
+    <div *ngIf="!loading">
+
+        <!-- Edit form -->
+        <div *ngIf="editingLink" class="card mb-4 border-warning">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span>Editing: {{ editingLink.name }}</span>
+                <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Cancel</button>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" [(ngModel)]="editName">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <input type="url" class="form-control" [(ngModel)]="editAddress">
+                </div>
+                <button class="btn btn-warning" (click)="saveEdit()" [disabled]="saving">
+                    {{ saving ? 'Saving...' : 'Save Changes' }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Links table -->
+        <table class="table table-striped align-middle" *ngIf="links.length > 0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let link of links">
+                    <td>{{ link.name }}</td>
+                    <td><a href="{{ link.address }}" target="_blank">{{ link.address }}</a></td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(link)">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" (click)="deleteLink(link)">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p *ngIf="links.length === 0" class="text-muted">No links yet.</p>
+    </div>
+</div>

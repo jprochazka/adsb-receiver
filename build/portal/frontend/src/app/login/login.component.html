@@ -2,13 +2,18 @@
     <h1>Login</h1>
     <hr />
     <div class="mb-3">
-        <label for="exampleFormControlInput1" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+        <label for="email" class="form-label">Email address</label>
+        <input type="email" class="form-control" id="email" placeholder="name@example.com" [(ngModel)]="email">
     </div>
-    <label for="inputPassword5" class="form-label">Password</label>
-    <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock">
-    <div id="passwordHelpBlock" class="form-text">
-        Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" id="password" class="form-control" [(ngModel)]="password">
     </div>
-    <button type="button" class="btn btn-primary">Login</button>
+    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+    <div class="d-flex align-items-center gap-3">
+      <button type="button" class="btn btn-primary" (click)="login()" [disabled]="loading">
+          {{ loading ? 'Logging in...' : 'Login' }}
+      </button>
+      <span class="text-muted small">Don't have an account? <a routerLink="/register">Register</a></span>
+    </div>
 </div>

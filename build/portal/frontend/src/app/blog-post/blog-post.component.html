@@ -1,8 +1,9 @@
-<div *ngIf="data">
+<app-spinner *ngIf="loading"></app-spinner>
+<div *ngIf="!loading && data">
     <div class="container">
-        <h1>{{ data[0].title }}</h1>
+        <h1>{{ data.title }}</h1>
         <hr />
-        <p class="fs-6">Posted by {{ data[0].author }} on {{ data[0].date }}</p>
-        <div class="fs-5">{{ data[0].content }}</div>
+        <p class="fs-6">Posted by {{ data.author }} on {{ data.date }}</p>
+        <div class="fs-5">{{ data.content }}</div>
     </div>
 </div>

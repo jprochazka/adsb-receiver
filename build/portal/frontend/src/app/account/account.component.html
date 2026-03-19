@@ -13,7 +13,8 @@
                 </div>
             </div>
             <div class="col-lg-9">
-                <div *ngIf="!section || section == 'profile'">
+                <app-spinner *ngIf="loading"></app-spinner>
+                <div *ngIf="!loading && (!section || section == 'profile')">
                     <div class="row g-3 align-items-center pb-2">
                         <h2>Public profile</h2>
                         <hr>
@@ -23,15 +24,7 @@
                             <label for="name" class="col-form-label">Name</label>
                         </div>
                         <div class="col-md-10">
-                            <input type="text" id="name" class="form-control">
-                        </div>
-                    </div>
-                    <div class="row g-3 align-items-center pb-2">
-                        <div class="col-md-2 align-top">
-                            <label for="username" class="col-form-label">Username</label>
-                        </div>
-                        <div class="col-md-10">
-                            <input type="text" id="email" class="form-control">
+                            <input type="text" id="name" class="form-control" [(ngModel)]="name">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center pb-2">
@@ -39,51 +32,65 @@
                             <label for="email" class="col-form-label">Email Address</label>
                         </div>
                         <div class="col-md-10">
-                            <input type="text" id="email" class="form-control" aria-describedby="email-warning">
+                            <input type="email" id="email" class="form-control" [(ngModel)]="email">
                         </div>
                     </div>
+                    <div *ngIf="profileSuccess" class="alert alert-success">{{ profileSuccess }}</div>
+                    <div *ngIf="profileError" class="alert alert-danger">{{ profileError }}</div>
                     <div class="row g-3 align-items-center pb-2">
-                        <button type="button" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-primary" (click)="saveProfile()">Save</button>
                     </div>
                 </div>
-                <div *ngIf="section == 'authentication'">
+                <div *ngIf="!loading && section == 'authentication'">
                     <div class="row g-3 align-items-center pb-2">
                         <h2>Password and authentication</h2>
                         <hr>
                     </div>
                     <div class="row g-3 align-items-center pb-2">
                         <div class="col-md-2 align-top">
-                            <label for="username" class="col-form-label">Password</label>
+                            <label for="currentPassword" class="col-form-label">Current password</label>
                         </div>
                         <div class="col-md-10">
-                            <input type="text" id="email" class="form-control" aria-describedby="username-warning">
+                            <input type="password" id="currentPassword" class="form-control" [(ngModel)]="currentPassword">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center pb-2">
                         <div class="col-md-2 align-top">
-                            <label for="email" class="col-form-label">Repeat password</label>
+                            <label for="newPassword" class="col-form-label">New password</label>
                         </div>
                         <div class="col-md-10">
-                            <input type="text" id="email" class="form-control" aria-describedby="email-warning">
+                            <input type="password" id="newPassword" class="form-control" [(ngModel)]="newPassword">
                         </div>
                     </div>
                     <div class="row g-3 align-items-center pb-2">
-                        <button type="button" class="btn btn-primary">Save</button>
+                        <div class="col-md-2 align-top">
+                            <label for="confirmPassword" class="col-form-label">Confirm new password</label>
+                        </div>
+                        <div class="col-md-10">
+                            <input type="password" id="confirmPassword" class="form-control" [(ngModel)]="confirmPassword">
+                        </div>
+                    </div>
+                    <div *ngIf="authSuccess" class="alert alert-success">{{ authSuccess }}</div>
+                    <div *ngIf="authError" class="alert alert-danger">{{ authError }}</div>
+                    <div class="row g-3 align-items-center pb-2">
+                        <button type="button" class="btn btn-primary" (click)="changePassword()">Save</button>
                     </div>
                 </div>
-                <div *ngIf="section == 'notifications'">
+                <div *ngIf="!loading && section == 'notifications'">
                     <div class="row g-3 align-items-center pb-2">
                         <h2>Notifications</h2>
                         <hr>
                     </div>
                     <div class="col-md-12">
                         <div class="row g-3 align-items-center pb-2">
-                            <span>A comma delimited list of flights</span>
-                            <input type="text" id="notifications" class="form-control">
+                            <span>A comma delimited list of flight numbers to monitor</span>
+                            <input type="text" id="notifications" class="form-control" [(ngModel)]="notifications">
                         </div>
                     </div>
+                    <div *ngIf="notifSuccess" class="alert alert-success">{{ notifSuccess }}</div>
+                    <div *ngIf="notifError" class="alert alert-danger">{{ notifError }}</div>
                     <div class="row g-3 align-items-center pb-2">
-                        <button type="button" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-primary" (click)="saveNotifications()">Save</button>
                     </div>
                 </div>
             </div>
