@@ -34,7 +34,7 @@ class NotificationResource(Resource):
     @notification_ns.response(409, 'Conflict - notification already exists')
     @notification_ns.response(401, 'Unauthorized - authentication required')
     @notification_ns.response(500, 'Internal server error')
-    @notification_ns.doc('create_notification')
+    @notification_ns.doc('create_notification', security='Bearer')
     @require_user_or_admin()
     def post(self, flight):
         """Create a flight notification (User or Admin required)"""
@@ -58,7 +58,7 @@ class NotificationResource(Resource):
     @notification_ns.response(404, 'Notification not found')
     @notification_ns.response(401, 'Unauthorized - admin access required')
     @notification_ns.response(500, 'Internal server error')
-    @notification_ns.doc('delete_notification')
+    @notification_ns.doc('delete_notification', security='Bearer')
     @require_admin()
     def delete(self, flight):
         """Delete a flight notification (Admin only)"""

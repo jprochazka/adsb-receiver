@@ -44,7 +44,7 @@ class SettingResource(Resource):
     @setting_ns.response(404, 'Setting not found')
     @setting_ns.response(401, 'Unauthorized - admin access required')
     @setting_ns.response(500, 'Internal server error')
-    @setting_ns.doc('update_setting')
+    @setting_ns.doc('update_setting', security='Bearer')
     @require_admin()
     def put(self):
         """Update a setting value (Admin only)"""
@@ -93,7 +93,7 @@ class SettingsListResource(Resource):
     @settings_ns.response(200, 'Settings list retrieved successfully', [setting_model])
     @settings_ns.response(401, 'Unauthorized - authentication required')
     @settings_ns.response(500, 'Internal server error')
-    @settings_ns.doc('get_settings_list')
+    @settings_ns.doc('get_settings_list', security='Bearer')
     @require_user_or_admin()
     def get(self):
         """Get all settings (Authentication required)"""

@@ -2,7 +2,7 @@ import os
 import yaml
 
 from datetime import timedelta
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 from flask_apscheduler import APScheduler
 from flask_jwt_extended import JWTManager
 from flask_restx import Api
@@ -33,6 +33,10 @@ def create_app(test_config=None):
         pass
 
     app.json.sort_keys = False
+
+    @app.route('/')
+    def index():
+        return redirect('/api/docs/')
 
     # Initialize Flask-RESTX API documentation
     api = Api(

@@ -56,7 +56,7 @@ class LinksResource(Resource):
     @link_ns.response(400, 'Bad request - validation error')
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('create_link')
+    @link_ns.doc('create_link', security='Bearer')
     @require_user_or_admin()
     def post(self):
         """Create a new link (Authentication required)"""
@@ -85,7 +85,7 @@ class LinkResource(Resource):
     @link_ns.response(404, 'Link not found')
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('get_link')
+    @link_ns.doc('get_link', security='Bearer')
     @require_user_or_admin()
     def get(self, link_id):
         """Get link by ID (Authentication required)"""
@@ -106,7 +106,7 @@ class LinkResource(Resource):
     @link_ns.response(404, 'Link not found')
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('update_link')
+    @link_ns.doc('update_link', security='Bearer')
     @require_user_or_admin()
     def put(self, link_id):
         """Update link by ID (Authentication required)"""
@@ -135,7 +135,7 @@ class LinkResource(Resource):
     @link_ns.response(404, 'Link not found')
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('delete_link')
+    @link_ns.doc('delete_link', security='Bearer')
     @require_user_or_admin()
     def delete(self, link_id):
         """Delete link by ID (Authentication required)"""

@@ -35,10 +35,10 @@ def require_role(required_role):
                 
                 if current_user.role != required_role and current_user.role != 'Admin':
                     return {'msg': f'Access denied. {required_role} role required'}, 403
-                
-                return f(*args, **kwargs)
             except Exception as e:
                 return {'msg': 'Invalid token'}, 401
+            
+            return f(*args, **kwargs)
         
         return decorated_function
     return decorator
@@ -57,14 +57,13 @@ def require_admin():
                 
                 if not current_user.is_admin():
                     return {'msg': 'Admin access required'}, 403
-                
-                return f(*args, **kwargs)
             except Exception as e:
-                # Don't catch HTTP exceptions from the decorated function
                 from werkzeug.exceptions import HTTPException
                 if isinstance(e, HTTPException):
                     raise e
                 return {'msg': 'Invalid token'}, 401
+            
+            return f(*args, **kwargs)
         
         return decorated_function
     return decorator
@@ -83,14 +82,13 @@ def require_user_or_admin():
                 
                 if current_user.role not in ['User', 'Admin']:
                     return {'msg': 'User or Admin access required'}, 403
-                
-                return f(*args, **kwargs)
             except Exception as e:
-                # Don't catch HTTP exceptions from the decorated function
                 from werkzeug.exceptions import HTTPException
                 if isinstance(e, HTTPException):
                     raise e
                 return {'msg': 'Invalid token'}, 401
+            
+            return f(*args, **kwargs)
         
         return decorated_function
     return decorator

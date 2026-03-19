@@ -21,3 +21,4 @@ build/readsb
 build/tar1090
 build/vdlm2dec
 logs
+.vscode
