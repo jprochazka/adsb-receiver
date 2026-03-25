@@ -29,6 +29,9 @@ ALTER TABLE `positions` DROP INDEX `idxFlight`;
 RENAME TABLE `administrators` TO `users`;
 RENAME TABLE `flightNotifications ` TO `notifications`;
 RENAME TABLE `blogPosts` TO `blog_posts`;
+RENAME TABLE `positions` TO `dump1090_positions`;
+RENAME TABLE `flights` TO `dump1090_flights`;
+RENAME TABLE `aircraft` TO `dump1090_aircraft`;
 
 -- RENAME COLUMNS
 
