@@ -9,14 +9,19 @@ import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { BlogComponent } from './blog/blog.component';
 import { BlogPostComponent } from './blog-post/blog-post.component';
 import { FlightHistoryComponent } from './flight-history/flight-history.component';
+import { AcarsComponent } from './acars/acars.component';
+import { AdminAcarsComponent } from './admin-acars/admin-acars.component';
 import { FlightsComponent } from './flights/flights.component';
 import { LoginComponent } from './login/login.component';
-import { PerformanceGraphsComponent } from './performance-graphs/performance-graphs.component';
+import { ReceiverInformationComponent } from './receiver-information/receiver-information.component';
 import { RegisterComponent } from './register/register.component';
 import { SystemInformationComponent } from './system-information/system-information.component';
 
 export const routes: Routes = [
     { path: 'account', component: AccountComponent },
+    { path: 'acars', component: AcarsComponent },
+    { path: 'acars/:page', component: AcarsComponent },
+    { path: 'admin/acars', component: AdminAcarsComponent },
     { path: 'admin/blog', component: AdminBlogComponent },
     { path: 'admin/flights', component: AdminFlightsComponent },
     { path: 'admin/information', component: AdminInformationComponent },
@@ -26,11 +31,12 @@ export const routes: Routes = [
     { path: 'blog', component: BlogComponent },
     { path: 'blog/:page', component: BlogComponent },
     { path: 'blog-post/:id', component: BlogPostComponent },
-    { path: 'flight-history/:flight', component: FlightHistoryComponent },
+    { path: 'flight-history/adsb/:flight', component: FlightHistoryComponent },
+    { path: 'flight-history/uat/:flight',  component: FlightHistoryComponent },
     { path: 'flights', component: FlightsComponent },
     { path: 'flights/:page', component: FlightsComponent },
     { path: 'login', component: LoginComponent },
-    { path: 'performance-graphs', component: PerformanceGraphsComponent },
+    { path: 'receiver-information', component: ReceiverInformationComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'system-information', component: SystemInformationComponent }
 ];

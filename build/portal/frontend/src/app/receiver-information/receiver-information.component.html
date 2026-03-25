@@ -1,5 +1,5 @@
 <div class="container py-4">
-    <h1 class="mb-3">Performance Graphs</h1>
+    <h1 class="mb-3">Receiver Information</h1>
 
     <app-spinner *ngIf="loading"></app-spinner>
 
@@ -20,7 +20,7 @@
         </div>
 
         <!-- Dump1090 Graphs -->
-        <div class="card mb-4">
+        <div class="card mb-4" *ngIf="dump1090GraphsEnabled">
             <div class="card-header fw-semibold">Dump1090 Graphs</div>
             <div class="card-body">
 
@@ -76,11 +76,83 @@
                     </div>
                 </div>
 
-                <!-- CPU (half-width) -->
-                <div class="row">
+                <!-- Positions + Strong signals -->
+                <div class="row mb-4">
+                    <div class="col-md-6 text-center">
+                        <img [src]="imgUrl('dump1090-localhost-positions')"
+                             class="img-fluid graph-img" alt="Positions Decoded">
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <img [src]="imgUrl('dump1090-localhost-strong_signals')"
+                             class="img-fluid graph-img" alt="Strong Signals">
+                    </div>
+                </div>
+
+                <!-- DF message type breakdown (full width) -->
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                        <img [src]="imgUrl('dump1090-localhost-df_types')"
+                             class="img-fluid graph-img" alt="Message Types">
+                    </div>
+                </div>
+
+                <!-- CPU (half-width, centered) -->
+                <div class="row justify-content-center">
                     <div class="col-md-6 text-center">
                         <img [src]="imgUrl('dump1090-localhost-cpu')"
                              class="img-fluid graph-img" alt="CPU Utilization">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Dump978 Graphs -->
+        <div class="card mb-4" *ngIf="dump978GraphsEnabled">
+            <div class="card-header fw-semibold">Dump978 Graphs</div>
+            <div class="card-body">
+
+                <!-- Message Rate (full width) -->
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                        <img [src]="imgUrl('dump978-localhost-message_rate')"
+                             class="img-fluid graph-img" alt="Message Rate">
+                    </div>
+                </div>
+
+                <!-- Aircraft + Signal -->
+                <div class="row mb-4">
+                    <div class="col-md-6 text-center">
+                        <img [src]="imgUrl('dump978-localhost-aircraft')"
+                             class="img-fluid graph-img" alt="Aircraft Seen">
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <img [src]="imgUrl('dump978-localhost-signal')"
+                             class="img-fluid graph-img" alt="Signal Strength">
+                    </div>
+                </div>
+
+                <!-- Range (conditional) + Altitude (conditional) -->
+                <div class="row">
+                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'imperialNautical'">
+                        <img [src]="imgUrl('dump978-localhost-range_imperial_nautical')"
+                             class="img-fluid graph-img" alt="Max Range (Nautical Miles)">
+                    </div>
+                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'imperialStatute'">
+                        <img [src]="imgUrl('dump978-localhost-range_imperial_statute')"
+                             class="img-fluid graph-img" alt="Max Range (Statute Miles)">
+                    </div>
+                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'metric'">
+                        <img [src]="imgUrl('dump978-localhost-range_metric')"
+                             class="img-fluid graph-img" alt="Max Range (Kilometres)">
+                    </div>
+                    <div class="col-md-6 text-center" *ngIf="measurementAltitude === 'imperial'">
+                        <img [src]="imgUrl('dump978-localhost-altitude_imperial')"
+                             class="img-fluid graph-img" alt="Average Aircraft Altitude (Feet)">
+                    </div>
+                    <div class="col-md-6 text-center" *ngIf="measurementAltitude === 'metric'">
+                        <img [src]="imgUrl('dump978-localhost-altitude_metric')"
+                             class="img-fluid graph-img" alt="Average Aircraft Altitude (Metres)">
                     </div>
                 </div>
 

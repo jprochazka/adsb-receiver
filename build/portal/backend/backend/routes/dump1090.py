@@ -8,11 +8,11 @@ from backend.models import db, Flight, Position
 from werkzeug.exceptions import HTTPException
 from sqlalchemy import select, func, delete
 
-flights = Blueprint('flights', __name__)
+flights = Blueprint('dump1090', __name__)
 
 # Create Flask-RESTX namespaces for flight operations
-flights_ns = Namespace('flights', description='Flight list operations')
-flight_ns = Namespace('flight', description='Individual flight operations')
+flights_ns = Namespace('adsb/flights', description='Flight list operations')
+flight_ns = Namespace('adsb/flight', description='Individual flight operations')
 
 # Define API models for documentation
 flight_model = flight_ns.model('Flight', {

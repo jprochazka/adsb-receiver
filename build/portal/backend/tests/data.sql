@@ -1,4 +1,4 @@
-INSERT INTO aircraft (`icao`, `first_seen`, `last_seen`)
+INSERT INTO dump1090_aircraft (`icao`, `first_seen`, `last_seen`)
 VALUES
   ('icao01', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
   ('icao02', '2024-07-17 02:20:22', '2024-06-17 02:22:02'),
@@ -13,7 +13,7 @@ VALUES
   ('Title Three', '2024-07-05 15:00:03', 'User Three', 'Content for blog post three.'),
   ('Title Four', '2024-07-06 16:30:04', 'User Two', 'Content for blog post four.');
 
-INSERT INTO flights (`aircraft`, `flight`, `first_seen`, `last_seen`)
+INSERT INTO dump1090_flights (`aircraft`, `flight`, `first_seen`, `last_seen`)
 VALUES
   (1, 'FLT0001', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
   (2, 'FLT0002', '2024-07-17 02:20:22', '2024-06-17 02:22:02'),
@@ -32,7 +32,7 @@ VALUES
   ('FLT0012'),
   ('FLT0013');
 
-INSERT INTO positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `vertical_rate`, `speed`)
+INSERT INTO dump1090_positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `vertical_rate`, `speed`)
 VALUES
   (1, 1, '2024-06-17 01:11:01', 204, 6523, 42.649292, -84.960896, 98, 46975, 0, 477),
   (1, 1, '2024-06-17 01:11:46', 289, 6523, 42.646408, -84.934304, 98, 46975, 0, 477),
@@ -60,3 +60,21 @@ VALUES
   ('Admin User', 'noreply@email-one.com', 'password123', 1, 'Admin'),
   ('Regular User', 'noreply@email-two.com', 'password456', 0, 'User'),
   ('Another User', 'noreply@email-three.com', 'password789', 0, 'User');
+
+INSERT INTO dump978_aircraft (`icao`, `first_seen`, `last_seen`)
+VALUES
+  ('uicao01', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
+  ('uicao02', '2024-07-17 02:20:22', '2024-06-17 02:22:02'),
+  ('uicao03', '2024-07-17 03:30:33', NULL);
+
+INSERT INTO dump978_flights (`aircraft`, `flight`, `first_seen`, `last_seen`)
+VALUES
+  (1, 'UAT0001', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
+  (2, 'UAT0002', '2024-07-17 02:20:22', '2024-06-17 02:22:02');
+
+INSERT INTO dump978_positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `vertical_rate`, `speed`)
+VALUES
+  (1, 1, '2024-06-17 01:11:01', 50,   6523, 42.649292, -84.960896, 98, 4000,  0,   120),
+  (1, 1, '2024-06-17 01:11:46', 75,   6523, 42.646408, -84.934304, 98, 4100,  64,  121),
+  (2, 2, '2024-06-17 02:10:01', 100,  1234, 41.774163, -83.827344, 91, 5000, 100,  130),
+  (NULL, 3, '2024-06-17 03:30:33', NULL, 4321, 43.000000, -85.000000, 90, 3000, 0, 110);

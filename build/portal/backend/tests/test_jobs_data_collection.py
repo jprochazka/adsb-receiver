@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock, mock_open
 from datetime import datetime
 from backend import create_app
 from backend.models import db, Aircraft, Flight, Position
-from backend.jobs.data_collection import DataProcessor
+from backend.jobs.dump1090_data_collection import DataProcessor
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ class TestDataProcessor:
         assert test_message in captured.out
         assert datetime.now().strftime("%Y/%m/%d") in captured.out
 
-    @patch('backend.jobs.data_collection.urlopen')
+    @patch('backend.jobs.dump1090_data_collection.urlopen')
     def test_read_json_success(self, mock_urlopen, processor):
         """Test successful JSON reading from dump1090"""
         mock_response = MagicMock()
@@ -68,8 +68,8 @@ class TestDataProcessor:
         assert len(result["aircraft"]) == 1
         assert result["aircraft"][0]["hex"] == "abc123"
 
-    @patch('backend.jobs.data_collection.urlopen')
-    @patch('backend.jobs.data_collection.logging.error')
+    @patch('backend.jobs.dump1090_data_collection.urlopen')
+    @patch('backend.jobs.dump1090_data_collection.logging.error')
     def test_read_json_failure(self, mock_logging, mock_urlopen, processor):
         """Test JSON reading failure handling"""
         mock_urlopen.side_effect = Exception("Connection failed")
@@ -107,7 +107,7 @@ class TestDataProcessor:
         captured = capsys.readouterr()
         assert "no aircraft data to process" in captured.out
 
-    @patch('backend.jobs.data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_flight')
     def test_process_aircraft_new_aircraft(self, mock_process_flight, processor, app):
         """Test processing a new aircraft"""
@@ -131,7 +131,7 @@ class TestDataProcessor:
             
             mock_process_flight.assert_called_once_with(new_aircraft.id, aircraft_data)
 
-    @patch('backend.jobs.data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_aircraft_existing_aircraft(self, mock_process_positions, processor, app):
         """Test processing an existing aircraft"""
@@ -160,8 +160,8 @@ class TestDataProcessor:
             
             mock_process_positions.assert_called_once_with(existing_aircraft.id, None, aircraft_data)
 
-    @patch('backend.jobs.data_collection.Aircraft')
-    @patch('backend.jobs.data_collection.logging.error')
+    @patch('backend.jobs.dump1090_data_collection.Aircraft')
+    @patch('backend.jobs.dump1090_data_collection.logging.error')
     def test_process_aircraft_database_error(self, mock_logging, mock_aircraft, processor, app):
         """Test aircraft processing with database error"""
         with app.app_context():
@@ -175,7 +175,7 @@ class TestDataProcessor:
             assert result is None
             mock_logging.assert_called()
 
-    @patch('backend.jobs.data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_flight_new_flight(self, mock_process_positions, processor, app):
         """Test processing a new flight"""
@@ -200,7 +200,7 @@ class TestDataProcessor:
             
             mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data)
 
-    @patch('backend.jobs.data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_flight_existing_flight(self, mock_process_positions, processor, app):
         """Test processing an existing flight"""
@@ -229,8 +229,8 @@ class TestDataProcessor:
             
             mock_process_positions.assert_called_once_with(aircraft_id, existing_flight.id, aircraft_data)
 
-    @patch('backend.jobs.data_collection.Flight')
-    @patch('backend.jobs.data_collection.logging.error')
+    @patch('backend.jobs.dump1090_data_collection.Flight')
+    @patch('backend.jobs.dump1090_data_collection.logging.error')
     def test_process_flight_database_error(self, mock_logging, mock_flight, processor, app):
         """Test flight processing with database error"""
         with app.app_context():
@@ -244,7 +244,7 @@ class TestDataProcessor:
             
             mock_logging.assert_called()
 
-    @patch('backend.jobs.data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     def test_process_positions_with_coordinates(self, processor, app):
         """Test processing positions with valid coordinates"""
         with app.app_context():
@@ -291,8 +291,8 @@ class TestDataProcessor:
             captured = capsys.readouterr()
             assert "is not present" in captured.out
 
-    @patch('backend.jobs.data_collection.Position')
-    @patch('backend.jobs.data_collection.logging.error')
+    @patch('backend.jobs.dump1090_data_collection.Position')
+    @patch('backend.jobs.dump1090_data_collection.logging.error')
     def test_process_positions_database_error(self, mock_logging, mock_position, processor, app):
         """Test position processing with database error"""
         with app.app_context():

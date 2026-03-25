@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { catchError, of } from 'rxjs';
+import { catchError, filter, of } from 'rxjs';
 import { LinksComponent } from './links/links.component';
 import { LogoutComponent } from './logout/logout.component';
 import { DataService } from './service/data.service';
@@ -22,6 +22,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private pollInterval: any;
 
   flightsNavEnabled = true;
+  acarsNavEnabled   = true;
   blogNavEnabled    = true;
   linksNavEnabled   = true;
 
@@ -44,6 +45,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadFlightsSettings();
     this.loadInfoSettings();
     this.loadMapSettings();
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+      document.getElementById('navbarMain')?.classList.remove('show');
+    });
   }
 
   ngOnDestroy(): void {
@@ -60,6 +64,9 @@ export class AppComponent implements OnInit, OnDestroy {
   private loadFlightsSettings(): void {
     this.dataService.getSetting('flights_nav_enabled').pipe(catchError(() => of({ value: 'true' }))).subscribe(res => {
       this.flightsNavEnabled = res?.value !== 'false';
+    });
+    this.dataService.getSetting('acars_nav_enabled').pipe(catchError(() => of({ value: 'true' }))).subscribe(res => {
+      this.acarsNavEnabled = res?.value !== 'false';
     });
     this.dataService.getSetting('blog_nav_enabled').pipe(catchError(() => of({ value: 'true' }))).subscribe(res => {
       this.blogNavEnabled = res?.value !== 'false';

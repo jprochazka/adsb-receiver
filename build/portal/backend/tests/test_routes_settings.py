@@ -2,7 +2,7 @@ from tests.conftest import create_admin_token, create_user_token
 
 # PUT /setting/{id}
 
-def test_put_setting_204(client, app):
+def test_put_setting_200(client, app):
     with app.app_context():
         access_token = create_admin_token()
         request_headers = {
@@ -13,7 +13,7 @@ def test_put_setting_204(client, app):
             'value': 'Updated Setting Three'
         }
         response = client.put('/api/setting', headers=request_headers, json=request_json)
-    assert response.status_code == 204
+    assert response.status_code == 200
 
 def test_put_setting_401(client):
     request_json = {

@@ -9,7 +9,7 @@ from sqlalchemy import select
 aircraft = Blueprint('aircraft', __name__)
 
 # Create Flask-RESTX namespace for aircraft operations
-aircraft_ns = Namespace('aircraft', description='Aircraft tracking and position data')
+aircraft_ns = Namespace('adsb/aircraft', description='Aircraft tracking and position data')
 
 # Define API models for documentation
 position_model = aircraft_ns.model('Position', {

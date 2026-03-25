@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
@@ -21,6 +22,7 @@ export class AdminGraphsComponent implements OnInit {
   measurementRange = 'imperialNautical';
   measurementTemperature = 'imperial';
   networkInterface = 'eth0';
+  dump978GraphsEnabled = false;
 
   rangeOptions = [
     { value: 'imperialNautical', label: 'Imperial — Nautical Miles' },
@@ -45,11 +47,13 @@ export class AdminGraphsComponent implements OnInit {
       range: this.dataService.getSetting('graphs_measurement_range'),
       temp:  this.dataService.getSetting('graphs_measurement_temperature'),
       iface: this.dataService.getSetting('graphs_network_interface'),
+      d978:  this.dataService.getSetting('graphs_dump978_enabled').pipe(catchError(() => of({ value: 'false' }))),
     }).subscribe({
-      next: ({ range, temp, iface }) => {
-        this.measurementRange       = range?.value ?? 'imperialNautical';
-        this.measurementTemperature = temp?.value  ?? 'imperial';
-        this.networkInterface       = iface?.value ?? 'eth0';
+      next: ({ range, temp, iface, d978 }) => {
+        this.measurementRange       = range?.value  ?? 'imperialNautical';
+        this.measurementTemperature = temp?.value   ?? 'imperial';
+        this.networkInterface       = iface?.value  ?? 'eth0';
+        this.dump978GraphsEnabled   = d978?.value   !== 'false';
         this.loading = false;
       },
       error: () => {
@@ -68,6 +72,7 @@ export class AdminGraphsComponent implements OnInit {
       this.dataService.updateSetting('graphs_measurement_range',       this.measurementRange),
       this.dataService.updateSetting('graphs_measurement_temperature',  this.measurementTemperature),
       this.dataService.updateSetting('graphs_network_interface',        this.networkInterface),
+      this.dataService.updateSetting('graphs_dump978_enabled',          String(this.dump978GraphsEnabled)),
     ]).subscribe({
       next: () => {
         this.saving = false;

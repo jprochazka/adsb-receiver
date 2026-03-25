@@ -1,13 +1,23 @@
 DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS aircraft;
+DROP TABLE IF EXISTS dump1090_positions;
+DROP TABLE IF EXISTS dump1090_flights;
+DROP TABLE IF EXISTS dump1090_aircraft;
+DROP TABLE IF EXISTS dump978_positions;
+DROP TABLE IF EXISTS dump978_flights;
+DROP TABLE IF EXISTS dump978_aircraft;
 DROP TABLE IF EXISTS blog_posts;
 DROP TABLE IF EXISTS notifications;
-DROP TABLE IF EXISTS flights;
 DROP TABLE IF EXISTS links;
-DROP TABLE IF EXISTS positions;
 DROP TABLE IF EXISTS settings;
 
-CREATE TABLE aircraft (
+CREATE TABLE dump1090_aircraft (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `icao` TEXT NOT NULL,
+    `first_seen` TEXT NOT NULL,
+    `last_seen` TEXT
+);
+
+CREATE TABLE dump978_aircraft (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `icao` TEXT NOT NULL,
     `first_seen` TEXT NOT NULL,
@@ -27,13 +37,22 @@ CREATE TABLE notifications (
     `flight` TEXT NOT NULL
 );
 
-CREATE TABLE flights (
+CREATE TABLE dump1090_flights (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `aircraft` INTEGER NOT NULL,
     `flight` TEXT NOT NULL,
     `first_seen` TEXT NOT NULL,
     `last_seen` TEXT,
-    FOREIGN KEY(aircraft) REFERENCES aircraft(id)
+    FOREIGN KEY(aircraft) REFERENCES dump1090_aircraft(id)
+);
+
+CREATE TABLE dump978_flights (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `aircraft` INTEGER NOT NULL,
+    `flight` TEXT NOT NULL,
+    `first_seen` TEXT NOT NULL,
+    `last_seen` TEXT,
+    FOREIGN KEY(aircraft) REFERENCES dump978_aircraft(id)
 );
 
 CREATE TABLE links (
@@ -42,7 +61,7 @@ CREATE TABLE links (
     `address` TEXT NOT NULL
 );
 
-CREATE TABLE positions (
+CREATE TABLE dump1090_positions (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
     `flight` INTEGER NOT NULL,
     `aircraft` INTEGER NOT NULL,
@@ -55,13 +74,30 @@ CREATE TABLE positions (
     `altitude` INTEGER NOT NULL,
     `vertical_rate` INTEGER NOT NULL,
     `speed` INTEGER,
-    FOREIGN KEY (aircraft) REFERENCES aircraft(id),
-    FOREIGN KEY (flight) REFERENCES flights(id)
+    FOREIGN KEY (aircraft) REFERENCES dump1090_aircraft(id),
+    FOREIGN KEY (flight) REFERENCES dump1090_flights(id)
+);
+
+CREATE TABLE dump978_positions (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+    `flight` INTEGER,
+    `aircraft` INTEGER NOT NULL,
+    `time` TEXT NOT NULL,
+    `message` INTEGER,
+    `squawk` INTEGER,
+    `latitude` REAL NOT NULL,
+    `longitude` REAL NOT NULL,
+    `track` INTEGER NOT NULL,
+    `altitude` INTEGER NOT NULL,
+    `vertical_rate` INTEGER NOT NULL,
+    `speed` INTEGER,
+    FOREIGN KEY (aircraft) REFERENCES dump978_aircraft(id),
+    FOREIGN KEY (flight) REFERENCES dump978_flights(id)
 );
 
 CREATE TABLE settings (
     `id` INTEGER PRIMARY KEY AUTOINCREMENT,
-    `name` TEXT NOT NULL,
+    `name` TEXT NOT NULL UNIQUE,
     `value` TEXT NOT NULL
 );
 
@@ -84,7 +120,9 @@ INSERT INTO users (`name`, `email`, `password`, `administrator`, `role`) VALUES
 INSERT INTO settings (`name`, `value`) VALUES
 ('graphs_measurement_range', 'imperialNautical'),
 ('graphs_measurement_temperature', 'imperial'),
-('graphs_network_interface', 'eth0');
+('graphs_network_interface', 'eth0'),
+('graphs_dump1090_enabled', 'true'),
+('graphs_dump978_enabled', 'false');
 
 -- Default flights visibility settings
 INSERT INTO settings (`name`, `value`) VALUES

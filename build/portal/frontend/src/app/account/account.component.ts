@@ -3,7 +3,7 @@ import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
-import { catchError, of } from 'rxjs';
+import { catchError, of, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-account',

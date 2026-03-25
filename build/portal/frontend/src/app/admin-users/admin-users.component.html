@@ -105,7 +105,7 @@
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
           <td>
-            <span class="badge" [class.bg-danger]="user.role === 'Admin'" [class.bg-secondary]="user.role !== 'Admin'">
+            <span class="badge badge-role" [class.bg-danger]="user.role === 'Admin'" [class.bg-secondary]="user.role !== 'Admin'">
               {{ user.role }}
             </span>
           </td>

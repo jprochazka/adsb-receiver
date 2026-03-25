@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
@@ -14,21 +15,24 @@ const PERIODS = [
 ];
 
 @Component({
-  selector: 'app-performance-graphs',
+  selector: 'app-receiver-information',
   standalone: true,
   imports: [NgFor, NgIf, SpinnerComponent],
-  templateUrl: './performance-graphs.component.html',
-  styleUrl: './performance-graphs.component.scss'
+  templateUrl: './receiver-information.component.html',
+  styleUrl: './receiver-information.component.scss'
 })
-export class PerformanceGraphsComponent implements OnInit {
+export class ReceiverInformationComponent implements OnInit {
   periods = PERIODS;
   activePeriod = '1h';
   loading = true;
   errorMessage = '';
 
   measurementRange = 'imperialNautical';
+  measurementAltitude = 'imperial';
   measurementTemperature = 'imperial';
   networkInterface = 'eth0';
+  dump1090GraphsEnabled = true;
+  dump978GraphsEnabled = false;
 
   constructor(private dataService: DataService) {}
 
@@ -37,11 +41,16 @@ export class PerformanceGraphsComponent implements OnInit {
       range: this.dataService.getSetting('graphs_measurement_range'),
       temp:  this.dataService.getSetting('graphs_measurement_temperature'),
       iface: this.dataService.getSetting('graphs_network_interface'),
+      d1090: this.dataService.getSetting('graphs_dump1090_enabled').pipe(catchError(() => of({ value: 'true' }))),
+      d978:  this.dataService.getSetting('graphs_dump978_enabled').pipe(catchError(() => of({ value: 'false' }))),
     }).subscribe({
-      next: ({ range, temp, iface }) => {
+      next: ({ range, temp, iface, d1090, d978 }) => {
         this.measurementRange        = range?.value  ?? 'imperialNautical';
+        this.measurementAltitude     = this.measurementRange === 'metric' ? 'metric' : 'imperial';
         this.measurementTemperature  = temp?.value   ?? 'imperial';
         this.networkInterface        = iface?.value  ?? 'eth0';
+        this.dump1090GraphsEnabled   = d1090?.value  !== 'false';
+        this.dump978GraphsEnabled    = d978?.value   !== 'false';
         this.loading = false;
       },
       error: () => {
@@ -55,7 +64,6 @@ export class PerformanceGraphsComponent implements OnInit {
     this.activePeriod = period;
   }
 
-  /** Build the URL for a named graph image at the current period. */
   imgUrl(name: string): string {
     return `/graphs/${name}-${this.activePeriod}.png`;
   }

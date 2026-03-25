@@ -25,6 +25,8 @@ export class AdminInformationComponent implements OnInit {
   infoGraphsEnabled = true;
 
   // Graph settings
+  dump1090GraphsEnabled  = true;
+  dump978GraphsEnabled   = false;
   measurementRange       = 'imperialNautical';
   measurementTemperature = 'imperial';
   networkInterface       = 'eth0';
@@ -52,14 +54,18 @@ export class AdminInformationComponent implements OnInit {
       nav:    this.dataService.getSetting('info_nav_enabled').pipe(catchError(() => of({ value: 'true' }))),
       system: this.dataService.getSetting('info_system_enabled').pipe(catchError(() => of({ value: 'true' }))),
       graphs: this.dataService.getSetting('info_graphs_enabled').pipe(catchError(() => of({ value: 'true' }))),
+      d1090:  this.dataService.getSetting('graphs_dump1090_enabled').pipe(catchError(() => of({ value: 'true' }))),
+      d978:   this.dataService.getSetting('graphs_dump978_enabled').pipe(catchError(() => of({ value: 'false' }))),
       range:  this.dataService.getSetting('graphs_measurement_range').pipe(catchError(() => of({ value: 'imperialNautical' }))),
       temp:   this.dataService.getSetting('graphs_measurement_temperature').pipe(catchError(() => of({ value: 'imperial' }))),
       iface:  this.dataService.getSetting('graphs_network_interface').pipe(catchError(() => of({ value: 'eth0' }))),
     }).subscribe({
-      next: ({ nav, system, graphs, range, temp, iface }) => {
+      next: ({ nav, system, graphs, d1090, d978, range, temp, iface }) => {
         this.infoNavEnabled    = nav?.value    !== 'false';
         this.infoSystemEnabled = system?.value !== 'false';
         this.infoGraphsEnabled = graphs?.value !== 'false';
+        this.dump1090GraphsEnabled  = d1090?.value !== 'false';
+        this.dump978GraphsEnabled   = d978?.value  !== 'false';
         this.measurementRange       = range?.value ?? 'imperialNautical';
         this.measurementTemperature = temp?.value  ?? 'imperial';
         this.networkInterface       = iface?.value ?? 'eth0';
@@ -81,6 +87,8 @@ export class AdminInformationComponent implements OnInit {
       this.dataService.updateSetting('info_nav_enabled',              String(this.infoNavEnabled)),
       this.dataService.updateSetting('info_system_enabled',           String(this.infoSystemEnabled)),
       this.dataService.updateSetting('info_graphs_enabled',           String(this.infoGraphsEnabled)),
+      this.dataService.updateSetting('graphs_dump1090_enabled',        String(this.dump1090GraphsEnabled)),
+      this.dataService.updateSetting('graphs_dump978_enabled',         String(this.dump978GraphsEnabled)),
       this.dataService.updateSetting('graphs_measurement_range',      this.measurementRange),
       this.dataService.updateSetting('graphs_measurement_temperature', this.measurementTemperature),
       this.dataService.updateSetting('graphs_network_interface',      this.networkInterface),

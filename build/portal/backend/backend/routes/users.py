@@ -67,7 +67,7 @@ class CreateUserRequestSchema(Schema):
 class UpdateUserRequestSchema(Schema):
     name = fields.String(required=True)
     email = fields.Email()
-    password = fields.String()
+    password = fields.String(required=True)
     administrator = fields.Boolean()  # Keep for backward compatibility
     role = fields.String()  # New role field
 

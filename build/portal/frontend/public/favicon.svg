@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="10" fill="#0b0f1e"/>
+  <text x="32" y="48" font-size="40" text-anchor="middle" fill="#0ea5e9" font-family="sans-serif">✈</text>
+</svg>

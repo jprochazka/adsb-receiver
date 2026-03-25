@@ -7,6 +7,8 @@
 
       <!-- Aircraft photo / placeholder -->
       <div class="flyout-img" [class.flyout-img--loaded]="photoUrl">
+        <span class="badge badge-adsb flyout-type-badge" *ngIf="flightType === 'adsb'">ADS-B</span>
+        <span class="badge badge-uat flyout-type-badge" *ngIf="flightType === 'uat'">UAT</span>
         <img *ngIf="photoUrl" [src]="photoUrl" class="flyout-photo"
              alt="Aircraft photo" (error)="photoUrl = null">
         <ng-container *ngIf="!photoUrl">

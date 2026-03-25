@@ -3,58 +3,204 @@
     <h1 *ngIf="searchQuery">Search Results for "{{ searchQuery }}"</h1>
     <hr />
     <app-spinner *ngIf="loading"></app-spinner>
-    <div *ngIf="!loading && data">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th scope="col">Flight</th>
-                    <th scope="col">Last Seen</th>
-                    <th scope="col">First Seen</th>
-                    <th scope="col">Links</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let flight of data.flights">
-                    <td>
-                        <a [routerLink]="['/flight-history', flight.flight]">{{ flight.flight }}</a>
-                    </td>
-                    <td>{{ flight.last_seen }}</td>
-                    <td>{{ flight.first_seen }}</td>
-                    <td>
-                        <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
-                        <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
-                        <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
 
-        <!-- Pagination (hidden during search) -->
-        <nav *ngIf="!searchQuery && totalPages > 1" aria-label="Flight list pages">
-            <ul class="pagination flex-wrap">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                    <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
-                </li>
-                <ng-container *ngFor="let p of pageNumbers; let i = index">
-                    <!-- Ellipsis gap -->
-                    <li class="page-item disabled" *ngIf="i > 0 && p !== pageNumbers[i - 1] + 1">
-                        <span class="page-link">…</span>
-                    </li>
-                    <li class="page-item" [class.active]="p === currentPage">
-                        <a class="page-link" (click)="goToPage(p)" style="cursor:pointer">{{ p }}</a>
-                    </li>
-                </ng-container>
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor:pointer">Next &#8250;</a>
-                </li>
-            </ul>
-        </nav>
+    <div *ngIf="!loading">
 
-        <p *ngIf="!searchQuery" class="fw-light text-secondary small">
-            Displaying {{ data.offset + 1 }}–{{ data.offset + data.count }} of {{ totalFlights }} flights &mdash; page {{ currentPage }} of {{ totalPages }}
-        </p>
-        <p *ngIf="searchQuery" class="fw-light text-secondary small">
-            {{ data.count }} result(s) found for "{{ searchQuery }}"
-        </p>
+        <!-- Tabs (shown only when both are enabled) -->
+        <ul class="nav nav-tabs mb-3" *ngIf="adsbTabEnabled && uatTabEnabled">
+            <li class="nav-item" *ngIf="allTabEnabled">
+                <a class="nav-link" [class.active]="activeTab === 'all'" (click)="setTab('all')" style="cursor:pointer">
+                    All Flights
+                    <span class="badge text-bg-secondary ms-1">{{ adsbTotalFlights + uatTotalFlights }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" [class.active]="activeTab === 'adsb'" (click)="setTab('adsb')" style="cursor:pointer">
+                    ADS-B Flights
+                    <span class="badge text-bg-secondary ms-1">{{ adsbTotalFlights }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" [class.active]="activeTab === 'uat'" (click)="setTab('uat')" style="cursor:pointer">
+                    UAT Flights
+                    <span class="badge text-bg-secondary ms-1">{{ uatTotalFlights }}</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- All Flights Tab -->
+        <div *ngIf="allTabEnabled && activeTab === 'all'">
+            <div *ngIf="combinedFlights.length; else noAll">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Flight</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">First Seen</th>
+                            <th scope="col">Last Seen</th>
+                            <th scope="col">Links</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let flight of combinedFlights">
+                            <td>
+                                <a *ngIf="flight._type === 'adsb'" [routerLink]="['/flight-history/adsb', flight.flight]">{{ flight.flight }}</a>
+                                <a *ngIf="flight._type === 'uat' && flight.flight" [routerLink]="['/flight-history/uat', flight.flight]">{{ flight.flight }}</a>
+                                <span *ngIf="flight._type === 'uat' && !flight.flight">—</span>
+                            </td>
+                            <td>
+                                <span *ngIf="flight._type === 'adsb'" class="badge badge-adsb">ADS-B</span>
+                                <span *ngIf="flight._type === 'uat'"  class="badge badge-uat">UAT</span>
+                            </td>
+                            <td>{{ flight.first_seen }}</td>
+                            <td>{{ flight.last_seen }}</td>
+                            <td>
+                                <ng-container *ngIf="flight.flight; else noLinks">
+                                    <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
+                                    <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
+                                    <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
+                                </ng-container>
+                                <ng-template #noLinks>&mdash;</ng-template>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p *ngIf="searchQuery" class="fw-light text-secondary small">
+                    {{ combinedFlights.length }} result(s) found for &ldquo;{{ searchQuery }}&rdquo;
+                </p>
+            </div>
+            <ng-template #noAll>
+                <p class="text-muted">No flights found.</p>
+            </ng-template>
+        </div>
+
+        <!-- ADS-B Tab -->
+        <div *ngIf="adsbTabEnabled && (activeTab === 'adsb' || !uatTabEnabled)">
+            <div *ngIf="adsbData?.flights?.length; else noAdsb">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Flight</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">First Seen</th>
+                            <th scope="col">Last Seen</th>
+                            <th scope="col">Links</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let flight of adsbData.flights">
+                            <td>
+                                <a [routerLink]="['/flight-history/adsb', flight.flight]">{{ flight.flight }}</a>
+                            </td>
+                            <td><span class="badge badge-adsb">ADS-B</span></td>
+                            <td>{{ flight.first_seen }}</td>
+                            <td>{{ flight.last_seen }}</td>
+                            <td>
+                                <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
+                                <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
+                                <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <nav *ngIf="!searchQuery && adsbTotalPages > 1" aria-label="ADS-B flight pages">
+                    <ul class="pagination flex-wrap">
+                        <li class="page-item" [class.disabled]="adsbCurrentPage === 1">
+                            <a class="page-link" (click)="goToAdsbPage(adsbCurrentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
+                        </li>
+                        <ng-container *ngFor="let p of adsbPageNumbers; let i = index">
+                            <li class="page-item disabled" *ngIf="i > 0 && p !== adsbPageNumbers[i - 1] + 1">
+                                <span class="page-link">…</span>
+                            </li>
+                            <li class="page-item" [class.active]="p === adsbCurrentPage">
+                                <a class="page-link" (click)="goToAdsbPage(p)" style="cursor:pointer">{{ p }}</a>
+                            </li>
+                        </ng-container>
+                        <li class="page-item" [class.disabled]="adsbCurrentPage === adsbTotalPages">
+                            <a class="page-link" (click)="goToAdsbPage(adsbCurrentPage + 1)" style="cursor:pointer">Next &#8250;</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <p *ngIf="!searchQuery" class="fw-light text-secondary small">
+                    Displaying {{ adsbData.offset + 1 }}–{{ adsbData.offset + adsbData.count }} of {{ adsbTotalFlights }} flights &mdash; page {{ adsbCurrentPage }} of {{ adsbTotalPages }}
+                </p>
+                <p *ngIf="searchQuery" class="fw-light text-secondary small">
+                    {{ adsbData.count }} result(s) found for "{{ searchQuery }}"
+                </p>
+            </div>
+            <ng-template #noAdsb>
+                <p class="text-muted">No ADS-B flights found.</p>
+            </ng-template>
+        </div>
+
+        <!-- UAT Tab -->
+        <div *ngIf="uatTabEnabled && (activeTab === 'uat' || !adsbTabEnabled)">
+            <div *ngIf="uatData?.flights?.length; else noUat">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Flight</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">ICAO</th>
+                            <th scope="col">First Seen</th>
+                            <th scope="col">Last Seen</th>
+                            <th scope="col">Links</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let flight of uatData.flights">
+                            <td>
+                                <a *ngIf="flight.flight" [routerLink]="['/flight-history/uat', flight.flight]">{{ flight.flight }}</a>
+                                <span *ngIf="!flight.flight">—</span>
+                            </td>
+                            <td><span class="badge badge-uat">UAT</span></td>
+                            <td>{{ flight.icao }}</td>
+                            <td>{{ flight.first_seen }}</td>
+                            <td>{{ flight.last_seen }}</td>
+                            <td>
+                                <ng-container *ngIf="flight.flight; else noUatLinks">
+                                    <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
+                                    <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
+                                    <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
+                                </ng-container>
+                                <ng-template #noUatLinks>&mdash;</ng-template>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <nav *ngIf="!searchQuery && uatTotalPages > 1" aria-label="UAT flight pages">
+                    <ul class="pagination flex-wrap">
+                        <li class="page-item" [class.disabled]="uatCurrentPage === 1">
+                            <a class="page-link" (click)="goToUatPage(uatCurrentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
+                        </li>
+                        <ng-container *ngFor="let p of uatPageNumbers; let i = index">
+                            <li class="page-item disabled" *ngIf="i > 0 && p !== uatPageNumbers[i - 1] + 1">
+                                <span class="page-link">…</span>
+                            </li>
+                            <li class="page-item" [class.active]="p === uatCurrentPage">
+                                <a class="page-link" (click)="goToUatPage(p)" style="cursor:pointer">{{ p }}</a>
+                            </li>
+                        </ng-container>
+                        <li class="page-item" [class.disabled]="uatCurrentPage === uatTotalPages">
+                            <a class="page-link" (click)="goToUatPage(uatCurrentPage + 1)" style="cursor:pointer">Next &#8250;</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <p *ngIf="!searchQuery" class="fw-light text-secondary small">
+                    Displaying {{ uatData.offset + 1 }}–{{ uatData.offset + uatData.count }} of {{ uatTotalFlights }} flights &mdash; page {{ uatCurrentPage }} of {{ uatTotalPages }}
+                </p>
+                <p *ngIf="searchQuery" class="fw-light text-secondary small">
+                    {{ uatData.count }} result(s) found for "{{ searchQuery }}"
+                </p>
+            </div>
+            <ng-template #noUat>
+                <p class="text-muted">No UAT flights found.</p>
+            </ng-template>
+        </div>
+
     </div>
 </div>

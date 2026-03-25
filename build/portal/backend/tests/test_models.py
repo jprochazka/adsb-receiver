@@ -3,8 +3,9 @@ from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 from backend import create_app
 from backend.models import (
-    db, Aircraft, Flight, Position, User, BlogPost, 
-    Link, Notification, Setting
+    db, Aircraft, Flight, Position, User, BlogPost,
+    Link, Notification, Setting,
+    Dump978Aircraft, Dump978Flight, Dump978Position,
 )
 
 
@@ -498,3 +499,160 @@ class TestModels:
             assert 'id' in aircraft_dict
             assert 'id' in user_dict
             assert 'id' in link_dict
+
+
+class TestDump978Models:
+    """Test SQLAlchemy models for dump978 / UAT data"""
+
+    def test_dump978_aircraft_creation(self, app):
+        """Test Dump978Aircraft model creation and serialization"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(
+                icao='UAT001',
+                first_seen='2024-01-01 10:00:00',
+                last_seen='2024-01-01 12:00:00',
+            )
+            db.session.add(aircraft)
+            db.session.commit()
+
+            assert aircraft.id is not None
+            assert aircraft.icao == 'UAT001'
+            d = aircraft.to_dict()
+            assert d['icao'] == 'UAT001'
+            assert d['first_seen'] == '2024-01-01 10:00:00'
+            assert d['last_seen'] == '2024-01-01 12:00:00'
+
+    def test_dump978_aircraft_nullable_last_seen(self, app):
+        """last_seen may be NULL for aircraft still being tracked"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(icao='UAT002', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+            assert aircraft.last_seen is None
+            assert aircraft.to_dict()['last_seen'] is None
+
+    def test_dump978_flight_creation(self, app):
+        """Test Dump978Flight model creation with FK to Dump978Aircraft"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(icao='UAT001', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='N123AB',
+                first_seen='2024-01-01 10:00:00',
+                last_seen='2024-01-01 11:00:00',
+            )
+            db.session.add(flight)
+            db.session.commit()
+
+            assert flight.id is not None
+            assert flight.flight == 'N123AB'
+            d = flight.to_dict()
+            assert d['aircraft'] == aircraft.id
+            assert d['flight'] == 'N123AB'
+
+    def test_dump978_flight_relationship(self, app):
+        """Test Dump978Aircraft → Dump978Flight relationship"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(icao='UAT001', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='N123AB',
+                first_seen='2024-01-01 10:00:00',
+            )
+            db.session.add(flight)
+            db.session.commit()
+
+            assert len(list(aircraft.flights)) == 1
+            assert list(aircraft.flights)[0].flight == 'N123AB'
+
+    def test_dump978_position_creation_full(self, app):
+        """Test Dump978Position with all fields populated"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(icao='UAT001', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='N123AB',
+                first_seen='2024-01-01 10:00:00',
+            )
+            db.session.add(flight)
+            db.session.commit()
+
+            position = Dump978Position(
+                flight=flight.id,
+                aircraft=aircraft.id,
+                time='2024-01-01 10:15:00',
+                message=42,
+                squawk=1200,
+                latitude=40.7128,
+                longitude=-74.0060,
+                track=180,
+                altitude=5000,
+                vertical_rate=100,
+                speed=120,
+            )
+            db.session.add(position)
+            db.session.commit()
+
+            assert position.id is not None
+            d = position.to_dict()
+            assert d['flight'] == flight.id
+            assert d['message'] == 42
+            assert d['latitude'] == 40.7128
+
+    def test_dump978_position_nullable_flight_and_message(self, app):
+        """Dump978Position allows NULL flight and message (UAT aircraft without callsign)"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(icao='UAT003', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            position = Dump978Position(
+                flight=None,
+                aircraft=aircraft.id,
+                time='2024-01-01 10:15:00',
+                message=None,
+                latitude=40.7128,
+                longitude=-74.0060,
+                track=90,
+                altitude=3000,
+                vertical_rate=0,
+            )
+            db.session.add(position)
+            db.session.commit()
+
+            assert position.flight is None
+            assert position.message is None
+            d = position.to_dict()
+            assert d['flight'] is None
+            assert d['message'] is None
+
+    def test_dump978_aircraft_positions_relationship(self, app):
+        """Test Dump978Aircraft → Dump978Position relationship"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(icao='UAT001', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            for i in range(3):
+                pos = Dump978Position(
+                    aircraft=aircraft.id,
+                    time=f'2024-01-01 10:{i:02d}:00',
+                    latitude=40.0 + i,
+                    longitude=-74.0,
+                    track=0,
+                    altitude=5000,
+                    vertical_rate=0,
+                )
+                db.session.add(pos)
+            db.session.commit()
+
+            assert len(list(aircraft.positions)) == 3

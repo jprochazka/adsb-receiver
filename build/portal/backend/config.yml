@@ -13,3 +13,6 @@ database:
     maintenance:
         purge_old_aircraft: True
         days_to_save: 30
+
+acars:
+    database: "instance/acarsdec.sqlite"

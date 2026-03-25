@@ -5,7 +5,7 @@ db = SQLAlchemy()
 
 
 class Aircraft(db.Model):
-    __tablename__ = 'aircraft'
+    __tablename__ = 'dump1090_aircraft'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     icao = db.Column(db.String(8), nullable=False, index=True)
@@ -67,10 +67,10 @@ class Notification(db.Model):
 
 
 class Flight(db.Model):
-    __tablename__ = 'flights'
+    __tablename__ = 'dump1090_flights'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    aircraft = db.Column(db.Integer, db.ForeignKey('aircraft.id'), nullable=False)
+    aircraft = db.Column(db.Integer, db.ForeignKey('dump1090_aircraft.id'), nullable=False)
     flight = db.Column(db.String(20), nullable=False)
     first_seen = db.Column(db.String(32), nullable=False)
     last_seen = db.Column(db.String(32))
@@ -111,11 +111,11 @@ class Link(db.Model):
 
 
 class Position(db.Model):
-    __tablename__ = 'positions'
+    __tablename__ = 'dump1090_positions'
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    flight = db.Column(db.Integer, db.ForeignKey('flights.id'), nullable=False)
-    aircraft = db.Column(db.Integer, db.ForeignKey('aircraft.id'), nullable=False)
+    flight = db.Column(db.Integer, db.ForeignKey('dump1090_flights.id'), nullable=False)
+    aircraft = db.Column(db.Integer, db.ForeignKey('dump1090_aircraft.id'), nullable=False)
     time = db.Column(db.String(32), nullable=False)
     message = db.Column(db.Integer, nullable=False)
     squawk = db.Column(db.Integer)
@@ -198,3 +198,93 @@ class User(db.Model):
     def is_admin(self):
         """Check if user is an admin"""
         return self.role == 'Admin' or self.administrator == 1
+
+
+class Dump978Aircraft(db.Model):
+    __tablename__ = 'dump978_aircraft'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    icao = db.Column(db.String(8), nullable=False, index=True)
+    first_seen = db.Column(db.String(32), nullable=False)
+    last_seen = db.Column(db.String(32))
+
+    # Relationships
+    flights = db.relationship('Dump978Flight', back_populates='aircraft_ref', lazy='dynamic')
+    positions = db.relationship('Dump978Position', back_populates='aircraft_ref', lazy='dynamic')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'icao': self.icao,
+            'first_seen': self.first_seen,
+            'last_seen': self.last_seen
+        }
+
+    def serialize(self):
+        return self.to_dict()
+
+
+class Dump978Flight(db.Model):
+    __tablename__ = 'dump978_flights'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    aircraft = db.Column(db.Integer, db.ForeignKey('dump978_aircraft.id'), nullable=False)
+    flight = db.Column(db.String(20), nullable=False)
+    first_seen = db.Column(db.String(32), nullable=False)
+    last_seen = db.Column(db.String(32))
+
+    # Relationships
+    aircraft_ref = db.relationship('Dump978Aircraft', back_populates='flights')
+    positions = db.relationship('Dump978Position', back_populates='flight_ref', lazy='dynamic')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'aircraft': self.aircraft,
+            'flight': self.flight,
+            'first_seen': self.first_seen,
+            'last_seen': self.last_seen
+        }
+
+    def serialize(self):
+        return self.to_dict()
+
+
+class Dump978Position(db.Model):
+    __tablename__ = 'dump978_positions'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    flight = db.Column(db.Integer, db.ForeignKey('dump978_flights.id'), nullable=True)
+    aircraft = db.Column(db.Integer, db.ForeignKey('dump978_aircraft.id'), nullable=False)
+    time = db.Column(db.String(32), nullable=False)
+    message = db.Column(db.Integer, nullable=True)
+    squawk = db.Column(db.Integer)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    track = db.Column(db.Integer, nullable=False)
+    altitude = db.Column(db.Integer, nullable=False)
+    vertical_rate = db.Column('vertical_rate', db.Integer, nullable=False)
+    speed = db.Column(db.Integer)
+
+    # Relationships
+    aircraft_ref = db.relationship('Dump978Aircraft', back_populates='positions')
+    flight_ref = db.relationship('Dump978Flight', back_populates='positions')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'flight': self.flight,
+            'aircraft': self.aircraft,
+            'time': self.time,
+            'message': self.message,
+            'squawk': self.squawk,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'track': self.track,
+            'altitude': self.altitude,
+            'vertical_rate': self.vertical_rate,
+            'speed': self.speed
+        }
+
+    def serialize(self):
+        return self.to_dict()

@@ -84,11 +84,15 @@ export class DataService {
   }
 
   getFlights(offset = 0, limit = 50): Observable<any> {
-    return this.http.get(`${this.apiUrl}/flights`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/adsb/flights`, { params: { offset, limit } });
   }
 
   getFlightDetails(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/flight/${encodeURIComponent(flight)}`);
+    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}`);
+  }
+
+  getUatFlightDetails(flight: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}`);
   }
 
   getAircraftPhoto(icao: string): Observable<any> {
@@ -96,15 +100,51 @@ export class DataService {
   }
 
   getFlightPositions(flight: string, limit = 1000): Observable<any> {
-    return this.http.get(`${this.apiUrl}/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
+    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
+  }
+
+  getUatFlightPositions(flight: string, limit = 1000): Observable<any> {
+    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
   }
 
   searchFlights(q: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/flights/search`, { params: { q } });
+    return this.http.get(`${this.apiUrl}/adsb/flights/search`, { params: { q } });
   }
 
   GetFlightsCount(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/flights/count`);
+    return this.http.get(`${this.apiUrl}/adsb/flights/count`);
+  }
+
+  getUatFlights(offset = 0, limit = 50): Observable<any> {
+    return this.http.get(`${this.apiUrl}/uat/flights`, { params: { offset, limit } });
+  }
+
+  getUatFlightsCount(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/uat/flights/count`);
+  }
+
+  searchUatFlights(q: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/uat/flights/search`, { params: { q } });
+  }
+
+  getAcarsFlights(offset = 0, limit = 50): Observable<any> {
+    return this.http.get(`${this.apiUrl}/acars/flights`, { params: { offset, limit } });
+  }
+
+  getAcarsFlightsCount(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/acars/flights/count`);
+  }
+
+  searchAcarsFlights(q: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/acars/flights/search`, { params: { q } });
+  }
+
+  getAcarsFlightMessages(flightId: number, offset = 0, limit = 25): Observable<any> {
+    return this.http.get(`${this.apiUrl}/acars/flight/${flightId}/messages`, { params: { offset, limit } });
+  }
+
+  getAcarsStations(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/acars/stations`);
   }
 
   getLinks(offset = 0, limit = 10): Observable<any> {
@@ -183,7 +223,14 @@ export class DataService {
 
   purgeFlights(days: number): Observable<any> {
     const token = localStorage.getItem('access_token');
-    return this.http.delete(`${this.apiUrl}/flights/purge?days=${days}`, {
+    return this.http.delete(`${this.apiUrl}/adsb/flights/purge?days=${days}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
+  purgeUatFlights(days: number): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.delete(`${this.apiUrl}/uat/flights/purge?days=${days}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
   }

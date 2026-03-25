@@ -1,0 +1,35 @@
+<div class="container">
+    <h1>ACARS Management</h1>
+    <hr />
+
+    <div *ngIf="navSuccessMessage" class="alert alert-success alert-dismissible">
+        {{ navSuccessMessage }}
+        <button type="button" class="btn-close" (click)="navSuccessMessage=''"></button>
+    </div>
+    <div *ngIf="navErrorMessage" class="alert alert-danger alert-dismissible">
+        {{ navErrorMessage }}
+        <button type="button" class="btn-close" (click)="navErrorMessage=''"></button>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header fw-semibold">Navigation Visibility</div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-semibold">Show ACARS in Navigation Bar</div>
+                    <div class="text-muted small">When disabled, the ACARS link is hidden from all visitors</div>
+                </div>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                           id="toggle-acars-nav" [(ngModel)]="acarsNavEnabled">
+                    <label class="form-check-label" for="toggle-acars-nav">
+                        {{ acarsNavEnabled ? 'Visible' : 'Hidden' }}
+                    </label>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <button class="btn btn-primary mb-4" (click)="saveNavSetting()" [disabled]="savingNav">
+        {{ savingNav ? 'Saving…' : 'Save Settings' }}
+    </button>
+</div>

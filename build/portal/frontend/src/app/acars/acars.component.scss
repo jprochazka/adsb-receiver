@@ -1,0 +1,25 @@
+.acars-flight-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.acars-messages-panel {
+    background-color: var(--bs-body-bg, #f8f9fa);
+    border-top: 2px solid var(--bs-primary, #0d6efd);
+}
+
+.acars-text {
+    max-width: 24rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.acars-modal-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.9em;
+    background: var(--bs-light, #f8f9fa);
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin: 0;
+}

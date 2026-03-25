@@ -37,6 +37,7 @@ const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#0
 })
 export class FlightHistoryComponent implements OnInit {
   flightId = '';
+  flightType: 'adsb' | 'uat' = 'adsb';
   loading = true;
   errorMessage = '';
   selectedTrackIdx: number | null = null;
@@ -78,7 +79,8 @@ export class FlightHistoryComponent implements OnInit {
   ngOnInit(): void {
     this.initMap();
     this.route.paramMap.subscribe(params => {
-      this.flightId = params.get('flight') || '';
+      this.flightId   = params.get('flight') || '';
+      this.flightType = (this.route.snapshot.url[1]?.path === 'uat') ? 'uat' : 'adsb';
       this.loading = true;
       this.errorMessage = '';
       this.tracks = [];
@@ -106,10 +108,14 @@ export class FlightHistoryComponent implements OnInit {
   }
 
   private loadPositions(): void {
-    forkJoin({
-      details: this.dataService.getFlightDetails(this.flightId).pipe(catchError(() => of(null))),
-      posData: this.dataService.getFlightPositions(this.flightId)
-    }).subscribe({
+    const details$ = this.flightType === 'uat'
+      ? this.dataService.getUatFlightDetails(this.flightId).pipe(catchError(() => of(null)))
+      : this.dataService.getFlightDetails(this.flightId).pipe(catchError(() => of(null)));
+    const posData$ = this.flightType === 'uat'
+      ? this.dataService.getUatFlightPositions(this.flightId)
+      : this.dataService.getFlightPositions(this.flightId);
+
+    forkJoin({ details: details$, posData: posData$ }).subscribe({
       next: ({ details, posData }) => {
         this.loading = false;
         this.flightInfo = {

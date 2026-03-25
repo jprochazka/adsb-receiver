@@ -97,7 +97,7 @@ $hr-color:   rgba(56, 189, 248, 0.18);
 $hr-opacity: 1;
 
 // ── Badges ───────────────────────────────────────────────────────────────────
-$badge-font-size:   0.7em;
+$badge-font-size:   0.7rem;
 $badge-font-weight: 600;
 
 // ── Border radius ────────────────────────────────────────────────────────────
@@ -114,6 +114,8 @@ $border-radius-sm: 0.25rem;
 
 // ── Navigation ───────────────────────────────────────────────────────────────
 .navbar {
+  position: relative;
+  z-index: 1030;
   background: linear-gradient(90deg, #05081a 0%, #0b142e 50%, #05081a 100%) !important;
   border-bottom: 1px solid rgba(56, 189, 248, 0.18);
   box-shadow: 0 2px 24px rgba(0, 0, 0, 0.7);
@@ -319,6 +321,20 @@ thead th {
   text-transform: uppercase;
 }
 
+.badge-adsb {
+  background-color: #0ea5e9;
+  color: #fff;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+.badge-uat {
+  background-color: #f59e0b;
+  color: #0b0f1e;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
 // ── Buttons ──────────────────────────────────────────────────────────────────
 .btn {
   font-weight: 500;
@@ -340,3 +356,28 @@ thead th {
 ::-webkit-scrollbar-track   { background: #06091a; }
 ::-webkit-scrollbar-thumb   { background: #1e3a5f; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
+
+// ── Nav tabs (dark theme) ─────────────────────────────────────────────────────
+.nav-tabs {
+  border-bottom-color: rgba(56, 189, 248, 0.2);
+
+  .nav-link {
+    color: #94a3b8;
+
+    &:hover,
+    &:focus {
+      color: #f8fafc;
+      border-color: rgba(56, 189, 248, 0.15) rgba(56, 189, 248, 0.15) transparent;
+    }
+
+    &.active {
+      color: #38bdf8;
+      background-color: #111827;
+      border-color: rgba(56, 189, 248, 0.2) rgba(56, 189, 248, 0.2) #111827;
+    }
+
+    &.disabled {
+      color: #475569;
+    }
+  }
+}

@@ -576,6 +576,7 @@ signal_graph() {
   "TEXTALIGN:center" \
   "DEF:signal=$2/dump1090_dbfs-signal.rrd:value:AVERAGE" \
   "DEF:peak=$2/dump1090_dbfs-peak_signal.rrd:value:AVERAGE" \
+  "DEF:minsig=$2/dump1090_dbfs-min_signal.rrd:value:AVERAGE" \
   "DEF:noise=$2/dump1090_dbfs-noise.rrd:value:AVERAGE" \
   "CDEF:us=signal,UN,-100,signal,IF" \
   "AREA:-100#00FF00:Mean Level\\:" \
@@ -583,12 +584,95 @@ signal_graph() {
   "GPRINT:signal:AVERAGE:%4.1lf" \
   "LINE1:peak#0000FF:Peak Level\:" \
   "GPRINT:peak:MAX:%4.1lf\c" \
+  "LINE1:minsig#00AAFF:Min Level\:" \
+  "GPRINT:minsig:MIN:%4.1lf\c" \
   "LINE:noise#7F00FF:Noise" \
   "GPRINT:noise:MAX:Max\: %4.1lf" \
   "GPRINT:noise:MIN:Min\: %4.1lf" \
   "GPRINT:noise:AVERAGE:Avg\: %4.1lf\c" \
   "LINE1:0#000000:Zero dBFS" \
   "LINE1:-3#FF0000:-3 dBFS\c" \
+  --watermark "Drawn: $nowlit";
+}
+
+positions_graph() {
+  rrdtool graph \
+  "$1" \
+  --start end-$4 \
+  --width 480 \
+  --height 200 \
+  --step "$5" \
+  --title "$3 Positions Decoded" \
+  --vertical-label "Positions/Hour" \
+  --lower-limit 0 \
+  --units-exponent 0 \
+  "TEXTALIGN:center" \
+  "DEF:pos=$2/dump1090_messages-positions.rrd:value:AVERAGE" \
+  "CDEF:poshr=pos,3600,*" \
+  "VDEF:avgpos=poshr,AVERAGE" \
+  "VDEF:maxpos=poshr,MAXIMUM" \
+  "AREA:poshr#00AAFF:Positions/Hour" \
+  "GPRINT:avgpos:Average\:%6.0lf/hr     " \
+  "GPRINT:maxpos:Maximum\:%6.0lf/hr\c" \
+  --watermark "Drawn: $nowlit";
+}
+
+strong_signals_graph() {
+  rrdtool graph \
+  "$1" \
+  --start end-$4 \
+  --width 429 \
+  --height 200 \
+  --step "$5" \
+  --title "$3 Strong Signals (>-3 dBFS)" \
+  --vertical-label "% of Messages" \
+  --lower-limit 0 \
+  --upper-limit 100 \
+  --rigid \
+  --units-exponent 0 \
+  "TEXTALIGN:center" \
+  "DEF:strong=$2/dump1090_messages-strong_signals.rrd:value:AVERAGE" \
+  "DEF:total=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
+  "CDEF:pct=total,0,GT,strong,100,*,total,/,0,IF" \
+  "VDEF:avgpct=pct,AVERAGE" \
+  "VDEF:maxpct=pct,MAXIMUM" \
+  "AREA:pct#FF4444:Strong Messages %" \
+  "LINE1:5#FF0000:5%% Warn\::dashes" \
+  "GPRINT:avgpct:Average\:%4.1lf%%     " \
+  "GPRINT:maxpct:Maximum\:%4.1lf%%\c" \
+  --watermark "Drawn: $nowlit";
+}
+
+df_types_graph() {
+  rrdtool graph \
+  "$1" \
+  --start end-$4 \
+  --width 1010 \
+  --height 200 \
+  --step "$5" \
+  --title "$3 Message Types" \
+  --vertical-label "Messages/Second" \
+  --lower-limit 0 \
+  --units-exponent 0 \
+  "TEXTALIGN:center" \
+  "DEF:df17=$2/dump1090_messages-local_accepted_17.rrd:value:AVERAGE" \
+  "DEF:df18=$2/dump1090_messages-local_accepted_18.rrd:value:AVERAGE" \
+  "DEF:df11=$2/dump1090_messages-local_accepted_11.rrd:value:AVERAGE" \
+  "DEF:df4=$2/dump1090_messages-local_accepted_4.rrd:value:AVERAGE" \
+  "DEF:df5=$2/dump1090_messages-local_accepted_5.rrd:value:AVERAGE" \
+  "DEF:df20=$2/dump1090_messages-local_accepted_20.rrd:value:AVERAGE" \
+  "DEF:df21=$2/dump1090_messages-local_accepted_21.rrd:value:AVERAGE" \
+  "DEF:total=$2/dump1090_messages-local_accepted.rrd:value:AVERAGE" \
+  "CDEF:surv=df4,df5,+" \
+  "CDEF:commD=df20,df21,+" \
+  "CDEF:known=df17,df18,df11,surv,commD,+,+,+,+" \
+  "CDEF:other=total,known,-,0,MAX" \
+  "AREA:df17#0080FF:DF17 ADS-B ES      " \
+  "AREA:df18#00DDFF:DF18 TIS-B ES:STACK" \
+  "AREA:df11#00FF80:DF11 All-Call:STACK" \
+  "AREA:surv#80FF00:DF4/5 Surv.:STACK" \
+  "AREA:commD#FFFF00:DF20/21 Comm-D:STACK" \
+  "AREA:other#FF8000:Other:STACK" \
   --watermark "Drawn: $nowlit";
 }
 
@@ -643,6 +727,9 @@ dump1090_receiver_graphs() {
   range_graph_imperial_statute ${DOCUMENTROOT}/graphs/dump1090-$2-range_imperial_statute-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
   range_graph_metric ${DOCUMENTROOT}/graphs/dump1090-$2-range_metric-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
   signal_graph ${DOCUMENTROOT}/graphs/dump1090-$2-signal-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  positions_graph ${DOCUMENTROOT}/graphs/dump1090-$2-positions-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  strong_signals_graph ${DOCUMENTROOT}/graphs/dump1090-$2-strong_signals-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
+  df_types_graph ${DOCUMENTROOT}/graphs/dump1090-$2-df_types-$4.png /var/lib/collectd/rrd/$1/dump1090-$2 "$3" "$4" "$5"
 }
 
 dump1090_hub_graphs() {

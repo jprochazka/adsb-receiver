@@ -200,7 +200,7 @@ class DataProcessor(object):
 
         return
 
-def data_collection_job():
+def dump1090_data_collection_job():
     """Main data collection job function."""
     global now
     

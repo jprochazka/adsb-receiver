@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" routerLink="/flights">
+    <a class="navbar-brand" routerLink="/">
       <span class="brand-icon">✈</span>
       <span class="brand-main">ADS-B</span>
       <span class="brand-suffix">PORTAL</span>
@@ -10,6 +10,15 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarMain">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item" *ngIf="blogNavEnabled">
+          <a class="nav-link" routerLink="/blog" routerLinkActive="active" ariaCurrentWhenActive="page">Blog</a>
+        </li>
+        <li class="nav-item" *ngIf="flightsNavEnabled">
+          <a class="nav-link" routerLink="/flights" routerLinkActive="active" ariaCurrentWhenActive="page">Flights</a>
+        </li>
+        <li class="nav-item" *ngIf="acarsNavEnabled">
+          <a class="nav-link" routerLink="/acars" routerLinkActive="active" ariaCurrentWhenActive="page">ACARS</a>
+        </li>
         <li class="nav-item dropdown" *ngIf="mapNavEnabled && (mapDump1090Enabled || mapDump978Enabled || mapAdsbxEnabled || mapPfclientEnabled)">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Maps</a>
           <ul class="dropdown-menu">
@@ -23,40 +32,32 @@
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Information</a>
           <ul class="dropdown-menu">
             <li *ngIf="infoSystemEnabled"><a class="dropdown-item" routerLink="/system-information">System Information</a></li>
-            <li *ngIf="infoGraphsEnabled"><a class="dropdown-item" routerLink="/performance-graphs">Performance Graphs</a></li>
+            <li *ngIf="infoGraphsEnabled"><a class="dropdown-item" routerLink="/receiver-information">Receiver Information</a></li>
           </ul>
         </li>
-        <li class="nav-item" *ngIf="flightsNavEnabled">
-          <a class="nav-link" routerLink="/flights" routerLinkActive="active" ariaCurrentWhenActive="page">Flights</a>
-        </li>
-        <li class="nav-item" *ngIf="blogNavEnabled">
-          <a class="nav-link" routerLink="/blog" routerLinkActive="active" ariaCurrentWhenActive="page">Blog</a>
-        </li>
         <app-links *ngIf="linksNavEnabled"></app-links>
+      </ul>
+      <ul class="navbar-nav me-2">
+        <li class="nav-item dropdown" *ngIf="isAdmin">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" routerLink="/admin/maps">Maps Management</a></li>
+            <li><a class="dropdown-item" routerLink="/admin/flights">Flights Management</a></li>
+            <li><a class="dropdown-item" routerLink="/admin/acars">ACARS Management</a></li>
+            <li><a class="dropdown-item" routerLink="/admin/information">Information Management</a></li>
+            <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
+            <li><a class="dropdown-item" routerLink="/admin/links">Links Management</a></li>
+            <li><a class="dropdown-item" routerLink="/admin/users">User Management</a></li>
+          </ul>
+        </li>
         <li class="nav-item" *ngIf="isLoggedIn">
           <a class="nav-link" routerLink="/account" routerLinkActive="active" ariaCurrentWhenActive="page">Account</a>
         </li>
         <li class="nav-item" *ngIf="!isLoggedIn">
           <a class="nav-link" routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</a>
         </li>
-        <li class="nav-item" *ngIf="!isLoggedIn">
-          <a class="nav-link" routerLink="/register" routerLinkActive="active" ariaCurrentWhenActive="page">Register</a>
-        </li>
         <li class="nav-item" *ngIf="isLoggedIn">
           <app-logout></app-logout>
-        </li>
-      </ul>
-      <ul class="navbar-nav me-2">
-        <li class="nav-item dropdown" *ngIf="isAdmin">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/information">Information Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/links">Links Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/maps">Maps Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/flights">Flights Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/users">User Management</a></li>
-          </ul>
         </li>
       </ul>
       <form class="d-flex nav-search ms-lg-2" role="search" (ngSubmit)="search()">

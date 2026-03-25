@@ -39,7 +39,7 @@ class UpdateSettingRequestSchema(Schema):
 @setting_ns.route('')
 class SettingResource(Resource):
     @setting_ns.expect(update_setting_model)
-    @setting_ns.response(204, 'Setting updated successfully')
+    @setting_ns.response(200, 'Setting updated successfully')
     @setting_ns.response(400, 'Bad request - validation error')
     @setting_ns.response(404, 'Setting not found')
     @setting_ns.response(401, 'Unauthorized - admin access required')
@@ -61,7 +61,7 @@ class SettingResource(Resource):
                 
             setting.value = payload['value']
             db.session.commit()
-            return {'msg': 'Setting updated successfully'}, 204
+            return {'msg': 'Setting updated successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to put setting named {payload['name']}", exc_info=ex)

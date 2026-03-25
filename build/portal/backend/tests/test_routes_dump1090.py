@@ -1,7 +1,9 @@
-# GET /api/flight/{flight}
+from tests.conftest import create_admin_token, create_user_token
+
+# GET /api/adsb/flight/{flight}
 
 def test_get_flight_200(client):
-    response = client.get('/api/flight/FLT0001')
+    response = client.get('/api/adsb/flight/FLT0001')
     assert response.status_code == 200
     assert response.json['id'] == 1
     assert response.json['aircraft'] == 1
@@ -9,13 +11,13 @@ def test_get_flight_200(client):
     assert response.json['last_seen'] == "2024-06-17 01:11:01"
 
 def test_get_flight_404(client):
-    response = client.get('/api/flight/FLT0000')
+    response = client.get('/api/adsb/flight/FLT0000')
     assert response.status_code == 404
 
-# GET /api/flight/{flight}/positions
+# GET /api/adsb/flight/{flight}/positions
 
 def test_get_flight_positions_200(client):
-    response = client.get('/api/flight/FLT0005/positions')
+    response = client.get('/api/adsb/flight/FLT0005/positions')
     assert response.status_code == 200
     assert response.json['offset'] == 0
     assert response.json['limit'] == 500
@@ -69,14 +71,26 @@ def test_get_flight_positions_200(client):
     assert response.json['positions'][3]['vertical_rate'] == 1216
     assert response.json['positions'][3]['speed'] == 484
 
-def test_get_flight_404(client):
-    response = client.get('/api/flight/FLT0000/positions')
+def test_get_flight_positions_404(client):
+    response = client.get('/api/adsb/flight/FLT0000/positions')
     assert response.status_code == 404
 
-# GET /api/flights
+def test_get_flight_positions_400_offset(client):
+    response = client.get('/api/adsb/flight/FLT0001/positions?offset=-1')
+    assert response.status_code == 400
+
+def test_get_flight_positions_400_limit_too_low(client):
+    response = client.get('/api/adsb/flight/FLT0001/positions?limit=0')
+    assert response.status_code == 400
+
+def test_get_flight_positions_400_limit_too_high(client):
+    response = client.get('/api/adsb/flight/FLT0001/positions?limit=1001')
+    assert response.status_code == 400
+
+# GET /api/adsb/flights
 
 def test_get_flights_200(client):
-    response = client.get('/api/flights')
+    response = client.get('/api/adsb/flights')
     assert response.status_code == 200
     assert response.json['offset'] == 0
     assert response.json['limit'] == 50
@@ -103,7 +117,7 @@ def test_get_flights_200(client):
     assert response.json['flights'][3]['last_seen'] == "2024-06-17 01:11:01"
     
 def test_get_flights_200_offset(client):
-    response = client.get('/api/flights?offset=2')
+    response = client.get('/api/adsb/flights?offset=2')
     assert response.status_code == 200
     assert response.json['offset'] == 2
     assert response.json['limit'] == 50
@@ -120,7 +134,7 @@ def test_get_flights_200_offset(client):
     assert response.json['flights'][1]['last_seen'] == "2024-06-17 01:11:01"
 
 def test_get_flights_200_limit(client):
-    response = client.get('/api/flights?limit=2')
+    response = client.get('/api/adsb/flights?limit=2')
     assert response.status_code == 200
     assert response.json['offset'] == 0
     assert response.json['limit'] == 2
@@ -137,7 +151,7 @@ def test_get_flights_200_limit(client):
     assert response.json['flights'][1]['last_seen'] == "2024-06-17 03:33:03"
 
 def test_get_flights_200_offset_and_limit(client):
-    response = client.get('/api/flights?offset=1&limit=2')
+    response = client.get('/api/adsb/flights?offset=1&limit=2')
     assert response.status_code == 200
     assert response.json['offset'] == 1
     assert response.json['limit'] == 2
@@ -154,20 +168,87 @@ def test_get_flights_200_offset_and_limit(client):
     assert response.json['flights'][1]['last_seen'] == "2024-06-17 02:22:02"
 
 def test_get_flights_400_offset_less_than_0(client):
-    response = client.get('/api/flights?offset=-1')
+    response = client.get('/api/adsb/flights?offset=-1')
     assert response.status_code == 400
 
 def test_get_flights_400_limit_less_than_0(client):
-    response = client.get('/api/flights?limit=-1')
+    response = client.get('/api/adsb/flights?limit=-1')
     assert response.status_code == 400
 
 def test_get_flights_400_limit_greater_than_100(client):
-    response = client.get('/api/flights?limit=101')
+    response = client.get('/api/adsb/flights?limit=101')
     assert response.status_code == 400
 
-# GET /api/flights/count
+# GET /api/adsb/flights/count
 
 def test_get_flights_count(client):
-    response = client.get('/api/flights/count')
+    response = client.get('/api/adsb/flights/count')
     assert response.status_code == 200
     assert response.json["flights"] == 4
+
+# GET /api/adsb/flights/search
+
+def test_get_flights_search_200(client):
+    response = client.get('/api/adsb/flights/search?q=FLT')
+    assert response.status_code == 200
+    assert response.json['count'] == 4
+
+def test_get_flights_search_200_single_result(client):
+    response = client.get('/api/adsb/flights/search?q=FLT0001')
+    assert response.status_code == 200
+    assert response.json['count'] == 1
+    assert response.json['flights'][0]['flight'] == 'FLT0001'
+
+def test_get_flights_search_200_no_results(client):
+    response = client.get('/api/adsb/flights/search?q=NOMATCH')
+    assert response.status_code == 200
+    assert response.json['count'] == 0
+
+def test_get_flights_search_400_no_query(client):
+    response = client.get('/api/adsb/flights/search')
+    assert response.status_code == 400
+
+# DELETE /api/adsb/flights/purge
+
+def test_purge_flights_401(client):
+    response = client.delete('/api/adsb/flights/purge?days=1')
+    assert response.status_code == 401
+
+def test_purge_flights_403(client, app):
+    with app.app_context():
+        access_token = create_user_token()
+    response = client.delete(
+        '/api/adsb/flights/purge?days=1',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+    assert response.status_code == 403
+
+def test_purge_flights_400_no_days(client, app):
+    with app.app_context():
+        access_token = create_admin_token(app)
+    response = client.delete(
+        '/api/adsb/flights/purge',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+    assert response.status_code == 400
+
+def test_purge_flights_400_days_zero(client, app):
+    with app.app_context():
+        access_token = create_admin_token(app)
+    response = client.delete(
+        '/api/adsb/flights/purge?days=0',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+    assert response.status_code == 400
+
+def test_purge_flights_200(client, app):
+    with app.app_context():
+        access_token = create_admin_token(app)
+    response = client.delete(
+        '/api/adsb/flights/purge?days=1',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+    assert response.status_code == 200
+    assert 'deleted_flights' in response.json
+    assert 'deleted_positions' in response.json
+    assert 'cutoff_date' in response.json

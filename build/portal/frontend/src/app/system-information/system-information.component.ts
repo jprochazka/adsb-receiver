@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgIf, DecimalPipe, DatePipe } from '@angular/common';
+import { NgIf, NgFor, DecimalPipe, DatePipe } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
@@ -7,7 +7,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 @Component({
   selector: 'app-system-information',
   standalone: true,
-  imports: [NgIf, DecimalPipe, DatePipe, SpinnerComponent],
+  imports: [NgIf, NgFor, DecimalPipe, DatePipe, SpinnerComponent],
   templateUrl: './system-information.component.html',
   styleUrl: './system-information.component.scss'
 })
