@@ -4,15 +4,6 @@
   </div>
   <hr />
 
-  <div *ngIf="navSuccessMessage" class="alert alert-success alert-dismissible">
-    {{ navSuccessMessage }}
-    <button type="button" class="btn-close" (click)="navSuccessMessage=''"></button>
-  </div>
-  <div *ngIf="navErrorMessage" class="alert alert-danger alert-dismissible">
-    {{ navErrorMessage }}
-    <button type="button" class="btn-close" (click)="navErrorMessage=''"></button>
-  </div>
-
   <div class="card mb-4">
     <div class="card-header fw-semibold">Navigation Visibility</div>
     <ul class="list-group list-group-flush">
@@ -23,7 +14,7 @@
         </div>
         <div class="form-check form-switch mb-0">
           <input class="form-check-input" type="checkbox" role="switch"
-                 id="toggle-flights-nav" [(ngModel)]="flightsNavEnabled">
+                 id="toggle-flights-nav" [(ngModel)]="flightsNavEnabled" (change)="saveFlightsNavEnabled()">
           <label class="form-check-label" for="toggle-flights-nav">
             {{ flightsNavEnabled ? 'Visible' : 'Hidden' }}
           </label>
@@ -42,7 +33,7 @@
         </div>
         <div class="form-check form-switch mb-0">
           <input class="form-check-input" type="checkbox" role="switch"
-                 id="toggle-all-tab" [(ngModel)]="allTabEnabled">
+                 id="toggle-all-tab" [(ngModel)]="allTabEnabled" (change)="saveAllTabEnabled()">
           <label class="form-check-label" for="toggle-all-tab">
             {{ allTabEnabled ? 'Enabled' : 'Disabled' }}
           </label>
@@ -55,7 +46,7 @@
         </div>
         <div class="form-check form-switch mb-0">
           <input class="form-check-input" type="checkbox" role="switch"
-                 id="toggle-adsb-tab" [(ngModel)]="adsbTabEnabled">
+                 id="toggle-adsb-tab" [(ngModel)]="adsbTabEnabled" (change)="saveAdsbTabEnabled()">
           <label class="form-check-label" for="toggle-adsb-tab">
             {{ adsbTabEnabled ? 'Enabled' : 'Disabled' }}
           </label>
@@ -68,7 +59,7 @@
         </div>
         <div class="form-check form-switch mb-0">
           <input class="form-check-input" type="checkbox" role="switch"
-                 id="toggle-uat-tab" [(ngModel)]="uatTabEnabled">
+                 id="toggle-uat-tab" [(ngModel)]="uatTabEnabled" (change)="saveUatTabEnabled()">
           <label class="form-check-label" for="toggle-uat-tab">
             {{ uatTabEnabled ? 'Enabled' : 'Disabled' }}
           </label>
@@ -77,18 +68,7 @@
     </ul>
   </div>
 
-  <button class="btn btn-primary mb-4" (click)="saveNavSetting()" [disabled]="savingNav">
-    {{ savingNav ? 'Saving…' : 'Save Settings' }}
-  </button>
-
-  <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
-    {{ successMessage }}
-    <button type="button" class="btn-close" (click)="successMessage=''"></button>
-  </div>
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
-    {{ errorMessage }}
-    <button type="button" class="btn-close" (click)="errorMessage=''"></button>
-  </div>
+  <p class="text-muted small mb-4">All changes are saved automatically.</p>
 
   <app-spinner *ngIf="loading"></app-spinner>
 
@@ -103,7 +83,22 @@
             <p class="mb-1 text-muted small">Total ADS-B Flights in Database</p>
             <p class="fs-3 fw-bold mb-3">{{ totalFlights }}</p>
             <p class="mb-1 text-muted small">Total UAT Flights in Database</p>
-            <p class="fs-3 fw-bold mb-0">{{ totalUatFlights }}</p>
+            <p class="fs-3 fw-bold mb-3">{{ totalUatFlights }}</p>
+            <p class="mb-1 text-muted small">Database Size</p>
+            <p class="fs-3 fw-bold mb-3">{{ dbSize }}</p>
+            <p class="mb-1 text-muted small">Disk Space Used / Total</p>
+            <p class="fs-3 fw-bold mb-2">{{ diskUsage }}</p>
+            <div class="progress" style="height: 1.4rem;">
+              <div class="progress-bar"
+                   [class.bg-success]="diskPercent < 75"
+                   [class.bg-warning]="diskPercent >= 75 && diskPercent < 90"
+                   [class.bg-danger]="diskPercent >= 90"
+                   role="progressbar"
+                   [style.width.%]="diskPercent"
+                   [attr.aria-valuenow]="diskPercent"
+                   aria-valuemin="0"
+                   aria-valuemax="100">{{ diskPercent }}%</div>
+            </div>
           </div>
         </div>
       </div>
@@ -152,20 +147,20 @@
               <div class="spinner-border spinner-border-sm"></div>
               <span>Purging ADS-B flights&hellip;</span>
             </div>
+
+            <div *ngIf="successMessage" class="alert alert-success alert-dismissible mt-3 mb-0">
+              {{ successMessage }}
+              <button type="button" class="btn-close" (click)="successMessage=''"></button>
+            </div>
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mt-3 mb-0">
+              {{ errorMessage }}
+              <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+            </div>
           </div>
         </div>
 
         <!-- UAT Purge card -->
-        <div>
-          <div *ngIf="uatSuccessMessage" class="alert alert-success alert-dismissible">
-            {{ uatSuccessMessage }}
-            <button type="button" class="btn-close" (click)="uatSuccessMessage=''"></button>
-          </div>
-          <div *ngIf="uatErrorMessage" class="alert alert-danger alert-dismissible">
-            {{ uatErrorMessage }}
-            <button type="button" class="btn-close" (click)="uatErrorMessage=''"></button>
-          </div>
-          <div class="card border-danger">
+        <div class="card border-danger">
             <div class="card-header fw-semibold text-danger">Purge Old UAT Flights</div>
             <div class="card-body">
               <p class="text-muted">
@@ -205,8 +200,16 @@
                 <div class="spinner-border spinner-border-sm"></div>
                 <span>Purging UAT flights&hellip;</span>
               </div>
+
+            <div *ngIf="uatSuccessMessage" class="alert alert-success alert-dismissible mt-3 mb-0">
+              {{ uatSuccessMessage }}
+              <button type="button" class="btn-close" (click)="uatSuccessMessage=''"></button>
             </div>
-          </div>
+            <div *ngIf="uatErrorMessage" class="alert alert-danger alert-dismissible mt-3 mb-0">
+              {{ uatErrorMessage }}
+              <button type="button" class="btn-close" (click)="uatErrorMessage=''"></button>
+            </div>
+            </div>
         </div>
 
       </div>

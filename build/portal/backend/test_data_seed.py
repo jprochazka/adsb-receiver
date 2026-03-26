@@ -127,6 +127,61 @@ LINKS = [
     ('Plane Finder',      'https://planefinder.net'),
 ]
 
+BLOG_POSTS = [
+    # (title, date, author, content)
+    (
+        'Welcome to the ADS-B Receiver Portal',
+        '2024-01-01 12:00:00',
+        'Admin User',
+        'Welcome to the ADS-B Receiver Portal! This portal allows you to monitor aircraft '
+        'in your area using your ADS-B receiver. You can view real-time flight data, '
+        'browse historical flights, and explore various statistics about the aircraft '
+        'you have tracked. We hope you enjoy using this portal as much as we enjoyed building it.'
+    ),
+    (
+        'Setting Up Your ADS-B Receiver',
+        '2024-01-15 09:30:00',
+        'Admin User',
+        'Getting started with your ADS-B receiver is easier than you might think. '
+        'All you need is a software-defined radio (SDR) dongle, a suitable antenna, '
+        'and a Raspberry Pi or similar single-board computer. Once you have your '
+        'hardware set up, the installer script will handle the rest — installing dump1090, '
+        'configuring the portal, and getting everything running automatically on boot. '
+        'Check the documentation for step-by-step instructions.'
+    ),
+    (
+        'Understanding ADS-B Data',
+        '2024-02-10 14:00:00',
+        'Test Admin',
+        'ADS-B (Automatic Dependent Surveillance-Broadcast) is a surveillance technology '
+        'in which an aircraft determines its position via satellite navigation and periodically '
+        'broadcasts it, enabling it to be tracked. The data includes the aircraft ICAO address, '
+        'callsign, position (latitude/longitude), altitude, speed, heading, and squawk code. '
+        'This portal collects and stores all of this data so you can review historical flights '
+        'and generate statistics over time.'
+    ),
+    (
+        'New Feature: Flight Track Visualisation',
+        '2024-03-20 11:15:00',
+        'Admin User',
+        'We are excited to announce the new flight track visualisation feature! '
+        'You can now view the complete flight path of any tracked aircraft on an interactive map. '
+        'Each distinct sighting is shown as a separate coloured track, making it easy to see '
+        'multiple overflights of the same aircraft over time. Head over to the Flights section '
+        'and click on any aircraft to explore its tracks.'
+    ),
+    (
+        'UAT / 978 MHz Support Added',
+        '2024-05-05 16:45:00',
+        'Test Admin',
+        'The portal now supports UAT (Universal Access Transceiver) traffic on 978 MHz in '
+        'addition to the standard 1090 MHz ADS-B feed. UAT is primarily used by general '
+        'aviation aircraft in the United States flying below 18,000 feet. If you have a '
+        'second SDR dongle and a dump978 installation, simply enable the dump978 option '
+        'in the portal settings and your UAT traffic will appear alongside your ADS-B data.'
+    ),
+]
+
 SETTINGS = [
     # (name, value)
     ('graphs_measurement_range',       'imperialNautical'),
@@ -145,6 +200,7 @@ SETTINGS = [
     ('map_dump978_enabled',            'true'),
     ('map_adsbx_enabled',              'true'),
     ('map_pfclient_enabled',           'false'),
+    ('map_links_order',                'dump1090,dump978,adsbx,pfclient'),
 ]
 
 
@@ -358,6 +414,15 @@ def seed_portal_db():
                 (name, address),
             )
     print(f'  Links          : {len(LINKS)}')
+
+    for title, date, author, content in BLOG_POSTS:
+        cur.execute('SELECT id FROM blog_posts WHERE title = ?', (title,))
+        if not cur.fetchone():
+            cur.execute(
+                'INSERT INTO blog_posts (title, date, author, content) VALUES (?, ?, ?, ?)',
+                (title, date, author, content),
+            )
+    print(f'  Blog posts     : {len(BLOG_POSTS)}')
 
     conn.commit()
     conn.close()

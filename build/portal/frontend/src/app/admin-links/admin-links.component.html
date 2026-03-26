@@ -10,15 +10,6 @@
     </div>
     <hr />
 
-    <div *ngIf="navSuccessMessage" class="alert alert-success alert-dismissible">
-        {{ navSuccessMessage }}
-        <button type="button" class="btn-close" (click)="navSuccessMessage=''"></button>
-    </div>
-    <div *ngIf="navErrorMessage" class="alert alert-danger alert-dismissible">
-        {{ navErrorMessage }}
-        <button type="button" class="btn-close" (click)="navErrorMessage=''"></button>
-    </div>
-
     <div class="card mb-4">
         <div class="card-header fw-semibold">Navigation Visibility</div>
         <ul class="list-group list-group-flush">
@@ -29,7 +20,7 @@
                 </div>
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" role="switch"
-                           id="toggle-links-nav" [(ngModel)]="linksNavEnabled">
+                           id="toggle-links-nav" [(ngModel)]="linksNavEnabled" (change)="saveLinksNavEnabled()">
                     <label class="form-check-label" for="toggle-links-nav">
                         {{ linksNavEnabled ? 'Visible' : 'Hidden' }}
                     </label>
@@ -37,9 +28,7 @@
             </li>
         </ul>
     </div>
-    <button class="btn btn-primary mb-4" (click)="saveNavSetting()" [disabled]="savingNav">
-        {{ savingNav ? 'Saving…' : 'Save Settings' }}
-    </button>
+    <p class="text-muted small mb-4">All changes are saved automatically.</p>
 
     <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
         {{ successMessage }}
@@ -93,17 +82,28 @@
             </div>
         </div>
 
-        <!-- Links table -->
+        <!-- Links table with drag-and-drop reordering -->
         <table class="table table-striped align-middle" *ngIf="links.length > 0">
             <thead>
                 <tr>
+                    <th style="width:2rem"></th>
                     <th>Name</th>
                     <th>Address</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let link of links">
+                <tr *ngFor="let link of links; let i = index"
+                    draggable="true"
+                    (dragstart)="onDragStart(i)"
+                    (dragover)="onDragOver($event, i)"
+                    (dragleave)="onDragLeave()"
+                    (drop)="onDrop($event, i)"
+                    (dragend)="onDragEnd()"
+                    [class.table-info]="dragOverIndex === i && dragIndex !== i"
+                    [class.opacity-50]="dragIndex === i"
+                    style="cursor: grab">
+                    <td class="text-muted" style="cursor: grab">&#8597;</td>
                     <td>{{ link.name }}</td>
                     <td><a href="{{ link.address }}" target="_blank">{{ link.address }}</a></td>
                     <td class="text-end">
@@ -114,22 +114,6 @@
             </tbody>
         </table>
         <p *ngIf="links.length === 0" class="text-muted">No links yet.</p>
-
-        <nav *ngIf="totalPages > 1" aria-label="Links pages">
-            <ul class="pagination">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                    <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage - 1)">&#8249; Prev</a>
-                </li>
-                <li *ngFor="let p of pageNumbers" class="page-item" [class.active]="p === currentPage">
-                    <a class="page-link" style="cursor:pointer" (click)="goToPage(p)">{{ p }}</a>
-                </li>
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage + 1)">Next &#8250;</a>
-                </li>
-            </ul>
-        </nav>
-        <p class="fw-light text-secondary small" *ngIf="total > 0">
-            Page {{ currentPage }} of {{ totalPages }} &mdash; {{ total }} total link{{ total === 1 ? '' : 's' }}
-        </p>
+        <p *ngIf="links.length > 0" class="text-muted small">Drag rows to reorder. Changes are saved automatically.</p>
     </div>
 </div>

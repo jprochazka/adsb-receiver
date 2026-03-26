@@ -16,3 +16,6 @@ database:
 
 acars:
     database: "instance/acarsdec.sqlite"
+
+security:
+    jwt_secret_key: "45a995ddf473053aac9c237a5dc5156d4a2079fec956aa41ac1d631ff213a48e"

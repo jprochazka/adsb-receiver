@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
@@ -8,7 +8,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 @Component({
   selector: 'app-admin-blog',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, SpinnerComponent],
+  imports: [NgFor, NgIf, SlicePipe, FormsModule, SpinnerComponent],
   templateUrl: './admin-blog.component.html',
   styleUrl: './admin-blog.component.scss'
 })
@@ -19,9 +19,6 @@ export class AdminBlogComponent implements OnInit {
   successMessage = '';
 
   blogNavEnabled  = true;
-  savingNav       = false;
-  navSuccessMessage = '';
-  navErrorMessage   = '';
 
   // Pagination
   currentPage = 1;
@@ -34,11 +31,15 @@ export class AdminBlogComponent implements OnInit {
   newTitle = '';
   newAuthor = '';
   newContent = '';
+  newDate = this.todayIso();
+  newVisible = true;
 
   // Edit form state
   editingPost: any = null;
   editTitle = '';
   editContent = '';
+  editDate = '';
+  editVisible = true;
   saving = false;
 
   constructor(private dataService: DataService) {}
@@ -54,26 +55,24 @@ export class AdminBlogComponent implements OnInit {
     });
   }
 
-  saveNavSetting() {
-    this.savingNav = true;
-    this.navSuccessMessage = '';
-    this.navErrorMessage = '';
-    this.dataService.updateSetting('blog_nav_enabled', String(this.blogNavEnabled)).subscribe({
-      next: () => {
-        this.savingNav = false;
-        this.navSuccessMessage = 'Blog management settings saved successfully.';
-      },
-      error: () => {
-        this.savingNav = false;
-        this.navErrorMessage = 'Failed to save settings.';
-      }
-    });
+  saveBlogNavEnabled() {
+    this.dataService.updateSetting('blog_nav_enabled', String(this.blogNavEnabled)).subscribe();
+  }
+
+  todayIso(): string {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+
+  isFuture(date: string): boolean {
+    return date > this.todayIso();
   }
 
   loadPosts() {
     this.loading = true;
     const offset = (this.currentPage - 1) * this.perPage;
-    this.dataService.getBlogPosts(offset, this.perPage).subscribe({
+    this.dataService.getAdminBlogPosts(offset, this.perPage).subscribe({
       next: (data) => {
         this.posts      = data.blog_posts;
         this.total      = data.total ?? data.count ?? 0;
@@ -109,6 +108,8 @@ export class AdminBlogComponent implements OnInit {
     this.newTitle = '';
     this.newAuthor = '';
     this.newContent = '';
+    this.newDate = this.todayIso();
+    this.newVisible = true;
     this.successMessage = '';
     this.errorMessage = '';
   }
@@ -123,7 +124,9 @@ export class AdminBlogComponent implements OnInit {
     this.dataService.createBlogPost({
       title: this.newTitle.trim(),
       author: this.newAuthor.trim(),
-      content: this.newContent.trim()
+      content: this.newContent.trim(),
+      date: this.newDate,
+      visible: this.newVisible
     }).subscribe({
       next: () => {
         this.creating = false;
@@ -143,6 +146,8 @@ export class AdminBlogComponent implements OnInit {
     this.editingPost = post;
     this.editTitle = post.title;
     this.editContent = post.content;
+    this.editDate = post.date;
+    this.editVisible = post.visible;
     this.successMessage = '';
     this.errorMessage = '';
     this.showCreateForm = false;
@@ -161,7 +166,9 @@ export class AdminBlogComponent implements OnInit {
     this.errorMessage = '';
     this.dataService.updateBlogPost(this.editingPost.id, {
       title: this.editTitle.trim(),
-      content: this.editContent.trim()
+      content: this.editContent.trim(),
+      date: this.editDate,
+      visible: this.editVisible
     }).subscribe({
       next: () => {
         this.saving = false;

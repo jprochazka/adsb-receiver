@@ -15,6 +15,9 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 export class AdminFlightsComponent implements OnInit {
   totalFlights = 0;
   totalUatFlights = 0;
+  dbSize = '';
+  diskUsage = '';
+  diskPercent = 0;
   loading = true;
   errorMessage = '';
   successMessage = '';
@@ -23,9 +26,6 @@ export class AdminFlightsComponent implements OnInit {
   allTabEnabled  = true;
   adsbTabEnabled = true;
   uatTabEnabled  = true;
-  savingNav = false;
-  navSuccessMessage = '';
-  navErrorMessage = '';
 
   purgeDays = 30;
   purging = false;
@@ -59,22 +59,20 @@ export class AdminFlightsComponent implements OnInit {
     });
   }
 
-  saveNavSetting() {
-    this.savingNav = true;
-    this.navSuccessMessage = '';
-    this.navErrorMessage = '';
-    Promise.all([
-      this.dataService.updateSetting('flights_nav_enabled', String(this.flightsNavEnabled)).toPromise(),
-      this.dataService.updateSetting('all_tab_enabled',     String(this.allTabEnabled)).toPromise(),
-      this.dataService.updateSetting('adsb_tab_enabled',    String(this.adsbTabEnabled)).toPromise(),
-      this.dataService.updateSetting('uat_tab_enabled',     String(this.uatTabEnabled)).toPromise(),
-    ]).then(() => {
-      this.savingNav = false;
-      this.navSuccessMessage = 'Flights management settings saved successfully.';
-    }).catch(() => {
-      this.savingNav = false;
-      this.navErrorMessage = 'Failed to save settings.';
-    });
+  saveFlightsNavEnabled() {
+    this.dataService.updateSetting('flights_nav_enabled', String(this.flightsNavEnabled)).subscribe();
+  }
+
+  saveAllTabEnabled() {
+    this.dataService.updateSetting('all_tab_enabled', String(this.allTabEnabled)).subscribe();
+  }
+
+  saveAdsbTabEnabled() {
+    this.dataService.updateSetting('adsb_tab_enabled', String(this.adsbTabEnabled)).subscribe();
+  }
+
+  saveUatTabEnabled() {
+    this.dataService.updateSetting('uat_tab_enabled', String(this.uatTabEnabled)).subscribe();
   }
 
   loadStats() {
@@ -92,6 +90,27 @@ export class AdminFlightsComponent implements OnInit {
     });
     this.dataService.getUatFlightsCount().pipe(catchError(() => of(null))).subscribe(data => {
       this.totalUatFlights = data?.flights ?? 0;
+    });
+    this.dataService.getSystemDatabase().pipe(catchError(() => of(null))).subscribe(data => {
+      const bytes = data?.size ?? 0;
+      if (bytes >= 1073741824) {
+        this.dbSize = (bytes / 1073741824).toFixed(2) + ' GB';
+      } else if (bytes >= 1048576) {
+        this.dbSize = (bytes / 1048576).toFixed(2) + ' MB';
+      } else if (bytes >= 1024) {
+        this.dbSize = (bytes / 1024).toFixed(2) + ' KB';
+      } else {
+        this.dbSize = bytes + ' B';
+      }
+    });
+    this.dataService.getSystemDisk().pipe(catchError(() => of(null))).subscribe(data => {
+      if (data) {
+        const fmt = (b: number) => b >= 1073741824 ? (b / 1073741824).toFixed(1) + ' GB'
+          : b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB'
+          : b >= 1024 ? (b / 1024).toFixed(1) + ' KB' : b + ' B';
+        this.diskUsage = fmt(data.disk_usage_used) + ' / ' + fmt(data.disk_usage_total);
+        this.diskPercent = Math.round(data.disk_usage_percent ?? 0);
+      }
     });
   }
 

@@ -1,4 +1,4 @@
-INSERT INTO dump1090_aircraft (`icao`, `first_seen`, `last_seen`)
+INSERT INTO dump1090_aircraft (icao, first_seen, last_seen)
 VALUES
   ('icao01', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
   ('icao02', '2024-07-17 02:20:22', '2024-06-17 02:22:02'),
@@ -6,33 +6,33 @@ VALUES
   ('icao04', '2024-07-17 04:40:44', '2024-06-17 04:44:04'),
   ('icao05', '2024-07-17 05:50:55', '2024-06-17 05:55:05');
 
-INSERT INTO blog_posts (`title`, `date`, `author`, `content`)
+INSERT INTO blog_posts (title, date, author, content)
 VALUES
   ('Title One', '2024-07-03 13:00:01', 'User One', 'Content for blog post one.'),
   ('Title Two', '2024-07-04 14:30:02', 'User One', 'Content for blog post two.'),
   ('Title Three', '2024-07-05 15:00:03', 'User Three', 'Content for blog post three.'),
   ('Title Four', '2024-07-06 16:30:04', 'User Two', 'Content for blog post four.');
 
-INSERT INTO dump1090_flights (`aircraft`, `flight`, `first_seen`, `last_seen`)
+INSERT INTO dump1090_flights (aircraft, flight, first_seen, last_seen)
 VALUES
   (1, 'FLT0001', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
   (2, 'FLT0002', '2024-07-17 02:20:22', '2024-06-17 02:22:02'),
   (3, 'FLT0003', '2024-07-17 03:30:33', '2024-06-17 03:33:03'),
   (5, 'FLT0005', '2024-07-17 04:40:44', '2024-06-17 04:44:04');
 
-INSERT INTO links (`name`, `address`)
+INSERT INTO links (name, address)
 VALUES
   ('Link One', 'https://adsbportal.com/one'),
   ('Link Two', 'https://adsbportal.com/two'),
   ('Link Three', 'https://adsbportal.com/three');
 
-INSERT INTO notifications (`flight`)
+INSERT INTO notifications (flight)
 VALUES
   ('FLT0011'),
   ('FLT0012'),
   ('FLT0013');
 
-INSERT INTO dump1090_positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `vertical_rate`, `speed`)
+INSERT INTO dump1090_positions (flight, aircraft, time, message, squawk, latitude, longitude, track, altitude, vertical_rate, speed)
 VALUES
   (1, 1, '2024-06-17 01:11:01', 204, 6523, 42.649292, -84.960896, 98, 46975, 0, 477),
   (1, 1, '2024-06-17 01:11:46', 289, 6523, 42.646408, -84.934304, 98, 46975, 0, 477),
@@ -49,30 +49,30 @@ VALUES
   (4, 5, '2024-07-17 05:50:35', 417, 1317, 41.773464, -83.749737, 91, 36825, 768, 487),
   (4, 5, '2024-07-17 05:50:55', 504, 1317, 41.772903, -83.690727, 91, 37225, 1216, 484);
 
-INSERT INTO settings (`name`, `value`)
+INSERT INTO settings (name, value)
 VALUES
   ('setting_one', 'Value One'),
   ('setting_two', 'Value Two'),
   ('setting_three', 'Value Three');
 
-INSERT INTO users (`name`, `email`, `password`, `administrator`, `role`)
+INSERT INTO users (name, email, password, administrator, role)
 VALUES
   ('Admin User', 'noreply@email-one.com', 'password123', 1, 'Admin'),
   ('Regular User', 'noreply@email-two.com', 'password456', 0, 'User'),
   ('Another User', 'noreply@email-three.com', 'password789', 0, 'User');
 
-INSERT INTO dump978_aircraft (`icao`, `first_seen`, `last_seen`)
+INSERT INTO dump978_aircraft (icao, first_seen, last_seen)
 VALUES
   ('uicao01', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
   ('uicao02', '2024-07-17 02:20:22', '2024-06-17 02:22:02'),
   ('uicao03', '2024-07-17 03:30:33', NULL);
 
-INSERT INTO dump978_flights (`aircraft`, `flight`, `first_seen`, `last_seen`)
+INSERT INTO dump978_flights (aircraft, flight, first_seen, last_seen)
 VALUES
   (1, 'UAT0001', '2024-07-17 01:10:11', '2024-06-17 01:11:01'),
   (2, 'UAT0002', '2024-07-17 02:20:22', '2024-06-17 02:22:02');
 
-INSERT INTO dump978_positions (`flight`, `aircraft`, `time`, `message`, `squawk`, `latitude`, `longitude`, `track`, `altitude`, `vertical_rate`, `speed`)
+INSERT INTO dump978_positions (flight, aircraft, time, message, squawk, latitude, longitude, track, altitude, vertical_rate, speed)
 VALUES
   (1, 1, '2024-06-17 01:11:01', 50,   6523, 42.649292, -84.960896, 98, 4000,  0,   120),
   (1, 1, '2024-06-17 01:11:46', 75,   6523, 42.646408, -84.934304, 98, 4100,  64,  121),

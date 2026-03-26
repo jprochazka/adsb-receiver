@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import yaml
@@ -6,6 +7,8 @@ from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
+
+from backend.auth import require_admin
 
 acars = Blueprint('acars', __name__)
 
@@ -73,10 +76,21 @@ acars_messages_list_model = acars_messages_ns.model('AcarsMessagesList', {
     'total': restx_fields.Integer(description='Total number of messages'),
 })
 
+acars_messages_count_model = acars_messages_ns.model('AcarsMessagesCount', {
+    'messages': restx_fields.Integer(description='Total number of ACARS messages'),
+})
+
+acars_purge_result_model = acars_flights_ns.model('AcarsPurgeResult', {
+    'deleted_flights': restx_fields.Integer(description='Number of flights deleted'),
+    'deleted_messages': restx_fields.Integer(description='Number of messages deleted'),
+    'cutoff_date': restx_fields.String(description='Cutoff date used for deletion'),
+})
+
 
 def _get_acars_engine():
     """Create and return a SQLAlchemy engine connected to the ACARS SQLite database."""
-    config = yaml.safe_load(open("config.yml"))
+    with open("config.yml") as f:
+        config = yaml.safe_load(f)
     db_path = config.get('acars', {}).get('database', '/run/acarsdec.sqlite')
     return create_engine(f"sqlite:///{db_path}", connect_args={"check_same_thread": False})
 
@@ -393,4 +407,86 @@ class AcarsMessagesListResource(Resource):
             return {'msg': 'ACARS database unavailable'}, 503
         except Exception as ex:
             logging.error("Error retrieving ACARS messages", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+
+@acars_messages_ns.route('/count')
+class AcarsMessagesCountResource(Resource):
+    @acars_messages_ns.marshal_with(acars_messages_count_model, code=200)
+    @acars_messages_ns.response(500, 'Internal server error')
+    @acars_messages_ns.response(503, 'ACARS database unavailable')
+    @acars_messages_ns.doc('get_acars_messages_count')
+    def get(self):
+        """Get total number of ACARS messages"""
+        try:
+            engine = _get_acars_engine()
+            with engine.connect() as conn:
+                total = conn.execute(text("SELECT COUNT(*) FROM Messages")).scalar()
+            return {'messages': total}, 200
+        except OperationalError as ex:
+            logging.warning("ACARS database unavailable", exc_info=ex)
+            return {'msg': 'ACARS database unavailable'}, 503
+        except Exception as ex:
+            logging.error("Error retrieving ACARS message count", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+
+@acars_flights_ns.route('/purge')
+class AcarsFlightsPurgeResource(Resource):
+    @require_admin()
+    @acars_flights_ns.marshal_with(acars_purge_result_model, code=200)
+    @acars_flights_ns.response(400, 'Bad request - invalid days parameter')
+    @acars_flights_ns.response(401, 'Unauthorized')
+    @acars_flights_ns.response(403, 'Forbidden - Admin role required')
+    @acars_flights_ns.response(500, 'Internal server error')
+    @acars_flights_ns.response(503, 'ACARS database unavailable')
+    @acars_flights_ns.doc('purge_old_acars_flights', security='Bearer', params={
+        'days': 'Delete flights whose LastTime is older than this many days (must be >= 1)'
+    })
+    def delete(self):
+        """Delete ACARS flights (and their messages) older than X days. Admin only."""
+        days = request.args.get('days', type=int)
+        if days is None or days < 1:
+            return {'msg': 'Bad Request - days parameter is required and must be a positive integer'}, 400
+
+        cutoff = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
+        cutoff_str = cutoff.strftime('%Y-%m-%d %H:%M:%S')
+
+        try:
+            engine = _get_acars_engine()
+            with engine.connect() as conn:
+                old_flight_ids = [
+                    row[0] for row in conn.execute(
+                        text("SELECT FlightID FROM Flights WHERE LastTime < :cutoff OR LastTime IS NULL"),
+                        {"cutoff": cutoff_str},
+                    ).fetchall()
+                ]
+
+                if not old_flight_ids:
+                    conn.commit()
+                    return {'deleted_flights': 0, 'deleted_messages': 0, 'cutoff_date': cutoff_str}, 200
+
+                placeholders = ','.join(str(fid) for fid in old_flight_ids)
+                deleted_messages = conn.execute(
+                    text(f"DELETE FROM Messages WHERE FlightID IN ({placeholders})")
+                ).rowcount
+                deleted_flights = conn.execute(
+                    text(f"DELETE FROM Flights WHERE FlightID IN ({placeholders})")
+                ).rowcount
+                conn.commit()
+
+            logging.info(
+                f'Purged {deleted_flights} ACARS flights and {deleted_messages} messages '
+                f'older than {days} days (cutoff: {cutoff_str})'
+            )
+            return {
+                'deleted_flights': deleted_flights,
+                'deleted_messages': deleted_messages,
+                'cutoff_date': cutoff_str,
+            }, 200
+        except OperationalError as ex:
+            logging.warning("ACARS database unavailable", exc_info=ex)
+            return {'msg': 'ACARS database unavailable'}, 503
+        except Exception as ex:
+            logging.error("Error purging ACARS flights", exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500

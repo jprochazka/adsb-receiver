@@ -8,6 +8,14 @@ import { LinksComponent } from './links/links.component';
 import { LogoutComponent } from './logout/logout.component';
 import { DataService } from './service/data.service';
 
+const MAP_LINK_DEFS: Record<string, { label: string; href: string; external: boolean }> = {
+  dump1090: { label: 'Dump1090',            href: '/dump1090', external: false },
+  dump978:  { label: 'Dump978',             href: '/dump978',  external: false },
+  adsbx:    { label: 'ADS-B Exchange',      href: '/adbsx',    external: false },
+  pfclient: { label: 'Plane Finder Client', href: '',          external: true  },
+};
+const DEFAULT_MAP_ORDER = 'dump1090,dump978,adsbx,pfclient';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -30,12 +38,16 @@ export class AppComponent implements OnInit, OnDestroy {
   infoSystemEnabled = true;
   infoGraphsEnabled = true;
 
-  mapNavEnabled      = true;
-  mapDump1090Enabled = true;
-  mapDump978Enabled  = true;
-  mapAdsbxEnabled    = true;
-  mapPfclientEnabled = false;
-  pfclientUrl        = '';
+  mapNavEnabled = true;
+  mapLinks: { key: string; label: string; href: string; enabled: boolean; external: boolean }[] = [];
+
+  get enabledMapLinks() {
+    return this.mapLinks.filter(l => l.enabled);
+  }
+
+  get anyMapEnabled(): boolean {
+    return this.mapLinks.some(l => l.enabled);
+  }
 
   constructor(private router: Router, private dataService: DataService) {}
 
@@ -89,19 +101,37 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private loadMapSettings(): void {
+    const pfclientUrl = `${window.location.protocol}//${window.location.hostname}:30053`;
     forkJoin({
       nav:      this.dataService.getSetting('map_nav_enabled').pipe(catchError(() => of({ value: 'true' }))),
       d1090:    this.dataService.getSetting('map_dump1090_enabled').pipe(catchError(() => of({ value: 'true' }))),
       d978:     this.dataService.getSetting('map_dump978_enabled').pipe(catchError(() => of({ value: 'true' }))),
       adsbx:    this.dataService.getSetting('map_adsbx_enabled').pipe(catchError(() => of({ value: 'true' }))),
       pfclient: this.dataService.getSetting('map_pfclient_enabled').pipe(catchError(() => of({ value: 'false' }))),
-    }).subscribe(({ nav, d1090, d978, adsbx, pfclient }) => {
-      this.mapNavEnabled      = nav?.value      !== 'false';
-      this.mapDump1090Enabled = d1090?.value    !== 'false';
-      this.mapDump978Enabled  = d978?.value     !== 'false';
-      this.mapAdsbxEnabled    = adsbx?.value    !== 'false';
-      this.mapPfclientEnabled = pfclient?.value === 'true';
-      this.pfclientUrl = `${window.location.protocol}//${window.location.hostname}:30053`;
+      order:    this.dataService.getSetting('map_links_order').pipe(catchError(() => of({ value: DEFAULT_MAP_ORDER }))),
+    }).subscribe(({ nav, d1090, d978, adsbx, pfclient, order }) => {
+      this.mapNavEnabled = nav?.value !== 'false';
+
+      const enabledMap: Record<string, boolean> = {
+        dump1090: d1090?.value    !== 'false',
+        dump978:  d978?.value     !== 'false',
+        adsbx:    adsbx?.value    !== 'false',
+        pfclient: pfclient?.value === 'true',
+      };
+
+      const orderKeys = (order?.value || DEFAULT_MAP_ORDER)
+        .split(',').map((k: string) => k.trim()).filter((k: string) => k in MAP_LINK_DEFS);
+      for (const key of Object.keys(MAP_LINK_DEFS)) {
+        if (!orderKeys.includes(key)) orderKeys.push(key);
+      }
+
+      this.mapLinks = orderKeys.map((key: string) => ({
+        key,
+        label:    MAP_LINK_DEFS[key].label,
+        href:     key === 'pfclient' ? pfclientUrl : MAP_LINK_DEFS[key].href,
+        enabled:  enabledMap[key] ?? false,
+        external: MAP_LINK_DEFS[key].external,
+      }));
     });
   }
 

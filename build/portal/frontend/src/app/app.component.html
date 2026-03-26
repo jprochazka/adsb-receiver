@@ -19,13 +19,12 @@
         <li class="nav-item" *ngIf="acarsNavEnabled">
           <a class="nav-link" routerLink="/acars" routerLinkActive="active" ariaCurrentWhenActive="page">ACARS</a>
         </li>
-        <li class="nav-item dropdown" *ngIf="mapNavEnabled && (mapDump1090Enabled || mapDump978Enabled || mapAdsbxEnabled || mapPfclientEnabled)">
+        <li class="nav-item dropdown" *ngIf="mapNavEnabled && anyMapEnabled">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Maps</a>
           <ul class="dropdown-menu">
-            <li *ngIf="mapDump1090Enabled"><a class="dropdown-item" href="/dump1090">Dump1090</a></li>
-            <li *ngIf="mapDump978Enabled"><a class="dropdown-item" href="/dump978">Dump978</a></li>
-            <li *ngIf="mapAdsbxEnabled"><a class="dropdown-item" href="/adbsx">ADS-B Exchange</a></li>
-            <li *ngIf="mapPfclientEnabled"><a class="dropdown-item" [href]="pfclientUrl" target="_blank">Plane Finder Client</a></li>
+            <li *ngFor="let link of enabledMapLinks">
+              <a class="dropdown-item" [href]="link.href" [target]="link.external ? '_blank' : null">{{ link.label }}</a>
+            </li>
           </ul>
         </li>
         <li class="nav-item dropdown" *ngIf="infoNavEnabled && (infoSystemEnabled || infoGraphsEnabled)">

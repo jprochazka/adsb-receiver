@@ -15,9 +15,6 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 })
 export class AdminInformationComponent implements OnInit {
   loading = true;
-  saving = false;
-  errorMessage = '';
-  successMessage = '';
 
   // Navigation visibility
   infoNavEnabled    = true;
@@ -72,35 +69,40 @@ export class AdminInformationComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.errorMessage = 'Failed to load settings.';
         this.loading = false;
       }
     });
   }
 
-  save(): void {
-    this.saving = true;
-    this.errorMessage = '';
-    this.successMessage = '';
+  saveInfoNavEnabled(): void {
+    this.dataService.updateSetting('info_nav_enabled', String(this.infoNavEnabled)).subscribe();
+  }
 
-    forkJoin([
-      this.dataService.updateSetting('info_nav_enabled',              String(this.infoNavEnabled)),
-      this.dataService.updateSetting('info_system_enabled',           String(this.infoSystemEnabled)),
-      this.dataService.updateSetting('info_graphs_enabled',           String(this.infoGraphsEnabled)),
-      this.dataService.updateSetting('graphs_dump1090_enabled',        String(this.dump1090GraphsEnabled)),
-      this.dataService.updateSetting('graphs_dump978_enabled',         String(this.dump978GraphsEnabled)),
-      this.dataService.updateSetting('graphs_measurement_range',      this.measurementRange),
-      this.dataService.updateSetting('graphs_measurement_temperature', this.measurementTemperature),
-      this.dataService.updateSetting('graphs_network_interface',      this.networkInterface),
-    ]).subscribe({
-      next: () => {
-        this.saving = false;
-        this.successMessage = 'Information management settings saved successfully.';
-      },
-      error: () => {
-        this.saving = false;
-        this.errorMessage = 'Failed to save settings.';
-      }
-    });
+  saveInfoSystemEnabled(): void {
+    this.dataService.updateSetting('info_system_enabled', String(this.infoSystemEnabled)).subscribe();
+  }
+
+  saveInfoGraphsEnabled(): void {
+    this.dataService.updateSetting('info_graphs_enabled', String(this.infoGraphsEnabled)).subscribe();
+  }
+
+  saveDump1090GraphsEnabled(): void {
+    this.dataService.updateSetting('graphs_dump1090_enabled', String(this.dump1090GraphsEnabled)).subscribe();
+  }
+
+  saveDump978GraphsEnabled(): void {
+    this.dataService.updateSetting('graphs_dump978_enabled', String(this.dump978GraphsEnabled)).subscribe();
+  }
+
+  saveMeasurementRange(): void {
+    this.dataService.updateSetting('graphs_measurement_range', this.measurementRange).subscribe();
+  }
+
+  saveMeasurementTemperature(): void {
+    this.dataService.updateSetting('graphs_measurement_temperature', this.measurementTemperature).subscribe();
+  }
+
+  saveNetworkInterface(): void {
+    this.dataService.updateSetting('graphs_network_interface', this.networkInterface).subscribe();
   }
 }

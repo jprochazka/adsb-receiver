@@ -21,18 +21,23 @@ blog_post_model = blog_ns.model('BlogPost', {
     'title': restx_fields.String(description='Blog post title'),
     'author': restx_fields.String(description='Blog post author'),
     'content': restx_fields.String(description='Blog post content'),
-    'date': restx_fields.String(description='Publication date')
+    'date': restx_fields.String(description='Publication date (YYYY-MM-DD)'),
+    'visible': restx_fields.Boolean(description='Whether the post is visible on the public blog')
 })
 
 create_blog_post_model = blog_ns.model('CreateBlogPost', {
     'title': restx_fields.String(required=True, description='Blog post title', example='My First Post'),
     'author': restx_fields.String(required=True, description='Author name', example='John Doe'),
-    'content': restx_fields.String(required=True, description='Blog post content', example='This is the content of my first blog post.')
+    'content': restx_fields.String(required=True, description='Blog post content', example='This is the content of my first blog post.'),
+    'date': restx_fields.String(description='Publication date and time (YYYY-MM-DDTHH:MM). Defaults to now.', example='2026-03-26T14:30'),
+    'visible': restx_fields.Boolean(description='Whether the post is visible on the public blog. Defaults to true.')
 })
 
 update_blog_post_model = blog_ns.model('UpdateBlogPost', {
     'title': restx_fields.String(required=True, description='Updated blog post title'),
-    'content': restx_fields.String(required=True, description='Updated blog post content')
+    'content': restx_fields.String(required=True, description='Updated blog post content'),
+    'date': restx_fields.String(description='Publication date (YYYY-MM-DD)'),
+    'visible': restx_fields.Boolean(description='Whether the post is visible on the public blog')
 })
 
 blog_posts_list_model = blog_ns.model('BlogPostsList', {
@@ -48,10 +53,14 @@ class CreateBlogPostRequestSchema(Schema):
     title = fields.String(required=True)
     author = fields.String(required=True)
     content = fields.String(required=True)
+    date = fields.String(load_default=None)
+    visible = fields.Boolean(load_default=True)
 
 class UpdateBlogPostRequestSchema(Schema):
     title = fields.String(required=True)
     content = fields.String(required=True)
+    date = fields.String(load_default=None)
+    visible = fields.Boolean(load_default=None)
 
 
 @blog_ns.route('/post')
@@ -71,12 +80,14 @@ class BlogPostCreateResource(Resource):
             return {'msg': 'Validation error', 'errors': err.messages}, 400
 
         try:
-            now = str(datetime.datetime.now(datetime.UTC))
+            now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
+            post_date = payload['date'] if payload.get('date') else now
             new_post = BlogPost(
-                date=now,
+                date=post_date,
                 title=payload['title'],
                 author=payload['author'],
-                content=payload['content']
+                content=payload['content'],
+                visible=payload['visible']
             )
             db.session.add(new_post)
             db.session.commit()
@@ -129,6 +140,10 @@ class BlogPostResource(Resource):
                 
             blog_post.title = payload['title']
             blog_post.content = payload['content']
+            if payload.get('date') is not None:
+                blog_post.date = payload['date']
+            if payload.get('visible') is not None:
+                blog_post.visible = payload['visible']
             
             db.session.commit()
             return {'msg': 'Blog post updated successfully'}, 204
@@ -170,23 +185,30 @@ class BlogPostsListResource(Resource):
         'limit': 'Number of posts to return (default: 25, max: 100)'
     })
     def get(self):
-        """Get list of blog posts with pagination"""
+        """Get list of published, visible blog posts with pagination (public)"""
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=25, type=int)
-        
+
         if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
-            
+
         try:
-            total = db.session.execute(select(func.count()).select_from(BlogPost)).scalar()
+            now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
+            base_query = select(BlogPost).where(
+                BlogPost.visible == True,
+                BlogPost.date <= now
+            )
+            total = db.session.execute(
+                select(func.count()).select_from(base_query.subquery())
+            ).scalar()
             blog_posts_result = db.session.execute(
-                select(BlogPost)
+                base_query
                 .order_by(BlogPost.date.desc())
                 .offset(offset)
                 .limit(limit)
             )
             blog_posts_data = [post.to_dict() for post in blog_posts_result.scalars()]
-            
+
             return {
                 'offset': offset,
                 'limit': limit,
@@ -196,6 +218,47 @@ class BlogPostsListResource(Resource):
             }, 200
         except Exception as ex:
             logging.error('Error encountered while trying to get blog posts', exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+
+@blog_ns.route('/posts/all')
+class BlogPostsAdminListResource(Resource):
+    @blog_ns.marshal_with(blog_posts_list_model, code=200)
+    @blog_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @blog_ns.response(401, 'Unauthorized - admin access required')
+    @blog_ns.response(500, 'Internal server error')
+    @blog_ns.doc('get_all_blog_posts_list', security='Bearer', params={
+        'offset': 'Pagination offset (default: 0)',
+        'limit': 'Number of posts to return (default: 25, max: 100)'
+    })
+    @require_admin()
+    def get(self):
+        """Get all blog posts including hidden and future-dated (Admin only)"""
+        offset = request.args.get('offset', default=0, type=int)
+        limit = request.args.get('limit', default=25, type=int)
+
+        if offset < 0 or limit < 1 or limit > 100:
+            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+
+        try:
+            total = db.session.execute(select(func.count()).select_from(BlogPost)).scalar()
+            blog_posts_result = db.session.execute(
+                select(BlogPost)
+                .order_by(BlogPost.date.desc())
+                .offset(offset)
+                .limit(limit)
+            )
+            blog_posts_data = [post.to_dict() for post in blog_posts_result.scalars()]
+
+            return {
+                'offset': offset,
+                'limit': limit,
+                'count': len(blog_posts_data),
+                'total': total,
+                'blog_posts': blog_posts_data
+            }, 200
+        except Exception as ex:
+            logging.error('Error encountered while trying to get all blog posts (admin)', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
 

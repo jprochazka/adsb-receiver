@@ -19,7 +19,12 @@ link_ns = Namespace('link', description='Individual link operations')
 link_model = link_ns.model('Link', {
     'id': restx_fields.Integer(description='Link ID'),
     'name': restx_fields.String(description='Link name'),
-    'address': restx_fields.String(description='Link URL address')
+    'address': restx_fields.String(description='Link URL address'),
+    'sort_order': restx_fields.Integer(description='Display sort order')
+})
+
+reorder_links_model = links_ns.model('ReorderLinks', {
+    'ids': restx_fields.List(restx_fields.Integer, required=True, description='Link IDs in desired order')
 })
 
 create_link_model = link_ns.model('CreateLink', {
@@ -48,6 +53,9 @@ class CreateLinkRequestSchema(Schema):
 class UpdateLinkRequestSchema(Schema):
     name = fields.String(required=True)
     address = fields.String(required=True)
+
+class ReorderLinksRequestSchema(Schema):
+    ids = fields.List(fields.Integer(), required=True)
         
 
 @link_ns.route('')
@@ -176,7 +184,7 @@ class LinksListResource(Resource):
             total = db.session.execute(select(func.count()).select_from(Link)).scalar()
             links_result = db.session.execute(
                 select(Link)
-                .order_by(Link.name)
+                .order_by(Link.sort_order, Link.id)
                 .offset(offset)
                 .limit(limit)
             )
@@ -191,6 +199,35 @@ class LinksListResource(Resource):
             }, 200
         except Exception as ex:
             logging.error('Error encountered while trying to get links', exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+
+@links_ns.route('/reorder')
+class LinksReorderResource(Resource):
+    @links_ns.expect(reorder_links_model)
+    @links_ns.response(204, 'Links reordered successfully')
+    @links_ns.response(400, 'Bad request - validation error')
+    @links_ns.response(401, 'Unauthorized - authentication required')
+    @links_ns.response(500, 'Internal server error')
+    @links_ns.doc('reorder_links', security='Bearer')
+    @require_user_or_admin()
+    def put(self):
+        """Update the display order of all links (Authentication required)"""
+        try:
+            payload = ReorderLinksRequestSchema().load(request.json)
+        except ValidationError as err:
+            return {'msg': 'Validation error', 'errors': err.messages}, 400
+
+        try:
+            for position, link_id in enumerate(payload['ids']):
+                link = db.session.get(Link, link_id)
+                if link:
+                    link.sort_order = position
+            db.session.commit()
+            return {'msg': 'Links reordered successfully'}, 204
+        except Exception as ex:
+            db.session.rollback()
+            logging.error('Error encountered while trying to reorder links', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
 

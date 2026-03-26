@@ -5,15 +5,6 @@
 
     <app-spinner *ngIf="loading"></app-spinner>
 
-    <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
-        {{ successMessage }}
-        <button type="button" class="btn-close" (click)="successMessage=''"></button>
-    </div>
-    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
-        {{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage=''"></button>
-    </div>
-
     <ng-container *ngIf="!loading">
 
         <div class="card mb-4">
@@ -26,7 +17,7 @@
                     </div>
                     <div class="form-check form-switch mb-0">
                         <input class="form-check-input" type="checkbox" role="switch"
-                               id="toggle-info-nav" [(ngModel)]="infoNavEnabled">
+                               id="toggle-info-nav" [(ngModel)]="infoNavEnabled" (change)="saveInfoNavEnabled()">
                         <label class="form-check-label" for="toggle-info-nav">
                             {{ infoNavEnabled ? 'Visible' : 'Hidden' }}
                         </label>
@@ -46,7 +37,7 @@
                     </div>
                     <div class="form-check form-switch mb-0">
                         <input class="form-check-input" type="checkbox" role="switch"
-                               id="toggle-system" [(ngModel)]="infoSystemEnabled">
+                               id="toggle-system" [(ngModel)]="infoSystemEnabled" (change)="saveInfoSystemEnabled()">
                         <label class="form-check-label" for="toggle-system">
                             {{ infoSystemEnabled ? 'Enabled' : 'Disabled' }}
                         </label>
@@ -60,7 +51,7 @@
                     </div>
                     <div class="form-check form-switch mb-0">
                         <input class="form-check-input" type="checkbox" role="switch"
-                               id="toggle-graphs" [(ngModel)]="infoGraphsEnabled">
+                               id="toggle-graphs" [(ngModel)]="infoGraphsEnabled" (change)="saveInfoGraphsEnabled()">
                         <label class="form-check-label" for="toggle-graphs">
                             {{ infoGraphsEnabled ? 'Enabled' : 'Disabled' }}
                         </label>
@@ -80,7 +71,7 @@
                     </div>
                     <div class="form-check form-switch mb-0">
                         <input class="form-check-input" type="checkbox" role="switch"
-                               id="toggle-dump1090-graphs" [(ngModel)]="dump1090GraphsEnabled">
+                               id="toggle-dump1090-graphs" [(ngModel)]="dump1090GraphsEnabled" (change)="saveDump1090GraphsEnabled()">
                         <label class="form-check-label" for="toggle-dump1090-graphs">
                             {{ dump1090GraphsEnabled ? 'Enabled' : 'Disabled' }}
                         </label>
@@ -93,7 +84,7 @@
                     </div>
                     <div class="form-check form-switch mb-0">
                         <input class="form-check-input" type="checkbox" role="switch"
-                               id="toggle-dump978-graphs" [(ngModel)]="dump978GraphsEnabled">
+                               id="toggle-dump978-graphs" [(ngModel)]="dump978GraphsEnabled" (change)="saveDump978GraphsEnabled()">
                         <label class="form-check-label" for="toggle-dump978-graphs">
                             {{ dump978GraphsEnabled ? 'Enabled' : 'Disabled' }}
                         </label>
@@ -114,7 +105,8 @@
                                [id]="'range-' + opt.value"
                                name="measurementRange"
                                [value]="opt.value"
-                               [(ngModel)]="measurementRange">
+                               [(ngModel)]="measurementRange"
+                               (change)="saveMeasurementRange()">
                         <label class="form-check-label" [for]="'range-' + opt.value">
                             {{ opt.label }}
                         </label>
@@ -135,7 +127,8 @@
                                [id]="'temp-' + opt.value"
                                name="measurementTemperature"
                                [value]="opt.value"
-                               [(ngModel)]="measurementTemperature">
+                               [(ngModel)]="measurementTemperature"
+                               (change)="saveMeasurementTemperature()">
                         <label class="form-check-label" [for]="'temp-' + opt.value">
                             {{ opt.label }}
                         </label>
@@ -156,7 +149,8 @@
                                [id]="'iface-' + opt.value"
                                name="networkInterface"
                                [value]="opt.value"
-                               [(ngModel)]="networkInterface">
+                               [(ngModel)]="networkInterface"
+                               (change)="saveNetworkInterface()">
                         <label class="form-check-label" [for]="'iface-' + opt.value">
                             {{ opt.label }}
                         </label>
@@ -165,9 +159,7 @@
             </div>
         </div>
 
-        <button class="btn btn-primary" (click)="save()" [disabled]="saving">
-            {{ saving ? 'Saving…' : 'Save Settings' }}
-        </button>
+        <p class="text-muted small">All changes are saved automatically.</p>
 
     </ng-container>
 </div>

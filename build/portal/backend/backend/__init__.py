@@ -6,6 +6,7 @@ from flask import Flask, jsonify, redirect
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 from flask_restx import Api
 from backend.jobs.dump1090_data_collection import dump1090_data_collection_job
 from backend.jobs.maintenance import maintenance_job
@@ -83,23 +84,36 @@ def create_app(test_config=None):
     api.add_namespace(setting_ns)
     api.add_namespace(settings_ns)
 
-    # Load database configuration
-    config = yaml.safe_load(open("config.yml"))
-    
-    # Configure SQLAlchemy based on database type
-    db_config = config['database']
-    if db_config['use'].lower() == 'mysql':
-        mysql_config = db_config['mysql']
-        app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{mysql_config['user']}:{mysql_config['password']}@{mysql_config['host']}/{mysql_config['database']}"
-    elif db_config['use'].lower() == 'postgresql':
-        pg_config = db_config['postgresql']
-        app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{pg_config['user']}:{pg_config['password']}@{pg_config['host']}/{pg_config['database']}"
-    elif db_config['use'].lower() == 'sqlite':
-        app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'adsbportal.sqlite3')}"
-    
+    # Load database configuration from yaml only if SQLALCHEMY_DATABASE_URI is
+    # not already set (e.g. passed directly via test_config).
+    if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        with open("config.yml") as f:
+            config = yaml.safe_load(f)
+        db_config = config['database']
+        if db_config['use'].lower() == 'mysql':
+            mysql_config = db_config['mysql']
+            app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{mysql_config['user']}:{mysql_config['password']}@{mysql_config['host']}/{mysql_config['database']}"
+        elif db_config['use'].lower() == 'postgresql':
+            pg_config = db_config['postgresql']
+            app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{pg_config['user']}:{pg_config['password']}@{pg_config['host']}/{pg_config['database']}"
+        elif db_config['use'].lower() == 'sqlite':
+            app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'adsbportal.sqlite3')}"
+        else:
+            raise ValueError(
+                f"Unsupported database type: '{db_config['use']}'. Must be sqlite, mysql, or postgresql."
+            )
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    app.config["JWT_SECRET_KEY"] = "CHANGE_THIS_IN_PRODUCTION"  # Change this!
+    if not app.config.get('JWT_SECRET_KEY'):
+        with open("config.yml") as f:
+            _security_config = yaml.safe_load(f)
+        jwt_secret = _security_config.get('security', {}).get('jwt_secret_key', '')
+        if not jwt_secret or jwt_secret == 'CHANGE_THIS_BEFORE_RUNNING':
+            raise ValueError(
+                "JWT secret key has not been set. Update 'security.jwt_secret_key' in config.yml."
+            )
+        app.config["JWT_SECRET_KEY"] = jwt_secret
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=365)
     jwt = JWTManager(app)
@@ -148,15 +162,8 @@ def create_app(test_config=None):
     
     # INIT_APP
     
-    # Initialize SQLAlchemy
+    # Initialize SQLAlchemy and Alembic migrations
     db.init_app(app)
-    
-    # Add SQLAlchemy-based CLI commands
-    @app.cli.command('init-db')
-    def init_db_command():
-        """Initialize the database with SQLAlchemy."""
-        import click
-        db.create_all()
-        click.echo('Database initialized with SQLAlchemy.')
+    Migrate(app, db)
     
     return app

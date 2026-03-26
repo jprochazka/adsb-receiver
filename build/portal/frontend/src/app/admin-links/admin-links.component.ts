@@ -19,15 +19,7 @@ export class AdminLinksComponent implements OnInit {
   successMessage = '';
 
   linksNavEnabled   = true;
-  savingNav         = false;
-  navSuccessMessage = '';
-  navErrorMessage   = '';
 
-  // Pagination
-  currentPage = 1;
-  totalPages  = 1;
-  total       = 0;
-  readonly perPage = 10;
   // Create form state
   showCreateForm = false;
   creating = false;
@@ -39,6 +31,10 @@ export class AdminLinksComponent implements OnInit {
   editName = '';
   editAddress = '';
   saving = false;
+
+  // Drag-and-drop state
+  dragIndex: number | null = null;
+  dragOverIndex: number | null = null;
 
   constructor(private dataService: DataService) {}
 
@@ -53,31 +49,15 @@ export class AdminLinksComponent implements OnInit {
     });
   }
 
-  saveNavSetting() {
-    this.savingNav = true;
-    this.navSuccessMessage = '';
-    this.navErrorMessage = '';
-    this.dataService.updateSetting('links_nav_enabled', String(this.linksNavEnabled)).subscribe({
-      next: () => {
-        this.savingNav = false;
-        this.navSuccessMessage = 'Links management settings saved successfully.';
-      },
-      error: () => {
-        this.savingNav = false;
-        this.navErrorMessage = 'Failed to save settings.';
-      }
-    });
+  saveLinksNavEnabled() {
+    this.dataService.updateSetting('links_nav_enabled', String(this.linksNavEnabled)).subscribe();
   }
 
   loadLinks() {
     this.loading = true;
-    const offset = (this.currentPage - 1) * this.perPage;
-    this.dataService.getLinks(offset, this.perPage).subscribe({
+    this.dataService.getLinks(0, 100).subscribe({
       next: (data) => {
-        this.links      = data.links;
-        this.total      = data.total ?? data.count ?? 0;
-        this.totalPages = Math.max(1, Math.ceil(this.total / this.perPage));
-        if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+        this.links   = data.links;
         this.loading = false;
       },
       error: () => {
@@ -85,20 +65,6 @@ export class AdminLinksComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-
-  goToPage(page: number) {
-    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
-    this.currentPage = page;
-    this.loadLinks();
-  }
-
-  get pageNumbers(): number[] {
-    const start = Math.max(1, this.currentPage - 2);
-    const end   = Math.min(this.totalPages, this.currentPage + 2);
-    const range: number[] = [];
-    for (let i = start; i <= end; i++) range.push(i);
-    return range;
   }
 
   toggleCreateForm() {
@@ -124,7 +90,6 @@ export class AdminLinksComponent implements OnInit {
         this.creating = false;
         this.showCreateForm = false;
         this.successMessage = 'Link created successfully.';
-        this.currentPage = 1;
         this.loadLinks();
       },
       error: () => {
@@ -178,12 +143,54 @@ export class AdminLinksComponent implements OnInit {
       next: () => {
         this.successMessage = `"${link.name}" was deleted.`;
         if (this.editingLink?.id === link.id) this.editingLink = null;
-        if (this.links.length === 1 && this.currentPage > 1) this.currentPage--;
         this.loadLinks();
       },
       error: () => {
         this.errorMessage = 'Failed to delete link.';
       }
     });
+  }
+
+  // Drag-and-drop handlers
+  onDragStart(index: number) {
+    this.dragIndex = index;
+  }
+
+  onDragOver(event: DragEvent, index: number) {
+    event.preventDefault();
+    this.dragOverIndex = index;
+  }
+
+  onDragLeave() {
+    this.dragOverIndex = null;
+  }
+
+  onDrop(event: DragEvent, dropIndex: number) {
+    event.preventDefault();
+    if (this.dragIndex === null || this.dragIndex === dropIndex) {
+      this.dragIndex = null;
+      this.dragOverIndex = null;
+      return;
+    }
+
+    const reordered = [...this.links];
+    const [moved] = reordered.splice(this.dragIndex, 1);
+    reordered.splice(dropIndex, 0, moved);
+    this.links = reordered;
+    this.dragIndex = null;
+    this.dragOverIndex = null;
+
+    this.dataService.reorderLinks(reordered.map(l => l.id)).subscribe({
+      next: () => { this.successMessage = 'Link order saved.'; },
+      error: () => {
+        this.errorMessage = 'Failed to save link order.';
+        this.loadLinks();
+      }
+    });
+  }
+
+  onDragEnd() {
+    this.dragIndex = null;
+    this.dragOverIndex = null;
   }
 }

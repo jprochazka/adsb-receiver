@@ -1,15 +1,8 @@
-<div class="container">
-    <h1>ACARS Management</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h1>ACARS Management</h1>
+    </div>
     <hr />
-
-    <div *ngIf="navSuccessMessage" class="alert alert-success alert-dismissible">
-        {{ navSuccessMessage }}
-        <button type="button" class="btn-close" (click)="navSuccessMessage=''"></button>
-    </div>
-    <div *ngIf="navErrorMessage" class="alert alert-danger alert-dismissible">
-        {{ navErrorMessage }}
-        <button type="button" class="btn-close" (click)="navErrorMessage=''"></button>
-    </div>
 
     <div class="card mb-4">
         <div class="card-header fw-semibold">Navigation Visibility</div>
@@ -21,7 +14,7 @@
                 </div>
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" role="switch"
-                           id="toggle-acars-nav" [(ngModel)]="acarsNavEnabled">
+                           id="toggle-acars-nav" [(ngModel)]="acarsNavEnabled" (change)="saveAcarsNavEnabled()">
                     <label class="form-check-label" for="toggle-acars-nav">
                         {{ acarsNavEnabled ? 'Visible' : 'Hidden' }}
                     </label>
@@ -29,7 +22,97 @@
             </li>
         </ul>
     </div>
-    <button class="btn btn-primary mb-4" (click)="saveNavSetting()" [disabled]="savingNav">
-        {{ savingNav ? 'Saving…' : 'Save Settings' }}
-    </button>
+
+    <p class="text-muted small mb-4">All changes are saved automatically.</p>
+
+    <app-spinner *ngIf="loading"></app-spinner>
+
+    <div *ngIf="!loading">
+        <div class="row g-4">
+
+            <!-- Stats card -->
+            <div class="col-md-4 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header fw-semibold">Statistics</div>
+                    <div class="card-body">
+                        <p class="mb-1 text-muted small">Total ACARS Flights in Database</p>
+                        <p class="fs-3 fw-bold mb-3">{{ totalFlights }}</p>
+                        <p class="mb-1 text-muted small">Total ACARS Messages in Database</p>
+                        <p class="fs-3 fw-bold mb-3">{{ totalMessages }}</p>
+                        <p class="mb-1 text-muted small">Database Size</p>
+                        <p class="fs-3 fw-bold mb-3">{{ dbSize }}</p>
+                        <p class="mb-1 text-muted small">Disk Space Used / Total</p>
+                        <p class="fs-3 fw-bold mb-2">{{ diskUsage }}</p>
+                        <div class="progress" style="height: 1.4rem;">
+                          <div class="progress-bar"
+                               [class.bg-success]="diskPercent < 75"
+                               [class.bg-warning]="diskPercent >= 75 && diskPercent < 90"
+                               [class.bg-danger]="diskPercent >= 90"
+                               role="progressbar"
+                               [style.width.%]="diskPercent"
+                               [attr.aria-valuenow]="diskPercent"
+                               aria-valuemin="0"
+                               aria-valuemax="100">{{ diskPercent }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purge card -->
+            <div class="col-md-8 d-flex">
+                <div class="card border-danger flex-fill">
+                    <div class="card-header fw-semibold text-danger">Purge Old ACARS Flights</div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            Permanently delete all ACARS flights — and their associated messages — where
+                            <code>LastTime</code> is older than the specified number of days.
+                            <strong>This action cannot be undone.</strong>
+                        </p>
+
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <label class="form-label mb-0 text-nowrap fw-semibold">Delete flights older than</label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                style="width: 90px"
+                                [(ngModel)]="purgeDays"
+                                min="1"
+                                [disabled]="purgeConfirm || purging">
+                            <span class="text-nowrap">days</span>
+                        </div>
+
+                        <div *ngIf="!purgeConfirm && !purging">
+                            <button class="btn btn-danger" (click)="requestPurge()" [disabled]="purgeDays < 1">
+                                Purge ACARS Flights
+                            </button>
+                        </div>
+
+                        <div *ngIf="purgeConfirm" class="alert alert-warning d-flex flex-wrap align-items-center gap-2 mb-0">
+                            <span class="flex-grow-1">
+                                Are you sure? This will permanently delete all ACARS flights older than
+                                <strong>{{ purgeDays }} day(s)</strong> and all their messages.
+                            </span>
+                            <button class="btn btn-danger btn-sm text-nowrap" (click)="confirmPurge()">Yes, Delete</button>
+                            <button class="btn btn-secondary btn-sm text-nowrap" (click)="cancelPurge()">Cancel</button>
+                        </div>
+
+                        <div *ngIf="purging" class="d-flex align-items-center gap-2 text-danger">
+                            <div class="spinner-border spinner-border-sm"></div>
+                            <span>Purging ACARS flights&hellip;</span>
+                        </div>
+
+                        <div *ngIf="successMessage" class="alert alert-success alert-dismissible mt-3 mb-0">
+                            {{ successMessage }}
+                            <button type="button" class="btn-close" (click)="successMessage=''"></button>
+                        </div>
+                        <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible mt-3 mb-0">
+                            {{ errorMessage }}
+                            <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>

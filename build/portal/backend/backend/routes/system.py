@@ -7,7 +7,8 @@ from flask import abort, Blueprint, current_app, jsonify
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db
 
-config=yaml.safe_load(open("config.yml"))
+with open("config.yml") as _f:
+    config = yaml.safe_load(_f)
 
 
 system = Blueprint('system', __name__)

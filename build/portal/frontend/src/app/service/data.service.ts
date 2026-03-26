@@ -62,14 +62,21 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/blog/posts?offset=${offset}&limit=${limit}`);
   }
 
-  createBlogPost(data: { title: string; author: string; content: string }): Observable<any> {
+  getAdminBlogPosts(offset = 0, limit = 10): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.get(`${this.apiUrl}/blog/posts/all?offset=${offset}&limit=${limit}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
+  createBlogPost(data: { title: string; author: string; content: string; date?: string; visible?: boolean }): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/blog/post`, data, {
       headers: { Authorization: `Bearer ${token}` }
     });
   }
 
-  updateBlogPost(id: number, data: { title: string; content: string }): Observable<any> {
+  updateBlogPost(id: number, data: { title: string; content: string; date?: string; visible?: boolean }): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/blog/post/${id}`, data, {
       headers: { Authorization: `Bearer ${token}` }
@@ -147,6 +154,17 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/acars/stations`);
   }
 
+  getAcarsMessagesCount(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/acars/messages/count`);
+  }
+
+  purgeAcarsFlights(days: number): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.delete(`${this.apiUrl}/acars/flights/purge?days=${days}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
   getLinks(offset = 0, limit = 10): Observable<any> {
     return this.http.get(`${this.apiUrl}/links?offset=${offset}&limit=${limit}`);
   }
@@ -168,6 +186,13 @@ export class DataService {
   deleteLink(id: number): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/link/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
+  reorderLinks(ids: number[]): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.put(`${this.apiUrl}/links/reorder`, { ids }, {
       headers: { Authorization: `Bearer ${token}` }
     });
   }

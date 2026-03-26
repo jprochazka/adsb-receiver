@@ -13,8 +13,8 @@ class Aircraft(db.Model):
     last_seen = db.Column(db.String(32))
     
     # Relationships
-    flights = db.relationship('Flight', back_populates='aircraft_ref', lazy='dynamic')
-    positions = db.relationship('Position', back_populates='aircraft_ref', lazy='dynamic')
+    flights = db.relationship('Flight', back_populates='aircraft_ref')
+    positions = db.relationship('Position', back_populates='aircraft_ref')
     
     def to_dict(self):
         return {
@@ -33,9 +33,10 @@ class BlogPost(db.Model):
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(255), nullable=False)
-    date = db.Column(db.String(32), nullable=False)
+    date = db.Column(db.String(16), nullable=False)
     author = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    visible = db.Column(db.Boolean, nullable=False, default=True)
     
     def to_dict(self):
         return {
@@ -43,7 +44,8 @@ class BlogPost(db.Model):
             'title': self.title,
             'date': self.date,
             'author': self.author,
-            'content': self.content
+            'content': self.content,
+            'visible': self.visible
         }
     
     def serialize(self):
@@ -77,7 +79,7 @@ class Flight(db.Model):
     
     # Relationships
     aircraft_ref = db.relationship('Aircraft', back_populates='flights')
-    positions = db.relationship('Position', back_populates='flight_ref', lazy='dynamic')
+    positions = db.relationship('Position', back_populates='flight_ref')
     
     def to_dict(self):
         return {
@@ -98,12 +100,14 @@ class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     address = db.Column(db.String(512), nullable=False)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
     
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'address': self.address
+            'address': self.address,
+            'sort_order': self.sort_order
         }
     
     def serialize(self):
@@ -209,8 +213,8 @@ class Dump978Aircraft(db.Model):
     last_seen = db.Column(db.String(32))
 
     # Relationships
-    flights = db.relationship('Dump978Flight', back_populates='aircraft_ref', lazy='dynamic')
-    positions = db.relationship('Dump978Position', back_populates='aircraft_ref', lazy='dynamic')
+    flights = db.relationship('Dump978Flight', back_populates='aircraft_ref')
+    positions = db.relationship('Dump978Position', back_populates='aircraft_ref')
 
     def to_dict(self):
         return {
@@ -235,7 +239,7 @@ class Dump978Flight(db.Model):
 
     # Relationships
     aircraft_ref = db.relationship('Dump978Aircraft', back_populates='flights')
-    positions = db.relationship('Dump978Position', back_populates='flight_ref', lazy='dynamic')
+    positions = db.relationship('Dump978Position', back_populates='flight_ref')
 
     def to_dict(self):
         return {
