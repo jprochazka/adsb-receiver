@@ -27,6 +27,8 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'frontend';
   searchQuery = '';
   trackedFlights: any[] = [];
+  alertBarDismissed = false;
+  private dismissedFlights = new Set<string>();
   private pollInterval: any;
 
   flightsNavEnabled = true;
@@ -68,7 +70,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private pollRecentNotifications(): void {
     this.dataService.getRecentNotifications().subscribe({
-      next: (result) => this.trackedFlights = result.flights ?? [],
+      next: (result) => {
+        const flights = result.flights ?? [];
+        if (this.alertBarDismissed) {
+          const hasNewFlight = flights.some((f: any) => !this.dismissedFlights.has(f.flight));
+          if (hasNewFlight) {
+            this.alertBarDismissed = false;
+            this.dismissedFlights.clear();
+          }
+        }
+        this.trackedFlights = flights;
+      },
       error: () => {}
     });
   }
@@ -157,6 +169,11 @@ export class AppComponent implements OnInit, OnDestroy {
     } catch {
       return false;
     }
+  }
+
+  dismissAlert(): void {
+    this.dismissedFlights = new Set(this.trackedFlights.map(f => f.flight));
+    this.alertBarDismissed = true;
   }
 
   search() {

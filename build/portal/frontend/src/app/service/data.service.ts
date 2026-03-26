@@ -54,6 +54,13 @@ export class DataService {
     });
   }
 
+  setUserLocked(userId: number, locked: boolean): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.put(`${this.apiUrl}/users/user/${userId}/lock`, { locked }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
   getBlogPost(id: any): Observable<any> {
     return this.http.get(`${this.apiUrl}/blog/post/` + id);
   }
@@ -158,6 +165,10 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/acars/messages/count`);
   }
 
+  getAcarsDatabase(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/acars/flights/database`);
+  }
+
   purgeAcarsFlights(days: number): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/acars/flights/purge?days=${days}`, {
@@ -219,6 +230,10 @@ export class DataService {
 
   getSystemDatabase(): Observable<any> {
     return this.http.get(`${this.apiUrl}/system/database`);
+  }
+
+  getSystemFlightsTables(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/system/flights-tables`);
   }
 
   getNotifications(): Observable<any> {

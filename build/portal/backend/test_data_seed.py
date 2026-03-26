@@ -20,7 +20,7 @@ Also seeds:
 
 import sqlite3
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 DB_PATH       = 'instance/adsbportal.sqlite3'
 ACARS_DB_PATH = 'instance/acarsdec.sqlite'
@@ -108,6 +108,13 @@ FLIGHTS = [
         (32.84, -96.85, 202, datetime(2024,  7, 14, 13, 30,  0), 15, -0.38, 790, 33000, 4320),
         (29.99, -90.26,  87, datetime(2024, 11,  3,  9, 45,  0), 15,  0.32, 800, 35000, 2240),
     ]),
+
+    # --- FDX101 : two historical sightings + one recent segment (triggers notification) ---
+    ('P3Q4R5', 'FDX101', [
+        (39.86,-104.67,  90, datetime(2025,  2, 12,  6,  0,  0), 15,  0.28, 870, 37000, 4401),
+        (33.64, -84.43, 270, datetime(2025,  9,  3, 22,  0,  0), 15, -0.24, 860, 39000, 2210),
+        (41.98, -87.90,  60, datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=10), 15, 0.35, 855, 38000, 3388),
+    ]),
 ]
 
 
@@ -116,6 +123,11 @@ USERS = [
     ('Admin User',   'admin@example.com',     'admin123', 1, 'Admin'),
     ('Regular User', 'user@example.com',       'user123',  0, 'User'),
     ('Test Admin',   'testadmin@example.com',  'test123',  1, 'Admin'),
+    ('Alice Johnson',  'alice@example.com',    'alice123', 0, 'User'),
+    ('Bob Smith',      'bob@example.com',      'bob123',   0, 'User'),
+    ('Carol White',    'carol@example.com',    'carol123', 0, 'User'),
+    ('David Brown',    'david@example.com',    'david123', 0, 'User'),
+    ('Eve Martinez',   'eve@example.com',      'eve123',   0, 'User'),
 ]
 
 LINKS = [
@@ -182,8 +194,11 @@ BLOG_POSTS = [
     ),
 ]
 
-SETTINGS = [
-    # (name, value)
+NOTIFICATIONS = [
+    'FDX101',
+]
+
+SETTINGS = [    # (name, value)
     ('graphs_measurement_range',       'imperialNautical'),
     ('graphs_measurement_temperature', 'imperial'),
     ('graphs_network_interface',       'eth0'),
@@ -391,8 +406,8 @@ def seed_portal_db():
         cur.execute('SELECT id FROM users WHERE email = ?', (email,))
         if not cur.fetchone():
             cur.execute(
-                'INSERT INTO users (name, email, password, administrator, role) '
-                'VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO users (name, email, password, administrator, role, created_at) '
+                'VALUES (?, ?, ?, ?, ?, datetime(\'now\'))',
                 (name, email, password, administrator, role),
             )
     print(f'  Users          : {len(USERS)}')
@@ -423,6 +438,12 @@ def seed_portal_db():
                 (title, date, author, content),
             )
     print(f'  Blog posts     : {len(BLOG_POSTS)}')
+
+    for flight in NOTIFICATIONS:
+        cur.execute('SELECT id FROM notifications WHERE flight = ?', (flight,))
+        if not cur.fetchone():
+            cur.execute('INSERT INTO notifications (flight) VALUES (?)', (flight,))
+    print(f'  Notifications  : {len(NOTIFICATIONS)}')
 
     conn.commit()
     conn.close()

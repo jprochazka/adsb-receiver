@@ -3,3 +3,22 @@
   text-align: center;
   display: inline-block;
 }
+
+.badge-role-admin {
+  background-color: #198754;
+  color: #fff;
+}
+
+.badge-role-user {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.badge-locked {
+  background-color: #cc2222;
+  color: #fff;
+}
+
+.btn-lock {
+  min-width: 4.5rem;
+}

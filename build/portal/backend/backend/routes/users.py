@@ -20,6 +20,8 @@ user_model = users_ns.model('User', {
     'name': restx_fields.String(description='User name'),
     'email': restx_fields.String(description='User email address'),
     'role': restx_fields.String(description='User role (Admin/User)'),
+    'locked': restx_fields.Boolean(description='Whether the account is locked'),
+    'created_at': restx_fields.String(description='Registration date (ISO 8601)'),
     'administrator': restx_fields.Integer(description='Administrator flag (0/1) for backward compatibility')
 })
 
@@ -307,6 +309,46 @@ class UserResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
+lock_model = users_ns.model('LockUserRequest', {
+    'locked': restx_fields.Boolean(required=True, description='True to lock the account, false to unlock')
+})
+
+
+@users_ns.route('/user/<int:user_id>/lock')
+class UserLockResource(Resource):
+    @users_ns.expect(lock_model, validate=True)
+    @users_ns.response(200, 'Lock state updated')
+    @users_ns.response(400, 'Cannot lock your own account', error_model)
+    @users_ns.response(401, 'Unauthorized', error_model)
+    @users_ns.response(403, 'Admin access required', error_model)
+    @users_ns.response(404, 'User not found', error_model)
+    @users_ns.response(500, 'Internal server error', error_model)
+    @users_ns.doc('lock_user', security='Bearer')
+    @require_admin()
+    def put(self, user_id):
+        """Lock or unlock a user account (Admin only)"""
+        from backend.auth import get_current_user
+        try:
+            current_user = get_current_user()
+            if current_user.id == user_id:
+                return {'msg': 'You cannot lock your own account'}, 400
+
+            user = db.session.get(User, user_id)
+            if not user:
+                return {'msg': 'User not found'}, 404
+
+            user.locked = bool(request.json.get('locked', False))
+            db.session.commit()
+
+            action = 'locked' if user.locked else 'unlocked'
+            return {'msg': f'User account {action} successfully'}, 200
+
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error locking/unlocking user {user_id}", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+
 @users_ns.route('/users')
 class UsersListResource(Resource):
     @users_ns.marshal_with(users_list_model, code=200)
@@ -315,21 +357,21 @@ class UsersListResource(Resource):
     @users_ns.doc('list_users', security='Bearer', 
                   params={
                       'offset': {'description': 'Pagination offset', 'type': 'integer', 'default': 0},
-                      'limit': {'description': 'Results per page (max 100)', 'type': 'integer', 'default': 50}
+                      'limit': {'description': 'Results per page (max 10000)', 'type': 'integer', 'default': 50}
                   })
     @require_admin()
     def get(self):
         """Get all users (Admin only)"""
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=50, type=int)
-        if offset < 0 or limit < 1 or limit > 100:
+        if offset < 0 or limit < 1 or limit > 10000:
             return {'msg': 'Invalid offset or limit parameters'}, 400
 
         try:
             total = db.session.execute(select(func.count()).select_from(User)).scalar()
             users_result = db.session.execute(
                 select(User)
-                .order_by(User.name)
+                .order_by(User.locked.asc(), User.created_at.desc())
                 .offset(offset)
                 .limit(limit)
             )

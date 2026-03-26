@@ -92,18 +92,25 @@
     </div>
   </div>
 </nav>
-@if (trackedFlights.length > 0) {
+@if (trackedFlights.length > 0 && !alertBarDismissed) {
   <div class="tracked-alert-bar">
     <span class="pulse-dot"></span>
     <span class="tracked-label">TRACKING ALERT</span>
     <span>&mdash;</span>
     @for (flight of trackedFlights; track flight; let i = $index) {
       @if (i > 0) {
-        <span>,</span>
+        <span class="tracked-sep">·</span>
       }
-      <a [routerLink]="['/flight-history', flight.flight]">{{ flight.flight }}</a>
+      <span class="tracked-flight">
+        <span class="badge-track" [class.badge-track-adsb]="flight.type === 'adsb'" [class.badge-track-uat]="flight.type === 'uat'" [class.badge-track-acars]="flight.type === 'acars'">{{ flight.type === 'adsb' ? 'ADS-B' : flight.type === 'uat' ? 'UAT' : 'ACARS' }}</span>
+        @if (flight.type === 'acars') {
+          <a [routerLink]="['/acars']" [queryParams]="{q: flight.flight}">{{ flight.flight }}</a>
+        } @else {
+          <a [routerLink]="['/flight-history', flight.type, flight.flight]">{{ flight.flight }}</a>
+        }
+      </span>
     }
-    <span>{{ trackedFlights.length === 1 ? 'is' : 'are' }} currently in range and being tracked.</span>
+    <button class="tracked-alert-dismiss" (click)="dismissAlert()" aria-label="Dismiss">&times;</button>
   </div>
 }
 <router-outlet></router-outlet>

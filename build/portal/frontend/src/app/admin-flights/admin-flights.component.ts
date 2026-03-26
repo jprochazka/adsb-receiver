@@ -16,6 +16,7 @@ export class AdminFlightsComponent implements OnInit {
   totalFlights = 0;
   totalUatFlights = 0;
   dbSize = '';
+  flightsTableSize = '';
   diskUsage = '';
   diskPercent = 0;
   loading = true;
@@ -101,6 +102,18 @@ export class AdminFlightsComponent implements OnInit {
         this.dbSize = (bytes / 1024).toFixed(2) + ' KB';
       } else {
         this.dbSize = bytes + ' B';
+      }
+    });
+    this.dataService.getSystemFlightsTables().pipe(catchError(() => of(null))).subscribe(data => {
+      const bytes = data?.size ?? 0;
+      if (bytes >= 1073741824) {
+        this.flightsTableSize = (bytes / 1073741824).toFixed(2) + ' GB';
+      } else if (bytes >= 1048576) {
+        this.flightsTableSize = (bytes / 1048576).toFixed(2) + ' MB';
+      } else if (bytes >= 1024) {
+        this.flightsTableSize = (bytes / 1024).toFixed(2) + ' KB';
+      } else {
+        this.flightsTableSize = bytes + ' B';
       }
     });
     this.dataService.getSystemDisk().pipe(catchError(() => of(null))).subscribe(data => {

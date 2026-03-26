@@ -139,8 +139,37 @@
           </div>
         </div>
       }
+      <!-- Search -->
+      <div class="mb-3">
+        <input type="search" class="form-control" placeholder="Search by title or author…" [(ngModel)]="searchQuery">
+      </div>
+
+      <!-- Tab nav -->
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'all'" style="cursor:pointer" (click)="switchTab('all')">
+            All <span class="badge bg-secondary ms-1">{{ allCount }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'published'" style="cursor:pointer" (click)="switchTab('published')">
+            Published <span class="badge bg-success ms-1">{{ publishedCount }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'draft'" style="cursor:pointer" (click)="switchTab('draft')">
+            Draft <span class="badge bg-secondary ms-1">{{ draftCount }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'scheduled'" style="cursor:pointer" (click)="switchTab('scheduled')">
+            Scheduled <span class="badge bg-warning text-dark ms-1">{{ scheduledCount }}</span>
+          </a>
+        </li>
+      </ul>
+
       <!-- Posts table -->
-      @if (posts.length > 0) {
+      @if (pagedPosts.length > 0) {
         <table class="table table-striped align-middle">
           <thead>
             <tr>
@@ -152,7 +181,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (post of posts; track post) {
+            @for (post of pagedPosts; track post.id) {
               <tr>
                 <td>
                   <a href="/blog-post/{{ post.id }}">{{ post.title }}</a>
@@ -179,8 +208,8 @@
           </tbody>
         </table>
       }
-      @if (posts.length === 0) {
-        <p class="text-muted">No blog posts yet.</p>
+      @if (tabPosts.length === 0) {
+        <p class="text-muted">No {{ activeTab === 'all' ? '' : activeTab + ' ' }}posts found.</p>
       }
       @if (totalPages > 1) {
         <nav aria-label="Blog post pages">
@@ -199,9 +228,9 @@
           </ul>
         </nav>
       }
-      @if (total > 0) {
+      @if (tabPosts.length > 0) {
         <p class="fw-light text-secondary small">
-          Page {{ currentPage }} of {{ totalPages }} &mdash; {{ total }} total post{{ total === 1 ? '' : 's' }}
+          Page {{ currentPage }} of {{ totalPages }} &mdash; {{ tabPosts.length }} post{{ tabPosts.length === 1 ? '' : 's' }}
         </p>
       }
     </div>

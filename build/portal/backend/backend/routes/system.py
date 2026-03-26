@@ -51,6 +51,10 @@ database_model = system_ns.model('DatabaseInfo', {
     'tables': restx_fields.Integer(description='Number of tables')
 })
 
+flights_tables_model = system_ns.model('FlightsTablesInfo', {
+    'size': restx_fields.Integer(description='Combined size of flight tables in bytes'),
+})
+
 
 @system_ns.route('/cpu')
 class CPUResource(Resource):
@@ -244,6 +248,53 @@ class DatabaseResource(Resource):
             return response
         except Exception as e:
             logging.error(f'Error encountered while getting database information: {e}')
+            return {'msg': 'Internal Server Error'}, 500
+
+
+_FLIGHT_TABLES = [
+    'dump1090_aircraft', 'dump1090_flights', 'dump1090_positions',
+    'dump978_aircraft', 'dump978_flights', 'dump978_positions',
+]
+
+
+@system_ns.route('/flights-tables')
+class FlightsTablesResource(Resource):
+    @system_ns.marshal_with(flights_tables_model, code=200)
+    @system_ns.response(200, 'Flight table size retrieved successfully')
+    @system_ns.response(500, 'Internal server error')
+    @system_ns.doc('get_flights_tables_size')
+    def get(self):
+        """Get combined disk size used by all flight-related tables"""
+        try:
+            db_type = config['database']['use'].lower()
+            match db_type:
+                case 'mysql':
+                    placeholders = ', '.join(f':t{i}' for i in range(len(_FLIGHT_TABLES)))
+                    params = {f't{i}': t for i, t in enumerate(_FLIGHT_TABLES)}
+                    params['db_name'] = config['database']['mysql']['database']
+                    result = db.session.execute(
+                        db.text(
+                            f"SELECT SUM(data_length + index_length) FROM information_schema.tables "
+                            f"WHERE table_schema = :db_name AND table_name IN ({placeholders})"
+                        ),
+                        params
+                    )
+                    size = result.fetchone()[0] or 0
+                case 'postgresql':
+                    parts = ' + '.join(
+                        f"pg_total_relation_size('{t}')" for t in _FLIGHT_TABLES
+                    )
+                    result = db.session.execute(db.text(f"SELECT {parts}"))
+                    size = result.fetchone()[0] or 0
+                case 'sqlite':
+                    placeholders = ', '.join(f"'{t}'" for t in _FLIGHT_TABLES)
+                    result = db.session.execute(
+                        db.text(f"SELECT SUM(pgsize) FROM dbstat WHERE name IN ({placeholders})")
+                    )
+                    size = result.fetchone()[0] or 0
+            return {'size': size}, 200
+        except Exception as e:
+            logging.error(f'Error retrieving flights table size: {e}')
             return {'msg': 'Internal Server Error'}, 500
 
 

@@ -181,7 +181,9 @@ class User(db.Model):
     password = db.Column(db.String(255))
     administrator = db.Column(db.Integer, default=0)  # Keep for backward compatibility
     role = db.Column(db.String(20), default='User')  # New role field with Admin/User values
-    
+    locked = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -189,7 +191,9 @@ class User(db.Model):
             'email': self.email,
             'password': self.password,
             'administrator': self.administrator,
-            'role': self.role
+            'role': self.role,
+            'locked': self.locked,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
         }
     
     def serialize(self):

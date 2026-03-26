@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Setting
-from backend.auth import require_admin, require_user_or_admin
+from backend.auth import require_admin
 from werkzeug.exceptions import HTTPException
 from sqlalchemy import select
 
@@ -94,9 +94,9 @@ class SettingsListResource(Resource):
     @settings_ns.response(401, 'Unauthorized - authentication required')
     @settings_ns.response(500, 'Internal server error')
     @settings_ns.doc('get_settings_list', security='Bearer')
-    @require_user_or_admin()
+    @require_admin()
     def get(self):
-        """Get all settings (Authentication required)"""
+        """Get all settings (Admin only)"""
         try:
             settings_result = db.session.execute(select(Setting).order_by(Setting.name))
             settings_data = [setting.to_dict() for setting in settings_result.scalars()]

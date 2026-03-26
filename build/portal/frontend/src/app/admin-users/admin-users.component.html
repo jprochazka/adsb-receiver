@@ -101,8 +101,32 @@
           </div>
         </div>
       }
+      <!-- Search -->
+      <div class="mb-3">
+        <input type="search" class="form-control" placeholder="Search by name or email…" [(ngModel)]="searchQuery">
+      </div>
+
+      <!-- Tab nav -->
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'all'" style="cursor:pointer" (click)="switchTab('all')">
+            All Users <span class="badge bg-secondary ms-1">{{ allCount }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'active'" style="cursor:pointer" (click)="switchTab('active')">
+            Active Users <span class="badge bg-secondary ms-1">{{ activeCount }}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [class.active]="activeTab === 'locked'" style="cursor:pointer" (click)="switchTab('locked')">
+            Locked Users <span class="badge bg-danger ms-1">{{ lockedCount }}</span>
+          </a>
+        </li>
+      </ul>
+
       <!-- Users table -->
-      @if (users.length > 0) {
+      @if (pagedUsers.length > 0) {
         <table class="table table-striped align-middle">
           <thead>
             <tr>
@@ -110,22 +134,36 @@
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Registered</th>
               <th class="text-end">Actions</th>
             </tr>
           </thead>
           <tbody>
-            @for (user of users; track user) {
+            @for (user of pagedUsers; track user.id) {
               <tr>
                 <td class="text-muted small">{{ user.id }}</td>
-                <td>{{ user.name }}</td>
+                <td>
+                  {{ user.name }}
+                  @if (user.locked) {
+                    <span class="badge ms-1 badge-locked">Locked</span>
+                  }
+                </td>
                 <td>{{ user.email }}</td>
                 <td>
-                  <span class="badge badge-role" [class.bg-danger]="user.role === 'Admin'" [class.bg-secondary]="user.role !== 'Admin'">
+                  <span class="badge badge-role" [class.badge-role-admin]="user.role === 'Admin'" [class.badge-role-user]="user.role !== 'Admin'">
                     {{ user.role }}
                   </span>
                 </td>
+                <td class="text-muted small">{{ fmtDate(user.created_at) }}</td>
                 <td class="text-end">
                   <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(user)">Edit</button>
+                  <button class="btn btn-sm me-2 btn-lock"
+                    [class.btn-outline-warning]="!user.locked"
+                    [class.btn-outline-success]="user.locked"
+                    [disabled]="lockingUserId === user.id"
+                    (click)="toggleLock(user)">
+                    {{ lockingUserId === user.id ? '...' : (user.locked ? 'Unlock' : 'Lock') }}
+                  </button>
                   <button class="btn btn-sm btn-outline-danger" (click)="deleteUser(user)">Delete</button>
                 </td>
               </tr>
@@ -133,8 +171,8 @@
           </tbody>
         </table>
       }
-      @if (users.length === 0) {
-        <p class="text-muted">No users found.</p>
+      @if (tabUsers.length === 0) {
+        <p class="text-muted">No {{ activeTab === 'active' ? 'active' : activeTab === 'locked' ? 'locked' : '' }} users found.</p>
       }
       @if (totalPages > 1) {
         <nav aria-label="User list pages">
@@ -153,9 +191,9 @@
           </ul>
         </nav>
       }
-      @if (total > 0) {
+      @if (tabUsers.length > 0) {
         <p class="fw-light text-secondary small">
-          Page {{ currentPage }} of {{ totalPages }} &mdash; {{ total }} total user{{ total === 1 ? '' : 's' }}
+          Page {{ currentPage }} of {{ totalPages }} &mdash; {{ tabUsers.length }} {{ activeTab === 'active' ? 'active' : activeTab === 'locked' ? 'locked' : 'total' }} user{{ tabUsers.length === 1 ? '' : 's' }}
         </p>
       }
     </div>

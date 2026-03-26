@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Link
-from backend.auth import require_user_or_admin
+from backend.auth import require_admin
 from werkzeug.exceptions import HTTPException
 from sqlalchemy import select, func
 
@@ -66,9 +66,9 @@ class LinksResource(Resource):
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
     @link_ns.doc('create_link', security='Bearer')
-    @require_user_or_admin()
+    @require_admin()
     def post(self):
-        """Create a new link (Authentication required)"""
+        """Create a new link (Admin only)"""
         try:
             payload = CreateLinkRequestSchema().load(request.json)
         except ValidationError as err:
@@ -95,9 +95,9 @@ class LinkResource(Resource):
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
     @link_ns.doc('get_link', security='Bearer')
-    @require_user_or_admin()
+    @require_admin()
     def get(self, link_id):
-        """Get link by ID (Authentication required)"""
+        """Get link by ID (Admin only)"""
         try:
             link = db.session.get(Link, link_id)
             
@@ -116,9 +116,9 @@ class LinkResource(Resource):
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
     @link_ns.doc('update_link', security='Bearer')
-    @require_user_or_admin()
+    @require_admin()
     def put(self, link_id):
-        """Update link by ID (Authentication required)"""
+        """Update link by ID (Admin only)"""
         try:
             payload = UpdateLinkRequestSchema().load(request.json)
         except ValidationError as err:
@@ -145,9 +145,9 @@ class LinkResource(Resource):
     @link_ns.response(401, 'Unauthorized - authentication required')
     @link_ns.response(500, 'Internal server error')
     @link_ns.doc('delete_link', security='Bearer')
-    @require_user_or_admin()
+    @require_admin()
     def delete(self, link_id):
-        """Delete link by ID (Authentication required)"""
+        """Delete link by ID (Admin only)"""
         try:
             link = db.session.get(Link, link_id)
             
@@ -210,9 +210,9 @@ class LinksReorderResource(Resource):
     @links_ns.response(401, 'Unauthorized - authentication required')
     @links_ns.response(500, 'Internal server error')
     @links_ns.doc('reorder_links', security='Bearer')
-    @require_user_or_admin()
+    @require_admin()
     def put(self):
-        """Update the display order of all links (Authentication required)"""
+        """Update the display order of all links (Admin only)"""
         try:
             payload = ReorderLinksRequestSchema().load(request.json)
         except ValidationError as err:

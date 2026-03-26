@@ -54,7 +54,10 @@ def require_admin():
                 
                 if not current_user:
                     return {'msg': 'User not found'}, 401
-                
+
+                if current_user.locked:
+                    return {'msg': 'Account is locked'}, 403
+
                 if not current_user.is_admin():
                     return {'msg': 'Admin access required'}, 403
             except Exception as e:
@@ -79,7 +82,10 @@ def require_user_or_admin():
                 
                 if not current_user:
                     return {'msg': 'User not found'}, 401
-                
+
+                if current_user.locked:
+                    return {'msg': 'Account is locked'}, 403
+
                 if current_user.role not in ['User', 'Admin']:
                     return {'msg': 'User or Admin access required'}, 403
             except Exception as e:

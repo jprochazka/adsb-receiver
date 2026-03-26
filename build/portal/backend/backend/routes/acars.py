@@ -80,6 +80,10 @@ acars_messages_count_model = acars_messages_ns.model('AcarsMessagesCount', {
     'messages': restx_fields.Integer(description='Total number of ACARS messages'),
 })
 
+acars_database_model = acars_flights_ns.model('AcarsDatabaseInfo', {
+    'size': restx_fields.Integer(description='ACARS database size in bytes'),
+})
+
 acars_purge_result_model = acars_flights_ns.model('AcarsPurgeResult', {
     'deleted_flights': restx_fields.Integer(description='Number of flights deleted'),
     'deleted_messages': restx_fields.Integer(description='Number of messages deleted'),
@@ -407,6 +411,27 @@ class AcarsMessagesListResource(Resource):
             return {'msg': 'ACARS database unavailable'}, 503
         except Exception as ex:
             logging.error("Error retrieving ACARS messages", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
+
+@acars_flights_ns.route('/database')
+class AcarsDatabaseResource(Resource):
+    @acars_flights_ns.marshal_with(acars_database_model, code=200)
+    @acars_flights_ns.response(500, 'Internal server error')
+    @acars_flights_ns.response(503, 'ACARS database unavailable')
+    @acars_flights_ns.doc('get_acars_database_info')
+    def get(self):
+        """Get ACARS database file size in bytes"""
+        try:
+            with open('config.yml') as f:
+                config = yaml.safe_load(f)
+            db_path = config.get('acars', {}).get('database', '/run/acarsdec.sqlite')
+            if not os.path.exists(db_path):
+                return {'msg': 'ACARS database unavailable'}, 503
+            size = os.path.getsize(db_path)
+            return {'size': size}, 200
+        except Exception as ex:
+            logging.error('Error retrieving ACARS database size', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
 

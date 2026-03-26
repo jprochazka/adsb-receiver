@@ -13,18 +13,66 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   styleUrl: './admin-blog.component.scss'
 })
 export class AdminBlogComponent implements OnInit {
-  posts: any[] = [];
+  allPosts: any[] = [];
   loading = true;
   errorMessage = '';
   successMessage = '';
 
   blogNavEnabled  = true;
 
-  // Pagination
-  currentPage = 1;
-  totalPages  = 1;
-  total       = 0;
+  // Tabs
+  activeTab: 'all' | 'published' | 'draft' | 'scheduled' = 'all';
+  allPage       = 1;
+  publishedPage = 1;
+  draftPage     = 1;
+  scheduledPage = 1;
   readonly perPage = 10;
+  private _searchQuery = '';
+  get searchQuery(): string { return this._searchQuery; }
+  set searchQuery(val: string) {
+    this._searchQuery = val;
+    this.allPage = 1; this.publishedPage = 1; this.draftPage = 1; this.scheduledPage = 1;
+  }
+
+  get publishedPosts(): any[]  { return this.allPosts.filter(p => p.visible && !this.isFuture(p.date)); }
+  get draftPosts(): any[]      { return this.allPosts.filter(p => !p.visible); }
+  get scheduledPosts(): any[]  { return this.allPosts.filter(p => p.visible && this.isFuture(p.date)); }
+  get basePosts(): any[] {
+    if (this.activeTab === 'published') return this.publishedPosts;
+    if (this.activeTab === 'draft')     return this.draftPosts;
+    if (this.activeTab === 'scheduled') return this.scheduledPosts;
+    return this.allPosts;
+  }
+  get tabPosts(): any[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    if (!q) return this.basePosts;
+    return this.basePosts.filter(p =>
+      p.title?.toLowerCase().includes(q) || p.author?.toLowerCase().includes(q)
+    );
+  }
+
+  private filterPosts(posts: any[]): any[] {
+    const q = this.searchQuery.trim().toLowerCase();
+    if (!q) return posts;
+    return posts.filter(p =>
+      p.title?.toLowerCase().includes(q) || p.author?.toLowerCase().includes(q)
+    );
+  }
+  get allCount(): number       { return this.filterPosts(this.allPosts).length; }
+  get publishedCount(): number { return this.filterPosts(this.publishedPosts).length; }
+  get draftCount(): number     { return this.filterPosts(this.draftPosts).length; }
+  get scheduledCount(): number { return this.filterPosts(this.scheduledPosts).length; }
+  get currentPage(): number {
+    if (this.activeTab === 'published') return this.publishedPage;
+    if (this.activeTab === 'draft')     return this.draftPage;
+    if (this.activeTab === 'scheduled') return this.scheduledPage;
+    return this.allPage;
+  }
+  get totalPages(): number { return Math.max(1, Math.ceil(this.tabPosts.length / this.perPage)); }
+  get pagedPosts(): any[] {
+    const start = (this.currentPage - 1) * this.perPage;
+    return this.tabPosts.slice(start, start + this.perPage);
+  }
   // Create form state
   showCreateForm = false;
   creating = false;
@@ -71,15 +119,9 @@ export class AdminBlogComponent implements OnInit {
 
   loadPosts() {
     this.loading = true;
-    const offset = (this.currentPage - 1) * this.perPage;
-    this.dataService.getAdminBlogPosts(offset, this.perPage).subscribe({
+    this.dataService.getAdminBlogPosts(0, 10000).subscribe({
       next: (data) => {
-        this.posts      = data.blog_posts;
-        this.total      = data.total ?? data.count ?? 0;
-        this.totalPages = Math.max(1, Math.ceil(this.total / this.perPage));
-        if (this.currentPage > this.totalPages) {
-          this.currentPage = this.totalPages;
-        }
+        this.allPosts = data.blog_posts;
         this.loading = false;
       },
       error: () => {
@@ -89,10 +131,17 @@ export class AdminBlogComponent implements OnInit {
     });
   }
 
+  switchTab(tab: 'all' | 'published' | 'draft' | 'scheduled') {
+    this.activeTab = tab;
+    this.allPage = 1; this.publishedPage = 1; this.draftPage = 1; this.scheduledPage = 1;
+  }
+
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages || page === this.currentPage) return;
-    this.currentPage = page;
-    this.loadPosts();
+    if (this.activeTab === 'published') this.publishedPage = page;
+    else if (this.activeTab === 'draft') this.draftPage = page;
+    else if (this.activeTab === 'scheduled') this.scheduledPage = page;
+    else this.allPage = page;
   }
 
   get pageNumbers(): number[] {
@@ -132,7 +181,6 @@ export class AdminBlogComponent implements OnInit {
         this.creating = false;
         this.showCreateForm = false;
         this.successMessage = 'Blog post created successfully.';
-        this.currentPage = 1;
         this.loadPosts();
       },
       error: () => {
@@ -190,8 +238,6 @@ export class AdminBlogComponent implements OnInit {
       next: () => {
         this.successMessage = `"${post.title}" was deleted.`;
         if (this.editingPost?.id === post.id) this.editingPost = null;
-        // If we deleted the last item on a non-first page, step back
-        if (this.posts.length === 1 && this.currentPage > 1) this.currentPage--;
         this.loadPosts();
       },
       error: () => {

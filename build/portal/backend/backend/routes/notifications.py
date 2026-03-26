@@ -1,13 +1,15 @@
 import logging
 import datetime
+import yaml
 
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
-from backend.models import db, Notification, Flight, Setting
-from backend.auth import require_admin, require_user_or_admin
+from backend.models import db, Notification, Flight, Dump978Flight, Setting
+from backend.auth import require_admin
 from werkzeug.exceptions import HTTPException
-from sqlalchemy import select
+from sqlalchemy import create_engine, select, text
+from sqlalchemy.exc import OperationalError
 
 notifications = Blueprint('notifications', __name__)
 
@@ -36,9 +38,9 @@ class NotificationResource(Resource):
     @notification_ns.response(401, 'Unauthorized - authentication required')
     @notification_ns.response(500, 'Internal server error')
     @notification_ns.doc('create_notification', security='Bearer')
-    @require_user_or_admin()
+    @require_admin()
     def post(self, flight):
-        """Create a flight notification (User or Admin required)"""
+        """Create a flight notification (Admin only)"""
         try:
             # Check if notification already exists
             existing_notification = db.session.execute(select(Notification).filter_by(flight=flight)).scalar_one_or_none()
@@ -118,6 +120,7 @@ class NotificationsListResource(Resource):
 recent_flight_model = notifications_ns.model('RecentFlight', {
     'id': restx_fields.Integer(description='Flight ID'),
     'flight': restx_fields.String(description='Flight number/callsign'),
+    'type': restx_fields.String(description='Flight type: adsb or uat'),
     'first_seen': restx_fields.String(description='First seen timestamp'),
     'last_seen': restx_fields.String(description='Last seen timestamp')
 })
@@ -154,7 +157,7 @@ class RecentNotificationsResource(Resource):
                 return {'flights': [], 'count': 0, 'lookback_minutes': lookback_minutes}, 200
 
             # Find flights seen within the lookback window whose callsign is monitored
-            flights_result = db.session.execute(
+            adsb_result = db.session.execute(
                 select(Flight)
                 .filter(
                     Flight.flight.in_(monitored),
@@ -162,7 +165,63 @@ class RecentNotificationsResource(Resource):
                 )
                 .order_by(Flight.last_seen.desc())
             )
-            flights_data = [f.to_dict() for f in flights_result.scalars()]
+            uat_result = db.session.execute(
+                select(Dump978Flight)
+                .filter(
+                    Dump978Flight.flight.in_(monitored),
+                    Dump978Flight.last_seen >= cutoff_str
+                )
+                .order_by(Dump978Flight.last_seen.desc())
+            )
+
+            seen_callsigns: set[str] = set()
+            flights_data = []
+            for f in adsb_result.scalars():
+                if f.flight not in seen_callsigns:
+                    seen_callsigns.add(f.flight)
+                    d = f.to_dict()
+                    d['type'] = 'adsb'
+                    flights_data.append(d)
+            for f in uat_result.scalars():
+                if f.flight not in seen_callsigns:
+                    seen_callsigns.add(f.flight)
+                    d = f.to_dict()
+                    d['type'] = 'uat'
+                    flights_data.append(d)
+
+            # Check ACARS database if available
+            try:
+                with open('config.yml') as f:
+                    config = yaml.safe_load(f)
+                acars_db_path = config.get('acars', {}).get('database', '/run/acarsdec.sqlite')
+                acars_engine = create_engine(f'sqlite:///{acars_db_path}', connect_args={'check_same_thread': False})
+                with acars_engine.connect() as conn:
+                    placeholders = ','.join(f':m{i}' for i in range(len(monitored)))
+                    params = {f'm{i}': v for i, v in enumerate(monitored)}
+                    params['cutoff'] = cutoff_str
+                    rows = conn.execute(
+                        text(
+                            f'SELECT FlightID, FlightNumber, StartTime, LastTime FROM Flights '
+                            f'WHERE FlightNumber IN ({placeholders}) AND LastTime >= :cutoff '
+                            f'ORDER BY LastTime DESC'
+                        ),
+                        params,
+                    ).fetchall()
+                for row in rows:
+                    callsign = row[1]
+                    if callsign and callsign not in seen_callsigns:
+                        seen_callsigns.add(callsign)
+                        flights_data.append({
+                            'id': row[0],
+                            'flight': callsign,
+                            'type': 'acars',
+                            'first_seen': str(row[2]) if row[2] else None,
+                            'last_seen': str(row[3]) if row[3] else None,
+                        })
+            except OperationalError:
+                pass  # ACARS database unavailable
+            except FileNotFoundError:
+                pass  # config.yml missing ACARS section
 
             return {
                 'flights': flights_data,

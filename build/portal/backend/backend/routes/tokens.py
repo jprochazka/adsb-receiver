@@ -71,6 +71,9 @@ class LoginResource(Resource):
         # In production, you should use hashed passwords
         if user.password != password:
             return {'msg': 'Invalid credentials'}, 401
+
+        if user.locked:
+            return {'msg': 'Account locked. Please contact an administrator.'}, 403
         
         # Ensure user has a valid role
         if not user.role or not validate_role(user.role):

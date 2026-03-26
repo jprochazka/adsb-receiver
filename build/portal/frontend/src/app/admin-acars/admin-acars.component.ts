@@ -18,6 +18,7 @@ export class AdminAcarsComponent implements OnInit {
   totalFlights = 0;
   totalMessages = 0;
   dbSize = '';
+  acarsDbSize = '';
   diskUsage = '';
   diskPercent = 0;
   loading = true;
@@ -50,17 +51,17 @@ export class AdminAcarsComponent implements OnInit {
     this.dataService.getAcarsMessagesCount().pipe(catchError(() => of(null))).subscribe(data => {
       this.totalMessages = data?.messages ?? 0;
     });
+    const fmtBytes = (bytes: number) => {
+      if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+      if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' MB';
+      if (bytes >= 1024) return (bytes / 1024).toFixed(2) + ' KB';
+      return bytes + ' B';
+    };
     this.dataService.getSystemDatabase().pipe(catchError(() => of(null))).subscribe(data => {
-      const bytes = data?.size ?? 0;
-      if (bytes >= 1073741824) {
-        this.dbSize = (bytes / 1073741824).toFixed(2) + ' GB';
-      } else if (bytes >= 1048576) {
-        this.dbSize = (bytes / 1048576).toFixed(2) + ' MB';
-      } else if (bytes >= 1024) {
-        this.dbSize = (bytes / 1024).toFixed(2) + ' KB';
-      } else {
-        this.dbSize = bytes + ' B';
-      }
+      this.dbSize = fmtBytes(data?.size ?? 0);
+    });
+    this.dataService.getAcarsDatabase().pipe(catchError(() => of(null))).subscribe(data => {
+      this.acarsDbSize = data ? fmtBytes(data.size) : 'Unavailable';
     });
     this.dataService.getSystemDisk().pipe(catchError(() => of(null))).subscribe(data => {
       if (data) {

@@ -229,7 +229,7 @@ class BlogPostsAdminListResource(Resource):
     @blog_ns.response(500, 'Internal server error')
     @blog_ns.doc('get_all_blog_posts_list', security='Bearer', params={
         'offset': 'Pagination offset (default: 0)',
-        'limit': 'Number of posts to return (default: 25, max: 100)'
+        'limit': 'Number of posts to return (default: 25, max: 10000)'
     })
     @require_admin()
     def get(self):
@@ -237,7 +237,7 @@ class BlogPostsAdminListResource(Resource):
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=25, type=int)
 
-        if offset < 0 or limit < 1 or limit > 100:
+        if offset < 0 or limit < 1 or limit > 10000:
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
 
         try:
