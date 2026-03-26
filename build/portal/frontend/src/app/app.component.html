@@ -10,54 +10,80 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarMain">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item" *ngIf="blogNavEnabled">
-          <a class="nav-link" routerLink="/blog" routerLinkActive="active" ariaCurrentWhenActive="page">Blog</a>
-        </li>
-        <li class="nav-item" *ngIf="flightsNavEnabled">
-          <a class="nav-link" routerLink="/flights" routerLinkActive="active" ariaCurrentWhenActive="page">Flights</a>
-        </li>
-        <li class="nav-item" *ngIf="acarsNavEnabled">
-          <a class="nav-link" routerLink="/acars" routerLinkActive="active" ariaCurrentWhenActive="page">ACARS</a>
-        </li>
-        <li class="nav-item dropdown" *ngIf="mapNavEnabled && anyMapEnabled">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Maps</a>
-          <ul class="dropdown-menu">
-            <li *ngFor="let link of enabledMapLinks">
-              <a class="dropdown-item" [href]="link.href" [target]="link.external ? '_blank' : null">{{ link.label }}</a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item dropdown" *ngIf="infoNavEnabled && (infoSystemEnabled || infoGraphsEnabled)">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Information</a>
-          <ul class="dropdown-menu">
-            <li *ngIf="infoSystemEnabled"><a class="dropdown-item" routerLink="/system-information">System Information</a></li>
-            <li *ngIf="infoGraphsEnabled"><a class="dropdown-item" routerLink="/receiver-information">Receiver Information</a></li>
-          </ul>
-        </li>
-        <app-links *ngIf="linksNavEnabled"></app-links>
+        @if (blogNavEnabled) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/blog" routerLinkActive="active" ariaCurrentWhenActive="page">Blog</a>
+          </li>
+        }
+        @if (flightsNavEnabled) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/flights" routerLinkActive="active" ariaCurrentWhenActive="page">Flights</a>
+          </li>
+        }
+        @if (acarsNavEnabled) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/acars" routerLinkActive="active" ariaCurrentWhenActive="page">ACARS</a>
+          </li>
+        }
+        @if (mapNavEnabled && anyMapEnabled) {
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Maps</a>
+            <ul class="dropdown-menu">
+              @for (link of enabledMapLinks; track link) {
+                <li>
+                  <a class="dropdown-item" [href]="link.href" [target]="link.external ? '_blank' : null">{{ link.label }}</a>
+                </li>
+              }
+            </ul>
+          </li>
+        }
+        @if (infoNavEnabled && (infoSystemEnabled || infoGraphsEnabled)) {
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Information</a>
+            <ul class="dropdown-menu">
+              @if (infoSystemEnabled) {
+                <li><a class="dropdown-item" routerLink="/system-information">System Information</a></li>
+              }
+              @if (infoGraphsEnabled) {
+                <li><a class="dropdown-item" routerLink="/receiver-information">Receiver Information</a></li>
+              }
+            </ul>
+          </li>
+        }
+        @if (linksNavEnabled) {
+          <app-links></app-links>
+        }
       </ul>
       <ul class="navbar-nav me-2">
-        <li class="nav-item dropdown" *ngIf="isAdmin">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" routerLink="/admin/maps">Maps Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/flights">Flights Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/acars">ACARS Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/information">Information Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/links">Links Management</a></li>
-            <li><a class="dropdown-item" routerLink="/admin/users">User Management</a></li>
-          </ul>
-        </li>
-        <li class="nav-item" *ngIf="isLoggedIn">
-          <a class="nav-link" routerLink="/account" routerLinkActive="active" ariaCurrentWhenActive="page">Account</a>
-        </li>
-        <li class="nav-item" *ngIf="!isLoggedIn">
-          <a class="nav-link" routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</a>
-        </li>
-        <li class="nav-item" *ngIf="isLoggedIn">
-          <app-logout></app-logout>
-        </li>
+        @if (isAdmin) {
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" routerLink="/admin/maps">Maps Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/flights">Flights Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/acars">ACARS Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/information">Information Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/links">Links Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/users">User Management</a></li>
+            </ul>
+          </li>
+        }
+        @if (isLoggedIn) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/account" routerLinkActive="active" ariaCurrentWhenActive="page">Account</a>
+          </li>
+        }
+        @if (!isLoggedIn) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</a>
+          </li>
+        }
+        @if (isLoggedIn) {
+          <li class="nav-item">
+            <app-logout></app-logout>
+          </li>
+        }
       </ul>
       <form class="d-flex nav-search ms-lg-2" role="search" (ngSubmit)="search()">
         <input class="form-control" type="search" placeholder="Search flights…" aria-label="Search flights" [(ngModel)]="searchQuery" name="searchQuery">
@@ -66,15 +92,19 @@
     </div>
   </div>
 </nav>
-<div *ngIf="trackedFlights.length > 0" class="tracked-alert-bar">
-  <span class="pulse-dot"></span>
-  <span class="tracked-label">TRACKING ALERT</span>
-  <span>&mdash;</span>
-  <ng-container *ngFor="let flight of trackedFlights; let i = index">
-    <span *ngIf="i > 0">,</span>
-    <a [routerLink]="['/flight-history', flight.flight]">{{ flight.flight }}</a>
-  </ng-container>
-  <span>{{ trackedFlights.length === 1 ? 'is' : 'are' }} currently in range and being tracked.</span>
-</div>
+@if (trackedFlights.length > 0) {
+  <div class="tracked-alert-bar">
+    <span class="pulse-dot"></span>
+    <span class="tracked-label">TRACKING ALERT</span>
+    <span>&mdash;</span>
+    @for (flight of trackedFlights; track flight; let i = $index) {
+      @if (i > 0) {
+        <span>,</span>
+      }
+      <a [routerLink]="['/flight-history', flight.flight]">{{ flight.flight }}</a>
+    }
+    <span>{{ trackedFlights.length === 1 ? 'is' : 'are' }} currently in range and being tracked.</span>
+  </div>
+}
 <router-outlet></router-outlet>
 

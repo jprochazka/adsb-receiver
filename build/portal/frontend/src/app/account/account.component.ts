@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
@@ -8,7 +8,7 @@ import { catchError, of, forkJoin } from 'rxjs';
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [NgIf, FormsModule, SpinnerComponent],
+  imports: [FormsModule, SpinnerComponent],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss'
 })

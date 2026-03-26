@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
@@ -25,7 +25,7 @@ const DEFAULT_ORDER = 'dump1090,dump978,adsbx,pfclient';
 @Component({
   selector: 'app-admin-maps',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, SpinnerComponent],
+  imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-maps.component.html',
   styleUrl: './admin-maps.component.scss'
 })

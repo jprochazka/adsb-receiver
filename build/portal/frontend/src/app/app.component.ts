@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -19,7 +19,7 @@ const DEFAULT_MAP_ORDER = 'dump1090,dump978,adsbx,pfclient';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterOutlet, RouterLink, RouterLinkActive, LinksComponent, LogoutComponent],
+  imports: [FormsModule, RouterOutlet, RouterLink, RouterLinkActive, LinksComponent, LogoutComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

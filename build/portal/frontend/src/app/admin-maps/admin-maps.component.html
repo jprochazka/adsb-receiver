@@ -1,67 +1,73 @@
 <div class="container py-4">
-    <h1 class="mb-2">Maps Management</h1>
-    <p class="text-muted mb-4">Enable or disable individual map links in the navigation menu. Drag rows to change display order. All changes are saved automatically.</p>
-    <hr />
+  <h1 class="mb-2">Maps Management</h1>
+  <p class="text-muted mb-4">Enable or disable individual map links in the navigation menu. Drag rows to change display order. All changes are saved automatically.</p>
+  <hr />
 
-    <app-spinner *ngIf="loading"></app-spinner>
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
 
-    <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
-        {{ successMessage }}
-        <button type="button" class="btn-close" (click)="successMessage=''"></button>
+  @if (successMessage) {
+    <div class="alert alert-success alert-dismissible">
+      {{ successMessage }}
+      <button type="button" class="btn-close" (click)="successMessage=''"></button>
     </div>
-    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
-        {{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-danger alert-dismissible">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" (click)="errorMessage=''"></button>
     </div>
+  }
 
-    <ng-container *ngIf="!loading">
-        <div class="card mb-4">
-            <div class="card-header fw-semibold">Navigation Visibility</div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-semibold">Show Maps in Navigation Bar</div>
-                        <div class="text-muted small">When disabled, the Maps menu is hidden from all visitors regardless of individual link settings</div>
-                    </div>
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" role="switch"
-                               id="toggle-nav" [(ngModel)]="mapNavEnabled" (change)="saveNavEnabled()">
-                        <label class="form-check-label" for="toggle-nav">
-                            {{ mapNavEnabled ? 'Visible' : 'Hidden' }}
-                        </label>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="card mb-2">
-            <div class="card-header fw-semibold">Map Links</div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex align-items-center"
-                    *ngFor="let item of mapItems; let i = index"
-                    draggable="true"
-                    (dragstart)="onDragStart($event, i)"
-                    (dragover)="onDragOver($event, i)"
-                    (dragleave)="onDragLeave($event)"
-                    (drop)="onDrop($event, i)"
-                    (dragend)="onDragEnd()"
-                    [class.list-group-item-info]="dragOverIndex === i && dragIndex !== i"
-                    [class.opacity-50]="dragIndex === i">
-                    <span class="text-muted me-3" style="font-size: 1.1rem; cursor: grab">&#8597;</span>
-                    <div class="flex-grow-1" draggable="false">
-                        <div class="fw-semibold">{{ item.label }}</div>
-                        <div class="text-muted small">{{ item.description }}</div>
-                    </div>
-                    <div class="form-check form-switch mb-0 ms-3" draggable="false">
-                        <input class="form-check-input" type="checkbox" role="switch"
-                               [id]="'toggle-' + item.key" [(ngModel)]="item.enabled" (change)="saveItemEnabled(item)">
-                        <label class="form-check-label" [for]="'toggle-' + item.key">
-                            {{ item.enabled ? 'Enabled' : 'Disabled' }}
-                        </label>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        <p class="text-muted small mb-4">Drag rows to reorder. All changes are saved automatically.</p>
-    </ng-container>
+  @if (!loading) {
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">Navigation Visibility</div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-semibold">Show Maps in Navigation Bar</div>
+            <div class="text-muted small">When disabled, the Maps menu is hidden from all visitors regardless of individual link settings</div>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+              id="toggle-nav" [(ngModel)]="mapNavEnabled" (change)="saveNavEnabled()">
+            <label class="form-check-label" for="toggle-nav">
+              {{ mapNavEnabled ? 'Visible' : 'Hidden' }}
+            </label>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="card mb-2">
+      <div class="card-header fw-semibold">Map Links</div>
+      <ul class="list-group list-group-flush">
+        @for (item of mapItems; track item; let i = $index) {
+          <li class="list-group-item d-flex align-items-center"
+            draggable="true"
+            (dragstart)="onDragStart($event, i)"
+            (dragover)="onDragOver($event, i)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event, i)"
+            (dragend)="onDragEnd()"
+            [class.list-group-item-info]="dragOverIndex === i && dragIndex !== i"
+            [class.opacity-50]="dragIndex === i">
+            <span class="text-muted me-3" style="font-size: 1.1rem; cursor: grab">&#8597;</span>
+            <div class="flex-grow-1" draggable="false">
+              <div class="fw-semibold">{{ item.label }}</div>
+              <div class="text-muted small">{{ item.description }}</div>
+            </div>
+            <div class="form-check form-switch mb-0 ms-3" draggable="false">
+              <input class="form-check-input" type="checkbox" role="switch"
+                [id]="'toggle-' + item.key" [(ngModel)]="item.enabled" (change)="saveItemEnabled(item)">
+              <label class="form-check-label" [for]="'toggle-' + item.key">
+                {{ item.enabled ? 'Enabled' : 'Disabled' }}
+              </label>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+    <p class="text-muted small mb-4">Drag rows to reorder. All changes are saved automatically.</p>
+  }
 </div>

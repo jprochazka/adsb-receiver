@@ -1,223 +1,235 @@
 <div class="container py-4">
-    <h1 class="mb-3">Receiver Information</h1>
+  <h1 class="mb-3">Receiver Information</h1>
 
-    <app-spinner *ngIf="loading"></app-spinner>
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
 
-    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  @if (errorMessage) {
+    <div class="alert alert-danger">{{ errorMessage }}</div>
+  }
 
-    <ng-container *ngIf="!loading && !errorMessage">
-
-        <!-- Period selector -->
-        <div class="btn-group mb-4" role="group" aria-label="Graph period">
-            <button *ngFor="let p of periods"
-                    type="button"
-                    class="btn btn-sm"
-                    [class.btn-primary]="activePeriod === p.value"
-                    [class.btn-outline-secondary]="activePeriod !== p.value"
-                    (click)="setPeriod(p.value)">
-                {{ p.label }}
-            </button>
-        </div>
-
-        <!-- Dump1090 Graphs -->
-        <div class="card mb-4" *ngIf="dump1090GraphsEnabled">
-            <div class="card-header fw-semibold">Dump1090 Graphs</div>
-            <div class="card-body">
-
-                <!-- Full-width trailing rate -->
-                <div class="row mb-4">
-                    <div class="col-12 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-local_trailing_rate')"
-                             class="img-fluid graph-img" alt="Message Rate (Trailing)">
-                    </div>
-                </div>
-
-                <!-- Aircraft + Tracks -->
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-aircraft')"
-                             class="img-fluid graph-img" alt="Aircraft Seen">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-tracks')"
-                             class="img-fluid graph-img" alt="Tracks Seen">
-                    </div>
-                </div>
-
-                <!-- Range (conditional) + Signal -->
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'imperialNautical'">
-                        <img [src]="imgUrl('dump1090-localhost-range_imperial_nautical')"
-                             class="img-fluid graph-img" alt="Max Range (Nautical Miles)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'imperialStatute'">
-                        <img [src]="imgUrl('dump1090-localhost-range_imperial_statute')"
-                             class="img-fluid graph-img" alt="Max Range (Statute Miles)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'metric'">
-                        <img [src]="imgUrl('dump1090-localhost-range_metric')"
-                             class="img-fluid graph-img" alt="Max Range (Kilometres)">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-signal')"
-                             class="img-fluid graph-img" alt="Signal Level">
-                    </div>
-                </div>
-
-                <!-- Local rate + Aircraft message rate -->
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-local_rate')"
-                             class="img-fluid graph-img" alt="Message Rate">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-aircraft_message_rate')"
-                             class="img-fluid graph-img" alt="Aircraft Message Rate">
-                    </div>
-                </div>
-
-                <!-- Positions + Strong signals -->
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-positions')"
-                             class="img-fluid graph-img" alt="Positions Decoded">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-strong_signals')"
-                             class="img-fluid graph-img" alt="Strong Signals">
-                    </div>
-                </div>
-
-                <!-- DF message type breakdown (full width) -->
-                <div class="row mb-4">
-                    <div class="col-12 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-df_types')"
-                             class="img-fluid graph-img" alt="Message Types">
-                    </div>
-                </div>
-
-                <!-- CPU (half-width, centered) -->
-                <div class="row justify-content-center">
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump1090-localhost-cpu')"
-                             class="img-fluid graph-img" alt="CPU Utilization">
-                    </div>
-                </div>
-
+  @if (!loading && !errorMessage) {
+    <!-- Period selector -->
+    <div class="btn-group mb-4" role="group" aria-label="Graph period">
+      @for (p of periods; track p) {
+        <button
+          type="button"
+          class="btn btn-sm"
+          [class.btn-primary]="activePeriod === p.value"
+          [class.btn-outline-secondary]="activePeriod !== p.value"
+          (click)="setPeriod(p.value)">
+          {{ p.label }}
+        </button>
+      }
+    </div>
+    <!-- Dump1090 Graphs -->
+    @if (dump1090GraphsEnabled) {
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Dump1090 Graphs</div>
+        <div class="card-body">
+          <!-- Full-width trailing rate -->
+          <div class="row mb-4">
+            <div class="col-12 text-center">
+              <img [src]="imgUrl('dump1090-localhost-local_trailing_rate')"
+                class="img-fluid graph-img" alt="Message Rate (Trailing)">
             </div>
-        </div>
-
-        <!-- Dump978 Graphs -->
-        <div class="card mb-4" *ngIf="dump978GraphsEnabled">
-            <div class="card-header fw-semibold">Dump978 Graphs</div>
-            <div class="card-body">
-
-                <!-- Message Rate (full width) -->
-                <div class="row mb-4">
-                    <div class="col-12 text-center">
-                        <img [src]="imgUrl('dump978-localhost-message_rate')"
-                             class="img-fluid graph-img" alt="Message Rate">
-                    </div>
-                </div>
-
-                <!-- Aircraft + Signal -->
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump978-localhost-aircraft')"
-                             class="img-fluid graph-img" alt="Aircraft Seen">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('dump978-localhost-signal')"
-                             class="img-fluid graph-img" alt="Signal Strength">
-                    </div>
-                </div>
-
-                <!-- Range (conditional) + Altitude (conditional) -->
-                <div class="row">
-                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'imperialNautical'">
-                        <img [src]="imgUrl('dump978-localhost-range_imperial_nautical')"
-                             class="img-fluid graph-img" alt="Max Range (Nautical Miles)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'imperialStatute'">
-                        <img [src]="imgUrl('dump978-localhost-range_imperial_statute')"
-                             class="img-fluid graph-img" alt="Max Range (Statute Miles)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="measurementRange === 'metric'">
-                        <img [src]="imgUrl('dump978-localhost-range_metric')"
-                             class="img-fluid graph-img" alt="Max Range (Kilometres)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="measurementAltitude === 'imperial'">
-                        <img [src]="imgUrl('dump978-localhost-altitude_imperial')"
-                             class="img-fluid graph-img" alt="Average Aircraft Altitude (Feet)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="measurementAltitude === 'metric'">
-                        <img [src]="imgUrl('dump978-localhost-altitude_metric')"
-                             class="img-fluid graph-img" alt="Average Aircraft Altitude (Metres)">
-                    </div>
-                </div>
-
+          </div>
+          <!-- Aircraft + Tracks -->
+          <div class="row mb-4">
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-aircraft')"
+                class="img-fluid graph-img" alt="Aircraft Seen">
             </div>
-        </div>
-
-        <!-- System Graphs -->
-        <div class="card mb-4">
-            <div class="card-header fw-semibold">System Graphs</div>
-            <div class="card-body">
-
-                <!-- Overall CPU (full width) -->
-                <div class="row mb-4">
-                    <div class="col-12 text-center">
-                        <img [src]="imgUrl('system-localhost-cpu')"
-                             class="img-fluid graph-img" alt="Overall CPU Utilization">
-                    </div>
-                </div>
-
-                <!-- Temperature (conditional) + Memory -->
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center" *ngIf="measurementTemperature === 'imperial'">
-                        <img [src]="imgUrl('system-localhost-temperature_imperial')"
-                             class="img-fluid graph-img" alt="Core Temperature (°F)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="measurementTemperature === 'metric'">
-                        <img [src]="imgUrl('system-localhost-temperature_metric')"
-                             class="img-fluid graph-img" alt="Core Temperature (°C)">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('system-localhost-memory')"
-                             class="img-fluid graph-img" alt="Memory Utilization">
-                    </div>
-                </div>
-
-                <!-- Network interface (conditional) + Disk space -->
-                <div class="row mb-4">
-                    <div class="col-md-6 text-center" *ngIf="networkInterface === 'eth0'">
-                        <img [src]="imgUrl('system-localhost-eth0_bandwidth')"
-                             class="img-fluid graph-img" alt="Bandwidth Usage (eth0)">
-                    </div>
-                    <div class="col-md-6 text-center" *ngIf="networkInterface !== 'eth0'">
-                        <img [src]="imgUrl('system-localhost-wlan0_bandwidth')"
-                             class="img-fluid graph-img" alt="Bandwidth Usage (wlan0)">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('system-localhost-df_root')"
-                             class="img-fluid graph-img" alt="Disk Space Usage (/)">
-                    </div>
-                </div>
-
-                <!-- Disk I/O -->
-                <div class="row">
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('system-localhost-disk_io_iops')"
-                             class="img-fluid graph-img" alt="Disk I/O - IOPS">
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <img [src]="imgUrl('system-localhost-disk_io_octets')"
-                             class="img-fluid graph-img" alt="Disk I/O - Bandwidth">
-                    </div>
-                </div>
-
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-tracks')"
+                class="img-fluid graph-img" alt="Tracks Seen">
             </div>
+          </div>
+          <!-- Range (conditional) + Signal -->
+          <div class="row mb-4">
+            @if (measurementRange === 'imperialNautical') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump1090-localhost-range_imperial_nautical')"
+                  class="img-fluid graph-img" alt="Max Range (Nautical Miles)">
+              </div>
+            }
+            @if (measurementRange === 'imperialStatute') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump1090-localhost-range_imperial_statute')"
+                  class="img-fluid graph-img" alt="Max Range (Statute Miles)">
+              </div>
+            }
+            @if (measurementRange === 'metric') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump1090-localhost-range_metric')"
+                  class="img-fluid graph-img" alt="Max Range (Kilometres)">
+              </div>
+            }
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-signal')"
+                class="img-fluid graph-img" alt="Signal Level">
+            </div>
+          </div>
+          <!-- Local rate + Aircraft message rate -->
+          <div class="row mb-4">
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-local_rate')"
+                class="img-fluid graph-img" alt="Message Rate">
+            </div>
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-aircraft_message_rate')"
+                class="img-fluid graph-img" alt="Aircraft Message Rate">
+            </div>
+          </div>
+          <!-- Positions + Strong signals -->
+          <div class="row mb-4">
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-positions')"
+                class="img-fluid graph-img" alt="Positions Decoded">
+            </div>
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-strong_signals')"
+                class="img-fluid graph-img" alt="Strong Signals">
+            </div>
+          </div>
+          <!-- DF message type breakdown (full width) -->
+          <div class="row mb-4">
+            <div class="col-12 text-center">
+              <img [src]="imgUrl('dump1090-localhost-df_types')"
+                class="img-fluid graph-img" alt="Message Types">
+            </div>
+          </div>
+          <!-- CPU (half-width, centered) -->
+          <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump1090-localhost-cpu')"
+                class="img-fluid graph-img" alt="CPU Utilization">
+            </div>
+          </div>
         </div>
-
-    </ng-container>
-</div>
+      </div>
+    }
+    <!-- Dump978 Graphs -->
+    @if (dump978GraphsEnabled) {
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Dump978 Graphs</div>
+        <div class="card-body">
+          <!-- Message Rate (full width) -->
+          <div class="row mb-4">
+            <div class="col-12 text-center">
+              <img [src]="imgUrl('dump978-localhost-message_rate')"
+                class="img-fluid graph-img" alt="Message Rate">
+            </div>
+          </div>
+          <!-- Aircraft + Signal -->
+          <div class="row mb-4">
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump978-localhost-aircraft')"
+                class="img-fluid graph-img" alt="Aircraft Seen">
+            </div>
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('dump978-localhost-signal')"
+                class="img-fluid graph-img" alt="Signal Strength">
+            </div>
+          </div>
+          <!-- Range (conditional) + Altitude (conditional) -->
+          <div class="row">
+            @if (measurementRange === 'imperialNautical') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump978-localhost-range_imperial_nautical')"
+                  class="img-fluid graph-img" alt="Max Range (Nautical Miles)">
+              </div>
+            }
+            @if (measurementRange === 'imperialStatute') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump978-localhost-range_imperial_statute')"
+                  class="img-fluid graph-img" alt="Max Range (Statute Miles)">
+              </div>
+            }
+            @if (measurementRange === 'metric') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump978-localhost-range_metric')"
+                  class="img-fluid graph-img" alt="Max Range (Kilometres)">
+              </div>
+            }
+            @if (measurementAltitude === 'imperial') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump978-localhost-altitude_imperial')"
+                  class="img-fluid graph-img" alt="Average Aircraft Altitude (Feet)">
+              </div>
+            }
+            @if (measurementAltitude === 'metric') {
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('dump978-localhost-altitude_metric')"
+                  class="img-fluid graph-img" alt="Average Aircraft Altitude (Metres)">
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+    <!-- System Graphs -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">System Graphs</div>
+      <div class="card-body">
+        <!-- Overall CPU (full width) -->
+        <div class="row mb-4">
+          <div class="col-12 text-center">
+            <img [src]="imgUrl('system-localhost-cpu')"
+              class="img-fluid graph-img" alt="Overall CPU Utilization">
+          </div>
+        </div>
+        <!-- Temperature (conditional) + Memory -->
+        <div class="row mb-4">
+          @if (measurementTemperature === 'imperial') {
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('system-localhost-temperature_imperial')"
+                class="img-fluid graph-img" alt="Core Temperature (°F)">
+            </div>
+          }
+          @if (measurementTemperature === 'metric') {
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('system-localhost-temperature_metric')"
+                class="img-fluid graph-img" alt="Core Temperature (°C)">
+            </div>
+          }
+          <div class="col-md-6 text-center">
+            <img [src]="imgUrl('system-localhost-memory')"
+              class="img-fluid graph-img" alt="Memory Utilization">
+          </div>
+        </div>
+        <!-- Network interface (conditional) + Disk space -->
+        <div class="row mb-4">
+          @if (networkInterface === 'eth0') {
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('system-localhost-eth0_bandwidth')"
+                class="img-fluid graph-img" alt="Bandwidth Usage (eth0)">
+            </div>
+          }
+          @if (networkInterface !== 'eth0') {
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('system-localhost-wlan0_bandwidth')"
+                class="img-fluid graph-img" alt="Bandwidth Usage (wlan0)">
+            </div>
+          }
+          <div class="col-md-6 text-center">
+            <img [src]="imgUrl('system-localhost-df_root')"
+              class="img-fluid graph-img" alt="Disk Space Usage (/)">
+            </div>
+          </div>
+          <!-- Disk I/O -->
+          <div class="row">
+            <div class="col-md-6 text-center">
+              <img [src]="imgUrl('system-localhost-disk_io_iops')"
+                class="img-fluid graph-img" alt="Disk I/O - IOPS">
+              </div>
+              <div class="col-md-6 text-center">
+                <img [src]="imgUrl('system-localhost-disk_io_octets')"
+                  class="img-fluid graph-img" alt="Disk I/O - Bandwidth">
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>

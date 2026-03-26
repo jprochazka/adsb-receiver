@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
 @Component({
   selector: 'app-links',
   standalone: true,
-  imports: [NgFor, NgIf, SpinnerComponent],
+  imports: [SpinnerComponent],
   templateUrl: './links.component.html',
   styleUrl: './links.component.scss'
 })

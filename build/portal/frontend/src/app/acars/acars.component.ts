@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, combineLatest } from 'rxjs';
@@ -12,7 +12,7 @@ const MSG_PAGE_SIZE = 25;
 @Component({
   selector: 'app-acars',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, SpinnerComponent, RouterLink],
+  imports: [FormsModule, SpinnerComponent, RouterLink],
   templateUrl: './acars.component.html',
   styleUrl: './acars.component.scss'
 })

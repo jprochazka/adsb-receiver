@@ -1,92 +1,104 @@
 <div class="container">
-    <h1>Account Settings</h1>
-    <hr />
-    <app-spinner *ngIf="loading"></app-spinner>
-    <div *ngIf="!loading">
-
-        <!-- Public profile -->
-        <div class="card mb-4">
-            <div class="card-header"><h5 class="mb-0">Public Profile</h5></div>
-            <div class="card-body">
-                <div class="row g-3 align-items-center pb-2">
-                    <div class="col-md-2">
-                        <label for="name" class="col-form-label">Name</label>
-                    </div>
-                    <div class="col-md-10">
-                        <input type="text" id="name" class="form-control" autocomplete="off" [(ngModel)]="name">
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center pb-2">
-                    <div class="col-md-2">
-                        <label for="email" class="col-form-label">Email Address</label>
-                    </div>
-                    <div class="col-md-10">
-                        <input type="email" id="email" class="form-control" autocomplete="off" [(ngModel)]="email">
-                    </div>
-                </div>
-                <div *ngIf="profileSuccess" class="alert alert-success mt-2">{{ profileSuccess }}</div>
-                <div *ngIf="profileError" class="alert alert-danger mt-2">{{ profileError }}</div>
-                <div class="mt-2">
-                    <button type="button" class="btn btn-primary" (click)="saveProfile()">Save</button>
-                </div>
+  <h1>Account Settings</h1>
+  <hr />
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
+  @if (!loading) {
+    <div>
+      <!-- Public profile -->
+      <div class="card mb-4">
+        <div class="card-header"><h5 class="mb-0">Public Profile</h5></div>
+        <div class="card-body">
+          <div class="row g-3 align-items-center pb-2">
+            <div class="col-md-2">
+              <label for="name" class="col-form-label">Name</label>
             </div>
-        </div>
-
-        <!-- Password and authentication -->
-        <div class="card mb-4">
-            <div class="card-header"><h5 class="mb-0">Password and Authentication</h5></div>
-            <div class="card-body">
-                <div class="row g-3 align-items-center pb-2">
-                    <div class="col-md-2">
-                        <label for="currentPassword" class="col-form-label">Current password</label>
-                    </div>
-                    <div class="col-md-10">
-                        <input type="password" id="currentPassword" class="form-control" autocomplete="new-password" [(ngModel)]="currentPassword">
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center pb-2">
-                    <div class="col-md-2">
-                        <label for="newPassword" class="col-form-label">New password</label>
-                    </div>
-                    <div class="col-md-10">
-                        <input type="password" id="newPassword" class="form-control" autocomplete="new-password" [(ngModel)]="newPassword">
-                    </div>
-                </div>
-                <div class="row g-3 align-items-center pb-2">
-                    <div class="col-md-2">
-                        <label for="confirmPassword" class="col-form-label">Confirm new password</label>
-                    </div>
-                    <div class="col-md-10">
-                        <input type="password" id="confirmPassword" class="form-control" autocomplete="new-password" [(ngModel)]="confirmPassword">
-                    </div>
-                </div>
-                <div *ngIf="authSuccess" class="alert alert-success mt-2">{{ authSuccess }}</div>
-                <div *ngIf="authError" class="alert alert-danger mt-2">{{ authError }}</div>
-                <div class="mt-2">
-                    <button type="button" class="btn btn-primary" (click)="changePassword()">Save</button>
-                </div>
+            <div class="col-md-10">
+              <input type="text" id="name" class="form-control" autocomplete="off" [(ngModel)]="name">
             </div>
-        </div>
-
-        <!-- Notifications -->
-        <div class="card mb-4">
-            <div class="card-header"><h5 class="mb-0">Notifications</h5></div>
-            <div class="card-body">
-                <div class="row g-3 align-items-center pb-2">
-                    <div class="col-12">
-                        <span>A comma delimited list of flight numbers to monitor</span>
-                    </div>
-                    <div class="col-12">
-                        <input type="text" id="notifications" class="form-control" [(ngModel)]="notifications">
-                    </div>
-                </div>
-                <div *ngIf="notifSuccess" class="alert alert-success mt-2">{{ notifSuccess }}</div>
-                <div *ngIf="notifError" class="alert alert-danger mt-2">{{ notifError }}</div>
-                <div class="mt-2">
-                    <button type="button" class="btn btn-primary" (click)="saveNotifications()">Save</button>
-                </div>
+          </div>
+          <div class="row g-3 align-items-center pb-2">
+            <div class="col-md-2">
+              <label for="email" class="col-form-label">Email Address</label>
             </div>
+            <div class="col-md-10">
+              <input type="email" id="email" class="form-control" autocomplete="off" [(ngModel)]="email">
+            </div>
+          </div>
+          @if (profileSuccess) {
+            <div class="alert alert-success mt-2">{{ profileSuccess }}</div>
+          }
+          @if (profileError) {
+            <div class="alert alert-danger mt-2">{{ profileError }}</div>
+          }
+          <div class="mt-2">
+            <button type="button" class="btn btn-primary" (click)="saveProfile()">Save</button>
+          </div>
         </div>
-
+      </div>
+      <!-- Password and authentication -->
+      <div class="card mb-4">
+        <div class="card-header"><h5 class="mb-0">Password and Authentication</h5></div>
+        <div class="card-body">
+          <div class="row g-3 align-items-center pb-2">
+            <div class="col-md-2">
+              <label for="currentPassword" class="col-form-label">Current password</label>
+            </div>
+            <div class="col-md-10">
+              <input type="password" id="currentPassword" class="form-control" autocomplete="new-password" [(ngModel)]="currentPassword">
+            </div>
+          </div>
+          <div class="row g-3 align-items-center pb-2">
+            <div class="col-md-2">
+              <label for="newPassword" class="col-form-label">New password</label>
+            </div>
+            <div class="col-md-10">
+              <input type="password" id="newPassword" class="form-control" autocomplete="new-password" [(ngModel)]="newPassword">
+            </div>
+          </div>
+          <div class="row g-3 align-items-center pb-2">
+            <div class="col-md-2">
+              <label for="confirmPassword" class="col-form-label">Confirm new password</label>
+            </div>
+            <div class="col-md-10">
+              <input type="password" id="confirmPassword" class="form-control" autocomplete="new-password" [(ngModel)]="confirmPassword">
+            </div>
+          </div>
+          @if (authSuccess) {
+            <div class="alert alert-success mt-2">{{ authSuccess }}</div>
+          }
+          @if (authError) {
+            <div class="alert alert-danger mt-2">{{ authError }}</div>
+          }
+          <div class="mt-2">
+            <button type="button" class="btn btn-primary" (click)="changePassword()">Save</button>
+          </div>
+        </div>
+      </div>
+      <!-- Notifications -->
+      <div class="card mb-4">
+        <div class="card-header"><h5 class="mb-0">Notifications</h5></div>
+        <div class="card-body">
+          <div class="row g-3 align-items-center pb-2">
+            <div class="col-12">
+              <span>A comma delimited list of flight numbers to monitor</span>
+            </div>
+            <div class="col-12">
+              <input type="text" id="notifications" class="form-control" [(ngModel)]="notifications">
+            </div>
+          </div>
+          @if (notifSuccess) {
+            <div class="alert alert-success mt-2">{{ notifSuccess }}</div>
+          }
+          @if (notifError) {
+            <div class="alert alert-danger mt-2">{{ notifError }}</div>
+          }
+          <div class="mt-2">
+            <button type="button" class="btn btn-primary" (click)="saveNotifications()">Save</button>
+          </div>
+        </div>
+      </div>
     </div>
+  }
 </div>

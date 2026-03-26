@@ -2,8 +2,12 @@
   <h1>Create Account</h1>
   <hr />
 
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-danger">{{ errorMessage }}</div>
+  }
 
   <div class="mb-3">
     <label for="reg-name" class="form-label">Full Name</label>

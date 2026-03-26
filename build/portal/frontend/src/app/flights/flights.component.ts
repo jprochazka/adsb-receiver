@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
@@ -11,7 +11,7 @@ const PAGE_SIZE = 50;
 @Component({
   selector: 'app-flights',
   standalone: true,
-  imports: [NgFor, NgIf, SpinnerComponent, RouterLink],
+  imports: [SpinnerComponent, RouterLink],
   templateUrl: './flights.component.html',
   styleUrl: './flights.component.scss'
 })

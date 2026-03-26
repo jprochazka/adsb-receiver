@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { ActivatedRoute } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -31,7 +31,7 @@ const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#0
 @Component({
   selector: 'app-flight-history',
   standalone: true,
-  imports: [NgFor, NgIf],
+  imports: [],
   templateUrl: './flight-history.component.html',
   styleUrl: './flight-history.component.scss'
 })

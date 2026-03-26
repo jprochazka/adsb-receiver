@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { DataService } from '../service/data.service';
@@ -17,7 +17,7 @@ const PERIODS = [
 @Component({
   selector: 'app-receiver-information',
   standalone: true,
-  imports: [NgFor, NgIf, SpinnerComponent],
+  imports: [SpinnerComponent],
   templateUrl: './receiver-information.component.html',
   styleUrl: './receiver-information.component.scss'
 })

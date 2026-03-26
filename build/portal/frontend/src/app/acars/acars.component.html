@@ -1,182 +1,216 @@
 <div class="container">
-    <h1>ACARS Messages</h1>
-    <hr />
+  <h1>ACARS Messages</h1>
+  <hr />
 
-    <!-- Search bar -->
-    <form class="d-flex gap-2 mb-3" (ngSubmit)="search()">
-        <input class="form-control" type="search" placeholder="Search by flight number or registration…"
-            [(ngModel)]="searchQuery" name="searchQuery" />
-        <button class="btn btn-primary" type="submit">Search</button>
-        <button *ngIf="searchQuery" class="btn btn-outline-secondary" type="button" (click)="clearSearch()">Clear</button>
-    </form>
+  <!-- Search bar -->
+  <form class="d-flex gap-2 mb-3" (ngSubmit)="search()">
+    <input class="form-control" type="search" placeholder="Search by flight number or registration…"
+      [(ngModel)]="searchQuery" name="searchQuery" />
+    <button class="btn btn-primary" type="submit">Search</button>
+    @if (searchQuery) {
+      <button class="btn btn-outline-secondary" type="button" (click)="clearSearch()">Clear</button>
+    }
+  </form>
 
-    <app-spinner *ngIf="loading"></app-spinner>
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
 
-    <div *ngIf="!loading">
-        <!-- Flights table -->
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th scope="col">Flight</th>
-                    <th scope="col">Registration</th>
-                    <th scope="col">Start Time</th>
-                    <th scope="col">Last Time</th>
-                    <th scope="col" class="text-end">Messages</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <ng-container *ngFor="let flight of flights">
-                    <tr class="acars-flight-row" [class.table-active]="expandedFlightId === flight.id"
-                        (click)="toggleMessages(flight)" style="cursor: pointer;">
-                        <td><strong>{{ flight.flight_number || '—' }}</strong></td>
-                        <td>{{ flight.registration || '—' }}</td>
-                        <td>{{ flight.start_time }}</td>
-                        <td>{{ flight.last_time }}</td>
-                        <td class="text-end">{{ flight.nb_messages }}</td>
-                        <td class="text-end text-secondary small">
-                            {{ expandedFlightId === flight.id ? '▲ hide' : '▼ show' }}
-                        </td>
-                    </tr>
-
-                    <!-- Expanded messages row -->
-                    <tr *ngIf="expandedFlightId === flight.id" class="acars-messages-row">
-                        <td colspan="6" class="p-0">
-                            <div class="acars-messages-panel p-3">
-                                <app-spinner *ngIf="messagesLoading"></app-spinner>
-
-                                <div *ngIf="!messagesLoading">
-                                    <table class="table table-sm table-striped mb-2" *ngIf="messages.length > 0">
-                                        <thead>
-                                            <tr>
-                                                <th>Time</th>
-                                                <th>Label</th>
-                                                <th>Mode</th>
-                                                <th>Ack</th>
-                                                <th>Block</th>
-                                                <th>Msg #</th>
-                                                <th>Channel</th>
-                                                <th>Signal</th>
-                                                <th>Error</th>
-                                                <th>Text</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let msg of messages">
-                                                <td class="text-nowrap">{{ msg.time }}</td>
-                                                <td><code>{{ msg.label }}</code></td>
-                                                <td>{{ msg.mode }}</td>
-                                                <td>{{ msg.ack }}</td>
-                                                <td>{{ msg.block_no }}</td>
-                                                <td>{{ msg.message_no }}</td>
-                                                <td>{{ msg.channel }}</td>
-                                                <td>{{ msg.signal_level }}</td>
-                                                <td>{{ msg.error }}</td>
-                                                <td class="acars-text">
-                                                    <span *ngIf="!msg.text">&#8212;</span>
-                                                    <a *ngIf="msg.text"
-                                                        class="font-monospace text-decoration-none"
-                                                        href="#"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#acarsTextModal"
-                                                        (click)="openTextModal(msg, $event)"
-                                                        title="View full message">{{ truncate(msg.text) }}</a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-
-                                    <p *ngIf="messages.length === 0" class="text-secondary mb-2">No messages found.</p>
-
-                                    <!-- Message pagination -->
-                                    <nav *ngIf="msgTotalPages > 1" aria-label="Message pages">
-                                        <ul class="pagination pagination-sm flex-wrap mb-1">
-                                            <li class="page-item" [class.disabled]="msgCurrentPage === 1">
-                                                <a class="page-link" (click)="goToMsgPage(flight.id, msgCurrentPage - 1)"
-                                                    style="cursor:pointer">&#8249;</a>
-                                            </li>
-                                            <ng-container *ngFor="let p of msgPageNumbers; let i = index">
-                                                <li class="page-item disabled"
-                                                    *ngIf="i > 0 && p !== msgPageNumbers[i - 1] + 1">
-                                                    <span class="page-link">…</span>
-                                                </li>
-                                                <li class="page-item" [class.active]="p === msgCurrentPage">
-                                                    <a class="page-link"
-                                                        (click)="goToMsgPage(flight.id, p)"
-                                                        style="cursor:pointer">{{ p }}</a>
-                                                </li>
-                                            </ng-container>
-                                            <li class="page-item" [class.disabled]="msgCurrentPage === msgTotalPages">
-                                                <a class="page-link" (click)="goToMsgPage(flight.id, msgCurrentPage + 1)"
-                                                    style="cursor:pointer">&#8250;</a>
-                                            </li>
-                                        </ul>
-                                    </nav>
-
-                                    <p class="text-secondary small mb-0">
-                                        {{ msgTotal }} message(s) total
-                                        <span *ngIf="msgTotalPages > 1">
-                                            — page {{ msgCurrentPage }} of {{ msgTotalPages }}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-container>
-            </tbody>
-        </table>
-
-        <p *ngIf="flights.length === 0" class="text-secondary">No ACARS flights found.</p>
-
-        <!-- Flight pagination -->
-        <nav *ngIf="!searchQuery && totalPages > 1" aria-label="Flight pages">
-            <ul class="pagination flex-wrap">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                    <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
+  @if (!loading) {
+    <div>
+      <!-- Flights table -->
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th scope="col">Flight</th>
+            <th scope="col">Registration</th>
+            <th scope="col">Start Time</th>
+            <th scope="col">Last Time</th>
+            <th scope="col" class="text-end">Messages</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (flight of flights; track flight) {
+            <tr class="acars-flight-row" [class.table-active]="expandedFlightId === flight.id"
+              (click)="toggleMessages(flight)" style="cursor: pointer;">
+              <td><strong>{{ flight.flight_number || '—' }}</strong></td>
+              <td>{{ flight.registration || '—' }}</td>
+              <td>{{ flight.start_time }}</td>
+              <td>{{ flight.last_time }}</td>
+              <td class="text-end">{{ flight.nb_messages }}</td>
+              <td class="text-end text-secondary small">
+                {{ expandedFlightId === flight.id ? '▲ hide' : '▼ show' }}
+              </td>
+            </tr>
+            <!-- Expanded messages row -->
+            @if (expandedFlightId === flight.id) {
+              <tr class="acars-messages-row">
+                <td colspan="6" class="p-0">
+                  <div class="acars-messages-panel p-3">
+                    @if (messagesLoading) {
+                      <app-spinner></app-spinner>
+                    }
+                    @if (!messagesLoading) {
+                      <div>
+                        @if (messages.length > 0) {
+                          <table class="table table-sm table-striped mb-2">
+                            <thead>
+                              <tr>
+                                <th>Time</th>
+                                <th>Label</th>
+                                <th>Mode</th>
+                                <th>Ack</th>
+                                <th>Block</th>
+                                <th>Msg #</th>
+                                <th>Channel</th>
+                                <th>Signal</th>
+                                <th>Error</th>
+                                <th>Text</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (msg of messages; track msg) {
+                                <tr>
+                                  <td class="text-nowrap">{{ msg.time }}</td>
+                                  <td><code>{{ msg.label }}</code></td>
+                                  <td>{{ msg.mode }}</td>
+                                  <td>{{ msg.ack }}</td>
+                                  <td>{{ msg.block_no }}</td>
+                                  <td>{{ msg.message_no }}</td>
+                                  <td>{{ msg.channel }}</td>
+                                  <td>{{ msg.signal_level }}</td>
+                                  <td>{{ msg.error }}</td>
+                                  <td class="acars-text">
+                                    @if (!msg.text) {
+                                      <span>&#8212;</span>
+                                    }
+                                    @if (msg.text) {
+                                      <a
+                                        class="font-monospace text-decoration-none"
+                                        href="#"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#acarsTextModal"
+                                        (click)="openTextModal(msg, $event)"
+                                      title="View full message">{{ truncate(msg.text) }}</a>
+                                    }
+                                  </td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        }
+                        @if (messages.length === 0) {
+                          <p class="text-secondary mb-2">No messages found.</p>
+                        }
+                        <!-- Message pagination -->
+                        @if (msgTotalPages > 1) {
+                          <nav aria-label="Message pages">
+                            <ul class="pagination pagination-sm flex-wrap mb-1">
+                              <li class="page-item" [class.disabled]="msgCurrentPage === 1">
+                                <a class="page-link" (click)="goToMsgPage(flight.id, msgCurrentPage - 1)"
+                                style="cursor:pointer">&#8249;</a>
+                              </li>
+                              @for (p of msgPageNumbers; track p; let i = $index) {
+                                @if (i > 0 && p !== msgPageNumbers[i - 1] + 1) {
+                                  <li class="page-item disabled"
+                                    >
+                                    <span class="page-link">…</span>
+                                  </li>
+                                }
+                                <li class="page-item" [class.active]="p === msgCurrentPage">
+                                  <a class="page-link"
+                                    (click)="goToMsgPage(flight.id, p)"
+                                  style="cursor:pointer">{{ p }}</a>
+                                </li>
+                              }
+                              <li class="page-item" [class.disabled]="msgCurrentPage === msgTotalPages">
+                                <a class="page-link" (click)="goToMsgPage(flight.id, msgCurrentPage + 1)"
+                                style="cursor:pointer">&#8250;</a>
+                              </li>
+                            </ul>
+                          </nav>
+                        }
+                        <p class="text-secondary small mb-0">
+                          {{ msgTotal }} message(s) total
+                          @if (msgTotalPages > 1) {
+                            <span>
+                              — page {{ msgCurrentPage }} of {{ msgTotalPages }}
+                            </span>
+                          }
+                        </p>
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+      @if (flights.length === 0) {
+        <p class="text-secondary">No ACARS flights found.</p>
+      }
+      <!-- Flight pagination -->
+      @if (!searchQuery && totalPages > 1) {
+        <nav aria-label="Flight pages">
+          <ul class="pagination flex-wrap">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
+            </li>
+            @for (p of pageNumbers; track p; let i = $index) {
+              @if (i > 0 && p !== pageNumbers[i - 1] + 1) {
+                <li class="page-item disabled">
+                  <span class="page-link">…</span>
                 </li>
-                <ng-container *ngFor="let p of pageNumbers; let i = index">
-                    <li class="page-item disabled" *ngIf="i > 0 && p !== pageNumbers[i - 1] + 1">
-                        <span class="page-link">…</span>
-                    </li>
-                    <li class="page-item" [class.active]="p === currentPage">
-                        <a class="page-link" (click)="goToPage(p)" style="cursor:pointer">{{ p }}</a>
-                    </li>
-                </ng-container>
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor:pointer">Next &#8250;</a>
-                </li>
-            </ul>
+              }
+              <li class="page-item" [class.active]="p === currentPage">
+                <a class="page-link" (click)="goToPage(p)" style="cursor:pointer">{{ p }}</a>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor:pointer">Next &#8250;</a>
+            </li>
+          </ul>
         </nav>
-
-        <p *ngIf="!searchQuery" class="fw-light text-secondary small">
-            {{ totalFlights }} flight(s) total
-            <span *ngIf="totalPages > 1">— page {{ currentPage }} of {{ totalPages }}</span>
+      }
+      @if (!searchQuery) {
+        <p class="fw-light text-secondary small">
+          {{ totalFlights }} flight(s) total
+          @if (totalPages > 1) {
+            <span>— page {{ currentPage }} of {{ totalPages }}</span>
+          }
         </p>
-        <p *ngIf="searchQuery" class="fw-light text-secondary small">
-            {{ flights.length }} result(s) for "{{ searchQuery }}"
+      }
+      @if (searchQuery) {
+        <p class="fw-light text-secondary small">
+          {{ flights.length }} result(s) for "{{ searchQuery }}"
         </p>
+      }
     </div>
+  }
 </div>
 
 <!-- ACARS message text modal -->
 <div class="modal fade" id="acarsTextModal" tabindex="-1" aria-labelledby="acarsTextModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="acarsTextModalLabel">
-                    Message {{ modalMsgNo }}
-                    <span *ngIf="modalLabel" class="badge bg-secondary ms-2">{{ modalLabel }}</span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="text-secondary small mb-2">{{ modalTime }}</p>
-                <pre class="acars-modal-text">{{ modalText }}</pre>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="acarsTextModalLabel">
+          Message {{ modalMsgNo }}
+          @if (modalLabel) {
+            <span class="badge bg-secondary ms-2">{{ modalLabel }}</span>
+          }
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary small mb-2">{{ modalTime }}</p>
+        <pre class="acars-modal-text">{{ modalText }}</pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
+  </div>
 </div>

@@ -1,174 +1,209 @@
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h1>Blog Management</h1>
-        <button class="btn btn-primary" (click)="toggleCreateForm()" *ngIf="!showCreateForm">
-            + New Post
-        </button>
-        <button class="btn btn-secondary" (click)="toggleCreateForm()" *ngIf="showCreateForm">
-            Cancel
-        </button>
-    </div>
-    <hr />
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1>Blog Management</h1>
+    @if (!showCreateForm) {
+      <button class="btn btn-primary" (click)="toggleCreateForm()">
+        + New Post
+      </button>
+    }
+    @if (showCreateForm) {
+      <button class="btn btn-secondary" (click)="toggleCreateForm()">
+        Cancel
+      </button>
+    }
+  </div>
+  <hr />
 
+  <div class="card mb-4">
+    <div class="card-header fw-semibold">Navigation Visibility</div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <div class="fw-semibold">Show Blog in Navigation Bar</div>
+          <div class="text-muted small">When disabled, the Blog link is hidden from all visitors</div>
+        </div>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input" type="checkbox" role="switch"
+            id="toggle-blog-nav" [(ngModel)]="blogNavEnabled" (change)="saveBlogNavEnabled()">
+          <label class="form-check-label" for="toggle-blog-nav">
+            {{ blogNavEnabled ? 'Visible' : 'Hidden' }}
+          </label>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <p class="text-muted small mb-4">All changes are saved automatically.</p>
+
+  @if (successMessage) {
+    <div class="alert alert-success alert-dismissible">
+      {{ successMessage }}
+      <button type="button" class="btn-close" (click)="successMessage=''"></button>
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-danger alert-dismissible">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+    </div>
+  }
+
+  <!-- Create form -->
+  @if (showCreateForm) {
     <div class="card mb-4">
-        <div class="card-header fw-semibold">Navigation Visibility</div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold">Show Blog in Navigation Bar</div>
-                    <div class="text-muted small">When disabled, the Blog link is hidden from all visitors</div>
-                </div>
-                <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" role="switch"
-                           id="toggle-blog-nav" [(ngModel)]="blogNavEnabled" (change)="saveBlogNavEnabled()">
-                    <label class="form-check-label" for="toggle-blog-nav">
-                        {{ blogNavEnabled ? 'Visible' : 'Hidden' }}
-                    </label>
-                </div>
-            </li>
-        </ul>
-    </div>
-    <p class="text-muted small mb-4">All changes are saved automatically.</p>
-
-    <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
-        {{ successMessage }}
-        <button type="button" class="btn-close" (click)="successMessage=''"></button>
-    </div>
-    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
-        {{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage=''"></button>
-    </div>
-
-    <!-- Create form -->
-    <div *ngIf="showCreateForm" class="card mb-4">
-        <div class="card-header fw-semibold">New Post</div>
-        <div class="card-body">
-            <div class="mb-3">
-                <label class="form-label">Title</label>
-                <input type="text" class="form-control" [(ngModel)]="newTitle" placeholder="Post title">
+      <div class="card-header fw-semibold">New Post</div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          <input type="text" class="form-control" [(ngModel)]="newTitle" placeholder="Post title">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Author</label>
+          <input type="text" class="form-control" [(ngModel)]="newAuthor" placeholder="Author name">
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Publication Date &amp; Time</label>
+            <input type="datetime-local" class="form-control" [(ngModel)]="newDate">
+            @if (isFuture(newDate)) {
+              <div class="alert alert-warning mt-2 mb-0 py-1 px-2 small">
+                This post is scheduled for the future and will not appear publicly until {{ newDate | slice:0:10 }} at {{ newDate | slice:11:16 }}.
+              </div>
+            }
+          </div>
+          <div class="col-md-4 d-flex align-items-start pt-4 mt-2">
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="new-visible" [(ngModel)]="newVisible">
+              <label class="form-check-label" for="new-visible">
+                {{ newVisible ? 'Published' : 'Draft' }}
+              </label>
             </div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Content</label>
+          <textarea class="form-control" rows="8" [(ngModel)]="newContent" placeholder="Post content"></textarea>
+        </div>
+        <button class="btn btn-primary" (click)="createPost()" [disabled]="creating">
+          {{ creating ? 'Saving...' : 'Create Post' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
+
+  @if (!loading) {
+    <div>
+      <!-- Edit form -->
+      @if (editingPost) {
+        <div class="card mb-4 border-warning">
+          <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+            <span>Editing: {{ editingPost.title }}</span>
+            <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Cancel</button>
+          </div>
+          <div class="card-body">
             <div class="mb-3">
-                <label class="form-label">Author</label>
-                <input type="text" class="form-control" [(ngModel)]="newAuthor" placeholder="Author name">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-control" [(ngModel)]="editTitle">
             </div>
             <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label">Publication Date &amp; Time</label>
-                    <input type="datetime-local" class="form-control" [(ngModel)]="newDate">
-                    <div *ngIf="isFuture(newDate)" class="alert alert-warning mt-2 mb-0 py-1 px-2 small">
-                        This post is scheduled for the future and will not appear publicly until {{ newDate | slice:0:10 }} at {{ newDate | slice:11:16 }}.
-                    </div>
+              <div class="col-md-4">
+                <label class="form-label">Publication Date &amp; Time</label>
+                <input type="datetime-local" class="form-control" [(ngModel)]="editDate">
+                @if (isFuture(editDate)) {
+                  <div class="alert alert-warning mt-2 mb-0 py-1 px-2 small">
+                    This post is scheduled for the future and will not appear publicly until {{ editDate | slice:0:10 }} at {{ editDate | slice:11:16 }}.
+                  </div>
+                }
+              </div>
+              <div class="col-md-4 d-flex align-items-start pt-4 mt-2">
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" role="switch"
+                    id="edit-visible" [(ngModel)]="editVisible">
+                  <label class="form-check-label" for="edit-visible">
+                    {{ editVisible ? 'Published' : 'Draft' }}
+                  </label>
                 </div>
-                <div class="col-md-4 d-flex align-items-start pt-4 mt-2">
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" role="switch"
-                               id="new-visible" [(ngModel)]="newVisible">
-                        <label class="form-check-label" for="new-visible">
-                            {{ newVisible ? 'Published' : 'Draft' }}
-                        </label>
-                    </div>
-                </div>
+              </div>
             </div>
             <div class="mb-3">
-                <label class="form-label">Content</label>
-                <textarea class="form-control" rows="8" [(ngModel)]="newContent" placeholder="Post content"></textarea>
+              <label class="form-label">Content</label>
+              <textarea class="form-control" rows="8" [(ngModel)]="editContent"></textarea>
             </div>
-            <button class="btn btn-primary" (click)="createPost()" [disabled]="creating">
-                {{ creating ? 'Saving...' : 'Create Post' }}
+            <button class="btn btn-warning" (click)="saveEdit()" [disabled]="saving">
+              {{ saving ? 'Saving...' : 'Save Changes' }}
             </button>
+          </div>
         </div>
-    </div>
-
-    <app-spinner *ngIf="loading"></app-spinner>
-
-    <div *ngIf="!loading">
-
-        <!-- Edit form -->
-        <div *ngIf="editingPost" class="card mb-4 border-warning">
-            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
-                <span>Editing: {{ editingPost.title }}</span>
-                <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Cancel</button>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Title</label>
-                    <input type="text" class="form-control" [(ngModel)]="editTitle">
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Publication Date &amp; Time</label>
-                        <input type="datetime-local" class="form-control" [(ngModel)]="editDate">
-                        <div *ngIf="isFuture(editDate)" class="alert alert-warning mt-2 mb-0 py-1 px-2 small">
-                            This post is scheduled for the future and will not appear publicly until {{ editDate | slice:0:10 }} at {{ editDate | slice:11:16 }}.
-                        </div>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-start pt-4 mt-2">
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" role="switch"
-                                   id="edit-visible" [(ngModel)]="editVisible">
-                            <label class="form-check-label" for="edit-visible">
-                                {{ editVisible ? 'Published' : 'Draft' }}
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Content</label>
-                    <textarea class="form-control" rows="8" [(ngModel)]="editContent"></textarea>
-                </div>
-                <button class="btn btn-warning" (click)="saveEdit()" [disabled]="saving">
-                    {{ saving ? 'Saving...' : 'Save Changes' }}
-                </button>
-            </div>
-        </div>
-
-        <!-- Posts table -->
-        <table class="table table-striped align-middle" *ngIf="posts.length > 0">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let post of posts">
-                    <td>
-                        <a href="/blog-post/{{ post.id }}">{{ post.title }}</a>
-                    </td>
-                    <td>{{ post.author }}</td>
-                    <td>{{ post.date }}</td>
-                    <td>
-                        <span *ngIf="!post.visible" class="badge bg-secondary" style="display:inline-block;width:7.5em;text-align:center;">Draft</span>
-                        <span *ngIf="post.visible && isFuture(post.date)" class="badge bg-warning text-dark" style="display:inline-block;width:7.5em;text-align:center;" title="Will become visible on {{ post.date | slice:0:10 }} at {{ post.date | slice:11:16 }}">Scheduled</span>
-                        <span *ngIf="post.visible && !isFuture(post.date)" class="badge bg-success" style="display:inline-block;width:7.5em;text-align:center;">Published</span>
-                    </td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(post)">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" (click)="deletePost(post)">Delete</button>
-                    </td>
-                </tr>
-            </tbody>
+      }
+      <!-- Posts table -->
+      @if (posts.length > 0) {
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (post of posts; track post) {
+              <tr>
+                <td>
+                  <a href="/blog-post/{{ post.id }}">{{ post.title }}</a>
+                </td>
+                <td>{{ post.author }}</td>
+                <td>{{ post.date }}</td>
+                <td>
+                  @if (!post.visible) {
+                    <span class="badge bg-secondary" style="display:inline-block;width:7.5em;text-align:center;">Draft</span>
+                  }
+                  @if (post.visible && isFuture(post.date)) {
+                    <span class="badge bg-warning text-dark" style="display:inline-block;width:7.5em;text-align:center;" title="Will become visible on {{ post.date | slice:0:10 }} at {{ post.date | slice:11:16 }}">Scheduled</span>
+                  }
+                  @if (post.visible && !isFuture(post.date)) {
+                    <span class="badge bg-success" style="display:inline-block;width:7.5em;text-align:center;">Published</span>
+                  }
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary me-2" (click)="startEdit(post)">Edit</button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deletePost(post)">Delete</button>
+                </td>
+              </tr>
+            }
+          </tbody>
         </table>
-        <p *ngIf="posts.length === 0" class="text-muted">No blog posts yet.</p>
-
-        <nav *ngIf="totalPages > 1" aria-label="Blog post pages">
-            <ul class="pagination">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                    <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage - 1)">&#8249; Prev</a>
-                </li>
-                <li *ngFor="let p of pageNumbers" class="page-item" [class.active]="p === currentPage">
-                    <a class="page-link" style="cursor:pointer" (click)="goToPage(p)">{{ p }}</a>
-                </li>
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage + 1)">Next &#8250;</a>
-                </li>
-            </ul>
+      }
+      @if (posts.length === 0) {
+        <p class="text-muted">No blog posts yet.</p>
+      }
+      @if (totalPages > 1) {
+        <nav aria-label="Blog post pages">
+          <ul class="pagination">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage - 1)">&#8249; Prev</a>
+            </li>
+            @for (p of pageNumbers; track p) {
+              <li class="page-item" [class.active]="p === currentPage">
+                <a class="page-link" style="cursor:pointer" (click)="goToPage(p)">{{ p }}</a>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" style="cursor:pointer" (click)="goToPage(currentPage + 1)">Next &#8250;</a>
+            </li>
+          </ul>
         </nav>
-        <p class="fw-light text-secondary small" *ngIf="total > 0">
-            Page {{ currentPage }} of {{ totalPages }} &mdash; {{ total }} total post{{ total === 1 ? '' : 's' }}
+      }
+      @if (total > 0) {
+        <p class="fw-light text-secondary small">
+          Page {{ currentPage }} of {{ totalPages }} &mdash; {{ total }} total post{{ total === 1 ? '' : 's' }}
         </p>
+      }
     </div>
+  }
 </div>

@@ -1,19 +1,21 @@
 <div class="container">
-    <h1>Login</h1>
-    <hr />
-    <div class="mb-3">
-        <label for="email" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="email" placeholder="name@example.com" [(ngModel)]="email">
-    </div>
-    <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" class="form-control" [(ngModel)]="password">
-    </div>
-    <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
-    <div class="d-flex align-items-center gap-3">
-      <button type="button" class="btn btn-primary" (click)="login()" [disabled]="loading">
-          {{ loading ? 'Logging in...' : 'Login' }}
-      </button>
-      <span class="text-muted small">Don't have an account? <a routerLink="/register">Register</a></span>
-    </div>
+  <h1>Login</h1>
+  <hr />
+  <div class="mb-3">
+    <label for="email" class="form-label">Email address</label>
+    <input type="email" class="form-control" id="email" placeholder="name@example.com" [(ngModel)]="email">
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password</label>
+    <input type="password" id="password" class="form-control" [(ngModel)]="password">
+  </div>
+  @if (errorMessage) {
+    <div class="alert alert-danger">{{ errorMessage }}</div>
+  }
+  <div class="d-flex align-items-center gap-3">
+    <button type="button" class="btn btn-primary" (click)="login()" [disabled]="loading">
+      {{ loading ? 'Logging in...' : 'Login' }}
+    </button>
+    <span class="text-muted small">Don't have an account? <a routerLink="/register">Register</a></span>
+  </div>
 </div>

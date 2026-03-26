@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
@@ -8,7 +8,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 @Component({
   selector: 'app-admin-acars',
   standalone: true,
-  imports: [NgIf, FormsModule, SpinnerComponent],
+  imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-acars.component.html',
   styleUrl: './admin-acars.component.scss'
 })

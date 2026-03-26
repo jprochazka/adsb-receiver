@@ -1,30 +1,40 @@
 <div class="container">
-    <h1>ADS-B Portal Blog</h1>
-    <hr />
-    <app-spinner *ngIf="loading"></app-spinner>
-    <div *ngIf="!loading">
-        <div *ngIf="posts.length === 0" class="text-muted">No blog posts found.</div>
-        <div *ngFor="let post of posts">
-            <h2><a [routerLink]="['/blog-post', post.id]">{{ post.title }}</a></h2>
-            <p class="fs-6">Posted by {{ post.author }} on {{ post.date }}</p>
-            <div class="fs-5">{{ post.content }}</div>
-            <div class="pb-3 text-end"><a [routerLink]="['/blog-post', post.id]">read more...</a></div>
+  <h1>ADS-B Portal Blog</h1>
+  <hr />
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
+  @if (!loading) {
+    <div>
+      @if (posts.length === 0) {
+        <div class="text-muted">No blog posts found.</div>
+      }
+      @for (post of posts; track post) {
+        <div>
+          <h2><a [routerLink]="['/blog-post', post.id]">{{ post.title }}</a></h2>
+          <p class="fs-6">Posted by {{ post.author }} on {{ post.date }}</p>
+          <div class="fs-5">{{ post.content }}</div>
+          <div class="pb-3 text-end"><a [routerLink]="['/blog-post', post.id]">read more...</a></div>
         </div>
-
-        <nav *ngIf="totalPages > 1" aria-label="Blog pagination">
-            <ul class="pagination">
-                <li class="page-item" [class.disabled]="currentPage === 1">
-                    <a class="page-link" [routerLink]="['/blog', currentPage - 1]">Previous</a>
-                </li>
-                <li *ngFor="let p of pageNumbers" class="page-item" [class.active]="p === currentPage">
-                    <a class="page-link" [routerLink]="['/blog', p]">{{ p }}</a>
-                </li>
-                <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <a class="page-link" [routerLink]="['/blog', currentPage + 1]">Next</a>
-                </li>
-            </ul>
+      }
+      @if (totalPages > 1) {
+        <nav aria-label="Blog pagination">
+          <ul class="pagination">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" [routerLink]="['/blog', currentPage - 1]">Previous</a>
+            </li>
+            @for (p of pageNumbers; track p) {
+              <li class="page-item" [class.active]="p === currentPage">
+                <a class="page-link" [routerLink]="['/blog', p]">{{ p }}</a>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" [routerLink]="['/blog', currentPage + 1]">Next</a>
+            </li>
+          </ul>
         </nav>
-
-        <p class="fw-light">{{ total }} total post{{ total === 1 ? '' : 's' }}</p>
+      }
+      <p class="fw-light">{{ total }} total post{{ total === 1 ? '' : 's' }}</p>
     </div>
+  }
 </div>

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf, SlicePipe } from '@angular/common';
+import { SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
@@ -8,7 +8,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 @Component({
   selector: 'app-admin-blog',
   standalone: true,
-  imports: [NgFor, NgIf, SlicePipe, FormsModule, SpinnerComponent],
+  imports: [SlicePipe, FormsModule, SpinnerComponent],
   templateUrl: './admin-blog.component.html',
   styleUrl: './admin-blog.component.scss'
 })

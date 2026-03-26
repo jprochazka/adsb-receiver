@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { DataService } from '../service/data.service';
 import { ActivatedRoute } from '@angular/router';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
@@ -7,7 +7,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 @Component({
   selector: 'app-blog-post',
   standalone: true,
-  imports: [NgIf, SpinnerComponent],
+  imports: [SpinnerComponent],
   templateUrl: './blog-post.component.html',
   styleUrl: './blog-post.component.scss'
 })

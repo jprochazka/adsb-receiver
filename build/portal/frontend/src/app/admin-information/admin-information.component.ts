@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
@@ -9,7 +9,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 @Component({
   selector: 'app-admin-information',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, SpinnerComponent],
+  imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-information.component.html',
   styleUrl: './admin-information.component.scss'
 })
