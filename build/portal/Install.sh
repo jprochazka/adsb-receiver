@@ -13,6 +13,7 @@ VENV_DIR="${BACKEND_DIR}/.venv"
 WEBROOT="/var/www/adsb-portal"
 NGINX_SITE="adsb-portal"
 SYSTEMD_SERVICE="adsb-portal-backend.service"
+RRD_BASE="${BACKEND_DIR}/instance/rrd"
 
 # Colors for output
 RED='\033[0;31m'
@@ -77,6 +78,17 @@ if [[ "${DB_TYPE}" == "mysql" || "${DB_TYPE}" == "postgresql" ]]; then
         3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
 fi
 
+# MySQL admin credentials (needed to create the database and application user)
+if [[ "${DB_TYPE}" == "mysql" ]]; then
+    DB_ADMIN_USER=$(whiptail --title "MySQL Admin Credentials" \
+        --inputbox "MySQL admin username (used to create database and user):" 8 60 "root" \
+        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
+
+    DB_ADMIN_PASS=$(whiptail --title "MySQL Admin Credentials" \
+        --passwordbox "MySQL admin password:" 8 60 \
+        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
+fi
+
 # JWT secret key (minimum 32 characters)
 while true; do
     JWT_SECRET=$(whiptail --title "Security Configuration" \
@@ -89,11 +101,43 @@ while true; do
         --msgbox "JWT secret key must be at least 32 characters. Please try again." 8 60
 done
 
+# Admin account
+ADMIN_NAME=$(whiptail --title "Admin Account Setup" \
+    --inputbox "Admin display name:" 8 60 "" \
+    3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
+
+while true; do
+    ADMIN_EMAIL=$(whiptail --title "Admin Account Setup" \
+        --inputbox "Admin email address:" 8 60 "" \
+        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
+    if [[ "${ADMIN_EMAIL}" == *@*.* ]]; then
+        break
+    fi
+    whiptail --title "Invalid Input" \
+        --msgbox "Please enter a valid email address." 8 60
+done
+
+while true; do
+    ADMIN_PASS=$(whiptail --title "Admin Account Setup" \
+        --passwordbox "Admin password (minimum 8 characters):" 8 60 \
+        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
+    ADMIN_PASS2=$(whiptail --title "Admin Account Setup" \
+        --passwordbox "Confirm admin password:" 8 60 \
+        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
+    if [[ "${ADMIN_PASS}" == "${ADMIN_PASS2}" && ${#ADMIN_PASS} -ge 8 ]]; then
+        break
+    fi
+    whiptail --title "Invalid Input" \
+        --msgbox "Passwords do not match or are fewer than 8 characters. Please try again." 8 60
+done
+
 # Pre-compute DB variables before entering the gauge subshell
 MYSQL_HOST="${DB_HOST:-127.0.0.1}"
 MYSQL_USER="${DB_USER:-portaluser}"
 MYSQL_PASS="${DB_PASS:-password}"
 MYSQL_NAME="${DB_NAME:-adsbportal}"
+MYSQL_ADMIN_USER="${DB_ADMIN_USER:-root}"
+MYSQL_ADMIN_PASS="${DB_ADMIN_PASS:-}"
 PG_HOST="${DB_HOST:-127.0.0.1}"
 PG_USER="${DB_USER:-portaluser}"
 PG_PASS="${DB_PASS:-password}"
@@ -101,6 +145,7 @@ PG_NAME="${DB_NAME:-adsbportal}"
 
 if [[ "${DB_TYPE}" == "mysql" ]]; then
     MYSQL_HOST="${DB_HOST}"; MYSQL_USER="${DB_USER}"; MYSQL_PASS="${DB_PASS}"; MYSQL_NAME="${DB_NAME}"
+    MYSQL_ADMIN_USER="${DB_ADMIN_USER}"; MYSQL_ADMIN_PASS="${DB_ADMIN_PASS}"
 elif [[ "${DB_TYPE}" == "postgresql" ]]; then
     PG_HOST="${DB_HOST}"; PG_USER="${DB_USER}"; PG_PASS="${DB_PASS}"; PG_NAME="${DB_NAME}"
 fi
@@ -142,6 +187,18 @@ database:
 acars:
     database: "instance/acarsdec.sqlite"
 
+graphs:
+    rrd_base: "${RRD_BASE}"
+    dump1090_instance: "localhost"
+    dump978_instance: "localhost"
+
+rrd_writer:
+    enabled: true
+    step_seconds: 30
+    http_timeout_seconds: 5
+    dump1090_url: "http://127.0.0.1/dump1090"
+    dump978_url: "http://127.0.0.1/dump978"
+
 security:
     jwt_secret_key: "${JWT_SECRET}"
 YMLEOF
@@ -152,40 +209,98 @@ YMLEOF
 
     # --- System packages ---
     _gauge 14 "Installing system packages..."
-    apt-get install -y nginx python3-venv python3-pip curl whiptail >> "${LOG_FILE}" 2>&1
+    DB_PKGS=""
+    if [[ "${DB_TYPE}" == "mysql" ]]; then
+        DB_PKGS="default-mysql-client"
+    elif [[ "${DB_TYPE}" == "postgresql" ]]; then
+        DB_PKGS="postgresql-client"
+    fi
+    # shellcheck disable=SC2086
+    apt-get install -y nginx python3-venv python3-pip curl whiptail rrdtool ${DB_PKGS} >> "${LOG_FILE}" 2>&1
 
     # --- Python virtual environment ---
-    _gauge 22 "Setting up Python virtual environment..."
+    _gauge 20 "Setting up Python virtual environment..."
     if [[ ! -d "${VENV_DIR}" ]]; then
         python3 -m venv "${VENV_DIR}" >> "${LOG_FILE}" 2>&1
     fi
 
     # --- pip bootstrap ---
-    _gauge 27 "Upgrading pip, setuptools, and wheel..."
+    _gauge 25 "Upgrading pip, setuptools, and wheel..."
     "${VENV_DIR}/bin/pip" install --upgrade pip setuptools wheel >> "${LOG_FILE}" 2>&1
 
     # --- Python dependencies ---
-    _gauge 35 "Installing Python dependencies..."
+    _gauge 33 "Installing Python dependencies..."
     if [[ -f "${BACKEND_DIR}/requirements.txt" ]]; then
         "${VENV_DIR}/bin/pip" install -r "${BACKEND_DIR}/requirements.txt" >> "${LOG_FILE}" 2>&1
     fi
 
     # --- Gunicorn ---
-    _gauge 57 "Installing Gunicorn..."
+    _gauge 43 "Installing Gunicorn..."
     "${VENV_DIR}/bin/pip" install "gunicorn[gthread]" >> "${LOG_FILE}" 2>&1
 
+    # --- RRD storage directory (used by backend rrd_writer job) ---
+    _gauge 47 "Preparing RRD data directory..."
+    mkdir -p "${RRD_BASE}"
+    chown -R www-data:www-data "${RRD_BASE}"
+    chmod -R 755 "${RRD_BASE}"
+
+    # --- Create database (MySQL / PostgreSQL; SQLite is created automatically by Alembic) ---
+    if [[ "${DB_TYPE}" == "mysql" ]]; then
+        _gauge 51 "Creating MySQL database and user..."
+        mysql -h"${MYSQL_HOST}" -u"${MYSQL_ADMIN_USER}" -p"${MYSQL_ADMIN_PASS}" >> "${LOG_FILE}" 2>&1 << SQLEOF
+CREATE DATABASE IF NOT EXISTS \`${MYSQL_NAME}\`;
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASS}';
+GRANT ALL PRIVILEGES ON \`${MYSQL_NAME}\`.* TO '${MYSQL_USER}'@'%';
+FLUSH PRIVILEGES;
+SQLEOF
+    elif [[ "${DB_TYPE}" == "postgresql" ]]; then
+        _gauge 51 "Creating PostgreSQL database and user..."
+        sudo -u postgres createdb "${PG_NAME}" >> "${LOG_FILE}" 2>&1 || true
+        sudo -u postgres psql -c "CREATE USER \"${PG_USER}\" WITH PASSWORD '${PG_PASS}';" >> "${LOG_FILE}" 2>&1 || true
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE \"${PG_NAME}\" TO \"${PG_USER}\";" >> "${LOG_FILE}" 2>&1
+    fi
+
     # --- Database migrations ---
-    _gauge 62 "Applying database migrations..."
+    _gauge 55 "Applying database migrations..."
     (cd "${BACKEND_DIR}" && FLASK_APP=backend "${VENV_DIR}/bin/flask" db upgrade >> "${LOG_FILE}" 2>&1)
+
+    # --- Admin user ---
+    _gauge 60 "Creating admin user..."
+    _SEED_SCRIPT="$(mktemp /tmp/seed_admin_XXXXXX.py)"
+    cat > "${_SEED_SCRIPT}" << 'PYEOF'
+import os
+from backend import create_app
+from backend.models import db, User
+from werkzeug.security import generate_password_hash
+from sqlalchemy import select
+app = create_app()
+with app.app_context():
+    email = os.environ['ADMIN_EMAIL']
+    existing = db.session.execute(select(User).filter_by(email=email)).scalar_one_or_none()
+    if not existing:
+        u = User(
+            name=os.environ['ADMIN_NAME'],
+            email=email,
+            password=generate_password_hash(os.environ['ADMIN_PASS']),
+            administrator=1,
+            role='Admin'
+        )
+        db.session.add(u)
+        db.session.commit()
+PYEOF
+    (cd "${BACKEND_DIR}" && \
+        ADMIN_NAME="${ADMIN_NAME}" ADMIN_EMAIL="${ADMIN_EMAIL}" ADMIN_PASS="${ADMIN_PASS}" \
+        "${VENV_DIR}/bin/python" "${_SEED_SCRIPT}" >> "${LOG_FILE}" 2>&1)
+    rm -f "${_SEED_SCRIPT}"
 
     # --- npm dependencies (skipped if already present) ---
     if [[ ! -d "${FRONTEND_DIR}/node_modules" ]]; then
-        _gauge 66 "Installing npm packages..."
+        _gauge 65 "Installing npm packages..."
         (cd "${FRONTEND_DIR}" && npm ci >> "${LOG_FILE}" 2>&1)
     fi
 
     # --- Angular production build ---
-    _gauge 72 "Building Angular frontend (this may take a while)..."
+    _gauge 70 "Building Angular frontend (this may take a while)..."
     if [[ ! -d "${FRONTEND_DIR}" ]]; then
         echo "Frontend directory not found: ${FRONTEND_DIR}" >> "${LOG_FILE}"
         exit 1
@@ -193,7 +308,7 @@ YMLEOF
     (cd "${FRONTEND_DIR}" && npm run build -- --configuration production >> "${LOG_FILE}" 2>&1)
 
     # --- Deploy frontend ---
-    _gauge 90 "Deploying frontend files..."
+    _gauge 86 "Deploying frontend files..."
     mkdir -p "${WEBROOT}"
     if [[ ! -d "${FRONTEND_DIR}/dist/adsb-portal/browser" ]]; then
         echo "Angular build output not found. Build may have failed." >> "${LOG_FILE}"
@@ -204,7 +319,7 @@ YMLEOF
     chmod -R 755 "${WEBROOT}"
 
     # --- Nginx configuration ---
-    _gauge 93 "Configuring Nginx..."
+    _gauge 90 "Configuring Nginx..."
     cat > "/etc/nginx/sites-available/${NGINX_SITE}" << 'NGINXEOF'
 server {
     listen 80 default_server;
@@ -236,7 +351,7 @@ NGINXEOF
     nginx -t >> "${LOG_FILE}" 2>&1
 
     # --- Systemd service ---
-    _gauge 95 "Creating systemd service..."
+    _gauge 93 "Creating systemd service..."
     cat > "/etc/systemd/system/${SYSTEMD_SERVICE}" << SVCEOF
 [Unit]
 Description=ADSB Portal Flask Backend
@@ -248,6 +363,7 @@ User=www-data
 Group=www-data
 WorkingDirectory=${BACKEND_DIR}
 Environment="PATH=${VENV_DIR}/bin"
+Environment="RRD_BASE=${RRD_BASE}"
 ExecStart=${VENV_DIR}/bin/gunicorn -w 2 -k gthread --threads 2 --bind 127.0.0.1:8000 'backend:create_app()'
 Restart=always
 RestartSec=10

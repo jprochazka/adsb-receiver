@@ -279,6 +279,10 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/setting/${encodeURIComponent(name)}`);
   }
 
+  getGraphData(decoder: string, metric: string, period: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/graphs/${decoder}/${metric}?period=${period}`);
+  }
+
   updateSetting(name: string, value: string): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/setting`, { name, value }, {

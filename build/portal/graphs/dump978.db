@@ -1,5 +1,0 @@
-dump978_aircraft	total:GAUGE:0:500, positions:GAUGE:0:500, with_callsign:GAUGE:0:500
-dump978_range		value:GAUGE:0:1000000
-dump978_dbfs		value:GAUGE:-200:200
-dump978_messages	value:DERIVE:0:U
-dump978_altitude	value:GAUGE:-2000:100000

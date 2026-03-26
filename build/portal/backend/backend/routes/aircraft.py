@@ -67,9 +67,7 @@ class AircraftByIcaoResource(Resource):
             if not aircraft_obj:
                 return {'msg': 'Aircraft not found'}, 404
                 
-            response = jsonify(aircraft_obj.to_dict())
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify(aircraft_obj.to_dict())
         except Exception as ex:
             logging.error(f"Error encountered while trying to get aircraft using ICAO {icao}", exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
@@ -115,10 +113,8 @@ class AircraftPositionsResource(Resource):
                 'count': len(positions),
                 'positions': positions
             }
-            response = jsonify(data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
-            
+            return jsonify(data)
+
         except Exception as ex:
             logging.error(f"Error encountered while trying to get flight positions for aircraft ICAO {icao}", exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500

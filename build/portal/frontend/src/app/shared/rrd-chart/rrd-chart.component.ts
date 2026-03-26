@@ -1,0 +1,196 @@
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  ViewChild,
+  AfterViewInit,
+} from '@angular/core';
+import { Chart, ChartType, registerables } from 'chart.js';
+import { DataService } from '../../service/data.service';
+
+Chart.register(...registerables);
+
+// Palette used for datasets in order
+const PALETTE = [
+  '#4e79a7', '#f28e2b', '#e15759', '#76b7b2',
+  '#59a14f', '#edc948', '#b07aa1', '#ff9da7',
+  '#9c755f', '#bab0ac',
+];
+
+export interface RrdChartConfig {
+  decoder: string;   // 'dump1090' | 'dump978' | 'system'
+  metric: string;    // matches backend route segment
+  type?: ChartType;  // defaults to 'line'
+  title: string;
+  yLabel?: string;
+  /** Optional post-processing applied to each dataset's data array. */
+  transform?: (datasets: { label: string; data: (number | null)[] }[]) =>
+    { label: string; data: (number | null)[] }[];
+}
+
+@Component({
+  selector: 'app-rrd-chart',
+  standalone: true,
+  template: `
+    <div class="rrd-chart-wrapper">
+      <h6 class="chart-title">{{ config.title }}</h6>
+      @if (loading) {
+        <div class="chart-placeholder d-flex align-items-center justify-content-center text-muted small">
+          Loading…
+        </div>
+      }
+      @if (error) {
+        <div class="chart-placeholder d-flex align-items-center justify-content-center text-muted small">
+          No data available
+        </div>
+      }
+      <canvas #chartCanvas [class.d-none]="loading || error"></canvas>
+    </div>
+  `,
+  styleUrl: './rrd-chart.component.scss',
+})
+export class RrdChartComponent implements AfterViewInit, OnChanges, OnDestroy {
+  @Input({ required: true }) config!: RrdChartConfig;
+  @Input({ required: true }) period!: string;
+  @Input() refreshMs = 15000;
+
+  @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+
+  loading = true;
+  error = false;
+
+  private chart: Chart | null = null;
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
+
+  constructor(private dataService: DataService) {}
+
+  ngAfterViewInit(): void {
+    this.startAutoRefresh();
+    this.loadData(true);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['period'] && !changes['period'].firstChange) {
+      this.loadData(true);
+    }
+
+    if (changes['refreshMs'] && !changes['refreshMs'].firstChange) {
+      this.startAutoRefresh();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+    this.chart?.destroy();
+  }
+
+  private startAutoRefresh(): void {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+
+    if (!Number.isFinite(this.refreshMs) || this.refreshMs < 3000) {
+      return;
+    }
+
+    this.refreshTimer = setInterval(() => {
+      if (document.visibilityState === 'hidden') {
+        return;
+      }
+      this.loadData(false);
+    }, this.refreshMs);
+  }
+
+  private loadData(showLoader: boolean): void {
+    if (showLoader) {
+      this.loading = true;
+      this.error = false;
+    }
+
+    this.dataService
+      .getGraphData(this.config.decoder, this.config.metric, this.period)
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.error = false;
+          this.renderChart(response);
+        },
+        error: () => {
+          this.loading = false;
+          this.error = true;
+        },
+      });
+  }
+
+  private renderChart(response: any): void {
+    const labels: number[] = response.labels ?? [];
+    let datasets: { label: string; data: (number | null)[] }[] = response.datasets ?? [];
+
+    if (this.config.transform) {
+      datasets = this.config.transform(datasets);
+    }
+
+    // Convert Unix timestamps to locale time strings for display
+    const labelStrings = labels.map((ts) =>
+      new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
+
+    const chartDatasets = datasets.map((ds, i) => ({
+      label: ds.label,
+      data: ds.data,
+      borderColor: PALETTE[i % PALETTE.length],
+      backgroundColor: PALETTE[i % PALETTE.length] + '33',
+      borderWidth: 1.5,
+      pointRadius: 0,
+      spanGaps: true,
+      fill: this.config.type === 'bar',
+    }));
+
+    if (this.chart) {
+      this.chart.data.labels = labelStrings;
+      this.chart.data.datasets = chartDatasets as any;
+      this.chart.update('none');
+      return;
+    }
+
+    this.chart = new Chart(this.canvasRef.nativeElement, {
+      type: this.config.type ?? 'line',
+      data: {
+        labels: labelStrings,
+        datasets: chartDatasets as any,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: { mode: 'index', intersect: false },
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 8, font: { size: 10 } },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+          },
+          y: {
+            title: {
+              display: !!this.config.yLabel,
+              text: this.config.yLabel ?? '',
+              font: { size: 11 },
+            },
+            ticks: { font: { size: 10 } },
+            grid: { color: 'rgba(0,0,0,0.05)' },
+          },
+        },
+      },
+    });
+  }
+}

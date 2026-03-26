@@ -6,6 +6,7 @@ import yaml
 from flask import abort, Blueprint, current_app, jsonify
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db
+from backend.auth import require_admin
 
 with open("config.yml") as _f:
     config = yaml.safe_load(_f)
@@ -59,8 +60,11 @@ flights_tables_model = system_ns.model('FlightsTablesInfo', {
 @system_ns.route('/cpu')
 class CPUResource(Resource):
     @system_ns.response(200, 'CPU information retrieved successfully')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_cpu_info')
+    @system_ns.doc('get_cpu_info', security='Bearer')
+    @require_admin()
     def get(self):
         """Get CPU information and statistics"""
         try:
@@ -81,9 +85,7 @@ class CPUResource(Resource):
                 'cpu_times': psutil.cpu_times()._asdict(),
                 'cpu_times_percent': psutil.cpu_times_percent(1)._asdict()
             }
-            response = jsonify(cpu_data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify(cpu_data)
         except Exception as e:
             logging.error(f'Error encountered while getting CPU information: {e}')
             return {'msg': 'Internal Server Error'}, 500
@@ -92,8 +94,11 @@ class CPUResource(Resource):
 @system_ns.route('/memory')
 class MemoryResource(Resource):
     @system_ns.response(200, 'Memory information retrieved successfully')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_memory_info')
+    @system_ns.doc('get_memory_info', security='Bearer')
+    @require_admin()
     def get(self):
         """Get memory usage information"""
         try:
@@ -112,9 +117,7 @@ class MemoryResource(Resource):
                 'memory_swap_sin': swap.sin,
                 'memory_swap_sout': swap.sout,
             }
-            response = jsonify(memory_data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify(memory_data)
         except Exception as e:
             logging.error(f'Error encountered while getting memory information: {e}')
             return {'msg': 'Internal Server Error'}, 500
@@ -123,8 +126,11 @@ class MemoryResource(Resource):
 @system_ns.route('/disk')
 class DiskResource(Resource):
     @system_ns.response(200, 'Disk information retrieved successfully')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_disk_info')
+    @system_ns.doc('get_disk_info', security='Bearer')
+    @require_admin()
     def get(self):
         """Get disk usage information"""
         try:
@@ -141,9 +147,7 @@ class DiskResource(Resource):
                 'disk_io_write_bytes': io.write_bytes,
                 'disk_partitions': [p._asdict() for p in psutil.disk_partitions()],
             }
-            response = jsonify(disk_data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify(disk_data)
         except Exception as e:
             logging.error(f'Error encountered while getting disk information: {e}')
             return {'msg': 'Internal Server Error'}, 500
@@ -152,8 +156,11 @@ class DiskResource(Resource):
 @system_ns.route('/network')
 class NetworkResource(Resource):
     @system_ns.response(200, 'Network information retrieved successfully')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_network_info')
+    @system_ns.doc('get_network_info', security='Bearer')
+    @require_admin()
     def get(self):
         """Get network usage information"""
         try:
@@ -171,9 +178,7 @@ class NetworkResource(Resource):
                 'network_interface_addresses': psutil.net_if_addrs(),
                 'network_interface_stats': psutil.net_if_stats()
             }
-            response = jsonify(network_data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify(network_data)
         except Exception as e:
             logging.error(f'Error encountered while getting network information: {e}')
             return {'msg': 'Internal Server Error'}, 500
@@ -182,8 +187,11 @@ class NetworkResource(Resource):
 @system_ns.route('/sensors')
 class SensorsResource(Resource):
     @system_ns.response(200, 'Success')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_sensors_info')
+    @system_ns.doc('get_sensors_info', security='Bearer')
+    @require_admin()
     def get(self):
         """Get sensor information (battery, temperature)"""
         try:
@@ -191,9 +199,7 @@ class SensorsResource(Resource):
             sensor_data = {
                 'sensors_battery': battery._asdict() if battery else None,
             }
-            response = jsonify(sensor_data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify(sensor_data)
         except Exception as e:
             logging.error(f'Error encountered while getting sensor information: {e}')
             return {'msg': 'Internal Server Error'}, 500
@@ -202,8 +208,11 @@ class SensorsResource(Resource):
 @system_ns.route('/other')
 class OtherResource(Resource):
     @system_ns.response(200, 'Success')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_other_info')
+    @system_ns.doc('get_other_info', security='Bearer')
+    @require_admin()
     def get(self):
         """Get other system information (boot time, users)"""
         try:
@@ -211,9 +220,7 @@ class OtherResource(Resource):
                 'other_boot_time': psutil.boot_time(),
                 'other_users': [u._asdict() for u in psutil.users()]
             }
-            response = jsonify(other_data)
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify(other_data)
         except Exception as e:
             logging.error(f'Error encountered while getting other system information: {e}')
             return {'msg': 'Internal Server Error'}, 500
@@ -222,8 +229,11 @@ class OtherResource(Resource):
 @system_ns.route('/database')
 class DatabaseResource(Resource):
     @system_ns.response(200, 'Database information retrieved successfully')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_database_info')
+    @system_ns.doc('get_database_info', security='Bearer')
+    @require_admin()
     def get(self):
         """Get database size and information"""
         try:
@@ -242,10 +252,7 @@ class DatabaseResource(Resource):
                     db_size = result.fetchone()[0]
                 case 'sqlite':
                     db_size = os.path.getsize(os.path.join(current_app.instance_path, 'adsbportal.sqlite3'))
-            
-            response = jsonify({'size': db_size})
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            return response
+            return jsonify({'size': db_size})
         except Exception as e:
             logging.error(f'Error encountered while getting database information: {e}')
             return {'msg': 'Internal Server Error'}, 500
@@ -261,8 +268,11 @@ _FLIGHT_TABLES = [
 class FlightsTablesResource(Resource):
     @system_ns.marshal_with(flights_tables_model, code=200)
     @system_ns.response(200, 'Flight table size retrieved successfully')
+    @system_ns.response(401, 'Unauthorized')
+    @system_ns.response(403, 'Forbidden')
     @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_flights_tables_size')
+    @system_ns.doc('get_flights_tables_size', security='Bearer')
+    @require_admin()
     def get(self):
         """Get combined disk size used by all flight-related tables"""
         try:

@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+
+.rrd-chart-wrapper {
+  width: 100%;
+}
+
+.chart-title {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #555;
+}
+
+.chart-placeholder {
+  height: 180px;
+  background: #f8f9fa;
+  border-radius: 0.25rem;
+}
+
+canvas {
+  width: 100% !important;
+}

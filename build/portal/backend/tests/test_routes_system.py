@@ -4,28 +4,14 @@ import os
 from unittest.mock import patch, MagicMock
 from backend import create_app
 from backend.models import db
+from tests.conftest import create_admin_token
 
 
 @pytest.fixture
-def app():
-    """Create and configure test app"""
-    app = create_app({
-        'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
-        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-        'JWT_SECRET_KEY': 'test-secret-key',
-    })
-
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.drop_all()
-
-
-@pytest.fixture
-def client(app):
-    """Test client"""
-    return app.test_client()
+def admin_headers(app):
+    """Admin JWT auth headers"""
+    token = create_admin_token(app)
+    return {'Authorization': f'Bearer {token}'}
 
 
 class TestSystemRoutes:
@@ -40,7 +26,7 @@ class TestSystemRoutes:
     @patch('backend.routes.system.psutil.cpu_times_percent')
     def test_cpu_endpoint(self, mock_cpu_times_percent, mock_cpu_times, 
                          mock_cpu_percent, mock_getloadavg, mock_cpu_count, 
-                         mock_cpu_stats, mock_cpu_freq, client):
+                         mock_cpu_stats, mock_cpu_freq, client, admin_headers):
         """Test CPU information endpoint"""
         # Mock psutil responses with proper numeric values
         mock_freq = MagicMock()
@@ -80,7 +66,7 @@ class TestSystemRoutes:
         }
         mock_cpu_times_percent.return_value = mock_times_percent
 
-        response = client.get('/api/system/cpu')
+        response = client.get('/api/system/cpu', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -96,13 +82,10 @@ class TestSystemRoutes:
         assert data['cpu_stats_interupts_since_boot'] == 6789
         assert data['cpu_stats_soft_interupts_since_boot'] == 4567
         assert data['cpu_stats_system_calls_since_boot'] == 98765
-        
-        # Check CORS header
-        assert response.headers.get('Access-Control-Allow-Origin') == '*'
 
     @patch('backend.routes.system.psutil.virtual_memory')
     @patch('backend.routes.system.psutil.swap_memory')
-    def test_memory_endpoint(self, mock_swap_memory, mock_virtual_memory, client):
+    def test_memory_endpoint(self, mock_swap_memory, mock_virtual_memory, client, admin_headers):
         """Test memory information endpoint"""
         # Mock psutil responses with proper numeric values
         mock_virtual = MagicMock()
@@ -122,7 +105,7 @@ class TestSystemRoutes:
         mock_swap.sout = 0
         mock_swap_memory.return_value = mock_swap
 
-        response = client.get('/api/system/memory')
+        response = client.get('/api/system/memory', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -135,14 +118,11 @@ class TestSystemRoutes:
         assert data['memory_swap_total'] == 2147483648
         assert data['memory_swap_used'] == 1073741824
         assert data['memory_swap_free'] == 1073741824
-        
-        # Check CORS header
-        assert response.headers.get('Access-Control-Allow-Origin') == '*'
 
     @patch('backend.routes.system.psutil.disk_usage')
     @patch('backend.routes.system.psutil.disk_io_counters')
     @patch('backend.routes.system.psutil.disk_partitions')
-    def test_disk_endpoint(self, mock_disk_partitions, mock_disk_io_counters, mock_disk_usage, client):
+    def test_disk_endpoint(self, mock_disk_partitions, mock_disk_io_counters, mock_disk_usage, client, admin_headers):
         """Test disk information endpoint"""
         # Mock psutil responses
         mock_usage = MagicMock()
@@ -161,7 +141,7 @@ class TestSystemRoutes:
         
         mock_disk_partitions.return_value = []
 
-        response = client.get('/api/system/disk')
+        response = client.get('/api/system/disk', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -169,17 +149,14 @@ class TestSystemRoutes:
         assert data['disk_usage_total'] == 1073741824000
         assert data['disk_usage_used'] == 536870912000
         assert data['disk_usage_free'] == 536870912000
-        assert data['disk_usage_percent'] == 50.0  # Note: there are duplicate keys in the original code
+        assert data['disk_usage_percent'] == 50.0
         assert data['disk_io_read_count'] == 1000
-        
-        # Check CORS header
-        assert response.headers.get('Access-Control-Allow-Origin') == '*'
 
     @patch('backend.routes.system.psutil.net_connections')
     @patch('backend.routes.system.psutil.net_if_addrs')
     @patch('backend.routes.system.psutil.net_if_stats')
     @patch('backend.routes.system.psutil.net_io_counters')
-    def test_network_endpoint(self, mock_net_io_counters, mock_net_if_stats, mock_net_if_addrs, mock_net_connections, client):
+    def test_network_endpoint(self, mock_net_io_counters, mock_net_if_stats, mock_net_if_addrs, mock_net_connections, client, admin_headers):
         """Test network information endpoint"""
         # Mock psutil responses
         mock_stats = MagicMock()
@@ -198,7 +175,7 @@ class TestSystemRoutes:
         mock_net_if_addrs.return_value = {}
         mock_net_if_stats.return_value = {}
 
-        response = client.get('/api/system/network')
+        response = client.get('/api/system/network', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -211,12 +188,9 @@ class TestSystemRoutes:
         assert data['network_io_errors_out'] == 5
         assert data['network_io_dropped_in'] == 2
         assert data['network_io_dropped_out'] == 1
-        
-        # Check CORS header
-        assert response.headers.get('Access-Control-Allow-Origin') == '*'
 
     @patch('backend.routes.system.psutil.sensors_battery')
-    def test_sensors_endpoint(self, mock_sensors_battery, client):
+    def test_sensors_endpoint(self, mock_sensors_battery, client, admin_headers):
         """Test sensors information endpoint"""
         # Mock sensor responses
         mock_battery = MagicMock()
@@ -228,63 +202,52 @@ class TestSystemRoutes:
         }
         mock_sensors_battery.return_value = mock_battery
 
-        response = client.get('/api/system/sensors')
+        response = client.get('/api/system/sensors', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
         
         assert 'sensors_battery' in data
-        
-        # Check CORS header
-        assert response.headers.get('Access-Control-Allow-Origin') == '*'
 
     @patch('backend.routes.system.psutil.boot_time')
     @patch('backend.routes.system.psutil.users')
-    def test_other_endpoint(self, mock_users, mock_boot_time, client):
+    def test_other_endpoint(self, mock_users, mock_boot_time, client, admin_headers):
         """Test other system information endpoint"""
         mock_boot_time.return_value = 1640995200.0
         mock_users.return_value = []
 
-        response = client.get('/api/system/other')
+        response = client.get('/api/system/other', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
         
         assert data['other_boot_time'] == 1640995200.0
         assert data['other_users'] == []
-        
-        # Check CORS header
-        assert response.headers.get('Access-Control-Allow-Origin') == '*'
 
-    @patch('backend.routes.system.db.session.execute')
     @patch('backend.routes.system.config', {'database': {'use': 'SQLite'}})
     @patch('backend.routes.system.os.path.getsize')
     @patch('backend.routes.system.os.path.join')
-    def test_database_endpoint_sqlite(self, mock_path_join, mock_getsize, mock_execute, client):
+    def test_database_endpoint_sqlite(self, mock_path_join, mock_getsize, client, admin_headers):
         """Test database size endpoint for SQLite"""
         mock_path_join.return_value = '/test/path/adsbportal.sqlite3'
         mock_getsize.return_value = 1048576  # 1MB
 
-        response = client.get('/api/system/database')
+        response = client.get('/api/system/database', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
         
         assert data['size'] == 1048576
-        
-        # Check CORS header
-        assert response.headers.get('Access-Control-Allow-Origin') == '*'
 
-    def test_endpoints_with_psutil_errors(self, client):
+    def test_endpoints_with_psutil_errors(self, client, admin_headers):
         """Test system endpoints handle psutil errors gracefully"""
         with patch('backend.routes.system.psutil.cpu_freq', side_effect=Exception("Mock error")):
-            response = client.get('/api/system/cpu')
-            # Should still return 200 but with error handling
-            assert response.status_code in [200, 500]  # Depending on error handling implementation
+            response = client.get('/api/system/cpu', headers=admin_headers)
+            assert response.status_code == 500
 
     # Integration tests merged from test_routes_system_integration.py
     def test_system_endpoints_exist(self, client):
-        """Test that all system endpoints exist and return some response"""
+        """Test that all system endpoints require authentication"""
         endpoints = [
             '/api/system/cpu',
             '/api/system/memory', 
@@ -297,12 +260,8 @@ class TestSystemRoutes:
         
         for endpoint in endpoints:
             response = client.get(endpoint)
-            # Should return 200 or 500 (if psutil fails), but not 404
-            assert response.status_code in [200, 500], f"Endpoint {endpoint} returned {response.status_code}"
-            
-            # Should have CORS header
-            assert 'Access-Control-Allow-Origin' in response.headers
-            assert response.headers['Access-Control-Allow-Origin'] == '*'
+            # Unauthenticated requests must be rejected
+            assert response.status_code == 401, f"Endpoint {endpoint} should require auth but returned {response.status_code}"
 
     def test_system_endpoints_return_json(self, client):
         """Test that system endpoints return valid JSON when they work"""

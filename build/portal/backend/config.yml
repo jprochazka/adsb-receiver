@@ -17,5 +17,18 @@ database:
 acars:
     database: "instance/acarsdec.sqlite"
 
+graphs:
+    rrd_base: instance/rrd
+    hostname: localhost
+    dump1090_instance: localhost
+    dump978_instance: localhost
+
+rrd_writer:
+    enabled: true
+    step_seconds: 30
+    http_timeout_seconds: 5
+    dump1090_url: "http://127.0.0.1/dump1090"
+    dump978_url: "http://127.0.0.1/dump978"
+
 security:
     jwt_secret_key: "45a995ddf473053aac9c237a5dc5156d4a2079fec956aa41ac1d631ff213a48e"

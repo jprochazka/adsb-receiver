@@ -189,7 +189,6 @@ class User(db.Model):
             'id': self.id,
             'name': self.name,
             'email': self.email,
-            'password': self.password,
             'administrator': self.administrator,
             'role': self.role,
             'locked': self.locked,

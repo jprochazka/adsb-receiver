@@ -20,6 +20,7 @@
     "@fontsource/inter": "^5.2.8",
     "@fontsource/rajdhani": "^5.2.7",
     "bootstrap": "^5.3.8",
+    "chart.js": "^4.5.1",
     "ol": "^10.8.0",
     "rxjs": "~7.8.0",
     "to-smooth": "^2.2.0",

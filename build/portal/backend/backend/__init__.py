@@ -11,6 +11,8 @@ from flask_restx import Api
 from backend.jobs.dump1090_data_collection import dump1090_data_collection_job
 from backend.jobs.maintenance import maintenance_job
 from backend.jobs.dump978_data_collection import dump978_data_collection_job
+from backend.jobs.rrd_data_collection import rrd_data_collection_job
+from backend.routes.graphs import graphs, graphs_ns
 from backend.routes.acars import acars, acars_flight_ns, acars_flights_ns, acars_messages_ns, acars_stations_ns
 from backend.routes.aircraft import aircraft, aircraft_ns
 from backend.routes.blog import blog, blog_ns
@@ -64,6 +66,7 @@ def create_app(test_config=None):
     )
     
     # Register API namespaces
+    api.add_namespace(graphs_ns)
     api.add_namespace(auth_ns)
     api.add_namespace(users_ns)
     api.add_namespace(aircraft_ns)
@@ -115,7 +118,7 @@ def create_app(test_config=None):
             )
         app.config["JWT_SECRET_KEY"] = jwt_secret
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=365)
+    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
     jwt = JWTManager(app)
     
     # JWT Error handlers for better error messages
@@ -131,6 +134,7 @@ def create_app(test_config=None):
     def missing_token_callback(error):
         return jsonify({'msg': 'Authorization token is required'}), 401
 
+    app.register_blueprint(graphs)
     app.register_blueprint(acars)
     app.register_blueprint(aircraft)
     app.register_blueprint(blog)
@@ -151,6 +155,7 @@ def create_app(test_config=None):
     scheduler = APScheduler()
     scheduler.add_job(id = 'dump1090_data_collection', func=dump1090_data_collection_job, trigger="interval", seconds=15)
     scheduler.add_job(id = 'dump978_data_collection', func=dump978_data_collection_job, trigger="interval", seconds=15)
+    scheduler.add_job(id = 'rrd_data_collection', func=rrd_data_collection_job, trigger="interval", seconds=30)
     scheduler.add_job(id = 'maintenance', func=maintenance_job, trigger="cron", hour=0)
     scheduler.init_app(app)
     #scheduler.start()

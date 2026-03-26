@@ -10,10 +10,12 @@ VENV_DIR="${SCRIPT_DIR}/backend/.venv"
 WEBROOT="/var/www/adsb-portal"
 NGINX_SITE="adsb-portal"
 SYSTEMD_SERVICE="adsb-portal-backend.service"
+RRD_BASE="${SCRIPT_DIR}/backend/instance/rrd"
 
 # Flags
 REMOVE_WEBROOT=false
 REMOVE_VENV=false
+REMOVE_RRD=false
 PURGE_PACKAGES=false
 INTERACTIVE=true
 
@@ -61,21 +63,24 @@ fi
 if [[ "${INTERACTIVE}" == true ]]; then
     # Optional-removal checklist
     CHOICES=$(whiptail --title "ADSB Portal Uninstaller" \
-        --checklist "The systemd service and Nginx config will always be removed.\nSelect any additional items to also remove:" 13 64 3 \
+        --checklist "The systemd service and Nginx config will always be removed.\nSelect any additional items to also remove:" 14 72 4 \
         "webroot"  "Frontend files (${WEBROOT})"                 "OFF" \
         "venv"     "Python virtual environment (${VENV_DIR})"    "OFF" \
-        "packages" "System packages (nginx, python3-pip, curl)"  "OFF" \
+        "rrd"      "RRD data directory (${RRD_BASE})"             "OFF" \
+        "packages" "System packages (nginx, python3-pip, curl, rrdtool)"  "OFF" \
         3>&1 1>&2 2>&3) || { echo "Uninstallation cancelled."; exit 0; }
 
     [[ "${CHOICES}" == *'"webroot"'*  ]] && REMOVE_WEBROOT=true
     [[ "${CHOICES}" == *'"venv"'*     ]] && REMOVE_VENV=true
+    [[ "${CHOICES}" == *'"rrd"'*      ]] && REMOVE_RRD=true
     [[ "${CHOICES}" == *'"packages"'* ]] && PURGE_PACKAGES=true
 
     # Build a summary of what will be removed
     SUMMARY="The following will be removed:\n\n  - systemd service: ${SYSTEMD_SERVICE}\n  - Nginx site config: ${NGINX_SITE}"
     [[ "${REMOVE_WEBROOT}"  == true ]] && SUMMARY+="\n  - Frontend files: ${WEBROOT}"
     [[ "${REMOVE_VENV}"     == true ]] && SUMMARY+="\n  - Virtual environment: ${VENV_DIR}"
-    [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages: nginx, python3-pip, curl"
+    [[ "${REMOVE_RRD}"      == true ]] && SUMMARY+="\n  - RRD data directory: ${RRD_BASE}"
+    [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages: nginx, python3-pip, curl, rrdtool"
 
     whiptail --title "Confirm Uninstallation" \
         --yesno "${SUMMARY}\n\nContinue?" 16 64 || { echo "Uninstallation cancelled."; exit 0; }
@@ -138,10 +143,16 @@ _uninstall() {
         rm -rf "${VENV_DIR}"
     fi
 
+    # --- Remove RRD data directory (optional) ---
+    _gauge 84 "Removing RRD data directory..."
+    if [[ "${REMOVE_RRD}" == true ]] && [[ -d "${RRD_BASE}" ]]; then
+        rm -rf "${RRD_BASE}"
+    fi
+
     # --- Purge packages (optional) ---
     _gauge 88 "Removing system packages..."
     if [[ "${PURGE_PACKAGES}" == true ]]; then
-        apt-get remove -y nginx python3-venv python3-pip curl >> "${LOG_FILE}" 2>&1 || true
+        apt-get remove -y nginx python3-venv python3-pip curl rrdtool >> "${LOG_FILE}" 2>&1 || true
         apt-get autoremove -y >> "${LOG_FILE}" 2>&1 || true
     fi
 
@@ -168,6 +179,7 @@ fi
 SUMMARY="ADSB Portal has been uninstalled.\n\nRemoved:\n  - systemd service\n  - Nginx configuration"
 [[ "${REMOVE_WEBROOT}"  == true ]] && SUMMARY+="\n  - Frontend files"
 [[ "${REMOVE_VENV}"     == true ]] && SUMMARY+="\n  - Python virtual environment"
+[[ "${REMOVE_RRD}"      == true ]] && SUMMARY+="\n  - RRD data directory"
 [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages"
 SUMMARY+="\n\nFull log: ${LOG_FILE}"
 

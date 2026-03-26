@@ -4,6 +4,7 @@ from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
+from werkzeug.security import generate_password_hash
 from backend.models import db, User
 from backend.auth import require_admin, require_user_or_admin, validate_role
 from werkzeug.exceptions import HTTPException
@@ -109,7 +110,7 @@ class UserCreateResource(Resource):
             new_user = User(
                 name=payload['name'],
                 email=payload['email'],
-                password=payload['password'],  # In production, hash this password
+                password=generate_password_hash(payload['password']),
                 administrator=administrator,
                 role=role
             )
@@ -168,7 +169,7 @@ class UserRegisterResource(Resource):
             new_user = User(
                 name=payload['name'].strip(),
                 email=payload['email'],
-                password=payload['password'],
+                password=generate_password_hash(payload['password']),
                 administrator=0,
                 role='User'
             )
@@ -251,7 +252,7 @@ class UserResource(Resource):
             if 'email' in payload:
                 user.email = payload['email']
             if 'password' in payload:
-                user.password = payload['password']  # In production, hash this password
+                user.password = generate_password_hash(payload['password'])
             
             # Only admins can change roles
             if 'role' in payload and validate_role(payload['role']):
@@ -364,7 +365,7 @@ class UsersListResource(Resource):
         """Get all users (Admin only)"""
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=50, type=int)
-        if offset < 0 or limit < 1 or limit > 10000:
+        if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Invalid offset or limit parameters'}, 400
 
         try:

@@ -6,12 +6,12 @@ VALUES
   ('icao04', '2024-07-17 04:40:44', '2024-06-17 04:44:04'),
   ('icao05', '2024-07-17 05:50:55', '2024-06-17 05:55:05');
 
-INSERT INTO blog_posts (title, date, author, content)
+INSERT INTO blog_posts (title, date, author, content, visible)
 VALUES
-  ('Title One', '2024-07-03 13:00:01', 'User One', 'Content for blog post one.'),
-  ('Title Two', '2024-07-04 14:30:02', 'User One', 'Content for blog post two.'),
-  ('Title Three', '2024-07-05 15:00:03', 'User Three', 'Content for blog post three.'),
-  ('Title Four', '2024-07-06 16:30:04', 'User Two', 'Content for blog post four.');
+  ('Title One', '2024-07-03 13:00:01', 'User One', 'Content for blog post one.', 1),
+  ('Title Two', '2024-07-04 14:30:02', 'User One', 'Content for blog post two.', 1),
+  ('Title Three', '2024-07-05 15:00:03', 'User Three', 'Content for blog post three.', 1),
+  ('Title Four', '2024-07-06 16:30:04', 'User Two', 'Content for blog post four.', 1);
 
 INSERT INTO dump1090_flights (aircraft, flight, first_seen, last_seen)
 VALUES
@@ -20,11 +20,11 @@ VALUES
   (3, 'FLT0003', '2024-07-17 03:30:33', '2024-06-17 03:33:03'),
   (5, 'FLT0005', '2024-07-17 04:40:44', '2024-06-17 04:44:04');
 
-INSERT INTO links (name, address)
+INSERT INTO links (name, address, sort_order)
 VALUES
-  ('Link One', 'https://adsbportal.com/one'),
-  ('Link Two', 'https://adsbportal.com/two'),
-  ('Link Three', 'https://adsbportal.com/three');
+  ('Link One', 'https://adsbportal.com/one', 1),
+  ('Link Two', 'https://adsbportal.com/two', 3),
+  ('Link Three', 'https://adsbportal.com/three', 2);
 
 INSERT INTO notifications (flight)
 VALUES
@@ -55,11 +55,11 @@ VALUES
   ('setting_two', 'Value Two'),
   ('setting_three', 'Value Three');
 
-INSERT INTO users (name, email, password, administrator, role)
+INSERT INTO users (name, email, password, administrator, role, locked, created_at)
 VALUES
-  ('Admin User', 'noreply@email-one.com', 'password123', 1, 'Admin'),
-  ('Regular User', 'noreply@email-two.com', 'password456', 0, 'User'),
-  ('Another User', 'noreply@email-three.com', 'password789', 0, 'User');
+  ('Admin User', 'noreply@email-one.com', 'scrypt:32768:8:1$gi1auJ6fnbiH4mJh$ef78969d738ebd2a5f45c6e0684965d2b46fcfe8e33ee0fb454ece76eb90dd84da369780a7c6e8d1355cf1be378b0191a0d5dd127bde2df69958f707829fbec5', 1, 'Admin', 0, '2024-01-03 00:00:00'),
+  ('Regular User', 'noreply@email-two.com', 'scrypt:32768:8:1$MOk0YSkhhDmIwAXh$4ef9d8f3a4cff8969cb2bb88b92679c0f9fd7836f2f6719a5caf6a6f1ed835eb7a326842430792717f8c11b49a6f294e31f6c160a06643fb4b68fc8945553bf1', 0, 'User', 0, '2024-01-01 00:00:00'),
+  ('Another User', 'noreply@email-three.com', 'scrypt:32768:8:1$NoLaKcpeOtxpLkcw$a6703a315290925928b9edd892c3131b8ac8e2f6588b1faf05fe2496b3126ff0a2e5838d1e35613305bff939d30311318525cb30332ed16fe9d1d76457ea31c5', 0, 'User', 0, '2024-01-02 00:00:00');
 
 INSERT INTO dump978_aircraft (icao, first_seen, last_seen)
 VALUES

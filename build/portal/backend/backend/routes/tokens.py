@@ -67,9 +67,7 @@ class LoginResource(Resource):
         if not user:
             return {'msg': 'Invalid credentials'}, 401
         
-        # For development/testing, we'll do a simple password check
-        # In production, you should use hashed passwords
-        if user.password != password:
+        if not check_password_hash(user.password or '', password):
             return {'msg': 'Invalid credentials'}, 401
 
         if user.locked:

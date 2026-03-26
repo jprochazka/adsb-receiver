@@ -157,6 +157,29 @@
         </div>
       </div>
     </div>
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">Graph Refresh Interval</div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Controls how often Receiver Information charts refresh from the API. Values are in seconds.
+        </p>
+        <div class="row g-2 align-items-center">
+          <div class="col-sm-6 col-md-4">
+            <input
+              class="form-control"
+              type="number"
+              min="3"
+              max="120"
+              step="1"
+              [(ngModel)]="graphRefreshIntervalSeconds"
+              (change)="saveGraphRefreshIntervalSeconds()">
+          </div>
+          <div class="col-auto">
+            <span class="text-muted small">Allowed range: 3 - 120 seconds</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <p class="text-muted small">All changes are saved automatically.</p>
   }
 </div>
