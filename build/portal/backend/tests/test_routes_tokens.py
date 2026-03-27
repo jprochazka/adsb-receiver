@@ -1,5 +1,3 @@
-from flask_jwt_extended import create_refresh_token
-
 # POST /token/login
 
 def test_post_token_login_200(client):
@@ -25,17 +23,3 @@ def test_post_token_login_401_invalid_credentials(client):
     else:
         # May be a different format or empty response
         assert response.status_code == 401
-
-# POST /token/refresh
-
-def test_post_token_refresh_200(client, app):
-    with app.app_context():
-        refresh_token = create_refresh_token(identity="noreply@email-one.com")
-        request_headers = {
-            'Authorization': 'Bearer {}'.format(refresh_token),
-            'accept': 'application/json'
-        }
-        response = client.post('/api/token/refresh', headers=request_headers)
-        content = response.get_json(silent=True)
-        assert response.status_code == 200
-        assert len(content['access_token']) > 0

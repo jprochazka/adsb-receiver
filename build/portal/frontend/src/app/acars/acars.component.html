@@ -2,15 +2,14 @@
   <h1>ACARS Messages</h1>
   <hr />
 
-  <!-- Search bar -->
-  <form class="d-flex gap-2 mb-3" (ngSubmit)="search()">
-    <input class="form-control" type="search" placeholder="Search by flight number or registration…"
-      [(ngModel)]="searchQuery" name="searchQuery" />
-    <button class="btn btn-primary" type="submit">Search</button>
-    @if (searchQuery) {
-      <button class="btn btn-outline-secondary" type="button" (click)="clearSearch()">Clear</button>
-    }
-  </form>
+  <div class="mb-3">
+    <input
+      class="form-control"
+      type="search"
+      placeholder="Filter loaded rows by flight number or registration…"
+      [(ngModel)]="filterQuery"
+      name="filterQuery" />
+  </div>
 
   @if (loading) {
     <app-spinner></app-spinner>
@@ -31,7 +30,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (flight of flights; track flight) {
+          @for (flight of filteredFlights; track flight) {
             <tr class="acars-flight-row" [class.table-active]="expandedFlightId === flight.id"
               (click)="toggleMessages(flight)" style="cursor: pointer;">
               <td><strong>{{ flight.flight_number || '—' }}</strong></td>
@@ -148,11 +147,11 @@
           }
         </tbody>
       </table>
-      @if (flights.length === 0) {
+      @if (filteredFlights.length === 0) {
         <p class="text-secondary">No ACARS flights found.</p>
       }
       <!-- Flight pagination -->
-      @if (!searchQuery && totalPages > 1) {
+      @if (!filterQuery && totalPages > 1) {
         <nav aria-label="Flight pages">
           <ul class="pagination flex-wrap">
             <li class="page-item" [class.disabled]="currentPage === 1">
@@ -174,7 +173,7 @@
           </ul>
         </nav>
       }
-      @if (!searchQuery) {
+      @if (!filterQuery) {
         <p class="fw-light text-secondary small">
           {{ totalFlights }} flight(s) total
           @if (totalPages > 1) {
@@ -182,9 +181,9 @@
           }
         </p>
       }
-      @if (searchQuery) {
+      @if (filterQuery) {
         <p class="fw-light text-secondary small">
-          {{ flights.length }} result(s) for "{{ searchQuery }}"
+          {{ filteredFlights.length }} filtered result(s) for "{{ filterQuery }}"
         </p>
       }
     </div>

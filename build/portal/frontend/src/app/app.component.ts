@@ -182,7 +182,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.dataService.searchFlights(q).subscribe({
       next: (result) => {
         if (result.count === 1) {
-          this.router.navigate(['/flight-history', result.flights[0].flight]);
+          this.router.navigate(['/flight-history', 'adsb', result.flights[0].flight]);
         } else {
           this.router.navigate(['/flights'], { queryParams: { q } });
         }

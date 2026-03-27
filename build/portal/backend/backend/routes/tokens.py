@@ -1,6 +1,6 @@
 import logging
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from werkzeug.security import check_password_hash
@@ -28,10 +28,6 @@ token_response_model = auth_ns.model('TokenResponse', {
         'email': restx_fields.String(description='User email'),
         'role': restx_fields.String(description='User role (Admin/User)')
     }))
-})
-
-refresh_response_model = auth_ns.model('RefreshResponse', {
-    'access_token': restx_fields.String(required=True, description='New JWT access token')
 })
 
 error_model = auth_ns.model('Error', {
@@ -100,36 +96,5 @@ class LoginResource(Resource):
 
 
 
-
-
-@auth_ns.route('/refresh')
-class RefreshResource(Resource):
-    @auth_ns.marshal_with(refresh_response_model, code=200)
-    @auth_ns.response(401, 'Token refresh failed', error_model)
-    @auth_ns.doc('refresh_token', security='Bearer')
-    @jwt_required(refresh=True)
-    def post(self):
-        """Refresh access token using refresh token"""
-        try:
-            current_user_email = get_jwt_identity()
-            user = db.session.execute(select(User).filter_by(email=current_user_email)).scalar_one_or_none()
-            
-            if not user:
-                return {'msg': 'User not found'}, 401
-            
-            # Ensure user has a valid role
-            if not user.role or not validate_role(user.role):
-                user.role = 'Admin' if user.administrator == 1 else 'User'
-            
-            access_token = create_access_token(
-                identity=user.email,
-                additional_claims={'role': user.role, 'user_id': user.id}
-            )
-            
-            return {'access_token': access_token}, 200
-            
-        except Exception as e:
-            logging.error(f"Error refreshing token: {e}")
-            return {'msg': 'Token refresh failed'}, 401
 
 

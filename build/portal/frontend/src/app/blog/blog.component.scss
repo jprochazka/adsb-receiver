@@ -1,0 +1,61 @@
+.comment-item {
+	--reply-level: 0;
+	margin-left: calc(var(--reply-level) * 20px);
+	position: relative;
+	background-color: rgba(128, 128, 128, 0.12);
+	border: 1px solid var(--bs-primary);
+	border-radius: var(--bs-border-radius);
+	padding: 0.75rem 1rem;
+}
+
+.comment-item--reply {
+	background-color: var(--bs-body-bg);
+}
+
+.comment-item--deleted {
+	opacity: 0.45;
+	border-color: var(--bs-border-color);
+	background-color: transparent;
+}
+
+.comment-item__deleted-label {
+	font-size: 0.8rem;
+	font-style: italic;
+	color: var(--bs-secondary-color);
+}
+
+.comment-reply-form {
+	background-color: rgba(0, 0, 0, 0.04);
+	border-radius: var(--bs-border-radius);
+	padding: 0.75rem;
+}
+
+.list-group-item {
+	border-color: color-mix(in srgb, var(--bs-primary) 75%, black);
+}
+
+.tag-cloud {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.1rem 0.5rem;
+	line-height: 1.4;
+}
+
+.tag-cloud__item {
+	--tag-weight: 0;
+	font-size: clamp(0.65rem, calc(0.65rem + var(--tag-weight) * 0.85rem), 1.5rem);
+	color: var(--bs-link-color);
+	text-decoration: none;
+	cursor: pointer;
+
+	&:hover {
+		text-decoration: underline;
+		color: var(--bs-link-hover-color);
+	}
+
+	&.tag-cloud__item--active {
+		font-weight: 700;
+		text-decoration: underline;
+	}
+}

@@ -1,6 +1,6 @@
 from tests.conftest import create_admin_token, create_user_token
 
-# DELETE /notification/{id}
+# DELETE /notifications/{id}
 
 def test_delete_notification_204(client, app):
     with app.app_context():
@@ -8,11 +8,20 @@ def test_delete_notification_204(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
-        response = client.delete('/api/notification/FLT0013', headers=request_headers)
+        response = client.delete('/api/notifications/FLT0013', headers=request_headers)
+        assert response.status_code == 204
+
+def test_delete_notification_204_user(client, app):
+    with app.app_context():
+        access_token = create_user_token(app)
+        request_headers = {
+            'Authorization': 'Bearer {}'.format(access_token),
+        }
+        response = client.delete('/api/notifications/FLT0013', headers=request_headers)
         assert response.status_code == 204
 
 def test_delete_notification_401(client):
-    response = client.delete('/api/notification/FLT0013')
+    response = client.delete('/api/notifications/FLT0013')
     assert response.status_code == 401
 
 def test_delete_notification_404(client, app):
@@ -21,10 +30,10 @@ def test_delete_notification_404(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
-        response = client.delete('/api/notification/FLT0000', headers=request_headers)
+        response = client.delete('/api/notifications/FLT0000', headers=request_headers)
         assert response.status_code == 404
 
-# POST /notification
+# POST /notifications/{id}
 
 def test_post_notification_200(client, app):
     with app.app_context():
@@ -32,11 +41,20 @@ def test_post_notification_200(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
-        response = client.post('/api/notification/FLT0014', headers=request_headers)
+        response = client.post('/api/notifications/FLT0014', headers=request_headers)
+        assert response.status_code == 201
+
+def test_post_notification_200_user(client, app):
+    with app.app_context():
+        access_token = create_user_token(app)
+        request_headers = {
+            'Authorization': 'Bearer {}'.format(access_token),
+        }
+        response = client.post('/api/notifications/FLT0014', headers=request_headers)
         assert response.status_code == 201
 
 def test_post_notification_401(client):
-    response = client.post('/api/notification/FLT0014')
+    response = client.post('/api/notifications/FLT0014')
     assert response.status_code == 401
 
 # GET /notifications

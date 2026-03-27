@@ -12,19 +12,19 @@ with open("config.yml") as _f:
     config = yaml.safe_load(_f)
 
 
-system = Blueprint('system', __name__)
+devices = Blueprint('devices', __name__)
 
 # Create Flask-RESTX namespace for system monitoring
-system_ns = Namespace('system', description='System monitoring and health checks')
+devices_ns = Namespace('devices', description='System monitoring and health checks')
 
 # Define API models for documentation
-cpu_model = system_ns.model('CPUInfo', {
+cpu_model = devices_ns.model('CPUInfo', {
     'cpu_percent': restx_fields.Float(description='CPU usage percentage'),
     'cpu_count': restx_fields.Integer(description='Number of CPU cores'),
     'cpu_freq': restx_fields.Raw(description='CPU frequency information')
 })
 
-memory_model = system_ns.model('MemoryInfo', {
+memory_model = devices_ns.model('MemoryInfo', {
     'total': restx_fields.Integer(description='Total memory in bytes'),
     'available': restx_fields.Integer(description='Available memory in bytes'),
     'percent': restx_fields.Float(description='Memory usage percentage'),
@@ -32,41 +32,38 @@ memory_model = system_ns.model('MemoryInfo', {
     'free': restx_fields.Integer(description='Free memory in bytes')
 })
 
-disk_model = system_ns.model('DiskInfo', {
+disk_model = devices_ns.model('DiskInfo', {
     'total': restx_fields.Integer(description='Total disk space in bytes'),
     'used': restx_fields.Integer(description='Used disk space in bytes'),
     'free': restx_fields.Integer(description='Free disk space in bytes'),
     'percent': restx_fields.Float(description='Disk usage percentage')
 })
 
-network_model = system_ns.model('NetworkInfo', {
+network_model = devices_ns.model('NetworkInfo', {
     'bytes_sent': restx_fields.Integer(description='Bytes sent'),
     'bytes_recv': restx_fields.Integer(description='Bytes received'),
     'packets_sent': restx_fields.Integer(description='Packets sent'),
     'packets_recv': restx_fields.Integer(description='Packets received')
 })
 
-database_model = system_ns.model('DatabaseInfo', {
+database_model = devices_ns.model('DatabaseInfo', {
     'type': restx_fields.String(description='Database type'),
     'size': restx_fields.Integer(description='Database size in bytes'),
     'tables': restx_fields.Integer(description='Number of tables')
 })
 
-flights_tables_model = system_ns.model('FlightsTablesInfo', {
+flights_tables_model = devices_ns.model('FlightsTablesInfo', {
     'size': restx_fields.Integer(description='Combined size of flight tables in bytes'),
 })
 
 
-@system_ns.route('/cpu')
+@devices_ns.route('/cpu')
 class CPUResource(Resource):
-    @system_ns.response(200, 'CPU information retrieved successfully')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_cpu_info', security='Bearer')
-    @require_admin()
+    @devices_ns.response(200, 'CPU information retrieved successfully')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_cpu_info')
     def get(self):
-        """Get CPU information and statistics"""
+        """Get CPU information and statistics (Public)"""
         try:
             frequency = psutil.cpu_freq()
             stats = psutil.cpu_stats()
@@ -91,16 +88,13 @@ class CPUResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
-@system_ns.route('/memory')
+@devices_ns.route('/memory')
 class MemoryResource(Resource):
-    @system_ns.response(200, 'Memory information retrieved successfully')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_memory_info', security='Bearer')
-    @require_admin()
+    @devices_ns.response(200, 'Memory information retrieved successfully')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_memory_info')
     def get(self):
-        """Get memory usage information"""
+        """Get memory usage information (Public)"""
         try:
             virtual = psutil.virtual_memory()
             swap = psutil.swap_memory()
@@ -123,16 +117,13 @@ class MemoryResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
-@system_ns.route('/disk')
+@devices_ns.route('/disk')
 class DiskResource(Resource):
-    @system_ns.response(200, 'Disk information retrieved successfully')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_disk_info', security='Bearer')
-    @require_admin()
+    @devices_ns.response(200, 'Disk information retrieved successfully')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_disk_info')
     def get(self):
-        """Get disk usage information"""
+        """Get disk usage information (Public)"""
         try:
             usage = psutil.disk_usage('/')
             io = psutil.disk_io_counters()
@@ -153,16 +144,13 @@ class DiskResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
-@system_ns.route('/network')
+@devices_ns.route('/network')
 class NetworkResource(Resource):
-    @system_ns.response(200, 'Network information retrieved successfully')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_network_info', security='Bearer')
-    @require_admin()
+    @devices_ns.response(200, 'Network information retrieved successfully')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_network_info')
     def get(self):
-        """Get network usage information"""
+        """Get network usage information (Public)"""
         try:
             io = psutil.net_io_counters()
             network_data = {
@@ -184,37 +172,13 @@ class NetworkResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
-@system_ns.route('/sensors')
-class SensorsResource(Resource):
-    @system_ns.response(200, 'Success')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_sensors_info', security='Bearer')
-    @require_admin()
-    def get(self):
-        """Get sensor information (battery, temperature)"""
-        try:
-            battery = psutil.sensors_battery()
-            sensor_data = {
-                'sensors_battery': battery._asdict() if battery else None,
-            }
-            return jsonify(sensor_data)
-        except Exception as e:
-            logging.error(f'Error encountered while getting sensor information: {e}')
-            return {'msg': 'Internal Server Error'}, 500
-
-
-@system_ns.route('/other')
+@devices_ns.route('/other')
 class OtherResource(Resource):
-    @system_ns.response(200, 'Success')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_other_info', security='Bearer')
-    @require_admin()
+    @devices_ns.response(200, 'Success')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_other_info')
     def get(self):
-        """Get other system information (boot time, users)"""
+        """Get other system information (boot time, users) (Public)"""
         try:
             other_data = {
                 'other_boot_time': psutil.boot_time(),
@@ -226,16 +190,13 @@ class OtherResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
-@system_ns.route('/database')
+@devices_ns.route('/database')
 class DatabaseResource(Resource):
-    @system_ns.response(200, 'Database information retrieved successfully')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_database_info', security='Bearer')
-    @require_admin()
+    @devices_ns.response(200, 'Database information retrieved successfully')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_database_info')
     def get(self):
-        """Get database size and information"""
+        """Get database size and information (Public)"""
         try:
             match config['database']['use'].lower():
                 case 'mysql':
@@ -264,17 +225,17 @@ _FLIGHT_TABLES = [
 ]
 
 
-@system_ns.route('/flights-tables')
+@devices_ns.route('/flights-tables')
 class FlightsTablesResource(Resource):
-    @system_ns.marshal_with(flights_tables_model, code=200)
-    @system_ns.response(200, 'Flight table size retrieved successfully')
-    @system_ns.response(401, 'Unauthorized')
-    @system_ns.response(403, 'Forbidden')
-    @system_ns.response(500, 'Internal server error')
-    @system_ns.doc('get_flights_tables_size', security='Bearer')
+    @devices_ns.marshal_with(flights_tables_model, code=200)
+    @devices_ns.response(200, 'Flight table size retrieved successfully')
+    @devices_ns.response(401, 'Unauthorized - authentication required')
+    @devices_ns.response(403, 'Forbidden - admin role required')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_flights_tables_size', security='Bearer')
     @require_admin()
     def get(self):
-        """Get combined disk size used by all flight-related tables"""
+        """Get combined disk size used by all flight-related tables (Admin only)"""
         try:
             db_type = config['database']['use'].lower()
             match db_type:

@@ -1,40 +1,291 @@
 <div class="container">
-  <h1>ADS-B Portal Blog</h1>
+  <h1>{{ selectedPost ? selectedPost.title : 'Blog' }}</h1>
   <hr />
   @if (loading) {
     <app-spinner></app-spinner>
   }
   @if (!loading) {
     <div>
-      @if (posts.length === 0) {
-        <div class="text-muted">No blog posts found.</div>
+      @if (selectedPost) {
+        <p class="fs-6">Posted by {{ selectedPost.author }} on {{ selectedPost.date | date:"MMMM d, y 'at' h:mm a" }}</p>
+        @if (selectedPost.category || selectedPost.tags?.length) {
+          <div class="mb-2">
+            @if (selectedPost.category) {
+              <span class="badge bg-secondary me-1">{{ selectedPost.category }}</span>
+            }
+            @for (tag of selectedPost.tags ?? []; track tag) {
+              <span class="badge rounded-pill bg-primary me-1">{{ tag }}</span>
+            }
+          </div>
+        }
+        <div class="fs-5">{{ selectedPost.content }}</div>
+
+        <div class="pt-4">
+          <h3>Comments</h3>
+          <hr />
+
+          @if (commentsLoading) {
+            <app-spinner></app-spinner>
+          }
+
+          @if (commentsError) {
+            <div class="text-danger mb-2">{{ commentsError }}</div>
+          }
+
+          @if (!commentsLoading && !commentsError && comments.length === 0) {
+            <p class="text-muted">No comments yet.</p>
+          }
+
+          @if (!commentsLoading && comments.length > 0) {
+            <ng-template #commentTree let-items let-level="level">
+              @for (comment of items; track trackComment($index, comment)) {
+                <div
+                  class="comment-item mb-3"
+                  [class.comment-item--reply]="level > 0"
+                  [class.comment-item--deleted]="comment.deleted"
+                  [style.--reply-level]="level">
+                  @if (comment.deleted) {
+                    <div class="comment-item__deleted-label">Comment deleted</div>
+                  } @else {
+                  <div class="small text-muted mb-1">
+                    {{ comment.user?.name || 'Unknown user' }} • {{ comment.created_at | date:"MMMM d, y 'at' h:mm a" }}
+                    @if (comment.edited) {
+                      <span class="ms-1">(edited)</span>
+                    }
+                    @if (isAuthenticated) {
+                      <a
+                        href="#"
+                        class="ms-2"
+                        (click)="$event.preventDefault(); toggleReplyForm(comment.id)">
+                        {{ replyFormOpen[comment.id] ? 'Cancel reply' : 'Reply' }}
+                      </a>
+                    }
+                    @if (currentUserId !== null && comment.user_id === currentUserId && !comment.deleted) {
+                      <a
+                        href="#"
+                        class="ms-2"
+                        (click)="$event.preventDefault(); toggleEditForm(comment)">
+                        {{ editFormOpen[comment.id] ? 'Cancel edit' : 'Edit' }}
+                      </a>
+                    }
+                    @if (canDelete(comment)) {
+                      <a
+                        href="#"
+                        class="ms-2 text-danger"
+                        (click)="$event.preventDefault(); deleteComment(comment)">
+                        Delete
+                      </a>
+                    }
+                  </div>
+                  @if (!editFormOpen[comment.id]) {
+                    <div class="comment-content">{{ comment.content }}</div>
+                  }
+
+                  @if (editFormOpen[comment.id]) {
+                    <div class="mt-2">
+                      <textarea
+                        class="form-control mb-2"
+                        rows="3"
+                        [(ngModel)]="editDrafts[comment.id]"
+                        [disabled]="editSubmitting[comment.id]"
+                        maxlength="5000"
+                        placeholder="Edit your comment..."></textarea>
+                      <div class="d-flex justify-content-end">
+                        <button class="btn btn-sm btn-primary" type="button" (click)="submitEdit(comment)" [disabled]="editSubmitting[comment.id]">
+                          {{ editSubmitting[comment.id] ? 'Saving...' : 'Save' }}
+                        </button>
+                      </div>
+                      @if (editErrors[comment.id]) {
+                        <div class="text-danger small mt-2">{{ editErrors[comment.id] }}</div>
+                      }
+                    </div>
+                  }
+
+                  @if (replyFormOpen[comment.id]) {
+                    <div class="mt-2 comment-reply-form">
+                      <textarea
+                        class="form-control mb-2"
+                        rows="2"
+                        [(ngModel)]="replyDrafts[comment.id]"
+                        [disabled]="replySubmitting[comment.id]"
+                        maxlength="5000"
+                        placeholder="Write a reply..."></textarea>
+                      <div class="d-flex justify-content-end">
+                        <button class="btn btn-sm btn-primary" type="button" (click)="submitReply(comment)" [disabled]="replySubmitting[comment.id]">
+                          {{ replySubmitting[comment.id] ? 'Posting...' : 'Post Reply' }}
+                        </button>
+                      </div>
+                      @if (replyErrors[comment.id]) {
+                        <div class="text-danger small mt-2">{{ replyErrors[comment.id] }}</div>
+                      }
+                    </div>
+                  }
+                  }
+                </div>
+
+                @if (comment.replies?.length) {
+                  <ng-container *ngTemplateOutlet="commentTree; context: { $implicit: comment.replies, level: level + 1 }"></ng-container>
+                }
+              }
+            </ng-template>
+
+            <ng-container *ngTemplateOutlet="commentTree; context: { $implicit: comments, level: 0 }"></ng-container>
+          }
+
+          @if (isAuthenticated) {
+            <div class="card mb-3 mt-3">
+              <div class="card-body">
+                <label class="form-label" for="new-comment">Add a comment</label>
+                <textarea
+                  id="new-comment"
+                  class="form-control mb-2"
+                  rows="3"
+                  [(ngModel)]="commentContent"
+                  [disabled]="commentSubmitting"
+                  maxlength="5000"
+                  placeholder="Write your comment..."></textarea>
+                <div class="d-flex justify-content-end">
+                  <button class="btn btn-primary" type="button" (click)="submitComment()" [disabled]="commentSubmitting">
+                    {{ commentSubmitting ? 'Posting...' : 'Post Comment' }}
+                  </button>
+                </div>
+                @if (commentSubmitError) {
+                  <div class="text-danger small mt-2">{{ commentSubmitError }}</div>
+                }
+                @if (commentSubmitSuccess) {
+                  <div class="text-success small mt-2">{{ commentSubmitSuccess }}</div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (!isAuthenticated) {
+            <p class="text-muted mt-3"><a routerLink="/login">Sign in</a> to post a comment.</p>
+          }
+
+        </div>
+
       }
-      @for (post of posts; track post) {
-        <div>
-          <h2><a [routerLink]="['/blog-post', post.id]">{{ post.title }}</a></h2>
-          <p class="fs-6">Posted by {{ post.author }} on {{ post.date }}</p>
-          <div class="fs-5">{{ post.content }}</div>
-          <div class="pb-3 text-end"><a [routerLink]="['/blog-post', post.id]">read more...</a></div>
+      @if (!selectedPost) {
+        <div class="row g-4">
+          <div class="col-lg-9">
+            @if (selectedCategory || selectedTag) {
+              <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <span class="fw-semibold">Filtered by:</span>
+                @if (selectedCategory) {
+                  <span class="badge text-bg-secondary d-inline-flex align-items-center gap-1">
+                    Category: {{ selectedCategory }}
+                    <button type="button" class="border-0 bg-transparent p-0 lh-1" style="color:inherit;font-size:0.85em;" aria-label="Clear category filter" (click)="selectCategory(selectedCategory)">&#x2715;</button>
+                  </span>
+                }
+                @if (selectedTag) {
+                  <span class="badge text-bg-primary d-inline-flex align-items-center gap-1">
+                    Tag: {{ selectedTag }}
+                    <button type="button" class="border-0 bg-transparent p-0 lh-1" style="color:inherit;font-size:0.85em;" aria-label="Clear tag filter" (click)="selectTag(selectedTag)">&#x2715;</button>
+                  </span>
+                }
+              </div>
+            }
+            @if (detailNotFound) {
+              <div class="text-muted">Blog post not found.</div>
+            }
+            @if (!detailNotFound && posts.length === 0) {
+              <div class="text-muted">No blog posts found{{ selectedCategory ? ' in category "' + selectedCategory + '"' : '' }}.</div>
+            }
+            @for (post of posts; track post) {
+              <div>
+                <h2><a [routerLink]="['/blog-post', post.id]">{{ post.title }}</a></h2>
+                <p class="fs-6">Posted by {{ post.author }} on {{ post.date | date:"MMMM d, y 'at' h:mm a" }}</p>
+                @if (post.category || post.tags?.length) {
+                  <div class="mb-2">
+                    @if (post.category) {
+                      <span class="badge bg-secondary me-1">{{ post.category }}</span>
+                    }
+                    @for (tag of post.tags ?? []; track tag) {
+                      <span class="badge rounded-pill bg-primary me-1">{{ tag }}</span>
+                    }
+                  </div>
+                }
+                <div class="fs-5">{{ truncate(post.content, 500) }}</div>
+                <div class="pb-3 text-end"><a [routerLink]="['/blog-post', post.id]">read more...</a></div>
+              </div>
+            }
+            @if (totalPages > 1) {
+              <nav aria-label="Blog pagination">
+                <ul class="pagination">
+                  <li class="page-item" [class.disabled]="currentPage === 1">
+                    <a class="page-link" [routerLink]="['/blog', currentPage - 1]">Previous</a>
+                  </li>
+                  @for (p of pageNumbers; track p) {
+                    <li class="page-item" [class.active]="p === currentPage">
+                      <a class="page-link" [routerLink]="['/blog', p]">{{ p }}</a>
+                    </li>
+                  }
+                  <li class="page-item" [class.disabled]="currentPage === totalPages">
+                    <a class="page-link" [routerLink]="['/blog', currentPage + 1]">Next</a>
+                  </li>
+                </ul>
+              </nav>
+            }
+            <p class="fw-light">{{ total }} total post{{ total === 1 ? '' : 's' }}</p>
+          </div>
+          <div class="col-lg-3">
+            <div class="card mb-4">
+              <div class="card-header fw-semibold">Explore Topics</div>
+              <div class="card-body">
+                @if (metaLoading) {
+                  <div class="text-muted small">Loading tags and categories...</div>
+                }
+                @if (!metaLoading && metaError) {
+                  <div class="text-danger small">{{ metaError }}</div>
+                }
+                @if (!metaLoading && !metaError) {
+                  <h6 class="mb-2">Categories</h6>
+                  @if (categoryList.length === 0) {
+                    <p class="text-muted small mb-0">No categories available yet.</p>
+                  }
+                  @if (categoryList.length > 0) {
+                    <ul class="list-group list-group-flush mb-4">
+                      @for (category of categoryList; track category.name) {
+                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                            [class.active]="selectedCategory === category.name"
+                            role="button"
+                            (click)="selectCategory(category.name)"
+                            (keydown.enter)="selectCategory(category.name)"
+                            tabindex="0">
+                          <span>{{ category.name }}</span>
+                          <span class="badge rounded-pill" [class.text-bg-light]="selectedCategory === category.name" [class.text-bg-secondary]="selectedCategory !== category.name">{{ category.count }}</span>
+                        </li>
+                      }
+                    </ul>
+                  }
+                  <h6 class="mb-2">Tag Cloud</h6>
+                  @if (tagCloud.length === 0) {
+                    <p class="text-muted small mb-0">No tags available yet.</p>
+                  }
+                  @if (tagCloud.length > 0) {
+                    <div class="tag-cloud" aria-label="Tag cloud">
+                      @for (tag of tagCloud; track tag.name) {
+                        <span
+                          class="tag-cloud__item"
+                          [class.tag-cloud__item--active]="selectedTag === tag.name"
+                          [style.--tag-weight]="tag.weight"
+                          [title]="tag.name + ' (' + tag.count + ')'" 
+                          role="button"
+                          (click)="selectTag(tag.name)"
+                          (keydown.enter)="selectTag(tag.name)"
+                          tabindex="0">
+                          {{ tag.name }}
+                        </span>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          </div>
         </div>
       }
-      @if (totalPages > 1) {
-        <nav aria-label="Blog pagination">
-          <ul class="pagination">
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <a class="page-link" [routerLink]="['/blog', currentPage - 1]">Previous</a>
-            </li>
-            @for (p of pageNumbers; track p) {
-              <li class="page-item" [class.active]="p === currentPage">
-                <a class="page-link" [routerLink]="['/blog', p]">{{ p }}</a>
-              </li>
-            }
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <a class="page-link" [routerLink]="['/blog', currentPage + 1]">Next</a>
-            </li>
-          </ul>
-        </nav>
-      }
-      <p class="fw-light">{{ total }} total post{{ total === 1 ? '' : 's' }}</p>
     </div>
   }
 </div>

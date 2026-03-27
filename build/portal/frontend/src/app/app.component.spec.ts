@@ -1,11 +1,34 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
+
 import { AppComponent } from './app.component';
+import { DataService } from './service/data.service';
 
 describe('AppComponent', () => {
+  const dataServiceMock = {
+    getRecentNotifications: jasmine.createSpy('getRecentNotifications').and.returnValue(of({ flights: [] })),
+    getSetting: jasmine.createSpy('getSetting').and.returnValue(of({ value: 'true' })),
+    searchFlights: jasmine.createSpy('searchFlights').and.returnValue(of({ count: 0, flights: [] })),
+  };
+
   beforeEach(async () => {
+    localStorage.setItem(
+      'access_token',
+      'eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQWRtaW4ifQ==.signature'
+    );
+
     await TestBed.configureTestingModule({
       imports: [AppComponent],
+      providers: [
+        provideRouter([]),
+        { provide: DataService, useValue: dataServiceMock },
+      ]
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    localStorage.removeItem('access_token');
   });
 
   it('should create the app', () => {
@@ -14,16 +37,9 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'frontend' title`, () => {
+  it('should have the frontend title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app.title).toEqual('frontend');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
   });
 });

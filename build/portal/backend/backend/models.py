@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 
 db = SQLAlchemy()
 
@@ -37,17 +37,77 @@ class BlogPost(db.Model):
     author = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     visible = db.Column(db.Boolean, nullable=False, default=True)
+    tags = db.Column(db.Text, nullable=True, default='')
+    category = db.Column(db.String(100), nullable=True, default='')
+
+    comments = db.relationship(
+        'BlogComment',
+        back_populates='blog_post',
+        cascade='all, delete-orphan',
+        order_by='BlogComment.created_at.asc()'
+    )
     
     def to_dict(self):
+        raw_tags = self.tags or ''
         return {
             'id': self.id,
             'title': self.title,
             'date': self.date,
             'author': self.author,
             'content': self.content,
-            'visible': self.visible
+            'visible': self.visible,
+            'tags': [t.strip() for t in raw_tags.split(',') if t.strip()],
+            'category': (self.category or '').strip() or 'Uncategorized'
         }
     
+    def serialize(self):
+        return self.to_dict()
+
+
+class BlogComment(db.Model):
+    __tablename__ = 'blog_comments'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    blog_post_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    parent_comment_id = db.Column(db.Integer, db.ForeignKey('blog_comments.id'), nullable=True, index=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    edited = db.Column(db.Boolean, nullable=False, default=False)
+    edited_at = db.Column(db.DateTime, nullable=True)
+    deleted = db.Column(db.Boolean, nullable=False, default=False)
+    deleted_at = db.Column(db.DateTime, nullable=True)
+
+    blog_post = db.relationship('BlogPost', back_populates='comments')
+    user = db.relationship('User', back_populates='blog_comments')
+    parent = db.relationship('BlogComment', remote_side=[id], back_populates='replies')
+    replies = db.relationship(
+        'BlogComment',
+        back_populates='parent',
+        cascade='all, delete-orphan',
+        order_by='BlogComment.created_at.asc()',
+        single_parent=True,
+    )
+
+    def to_dict(self):
+        is_deleted = self.deleted
+        return {
+            'id': self.id,
+            'blog_post_id': self.blog_post_id,
+            'user_id': None if is_deleted else self.user_id,
+            'parent_comment_id': self.parent_comment_id,
+            'content': '[deleted]' if is_deleted else self.content,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'edited': self.edited,
+            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
+            'deleted': self.deleted,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'user': {
+                'id': None if is_deleted else (self.user.id if self.user else self.user_id),
+                'name': None if is_deleted else (self.user.name if self.user else None),
+            },
+        }
+
     def serialize(self):
         return self.to_dict()
 
@@ -182,7 +242,9 @@ class User(db.Model):
     administrator = db.Column(db.Integer, default=0)  # Keep for backward compatibility
     role = db.Column(db.String(20), default='User')  # New role field with Admin/User values
     locked = db.Column(db.Boolean, default=False, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    blog_comments = db.relationship('BlogComment', back_populates='user')
 
     def to_dict(self):
         return {

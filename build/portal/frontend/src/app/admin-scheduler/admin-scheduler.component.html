@@ -1,0 +1,80 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1>Scheduler Management</h1>
+    <button class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading || actionBusy">Refresh</button>
+  </div>
+  <hr />
+
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
+
+  @if (!loading) {
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">Scheduler Controls</div>
+      <div class="card-body">
+        <p class="mb-3">Current state: <strong>{{ schedulerStateLabel() }}</strong></p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-success" (click)="start()" [disabled]="actionBusy">Start</button>
+          <button class="btn btn-warning" (click)="pause()" [disabled]="actionBusy">Pause</button>
+          <button class="btn btn-primary" (click)="resume()" [disabled]="actionBusy">Resume</button>
+          <button class="btn btn-danger" (click)="shutdown()" [disabled]="actionBusy">Shutdown</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header fw-semibold">Scheduled Jobs</div>
+      <div class="card-body p-0">
+        @if (jobs.length > 0) {
+          <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Job ID</th>
+                  <th>Trigger</th>
+                  <th>Next Run</th>
+                  <th>Status</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (job of jobs; track job.id) {
+                  <tr>
+                    <td><code>{{ job.id }}</code></td>
+                    <td>{{ job.trigger || '—' }}</td>
+                    <td>{{ job.next_run_time || '—' }}</td>
+                    <td>{{ job.pending ? 'Pending' : 'Active' }}</td>
+                    <td class="text-end">
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" (click)="runJob(job.id)" [disabled]="jobsBusy[job.id]">Run</button>
+                        <button class="btn btn-outline-warning" (click)="pauseJob(job.id)" [disabled]="jobsBusy[job.id]">Pause</button>
+                        <button class="btn btn-outline-success" (click)="resumeJob(job.id)" [disabled]="jobsBusy[job.id]">Resume</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="p-3 text-muted">No scheduler jobs returned.</div>
+        }
+      </div>
+    </div>
+
+    @if (successMessage) {
+      <div class="alert alert-success alert-dismissible mt-3 mb-0">
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage=''"></button>
+      </div>
+    }
+    @if (errorMessage) {
+      <div class="alert alert-danger alert-dismissible mt-3 mb-0">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+      </div>
+    }
+  }
+</div>

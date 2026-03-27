@@ -1,0 +1,419 @@
+<div class="container py-4">
+  <h1 class="mb-4">Devices</h1>
+
+  <!-- Tab Navigation -->
+  @if (showTabNavigation) {
+    <ul class="nav nav-tabs mb-4" role="tablist">
+      @if (infoGraphsEnabled) {
+        <li class="nav-item" role="presentation">
+          <button 
+            class="nav-link" 
+            [class.active]="activeTab === 'receiver'"
+            (click)="setActiveTab('receiver')"
+            type="button">
+            Receiver
+          </button>
+        </li>
+      }
+      @if (infoSystemEnabled) {
+        <li class="nav-item" role="presentation">
+          <button 
+            class="nav-link" 
+            [class.active]="activeTab === 'system'"
+            (click)="setActiveTab('system')"
+            type="button">
+            System
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (!hasVisibleTab) {
+    <div class="alert alert-secondary mb-0">No device sections are currently enabled.</div>
+  }
+
+  <!-- Receiver Information Tab -->
+  @if (infoGraphsEnabled && activeTab === 'receiver') {
+    @if (receiverLoading) {
+      <app-spinner></app-spinner>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">{{ errorMessage }}</div>
+    }
+
+    @if (!receiverLoading && !errorMessage) {
+      <div class="btn-group mb-4" role="group" aria-label="Graph period">
+        @for (p of periods; track p) {
+          <button
+            type="button"
+            class="btn btn-sm"
+            [class.btn-primary]="activePeriod === p.value"
+            [class.btn-outline-secondary]="activePeriod !== p.value"
+            (click)="setPeriod(p.value)">
+            {{ p.label }}
+          </button>
+        }
+      </div>
+
+      @if (dump1090GraphsEnabled) {
+        <div class="card mb-4">
+          <div class="card-header fw-semibold">Dump1090 Graphs</div>
+          <div class="card-body">
+            <div class="row mb-4">
+              <div class="col-12">
+                <app-rrd-chart [config]="d1090MessageRate" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090Aircraft" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090Tracks" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090Range" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090Signal" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090Positions" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090DfTypes" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="col-12">
+                <app-rrd-chart [config]="d1090StrongSignals" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090Cpu" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (dump978GraphsEnabled) {
+        <div class="card mb-4">
+          <div class="card-header fw-semibold">Dump978 Graphs</div>
+          <div class="card-body">
+            <div class="row mb-4">
+              <div class="col-12">
+                <app-rrd-chart [config]="d978Messages" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d978Aircraft" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d978Signal" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d978Range" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d978Altitude" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">System Graphs</div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-12">
+              <app-rrd-chart [config]="sysCpu" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <app-rrd-chart [config]="sysTemperature" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+            </div>
+            <div class="col-md-6">
+              <app-rrd-chart [config]="sysMemory" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <app-rrd-chart [config]="sysNetwork" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+            </div>
+            <div class="col-md-6">
+              <app-rrd-chart [config]="sysDiskUsage" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <app-rrd-chart [config]="sysDiskIops" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+            </div>
+            <div class="col-md-6">
+              <app-rrd-chart [config]="sysDiskBandwidth" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- System Information Tab -->
+  @if (infoSystemEnabled && activeTab === 'system') {
+    @if (systemLoading) {
+      <app-spinner></app-spinner>
+    }
+    @if (!systemLoading) {
+      <div>
+        <div class="row g-4">
+          <!-- CPU -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">CPU</div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Usage</td>
+                      <td>
+                        <div class="progress" style="height: 20px;">
+                          <div class="progress-bar" role="progressbar"
+                            [style.width]="cpu?.cpu_percent + '%'"
+                            [class.bg-danger]="cpu?.cpu_percent > 80"
+                            [class.bg-warning]="cpu?.cpu_percent > 50 && cpu?.cpu_percent <= 80"
+                            [attr.aria-valuenow]="cpu?.cpu_percent"
+                            aria-valuemin="0" aria-valuemax="100">
+                            {{ cpu?.cpu_percent | number:'1.1-1' }}%
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Physical cores</td>
+                      <td>{{ cpu?.cpu_count }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Logical cores</td>
+                      <td>{{ cpu?.cpu_count_logical }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Frequency (current)</td>
+                      <td>{{ cpu?.cpu_frequency_current | number:'1.0-0' }} MHz</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Frequency (max)</td>
+                      <td>{{ cpu?.cpu_frequency_max | number:'1.0-0' }} MHz</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Load avg (1/5/15 min)</td>
+                      <td>
+                        {{ cpu?.cpu_load_averages?.[0] | number:'1.2-2' }} /
+                        {{ cpu?.cpu_load_averages?.[1] | number:'1.2-2' }} /
+                        {{ cpu?.cpu_load_averages?.[2] | number:'1.2-2' }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Context switches</td>
+                      <td>{{ cpu?.cpu_stats_context_switches_since_boot | number }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Interrupts</td>
+                      <td>{{ cpu?.cpu_stats_interupts_since_boot | number }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- Memory -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Memory</div>
+              <div class="card-body">
+                <h6 class="text-muted">Virtual Memory</h6>
+                <div class="progress mb-2" style="height: 20px;">
+                  <div class="progress-bar" role="progressbar"
+                    [style.width]="memory?.memory_virtual_percent + '%'"
+                    [class.bg-danger]="memory?.memory_virtual_percent > 80"
+                    [class.bg-warning]="memory?.memory_virtual_percent > 50 && memory?.memory_virtual_percent <= 80"
+                    [attr.aria-valuenow]="memory?.memory_virtual_percent"
+                    aria-valuemin="0" aria-valuemax="100">
+                    {{ memory?.memory_virtual_percent | number:'1.1-1' }}%
+                  </div>
+                </div>
+                <table class="table table-sm mb-3">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Total</td>
+                      <td>{{ formatBytes(memory?.memory_virtual_total) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Used</td>
+                      <td>{{ formatBytes(memory?.memory_virtual_used) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Available</td>
+                      <td>{{ formatBytes(memory?.memory_virtual_available) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <h6 class="text-muted">Swap</h6>
+                <div class="progress mb-2" style="height: 20px;">
+                  <div class="progress-bar bg-secondary" role="progressbar"
+                    [style.width]="memory?.memory_swap_percent + '%'"
+                    [attr.aria-valuenow]="memory?.memory_swap_percent"
+                    aria-valuemin="0" aria-valuemax="100">
+                    {{ memory?.memory_swap_percent | number:'1.1-1' }}%
+                  </div>
+                </div>
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Total</td>
+                      <td>{{ formatBytes(memory?.memory_swap_total) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Used</td>
+                      <td>{{ formatBytes(memory?.memory_swap_used) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Free</td>
+                      <td>{{ formatBytes(memory?.memory_swap_free) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- Disk -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Disk</div>
+              <div class="card-body">
+                <div class="progress mb-2" style="height: 20px;">
+                  <div class="progress-bar" role="progressbar"
+                    [style.width]="disk?.disk_usage_percent + '%'"
+                    [class.bg-danger]="disk?.disk_usage_percent > 80"
+                    [class.bg-warning]="disk?.disk_usage_percent > 50 && disk?.disk_usage_percent <= 80"
+                    [attr.aria-valuenow]="disk?.disk_usage_percent"
+                    aria-valuemin="0" aria-valuemax="100">
+                    {{ disk?.disk_usage_percent | number:'1.1-1' }}%
+                  </div>
+                </div>
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Total</td>
+                      <td>{{ formatBytes(disk?.disk_usage_total) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Used</td>
+                      <td>{{ formatBytes(disk?.disk_usage_used) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Free</td>
+                      <td>{{ formatBytes(disk?.disk_usage_free) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Reads</td>
+                      <td>{{ disk?.disk_io_read_count | number }} ({{ formatBytes(disk?.disk_io_read_bytes) }})</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Writes</td>
+                      <td>{{ disk?.disk_io_write_count | number }} ({{ formatBytes(disk?.disk_io_write_bytes) }})</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- Network -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Network</div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Bytes sent</td>
+                      <td>{{ formatBytes(network?.network_io_bytes_sent) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Bytes received</td>
+                      <td>{{ formatBytes(network?.network_io_bytes_received) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Packets sent</td>
+                      <td>{{ network?.network_io_packets_sent | number }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Packets received</td>
+                      <td>{{ network?.network_io_packets_received | number }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Errors in / out</td>
+                      <td>{{ network?.network_io_errors_in | number }} / {{ network?.network_io_errors_out | number }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Dropped in / out</td>
+                      <td>{{ network?.network_io_dropped_in | number }} / {{ network?.network_io_dropped_out | number }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- System & Database -->
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">System</div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Boot time</td>
+                      <td>{{ bootTime() | date:'medium' }}</td>
+                    </tr>
+                    @for (user of other?.other_users; track user) {
+                      <tr>
+                        <td class="text-muted">Logged-in user</td>
+                        <td>{{ user.name }} ({{ user.terminal }})</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Database</div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Size</td>
+                      <td>{{ formatBytes(database?.size) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

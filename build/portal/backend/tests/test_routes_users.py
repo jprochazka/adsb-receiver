@@ -1,4 +1,5 @@
 from tests.conftest import create_admin_token, create_user_token
+from backend.models import BlogComment, db
 
 # POST /user
 
@@ -130,9 +131,72 @@ def test_delete_user_200(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
+        target_comment = BlogComment.query.filter_by(user_id=3).first()
+        assert target_comment is not None
+
         response = client.delete('/api/users/user/3', headers=request_headers)  # User ID 3 = "Another User"
         assert response.status_code == 200
         assert response.json['msg'] == 'User deleted successfully'
+
+        updated_comment = BlogComment.query.filter_by(id=target_comment.id).first()
+        assert updated_comment is None
+
+
+def test_delete_user_200_respects_existing_soft_deleted_comment(client, app):
+    with app.app_context():
+        target_comment = BlogComment.query.filter_by(user_id=3).first()
+        assert target_comment is not None
+
+        target_comment.deleted = True
+        db.session.commit()
+
+        access_token = create_admin_token(app)
+        request_headers = {
+            'Authorization': 'Bearer {}'.format(access_token),
+        }
+
+        response = client.delete('/api/users/user/3', headers=request_headers)
+        assert response.status_code == 200
+
+        updated_comment = BlogComment.query.filter_by(id=target_comment.id).first()
+        assert updated_comment is None
+
+
+def test_delete_user_200_applies_mixed_comment_delete_logic(client, app):
+    with app.app_context():
+        # User 2 already owns comment id=1 which has replies (threaded)
+        threaded_comment = BlogComment.query.filter_by(id=1).first()
+        assert threaded_comment is not None
+        assert threaded_comment.user_id == 2
+
+        # Add a leaf comment for user 2 so both branches of the logic are exercised.
+        leaf_comment = BlogComment(
+            blog_post_id=1,
+            user_id=2,
+            parent_comment_id=None,
+            content='Temporary leaf comment for deletion logic test.',
+        )
+        db.session.add(leaf_comment)
+        db.session.commit()
+        leaf_comment_id = leaf_comment.id
+
+        access_token = create_admin_token(app)
+        request_headers = {
+            'Authorization': 'Bearer {}'.format(access_token),
+        }
+
+        response = client.delete('/api/users/user/2', headers=request_headers)
+        assert response.status_code == 200
+
+        updated_threaded = BlogComment.query.filter_by(id=1).first()
+        deleted_leaf = BlogComment.query.filter_by(id=leaf_comment_id).first()
+
+        assert updated_threaded is not None
+        assert updated_threaded.deleted is True
+        assert updated_threaded.deleted_at is not None
+        # Reassigned to the deleting admin user to preserve FK integrity.
+        assert updated_threaded.user_id == 1
+        assert deleted_leaf is None
 
 def test_delete_user_401(client):
     response = client.delete('/api/users/user/3')  # User ID 3 = "Another User"

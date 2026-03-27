@@ -7,13 +7,13 @@ import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
 @Component({
-  selector: 'app-admin-information',
+  selector: 'app-admin-devices',
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
-  templateUrl: './admin-information.component.html',
-  styleUrl: './admin-information.component.scss'
+  templateUrl: './admin-devices.component.html',
+  styleUrl: './admin-devices.component.scss'
 })
-export class AdminInformationComponent implements OnInit {
+export class AdminDevicesComponent implements OnInit {
   loading = true;
 
   // Navigation visibility

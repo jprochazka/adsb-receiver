@@ -14,16 +14,16 @@ def admin_headers(app):
     return {'Authorization': f'Bearer {token}'}
 
 
-class TestSystemRoutes:
+class TestDevicesRoutes:
     """Test system API routes"""
 
-    @patch('backend.routes.system.psutil.cpu_freq')
-    @patch('backend.routes.system.psutil.cpu_stats')
-    @patch('backend.routes.system.psutil.cpu_count')
-    @patch('backend.routes.system.psutil.getloadavg')
-    @patch('backend.routes.system.psutil.cpu_percent')
-    @patch('backend.routes.system.psutil.cpu_times')
-    @patch('backend.routes.system.psutil.cpu_times_percent')
+    @patch('backend.routes.devices.psutil.cpu_freq')
+    @patch('backend.routes.devices.psutil.cpu_stats')
+    @patch('backend.routes.devices.psutil.cpu_count')
+    @patch('backend.routes.devices.psutil.getloadavg')
+    @patch('backend.routes.devices.psutil.cpu_percent')
+    @patch('backend.routes.devices.psutil.cpu_times')
+    @patch('backend.routes.devices.psutil.cpu_times_percent')
     def test_cpu_endpoint(self, mock_cpu_times_percent, mock_cpu_times, 
                          mock_cpu_percent, mock_getloadavg, mock_cpu_count, 
                          mock_cpu_stats, mock_cpu_freq, client, admin_headers):
@@ -66,7 +66,7 @@ class TestSystemRoutes:
         }
         mock_cpu_times_percent.return_value = mock_times_percent
 
-        response = client.get('/api/system/cpu', headers=admin_headers)
+        response = client.get('/api/devices/cpu', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -83,8 +83,8 @@ class TestSystemRoutes:
         assert data['cpu_stats_soft_interupts_since_boot'] == 4567
         assert data['cpu_stats_system_calls_since_boot'] == 98765
 
-    @patch('backend.routes.system.psutil.virtual_memory')
-    @patch('backend.routes.system.psutil.swap_memory')
+    @patch('backend.routes.devices.psutil.virtual_memory')
+    @patch('backend.routes.devices.psutil.swap_memory')
     def test_memory_endpoint(self, mock_swap_memory, mock_virtual_memory, client, admin_headers):
         """Test memory information endpoint"""
         # Mock psutil responses with proper numeric values
@@ -105,7 +105,7 @@ class TestSystemRoutes:
         mock_swap.sout = 0
         mock_swap_memory.return_value = mock_swap
 
-        response = client.get('/api/system/memory', headers=admin_headers)
+        response = client.get('/api/devices/memory', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -119,9 +119,9 @@ class TestSystemRoutes:
         assert data['memory_swap_used'] == 1073741824
         assert data['memory_swap_free'] == 1073741824
 
-    @patch('backend.routes.system.psutil.disk_usage')
-    @patch('backend.routes.system.psutil.disk_io_counters')
-    @patch('backend.routes.system.psutil.disk_partitions')
+    @patch('backend.routes.devices.psutil.disk_usage')
+    @patch('backend.routes.devices.psutil.disk_io_counters')
+    @patch('backend.routes.devices.psutil.disk_partitions')
     def test_disk_endpoint(self, mock_disk_partitions, mock_disk_io_counters, mock_disk_usage, client, admin_headers):
         """Test disk information endpoint"""
         # Mock psutil responses
@@ -141,7 +141,7 @@ class TestSystemRoutes:
         
         mock_disk_partitions.return_value = []
 
-        response = client.get('/api/system/disk', headers=admin_headers)
+        response = client.get('/api/devices/disk', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -152,10 +152,10 @@ class TestSystemRoutes:
         assert data['disk_usage_percent'] == 50.0
         assert data['disk_io_read_count'] == 1000
 
-    @patch('backend.routes.system.psutil.net_connections')
-    @patch('backend.routes.system.psutil.net_if_addrs')
-    @patch('backend.routes.system.psutil.net_if_stats')
-    @patch('backend.routes.system.psutil.net_io_counters')
+    @patch('backend.routes.devices.psutil.net_connections')
+    @patch('backend.routes.devices.psutil.net_if_addrs')
+    @patch('backend.routes.devices.psutil.net_if_stats')
+    @patch('backend.routes.devices.psutil.net_io_counters')
     def test_network_endpoint(self, mock_net_io_counters, mock_net_if_stats, mock_net_if_addrs, mock_net_connections, client, admin_headers):
         """Test network information endpoint"""
         # Mock psutil responses
@@ -175,7 +175,7 @@ class TestSystemRoutes:
         mock_net_if_addrs.return_value = {}
         mock_net_if_stats.return_value = {}
 
-        response = client.get('/api/system/network', headers=admin_headers)
+        response = client.get('/api/devices/network', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -189,34 +189,14 @@ class TestSystemRoutes:
         assert data['network_io_dropped_in'] == 2
         assert data['network_io_dropped_out'] == 1
 
-    @patch('backend.routes.system.psutil.sensors_battery')
-    def test_sensors_endpoint(self, mock_sensors_battery, client, admin_headers):
-        """Test sensors information endpoint"""
-        # Mock sensor responses
-        mock_battery = MagicMock()
-        mock_battery.percent = 85.0
-        mock_battery.secsleft = 3600
-        mock_battery.power_plugged = True
-        mock_battery._asdict.return_value = {
-            'percent': 85.0, 'secsleft': 3600, 'power_plugged': True
-        }
-        mock_sensors_battery.return_value = mock_battery
-
-        response = client.get('/api/system/sensors', headers=admin_headers)
-        
-        assert response.status_code == 200
-        data = json.loads(response.data)
-        
-        assert 'sensors_battery' in data
-
-    @patch('backend.routes.system.psutil.boot_time')
-    @patch('backend.routes.system.psutil.users')
+    @patch('backend.routes.devices.psutil.boot_time')
+    @patch('backend.routes.devices.psutil.users')
     def test_other_endpoint(self, mock_users, mock_boot_time, client, admin_headers):
         """Test other system information endpoint"""
         mock_boot_time.return_value = 1640995200.0
         mock_users.return_value = []
 
-        response = client.get('/api/system/other', headers=admin_headers)
+        response = client.get('/api/devices/other', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -224,15 +204,15 @@ class TestSystemRoutes:
         assert data['other_boot_time'] == 1640995200.0
         assert data['other_users'] == []
 
-    @patch('backend.routes.system.config', {'database': {'use': 'SQLite'}})
-    @patch('backend.routes.system.os.path.getsize')
-    @patch('backend.routes.system.os.path.join')
+    @patch('backend.routes.devices.config', {'database': {'use': 'SQLite'}})
+    @patch('backend.routes.devices.os.path.getsize')
+    @patch('backend.routes.devices.os.path.join')
     def test_database_endpoint_sqlite(self, mock_path_join, mock_getsize, client, admin_headers):
         """Test database size endpoint for SQLite"""
         mock_path_join.return_value = '/test/path/adsbportal.sqlite3'
         mock_getsize.return_value = 1048576  # 1MB
 
-        response = client.get('/api/system/database', headers=admin_headers)
+        response = client.get('/api/devices/database', headers=admin_headers)
         
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -241,38 +221,41 @@ class TestSystemRoutes:
 
     def test_endpoints_with_psutil_errors(self, client, admin_headers):
         """Test system endpoints handle psutil errors gracefully"""
-        with patch('backend.routes.system.psutil.cpu_freq', side_effect=Exception("Mock error")):
-            response = client.get('/api/system/cpu', headers=admin_headers)
+        with patch('backend.routes.devices.psutil.cpu_freq', side_effect=Exception("Mock error")):
+            response = client.get('/api/devices/cpu', headers=admin_headers)
             assert response.status_code == 500
 
     # Integration tests merged from test_routes_system_integration.py
     def test_system_endpoints_exist(self, client):
-        """Test that all system endpoints require authentication"""
+        """Test that public system endpoints are accessible without authentication"""
         endpoints = [
-            '/api/system/cpu',
-            '/api/system/memory', 
-            '/api/system/disk',
-            '/api/system/network',
-            '/api/system/sensors',
-            '/api/system/other',
-            '/api/system/database'
+            '/api/devices/cpu',
+            '/api/devices/memory', 
+            '/api/devices/disk',
+            '/api/devices/network',
+            '/api/devices/other',
+            '/api/devices/database'
         ]
         
         for endpoint in endpoints:
             response = client.get(endpoint)
-            # Unauthenticated requests must be rejected
-            assert response.status_code == 401, f"Endpoint {endpoint} should require auth but returned {response.status_code}"
+            assert response.status_code != 401, f"Endpoint {endpoint} should be public but returned {response.status_code}"
+            assert response.status_code != 403, f"Endpoint {endpoint} should be public but returned {response.status_code}"
+
+    def test_flights_tables_endpoint_requires_auth(self, client):
+        """Test that admin-only system flight table stats still require authentication"""
+        response = client.get('/api/devices/flights-tables')
+        assert response.status_code == 401
 
     def test_system_endpoints_return_json(self, client):
         """Test that system endpoints return valid JSON when they work"""
         endpoints = [
-            '/api/system/cpu',
-            '/api/system/memory', 
-            '/api/system/disk',
-            '/api/system/network',
-            '/api/system/sensors',
-            '/api/system/other',
-            '/api/system/database'
+            '/api/devices/cpu',
+            '/api/devices/memory', 
+            '/api/devices/disk',
+            '/api/devices/network',
+            '/api/devices/other',
+            '/api/devices/database'
         ]
         
         for endpoint in endpoints:
@@ -288,7 +271,7 @@ class TestSystemRoutes:
 
     def test_cpu_endpoint_structure(self, client):
         """Test CPU endpoint returns expected structure when working"""
-        response = client.get('/api/system/cpu')
+        response = client.get('/api/devices/cpu')
         
         if response.status_code == 200:
             data = response.get_json()
@@ -307,7 +290,7 @@ class TestSystemRoutes:
 
     def test_memory_endpoint_structure(self, client):
         """Test memory endpoint returns expected structure when working"""
-        response = client.get('/api/system/memory')
+        response = client.get('/api/devices/memory')
         
         if response.status_code == 200:
             data = response.get_json()
@@ -324,7 +307,7 @@ class TestSystemRoutes:
 
     def test_network_endpoint_structure(self, client):
         """Test network endpoint returns expected structure when working"""
-        response = client.get('/api/system/network')
+        response = client.get('/api/devices/network')
         
         if response.status_code == 200:
             data = response.get_json()
@@ -342,7 +325,7 @@ class TestSystemRoutes:
 
     def test_disk_endpoint_structure(self, client):
         """Test disk endpoint returns expected structure when working"""
-        response = client.get('/api/system/disk')
+        response = client.get('/api/devices/disk')
         
         if response.status_code == 200:
             data = response.get_json()
@@ -358,7 +341,7 @@ class TestSystemRoutes:
 
     def test_other_endpoint_structure(self, client):
         """Test other endpoint returns expected structure when working"""
-        response = client.get('/api/system/other')
+        response = client.get('/api/devices/other')
         
         if response.status_code == 200:
             data = response.get_json()
@@ -371,7 +354,7 @@ class TestSystemRoutes:
 
     def test_database_endpoint_structure(self, client):
         """Test database endpoint returns expected structure when working"""
-        response = client.get('/api/system/database')
+        response = client.get('/api/devices/database')
         
         if response.status_code == 200:
             data = response.get_json()
@@ -380,36 +363,25 @@ class TestSystemRoutes:
             assert 'size' in data, "Missing 'size' key in database endpoint response"
             assert isinstance(data['size'], (int, float)), "Database size should be numeric"
 
-    def test_sensors_endpoint_structure(self, client):
-        """Test sensors endpoint returns expected structure when working"""
-        response = client.get('/api/system/sensors')
-        
-        if response.status_code == 200:
-            data = response.get_json()
-            
-            # Should have sensors_battery key
-            assert 'sensors_battery' in data, "Missing 'sensors_battery' key in sensors endpoint response"
-
     def test_system_error_handling(self, client):
         """Test that system endpoints handle errors gracefully"""
         # Test with non-existent endpoints
-        response = client.get('/api/system/nonexistent')
+        response = client.get('/api/devices/nonexistent')
         assert response.status_code == 404
         
         # Test with invalid methods
-        response = client.post('/api/system/cpu')
+        response = client.post('/api/devices/cpu')
         assert response.status_code == 405  # Method Not Allowed
 
     def test_cors_headers_consistency(self, client):
         """Test that all system endpoints have consistent CORS headers"""
         endpoints = [
-            '/api/system/cpu',
-            '/api/system/memory', 
-            '/api/system/disk',
-            '/api/system/network',
-            '/api/system/sensors',
-            '/api/system/other',
-            '/api/system/database'
+            '/api/devices/cpu',
+            '/api/devices/memory', 
+            '/api/devices/disk',
+            '/api/devices/network',
+            '/api/devices/other',
+            '/api/devices/database'
         ]
         
         for endpoint in endpoints:
@@ -422,13 +394,12 @@ class TestSystemRoutes:
     def test_response_content_type(self, client):
         """Test that system endpoints return correct content type"""
         endpoints = [
-            '/api/system/cpu',
-            '/api/system/memory', 
-            '/api/system/disk',
-            '/api/system/network',
-            '/api/system/sensors',
-            '/api/system/other',
-            '/api/system/database'
+            '/api/devices/cpu',
+            '/api/devices/memory', 
+            '/api/devices/disk',
+            '/api/devices/network',
+            '/api/devices/other',
+            '/api/devices/database'
         ]
         
         for endpoint in endpoints:
@@ -439,7 +410,7 @@ class TestSystemRoutes:
 
     def test_numeric_values_are_numeric(self, client):
         """Test that numeric values in responses are actually numeric"""
-        response = client.get('/api/system/memory')
+        response = client.get('/api/devices/memory')
         
         if response.status_code == 200:
             data = response.get_json()
@@ -456,7 +427,7 @@ class TestSystemRoutes:
 
     def test_list_values_are_lists(self, client):
         """Test that list values in responses are actually lists"""
-        response = client.get('/api/system/cpu')
+        response = client.get('/api/devices/cpu')
         
         if response.status_code == 200:
             data = response.get_json()

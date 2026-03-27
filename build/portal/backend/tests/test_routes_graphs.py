@@ -46,7 +46,7 @@ def test_get_dump978_graph_200(mock_fetch, client):
 @patch('backend.routes.graphs._fetch_rrd', side_effect=_fake_fetch)
 @patch('backend.routes.graphs._get_network_interface', return_value='eth0')
 def test_get_system_network_graph_200(mock_iface, mock_fetch, client):
-    response = client.get('/api/graphs/system/network?period=24h')
+    response = client.get('/api/graphs/devices/network?period=24h')
 
     assert response.status_code == 200
     data = response.get_json()

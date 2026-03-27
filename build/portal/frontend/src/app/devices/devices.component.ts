@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
+import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { DataService } from '../service/data.service';
@@ -16,16 +16,20 @@ const PERIODS = [
 ];
 
 @Component({
-  selector: 'app-receiver-information',
+  selector: 'app-devices',
   standalone: true,
-  imports: [SpinnerComponent, RrdChartComponent],
-  templateUrl: './receiver-information.component.html',
-  styleUrl: './receiver-information.component.scss'
+  imports: [CommonModule, DecimalPipe, DatePipe, SpinnerComponent, RrdChartComponent],
+  templateUrl: './devices.component.html',
+  styleUrl: './devices.component.scss'
 })
-export class ReceiverInformationComponent implements OnInit {
+export class DevicesComponent implements OnInit {
+  infoSystemEnabled = true;
+  infoGraphsEnabled = true;
+
+  // ---- Receiver Information ----
   periods = PERIODS;
   activePeriod = '24h';
-  loading = true;
+  receiverLoading = true;
   errorMessage = '';
 
   measurementRange = 'imperialNautical';
@@ -36,7 +40,7 @@ export class ReceiverInformationComponent implements OnInit {
   dump978GraphsEnabled = false;
   graphRefreshIntervalMs = 15000;
 
-  // ---- Chart configs (built after settings load) ----
+  // Chart configs (built after settings load)
   d1090MessageRate!: RrdChartConfig;
   d1090Aircraft!: RrdChartConfig;
   d1090Tracks!: RrdChartConfig;
@@ -62,9 +66,63 @@ export class ReceiverInformationComponent implements OnInit {
   sysDiskIops!: RrdChartConfig;
   sysDiskBandwidth!: RrdChartConfig;
 
+  // ---- System Information ----
+  systemLoading = true;
+  cpu: any;
+  memory: any;
+  disk: any;
+  network: any;
+  other: any;
+  database: any;
+
+  // Tab control
+  activeTab = 'receiver';
+
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
+    this.loadVisibilitySettings();
+  }
+
+  get showTabNavigation(): boolean {
+    return this.infoGraphsEnabled && this.infoSystemEnabled;
+  }
+
+  get hasVisibleTab(): boolean {
+    return this.infoGraphsEnabled || this.infoSystemEnabled;
+  }
+
+  private loadVisibilitySettings(): void {
+    forkJoin({
+      system: this.dataService.getSetting('info_system_enabled').pipe(catchError(() => of({ value: 'true' }))),
+      graphs: this.dataService.getSetting('info_graphs_enabled').pipe(catchError(() => of({ value: 'true' }))),
+    }).subscribe({
+      next: ({ system, graphs }) => {
+        this.infoSystemEnabled = system?.value !== 'false';
+        this.infoGraphsEnabled = graphs?.value !== 'false';
+        this.syncActiveTab();
+
+        if (this.infoGraphsEnabled) {
+          this.loadReceiverData();
+        } else {
+          this.receiverLoading = false;
+        }
+
+        if (this.infoSystemEnabled) {
+          this.loadSystemData();
+        } else {
+          this.systemLoading = false;
+        }
+      },
+      error: () => {
+        this.syncActiveTab();
+        this.loadReceiverData();
+        this.loadSystemData();
+      }
+    });
+  }
+
+  private loadReceiverData(): void {
     forkJoin({
       range: this.dataService.getSetting('graphs_measurement_range'),
       temp:  this.dataService.getSetting('graphs_measurement_temperature'),
@@ -82,12 +140,34 @@ export class ReceiverInformationComponent implements OnInit {
         this.dump1090GraphsEnabled  = d1090?.value !== 'false';
         this.dump978GraphsEnabled   = d978?.value  !== 'false';
         this.buildChartConfigs();
-        this.loading = false;
+        this.receiverLoading = false;
       },
       error: () => {
         this.errorMessage = 'Failed to load graph settings.';
-        this.loading = false;
+        this.receiverLoading = false;
       }
+    });
+  }
+
+  private loadSystemData(): void {
+    forkJoin({
+      cpu: this.dataService.getSystemCpu(),
+      memory: this.dataService.getSystemMemory(),
+      disk: this.dataService.getSystemDisk(),
+      network: this.dataService.getSystemNetwork(),
+      other: this.dataService.getSystemOther(),
+      database: this.dataService.getSystemDatabase()
+    }).subscribe({
+      next: ({ cpu, memory, disk, network, other, database }) => {
+        this.cpu = cpu;
+        this.memory = memory;
+        this.disk = disk;
+        this.network = network;
+        this.other = other;
+        this.database = database;
+        this.systemLoading = false;
+      },
+      error: () => { this.systemLoading = false; }
     });
   }
 
@@ -101,6 +181,41 @@ export class ReceiverInformationComponent implements OnInit {
 
   setPeriod(period: string): void {
     this.activePeriod = period;
+  }
+
+  setActiveTab(tab: string): void {
+    if ((tab === 'receiver' && !this.infoGraphsEnabled) || (tab === 'system' && !this.infoSystemEnabled)) {
+      this.syncActiveTab();
+      return;
+    }
+
+    this.activeTab = tab;
+  }
+
+  private syncActiveTab(): void {
+    if (this.infoGraphsEnabled) {
+      this.activeTab = 'receiver';
+      return;
+    }
+
+    if (this.infoSystemEnabled) {
+      this.activeTab = 'system';
+      return;
+    }
+
+    this.activeTab = '';
+  }
+
+  formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+  }
+
+  bootTime(): Date {
+    return new Date(this.other.other_boot_time * 1000);
   }
 
   private buildChartConfigs(): void {
@@ -224,31 +339,31 @@ export class ReceiverInformationComponent implements OnInit {
 
     // system
     this.sysCpu = {
-      decoder: 'system', metric: 'cpu', title: 'Overall CPU Utilization',
+      decoder: 'devices', metric: 'cpu', title: 'Overall CPU Utilization',
       yLabel: 'CPU %',
     };
     this.sysTemperature = {
-      decoder: 'system', metric: 'temperature', title: tempLabel,
+      decoder: 'devices', metric: 'temperature', title: tempLabel,
       yLabel: tempLabel, transform: tempTransform,
     };
     this.sysMemory = {
-      decoder: 'system', metric: 'memory', title: 'Memory Utilization',
+      decoder: 'devices', metric: 'memory', title: 'Memory Utilization',
       yLabel: 'Bytes', type: 'bar',
     };
     this.sysNetwork = {
-      decoder: 'system', metric: 'network', title: `Network Bandwidth (${this.networkInterface})`,
+      decoder: 'devices', metric: 'network', title: `Network Bandwidth (${this.networkInterface})`,
       yLabel: 'Bytes/sec',
     };
     this.sysDiskUsage = {
-      decoder: 'system', metric: 'disk-usage', title: 'Disk Usage (/)',
+      decoder: 'devices', metric: 'disk-usage', title: 'Disk Usage (/)',
       yLabel: 'Bytes', type: 'bar',
     };
     this.sysDiskIops = {
-      decoder: 'system', metric: 'disk-io-iops', title: 'Disk I/O — IOPS',
+      decoder: 'devices', metric: 'disk-io-iops', title: 'Disk I/O — IOPS',
       yLabel: 'IOPS',
     };
     this.sysDiskBandwidth = {
-      decoder: 'system', metric: 'disk-io-bandwidth', title: 'Disk I/O — Bandwidth',
+      decoder: 'devices', metric: 'disk-io-bandwidth', title: 'Disk I/O — Bandwidth',
       yLabel: 'Bytes/sec',
     };
   }

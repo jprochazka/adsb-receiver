@@ -2,10 +2,10 @@ import os
 import yaml
 
 from datetime import timedelta
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify, redirect, request
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, get_jwt, verify_jwt_in_request
 from flask_migrate import Migrate
 from flask_restx import Api
 from backend.jobs.dump1090_data_collection import dump1090_data_collection_job
@@ -13,15 +13,14 @@ from backend.jobs.maintenance import maintenance_job
 from backend.jobs.dump978_data_collection import dump978_data_collection_job
 from backend.jobs.rrd_data_collection import rrd_data_collection_job
 from backend.routes.graphs import graphs, graphs_ns
-from backend.routes.acars import acars, acars_flight_ns, acars_flights_ns, acars_messages_ns, acars_stations_ns
-from backend.routes.aircraft import aircraft, aircraft_ns
+from backend.routes.acars import acars, acars_ns
 from backend.routes.blog import blog, blog_ns
-from backend.routes.dump1090 import flights, flights_ns, flight_ns
-from backend.routes.dump978 import uat, uat_flights_ns, uat_flight_ns
-from backend.routes.links import links, links_ns, link_ns
-from backend.routes.notifications import notifications, notification_ns, notifications_ns
-from backend.routes.settings import settings, setting_ns, settings_ns
-from backend.routes.system import system, system_ns
+from backend.routes.dump1090 import flights, adsb_ns
+from backend.routes.dump978 import uat, uat_ns
+from backend.routes.links import links, links_ns
+from backend.routes.notifications import notifications, notifications_ns
+from backend.routes.settings import settings, setting_ns
+from backend.routes.devices import devices, devices_ns
 from backend.routes.tokens import tokens, auth_ns
 from backend.routes.users import users, users_ns
 from backend.models import db
@@ -69,23 +68,14 @@ def create_app(test_config=None):
     api.add_namespace(graphs_ns)
     api.add_namespace(auth_ns)
     api.add_namespace(users_ns)
-    api.add_namespace(aircraft_ns)
-    api.add_namespace(flight_ns)
-    api.add_namespace(flights_ns)
-    api.add_namespace(uat_flight_ns)
-    api.add_namespace(uat_flights_ns)
-    api.add_namespace(acars_flight_ns)
-    api.add_namespace(acars_flights_ns)
-    api.add_namespace(acars_messages_ns)
-    api.add_namespace(acars_stations_ns)
+    api.add_namespace(adsb_ns)
+    api.add_namespace(uat_ns)
+    api.add_namespace(acars_ns)
     api.add_namespace(blog_ns)
-    api.add_namespace(system_ns)
-    api.add_namespace(link_ns)
+    api.add_namespace(devices_ns)
     api.add_namespace(links_ns)
-    api.add_namespace(notification_ns)
     api.add_namespace(notifications_ns)
     api.add_namespace(setting_ns)
-    api.add_namespace(settings_ns)
 
     # Load database configuration from yaml only if SQLALCHEMY_DATABASE_URI is
     # not already set (e.g. passed directly via test_config).
@@ -134,16 +124,29 @@ def create_app(test_config=None):
     def missing_token_callback(error):
         return jsonify({'msg': 'Authorization token is required'}), 401
 
+    @app.before_request
+    def protect_scheduler_api():
+        if not request.path.startswith('/api/scheduler'):
+            return None
+        if request.method == 'OPTIONS':
+            return None
+
+        verify_jwt_in_request()
+        claims = get_jwt()
+        if claims.get('role') != 'Admin':
+            return jsonify({'msg': 'Admin access required'}), 403
+
+        return None
+
     app.register_blueprint(graphs)
     app.register_blueprint(acars)
-    app.register_blueprint(aircraft)
     app.register_blueprint(blog)
     app.register_blueprint(flights)
     app.register_blueprint(uat)
     app.register_blueprint(links)
     app.register_blueprint(notifications)
     app.register_blueprint(settings)
-    app.register_blueprint(system)
+    app.register_blueprint(devices)
     app.register_blueprint(tokens)
     app.register_blueprint(users)
 

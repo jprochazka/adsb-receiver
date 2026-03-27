@@ -6,7 +6,7 @@ from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Notification, Flight, Dump978Flight, Setting
-from backend.auth import require_admin
+from backend.auth import require_admin, require_user_or_admin
 from werkzeug.exceptions import HTTPException
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.exc import OperationalError
@@ -14,11 +14,10 @@ from sqlalchemy.exc import OperationalError
 notifications = Blueprint('notifications', __name__)
 
 # Create Flask-RESTX namespaces for notifications management
-notification_ns = Namespace('notification', description='Individual notification management')
 notifications_ns = Namespace('notifications', description='Notifications list management')
 
 # Define API models for documentation - shared across namespaces
-notification_model = notification_ns.model('Notification', {
+notification_model = notifications_ns.model('Notification', {
     'id': restx_fields.Integer(description='Notification ID'),
     'flight': restx_fields.String(description='Flight number/callsign to monitor')
 })
@@ -31,16 +30,17 @@ notifications_list_model = notifications_ns.model('NotificationsList', {
 })
 
 
-@notification_ns.route('/<string:flight>')
+@notifications_ns.route('/<string:flight>')
 class NotificationResource(Resource):
-    @notification_ns.response(201, 'Notification created successfully')
-    @notification_ns.response(409, 'Conflict - notification already exists')
-    @notification_ns.response(401, 'Unauthorized - authentication required')
-    @notification_ns.response(500, 'Internal server error')
-    @notification_ns.doc('create_notification', security='Bearer')
-    @require_admin()
+    @notifications_ns.response(201, 'Notification created successfully')
+    @notifications_ns.response(403, 'Forbidden')
+    @notifications_ns.response(409, 'Conflict - notification already exists')
+    @notifications_ns.response(401, 'Unauthorized - authentication required')
+    @notifications_ns.response(500, 'Internal server error')
+    @notifications_ns.doc('create_notification', security='Bearer')
+    @require_user_or_admin()
     def post(self, flight):
-        """Create a flight notification (Admin only)"""
+        """Create a flight notification (authenticated user or admin)"""
         try:
             # Check if notification already exists
             existing_notification = db.session.execute(select(Notification).filter_by(flight=flight)).scalar_one_or_none()
@@ -57,14 +57,15 @@ class NotificationResource(Resource):
             logging.error(f"Error encountered while trying to post notification for flight {flight}", exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
-    @notification_ns.response(204, 'Notification deleted successfully')
-    @notification_ns.response(404, 'Notification not found')
-    @notification_ns.response(401, 'Unauthorized - admin access required')
-    @notification_ns.response(500, 'Internal server error')
-    @notification_ns.doc('delete_notification', security='Bearer')
-    @require_admin()
+    @notifications_ns.response(204, 'Notification deleted successfully')
+    @notifications_ns.response(404, 'Notification not found')
+    @notifications_ns.response(401, 'Unauthorized - authentication required')
+    @notifications_ns.response(403, 'Forbidden')
+    @notifications_ns.response(500, 'Internal server error')
+    @notifications_ns.doc('delete_notification', security='Bearer')
+    @require_user_or_admin()
     def delete(self, flight):
-        """Delete a flight notification (Admin only)"""
+        """Delete a flight notification (authenticated user or admin)"""
         try:
             notification = db.session.execute(select(Notification).filter_by(flight=flight)).scalar_one_or_none()
             

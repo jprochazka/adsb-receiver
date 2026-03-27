@@ -1,0 +1,203 @@
+:host {
+	display: block;
+}
+
+.map-page {
+	position: fixed;
+	top: 56px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	#map {
+		width: 100%;
+		height: 100%;
+	}
+}
+
+$flyout-width: 270px;
+$flyout-tab:   28px;
+
+.flyout {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: $flyout-width;
+	z-index: 10;
+	display: flex;
+	flex-direction: row;
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+	&--closed {
+		transform: translateX(calc(-1 * (#{$flyout-width} - #{$flyout-tab})));
+	}
+}
+
+.flyout-panel {
+	flex: 1;
+	min-width: 0;
+	overflow-y: auto;
+	background: rgba(5, 8, 26, 0.92);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-right: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.flyout-tab {
+	flex-shrink: 0;
+	width: $flyout-tab;
+	border: none;
+	border-left: none;
+	background: rgba(5, 8, 26, 0.88);
+	border-top: 1px solid rgba(56, 189, 248, 0.15);
+	border-right: 1px solid rgba(56, 189, 248, 0.15);
+	border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+	border-radius: 0 6px 6px 0;
+	cursor: pointer;
+	color: #38bdf8;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-self: center;
+	height: 60px;
+}
+
+.flyout-chevron {
+	transition: transform 0.3s;
+}
+
+.flyout--closed .flyout-chevron {
+	transform: rotate(180deg);
+}
+
+.flyout-img {
+	position: relative;
+	height: 140px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+	background: linear-gradient(145deg, #070c20 0%, #0d1a38 100%);
+}
+
+.flyout-photo {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.flyout-type-badge {
+	position: absolute;
+	bottom: 0.4rem;
+	left: 0.4rem;
+	z-index: 2;
+	font-size: 0.65rem;
+}
+
+.flyout-photo-credit {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	font-size: 0.55rem;
+	color: rgba(255, 255, 255, 0.5);
+	background: rgba(0, 0, 0, 0.55);
+	padding: 0.1rem 0.35rem;
+}
+
+.flyout-img-icon {
+	width: 72px;
+	height: auto;
+	fill: #38bdf8;
+	opacity: 0.12;
+}
+
+.flyout-info {
+	padding: 1rem;
+}
+
+.flyout-callsign {
+	font-family: 'Rajdhani', sans-serif;
+	font-weight: 700;
+	font-size: 1.5rem;
+	letter-spacing: 0.12em;
+	color: #f8fafc;
+	margin-bottom: 0.75rem;
+}
+
+.flyout-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 0.5rem;
+	padding: 0.22rem 0;
+}
+
+.flyout-label {
+	font-size: 0.65rem;
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	color: #475569;
+}
+
+.flyout-value {
+	font-size: 0.8rem;
+	color: #cbd5e1;
+	text-align: right;
+
+	&.mono {
+		font-family: 'Courier New', monospace;
+		color: #38bdf8;
+	}
+}
+
+.flyout-hr {
+	border: none;
+	border-top: 1px solid rgba(56, 189, 248, 0.08);
+	margin: 0.55rem 0;
+}
+
+.flyout-section-label {
+	font-size: 0.6rem;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: #38bdf8;
+	margin-bottom: 0.15rem;
+}
+
+.flyout-select-wrap {
+	position: relative;
+	margin-top: 0.65rem;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.flyout-select {
+	flex: 1;
+	min-width: 0;
+	appearance: none;
+	-webkit-appearance: none;
+	background-color: #0d1829;
+	border: 1px solid rgba(56, 189, 248, 0.45);
+	border-radius: 0.3rem;
+	color: #e2e8f0;
+	font-family: 'Rajdhani', sans-serif;
+	font-size: 0.8rem;
+	padding: 0.35rem 0.6rem;
+}
+
+.flyout-select-swatch {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+
+.flyout-loading {
+	display: flex;
+	justify-content: center;
+	padding: 1rem;
+}

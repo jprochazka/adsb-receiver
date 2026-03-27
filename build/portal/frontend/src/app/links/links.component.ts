@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
 import { DataService } from '../service/data.service';
-import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
 @Component({
   selector: 'app-links',
   standalone: true,
-  imports: [SpinnerComponent],
+  imports: [],
   templateUrl: './links.component.html',
   styleUrl: './links.component.scss'
 })

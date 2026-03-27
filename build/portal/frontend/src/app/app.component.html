@@ -25,6 +25,11 @@
             <a class="nav-link" routerLink="/acars" routerLinkActive="active" ariaCurrentWhenActive="page">ACARS</a>
           </li>
         }
+        @if (infoNavEnabled && (infoSystemEnabled || infoGraphsEnabled)) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/devices" routerLinkActive="active" ariaCurrentWhenActive="page">Devices</a>
+          </li>
+        }
         @if (mapNavEnabled && anyMapEnabled) {
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Maps</a>
@@ -33,19 +38,6 @@
                 <li>
                   <a class="dropdown-item" [href]="link.href" [target]="link.external ? '_blank' : null">{{ link.label }}</a>
                 </li>
-              }
-            </ul>
-          </li>
-        }
-        @if (infoNavEnabled && (infoSystemEnabled || infoGraphsEnabled)) {
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Information</a>
-            <ul class="dropdown-menu">
-              @if (infoSystemEnabled) {
-                <li><a class="dropdown-item" routerLink="/system-information">System Information</a></li>
-              }
-              @if (infoGraphsEnabled) {
-                <li><a class="dropdown-item" routerLink="/receiver-information">Receiver Information</a></li>
               }
             </ul>
           </li>
@@ -59,13 +51,15 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" routerLink="/admin/maps">Maps Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
               <li><a class="dropdown-item" routerLink="/admin/flights">Flights Management</a></li>
               <li><a class="dropdown-item" routerLink="/admin/acars">ACARS Management</a></li>
-              <li><a class="dropdown-item" routerLink="/admin/information">Information Management</a></li>
-              <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/devices">Devices Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/maps">Maps Management</a></li>
               <li><a class="dropdown-item" routerLink="/admin/links">Links Management</a></li>
+              <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" routerLink="/admin/users">User Management</a></li>
+              <li><a class="dropdown-item" routerLink="/admin/scheduler">Scheduler Management</a></li>
             </ul>
           </li>
         }

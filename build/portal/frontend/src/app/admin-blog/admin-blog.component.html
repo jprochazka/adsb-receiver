@@ -32,7 +32,75 @@
       </li>
     </ul>
   </div>
-  <p class="text-muted small mb-4">All changes are saved automatically.</p>
+
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <a
+        href="#"
+        class="text-primary text-decoration-none fw-semibold"
+        (click)="$event.preventDefault(); showTaxonomySection = !showTaxonomySection"
+        [attr.aria-expanded]="showTaxonomySection"
+        aria-controls="taxonomy-management-body"
+        role="button">
+        {{ showTaxonomySection ? 'Hide' : 'Show' }} Categories &amp; Tags Management
+      </a>
+      <div class="d-flex align-items-center gap-2">
+        @if (managingTaxonomy) {
+          <span class="badge bg-info text-dark">Updating...</span>
+        }
+      </div>
+    </div>
+    @if (showTaxonomySection) {
+      <div class="card-body" id="taxonomy-management-body">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <h6 class="mb-2">Categories</h6>
+            @if (categoryCatalog.length === 0) {
+              <p class="text-muted mb-0">No categories in use yet.</p>
+            }
+            @if (categoryCatalog.length > 0) {
+              <ul class="list-group">
+                @for (category of categoryCatalog; track category.name) {
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="badge bg-secondary me-2">{{ category.name }}</span>
+                      <span class="text-muted small">Used in {{ category.count }} post{{ category.count === 1 ? '' : 's' }}</span>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-secondary" (click)="renameCategory(category.name)" [disabled]="managingTaxonomy || category.name === 'Uncategorized'">Rename</button>
+                      <button class="btn btn-outline-danger" (click)="deleteCategory(category.name)" [disabled]="managingTaxonomy || category.name === 'Uncategorized'">Delete</button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          <div class="col-lg-6">
+            <h6 class="mb-2">Tags</h6>
+            @if (tagCatalog.length === 0) {
+              <p class="text-muted mb-0">No tags in use yet.</p>
+            }
+            @if (tagCatalog.length > 0) {
+              <ul class="list-group">
+                @for (tag of tagCatalog; track tag.name) {
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="badge rounded-pill bg-primary me-2">{{ tag.name }}</span>
+                      <span class="text-muted small">Used in {{ tag.count }} post{{ tag.count === 1 ? '' : 's' }}</span>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-secondary" (click)="renameTag(tag.name)" [disabled]="managingTaxonomy">Rename</button>
+                      <button class="btn btn-outline-danger" (click)="deleteTag(tag.name)" [disabled]="managingTaxonomy">Delete</button>
+                    </div>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
 
   @if (successMessage) {
     <div class="alert alert-success alert-dismissible">
@@ -49,16 +117,16 @@
 
   <!-- Create form -->
   @if (showCreateForm) {
-    <div class="card mb-4">
+    <div class="card mb-4 border-warning">
       <div class="card-header fw-semibold">New Post</div>
       <div class="card-body">
         <div class="mb-3">
           <label class="form-label">Title</label>
-          <input type="text" class="form-control" [(ngModel)]="newTitle" placeholder="Post title">
+          <input type="text" class="form-control" [(ngModel)]="newTitle" placeholder="Post title" maxlength="255">
         </div>
         <div class="mb-3">
           <label class="form-label">Author</label>
-          <input type="text" class="form-control" [(ngModel)]="newAuthor" placeholder="Author name">
+          <input type="text" class="form-control" [(ngModel)]="newAuthor" placeholder="Author name" maxlength="100">
         </div>
         <div class="row mb-3">
           <div class="col-md-4">
@@ -81,10 +149,59 @@
           </div>
         </div>
         <div class="mb-3">
-          <label class="form-label">Content</label>
-          <textarea class="form-control" rows="8" [(ngModel)]="newContent" placeholder="Post content"></textarea>
+          <label class="form-label">Tags</label>
+          @if (tagCatalog.length > 0) {
+            <div class="mb-2 d-flex flex-wrap gap-1">
+              @for (tag of tagCatalog; track tag.name) {
+                <span class="badge rounded-pill"
+                      [class.bg-primary]="isNewTagSelected(tag.name)"
+                      [class.bg-secondary]="!isNewTagSelected(tag.name)"
+                      role="button"
+                      style="cursor:pointer;user-select:none;"
+                      (click)="toggleNewTag(tag.name)"
+                      (keydown.enter)="toggleNewTag(tag.name)"
+                      tabindex="0"
+                      [title]="(isNewTagSelected(tag.name) ? 'Remove' : 'Add') + ' tag: ' + tag.name">
+                  {{ tag.name }}
+                </span>
+              }
+            </div>
+          }
+          <div class="input-group">
+            <input type="text" class="form-control" [(ngModel)]="newTagInput"
+                   placeholder="New tag name"
+                   maxlength="50"
+                   (keydown.enter)="addNewTag()">
+            <button class="btn btn-outline-secondary" type="button" (click)="addNewTag()">Add</button>
+          </div>
+          @if (newTags.length > 0) {
+            <div class="mt-2 d-flex flex-wrap gap-1">
+              @for (tag of newTags; track tag) {
+                <span class="badge text-bg-primary rounded-pill">
+                  {{ tag }}
+                  <button type="button" class="border-0 bg-transparent p-0 ms-1 lh-1" style="color:inherit;font-size:0.85em;" (click)="toggleNewTag(tag)" aria-label="Remove tag">&#x2715;</button>
+                </span>
+              }
+            </div>
+          }
         </div>
-        <button class="btn btn-primary" (click)="createPost()" [disabled]="creating">
+        <div class="mb-3">
+          <label class="form-label">Category</label>
+          <select class="form-select" [(ngModel)]="newCategory">
+            @for (category of categoryCatalog; track category.name) {
+              <option [value]="category.name">{{ category.name }}</option>
+            }
+            <option value="__new__">— Add new category —</option>
+          </select>
+          @if (newCategory === '__new__') {
+            <input type="text" class="form-control mt-2" [(ngModel)]="newCategoryCustom" placeholder="New category name" maxlength="100">
+          }
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Content</label>
+          <textarea class="form-control" rows="8" [(ngModel)]="newContent" placeholder="Post content" maxlength="65535"></textarea>
+        </div>
+        <button class="btn btn-warning" (click)="createPost()" [disabled]="creating">
           {{ creating ? 'Saving...' : 'Create Post' }}
         </button>
       </div>
@@ -107,7 +224,7 @@
           <div class="card-body">
             <div class="mb-3">
               <label class="form-label">Title</label>
-              <input type="text" class="form-control" [(ngModel)]="editTitle">
+              <input type="text" class="form-control" [(ngModel)]="editTitle" maxlength="255">
             </div>
             <div class="row mb-3">
               <div class="col-md-4">
@@ -130,8 +247,57 @@
               </div>
             </div>
             <div class="mb-3">
+              <label class="form-label">Tags</label>
+              @if (tagCatalog.length > 0) {
+                <div class="mb-2 d-flex flex-wrap gap-1">
+                  @for (tag of tagCatalog; track tag.name) {
+                    <span class="badge rounded-pill"
+                          [class.bg-primary]="isEditTagSelected(tag.name)"
+                          [class.bg-secondary]="!isEditTagSelected(tag.name)"
+                          role="button"
+                          style="cursor:pointer;user-select:none;"
+                          (click)="toggleEditTag(tag.name)"
+                          (keydown.enter)="toggleEditTag(tag.name)"
+                          tabindex="0"
+                          [title]="(isEditTagSelected(tag.name) ? 'Remove' : 'Add') + ' tag: ' + tag.name">
+                      {{ tag.name }}
+                    </span>
+                  }
+                </div>
+              }
+              <div class="input-group">
+                <input type="text" class="form-control" [(ngModel)]="editTagInput"
+                       placeholder="New tag name"
+                       maxlength="50"
+                       (keydown.enter)="addEditTag()">
+                <button class="btn btn-outline-secondary" type="button" (click)="addEditTag()">Add</button>
+              </div>
+              @if (editTags.length > 0) {
+                <div class="mt-2 d-flex flex-wrap gap-1">
+                  @for (tag of editTags; track tag) {
+                    <span class="badge text-bg-primary rounded-pill">
+                      {{ tag }}
+                      <button type="button" class="border-0 bg-transparent p-0 ms-1 lh-1" style="color:inherit;font-size:0.85em;" (click)="toggleEditTag(tag)" aria-label="Remove tag">&#x2715;</button>
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Category</label>
+              <select class="form-select" [(ngModel)]="editCategory">
+                @for (category of categoryCatalog; track category.name) {
+                  <option [value]="category.name">{{ category.name }}</option>
+                }
+                <option value="__new__">— Add new category —</option>
+              </select>
+              @if (editCategory === '__new__') {
+                <input type="text" class="form-control mt-2" [(ngModel)]="editCategoryCustom" placeholder="New category name" maxlength="100">
+              }
+            </div>
+            <div class="mb-3">
               <label class="form-label">Content</label>
-              <textarea class="form-control" rows="8" [(ngModel)]="editContent"></textarea>
+              <textarea class="form-control" rows="8" [(ngModel)]="editContent" maxlength="65535"></textarea>
             </div>
             <button class="btn btn-warning" (click)="saveEdit()" [disabled]="saving">
               {{ saving ? 'Saving...' : 'Save Changes' }}
@@ -140,6 +306,7 @@
         </div>
       }
       <!-- Search -->
+      <p class="text-muted small mb-4">All changes are saved automatically.</p>
       <div class="mb-3">
         <input type="search" class="form-control" placeholder="Search by title or author…" [(ngModel)]="searchQuery">
       </div>
@@ -235,4 +402,5 @@
       }
     </div>
   }
+
 </div>

@@ -13,10 +13,9 @@ links = Blueprint('links', __name__)
 
 # Create Flask-RESTX namespaces for links management
 links_ns = Namespace('links', description='Links list operations')
-link_ns = Namespace('link', description='Individual link operations')
 
 # Define API models for documentation
-link_model = link_ns.model('Link', {
+link_model = links_ns.model('Link', {
     'id': restx_fields.Integer(description='Link ID'),
     'name': restx_fields.String(description='Link name'),
     'address': restx_fields.String(description='Link URL address'),
@@ -27,12 +26,12 @@ reorder_links_model = links_ns.model('ReorderLinks', {
     'ids': restx_fields.List(restx_fields.Integer, required=True, description='Link IDs in desired order')
 })
 
-create_link_model = link_ns.model('CreateLink', {
+create_link_model = links_ns.model('CreateLink', {
     'name': restx_fields.String(required=True, description='Link name', example='FlightAware'),
     'address': restx_fields.String(required=True, description='Link URL address', example='https://flightaware.com')
 })
 
-update_link_model = link_ns.model('UpdateLink', {
+update_link_model = links_ns.model('UpdateLink', {
     'name': restx_fields.String(required=True, description='Updated link name'),
     'address': restx_fields.String(required=True, description='Updated link URL address')
 })
@@ -58,43 +57,14 @@ class ReorderLinksRequestSchema(Schema):
     ids = fields.List(fields.Integer(), required=True)
         
 
-@link_ns.route('')
-class LinksResource(Resource):
-    @link_ns.expect(create_link_model)
-    @link_ns.response(201, 'Link created successfully')
-    @link_ns.response(400, 'Bad request - validation error')
-    @link_ns.response(401, 'Unauthorized - authentication required')
-    @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('create_link', security='Bearer')
-    @require_admin()
-    def post(self):
-        """Create a new link (Admin only)"""
-        try:
-            payload = CreateLinkRequestSchema().load(request.json)
-        except ValidationError as err:
-            return {'msg': 'Validation error', 'errors': err.messages}, 400
-
-        try:
-            new_link = Link(
-                name=payload['name'],
-                address=payload['address']
-            )
-            db.session.add(new_link)
-            db.session.commit()
-            return {'msg': 'Link created successfully'}, 201
-        except Exception as ex:
-            db.session.rollback()
-            logging.error(f"Error encountered while trying to post link", exc_info=ex)
-            return {'msg': 'Internal Server Error'}, 500
-
-
-@link_ns.route('/<int:link_id>')
+@links_ns.route('/<int:link_id>')
 class LinkResource(Resource):
-    @link_ns.marshal_with(link_model, code=200)
-    @link_ns.response(404, 'Link not found')
-    @link_ns.response(401, 'Unauthorized - authentication required')
-    @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('get_link', security='Bearer')
+    @links_ns.marshal_with(link_model, code=200)
+    @links_ns.response(404, 'Link not found')
+    @links_ns.response(401, 'Unauthorized - authentication required')
+    @links_ns.response(403, 'Forbidden - admin role required')
+    @links_ns.response(500, 'Internal server error')
+    @links_ns.doc('get_link', security='Bearer')
     @require_admin()
     def get(self, link_id):
         """Get link by ID (Admin only)"""
@@ -109,13 +79,14 @@ class LinkResource(Resource):
             logging.error(f"Error encountered while trying to get link id {link_id}", exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
-    @link_ns.expect(update_link_model)
-    @link_ns.response(204, 'Link updated successfully')
-    @link_ns.response(400, 'Bad request - validation error')
-    @link_ns.response(404, 'Link not found')
-    @link_ns.response(401, 'Unauthorized - authentication required')
-    @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('update_link', security='Bearer')
+    @links_ns.expect(update_link_model)
+    @links_ns.response(204, 'Link updated successfully')
+    @links_ns.response(400, 'Bad request - validation error')
+    @links_ns.response(404, 'Link not found')
+    @links_ns.response(401, 'Unauthorized - authentication required')
+    @links_ns.response(403, 'Forbidden - admin role required')
+    @links_ns.response(500, 'Internal server error')
+    @links_ns.doc('update_link', security='Bearer')
     @require_admin()
     def put(self, link_id):
         """Update link by ID (Admin only)"""
@@ -140,11 +111,12 @@ class LinkResource(Resource):
             logging.error(f"Error encountered while trying to put link id {link_id}", exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
-    @link_ns.response(204, 'Link deleted successfully')
-    @link_ns.response(404, 'Link not found')
-    @link_ns.response(401, 'Unauthorized - authentication required')
-    @link_ns.response(500, 'Internal server error')
-    @link_ns.doc('delete_link', security='Bearer')
+    @links_ns.response(204, 'Link deleted successfully')
+    @links_ns.response(404, 'Link not found')
+    @links_ns.response(401, 'Unauthorized - authentication required')
+    @links_ns.response(403, 'Forbidden - admin role required')
+    @links_ns.response(500, 'Internal server error')
+    @links_ns.doc('delete_link', security='Bearer')
     @require_admin()
     def delete(self, link_id):
         """Delete link by ID (Admin only)"""
@@ -165,6 +137,34 @@ class LinkResource(Resource):
 
 @links_ns.route('')
 class LinksListResource(Resource):
+    @links_ns.expect(create_link_model)
+    @links_ns.response(201, 'Link created successfully')
+    @links_ns.response(400, 'Bad request - validation error')
+    @links_ns.response(401, 'Unauthorized - authentication required')
+    @links_ns.response(403, 'Forbidden - admin role required')
+    @links_ns.response(500, 'Internal server error')
+    @links_ns.doc('create_link', security='Bearer')
+    @require_admin()
+    def post(self):
+        """Create a new link (Admin only)"""
+        try:
+            payload = CreateLinkRequestSchema().load(request.json)
+        except ValidationError as err:
+            return {'msg': 'Validation error', 'errors': err.messages}, 400
+
+        try:
+            new_link = Link(
+                name=payload['name'],
+                address=payload['address']
+            )
+            db.session.add(new_link)
+            db.session.commit()
+            return {'msg': 'Link created successfully'}, 201
+        except Exception as ex:
+            db.session.rollback()
+            logging.error(f"Error encountered while trying to post link", exc_info=ex)
+            return {'msg': 'Internal Server Error'}, 500
+
     @links_ns.marshal_with(links_list_model, code=200)
     @links_ns.response(400, 'Bad request - invalid offset or limit parameters')
     @links_ns.response(500, 'Internal server error')
@@ -208,6 +208,7 @@ class LinksReorderResource(Resource):
     @links_ns.response(204, 'Links reordered successfully')
     @links_ns.response(400, 'Bad request - validation error')
     @links_ns.response(401, 'Unauthorized - authentication required')
+    @links_ns.response(403, 'Forbidden - admin role required')
     @links_ns.response(500, 'Internal server error')
     @links_ns.doc('reorder_links', security='Bearer')
     @require_admin()

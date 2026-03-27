@@ -1,19 +1,16 @@
 import logging
 
-from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Setting
 from backend.auth import require_admin
-from werkzeug.exceptions import HTTPException
 from sqlalchemy import select
 
 settings = Blueprint('settings', __name__)
 
 # Create Flask-RESTX namespaces for settings management
 setting_ns = Namespace('setting', description='Individual setting management')
-settings_ns = Namespace('settings', description='Settings list management')
 
 # Define API models for documentation - shared across namespaces
 setting_model = setting_ns.model('Setting', {
@@ -26,11 +23,6 @@ update_setting_model = setting_ns.model('UpdateSetting', {
     'value': restx_fields.String(required=True, description='New setting value')
 })
 
-settings_list_model = settings_ns.model('SettingsList', {
-    'settings': restx_fields.List(restx_fields.Nested(setting_model))
-})
-
-
 class UpdateSettingRequestSchema(Schema):
     name = fields.String(required=True)
     value = fields.String(required=True)
@@ -42,7 +34,8 @@ class SettingResource(Resource):
     @setting_ns.response(200, 'Setting updated successfully')
     @setting_ns.response(400, 'Bad request - validation error')
     @setting_ns.response(404, 'Setting not found')
-    @setting_ns.response(401, 'Unauthorized - admin access required')
+    @setting_ns.response(401, 'Unauthorized - authentication required')
+    @setting_ns.response(403, 'Forbidden - admin role required')
     @setting_ns.response(500, 'Internal server error')
     @setting_ns.doc('update_setting', security='Bearer')
     @require_admin()
@@ -85,24 +78,6 @@ class SettingByNameResource(Resource):
             return setting.to_dict(), 200
         except Exception as ex:
             logging.error(f"Error encountered while trying to get setting named {name}", exc_info=ex)
-            return {'msg': 'Internal Server Error'}, 500
-
-
-@settings_ns.route('', strict_slashes=False)
-class SettingsListResource(Resource):
-    @settings_ns.response(200, 'Settings list retrieved successfully', [setting_model])
-    @settings_ns.response(401, 'Unauthorized - authentication required')
-    @settings_ns.response(500, 'Internal server error')
-    @settings_ns.doc('get_settings_list', security='Bearer')
-    @require_admin()
-    def get(self):
-        """Get all settings (Admin only)"""
-        try:
-            settings_result = db.session.execute(select(Setting).order_by(Setting.name))
-            settings_data = [setting.to_dict() for setting in settings_result.scalars()]
-            return settings_data, 200
-        except Exception as ex:
-            logging.error('Error encountered while trying to get settings', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
 

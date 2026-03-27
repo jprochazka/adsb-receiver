@@ -1,12 +1,3 @@
-// ── Fonts (self-hosted via fontsource) ───────────────────────────────────────
-@import '@fontsource/inter/400.css';
-@import '@fontsource/inter/500.css';
-@import '@fontsource/inter/600.css';
-@import '@fontsource/rajdhani/400.css';
-@import '@fontsource/rajdhani/500.css';
-@import '@fontsource/rajdhani/600.css';
-@import '@fontsource/rajdhani/700.css';
-
 // ── Typography ───────────────────────────────────────────────────────────────
 $font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 $headings-font-family:   'Rajdhani', sans-serif;
@@ -115,7 +106,92 @@ $border-radius-lg: 0.5rem;
 $border-radius-sm: 0.25rem;
 
 // ── Bootstrap import ──────────────────────────────────────────────────────────
-@import 'bootstrap/scss/bootstrap';
+@use 'bootstrap/scss/bootstrap' with (
+  $font-family-sans-serif: $font-family-sans-serif,
+  $headings-font-family: $headings-font-family,
+  $headings-font-weight: $headings-font-weight,
+  $primary: $primary,
+  $secondary: $secondary,
+  $success: $success,
+  $info: $info,
+  $warning: $warning,
+  $danger: $danger,
+  $light: $light,
+  $dark: $dark,
+  $body-bg: $body-bg,
+  $body-color: $body-color,
+  $headings-color: $headings-color,
+  $link-color: $link-color,
+  $link-hover-color: $link-hover-color,
+  $card-bg: $card-bg,
+  $card-border-color: $card-border-color,
+  $card-cap-bg: $card-cap-bg,
+  $card-cap-color: $card-cap-color,
+  $table-color: $table-color,
+  $table-bg: $table-bg,
+  $table-border-color: $table-border-color,
+  $table-striped-bg: $table-striped-bg,
+  $table-striped-color: $table-striped-color,
+  $table-hover-bg: $table-hover-bg,
+  $table-hover-color: $table-hover-color,
+  $input-bg: $input-bg,
+  $input-color: $input-color,
+  $input-border-color: $input-border-color,
+  $input-placeholder-color: $input-placeholder-color,
+  $input-focus-bg: $input-focus-bg,
+  $input-focus-border-color: $input-focus-border-color,
+  $input-focus-color: $input-focus-color,
+  $input-group-addon-bg: $input-group-addon-bg,
+  $input-group-addon-color: $input-group-addon-color,
+  $input-group-addon-border-color: $input-group-addon-border-color,
+  $form-select-bg: $form-select-bg,
+  $form-select-color: $form-select-color,
+  $form-select-border-color: $form-select-border-color,
+  $form-select-focus-border-color: $form-select-focus-border-color,
+  $dropdown-bg: $dropdown-bg,
+  $dropdown-border-color: $dropdown-border-color,
+  $dropdown-link-color: $dropdown-link-color,
+  $dropdown-link-hover-color: $dropdown-link-hover-color,
+  $dropdown-link-hover-bg: $dropdown-link-hover-bg,
+  $dropdown-link-active-bg: $dropdown-link-active-bg,
+  $dropdown-link-active-color: $dropdown-link-active-color,
+  $dropdown-divider-bg: $dropdown-divider-bg,
+  $navbar-dark-color: $navbar-dark-color,
+  $navbar-dark-hover-color: $navbar-dark-hover-color,
+  $navbar-dark-active-color: $navbar-dark-active-color,
+  $navbar-dark-brand-color: $navbar-dark-brand-color,
+  $navbar-dark-toggler-border-color: $navbar-dark-toggler-border-color,
+  $alert-bg-scale: $alert-bg-scale,
+  $alert-border-scale: $alert-border-scale,
+  $alert-color-scale: $alert-color-scale,
+  $pagination-bg: $pagination-bg,
+  $pagination-border-color: $pagination-border-color,
+  $pagination-color: $pagination-color,
+  $pagination-hover-bg: $pagination-hover-bg,
+  $pagination-hover-color: $pagination-hover-color,
+  $pagination-hover-border-color: $pagination-hover-border-color,
+  $pagination-active-bg: $pagination-active-bg,
+  $pagination-active-border-color: $pagination-active-border-color,
+  $pagination-disabled-bg: $pagination-disabled-bg,
+  $pagination-disabled-color: $pagination-disabled-color,
+  $pagination-disabled-border-color: $pagination-disabled-border-color,
+  $hr-color: $hr-color,
+  $hr-opacity: $hr-opacity,
+  $badge-font-size: $badge-font-size,
+  $badge-font-weight: $badge-font-weight,
+  $border-radius: $border-radius,
+  $border-radius-lg: $border-radius-lg,
+  $border-radius-sm: $border-radius-sm
+);
+
+// ── Fonts (self-hosted via fontsource) ───────────────────────────────────────
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/rajdhani/400.css';
+@import '@fontsource/rajdhani/500.css';
+@import '@fontsource/rajdhani/600.css';
+@import '@fontsource/rajdhani/700.css';
 
 // ═════════════════════════════════════════════════════════════════════════════
 // AVIATION THEME — custom overrides

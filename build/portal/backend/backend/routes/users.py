@@ -1,14 +1,15 @@
 import logging
+from datetime import datetime, timezone
 
 from flask import abort, Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from werkzeug.security import generate_password_hash
-from backend.models import db, User
+from backend.models import BlogComment, db, User
 from backend.auth import require_admin, require_user_or_admin, validate_role
 from werkzeug.exceptions import HTTPException
-from sqlalchemy import select, func
+from sqlalchemy import delete, select, func
 
 users = Blueprint('users', __name__)
 
@@ -80,7 +81,8 @@ class UserCreateResource(Resource):
     @users_ns.expect(create_user_model, validate=True)
     @users_ns.marshal_with(user_response_model, code=201)
     @users_ns.response(400, 'Invalid request data', error_model)
-    @users_ns.response(401, 'Unauthorized', error_model)
+    @users_ns.response(401, 'Unauthorized - authentication required', error_model)
+    @users_ns.response(403, 'Forbidden - admin role required', error_model)
     @users_ns.doc('create_user', security='Bearer')
     @require_admin()
     def post(self):
@@ -189,7 +191,7 @@ class UserResource(Resource):
     @users_ns.marshal_with(user_model, code=200)
     @users_ns.response(403, 'Access denied', error_model)
     @users_ns.response(404, 'User not found', error_model)
-    @users_ns.response(401, 'Unauthorized', error_model)
+    @users_ns.response(401, 'Unauthorized - authentication required', error_model)
     @users_ns.response(500, 'Internal server error', error_model)
     @users_ns.doc('get_user', security='Bearer')
     @require_user_or_admin()
@@ -223,7 +225,7 @@ class UserResource(Resource):
     @users_ns.response(400, 'Invalid request data', error_model)
     @users_ns.response(403, 'Access denied', error_model)
     @users_ns.response(404, 'User not found', error_model)
-    @users_ns.response(401, 'Unauthorized', error_model)
+    @users_ns.response(401, 'Unauthorized - authentication required', error_model)
     @users_ns.response(500, 'Internal server error', error_model)
     @users_ns.doc('update_user', security='Bearer')
     @require_user_or_admin()
@@ -287,19 +289,59 @@ class UserResource(Resource):
 
     @users_ns.response(200, 'User deleted successfully')
     @users_ns.response(404, 'User not found', error_model)
-    @users_ns.response(401, 'Unauthorized - admin access required', error_model)
+    @users_ns.response(401, 'Unauthorized - authentication required', error_model)
+    @users_ns.response(403, 'Forbidden - admin role required', error_model)
     @users_ns.response(500, 'Internal server error', error_model)
     @users_ns.doc('delete_user', security='Bearer')
     @require_admin()
     def delete(self, user_id):
         """Delete a user (Admin only)"""
+        from backend.auth import get_current_user
+
         try:
             user = db.session.get(User, user_id)
             
             if not user:
                 return {'msg': 'User not found'}, 404
+
+            current_user = get_current_user()
+
+            # Preserve comment threads when a user is removed by soft-deleting
+            # authored comments and reassigning ownership to another existing user.
+            replacement_user_id = None
+            if current_user and current_user.id != user_id:
+                replacement_user_id = current_user.id
+            else:
+                replacement_user = db.session.execute(
+                    select(User)
+                    .where(User.id != user_id)
+                    .order_by(User.id.asc())
+                ).scalar_one_or_none()
+                if replacement_user:
+                    replacement_user_id = replacement_user.id
+
+            authored_comments = db.session.execute(
+                select(BlogComment).where(BlogComment.user_id == user_id)
+            ).scalars().all()
+
+            comments_with_replies = [comment for comment in authored_comments if comment.replies]
+            comments_without_replies = [comment for comment in authored_comments if not comment.replies]
+
+            if comments_with_replies and replacement_user_id is None:
+                return {'msg': 'Cannot delete this user because no replacement user is available for authored comments'}, 400
+
+            # Leaf comments can be removed outright.
+            for comment in comments_without_replies:
+                db.session.delete(comment)
+
+            # Preserve threaded comments by soft-deleting and reassigning to a replacement user.
+            for comment in comments_with_replies:
+                if not comment.deleted:
+                    comment.deleted = True
+                    comment.deleted_at = datetime.now(timezone.utc)
+                comment.user_id = replacement_user_id
                 
-            db.session.delete(user)
+            db.session.execute(delete(User).where(User.id == user_id))
             db.session.commit()
             
             return {'msg': 'User deleted successfully'}, 200
@@ -320,8 +362,8 @@ class UserLockResource(Resource):
     @users_ns.expect(lock_model, validate=True)
     @users_ns.response(200, 'Lock state updated')
     @users_ns.response(400, 'Cannot lock your own account', error_model)
-    @users_ns.response(401, 'Unauthorized', error_model)
-    @users_ns.response(403, 'Admin access required', error_model)
+    @users_ns.response(401, 'Unauthorized - authentication required', error_model)
+    @users_ns.response(403, 'Forbidden - admin role required', error_model)
     @users_ns.response(404, 'User not found', error_model)
     @users_ns.response(500, 'Internal server error', error_model)
     @users_ns.doc('lock_user', security='Bearer')
@@ -354,7 +396,9 @@ class UserLockResource(Resource):
 class UsersListResource(Resource):
     @users_ns.marshal_with(users_list_model, code=200)
     @users_ns.response(400, 'Invalid parameters', error_model)
-    @users_ns.response(401, 'Unauthorized', error_model)
+    @users_ns.response(401, 'Unauthorized - authentication required', error_model)
+    @users_ns.response(403, 'Forbidden - admin role required', error_model)
+    @users_ns.response(500, 'Internal server error', error_model)
     @users_ns.doc('list_users', security='Bearer', 
                   params={
                       'offset': {'description': 'Pagination offset', 'type': 'integer', 'default': 0},

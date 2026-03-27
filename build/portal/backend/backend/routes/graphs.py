@@ -296,19 +296,19 @@ class Dump978GraphResource(Resource):
 
 
 # ---------------------------------------------------------------------------
-# Routes — system
+# Routes — devices
 # ---------------------------------------------------------------------------
 
-@graphs_ns.route('/system/<string:metric>')
+@graphs_ns.route('/devices/<string:metric>')
 @graphs_ns.param('metric', 'Chart metric: cpu | disk-usage | disk-io-iops | disk-io-bandwidth | network | memory | temperature')
-class SystemGraphResource(Resource):
+class DevicesGraphResource(Resource):
     @graphs_ns.param('period', 'Time period: 1h | 6h | 24h | 2d | 7d | 30d', _in='query')
     @graphs_ns.response(200, 'Success', graph_response_model)
     @graphs_ns.response(400, 'Invalid period')
     @graphs_ns.response(404, 'Unknown metric')
-    @graphs_ns.doc('get_system_graph')
+    @graphs_ns.doc('get_devices_graph')
     def get(self, metric):
-        """Get system chart data from RRD"""
+        """Get devices chart data from RRD"""
         period = request.args.get('period', '24h')
         if period not in VALID_PERIODS:
             abort(400, f'Invalid period. Valid values: {", ".join(sorted(VALID_PERIODS))}')
@@ -323,6 +323,6 @@ class SystemGraphResource(Resource):
         elif metric in SYSTEM_METRICS:
             series = _metric_to_series(SYSTEM_METRICS[metric])
         else:
-            abort(404, f'Unknown system metric: {metric}')
+            abort(404, f'Unknown devices metric: {metric}')
 
         return jsonify(_build_chart_response(series, period))

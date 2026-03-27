@@ -1,13 +1,48 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
+
 import { AcarsComponent } from './acars.component';
+import { DataService } from '../service/data.service';
 
 describe('AcarsComponent', () => {
   let component: AcarsComponent;
   let fixture: ComponentFixture<AcarsComponent>;
 
+  const dataServiceMock = {
+    getAcarsFlightsCount: jasmine.createSpy('getAcarsFlightsCount').and.returnValue(of({ flights: 0 })),
+    getAcarsFlights: jasmine.createSpy('getAcarsFlights').and.returnValue(of({ flights: [] })),
+    getAcarsFlightMessages: jasmine.createSpy('getAcarsFlightMessages').and.returnValue(of({ messages: [], total: 0 })),
+  };
+
   beforeEach(async () => {
+    dataServiceMock.getAcarsFlightsCount.calls.reset();
+    dataServiceMock.getAcarsFlightsCount.and.returnValue(of({ flights: 2 }));
+    dataServiceMock.getAcarsFlights.calls.reset();
+    dataServiceMock.getAcarsFlights.and.returnValue(of({
+      flights: [
+        { id: 1, flight_number: 'AAL123', registration: 'N123AA' },
+        { id: 2, flight_number: 'DAL456', registration: 'N456DL' },
+      ],
+    }));
+    dataServiceMock.getAcarsFlightMessages.calls.reset();
+    dataServiceMock.getAcarsFlightMessages.and.returnValue(of({
+      messages: [{ id: 99, text: 'HELLO' }],
+      total: 1,
+    }));
+
     await TestBed.configureTestingModule({
-      imports: [AcarsComponent]
+      imports: [AcarsComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            paramMap: of(convertToParamMap({})),
+          },
+        },
+        { provide: DataService, useValue: dataServiceMock },
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AcarsComponent);
@@ -17,5 +52,33 @@ describe('AcarsComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should load flights on init', () => {
+    expect(dataServiceMock.getAcarsFlightsCount).toHaveBeenCalled();
+    expect(dataServiceMock.getAcarsFlights).toHaveBeenCalledWith(0, 50);
+    expect(component.totalFlights).toBe(2);
+    expect(component.flights.length).toBe(2);
+    expect(component.loading).toBeFalse();
+  });
+
+  it('should filter flights by query', () => {
+    component.filterQuery = 'n123';
+
+    expect(component.filteredFlights.length).toBe(1);
+    expect(component.filteredFlights[0].flight_number).toBe('AAL123');
+  });
+
+  it('should load and collapse messages for a selected flight', () => {
+    component.toggleMessages({ id: 1 });
+
+    expect(component.expandedFlightId).toBe(1);
+    expect(dataServiceMock.getAcarsFlightMessages).toHaveBeenCalledWith(1, 0, 25);
+    expect(component.messages.length).toBe(1);
+
+    component.toggleMessages({ id: 1 });
+
+    expect(component.expandedFlightId).toBeNull();
+    expect(component.messages.length).toBe(0);
   });
 });

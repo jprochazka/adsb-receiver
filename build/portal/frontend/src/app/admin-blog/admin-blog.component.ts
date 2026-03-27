@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { catchError, of } from 'rxjs';
+import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
@@ -76,11 +76,17 @@ export class AdminBlogComponent implements OnInit {
   // Create form state
   showCreateForm = false;
   creating = false;
+  managingTaxonomy = false;
+  showTaxonomySection = false;
   newTitle = '';
   newAuthor = '';
   newContent = '';
   newDate = this.todayIso();
   newVisible = true;
+  newTags: string[] = [];
+  newTagInput = '';
+  newCategory = 'Uncategorized';
+  newCategoryCustom = '';
 
   // Edit form state
   editingPost: any = null;
@@ -88,9 +94,98 @@ export class AdminBlogComponent implements OnInit {
   editContent = '';
   editDate = '';
   editVisible = true;
+  editTags: string[] = [];
+  editTagInput = '';
+  editCategory = '';
+  editCategoryCustom = '';
   saving = false;
 
   constructor(private dataService: DataService) {}
+
+  get tagCatalog(): Array<{ name: string; count: number }> {
+    const counts = new Map<string, { name: string; count: number }>();
+    for (const post of this.allPosts) {
+      for (const rawTag of this.getPostTags(post)) {
+        const tag = rawTag.trim();
+        if (!tag) continue;
+        const key = tag.toLowerCase();
+        const existing = counts.get(key);
+        if (existing) {
+          existing.count += 1;
+          continue;
+        }
+        counts.set(key, { name: tag, count: 1 });
+      }
+    }
+    return Array.from(counts.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  toggleNewTag(tag: string): void {
+    const idx = this.newTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
+    if (idx >= 0) this.newTags.splice(idx, 1);
+    else this.newTags = this.deduplicateTags([...this.newTags, tag]);
+  }
+
+  addNewTag(): void {
+    const tag = this.newTagInput.trim();
+    if (!tag) return;
+    this.newTags = this.deduplicateTags([...this.newTags, tag]);
+    this.newTagInput = '';
+  }
+
+  toggleEditTag(tag: string): void {
+    const idx = this.editTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
+    if (idx >= 0) this.editTags.splice(idx, 1);
+    else this.editTags = this.deduplicateTags([...this.editTags, tag]);
+  }
+
+  addEditTag(): void {
+    const tag = this.editTagInput.trim();
+    if (!tag) return;
+    this.editTags = this.deduplicateTags([...this.editTags, tag]);
+    this.editTagInput = '';
+  }
+
+  isNewTagSelected(tag: string): boolean {
+    return this.newTags.some(t => t.toLowerCase() === tag.toLowerCase());
+  }
+
+  isEditTagSelected(tag: string): boolean {
+    return this.editTags.some(t => t.toLowerCase() === tag.toLowerCase());
+  }
+
+  /** Returns the category to actually submit for the create form. */
+  get resolvedNewCategory(): string {
+    if (this.newCategory === '__new__') {
+      return this.newCategoryCustom.trim() || 'Uncategorized';
+    }
+    return this.newCategory || 'Uncategorized';
+  }
+
+  /** Returns the category to actually submit for the edit form. */
+  get resolvedEditCategory(): string {
+    if (this.editCategory === '__new__') {
+      return this.editCategoryCustom.trim() || 'Uncategorized';
+    }
+    return this.editCategory || 'Uncategorized';
+  }
+
+  get categoryCatalog(): Array<{ name: string; count: number }> {
+    const counts = new Map<string, { name: string; count: number }>();
+    // Seed Uncategorized at 0 so it always appears
+    counts.set('uncategorized', { name: 'Uncategorized', count: 0 });
+    for (const post of this.allPosts) {
+      const category = (post.category ?? '').trim() || 'Uncategorized';
+      const key = category.toLowerCase();
+      const existing = counts.get(key);
+      if (existing) {
+        existing.count += 1;
+        continue;
+      }
+      counts.set(key, { name: category, count: 1 });
+    }
+    return Array.from(counts.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
 
   ngOnInit() {
     this.loadNavSetting();
@@ -131,6 +226,69 @@ export class AdminBlogComponent implements OnInit {
     });
   }
 
+  renameTag(currentTag: string) {
+    const nextTag = prompt(`Rename tag "${currentTag}" to:`, currentTag)?.trim() ?? '';
+    if (!nextTag || nextTag === currentTag) return;
+    const affectedPosts = this.allPosts.filter(post => this.getPostTags(post).some(t => t.toLowerCase() === currentTag.toLowerCase()));
+    if (affectedPosts.length === 0) return;
+
+    this.applyBulkPostUpdates(
+      affectedPosts,
+      (post) => {
+        const tags = this.getPostTags(post).map(tag =>
+          tag.toLowerCase() === currentTag.toLowerCase() ? nextTag : tag
+        );
+        return { tags: this.deduplicateTags(tags) };
+      },
+      `Tag "${currentTag}" renamed to "${nextTag}".`,
+      'Failed to rename tag.'
+    );
+  }
+
+  deleteTag(tagToDelete: string) {
+    if (!confirm(`Delete tag "${tagToDelete}" from all posts?`)) return;
+    const affectedPosts = this.allPosts.filter(post => this.getPostTags(post).some(t => t.toLowerCase() === tagToDelete.toLowerCase()));
+    if (affectedPosts.length === 0) return;
+
+    this.applyBulkPostUpdates(
+      affectedPosts,
+      (post) => ({
+        tags: this.getPostTags(post).filter(tag => tag.toLowerCase() !== tagToDelete.toLowerCase())
+      }),
+      `Tag "${tagToDelete}" removed from ${affectedPosts.length} post${affectedPosts.length === 1 ? '' : 's'}.`,
+      'Failed to delete tag.'
+    );
+  }
+
+  renameCategory(currentCategory: string) {
+    if (currentCategory.toLowerCase() === 'uncategorized') return;
+    const nextCategory = prompt(`Rename category "${currentCategory}" to:`, currentCategory)?.trim() ?? '';
+    if (!nextCategory || nextCategory === currentCategory) return;
+    const affectedPosts = this.allPosts.filter(post => (post.category ?? '').trim().toLowerCase() === currentCategory.toLowerCase());
+    if (affectedPosts.length === 0) return;
+
+    this.applyBulkPostUpdates(
+      affectedPosts,
+      () => ({ category: nextCategory }),
+      `Category "${currentCategory}" renamed to "${nextCategory}".`,
+      'Failed to rename category.'
+    );
+  }
+
+  deleteCategory(categoryToDelete: string) {
+    if (categoryToDelete.toLowerCase() === 'uncategorized') return;
+    if (!confirm(`Remove category "${categoryToDelete}" from all posts? They will be moved to Uncategorized.`)) return;
+    const affectedPosts = this.allPosts.filter(post => (post.category ?? '').trim().toLowerCase() === categoryToDelete.toLowerCase());
+    if (affectedPosts.length === 0) return;
+
+    this.applyBulkPostUpdates(
+      affectedPosts,
+      () => ({ category: 'Uncategorized' }),
+      `Category "${categoryToDelete}" removed from ${affectedPosts.length} post${affectedPosts.length === 1 ? '' : 's'}. Posts moved to Uncategorized.`,
+      'Failed to delete category.'
+    );
+  }
+
   switchTab(tab: 'all' | 'published' | 'draft' | 'scheduled') {
     this.activeTab = tab;
     this.allPage = 1; this.publishedPage = 1; this.draftPage = 1; this.scheduledPage = 1;
@@ -159,6 +317,10 @@ export class AdminBlogComponent implements OnInit {
     this.newContent = '';
     this.newDate = this.todayIso();
     this.newVisible = true;
+    this.newTags = [];
+    this.newTagInput = '';
+    this.newCategory = 'Uncategorized';
+    this.newCategoryCustom = '';
     this.successMessage = '';
     this.errorMessage = '';
   }
@@ -175,7 +337,9 @@ export class AdminBlogComponent implements OnInit {
       author: this.newAuthor.trim(),
       content: this.newContent.trim(),
       date: this.newDate,
-      visible: this.newVisible
+      visible: this.newVisible,
+      tags: this.deduplicateTags(this.newTags),
+      category: this.resolvedNewCategory
     }).subscribe({
       next: () => {
         this.creating = false;
@@ -196,6 +360,10 @@ export class AdminBlogComponent implements OnInit {
     this.editContent = post.content;
     this.editDate = post.date;
     this.editVisible = post.visible;
+    this.editTags = Array.isArray(post.tags) ? [...post.tags] : [];
+    this.editTagInput = '';
+    this.editCategory = post.category ?? '';
+    this.editCategoryCustom = '';
     this.successMessage = '';
     this.errorMessage = '';
     this.showCreateForm = false;
@@ -216,7 +384,9 @@ export class AdminBlogComponent implements OnInit {
       title: this.editTitle.trim(),
       content: this.editContent.trim(),
       date: this.editDate,
-      visible: this.editVisible
+      visible: this.editVisible,
+      tags: this.deduplicateTags(this.editTags),
+      category: this.resolvedEditCategory
     }).subscribe({
       next: () => {
         this.saving = false;
@@ -244,5 +414,62 @@ export class AdminBlogComponent implements OnInit {
         this.errorMessage = 'Failed to delete blog post.';
       }
     });
+  }
+
+  private getPostTags(post: any): string[] {
+    if (!Array.isArray(post?.tags)) return [];
+    return post.tags
+      .map((tag: string) => (tag ?? '').trim())
+      .filter((tag: string) => !!tag);
+  }
+
+  private deduplicateTags(tags: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const rawTag of tags) {
+      const tag = rawTag.trim();
+      if (!tag) continue;
+      const key = tag.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(tag);
+    }
+    return result;
+  }
+
+  private applyBulkPostUpdates(
+    posts: any[],
+    mapper: (post: any) => { tags?: string[]; category?: string },
+    successMessage: string,
+    failureMessage: string
+  ) {
+    if (this.managingTaxonomy || posts.length === 0) return;
+
+    this.managingTaxonomy = true;
+    this.errorMessage = '';
+
+    const updates = posts.map(post => {
+      const mapped = mapper(post);
+      return this.dataService.updateBlogPost(post.id, {
+        title: post.title,
+        content: post.content,
+        date: post.date,
+        visible: post.visible,
+        tags: mapped.tags ?? this.getPostTags(post),
+        category: mapped.category ?? (post.category ?? '').trim(),
+      });
+    });
+
+    forkJoin(updates)
+      .pipe(finalize(() => { this.managingTaxonomy = false; }))
+      .subscribe({
+        next: () => {
+          this.successMessage = successMessage;
+          this.loadPosts();
+        },
+        error: () => {
+          this.errorMessage = failureMessage;
+        }
+      });
   }
 }

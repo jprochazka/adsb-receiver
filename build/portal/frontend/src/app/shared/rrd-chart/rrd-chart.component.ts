@@ -178,7 +178,10 @@ export class RrdChartComponent implements AfterViewInit, OnChanges, OnDestroy {
         scales: {
           x: {
             ticks: { maxTicksLimit: 8, font: { size: 10 } },
-            grid: { color: 'rgba(0,0,0,0.05)' },
+            grid: {
+              color: 'rgba(0,0,0,0.22)',
+              lineWidth: 1.25,
+            },
           },
           y: {
             title: {
@@ -187,7 +190,10 @@ export class RrdChartComponent implements AfterViewInit, OnChanges, OnDestroy {
               font: { size: 11 },
             },
             ticks: { font: { size: 10 } },
-            grid: { color: 'rgba(0,0,0,0.05)' },
+            grid: {
+              color: 'rgba(0,0,0,0.22)',
+              lineWidth: 1.25,
+            },
           },
         },
       },

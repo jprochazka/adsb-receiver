@@ -1,6 +1,6 @@
 from tests.conftest import create_admin_token
 
-# POST /link
+# POST /links
 
 def test_post_link_200(client, app):
     with app.app_context():
@@ -12,7 +12,7 @@ def test_post_link_200(client, app):
             'name': 'Link Four', 
             'address': 'https://adsbportal.com/four'
         }
-        response = client.post('/api/link', headers=request_headers, json=request_json)
+        response = client.post('/api/links', headers=request_headers, json=request_json)
         assert response.status_code == 201
 
 def test_post_link_401(client):
@@ -20,7 +20,7 @@ def test_post_link_401(client):
         'name': 'Link Four', 
         'address': 'https://adsbportal.com/four'
     }
-    response = client.post('/api/link', json=request_json)
+    response = client.post('/api/links', json=request_json)
     assert response.status_code == 401
 
 def test_post_link_400_missing_name(client, app):
@@ -32,7 +32,7 @@ def test_post_link_400_missing_name(client, app):
         request_json = {
             'address': 'https://adsbportal.com/four'
         }
-        response = client.post('/api/link', headers=request_headers, json=request_json)
+        response = client.post('/api/links', headers=request_headers, json=request_json)
         assert response.status_code == 400
 
 def test_post_link_400_missing_address(client, app):
@@ -44,10 +44,10 @@ def test_post_link_400_missing_address(client, app):
         request_json = {
             'name': 'Link Four',
         }
-        response = client.post('/api/link', headers=request_headers, json=request_json)
+        response = client.post('/api/links', headers=request_headers, json=request_json)
         assert response.status_code == 400
 
-# DELETE /link/{id}
+# DELETE /links/{id}
 
 def test_delete_link_204(client, app):
     with app.app_context():
@@ -55,11 +55,11 @@ def test_delete_link_204(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
-        response = client.delete('/api/link/1', headers=request_headers)
+        response = client.delete('/api/links/1', headers=request_headers)
         assert response.status_code == 204
 
 def test_delete_link_401(client):
-    response = client.delete('/api/link/1')
+    response = client.delete('/api/links/1')
     assert response.status_code == 401
 
 def test_delete_link_404(client, app):
@@ -68,10 +68,10 @@ def test_delete_link_404(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
-        response = client.delete('/api/link/4', headers=request_headers)
+        response = client.delete('/api/links/4', headers=request_headers)
         assert response.status_code == 404
 
-# GET /link/{id}
+# GET /links/{id}
 
 def test_get_link_200(client, app):
     with app.app_context():
@@ -79,13 +79,13 @@ def test_get_link_200(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
-        response = client.get('/api/link/2', headers=request_headers)
+        response = client.get('/api/links/2', headers=request_headers)
         assert response.status_code == 200
         assert response.json['id'] == 2
         assert response.json['address'] == "https://adsbportal.com/two"
 
 def test_get_link_401(client, app):
-    response = client.get('/api/link/2')
+    response = client.get('/api/links/2')
     assert response.status_code == 401
 
 def test_get_user_404(client, app):
@@ -94,10 +94,10 @@ def test_get_user_404(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
-        response = client.get('/api/link/4', headers=request_headers)
+        response = client.get('/api/links/4', headers=request_headers)
         assert response.status_code == 404
 
-# PUT /link/{id}
+# PUT /links/{id}
 
 def test_put_link_204(client, app):
     with app.app_context():
@@ -109,7 +109,7 @@ def test_put_link_204(client, app):
             'name': 'Link Three Updated',
             'address': 'https://adsbportal.com/three-updated'
         }
-        response = client.put('/api/link/3', headers=request_headers, json=request_json)
+        response = client.put('/api/links/3', headers=request_headers, json=request_json)
     assert response.status_code == 204
 
 def test_put_link_401(client):
@@ -117,7 +117,7 @@ def test_put_link_401(client):
         'name': 'Link Three Updated',
         'address': 'https://adsbportal.com/three-updated'
     }
-    response = client.put('/api/link/3', json=request_json)
+    response = client.put('/api/links/3', json=request_json)
     assert response.status_code == 401
 
 def test_put_link_400_missing_name(client, app):
@@ -129,7 +129,7 @@ def test_put_link_400_missing_name(client, app):
         request_json = {
             'address': 'https://adsbportal.com/three-updated'
         }
-        response = client.put('/api/link/3', headers=request_headers, json=request_json)
+        response = client.put('/api/links/3', headers=request_headers, json=request_json)
         assert response.status_code == 400
 
 def test_put_link_400_missing_address(client, app):
@@ -141,7 +141,7 @@ def test_put_link_400_missing_address(client, app):
         request_json = {
             'name': 'Link Three Updated'
         }
-        response = client.put('/api/link/3', headers=request_headers, json=request_json)
+        response = client.put('/api/links/3', headers=request_headers, json=request_json)
         assert response.status_code == 400
 
 def test_put_link_404(client, app):
@@ -154,7 +154,7 @@ def test_put_link_404(client, app):
             'name': 'Link Four Updated', 
             'address': 'https://adsbportal.com/four-updated'
         }
-        response = client.put('/api/link/4', headers=request_headers, json=request_json)
+        response = client.put('/api/links/4', headers=request_headers, json=request_json)
         assert response.status_code == 404
 
 # GET /links

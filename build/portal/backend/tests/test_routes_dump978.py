@@ -64,11 +64,13 @@ def test_get_uat_flights_200(client):
     assert response.json['limit'] == 50
     assert response.json['count'] == 2
     assert response.json['flights'][0]['id'] == 2
+    assert response.json['flights'][0]['icao'] == 'uicao02'
     assert response.json['flights'][0]['aircraft'] == 2
     assert response.json['flights'][0]['flight'] == 'UAT0002'
     assert response.json['flights'][0]['first_seen'] == '2024-07-17 02:20:22'
     assert response.json['flights'][0]['last_seen'] == '2024-06-17 02:22:02'
     assert response.json['flights'][1]['id'] == 1
+    assert response.json['flights'][1]['icao'] == 'uicao01'
     assert response.json['flights'][1]['aircraft'] == 1
     assert response.json['flights'][1]['flight'] == 'UAT0001'
     assert response.json['flights'][1]['first_seen'] == '2024-07-17 01:10:11'
@@ -131,6 +133,13 @@ def test_get_uat_flights_search_200_single_result(client):
     assert response.status_code == 200
     assert response.json['count'] == 1
     assert response.json['flights'][0]['flight'] == 'UAT0001'
+
+def test_get_uat_flights_search_200_single_result_by_icao(client):
+    response = client.get('/api/uat/flights/search?q=uicao01')
+    assert response.status_code == 200
+    assert response.json['count'] == 1
+    assert response.json['flights'][0]['flight'] == 'UAT0001'
+    assert response.json['flights'][0]['icao'] == 'uicao01'
 
 def test_get_uat_flights_search_200_no_results(client):
     response = client.get('/api/uat/flights/search?q=NOMATCH')

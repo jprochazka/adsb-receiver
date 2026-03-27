@@ -85,3 +85,20 @@ def create_user_token(app=None):
             identity="noreply@email-two.com",
             additional_claims={'role': 'User', 'user_id': 2}
         )
+
+
+def create_another_user_token(app=None):
+    """Create token for a second regular user within proper application context"""
+    from flask_jwt_extended import create_access_token
+
+    if app:
+        with app.app_context():
+            return create_access_token(
+                identity="noreply@email-three.com",
+                additional_claims={'role': 'User', 'user_id': 3}
+            )
+    else:
+        return create_access_token(
+            identity="noreply@email-three.com",
+            additional_claims={'role': 'User', 'user_id': 3}
+        )
