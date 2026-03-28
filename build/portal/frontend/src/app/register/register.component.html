@@ -61,6 +61,6 @@
       [disabled]="loading || !!successMessage">
       {{ loading ? 'Creating account...' : 'Create Account' }}
     </button>
-    <span class="text-muted small">Already have an account? <a routerLink="/login">Log in</a></span>
+    <span class="text-muted small">Already have an account? <a routerLink="/login" [queryParams]="loginQueryParams">Log in</a></span>
   </div>
 </div>

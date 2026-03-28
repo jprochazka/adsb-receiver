@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import socket
 import subprocess
@@ -157,6 +158,10 @@ def _fetch_rrd(rrd_path: str, ds_name: str, cf: str, period: str) -> dict:
     Run ``rrdtool fetch`` and return a {unix_timestamp: float|None} dict for
     the requested data-source column. Returns an empty dict on any error.
     """
+    if not os.path.isfile(rrd_path):
+        # File absent means collection is disabled for this metric — not an error.
+        return {}
+
     result = subprocess.run(
         ['rrdtool', 'fetch', rrd_path, cf, '--start', f'end-{period}', '--end', 'now'],
         capture_output=True, text=True, timeout=15
@@ -306,6 +311,7 @@ class DevicesGraphResource(Resource):
     @graphs_ns.response(200, 'Success', graph_response_model)
     @graphs_ns.response(400, 'Invalid period')
     @graphs_ns.response(404, 'Unknown metric')
+    @graphs_ns.response(503, 'RRD data not available')
     @graphs_ns.doc('get_devices_graph')
     def get(self, metric):
         """Get devices chart data from RRD"""
@@ -316,12 +322,25 @@ class DevicesGraphResource(Resource):
         if metric == 'network':
             iface = _get_network_interface()
             rrd_path = f'{_SYS_DIR}/interface-{iface}/if_octets.rrd'
+            if not os.path.isfile(rrd_path):
+                return (
+                    {'error': f'RRD file not found for network interface "{iface}". '
+                              'Verify the interface name in settings and that data collection is running.'},
+                    503,
+                )
             series = [
                 ('rx', rrd_path, 'AVERAGE', 'rx'),
                 ('tx', rrd_path, 'AVERAGE', 'tx'),
             ]
         elif metric in SYSTEM_METRICS:
             series = _metric_to_series(SYSTEM_METRICS[metric])
+            missing = [rrd_path for _, rrd_path, _, _ in series if not os.path.isfile(rrd_path)]
+            if len(missing) == len(series):
+                return (
+                    {'error': f'RRD files not found for metric "{metric}". '
+                              'Data collection may not be running yet.'},
+                    503,
+                )
         else:
             abort(404, f'Unknown devices metric: {metric}')
 

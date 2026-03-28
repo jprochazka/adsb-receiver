@@ -310,11 +310,26 @@ PYEOF
     # --- Deploy frontend ---
     _gauge 86 "Deploying frontend files..."
     mkdir -p "${WEBROOT}"
-    if [[ ! -d "${FRONTEND_DIR}/dist/adsb-portal/browser" ]]; then
+
+    FRONTEND_BUILD_DIR=""
+    for candidate in \
+        "${FRONTEND_DIR}/dist/frontend/browser" \
+        "${FRONTEND_DIR}/dist/frontend" \
+        "${FRONTEND_DIR}/dist/adsb-portal/browser" \
+        "${FRONTEND_DIR}/dist/adsb-portal"; do
+        if [[ -f "${candidate}/index.html" ]]; then
+            FRONTEND_BUILD_DIR="${candidate}"
+            break
+        fi
+    done
+
+    if [[ -z "${FRONTEND_BUILD_DIR}" ]]; then
         echo "Angular build output not found. Build may have failed." >> "${LOG_FILE}"
         exit 1
     fi
-    cp -r "${FRONTEND_DIR}/dist/adsb-portal/browser"/* "${WEBROOT}/"
+
+    rm -rf "${WEBROOT:?}"/*
+    cp -r "${FRONTEND_BUILD_DIR}"/* "${WEBROOT}/"
     chown -R www-data:www-data "${WEBROOT}"
     chmod -R 755 "${WEBROOT}"
 

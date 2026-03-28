@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-
+import { DatePipe } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
@@ -31,7 +31,7 @@ const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#0
 @Component({
   selector: 'app-flights',
   standalone: true,
-  imports: [FormsModule, SpinnerComponent, RouterLink],
+  imports: [DatePipe, FormsModule, SpinnerComponent, RouterLink],
   templateUrl: './flights.component.html',
   styleUrl: './flights.component.scss'
 })
@@ -87,6 +87,21 @@ export class FlightsComponent implements OnInit, OnDestroy {
     lastSquawk: number | null;
   }> = [];
   flyoutOpen = true;
+  commentsOpen = false;
+  commentsLoading = false;
+  commentsSubmitting = false;
+  commentsMutating = false;
+  commentsError = '';
+  commentDraft = '';
+  comments: any[] = [];
+  editingCommentId: number | null = null;
+  editingDraft = '';
+  currentUserId: number | null = null;
+  currentUserLocked = true;
+  currentUserRole: string | null = null;
+  ignoreOnPurge = false;
+  ignoreOnPurgeUpdating = false;
+  ignoreOnPurgeError = '';
   photoUrl: string | null = null;
   photoAttribution: string | null = null;
   flightInfo: {
@@ -109,7 +124,8 @@ export class FlightsComponent implements OnInit, OnDestroy {
   private allExtent: any = null;
 
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor(private data_service: DataService) {}
 
@@ -153,6 +169,15 @@ export class FlightsComponent implements OnInit, OnDestroy {
       }
 
       this.detailMode = false;
+      if (this.map) {
+        this.map.setTarget(undefined);
+      }
+      this.commentsOpen = false;
+      this.comments = [];
+      this.commentDraft = '';
+      this.editingCommentId = null;
+      this.editingDraft = '';
+      this.commentsError = '';
       const q = queryParams.get('q') || '';
       this.searchQuery = q;
       this.loading = true;
@@ -224,10 +249,23 @@ export class FlightsComponent implements OnInit, OnDestroy {
     this.photoUrl = null;
     this.photoAttribution = null;
     this.flyoutOpen = true;
+    this.commentsOpen = false;
+    this.comments = [];
+    this.commentDraft = '';
+    this.editingCommentId = null;
+    this.editingDraft = '';
+    this.commentsError = '';
+    this.ignoreOnPurge = false;
+    this.ignoreOnPurgeUpdating = false;
+    this.ignoreOnPurgeError = '';
+    this.loadCurrentUserState();
 
-    if (!this.map) {
-      this.initMap();
+    // Recreate map every time detail mode is entered to avoid stale target state.
+    if (this.map) {
+      this.map.setTarget(undefined);
     }
+    this.cdr.detectChanges();
+    this.initMap();
 
     if (this.vectorLayer) {
       this.map.removeLayer(this.vectorLayer);
@@ -269,6 +307,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
           lastSpeed: null,
           lastSquawk: null
         };
+        this.ignoreOnPurge = !!details?.ignore_on_purge;
         if (!posData.positions?.length) {
           this.errorMessage = 'No position data available for this flight.';
           return;
@@ -398,6 +437,234 @@ export class FlightsComponent implements OnInit, OnDestroy {
 
   toggleFlyout(): void {
     this.flyoutOpen = !this.flyoutOpen;
+  }
+
+  openComments(): void {
+    this.commentsOpen = true;
+    this.commentsError = '';
+    this.loadComments();
+    this.loadCurrentUserState();
+  }
+
+  closeComments(): void {
+    this.commentsOpen = false;
+    this.editingCommentId = null;
+    this.editingDraft = '';
+  }
+
+  get isLoggedIn(): boolean {
+    const payload = this.getTokenPayload();
+    return !!payload && (payload.exp * 1000 > Date.now());
+  }
+
+  get canAddComments(): boolean {
+    if (!this.isLoggedIn) return false;
+    if (this.currentUserLocked) return false;
+    return this.currentUserRole === 'Admin' || this.currentUserRole === 'User';
+  }
+
+  get canModerateComments(): boolean {
+    if (!this.isLoggedIn) return false;
+    if (this.currentUserLocked) return false;
+    return this.hasAdminRole();
+  }
+
+  get canToggleIgnoreOnPurge(): boolean {
+    return this.canModerateComments;
+  }
+
+  canEditComment(comment: any): boolean {
+    if (!this.isLoggedIn || this.currentUserLocked) return false;
+    if (this.hasAdminRole()) return true;
+    return this.currentUserId !== null && comment?.user_id === this.currentUserId;
+  }
+
+  private hasAdminRole(): boolean {
+    return (this.currentUserRole || '').trim().toLowerCase() === 'admin';
+  }
+
+  canDeleteComment(comment: any): boolean {
+    if (!comment) return false;
+    return this.canModerateComments;
+  }
+
+  updateIgnoreOnPurge(event: Event): void {
+    if (!this.canToggleIgnoreOnPurge || this.ignoreOnPurgeUpdating) {
+      const input = event.target as HTMLInputElement;
+      input.checked = this.ignoreOnPurge;
+      return;
+    }
+
+    const input = event.target as HTMLInputElement;
+    const nextValue = !!input.checked;
+    const previousValue = this.ignoreOnPurge;
+
+    this.ignoreOnPurge = nextValue;
+    this.ignoreOnPurgeUpdating = true;
+    this.ignoreOnPurgeError = '';
+
+    const request$ = this.flightType === 'uat'
+      ? this.data_service.updateUatFlightPurgePreference(this.flightId, nextValue)
+      : this.data_service.updateFlightPurgePreference(this.flightId, nextValue);
+
+    request$.subscribe({
+      next: (response) => {
+        this.ignoreOnPurge = !!response?.ignore_on_purge;
+        this.ignoreOnPurgeUpdating = false;
+      },
+      error: (err) => {
+        this.ignoreOnPurge = previousValue;
+        input.checked = previousValue;
+        this.ignoreOnPurgeUpdating = false;
+        this.ignoreOnPurgeError = err?.error?.msg || 'Unable to update purge preference.';
+      }
+    });
+  }
+
+  submitComment(): void {
+    const content = this.commentDraft.trim();
+    if (!content || !this.canAddComments || this.commentsSubmitting) {
+      return;
+    }
+
+    this.commentsSubmitting = true;
+    this.commentsError = '';
+
+    const request$ = this.flightType === 'uat'
+      ? this.data_service.createUatFlightComment(this.flightId, content)
+      : this.data_service.createFlightComment(this.flightId, content);
+
+    request$.subscribe({
+      next: (comment) => {
+        this.commentDraft = '';
+        this.comments.unshift(comment);
+        this.commentsSubmitting = false;
+      },
+      error: (err) => {
+        this.commentsSubmitting = false;
+        this.commentsError = err?.error?.msg || 'Unable to add comment.';
+      }
+    });
+  }
+
+  private loadComments(): void {
+    this.commentsLoading = true;
+    this.commentsError = '';
+
+    const request$ = this.flightType === 'uat'
+      ? this.data_service.getUatFlightComments(this.flightId)
+      : this.data_service.getFlightComments(this.flightId);
+
+    request$.subscribe({
+      next: (res) => {
+        this.comments = (res?.comments || []).slice().reverse();
+        this.editingCommentId = null;
+        this.editingDraft = '';
+        this.commentsLoading = false;
+      },
+      error: (err) => {
+        this.comments = [];
+        this.commentsLoading = false;
+        this.commentsError = err?.error?.msg || 'Unable to load comments.';
+      }
+    });
+  }
+
+  private loadCurrentUserState(): void {
+    if (!this.isLoggedIn) {
+      this.currentUserId = null;
+      this.currentUserLocked = true;
+      this.currentUserRole = null;
+      return;
+    }
+
+    const payload = this.getTokenPayload();
+    this.currentUserId = payload?.user_id ?? null;
+    this.currentUserRole = payload?.role || null;
+
+    const userId = payload?.user_id;
+    if (!userId) {
+      this.currentUserId = null;
+      this.currentUserLocked = true;
+      return;
+    }
+
+    this.data_service.getUser(userId).pipe(catchError(() => of(null))).subscribe((user) => {
+      this.currentUserId = user?.id ?? this.currentUserId;
+      this.currentUserLocked = user?.locked !== false;
+      this.currentUserRole = user?.role || this.currentUserRole;
+    });
+  }
+
+  private getTokenPayload(): any | null {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(base64));
+    } catch {
+      return null;
+    }
+  }
+
+  beginEditComment(comment: any): void {
+    if (!this.canEditComment(comment)) return;
+    this.editingCommentId = comment.id;
+    this.editingDraft = comment.content || '';
+  }
+
+  cancelEditComment(): void {
+    this.editingCommentId = null;
+    this.editingDraft = '';
+  }
+
+  saveEditedComment(comment: any): void {
+    if (!this.canEditComment(comment) || this.commentsMutating) return;
+    const content = this.editingDraft.trim();
+    if (!content) return;
+
+    this.commentsMutating = true;
+    this.commentsError = '';
+
+    const request$ = this.flightType === 'uat'
+      ? this.data_service.updateUatFlightComment(this.flightId, comment.id, content)
+      : this.data_service.updateFlightComment(this.flightId, comment.id, content);
+
+    request$.subscribe({
+      next: (updated) => {
+        const idx = this.comments.findIndex(c => c.id === comment.id);
+        if (idx >= 0) this.comments[idx] = updated;
+        this.commentsMutating = false;
+        this.cancelEditComment();
+      },
+      error: (err) => {
+        this.commentsMutating = false;
+        this.commentsError = err?.error?.msg || 'Unable to update comment.';
+      }
+    });
+  }
+
+  deleteComment(comment: any): void {
+    if (!this.canDeleteComment(comment) || this.commentsMutating) return;
+
+    this.commentsMutating = true;
+    this.commentsError = '';
+
+    const request$ = this.flightType === 'uat'
+      ? this.data_service.deleteUatFlightComment(this.flightId, comment.id)
+      : this.data_service.deleteFlightComment(this.flightId, comment.id);
+
+    request$.subscribe({
+      next: () => {
+        this.comments = this.comments.filter(c => c.id !== comment.id);
+        this.commentsMutating = false;
+        if (this.editingCommentId === comment.id) this.cancelEditComment();
+      },
+      error: (err) => {
+        this.commentsMutating = false;
+        this.commentsError = err?.error?.msg || 'Unable to delete comment.';
+      }
+    });
   }
 
   zoomToTrack(idx: number): void {

@@ -30,6 +30,26 @@ describe('AdminFlightsComponent', () => {
       deleted_positions: 2,
       cutoff_date: '2026-03-01 00:00:00'
     })),
+    getIgnoredFlights: jasmine.createSpy('getIgnoredFlights').and.returnValue(of({
+      flights: [
+        { id: 1, flight: 'FLT0001', icao: 'icao01', last_seen: '2024-06-17 01:11:01', ignore_on_purge: true }
+      ],
+      total: 1,
+    })),
+    getIgnoredUatFlights: jasmine.createSpy('getIgnoredUatFlights').and.returnValue(of({
+      flights: [
+        { id: 1, flight: 'UAT0001', icao: 'uicao01', last_seen: '2024-06-17 01:11:01', ignore_on_purge: true }
+      ],
+      total: 1,
+    })),
+    updateFlightPurgePreference: jasmine.createSpy('updateFlightPurgePreference').and.returnValue(of({
+      flight: 'FLT0001',
+      ignore_on_purge: false,
+    })),
+    updateUatFlightPurgePreference: jasmine.createSpy('updateUatFlightPurgePreference').and.returnValue(of({
+      flight: 'UAT0001',
+      ignore_on_purge: false,
+    })),
   };
 
   beforeEach(async () => {
@@ -52,6 +72,8 @@ describe('AdminFlightsComponent', () => {
     expect(component.totalUatFlights).toBe(3);
     expect(component.loading).toBeFalse();
     expect(dataServiceMock.GetFlightsCount).toHaveBeenCalled();
+    expect(dataServiceMock.getIgnoredFlights).toHaveBeenCalled();
+    expect(dataServiceMock.getIgnoredUatFlights).toHaveBeenCalled();
   });
 
   it('should save nav settings', () => {
@@ -97,5 +119,35 @@ describe('AdminFlightsComponent', () => {
     expect(dataServiceMock.purgeUatFlights).toHaveBeenCalledWith(14);
     expect(component.uatPurging).toBeFalse();
     expect(component.uatSuccessMessage).toContain('Purge complete');
+  });
+
+  it('should update ADS-B ignored flight toggle', () => {
+    const event = { target: { checked: false } } as any;
+    component.updateIgnoredAdsbFlight({ flight: 'FLT0001' }, event);
+
+    expect(dataServiceMock.updateFlightPurgePreference).toHaveBeenCalledWith('FLT0001', false);
+  });
+
+  it('should update UAT ignored flight toggle', () => {
+    const event = { target: { checked: false } } as any;
+    component.updateIgnoredUatFlight({ flight: 'UAT0001' }, event);
+
+    expect(dataServiceMock.updateUatFlightPurgePreference).toHaveBeenCalledWith('UAT0001', false);
+  });
+
+  it('should render ignore-during-purge warning in both purge cards', () => {
+    const warningText = 'Flights marked as Ignore During Purge will not be deleted.';
+    const html = fixture.nativeElement as HTMLElement;
+    const warnings = Array.from(html.querySelectorAll('p.small.text-warning-emphasis'));
+
+    expect(warnings.length).toBe(2);
+    expect(warnings.every((node) => node.textContent?.includes(warningText))).toBeTrue();
+  });
+
+  it('should apply purge-card class to both purge cards for consistent layout', () => {
+    const html = fixture.nativeElement as HTMLElement;
+    const purgeCards = html.querySelectorAll('.card.border-danger.purge-card');
+
+    expect(purgeCards.length).toBe(2);
   });
 });

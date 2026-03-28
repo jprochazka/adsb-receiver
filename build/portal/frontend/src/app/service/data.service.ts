@@ -132,12 +132,36 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/adsb/flights`, { params: { offset, limit } });
   }
 
+  getIgnoredFlights(offset = 0, limit = 10): Observable<any> {
+    return this.http.get(`${this.apiUrl}/adsb/flights`, {
+      params: { offset, limit, ignore_on_purge: 'true' }
+    });
+  }
+
   getFlightDetails(flight: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}`);
   }
 
+  updateFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.put(
+      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/purge-preference`,
+      { ignore_on_purge },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
   getUatFlightDetails(flight: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}`);
+  }
+
+  updateUatFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.put(
+      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/purge-preference`,
+      { ignore_on_purge },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
   }
 
   getAircraftPhoto(icao: string): Observable<any> {
@@ -152,6 +176,66 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
   }
 
+  getFlightComments(flight: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments`);
+  }
+
+  getUatFlightComments(flight: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments`);
+  }
+
+  createFlightComment(flight: string, content: string): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.post(
+      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments`,
+      { content },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
+  createUatFlightComment(flight: string, content: string): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.post(
+      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments`,
+      { content },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
+  updateFlightComment(flight: string, commentId: number, content: string): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.put(
+      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      { content },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
+  deleteFlightComment(flight: string, commentId: number): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.delete(
+      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
+  updateUatFlightComment(flight: string, commentId: number, content: string): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.put(
+      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      { content },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
+  deleteUatFlightComment(flight: string, commentId: number): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.delete(
+      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
   searchFlights(q: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/adsb/flights/search`, { params: { q } });
   }
@@ -162,6 +246,12 @@ export class DataService {
 
   getUatFlights(offset = 0, limit = 50): Observable<any> {
     return this.http.get(`${this.apiUrl}/uat/flights`, { params: { offset, limit } });
+  }
+
+  getIgnoredUatFlights(offset = 0, limit = 10): Observable<any> {
+    return this.http.get(`${this.apiUrl}/uat/flights`, {
+      params: { offset, limit, ignore_on_purge: 'true' }
+    });
   }
 
   getUatFlightsCount(): Observable<any> {

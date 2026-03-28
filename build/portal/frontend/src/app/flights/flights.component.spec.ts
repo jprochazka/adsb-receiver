@@ -25,6 +25,14 @@ describe('FlightsComponent', () => {
     })),
     searchFlights: jasmine.createSpy('searchFlights').and.returnValue(of({ flights: [], count: 0 })),
     searchUatFlights: jasmine.createSpy('searchUatFlights').and.returnValue(of({ flights: [], count: 0 })),
+    updateFlightPurgePreference: jasmine.createSpy('updateFlightPurgePreference').and.returnValue(of({
+      flight: 'AAL123',
+      ignore_on_purge: true,
+    })),
+    updateUatFlightPurgePreference: jasmine.createSpy('updateUatFlightPurgePreference').and.returnValue(of({
+      flight: 'UAL789',
+      ignore_on_purge: true,
+    })),
   };
 
   beforeEach(async () => {
@@ -87,5 +95,43 @@ describe('FlightsComponent', () => {
     expect(component.combinedTabCount).toBe(1);
     expect(component.adsbTabCount).toBe(0);
     expect(component.uatTabCount).toBe(1);
+  });
+
+  it('should not allow non-admin users to toggle ignore on purge', () => {
+    component.ignoreOnPurge = false;
+    component.ignoreOnPurgeUpdating = false;
+    component.currentUserRole = 'User';
+    component.currentUserLocked = false;
+    spyOn<any>(component, 'getTokenPayload').and.returnValue({ user_id: 2, role: 'User', exp: Math.floor(Date.now() / 1000) + 3600 });
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = true;
+
+    component.updateIgnoreOnPurge({ target: input } as unknown as Event);
+
+    expect(dataServiceMock.updateFlightPurgePreference).not.toHaveBeenCalled();
+    expect(dataServiceMock.updateUatFlightPurgePreference).not.toHaveBeenCalled();
+    expect(input.checked).toBeFalse();
+    expect(component.ignoreOnPurge).toBeFalse();
+  });
+
+  it('should allow admin users to toggle ignore on purge', () => {
+    component.flightType = 'adsb';
+    component.flightId = 'AAL123';
+    component.ignoreOnPurge = false;
+    component.ignoreOnPurgeUpdating = false;
+    component.currentUserRole = 'Admin';
+    component.currentUserLocked = false;
+    spyOn<any>(component, 'getTokenPayload').and.returnValue({ user_id: 1, role: 'Admin', exp: Math.floor(Date.now() / 1000) + 3600 });
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = true;
+
+    component.updateIgnoreOnPurge({ target: input } as unknown as Event);
+
+    expect(dataServiceMock.updateFlightPurgePreference).toHaveBeenCalledWith('AAL123', true);
+    expect(component.ignoreOnPurge).toBeTrue();
   });
 });

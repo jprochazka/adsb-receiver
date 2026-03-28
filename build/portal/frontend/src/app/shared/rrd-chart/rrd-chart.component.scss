@@ -16,8 +16,12 @@
 
 .chart-placeholder {
   height: 180px;
-  background: #f8f9fa;
+  background: #111827;
   border-radius: 0.25rem;
+
+  &--warn {
+    border: 1px solid #f59e0b;
+  }
 }
 
 canvas {

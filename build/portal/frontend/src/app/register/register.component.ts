@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 
 @Component({
@@ -22,6 +22,7 @@ export class RegisterComponent {
   successMessage = '';
 
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   constructor(private dataService: DataService) {}
 
@@ -47,7 +48,14 @@ export class RegisterComponent {
       next: () => {
         this.loading = false;
         this.successMessage = 'Account created! Redirecting to login\u2026';
-        setTimeout(() => this.router.navigate(['/login']), 1500);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        setTimeout(() => {
+          if (returnUrl && returnUrl.startsWith('/')) {
+            this.router.navigate(['/login'], { queryParams: { returnUrl } });
+            return;
+          }
+          this.router.navigate(['/login']);
+        }, 1500);
       },
       error: (err) => {
         this.loading = false;
@@ -55,5 +63,13 @@ export class RegisterComponent {
         this.errorMessage = msg && typeof msg === 'string' ? msg : 'Registration failed. Please try again.';
       }
     });
+  }
+
+  get loginQueryParams(): { returnUrl: string } | {} {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl && returnUrl.startsWith('/')) {
+      return { returnUrl };
+    }
+    return {};
   }
 }

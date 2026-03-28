@@ -160,7 +160,7 @@
           }
 
           @if (!isAuthenticated) {
-            <p class="text-muted mt-3"><a routerLink="/login">Sign in</a> to post a comment.</p>
+            <p class="text-muted mt-3"><a routerLink="/login" [queryParams]="loginQueryParams">Sign in</a> to post a comment.</p>
           }
 
         </div>

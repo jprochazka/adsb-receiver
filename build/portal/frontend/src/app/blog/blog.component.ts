@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
@@ -52,7 +52,11 @@ export class BlogComponent implements OnInit {
   currentUserId: number | null = null;
   currentUserRole: string | null = null;
 
-  constructor(private dataService: DataService, private route: ActivatedRoute) {}
+  constructor(private dataService: DataService, private route: ActivatedRoute, private router: Router) {}
+
+  get loginQueryParams(): { returnUrl: string } {
+    return { returnUrl: this.router.url };
+  }
 
   ngOnInit() {
     this.isAuthenticated = this.hasValidToken();

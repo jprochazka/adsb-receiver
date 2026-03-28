@@ -43,7 +43,7 @@ export interface RrdChartConfig {
         </div>
       }
       @if (error) {
-        <div class="chart-placeholder d-flex align-items-center justify-content-center text-muted small">
+        <div class="chart-placeholder chart-placeholder--warn d-flex align-items-center justify-content-center text-muted small">
           No data available
         </div>
       }
@@ -119,6 +119,14 @@ export class RrdChartComponent implements AfterViewInit, OnChanges, OnDestroy {
       .subscribe({
         next: (response) => {
           this.loading = false;
+          const hasData = (response.labels?.length ?? 0) > 0 &&
+            (response.datasets ?? []).some((ds: any) =>
+              ds.data?.some((v: any) => v !== null && v !== undefined)
+            );
+          if (!hasData) {
+            this.error = true;
+            return;
+          }
           this.error = false;
           this.renderChart(response);
         },

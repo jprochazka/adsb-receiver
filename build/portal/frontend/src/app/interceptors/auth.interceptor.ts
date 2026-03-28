@@ -16,7 +16,7 @@ function isTokenExpired(token: string): boolean {
 function clearSession(router: Router): void {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
-  router.navigate(['/login']);
+  router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {

@@ -1,0 +1,22 @@
+.ignored-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+.purge-card .card-body {
+	display: flex;
+	flex-direction: column;
+}
+
+.purge-description {
+	min-height: 3.75rem;
+	margin-bottom: 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+	.purge-description {
+		min-height: 0;
+	}
+}

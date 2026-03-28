@@ -41,9 +41,14 @@ class TestMaintenanceProcessor:
         assert captured.out == ""
 
     @patch.object(MaintenanceProcessor, 'purge_aircraft')
+    @patch.object(MaintenanceProcessor, 'purge_flights')
     @patch.object(MaintenanceProcessor, 'purge_positions')
-    def test_begin_maintenance_enabled(self, mock_purge_positions, mock_purge_aircraft, 
-                                     processor, app):
+    @patch.object(MaintenanceProcessor, 'purge_uat_aircraft')
+    @patch.object(MaintenanceProcessor, 'purge_uat_flights')
+    @patch.object(MaintenanceProcessor, 'purge_uat_positions')
+    def test_begin_maintenance_enabled(self, mock_purge_uat_positions, mock_purge_uat_flights,
+                                     mock_purge_uat_aircraft, mock_purge_positions,
+                                     mock_purge_flights, mock_purge_aircraft, processor, app):
         """Test maintenance when purging is enabled"""
         from backend.models import Setting
         
@@ -59,7 +64,11 @@ class TestMaintenanceProcessor:
             
             # Should call purge methods
             mock_purge_aircraft.assert_called_once()
+            mock_purge_flights.assert_called_once()
             mock_purge_positions.assert_called_once()
+            mock_purge_uat_aircraft.assert_called_once()
+            mock_purge_uat_flights.assert_called_once()
+            mock_purge_uat_positions.assert_called_once()
             
             # Check that cutoff date is calculated correctly (30 days ago)
             call_args = mock_purge_aircraft.call_args[0][0]
@@ -188,6 +197,49 @@ class TestMaintenanceProcessor:
             # Position should be deleted
             assert Position.query.filter_by(aircraft=aircraft.id).first() is None
 
+    def test_purge_positions_ignores_protected_flights(self, processor, app):
+        """Test positions tied to protected flights are preserved"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Position, Aircraft, Flight
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Aircraft(icao='PROTECT1', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Flight(
+                aircraft=aircraft.id,
+                flight='KEEP123',
+                first_seen=now_str,
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                ignore_on_purge=True,
+            )
+            db.session.add(flight)
+            db.session.flush()
+
+            position = Position(
+                aircraft=aircraft.id,
+                flight=flight.id,
+                time=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                message=1,
+                latitude=0.0,
+                longitude=0.0,
+                altitude=0,
+                track=0,
+                speed=0,
+                vertical_rate=0,
+            )
+            db.session.add(position)
+            db.session.commit()
+
+            processor.purge_positions(cutoff_date)
+
+            assert Position.query.filter_by(id=position.id).first() is not None
+
     @patch('backend.jobs.maintenance.logging.error')
     def test_purge_positions_database_error(self, mock_logging, processor, app):
         """Test position purging with database error"""
@@ -228,6 +280,291 @@ class TestMaintenanceProcessor:
             
             # Flight should be deleted
             assert Flight.query.filter_by(aircraft=aircraft.id).first() is None
+
+    def test_purge_flights_deletes_related_comments(self, processor, app):
+        """Test ADS-B flight comments are removed when maintenance deletes flights"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Aircraft, Flight, FlightComment
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Aircraft(icao='COMMENT1', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Flight(
+                aircraft=aircraft.id,
+                flight='COMMENT1',
+                first_seen=now_str,
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S')
+            )
+            db.session.add(flight)
+            db.session.flush()
+            flight_id = flight.id
+
+            comment = FlightComment(flight_id=flight_id, user_id=1, content='Remove this comment too.')
+            db.session.add(comment)
+            db.session.commit()
+            comment_id = comment.id
+
+            processor.purge_flights(cutoff_date)
+
+            assert Flight.query.filter_by(id=flight_id).first() is None
+            assert FlightComment.query.filter_by(id=comment_id).first() is None
+
+    def test_purge_flights_ignores_protected_flights(self, processor, app):
+        """Test protected flights are preserved during maintenance"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Flight, Aircraft, Position
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Aircraft(icao='PROTECT2', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Flight(
+                aircraft=aircraft.id,
+                flight='KEEP456',
+                first_seen=now_str,
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                ignore_on_purge=True,
+            )
+            db.session.add(flight)
+            db.session.flush()
+
+            position = Position(
+                aircraft=aircraft.id,
+                flight=flight.id,
+                time=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                message=1,
+                latitude=0.0,
+                longitude=0.0,
+                altitude=0,
+                track=0,
+                speed=0,
+                vertical_rate=0,
+            )
+            db.session.add(position)
+            db.session.commit()
+
+            processor.purge_flights(cutoff_date)
+
+            assert Flight.query.filter_by(id=flight.id).first() is not None
+            assert Position.query.filter_by(id=position.id).first() is not None
+
+    def test_purge_uat_positions_success(self, processor, app):
+        """Test successful UAT position purging"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Dump978Aircraft, Dump978Flight, Dump978Position
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Dump978Aircraft(icao='UTEST123', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Dump978Flight(aircraft=aircraft.id, flight='UTEST123', first_seen=now_str, last_seen=now_str)
+            db.session.add(flight)
+            db.session.flush()
+
+            position = Dump978Position(
+                aircraft=aircraft.id,
+                flight=flight.id,
+                time=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                message=1,
+                latitude=0.0,
+                longitude=0.0,
+                altitude=0,
+                track=0,
+                speed=0,
+                vertical_rate=0,
+            )
+            db.session.add(position)
+            db.session.commit()
+
+            processor.purge_uat_positions(cutoff_date)
+
+            assert Dump978Position.query.filter_by(aircraft=aircraft.id).first() is None
+
+    def test_purge_uat_positions_ignores_protected_flights(self, processor, app):
+        """Test UAT positions tied to protected flights are preserved"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Dump978Aircraft, Dump978Flight, Dump978Position
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Dump978Aircraft(icao='UPROTECT1', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='UKEEP123',
+                first_seen=now_str,
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                ignore_on_purge=True,
+            )
+            db.session.add(flight)
+            db.session.flush()
+
+            position = Dump978Position(
+                aircraft=aircraft.id,
+                flight=flight.id,
+                time=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                message=1,
+                latitude=0.0,
+                longitude=0.0,
+                altitude=0,
+                track=0,
+                speed=0,
+                vertical_rate=0,
+            )
+            db.session.add(position)
+            db.session.commit()
+
+            processor.purge_uat_positions(cutoff_date)
+
+            assert Dump978Position.query.filter_by(id=position.id).first() is not None
+
+    def test_purge_uat_flights_success(self, processor, app):
+        """Test successful UAT flight purging"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Dump978Aircraft, Dump978Flight
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Dump978Aircraft(icao='UTEST456', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='UTEST456',
+                first_seen=now_str,
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S')
+            )
+            db.session.add(flight)
+            db.session.commit()
+            flight_id = flight.id
+
+            processor.purge_uat_flights(cutoff_date)
+
+            assert Dump978Flight.query.filter_by(id=flight_id).first() is None
+
+    def test_purge_uat_flights_deletes_related_comments(self, processor, app):
+        """Test UAT flight comments are removed when maintenance deletes flights"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Dump978Aircraft, Dump978Flight, UatFlightComment
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Dump978Aircraft(icao='UCOMMENT1', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='UCOMMENT1',
+                first_seen=now_str,
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S')
+            )
+            db.session.add(flight)
+            db.session.flush()
+            flight_id = flight.id
+
+            comment = UatFlightComment(flight_id=flight_id, user_id=1, content='Remove this UAT comment too.')
+            db.session.add(comment)
+            db.session.commit()
+            comment_id = comment.id
+
+            processor.purge_uat_flights(cutoff_date)
+
+            assert Dump978Flight.query.filter_by(id=flight_id).first() is None
+            assert UatFlightComment.query.filter_by(id=comment_id).first() is None
+
+    def test_purge_uat_flights_ignores_protected_flights(self, processor, app):
+        """Test protected UAT flights are preserved during maintenance"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Dump978Aircraft, Dump978Flight, Dump978Position
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            aircraft = Dump978Aircraft(icao='UPROTECT2', first_seen=now_str, last_seen=now_str)
+            db.session.add(aircraft)
+            db.session.flush()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='UKEEP456',
+                first_seen=now_str,
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                ignore_on_purge=True,
+            )
+            db.session.add(flight)
+            db.session.flush()
+
+            position = Dump978Position(
+                aircraft=aircraft.id,
+                flight=flight.id,
+                time=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                message=1,
+                latitude=0.0,
+                longitude=0.0,
+                altitude=0,
+                track=0,
+                speed=0,
+                vertical_rate=0,
+            )
+            db.session.add(position)
+            db.session.commit()
+
+            processor.purge_uat_flights(cutoff_date)
+
+            assert Dump978Flight.query.filter_by(id=flight.id).first() is not None
+            assert Dump978Position.query.filter_by(id=position.id).first() is not None
+
+    def test_purge_uat_aircraft_success(self, processor, app):
+        """Test successful UAT aircraft purging"""
+        with app.app_context():
+            from backend import db
+            from backend.models import Dump978Aircraft
+
+            cutoff_date = datetime.now() - timedelta(days=30)
+            old_date = cutoff_date - timedelta(days=1)
+
+            aircraft = Dump978Aircraft(
+                icao='UOLD123',
+                first_seen=old_date.strftime('%Y-%m-%d %H:%M:%S'),
+                last_seen=old_date.strftime('%Y-%m-%d %H:%M:%S')
+            )
+            db.session.add(aircraft)
+            db.session.commit()
+
+            processor.purge_uat_aircraft(cutoff_date)
+
+            assert Dump978Aircraft.query.filter_by(icao='UOLD123').first() is None
 
     @patch('backend.jobs.maintenance.logging.error')
     def test_purge_flights_database_error(self, mock_logging, processor, app):

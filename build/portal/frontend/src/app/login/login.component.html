@@ -16,6 +16,6 @@
     <button type="button" class="btn btn-primary" (click)="login()" [disabled]="loading">
       {{ loading ? 'Logging in...' : 'Login' }}
     </button>
-    <span class="text-muted small">Don't have an account? <a routerLink="/register">Register</a></span>
+    <span class="text-muted small">Don't have an account? <a routerLink="/register" [queryParams]="registerQueryParams">Register</a></span>
   </div>
 </div>

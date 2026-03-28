@@ -109,13 +109,16 @@
         <!-- Right column: both purge cards stacked -->
         <div class="col-md-8 d-flex flex-column gap-4">
           <!-- ADS-B Purge card -->
-          <div class="card border-danger">
+          <div class="card border-danger purge-card">
             <div class="card-header fw-semibold text-danger">Purge Old ADS-B Flights</div>
             <div class="card-body">
-              <p class="text-muted">
+              <p class="text-muted purge-description">
                 Permanently delete all ADS-B flights — and their associated position data — where
                 <code>last_seen</code> is older than the specified number of days.
                 <strong>This action cannot be undone.</strong>
+              </p>
+              <p class="small text-warning-emphasis mb-3">
+                Flights marked as <strong>Ignore During Purge</strong> will not be deleted.
               </p>
               <div class="d-flex align-items-center gap-3 mb-3">
                 <label class="form-label mb-0 text-nowrap fw-semibold">Delete flights older than</label>
@@ -166,13 +169,16 @@
             </div>
           </div>
           <!-- UAT Purge card -->
-          <div class="card border-danger">
+          <div class="card border-danger purge-card">
             <div class="card-header fw-semibold text-danger">Purge Old UAT Flights</div>
             <div class="card-body">
-              <p class="text-muted">
+              <p class="text-muted purge-description">
                 Permanently delete all UAT flights — and their associated position data — where
                 <code>last_seen</code> is older than the specified number of days.
                 <strong>This action cannot be undone.</strong>
+              </p>
+              <p class="small text-warning-emphasis mb-3">
+                Flights marked as <strong>Ignore During Purge</strong> will not be deleted.
               </p>
               <div class="d-flex align-items-center gap-3 mb-3">
                 <label class="form-label mb-0 text-nowrap fw-semibold">Delete flights older than</label>
@@ -220,6 +226,145 @@
                   <button type="button" class="btn-close" (click)="uatErrorMessage=''"></button>
                 </div>
               }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header fw-semibold">Ignore During Purge Flights</div>
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-12 col-lg-6">
+              <h6 class="mb-3">ADS-B</h6>
+
+              @if (ignoredAdsbError) {
+                <div class="alert alert-danger py-2">{{ ignoredAdsbError }}</div>
+              }
+
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-2">
+                  <thead>
+                    <tr>
+                      <th scope="col">Flight</th>
+                      <th scope="col">ICAO</th>
+                      <th scope="col">Last Seen</th>
+                      <th scope="col" class="text-end">Ignore During Purge</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @if (ignoredAdsbLoading) {
+                      <tr>
+                        <td colspan="4" class="text-center py-3">Loading...</td>
+                      </tr>
+                    } @else if (!ignoredAdsbFlights.length) {
+                      <tr>
+                        <td colspan="4" class="text-center text-muted py-3">No ADS-B flights are currently ignored.</td>
+                      </tr>
+                    } @else {
+                      @for (flight of ignoredAdsbFlights; track flight.id) {
+                        <tr>
+                          <td class="fw-semibold">{{ flight.flight }}</td>
+                          <td>{{ flight.icao || '-' }}</td>
+                          <td>{{ flight.last_seen || '-' }}</td>
+                          <td class="text-end">
+                            <div class="form-check form-switch d-inline-flex mb-0">
+                              <input
+                                class="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                [id]="'ignored-adsb-' + flight.id"
+                                [checked]="flight.ignore_on_purge"
+                                [disabled]="isSavingIgnoredAdsb(flight.flight)"
+                                (change)="updateIgnoredAdsbFlight(flight, $event)">
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="ignored-pagination">
+                <small class="text-muted">
+                  Showing {{ adsbIgnoredStart() }}-{{ adsbIgnoredEnd() }} of {{ ignoredAdsbTotal }}
+                </small>
+                <div class="btn-group btn-group-sm" role="group" aria-label="ADS-B ignored pagination">
+                  <button class="btn btn-outline-secondary" (click)="prevIgnoredAdsbPage()" [disabled]="ignoredAdsbOffset === 0 || ignoredAdsbLoading">
+                    Previous
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="nextIgnoredAdsbPage()" [disabled]="ignoredAdsbOffset + ignoredPageSize >= ignoredAdsbTotal || ignoredAdsbLoading">
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+              <h6 class="mb-3">UAT</h6>
+
+              @if (ignoredUatError) {
+                <div class="alert alert-danger py-2">{{ ignoredUatError }}</div>
+              }
+
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-2">
+                  <thead>
+                    <tr>
+                      <th scope="col">Flight</th>
+                      <th scope="col">ICAO</th>
+                      <th scope="col">Last Seen</th>
+                      <th scope="col" class="text-end">Ignore During Purge</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @if (ignoredUatLoading) {
+                      <tr>
+                        <td colspan="4" class="text-center py-3">Loading...</td>
+                      </tr>
+                    } @else if (!ignoredUatFlights.length) {
+                      <tr>
+                        <td colspan="4" class="text-center text-muted py-3">No UAT flights are currently ignored.</td>
+                      </tr>
+                    } @else {
+                      @for (flight of ignoredUatFlights; track flight.id) {
+                        <tr>
+                          <td class="fw-semibold">{{ flight.flight }}</td>
+                          <td>{{ flight.icao || '-' }}</td>
+                          <td>{{ flight.last_seen || '-' }}</td>
+                          <td class="text-end">
+                            <div class="form-check form-switch d-inline-flex mb-0">
+                              <input
+                                class="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                [id]="'ignored-uat-' + flight.id"
+                                [checked]="flight.ignore_on_purge"
+                                [disabled]="isSavingIgnoredUat(flight.flight)"
+                                (change)="updateIgnoredUatFlight(flight, $event)">
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="ignored-pagination">
+                <small class="text-muted">
+                  Showing {{ uatIgnoredStart() }}-{{ uatIgnoredEnd() }} of {{ ignoredUatTotal }}
+                </small>
+                <div class="btn-group btn-group-sm" role="group" aria-label="UAT ignored pagination">
+                  <button class="btn btn-outline-secondary" (click)="prevIgnoredUatPage()" [disabled]="ignoredUatOffset === 0 || ignoredUatLoading">
+                    Previous
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="nextIgnoredUatPage()" [disabled]="ignoredUatOffset + ignoredPageSize >= ignoredUatTotal || ignoredUatLoading">
+                    Next
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

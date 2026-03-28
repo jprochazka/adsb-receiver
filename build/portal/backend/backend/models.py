@@ -136,10 +136,12 @@ class Flight(db.Model):
     flight = db.Column(db.String(20), nullable=False)
     first_seen = db.Column(db.String(32), nullable=False)
     last_seen = db.Column(db.String(32))
+    ignore_on_purge = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text('0'))
     
     # Relationships
     aircraft_ref = db.relationship('Aircraft', back_populates='flights')
     positions = db.relationship('Position', back_populates='flight_ref')
+    comments = db.relationship('FlightComment', back_populates='flight_ref', cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -147,7 +149,8 @@ class Flight(db.Model):
             'aircraft': self.aircraft,
             'flight': self.flight,
             'first_seen': self.first_seen,
-            'last_seen': self.last_seen
+            'last_seen': self.last_seen,
+            'ignore_on_purge': self.ignore_on_purge,
         }
     
     def serialize(self):
@@ -245,6 +248,8 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     blog_comments = db.relationship('BlogComment', back_populates='user')
+    flight_comments = db.relationship('FlightComment', back_populates='user')
+    uat_flight_comments = db.relationship('UatFlightComment', back_populates='user')
 
     def to_dict(self):
         return {
@@ -301,10 +306,12 @@ class Dump978Flight(db.Model):
     flight = db.Column(db.String(20), nullable=False)
     first_seen = db.Column(db.String(32), nullable=False)
     last_seen = db.Column(db.String(32))
+    ignore_on_purge = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text('0'))
 
     # Relationships
     aircraft_ref = db.relationship('Dump978Aircraft', back_populates='flights')
     positions = db.relationship('Dump978Position', back_populates='flight_ref')
+    comments = db.relationship('UatFlightComment', back_populates='flight_ref', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -312,7 +319,8 @@ class Dump978Flight(db.Model):
             'aircraft': self.aircraft,
             'flight': self.flight,
             'first_seen': self.first_seen,
-            'last_seen': self.last_seen
+            'last_seen': self.last_seen,
+            'ignore_on_purge': self.ignore_on_purge,
         }
 
     def serialize(self):
@@ -353,6 +361,72 @@ class Dump978Position(db.Model):
             'altitude': self.altitude,
             'vertical_rate': self.vertical_rate,
             'speed': self.speed
+        }
+
+    def serialize(self):
+        return self.to_dict()
+
+
+class FlightComment(db.Model):
+    __tablename__ = 'dump1090_flight_comments'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    flight_id = db.Column(db.Integer, db.ForeignKey('dump1090_flights.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    edited = db.Column(db.Boolean, nullable=False, default=False)
+    edited_at = db.Column(db.DateTime, nullable=True)
+
+    flight_ref = db.relationship('Flight', back_populates='comments')
+    user = db.relationship('User', back_populates='flight_comments')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'flight_id': self.flight_id,
+            'user_id': self.user_id,
+            'content': self.content,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'edited': self.edited,
+            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
+            'user': {
+                'id': self.user.id if self.user else self.user_id,
+                'name': self.user.name if self.user else None,
+            },
+        }
+
+    def serialize(self):
+        return self.to_dict()
+
+
+class UatFlightComment(db.Model):
+    __tablename__ = 'dump978_flight_comments'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    flight_id = db.Column(db.Integer, db.ForeignKey('dump978_flights.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    edited = db.Column(db.Boolean, nullable=False, default=False)
+    edited_at = db.Column(db.DateTime, nullable=True)
+
+    flight_ref = db.relationship('Dump978Flight', back_populates='comments')
+    user = db.relationship('User', back_populates='uat_flight_comments')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'flight_id': self.flight_id,
+            'user_id': self.user_id,
+            'content': self.content,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'edited': self.edited,
+            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
+            'user': {
+                'id': self.user.id if self.user else self.user_id,
+                'name': self.user.name if self.user else None,
+            },
         }
 
     def serialize(self):

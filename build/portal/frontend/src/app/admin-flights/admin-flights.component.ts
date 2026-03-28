@@ -38,11 +38,29 @@ export class AdminFlightsComponent implements OnInit {
   uatSuccessMessage = '';
   uatErrorMessage = '';
 
+  ignoredPageSize = 10;
+
+  ignoredAdsbFlights: any[] = [];
+  ignoredAdsbOffset = 0;
+  ignoredAdsbTotal = 0;
+  ignoredAdsbLoading = false;
+  ignoredAdsbError = '';
+  private ignoredAdsbSaving = new Set<string>();
+
+  ignoredUatFlights: any[] = [];
+  ignoredUatOffset = 0;
+  ignoredUatTotal = 0;
+  ignoredUatLoading = false;
+  ignoredUatError = '';
+  private ignoredUatSaving = new Set<string>();
+
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
     this.loadNavSetting();
     this.loadStats();
+    this.loadIgnoredAdsbFlights();
+    this.loadIgnoredUatFlights();
   }
 
   loadNavSetting() {
@@ -175,6 +193,152 @@ export class AdminFlightsComponent implements OnInit {
       error: () => {
         this.uatPurging = false;
         this.uatErrorMessage = 'Failed to purge UAT flights. Ensure you are logged in as an Admin.';
+      }
+    });
+  }
+
+  loadIgnoredAdsbFlights() {
+    this.ignoredAdsbLoading = true;
+    this.ignoredAdsbError = '';
+
+    this.dataService.getIgnoredFlights(this.ignoredAdsbOffset, this.ignoredPageSize).subscribe({
+      next: (res) => {
+        this.ignoredAdsbFlights = res?.flights ?? [];
+        this.ignoredAdsbTotal = res?.total ?? this.ignoredAdsbFlights.length;
+        this.ignoredAdsbLoading = false;
+
+        if (this.ignoredAdsbTotal > 0 && this.ignoredAdsbOffset >= this.ignoredAdsbTotal) {
+          this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredPageSize);
+          this.loadIgnoredAdsbFlights();
+        }
+      },
+      error: () => {
+        this.ignoredAdsbLoading = false;
+        this.ignoredAdsbError = 'Failed to load ADS-B ignored flights.';
+      }
+    });
+  }
+
+  loadIgnoredUatFlights() {
+    this.ignoredUatLoading = true;
+    this.ignoredUatError = '';
+
+    this.dataService.getIgnoredUatFlights(this.ignoredUatOffset, this.ignoredPageSize).subscribe({
+      next: (res) => {
+        this.ignoredUatFlights = res?.flights ?? [];
+        this.ignoredUatTotal = res?.total ?? this.ignoredUatFlights.length;
+        this.ignoredUatLoading = false;
+
+        if (this.ignoredUatTotal > 0 && this.ignoredUatOffset >= this.ignoredUatTotal) {
+          this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredPageSize);
+          this.loadIgnoredUatFlights();
+        }
+      },
+      error: () => {
+        this.ignoredUatLoading = false;
+        this.ignoredUatError = 'Failed to load UAT ignored flights.';
+      }
+    });
+  }
+
+  adsbIgnoredStart() {
+    return this.ignoredAdsbTotal === 0 ? 0 : this.ignoredAdsbOffset + 1;
+  }
+
+  adsbIgnoredEnd() {
+    return Math.min(this.ignoredAdsbOffset + this.ignoredPageSize, this.ignoredAdsbTotal);
+  }
+
+  uatIgnoredStart() {
+    return this.ignoredUatTotal === 0 ? 0 : this.ignoredUatOffset + 1;
+  }
+
+  uatIgnoredEnd() {
+    return Math.min(this.ignoredUatOffset + this.ignoredPageSize, this.ignoredUatTotal);
+  }
+
+  prevIgnoredAdsbPage() {
+    if (this.ignoredAdsbOffset === 0 || this.ignoredAdsbLoading) {
+      return;
+    }
+    this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredPageSize);
+    this.loadIgnoredAdsbFlights();
+  }
+
+  nextIgnoredAdsbPage() {
+    if (this.ignoredAdsbLoading || this.ignoredAdsbOffset + this.ignoredPageSize >= this.ignoredAdsbTotal) {
+      return;
+    }
+    this.ignoredAdsbOffset += this.ignoredPageSize;
+    this.loadIgnoredAdsbFlights();
+  }
+
+  prevIgnoredUatPage() {
+    if (this.ignoredUatOffset === 0 || this.ignoredUatLoading) {
+      return;
+    }
+    this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredPageSize);
+    this.loadIgnoredUatFlights();
+  }
+
+  nextIgnoredUatPage() {
+    if (this.ignoredUatLoading || this.ignoredUatOffset + this.ignoredPageSize >= this.ignoredUatTotal) {
+      return;
+    }
+    this.ignoredUatOffset += this.ignoredPageSize;
+    this.loadIgnoredUatFlights();
+  }
+
+  isSavingIgnoredAdsb(flight: string) {
+    return this.ignoredAdsbSaving.has(flight);
+  }
+
+  isSavingIgnoredUat(flight: string) {
+    return this.ignoredUatSaving.has(flight);
+  }
+
+  updateIgnoredAdsbFlight(flight: any, event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    if (!target) {
+      return;
+    }
+
+    const ignoreOnPurge = target.checked;
+    this.ignoredAdsbSaving.add(flight.flight);
+    this.ignoredAdsbError = '';
+
+    this.dataService.updateFlightPurgePreference(flight.flight, ignoreOnPurge).subscribe({
+      next: () => {
+        this.ignoredAdsbSaving.delete(flight.flight);
+        this.loadIgnoredAdsbFlights();
+      },
+      error: () => {
+        this.ignoredAdsbSaving.delete(flight.flight);
+        this.ignoredAdsbError = `Failed to update purge preference for ADS-B flight ${flight.flight}.`;
+        this.loadIgnoredAdsbFlights();
+      }
+    });
+  }
+
+  updateIgnoredUatFlight(flight: any, event: Event) {
+    const target = event.target as HTMLInputElement | null;
+    if (!target) {
+      return;
+    }
+
+    const ignoreOnPurge = target.checked;
+    this.ignoredUatSaving.add(flight.flight);
+    this.ignoredUatError = '';
+
+    this.dataService.updateUatFlightPurgePreference(flight.flight, ignoreOnPurge).subscribe({
+      next: () => {
+        this.ignoredUatSaving.delete(flight.flight);
+        this.loadIgnoredUatFlights();
+      },
+      error: () => {
+        this.ignoredUatSaving.delete(flight.flight);
+        this.ignoredUatError = `Failed to update purge preference for UAT flight ${flight.flight}.`;
+        this.loadIgnoredUatFlights();
       }
     });
   }

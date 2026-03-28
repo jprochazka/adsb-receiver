@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { LoginComponent } from './login.component';
@@ -63,5 +63,38 @@ describe('LoginComponent', () => {
 
     expect(component.errorMessage).toBe('Invalid email or password.');
     expect(component.loading).toBeFalse();
+  });
+
+  it('should redirect to returnUrl after successful login when provided', async () => {
+    await TestBed.resetTestingModule();
+
+    await TestBed.configureTestingModule({
+      imports: [LoginComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              queryParamMap: convertToParamMap({ returnUrl: '/flight-history/adsb/FLT0001' }),
+            },
+          },
+        },
+        { provide: DataService, useValue: dataServiceMock },
+      ],
+    }).compileComponents();
+
+    router = TestBed.inject(Router);
+    fixture = TestBed.createComponent(LoginComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const navigateByUrlSpy = spyOn(router, 'navigateByUrl').and.resolveTo(true);
+    component.email = 'jane@example.com';
+    component.password = 'password123';
+
+    component.login();
+
+    expect(navigateByUrlSpy).toHaveBeenCalledWith('/flight-history/adsb/FLT0001');
   });
 });

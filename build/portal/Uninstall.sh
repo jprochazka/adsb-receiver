@@ -30,6 +30,10 @@ while [[ $# -gt 0 ]]; do
             REMOVE_VENV=true
             shift
             ;;
+        --remove-rrd)
+            REMOVE_RRD=true
+            shift
+            ;;
         --purge-packages)
             PURGE_PACKAGES=true
             shift
@@ -39,7 +43,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            print_error "Unknown option: $1"
+            echo "Unknown option: $1" >&2
             exit 1
             ;;
     esac
