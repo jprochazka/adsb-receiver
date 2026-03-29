@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.live-admin-card {
+  background-color: var(--bs-card-bg);
+  border-color: var(--bs-card-border-color);
+
+  .card-header {
+    background-color: var(--bs-card-cap-bg);
+    color: var(--bs-card-cap-color);
+    border-bottom-color: var(--bs-card-border-color);
+  }
+}
+
+.custom-preset-slot {
+  background-color: var(--bs-card-bg) !important;
+  border-color: var(--bs-border-color) !important;
+  color: var(--bs-body-color);
+}
+
+.live-navigation-card {
+  .card-header {
+    border-bottom: none;
+  }
+
+  .list-group-item {
+    border-color: transparent;
+  }
+}

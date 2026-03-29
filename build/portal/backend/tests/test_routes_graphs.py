@@ -2,7 +2,7 @@ import logging
 from unittest.mock import patch
 
 
-def _fake_fetch(rrd_path: str, ds_name: str, cf: str, period: str):
+def _fake_fetch(rrd_path: str, ds_name: str, cf: str, period: str, *args, **kwargs):
     # Deterministic per-DS values used by multiple graph endpoint tests
     base = {
         'total': 10.0,
@@ -60,6 +60,52 @@ def test_get_system_network_graph_200(mock_iface, mock_fetch, mock_isfile, clien
 
 def test_get_graph_400_invalid_period(client):
     response = client.get('/api/graphs/dump1090/aircraft?period=365d')
+    assert response.status_code == 400
+
+
+def test_get_graph_400_missing_end_for_exact_range(client):
+    response = client.get('/api/graphs/dump1090/aircraft?start=1700000000')
+    assert response.status_code == 400
+
+
+@patch('backend.routes.graphs._fetch_rrd', side_effect=_fake_fetch)
+def test_get_graph_200_exact_range(mock_fetch, client):
+    response = client.get('/api/graphs/dump1090/aircraft?start=1700000000&end=1700003600')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['start'] == 1700000000
+    assert data['end'] == 1700003600
+
+
+@patch('backend.routes.graphs._fetch_rrd', side_effect=_fake_fetch)
+def test_get_graph_200_exact_range_with_step(mock_fetch, client):
+    response = client.get('/api/graphs/dump1090/aircraft?start=1700000000&end=1700003600&step=60')
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data['start'] == 1700000000
+    assert data['end'] == 1700003600
+    assert data['step'] == 60
+    assert data['labels'] == [100, 130]
+    assert mock_fetch.call_count == 3
+    first_call = mock_fetch.call_args_list[0]
+    assert first_call.kwargs['start'] == 1700000000
+    assert first_call.kwargs['end'] == 1700003600
+    assert first_call.kwargs['step'] == 60
+
+
+def test_get_graph_400_invalid_step_value(client):
+    response = client.get('/api/graphs/dump1090/aircraft?period=1h&step=abc')
+    assert response.status_code == 400
+
+
+def test_get_graph_400_non_positive_step(client):
+    response = client.get('/api/graphs/dump1090/aircraft?period=1h&step=0')
+    assert response.status_code == 400
+
+
+def test_get_graph_400_end_must_be_greater_than_start(client):
+    response = client.get('/api/graphs/dump1090/aircraft?start=1700003600&end=1700000000')
     assert response.status_code == 400
 
 

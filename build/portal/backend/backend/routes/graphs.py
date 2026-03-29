@@ -153,7 +153,15 @@ SYSTEM_METRICS = {
 # RRD fetch helpers
 # ---------------------------------------------------------------------------
 
-def _fetch_rrd(rrd_path: str, ds_name: str, cf: str, period: str) -> dict:
+def _fetch_rrd(
+    rrd_path: str,
+    ds_name: str,
+    cf: str,
+    period: str,
+    start: int | None = None,
+    end: int | None = None,
+    step: int | None = None,
+) -> dict:
     """
     Run ``rrdtool fetch`` and return a {unix_timestamp: float|None} dict for
     the requested data-source column. Returns an empty dict on any error.
@@ -162,10 +170,16 @@ def _fetch_rrd(rrd_path: str, ds_name: str, cf: str, period: str) -> dict:
         # File absent means collection is disabled for this metric — not an error.
         return {}
 
-    result = subprocess.run(
-        ['rrdtool', 'fetch', rrd_path, cf, '--start', f'end-{period}', '--end', 'now'],
-        capture_output=True, text=True, timeout=15
-    )
+    cmd = ['rrdtool', 'fetch', rrd_path, cf]
+    if start is not None and end is not None:
+        cmd.extend(['--start', str(start), '--end', str(end)])
+    else:
+        cmd.extend(['--start', f'end-{period}', '--end', 'now'])
+
+    if step is not None:
+        cmd.extend(['--resolution', str(step)])
+
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
 
     if result.returncode != 0:
         logging.error('rrdtool fetch failed for %s: %s', rrd_path, result.stderr.strip())
@@ -197,7 +211,13 @@ def _fetch_rrd(rrd_path: str, ds_name: str, cf: str, period: str) -> dict:
     return data
 
 
-def _build_chart_response(series: list, period: str) -> dict:
+def _build_chart_response(
+    series: list,
+    period: str,
+    start: int | None = None,
+    end: int | None = None,
+    step: int | None = None,
+) -> dict:
     """
     Fetch all series and merge into a Chart.js-compatible response.
 
@@ -209,7 +229,7 @@ def _build_chart_response(series: list, period: str) -> dict:
     fetched_series = []
 
     for label, rrd_path, cf, ds_name in series:
-        ts_map = _fetch_rrd(rrd_path, ds_name, cf, period)
+        ts_map = _fetch_rrd(rrd_path, ds_name, cf, period, start=start, end=end, step=step)
         all_timestamps.update(ts_map.keys())
         fetched_series.append((label, ts_map))
 
@@ -217,6 +237,9 @@ def _build_chart_response(series: list, period: str) -> dict:
 
     return {
         'period': period,
+        'start': start,
+        'end': end,
+        'step': step,
         'labels': sorted_timestamps,
         'datasets': [
             {
@@ -231,6 +254,51 @@ def _build_chart_response(series: list, period: str) -> dict:
 def _metric_to_series(metric_list: list) -> list:
     """Convert a metric definition list into (label, path, cf, ds) tuples."""
     return [(label, rrd_path, cf, ds_name) for label, rrd_path, cf, ds_name in metric_list]
+
+
+def _parse_window_query() -> tuple[str, int | None, int | None, int | None]:
+    """
+    Parse graph query range parameters.
+
+    Supported query styles:
+      - period-based: ?period=24h
+      - exact window: ?start=<unix>&end=<unix>[&step=<seconds>]
+    """
+    period = request.args.get('period', '24h')
+    start_arg = request.args.get('start')
+    end_arg = request.args.get('end')
+    step_arg = request.args.get('step')
+
+    start = None
+    end = None
+    step = None
+
+    if start_arg is not None or end_arg is not None:
+        if start_arg is None or end_arg is None:
+            abort(400, 'Both start and end must be provided for exact range queries')
+
+        try:
+            start = int(start_arg)
+            end = int(end_arg)
+        except ValueError:
+            abort(400, 'start/end must be unix timestamps (integer seconds)')
+
+        if end <= start:
+            abort(400, 'end must be greater than start')
+    else:
+        if period not in VALID_PERIODS:
+            abort(400, f'Invalid period. Valid values: {", ".join(sorted(VALID_PERIODS))}')
+
+    if step_arg is not None:
+        try:
+            step = int(step_arg)
+        except ValueError:
+            abort(400, 'step must be an integer number of seconds')
+
+        if step <= 0:
+            abort(400, 'step must be greater than 0')
+
+    return period, start, end, step
 
 
 def _get_network_interface() -> str:
@@ -272,10 +340,8 @@ class Dump1090GraphResource(Resource):
         """Get dump1090 chart data from RRD"""
         if metric not in DUMP1090_METRICS:
             abort(404, f'Unknown dump1090 metric: {metric}')
-        period = request.args.get('period', '24h')
-        if period not in VALID_PERIODS:
-            abort(400, f'Invalid period. Valid values: {", ".join(sorted(VALID_PERIODS))}')
-        return jsonify(_build_chart_response(_metric_to_series(DUMP1090_METRICS[metric]), period))
+        period, start, end, step = _parse_window_query()
+        return jsonify(_build_chart_response(_metric_to_series(DUMP1090_METRICS[metric]), period, start, end, step))
 
 
 # ---------------------------------------------------------------------------
@@ -294,10 +360,8 @@ class Dump978GraphResource(Resource):
         """Get dump978 chart data from RRD"""
         if metric not in DUMP978_METRICS:
             abort(404, f'Unknown dump978 metric: {metric}')
-        period = request.args.get('period', '24h')
-        if period not in VALID_PERIODS:
-            abort(400, f'Invalid period. Valid values: {", ".join(sorted(VALID_PERIODS))}')
-        return jsonify(_build_chart_response(_metric_to_series(DUMP978_METRICS[metric]), period))
+        period, start, end, step = _parse_window_query()
+        return jsonify(_build_chart_response(_metric_to_series(DUMP978_METRICS[metric]), period, start, end, step))
 
 
 # ---------------------------------------------------------------------------
@@ -315,9 +379,7 @@ class DevicesGraphResource(Resource):
     @graphs_ns.doc('get_devices_graph')
     def get(self, metric):
         """Get devices chart data from RRD"""
-        period = request.args.get('period', '24h')
-        if period not in VALID_PERIODS:
-            abort(400, f'Invalid period. Valid values: {", ".join(sorted(VALID_PERIODS))}')
+        period, start, end, step = _parse_window_query()
 
         if metric == 'network':
             iface = _get_network_interface()
@@ -344,4 +406,4 @@ class DevicesGraphResource(Resource):
         else:
             abort(404, f'Unknown devices metric: {metric}')
 
-        return jsonify(_build_chart_response(series, period))
+        return jsonify(_build_chart_response(series, period, start, end, step))

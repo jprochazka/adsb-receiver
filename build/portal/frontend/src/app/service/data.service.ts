@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -395,8 +395,25 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/setting/${encodeURIComponent(name)}`);
   }
 
-  getGraphData(decoder: string, metric: string, period: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/graphs/${decoder}/${metric}?period=${period}`);
+  getGraphData(
+    decoder: string,
+    metric: string,
+    options: { period?: string; start?: number; end?: number; step?: number } = {}
+  ): Observable<any> {
+    let params = new HttpParams();
+
+    if (options.start != null && options.end != null) {
+      params = params.set('start', String(options.start));
+      params = params.set('end', String(options.end));
+    } else {
+      params = params.set('period', options.period ?? '24h');
+    }
+
+    if (options.step != null) {
+      params = params.set('step', String(options.step));
+    }
+
+    return this.http.get(`${this.apiUrl}/graphs/${decoder}/${metric}`, { params });
   }
 
   updateSetting(name: string, value: string): Observable<any> {
@@ -467,5 +484,9 @@ export class DataService {
     return this.http.post(`${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/resume`, {}, {
       headers: { Authorization: `Bearer ${token}` }
     });
+  }
+
+  getLiveAircraft(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/live/aircraft`);
   }
 }

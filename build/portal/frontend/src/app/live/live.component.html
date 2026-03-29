@@ -1,0 +1,264 @@
+<div class="lm-page">
+  <div id="live"></div>
+
+  <!-- ── Left flyout panel ─────────────────────────────────────────────── -->
+  <div class="flyout" [class.flyout--closed]="!panelOpen" [style.--flyout-width.px]="flyoutWidth">
+    <div class="flyout-panel">
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <div class="status-stat">
+          <span class="status-stat-value">{{ aircraft.length }}</span>
+          <span class="status-stat-label">Aircraft</span>
+        </div>
+        <div class="status-stat">
+          <span class="status-stat-value">{{ aircraftWithPosition }}</span>
+          <span class="status-stat-label">Plotted</span>
+        </div>
+        @if (lastUpdate) {
+          <div class="status-update">
+            <svg class="status-refresh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="10" height="10" fill="currentColor">
+              <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+              <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+            </svg>
+            {{ lastUpdate | date:'HH:mm:ss' }}
+          </div>
+        }
+      </div>
+
+      @if (loading) {
+        <div class="panel-spinner-wrap">
+          <app-spinner></app-spinner>
+          <p class="panel-spinner-label">Connecting to decoder(s)&hellip;</p>
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div class="panel-error">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+          </svg>
+          {{ errorMessage }}
+        </div>
+      }
+
+      <!-- ── Aircraft detail view ──────────────────────────────────────── -->
+      @if (selectedAircraft) {
+        <div class="ac-detail">
+
+          <!-- Photo / plane icon header -->
+          <div class="detail-img" [class.detail-img--loaded]="photoUrl">
+            @if (photoUrl) {
+              <img [src]="photoUrl" class="detail-photo" alt="Aircraft photo" (error)="photoUrl = null">
+              @if (photoAttrib) {
+                <span class="detail-photo-credit">&copy; {{ photoAttrib }}</span>
+              }
+            }
+            @if (!photoUrl) {
+              <svg class="detail-plane-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                <path d="M6.428 1.151C6.708.591 7.239 0 8 0s1.292.592 1.572 1.151C9.861 1.73 10 2.431 10 3v3.691l5.17 2.585a1.5 1.5 0 0 1 .83 1.342V12a.5.5 0 0 1-.582.493l-5.507-.088-.375 2.44a1 1 0 0 1-1.967 0l-.375-2.44-5.507.088A.5.5 0 0 1 1 12v-1.382a1.5 1.5 0 0 1 .83-1.342L7 6.691V3c0-.569.14-1.271.428-1.849z"/>
+              </svg>
+            }
+          </div>
+
+          <!-- Back button + main callsign -->
+          <div class="detail-header">
+            <button class="detail-back-btn" (click)="clearSelection()" aria-label="Back to aircraft list">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+              </svg>
+              All Aircraft
+            </button>
+            <div class="detail-callsign">
+              {{ selectedAircraft.flight ?? selectedAircraft.hex }}
+            </div>
+            <div class="detail-source-badge" [class.detail-source-badge--uat]="selectedAircraft.source === 'dump978'">
+              {{ selectedAircraft.source === 'dump978' ? 'UAT' : 'ADS-B' }}
+            </div>
+          </div>
+
+          <!-- Data rows -->
+          <div class="detail-info">
+            <div class="flyout-row">
+              <span class="flyout-label">ICAO</span>
+              <span class="flyout-value mono">{{ selectedAircraft.hex }}</span>
+            </div>
+            <div class="flyout-row">
+              <span class="flyout-label">Source</span>
+              <span class="flyout-value">{{ sourceLabel(selectedAircraft) }}</span>
+            </div>
+            @if (selectedAircraft.flight) {
+              <div class="flyout-row">
+                <span class="flyout-label">Callsign</span>
+                <span class="flyout-value mono">{{ selectedAircraft.flight }}</span>
+              </div>
+            }
+            <hr class="flyout-hr">
+
+            @if (selectedAircraft.altitude != null) {
+              <div class="flyout-row">
+                <span class="flyout-label">Altitude</span>
+                <span class="flyout-value" [style.color]="altColor(selectedAircraft.altitude)">
+                  {{ formatAlt(selectedAircraft.altitude) }}
+                </span>
+              </div>
+            }
+            @if (selectedAircraft.speed != null) {
+              <div class="flyout-row">
+                <span class="flyout-label">Speed</span>
+                <span class="flyout-value">{{ selectedAircraft.speed | number:'1.0-0' }} kts</span>
+              </div>
+            }
+            @if (selectedAircraft.track != null) {
+              <div class="flyout-row">
+                <span class="flyout-label">Track</span>
+                <span class="flyout-value">{{ selectedAircraft.track | number:'1.0-0' }}&deg;</span>
+              </div>
+            }
+            @if (selectedAircraft.vertical_rate != null) {
+              <div class="flyout-row">
+                <span class="flyout-label">Vertical Rate</span>
+                <span class="flyout-value"
+                  [class.vrate-climb]="selectedAircraft.vertical_rate! > 64"
+                  [class.vrate-descend]="selectedAircraft.vertical_rate! < -64">
+                  {{ formatVRate(selectedAircraft.vertical_rate) }}
+                </span>
+              </div>
+            }
+            @if (selectedAircraft.squawk) {
+              <hr class="flyout-hr">
+              <div class="flyout-row">
+                <span class="flyout-label">Squawk</span>
+                <span class="flyout-value mono">{{ selectedAircraft.squawk }}</span>
+              </div>
+            }
+            @if (selectedAircraft.category) {
+              <div class="flyout-row">
+                <span class="flyout-label">Category</span>
+                <span class="flyout-value">{{ selectedAircraft.category }}</span>
+              </div>
+            }
+            @if (selectedAircraft.type) {
+              <div class="flyout-row">
+                <span class="flyout-label">Signal Type</span>
+                <span class="flyout-value">{{ selectedAircraft.type }}</span>
+              </div>
+            }
+            <hr class="flyout-hr">
+            @if (selectedAircraft.seen != null) {
+              <div class="flyout-row">
+                <span class="flyout-label">Last Seen</span>
+                <span class="flyout-value">{{ formatSeen(selectedAircraft.seen) }}</span>
+              </div>
+            }
+            @if (selectedAircraft.rssi != null) {
+              <div class="flyout-row">
+                <span class="flyout-label">Signal</span>
+                <span class="flyout-value">{{ selectedAircraft.rssi | number:'1.1-1' }} dBFS</span>
+              </div>
+            }
+          </div>
+
+          <!-- Link to flight history page -->
+          @if (flightHistoryLink(selectedAircraft)) {
+            <div class="detail-footer">
+              <a class="detail-history-link"
+                [routerLink]="flightHistoryLink(selectedAircraft)"
+                aria-label="View flight history">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                  <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                </svg>
+                View Flight History
+              </a>
+            </div>
+          }
+
+        </div>
+      }
+
+      <!-- ── Aircraft list view (no selection) ────────────────────────── -->
+      @if (!selectedAircraft && !loading) {
+        <div class="panel-list-wrap">
+          <!-- Aircraft rows -->
+          <div class="ac-list">
+            @for (ac of filteredAircraft; track ac.hex) {
+              <button class="ac-row" (click)="selectAircraft(ac.hex)" [class.ac-row--no-pos]="ac.lat == null">
+                <span class="ac-dot" [style.background]="altColor(ac.altitude)"></span>
+                <span class="ac-hex mono">{{ ac.hex }}</span>
+                @if (ac.flight) {
+                  <span class="ac-callsign">{{ ac.flight }}</span>
+                }
+                <span class="ac-source" [class.ac-source--uat]="ac.source === 'dump978'">
+                  {{ ac.source === 'dump978' ? 'UAT' : 'ADS-B' }}
+                </span>
+                <span class="ac-alt" [style.color]="altColor(ac.altitude)">
+                  {{ ac.lat != null ? formatAlt(ac.altitude) : '—' }}
+                </span>
+              </button>
+            }
+
+            @if (filteredAircraft.length === 0 && !errorMessage) {
+              <div class="ac-list-empty">
+                @if (filterQuery) {
+                  No aircraft match <em>{{ filterQuery }}</em>.
+                } @else {
+                  No aircraft currently visible.
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Filter input -->
+          <div class="panel-filter">
+            <svg class="panel-filter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.099zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+            </svg>
+            <input
+              class="panel-filter-input"
+              type="text"
+              placeholder="Filter by hex or callsign…"
+              [(ngModel)]="filterQuery"
+              (ngModelChange)="applyFilter()"
+              autocomplete="off"
+              spellcheck="false">
+            @if (filterQuery) {
+              <button class="panel-filter-clear" (click)="filterQuery = ''; applyFilter()" aria-label="Clear filter">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="11" height="11" fill="currentColor">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+        </div>
+      }
+
+    </div><!-- /flyout-panel -->
+
+    <div class="flyout-resize-handle"
+      [class.flyout-resize-handle--hidden]="!panelOpen"
+      (mousedown)="startResize($event)"
+      aria-hidden="true"></div>
+
+    <!-- Toggle tab -->
+    <button class="flyout-tab" (click)="togglePanel()"
+      [attr.aria-label]="panelOpen ? 'Collapse panel' : 'Expand panel'">
+      <svg class="flyout-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 14" width="8" height="14">
+        <polyline points="6,1 1,7 6,13" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Altitude legend -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#64748b"></span><span>Ground / Unknown</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>&lt; 5,000 ft</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span><span>5–15k ft</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>15–30k ft</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#f97316"></span><span>30–45k ft</span></div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ef4444"></span><span>&gt; 45,000 ft</span></div>
+  </div>
+
+</div>

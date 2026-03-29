@@ -1,0 +1,179 @@
+<div class="container py-4">
+  <h1 class="mb-2">Live Map Management</h1>
+  <hr />
+
+  @if (loading) {
+    <app-spinner></app-spinner>
+  }
+
+  @if (successMessage) {
+    <div class="alert alert-success alert-dismissible">
+      {{ successMessage }}
+      <button type="button" class="btn-close" (click)="successMessage=''"></button>
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-danger alert-dismissible">
+      {{ errorMessage }}
+      <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+    </div>
+  }
+
+  @if (!loading) {
+    <div class="card mb-4 live-admin-card live-navigation-card">
+      <div class="card-header fw-semibold">Navigation Visibility</div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-semibold">Show Live Map in Navigation Bar</div>
+            <div class="text-muted small">When disabled, the Live Map link is hidden from visitors.</div>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch"
+              id="toggle-live-map" [(ngModel)]="liveMapEnabled" (change)="saveLiveMapEnabled()">
+            <label class="form-check-label" for="toggle-live-map">
+              {{ liveMapEnabled ? 'Enabled' : 'Disabled' }}
+            </label>
+          </div>
+        </li>
+        <li class="list-group-item">
+        </li>
+      </ul>
+    </div>
+
+    <div class="card mb-4 live-admin-card">
+      <div class="card-header fw-semibold">Decoder Feed URLs</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="live-map-json-url">dump1090 Feed URL</label>
+            <input id="live-map-json-url" class="form-control" type="text"
+              [(ngModel)]="dump1090JsonUrl" (change)="saveDump1090JsonUrl()">
+            <div class="form-text">Address to the dump1090 aircraft.json feed.</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="live-map-json-url-dump978">dump978 Feed URL</label>
+            <input id="live-map-json-url-dump978" class="form-control" type="text"
+              [(ngModel)]="dump978JsonUrl" (change)="saveDump978JsonUrl()">
+            <div class="form-text">Address to the dump978 aircraft.json feed.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 live-admin-card">
+      <div class="card-header fw-semibold">Default Map View</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="live-map-center-lat">Default Center Latitude</label>
+            <input id="live-map-center-lat" class="form-control" type="number" min="-85" max="85" step="any"
+              [(ngModel)]="liveMapCenterLat" (change)="saveLiveMapCenterLat()">
+            <div class="form-text">Range: -85 to 85 (full precision)</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="live-map-center-lon">Default Center Longitude</label>
+            <input id="live-map-center-lon" class="form-control" type="number" min="-180" max="180" step="any"
+              [(ngModel)]="liveMapCenterLon" (change)="saveLiveMapCenterLon()">
+            <div class="form-text">Range: -180 to 180 (full precision)</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="live-map-default-zoom">Default Zoom</label>
+            <input id="live-map-default-zoom" class="form-control" type="number" min="1" max="18" step="0.1"
+              [(ngModel)]="liveMapDefaultZoom" (change)="saveLiveMapDefaultZoom()">
+            <div class="form-text">Range: 1 to 18</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 live-admin-card">
+      <div class="card-header fw-semibold">Update & Trail Settings</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="live-map-refresh">Refresh Interval (ms)</label>
+            <input id="live-map-refresh" class="form-control" type="number" min="1000" max="60000"
+              [(ngModel)]="liveMapRefreshMs" (change)="saveLiveMapRefreshMs()">
+            <div class="form-text">Range: 1000 to 60000</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="live-map-trail-points">Trail Points Per Aircraft</label>
+            <input id="live-map-trail-points" class="form-control" type="number" min="0" max="200"
+              [(ngModel)]="liveMapTrailPoints" (change)="saveLiveMapTrailPoints()">
+            <div class="form-text">0 disables trails</div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="toggle-live-map-show-all-seen" [(ngModel)]="liveMapShowAllSeen" (change)="saveLiveMapShowAllSeen()">
+              <label class="form-check-label fw-semibold" for="toggle-live-map-show-all-seen">
+                Display all seen aircraft
+              </label>
+              <div class="form-text">When disabled, only aircraft with valid map positions appear in the flyout list.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-muted small mb-3">All changes are saved automatically.</p>
+
+    <div class="card mb-4 live-admin-card">
+      <div class="card-header fw-semibold">Presets</div>
+      <div class="card-body">
+        <div class="mb-3">
+          <div class="fw-semibold mb-2">Built-in Presets</div>
+          <div class="d-flex flex-wrap gap-2">
+            @for (preset of liveMapPresets; track preset.key) {
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="applyLiveMapPreset(preset.key)"
+                [attr.title]="preset.description">
+                {{ preset.label }}
+              </button>
+            }
+          </div>
+          <div class="form-text mt-2">Preset buttons overwrite live-map values and save immediately.</div>
+        </div>
+
+        <div>
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <div class="fw-semibold">Custom Preset Slots</div>
+            <button type="button" class="btn btn-sm btn-outline-success" (click)="addCustomPreset()">Add Preset</button>
+          </div>
+          <div class="row g-2">
+            @for (slot of customPresetSlots; track slot; let i = $index) {
+              <div class="col-12">
+                <div class="custom-preset-slot border rounded p-2">
+                  <div class="d-flex flex-wrap align-items-center gap-2">
+                    <input
+                      class="form-control form-control-sm"
+                      style="max-width: 220px;"
+                      type="text"
+                      maxlength="40"
+                      placeholder="Preset name"
+                      [(ngModel)]="slot.label"
+                      [ngModelOptions]="{ standalone: true }">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="saveCustomPresetLabel(i)">Save Name</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" (click)="saveCurrentAsCustomPreset(i)">Save Current</button>
+                    <button type="button" class="btn btn-sm btn-primary" (click)="applyCustomPreset(i)">Apply</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteCustomPreset(i)">Delete</button>
+                  </div>
+                  <div class="form-text mt-1">
+                    {{ slot.label || ('Preset ' + (i + 1)) }}: {{ slot.refreshMs }}ms, Lat {{ slot.centerLat }}, Lon {{ slot.centerLon }}, Zoom {{ slot.zoom }}, Trails {{ slot.trailPoints }}
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (customPresetSlots.length === 0) {
+              <div class="col-12">
+                <div class="text-muted small">No custom presets yet. Use <strong>Add Preset</strong> to create one.</div>
+              </div>
+            }
+          </div>
+          <div class="form-text mt-2">Edit name, then use Save Current to store the values below into that slot. Deleted presets are removed immediately.</div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,24 +1,39 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { RrdChartComponent, RrdChartConfig } from '../shared/rrd-chart/rrd-chart.component';
 
-const PERIODS = [
-  { label: 'Hourly',    value: '1h'  },
-  { label: 'Six Hours', value: '6h'  },
-  { label: 'Daily',     value: '24h' },
-  { label: 'Two Days',  value: '2d'  },
-  { label: 'Weekly',    value: '7d'  },
-  { label: 'Monthly',   value: '30d' },
+type PeriodOption = { label: string; value: string; durationHours: number };
+
+const PERIODS: PeriodOption[] = [
+  { label: 'Hourly',    value: '1h',  durationHours: 1 },
+  { label: 'Six Hours', value: '6h',  durationHours: 6 },
+  { label: 'Daily',     value: '24h', durationHours: 24 },
+  { label: 'Two Days',  value: '2d',  durationHours: 48 },
+  { label: 'Weekly',    value: '7d',  durationHours: 168 },
+  { label: 'Monthly',   value: '30d', durationHours: 720 },
 ];
+
+type GraphResolution = 'auto' | 'fine' | 'balanced' | 'compact';
+
+type ReceiverKpis = {
+  adsbMsgRate: number | null;
+  adsbAircraft: number | null;
+  adsbRange: number | null;
+  adsbStrongPct: number | null;
+  adsbPosPerMsgPct: number | null;
+  uatMsgRate: number | null;
+  uatAircraft: number | null;
+};
 
 @Component({
   selector: 'app-devices',
   standalone: true,
-  imports: [CommonModule, DecimalPipe, DatePipe, SpinnerComponent, RrdChartComponent],
+  imports: [CommonModule, FormsModule, DecimalPipe, DatePipe, SpinnerComponent, RrdChartComponent],
   templateUrl: './devices.component.html',
   styleUrl: './devices.component.scss'
 })
@@ -29,6 +44,17 @@ export class DevicesComponent implements OnInit {
   // ---- Receiver Information ----
   periods = PERIODS;
   activePeriod = '24h';
+  periodIndex = PERIODS.findIndex((p) => p.value === this.activePeriod);
+  rangeStart = '';
+  rangeEnd = '';
+  resolution: GraphResolution = 'auto';
+  customRangeActive = false;
+  customStartEpoch: number | null = null;
+  customEndEpoch: number | null = null;
+  brushStartPct = 0;
+  brushEndPct = 100;
+  brushSnapOptions = [1, 5, 15];
+  brushSnapMinutes = 5;
   receiverLoading = true;
   errorMessage = '';
 
@@ -39,6 +65,12 @@ export class DevicesComponent implements OnInit {
   dump1090GraphsEnabled = true;
   dump978GraphsEnabled = false;
   graphRefreshIntervalMs = 15000;
+  compareEnabled = false;
+  currentKpis: ReceiverKpis | null = null;
+  baselineKpis: ReceiverKpis | null = null;
+  baselineLabel = '';
+  baselineStartEpoch: number | null = null;
+  baselineEndEpoch: number | null = null;
 
   // Chart configs (built after settings load)
   d1090MessageRate!: RrdChartConfig;
@@ -81,6 +113,7 @@ export class DevicesComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
+    this.syncCustomRangeFromActivePeriod();
     this.loadVisibilitySettings();
   }
 
@@ -140,6 +173,7 @@ export class DevicesComponent implements OnInit {
         this.dump1090GraphsEnabled  = d1090?.value !== 'false';
         this.dump978GraphsEnabled   = d978?.value  !== 'false';
         this.buildChartConfigs();
+        this.refreshReceiverInsights();
         this.receiverLoading = false;
       },
       error: () => {
@@ -181,6 +215,162 @@ export class DevicesComponent implements OnInit {
 
   setPeriod(period: string): void {
     this.activePeriod = period;
+    this.periodIndex = this.periods.findIndex((p) => p.value === period);
+    this.customRangeActive = false;
+    this.customStartEpoch = null;
+    this.customEndEpoch = null;
+    this.brushStartPct = 0;
+    this.brushEndPct = 100;
+    this.syncCustomRangeFromActivePeriod();
+    if (!this.receiverLoading) {
+      this.refreshReceiverInsights();
+    }
+  }
+
+  setPeriodByIndex(index: number): void {
+    const bounded = Math.max(0, Math.min(this.periods.length - 1, index));
+    this.periodIndex = bounded;
+    this.setPeriod(this.periods[bounded].value);
+  }
+
+  stepPeriod(delta: number): void {
+    this.setPeriodByIndex(this.periodIndex + delta);
+  }
+
+  applyCustomRange(): void {
+    if (!this.rangeStart || !this.rangeEnd) {
+      this.errorMessage = 'Select both start and end date/time to apply a custom range.';
+      return;
+    }
+
+    const start = new Date(this.rangeStart);
+    const end = new Date(this.rangeEnd);
+    if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())) {
+      this.errorMessage = 'Invalid custom date range.';
+      return;
+    }
+    if (end <= start) {
+      this.errorMessage = 'End date/time must be after start date/time.';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.customRangeActive = true;
+    this.customStartEpoch = Math.floor(start.getTime() / 1000);
+    this.customEndEpoch = Math.floor(end.getTime() / 1000);
+    this.refreshReceiverInsights();
+  }
+
+  setBaselineFromCurrent(): void {
+    if (!this.currentKpis) {
+      return;
+    }
+
+    this.baselineKpis = { ...this.currentKpis };
+    const window = this.getActiveWindowEpochs();
+    this.baselineStartEpoch = window?.start ?? null;
+    this.baselineEndEpoch = window?.end ?? null;
+    this.baselineLabel = this.rangeSummary;
+    this.compareEnabled = true;
+  }
+
+  clearBaseline(): void {
+    this.baselineKpis = null;
+    this.baselineLabel = '';
+    this.compareEnabled = false;
+    this.baselineStartEpoch = null;
+    this.baselineEndEpoch = null;
+  }
+
+  formatDelta(current: number | null, baseline: number | null, suffix = ''): string {
+    if (current == null || baseline == null) {
+      return '';
+    }
+
+    const diff = current - baseline;
+    const sign = diff >= 0 ? '+' : '';
+    return `${sign}${diff.toFixed(1)}${suffix}`;
+  }
+
+  hasDelta(current: number | null, baseline: number | null): boolean {
+    return this.compareEnabled && current != null && baseline != null;
+  }
+
+  onBrushStartInput(value: number): void {
+    this.brushStartPct = Math.max(0, Math.min(value, this.brushEndPct - 0.1));
+    this.syncRangeFromBrush();
+  }
+
+  onBrushEndInput(value: number): void {
+    this.brushEndPct = Math.min(100, Math.max(value, this.brushStartPct + 0.1));
+    this.syncRangeFromBrush();
+  }
+
+  setBrushSnap(minutes: number): void {
+    if (!this.brushSnapOptions.includes(minutes)) {
+      return;
+    }
+
+    this.brushSnapMinutes = minutes;
+    this.syncRangeFromBrush();
+  }
+
+  nudgeBrushStart(direction: -1 | 1): void {
+    const deltaPct = this.getBrushDeltaPct() * direction;
+    this.onBrushStartInput(this.brushStartPct + deltaPct);
+  }
+
+  nudgeBrushEnd(direction: -1 | 1): void {
+    const deltaPct = this.getBrushDeltaPct() * direction;
+    this.onBrushEndInput(this.brushEndPct + deltaPct);
+  }
+
+  get brushSelectionStyle(): string {
+    const left = Math.max(0, Math.min(100, this.brushStartPct));
+    const width = Math.max(1, Math.min(100 - left, this.brushEndPct - this.brushStartPct));
+    return `left:${left}%;width:${width}%`;
+  }
+
+  get activePeriodLabel(): string {
+    return this.periods.find((p) => p.value === this.activePeriod)?.label ?? this.activePeriod;
+  }
+
+  get brushStartLabel(): string {
+    return this.formatBrushDateLabel(this.rangeStart);
+  }
+
+  get brushEndLabel(): string {
+    return this.formatBrushDateLabel(this.rangeEnd);
+  }
+
+  get maxGraphPoints(): number {
+    if (this.resolution === 'fine') return 480;
+    if (this.resolution === 'balanced') return 240;
+    if (this.resolution === 'compact') return 120;
+
+    // Auto: adapt density to current period for readability.
+    const option = this.periods.find((p) => p.value === this.activePeriod);
+    if (!option) return 240;
+    if (option.durationHours <= 6) return 480;
+    if (option.durationHours <= 48) return 300;
+    if (option.durationHours <= 168) return 220;
+    return 160;
+  }
+
+  get chartStepSeconds(): number {
+    return this.getKpiStepSeconds();
+  }
+
+  get rangeSummary(): string {
+    if (this.customRangeActive && this.customStartEpoch && this.customEndEpoch) {
+      const start = new Date(this.customStartEpoch * 1000).toLocaleString();
+      const end = new Date(this.customEndEpoch * 1000).toLocaleString();
+      return `${start} to ${end}`;
+    }
+
+    const option = this.periods.find((p) => p.value === this.activePeriod);
+    if (!option) return this.activePeriod;
+    return `${option.label} (${option.value})`;
   }
 
   setActiveTab(tab: string): void {
@@ -204,6 +394,177 @@ export class DevicesComponent implements OnInit {
     }
 
     this.activeTab = '';
+  }
+
+  private syncCustomRangeFromActivePeriod(): void {
+    const option = this.periods.find((p) => p.value === this.activePeriod);
+    if (!option) return;
+
+    const end = new Date();
+    const start = new Date(end.getTime() - option.durationHours * 3_600_000);
+    this.rangeStart = this.toDatetimeLocalValue(start);
+    this.rangeEnd = this.toDatetimeLocalValue(end);
+  }
+
+  private syncRangeFromBrush(): void {
+    const option = this.periods.find((p) => p.value === this.activePeriod);
+    if (!option) return;
+
+    const now = Date.now();
+    const windowMs = option.durationHours * 3_600_000;
+    const baseStart = now - windowMs;
+
+    const startMs = baseStart + (windowMs * (this.brushStartPct / 100));
+    const endMs = baseStart + (windowMs * (this.brushEndPct / 100));
+    const snapMs = this.brushSnapMinutes * 60_000;
+
+    let snappedStartMs = Math.floor(startMs / snapMs) * snapMs;
+    let snappedEndMs = Math.ceil(endMs / snapMs) * snapMs;
+
+    snappedStartMs = Math.max(baseStart, snappedStartMs);
+    snappedEndMs = Math.min(now, snappedEndMs);
+    if (snappedEndMs <= snappedStartMs) {
+      snappedEndMs = Math.min(now, snappedStartMs + snapMs);
+    }
+
+    this.rangeStart = this.toDatetimeLocalValue(new Date(snappedStartMs));
+    this.rangeEnd = this.toDatetimeLocalValue(new Date(snappedEndMs));
+  }
+
+  private refreshReceiverInsights(): void {
+    const options = this.buildGraphQueryOptions();
+    forkJoin({
+      d1090Rate: this.dataService.getGraphData('dump1090', 'message-rate', options).pipe(catchError(() => of(null))),
+      d1090Aircraft: this.dataService.getGraphData('dump1090', 'aircraft', options).pipe(catchError(() => of(null))),
+      d1090Range: this.dataService.getGraphData('dump1090', 'range', options).pipe(catchError(() => of(null))),
+      d978Messages: this.dataService.getGraphData('dump978', 'messages', options).pipe(catchError(() => of(null))),
+      d978Aircraft: this.dataService.getGraphData('dump978', 'aircraft', options).pipe(catchError(() => of(null))),
+    }).subscribe(({ d1090Rate, d1090Aircraft, d1090Range, d978Messages, d978Aircraft }) => {
+      const msgRate = this.extractDatasetAverage(d1090Rate, 'messages');
+      const positions = this.extractDatasetAverage(d1090Rate, 'positions');
+      const strongSignals = this.extractDatasetAverage(d1090Rate, 'strong_signals');
+      const rangeMeters = this.extractDatasetAverage(d1090Range, 'max_range');
+
+      this.currentKpis = {
+        adsbMsgRate: msgRate,
+        adsbAircraft: this.extractDatasetAverage(d1090Aircraft, 'total'),
+        adsbRange: rangeMeters != null ? this.convertRangeFromMeters(rangeMeters) : null,
+        adsbStrongPct: (strongSignals != null && msgRate != null && msgRate > 0) ? (strongSignals * 100) / msgRate : null,
+        adsbPosPerMsgPct: (positions != null && msgRate != null && msgRate > 0) ? (positions * 100) / msgRate : null,
+        uatMsgRate: this.extractDatasetAverage(d978Messages, 'messages'),
+        uatAircraft: this.extractDatasetAverage(d978Aircraft, 'total'),
+      };
+    });
+  }
+
+  private buildGraphQueryOptions(): { period?: string; start?: number; end?: number; step?: number } {
+    const step = this.chartStepSeconds;
+    const window = this.getActiveWindowEpochs();
+    if (window) {
+      return {
+        start: window.start,
+        end: window.end,
+        step,
+      };
+    }
+
+    return {
+      period: this.activePeriod,
+      step,
+    };
+  }
+
+  private getActiveWindowEpochs(): { start: number; end: number } | null {
+    if (this.customRangeActive && this.customStartEpoch != null && this.customEndEpoch != null) {
+      return {
+        start: this.customStartEpoch,
+        end: this.customEndEpoch,
+      };
+    }
+
+    const option = this.periods.find((p) => p.value === this.activePeriod);
+    if (!option) {
+      return null;
+    }
+
+    const end = Math.floor(Date.now() / 1000);
+    const start = end - Math.floor(option.durationHours * 3600);
+    return { start, end };
+  }
+
+  private getKpiStepSeconds(): number {
+    if (this.resolution === 'fine') return 60;
+    if (this.resolution === 'balanced') return 300;
+    if (this.resolution === 'compact') return 900;
+
+    const option = this.periods.find((p) => p.value === this.activePeriod);
+    if (!option) return 300;
+    if (option.durationHours <= 1) return 60;
+    if (option.durationHours <= 24) return 300;
+    return 900;
+  }
+
+  private extractDatasetAverage(response: any, label: string): number | null {
+    if (!response?.datasets || !Array.isArray(response.datasets)) {
+      return null;
+    }
+
+    const dataset = response.datasets.find((d: any) => d?.label === label);
+    if (!dataset || !Array.isArray(dataset.data)) {
+      return null;
+    }
+
+    const values = dataset.data.filter((v: number | null) => typeof v === 'number') as number[];
+    if (!values.length) {
+      return null;
+    }
+
+    const sum = values.reduce((acc, v) => acc + v, 0);
+    return sum / values.length;
+  }
+
+  private convertRangeFromMeters(value: number): number {
+    if (this.measurementRange === 'metric') {
+      return value * 0.001;
+    }
+    if (this.measurementRange === 'imperialStatute') {
+      return value * 0.000621371;
+    }
+    return value * 0.000539957;
+  }
+
+  private getBrushDeltaPct(): number {
+    const option = this.periods.find((p) => p.value === this.activePeriod);
+    if (!option) return 0.1;
+
+    const windowMs = option.durationHours * 3_600_000;
+    const deltaPct = (this.brushSnapMinutes * 60_000 * 100) / windowMs;
+    return Math.max(0.1, deltaPct);
+  }
+
+  private formatBrushDateLabel(datetimeLocal: string): string {
+    const date = new Date(datetimeLocal);
+    if (!Number.isFinite(date.getTime())) {
+      return datetimeLocal;
+    }
+
+    return date.toLocaleString(undefined, {
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  }
+
+  private toDatetimeLocalValue(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const y = date.getFullYear();
+    const m = pad(date.getMonth() + 1);
+    const d = pad(date.getDate());
+    const h = pad(date.getHours());
+    const min = pad(date.getMinutes());
+    return `${y}-${m}-${d}T${h}:${min}`;
   }
 
   formatBytes(bytes: number): string {

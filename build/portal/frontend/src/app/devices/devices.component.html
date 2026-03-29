@@ -44,17 +44,216 @@
     }
 
     @if (!receiverLoading && !errorMessage) {
-      <div class="btn-group mb-4" role="group" aria-label="Graph period">
-        @for (p of periods; track p) {
-          <button
-            type="button"
-            class="btn btn-sm"
-            [class.btn-primary]="activePeriod === p.value"
-            [class.btn-outline-secondary]="activePeriod !== p.value"
-            (click)="setPeriod(p.value)">
-            {{ p.label }}
-          </button>
-        }
+      <div class="card mb-4 devices-time-card">
+        <div class="card-body py-3">
+          <div class="row g-3 align-items-start">
+            <div class="col min-w-250">
+              <label class="form-label fw-semibold mb-1">Time Window</label>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="stepPeriod(-1)">-</button>
+                <input
+                  class="form-range flex-grow-1"
+                  type="range"
+                  min="0"
+                  [max]="periods.length - 1"
+                  [value]="periodIndex"
+                  (input)="setPeriodByIndex(+$any($event.target).value)">
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="stepPeriod(1)">+</button>
+              </div>
+
+              <div class="time-brush mt-2" aria-label="Visual range selector">
+                <div class="time-brush-track"></div>
+                <div class="time-brush-selection" [style]="brushSelectionStyle"></div>
+                <input
+                  class="time-brush-slider"
+                  type="range"
+                  min="0"
+                  max="99.9"
+                  step="0.1"
+                  [value]="brushStartPct"
+                  (input)="onBrushStartInput(+$any($event.target).value)"
+                  aria-label="Range start handle">
+                <input
+                  class="time-brush-slider"
+                  type="range"
+                  min="1"
+                  max="100"
+                  step="0.1"
+                  [value]="brushEndPct"
+                  (input)="onBrushEndInput(+$any($event.target).value)"
+                  aria-label="Range end handle">
+              </div>
+
+              <div class="time-brush-labels small text-muted mt-1">
+                <span>{{ brushStartLabel }}</span>
+                <span>{{ brushEndLabel }}</span>
+              </div>
+
+              <div class="time-brush-controls mt-2">
+                <span class="small text-muted">Snap</span>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Snap increment">
+                  @for (snap of brushSnapOptions; track snap) {
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      [class.active]="brushSnapMinutes === snap"
+                      (click)="setBrushSnap(snap)">
+                      {{ snap }}m
+                    </button>
+                  }
+                </div>
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="Fine adjust start range">
+                  <button type="button" class="btn btn-outline-secondary" (click)="nudgeBrushStart(-1)">Start -</button>
+                  <button type="button" class="btn btn-outline-secondary" (click)="nudgeBrushStart(1)">Start +</button>
+                </div>
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="Fine adjust end range">
+                  <button type="button" class="btn btn-outline-secondary" (click)="nudgeBrushEnd(-1)">End -</button>
+                  <button type="button" class="btn btn-outline-secondary" (click)="nudgeBrushEnd(1)">End +</button>
+                </div>
+              </div>
+
+              <div class="small text-muted mt-1">
+                Active window: <strong>{{ rangeSummary }}</strong>
+              </div>
+            </div>
+
+            <div class="col-auto min-w-220">
+              <label class="form-label fw-semibold mb-1" for="devices-resolution">Resolution</label>
+              <select id="devices-resolution" class="form-select form-select-sm" [(ngModel)]="resolution">
+                <option value="auto">Auto</option>
+                <option value="fine">Fine detail</option>
+                <option value="balanced">Balanced</option>
+                <option value="compact">Compact</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-2 mt-1 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold mb-1" for="range-start">From</label>
+              <input id="range-start" class="form-control form-control-sm" type="datetime-local" [(ngModel)]="rangeStart">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold mb-1" for="range-end">To</label>
+              <input id="range-end" class="form-control form-control-sm" type="datetime-local" [(ngModel)]="rangeEnd">
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-primary" (click)="applyCustomRange()">Apply Range</button>
+            </div>
+          </div>
+
+          <div class="small text-muted mt-2">
+            Apply Range queries graphs using the exact start/end window.
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4 devices-kpi-card">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <span class="fw-semibold">SDR Tuning Summary</span>
+          <div class="d-flex align-items-center gap-2">
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" id="compare-baseline" [(ngModel)]="compareEnabled" [disabled]="!baselineKpis">
+              <label class="form-check-label small" for="compare-baseline">Compare to baseline</label>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="setBaselineFromCurrent()">Set Baseline</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearBaseline()" [disabled]="!baselineKpis">Clear</button>
+          </div>
+        </div>
+        <div class="card-body">
+          @if (baselineKpis) {
+            <div class="small text-muted mb-3">Baseline window: {{ baselineLabel }}</div>
+          }
+
+          <div class="row g-3">
+            <div class="col-lg-6">
+              <div class="receiver-kpi-group h-100">
+                <h6 class="mb-3">ADS-B (1090)</h6>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="kpi-tile">
+                      <div class="kpi-label">Messages/sec</div>
+                      <div class="kpi-value">{{ currentKpis?.adsbMsgRate ?? 0 | number:'1.1-1' }}</div>
+                      @if (hasDelta(currentKpis?.adsbMsgRate ?? null, baselineKpis?.adsbMsgRate ?? null)) {
+                        <div class="kpi-delta">{{ formatDelta(currentKpis?.adsbMsgRate ?? null, baselineKpis?.adsbMsgRate ?? null) }}</div>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="kpi-tile">
+                      <div class="kpi-label">Aircraft Seen</div>
+                      <div class="kpi-value">{{ currentKpis?.adsbAircraft ?? 0 | number:'1.0-0' }}</div>
+                      @if (hasDelta(currentKpis?.adsbAircraft ?? null, baselineKpis?.adsbAircraft ?? null)) {
+                        <div class="kpi-delta">{{ formatDelta(currentKpis?.adsbAircraft ?? null, baselineKpis?.adsbAircraft ?? null) }}</div>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="kpi-tile">
+                      <div class="kpi-label">Max Range</div>
+                      <div class="kpi-value">{{ currentKpis?.adsbRange ?? 0 | number:'1.1-1' }}</div>
+                      <div class="kpi-unit">
+                        {{ measurementRange === 'metric' ? 'km' : (measurementRange === 'imperialStatute' ? 'mi' : 'nm') }}
+                      </div>
+                      @if (hasDelta(currentKpis?.adsbRange ?? null, baselineKpis?.adsbRange ?? null)) {
+                        <div class="kpi-delta">{{ formatDelta(currentKpis?.adsbRange ?? null, baselineKpis?.adsbRange ?? null) }}</div>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="kpi-tile">
+                      <div class="kpi-label">Strong Signal Ratio</div>
+                      <div class="kpi-value">{{ currentKpis?.adsbStrongPct ?? 0 | number:'1.1-1' }}%</div>
+                      @if (hasDelta(currentKpis?.adsbStrongPct ?? null, baselineKpis?.adsbStrongPct ?? null)) {
+                        <div class="kpi-delta">{{ formatDelta(currentKpis?.adsbStrongPct ?? null, baselineKpis?.adsbStrongPct ?? null, '%') }}</div>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="kpi-tile">
+                      <div class="kpi-label">Positions per Message</div>
+                      <div class="kpi-value">{{ currentKpis?.adsbPosPerMsgPct ?? 0 | number:'1.1-1' }}%</div>
+                      @if (hasDelta(currentKpis?.adsbPosPerMsgPct ?? null, baselineKpis?.adsbPosPerMsgPct ?? null)) {
+                        <div class="kpi-delta">{{ formatDelta(currentKpis?.adsbPosPerMsgPct ?? null, baselineKpis?.adsbPosPerMsgPct ?? null, '%') }}</div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="receiver-kpi-group h-100">
+                <h6 class="mb-3">UAT (978)</h6>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="kpi-tile">
+                      <div class="kpi-label">Messages/sec</div>
+                      <div class="kpi-value">{{ currentKpis?.uatMsgRate ?? 0 | number:'1.1-1' }}</div>
+                      @if (hasDelta(currentKpis?.uatMsgRate ?? null, baselineKpis?.uatMsgRate ?? null)) {
+                        <div class="kpi-delta">{{ formatDelta(currentKpis?.uatMsgRate ?? null, baselineKpis?.uatMsgRate ?? null) }}</div>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="kpi-tile">
+                      <div class="kpi-label">Aircraft Seen</div>
+                      <div class="kpi-value">{{ currentKpis?.uatAircraft ?? 0 | number:'1.0-0' }}</div>
+                      @if (hasDelta(currentKpis?.uatAircraft ?? null, baselineKpis?.uatAircraft ?? null)) {
+                        <div class="kpi-delta">{{ formatDelta(currentKpis?.uatAircraft ?? null, baselineKpis?.uatAircraft ?? null) }}</div>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <div class="small text-muted mt-3">
+                  Use baseline compare after gain/filter/antenna changes to validate whether adjustments improved sustained decode quality.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       @if (dump1090GraphsEnabled) {
@@ -63,41 +262,41 @@
           <div class="card-body">
             <div class="row mb-4">
               <div class="col-12">
-                <app-rrd-chart [config]="d1090MessageRate" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d1090MessageRate" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch" [stepSeconds]="chartStepSeconds" [compareStartEpoch]="compareEnabled ? baselineStartEpoch : null" [compareEndEpoch]="compareEnabled ? baselineEndEpoch : null" compareLabel="Baseline"></app-rrd-chart>
               </div>
             </div>
             <div class="row mb-4">
               <div class="col-md-6">
-                <app-rrd-chart [config]="d1090Aircraft" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d1090Aircraft" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
               <div class="col-md-6">
-                <app-rrd-chart [config]="d1090Tracks" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
-              </div>
-            </div>
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <app-rrd-chart [config]="d1090Range" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
-              </div>
-              <div class="col-md-6">
-                <app-rrd-chart [config]="d1090Signal" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d1090Tracks" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
             </div>
             <div class="row mb-4">
               <div class="col-md-6">
-                <app-rrd-chart [config]="d1090Positions" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d1090Range" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
               <div class="col-md-6">
-                <app-rrd-chart [config]="d1090DfTypes" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d1090Signal" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch" [stepSeconds]="chartStepSeconds" [compareStartEpoch]="compareEnabled ? baselineStartEpoch : null" [compareEndEpoch]="compareEnabled ? baselineEndEpoch : null" compareLabel="Baseline"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090Positions" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
+              </div>
+              <div class="col-md-6">
+                <app-rrd-chart [config]="d1090DfTypes" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
             </div>
             <div class="row mb-4">
               <div class="col-12">
-                <app-rrd-chart [config]="d1090StrongSignals" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d1090StrongSignals" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
             </div>
             <div class="row justify-content-center">
               <div class="col-md-6">
-                <app-rrd-chart [config]="d1090Cpu" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d1090Cpu" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
             </div>
           </div>
@@ -110,23 +309,23 @@
           <div class="card-body">
             <div class="row mb-4">
               <div class="col-12">
-                <app-rrd-chart [config]="d978Messages" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d978Messages" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch" [stepSeconds]="chartStepSeconds" [compareStartEpoch]="compareEnabled ? baselineStartEpoch : null" [compareEndEpoch]="compareEnabled ? baselineEndEpoch : null" compareLabel="Baseline"></app-rrd-chart>
               </div>
             </div>
             <div class="row mb-4">
               <div class="col-md-6">
-                <app-rrd-chart [config]="d978Aircraft" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d978Aircraft" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
               <div class="col-md-6">
-                <app-rrd-chart [config]="d978Signal" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d978Signal" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch" [stepSeconds]="chartStepSeconds" [compareStartEpoch]="compareEnabled ? baselineStartEpoch : null" [compareEndEpoch]="compareEnabled ? baselineEndEpoch : null" compareLabel="Baseline"></app-rrd-chart>
               </div>
             </div>
             <div class="row">
               <div class="col-md-6">
-                <app-rrd-chart [config]="d978Range" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d978Range" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
               <div class="col-md-6">
-                <app-rrd-chart [config]="d978Altitude" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+                <app-rrd-chart [config]="d978Altitude" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>
             </div>
           </div>
@@ -138,31 +337,31 @@
         <div class="card-body">
           <div class="row mb-4">
             <div class="col-12">
-              <app-rrd-chart [config]="sysCpu" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              <app-rrd-chart [config]="sysCpu" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
             </div>
           </div>
           <div class="row mb-4">
             <div class="col-md-6">
-              <app-rrd-chart [config]="sysTemperature" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              <app-rrd-chart [config]="sysTemperature" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
             </div>
             <div class="col-md-6">
-              <app-rrd-chart [config]="sysMemory" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              <app-rrd-chart [config]="sysMemory" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
             </div>
           </div>
           <div class="row mb-4">
             <div class="col-md-6">
-              <app-rrd-chart [config]="sysNetwork" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              <app-rrd-chart [config]="sysNetwork" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
             </div>
             <div class="col-md-6">
-              <app-rrd-chart [config]="sysDiskUsage" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              <app-rrd-chart [config]="sysDiskUsage" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
             </div>
           </div>
           <div class="row">
             <div class="col-md-6">
-              <app-rrd-chart [config]="sysDiskIops" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              <app-rrd-chart [config]="sysDiskIops" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
             </div>
             <div class="col-md-6">
-              <app-rrd-chart [config]="sysDiskBandwidth" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs"></app-rrd-chart>
+              <app-rrd-chart [config]="sysDiskBandwidth" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
             </div>
           </div>
         </div>

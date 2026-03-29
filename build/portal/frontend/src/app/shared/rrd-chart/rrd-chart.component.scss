@@ -14,6 +14,30 @@
   color: #555;
 }
 
+.chart-compare-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  color: #4b5563;
+}
+
+.hint-line {
+  display: inline-block;
+  width: 16px;
+  border-top: 2px solid #4e79a7;
+}
+
+.hint-line--dashed {
+  border-top-style: dashed;
+}
+
+.hint-sep {
+  color: #9ca3af;
+}
+
 .chart-placeholder {
   height: 180px;
   background: #111827;

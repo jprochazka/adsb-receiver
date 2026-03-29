@@ -1,0 +1,562 @@
+:host {
+	display: block;
+}
+
+// ── Page layout ──────────────────────────────────────────────────────────────
+
+.lm-page {
+	position: fixed;
+	top: 56px; // below navbar
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	#live {
+		width: 100%;
+		height: 100%;
+	}
+}
+
+// ── Flyout panel ─────────────────────────────────────────────────────────────
+
+$flyout-tab:   28px;
+$flyout-resize-handle: 8px;
+
+.flyout {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: calc(var(--flyout-width, 280px) + #{$flyout-tab});
+	z-index: 10;
+	display: flex;
+	flex-direction: row;
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+	&--closed {
+		transform: translateX(calc(-1 * (var(--flyout-width, 280px))));
+	}
+}
+
+.flyout-panel {
+	width: var(--flyout-width, 280px);
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: rgba(5, 8, 26, 0.92);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-right: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.flyout-resize-handle {
+	position: absolute;
+	right: $flyout-tab;
+	top: 0;
+	bottom: 0;
+	width: $flyout-resize-handle;
+	cursor: ew-resize;
+	z-index: 1;
+	background: transparent;
+	opacity: 0;
+
+	&::before {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		transform: translateX(-50%);
+		background: transparent;
+	}
+
+	&:hover {
+		background: transparent;
+	}
+}
+
+.flyout-resize-handle--hidden {
+	pointer-events: none;
+	opacity: 0;
+}
+
+.flyout-tab {
+	flex-shrink: 0;
+	width: $flyout-tab;
+	border: none;
+	background: rgba(5, 8, 26, 0.88);
+	border-top: 1px solid rgba(56, 189, 248, 0.15);
+	border-right: 1px solid rgba(56, 189, 248, 0.15);
+	border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+	border-radius: 0 6px 6px 0;
+	cursor: pointer;
+	color: #38bdf8;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-self: center;
+	height: 60px;
+}
+
+.flyout-chevron {
+	transition: transform 0.3s;
+}
+
+.flyout--closed .flyout-chevron {
+	transform: rotate(180deg);
+}
+
+// ── Status bar ───────────────────────────────────────────────────────────────
+
+.status-bar {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	padding: 0.5rem 1rem;
+	border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+	background: rgba(14, 24, 52, 0.7);
+	flex-shrink: 0;
+}
+
+.status-stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex: 1;
+}
+
+.status-stat-value {
+	font-family: 'Rajdhani', sans-serif;
+	font-weight: 700;
+	font-size: 1.15rem;
+	color: #f8fafc;
+	line-height: 1;
+}
+
+.status-stat-label {
+	font-size: 0.58rem;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: #475569;
+	margin-top: 0.1rem;
+}
+
+.status-update {
+	font-size: 0.65rem;
+	color: #475569;
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
+.status-refresh-icon {
+	color: #22c55e;
+}
+
+// ── Spinner / loading ────────────────────────────────────────────────────────
+
+.panel-spinner-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	flex: 1;
+	padding: 2rem;
+}
+
+.panel-spinner-label {
+	font-size: 0.75rem;
+	color: #475569;
+	margin: 0;
+}
+
+// ── Error state ──────────────────────────────────────────────────────────────
+
+.panel-error {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 0.75rem;
+	padding: 1.5rem 1rem;
+	font-size: 0.78rem;
+	color: #fca5a5;
+	line-height: 1.45;
+	flex: 1;
+
+	svg {
+		flex-shrink: 0;
+		color: #ef4444;
+	}
+}
+
+// ── Shared flyout row styles (mirrors flights.component) ─────────────────────
+
+.flyout-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 0.5rem;
+	padding: 0.22rem 0;
+}
+
+.flyout-label {
+	font-size: 0.65rem;
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	color: #475569;
+}
+
+.flyout-value {
+	font-size: 0.8rem;
+	color: #cbd5e1;
+	text-align: right;
+
+	&.mono {
+		font-family: 'Courier New', monospace;
+		color: #38bdf8;
+	}
+}
+
+.flyout-hr {
+	border: none;
+	border-top: 1px solid rgba(56, 189, 248, 0.08);
+	margin: 0.55rem 0;
+}
+
+.mono {
+	font-family: 'Courier New', monospace;
+}
+
+// ── Aircraft detail view ─────────────────────────────────────────────────────
+
+.ac-detail {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.detail-img {
+	position: relative;
+	height: 130px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+	background: linear-gradient(145deg, #070c20 0%, #0d1a38 100%);
+	flex-shrink: 0;
+}
+
+.detail-photo {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.detail-photo-credit {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	font-size: 0.55rem;
+	color: rgba(255, 255, 255, 0.5);
+	background: rgba(0, 0, 0, 0.55);
+	padding: 0.1rem 0.35rem;
+}
+
+.detail-plane-icon {
+	width: 64px;
+	height: auto;
+	fill: #38bdf8;
+	opacity: 0.12;
+}
+
+.detail-header {
+	padding: 0.75rem 1rem 0.35rem;
+	border-bottom: 1px solid rgba(56, 189, 248, 0.06);
+	flex-shrink: 0;
+}
+
+.detail-back-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: 0.7rem;
+	color: #38bdf8;
+	cursor: pointer;
+	margin-bottom: 0.4rem;
+
+	&:hover {
+		color: #7dd3fc;
+	}
+}
+
+.detail-callsign {
+	font-family: 'Rajdhani', sans-serif;
+	font-weight: 700;
+	font-size: 1.45rem;
+	letter-spacing: 0.1em;
+	color: #f8fafc;
+	line-height: 1.1;
+}
+
+.detail-source-badge {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 0.35rem;
+	padding: 0.1rem 0.45rem;
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #22d3ee;
+	border: 1px solid rgba(34, 211, 238, 0.45);
+	border-radius: 999px;
+	background: rgba(8, 47, 73, 0.5);
+}
+
+.detail-source-badge--uat {
+	color: #f59e0b;
+	border-color: rgba(245, 158, 11, 0.5);
+	background: rgba(120, 53, 15, 0.45);
+}
+
+.detail-info {
+	padding: 0.75rem 1rem;
+	flex: 1;
+	overflow-y: auto;
+}
+
+.vrate-climb    { color: #22c55e !important; }
+.vrate-descend  { color: #f97316 !important; }
+
+.detail-footer {
+	padding: 0.75rem 1rem;
+	border-top: 1px solid rgba(56, 189, 248, 0.1);
+	margin-top: auto;
+	flex-shrink: 0;
+}
+
+.detail-history-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.45rem;
+	width: 100%;
+	padding: 0.45rem 0.75rem;
+	background: rgba(14, 165, 233, 0.08);
+	border: 1px solid rgba(14, 165, 233, 0.35);
+	border-radius: 0.35rem;
+	color: #38bdf8;
+	font-size: 0.78rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.15s;
+
+	&:hover {
+		background: rgba(14, 165, 233, 0.15);
+		color: #7dd3fc;
+	}
+}
+
+// ── Aircraft list ─────────────────────────────────────────────────────────────
+
+.panel-list-wrap {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+.panel-filter {
+	position: relative;
+	display: flex;
+	align-items: center;
+	padding: 0.5rem 0.75rem;
+	border-top: 1px solid rgba(56, 189, 248, 0.08);
+	flex-shrink: 0;
+}
+
+.panel-filter-icon {
+	position: absolute;
+	left: 1.1rem;
+	color: #475569;
+	pointer-events: none;
+}
+
+.panel-filter-input {
+	width: 100%;
+	background: rgba(14, 24, 52, 0.6);
+	border: 1px solid rgba(56, 189, 248, 0.2);
+	border-radius: 0.3rem;
+	color: #e2e8f0;
+	font-size: 0.78rem;
+	padding: 0.3rem 1.6rem 0.3rem 1.9rem;
+
+	&:focus {
+		outline: none;
+		border-color: rgba(56, 189, 248, 0.5);
+	}
+
+	&::placeholder {
+		color: #334155;
+	}
+}
+
+.panel-filter-clear {
+	position: absolute;
+	right: 1.1rem;
+	background: none;
+	border: none;
+	color: #475569;
+	cursor: pointer;
+	padding: 0;
+	display: flex;
+	align-items: center;
+
+	&:hover { color: #94a3b8; }
+}
+
+.ac-list {
+	flex: 1;
+	overflow-y: auto;
+}
+
+.ac-row {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	width: 100%;
+	padding: 0.4rem 0.75rem;
+	background: none;
+	border: none;
+	border-bottom: 1px solid rgba(56, 189, 248, 0.04);
+	color: #e2e8f0;
+	cursor: pointer;
+	text-align: left;
+	transition: background 0.12s;
+
+	&:hover {
+		background: rgba(56, 189, 248, 0.07);
+	}
+
+	&--no-pos {
+		opacity: 0.45;
+	}
+}
+
+.ac-dot {
+	flex-shrink: 0;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+}
+
+.ac-hex {
+	font-family: 'Courier New', monospace;
+	font-size: 0.75rem;
+	color: #94a3b8;
+	flex-shrink: 0;
+	min-width: 4.5rem;
+}
+
+.ac-callsign {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: #f8fafc;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ac-source {
+	flex-shrink: 0;
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #22d3ee;
+	border: 1px solid rgba(34, 211, 238, 0.45);
+	border-radius: 999px;
+	padding: 0.08rem 0.35rem;
+	line-height: 1.2;
+	background: rgba(8, 47, 73, 0.5);
+}
+
+.ac-source--uat {
+	color: #f59e0b;
+	border-color: rgba(245, 158, 11, 0.5);
+	background: rgba(120, 53, 15, 0.45);
+}
+
+.ac-alt {
+	font-size: 0.72rem;
+	flex-shrink: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+.ac-list-empty {
+	padding: 1.5rem 1rem;
+	font-size: 0.78rem;
+	color: #475569;
+	text-align: center;
+}
+
+// ── Altitude legend ───────────────────────────────────────────────────────────
+
+.legend {
+	position: absolute;
+	bottom: 1.2rem;
+	right: 0.75rem;
+	background: rgba(5, 8, 26, 0.88);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	border: 1px solid rgba(56, 189, 248, 0.12);
+	border-radius: 0.4rem;
+	padding: 0.5rem 0.75rem;
+	z-index: 5;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.legend-item {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	font-size: 0.62rem;
+	color: #94a3b8;
+	white-space: nowrap;
+}
+
+.legend-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+// ── OpenLayers control placement adjustments ──────────────────────────────────
+
+:host ::ng-deep {
+	.ol-zoom,
+	.ol-zoom-slider,
+	.ol-scale-line {
+		// Allow OL controls to sit above the vector layer without obscuring aircraft
+	}
+
+	.ol-full-screen {
+		top: 0.5rem;
+		right: 0.5rem;
+	}
+}

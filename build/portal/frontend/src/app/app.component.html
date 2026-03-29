@@ -10,6 +10,12 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarMain">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        @if (liveMapEnabled) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/" routerLinkActive="active"
+               [routerLinkActiveOptions]="{exact: true}" ariaCurrentWhenActive="page">Live Map</a>
+          </li>
+        }
         @if (blogNavEnabled) {
           <li class="nav-item">
             <a class="nav-link" routerLink="/blog" routerLinkActive="active" ariaCurrentWhenActive="page">Blog</a>
@@ -51,6 +57,7 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
             <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" routerLink="/admin/live">Live Map Management</a></li>
               <li><a class="dropdown-item" routerLink="/admin/blog">Blog Management</a></li>
               <li><a class="dropdown-item" routerLink="/admin/flights">Flights Management</a></li>
               <li><a class="dropdown-item" routerLink="/admin/acars">ACARS Management</a></li>

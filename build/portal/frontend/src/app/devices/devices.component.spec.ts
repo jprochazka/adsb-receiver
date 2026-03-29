@@ -23,6 +23,13 @@ class RrdChartStubComponent {
   @Input() config: unknown;
   @Input() period = '';
   @Input() refreshMs = 15000;
+  @Input() maxPoints: number | null = null;
+  @Input() startEpoch: number | null = null;
+  @Input() endEpoch: number | null = null;
+  @Input() compareStartEpoch: number | null = null;
+  @Input() compareEndEpoch: number | null = null;
+  @Input() compareLabel = '';
+  @Input() stepSeconds: number | null = null;
 }
 
 describe('DevicesComponent', () => {
@@ -159,6 +166,132 @@ describe('DevicesComponent', () => {
   it('should update active period', () => {
     component.setPeriod('7d');
     expect(component.activePeriod).toBe('7d');
+  });
+
+  it('should expose brush snap and fine-adjust controls in the template', () => {
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Snap');
+    expect(text).toContain('Start -');
+    expect(text).toContain('Start +');
+    expect(text).toContain('End -');
+    expect(text).toContain('End +');
+  });
+
+  it('should snap brush-derived range to selected increment', () => {
+    fixture.detectChanges();
+    spyOn(Date, 'now').and.returnValue(new Date('2026-03-28T12:00:00Z').getTime());
+
+    component.setPeriod('24h');
+    component.setBrushSnap(15);
+    component.onBrushStartInput(10.2);
+    component.onBrushEndInput(90.2);
+
+    const start = new Date(component.rangeStart);
+    const end = new Date(component.rangeEnd);
+
+    expect(Number.isNaN(start.getTime())).toBeFalse();
+    expect(Number.isNaN(end.getTime())).toBeFalse();
+    expect(start.getMinutes() % 15).toBe(0);
+    expect(end.getMinutes() % 15).toBe(0);
+    expect(end.getTime()).toBeGreaterThan(start.getTime());
+  });
+
+  it('should nudge brush handles using selected snap increment', () => {
+    fixture.detectChanges();
+
+    component.setPeriod('24h');
+    component.setBrushSnap(15);
+    const startBefore = component.brushStartPct;
+    const endBefore = component.brushEndPct;
+
+    component.nudgeBrushStart(1);
+    component.nudgeBrushEnd(-1);
+
+    expect(component.brushStartPct).toBeGreaterThan(startBefore);
+    expect(component.brushEndPct).toBeLessThan(endBefore);
+  });
+
+  it('should format brush labels from range inputs', () => {
+    fixture.detectChanges();
+
+    component.rangeStart = '2026-03-28T10:30';
+    component.rangeEnd = '2026-03-28T11:45';
+
+    expect(component.brushStartLabel).toBeTruthy();
+    expect(component.brushEndLabel).toBeTruthy();
+    expect(component.brushStartLabel).not.toContain('T');
+    expect(component.brushEndLabel).not.toContain('T');
+  });
+
+  it('should compute SDR tuning KPIs from graph responses', () => {
+    dataServiceMock.getGraphData.and.callFake((_decoder: string, metric: string) => {
+      if (metric === 'message-rate') {
+        return of({
+          labels: [1, 2],
+          datasets: [
+            { label: 'messages', data: [100, 120] },
+            { label: 'positions', data: [45, 55] },
+            { label: 'strong_signals', data: [20, 18] },
+          ],
+        });
+      }
+
+      if (metric === 'aircraft') {
+        return of({ labels: [1, 2], datasets: [{ label: 'total', data: [30, 35] }] });
+      }
+
+      if (metric === 'range') {
+        return of({ labels: [1, 2], datasets: [{ label: 'max_range', data: [100000, 120000] }] });
+      }
+
+      if (metric === 'messages') {
+        return of({ labels: [1, 2], datasets: [{ label: 'messages', data: [14, 16] }] });
+      }
+
+      return of({ labels: [], datasets: [] });
+    });
+
+    fixture.detectChanges();
+
+    expect(component.currentKpis).toBeTruthy();
+    expect(component.currentKpis?.adsbMsgRate).toBeCloseTo(110, 5);
+    expect(component.currentKpis?.adsbAircraft).toBeCloseTo(32.5, 5);
+    expect(component.currentKpis?.adsbPosPerMsgPct).toBeGreaterThan(40);
+    expect(component.currentKpis?.adsbStrongPct).toBeGreaterThan(10);
+    expect(component.currentKpis?.uatMsgRate).toBeCloseTo(15, 5);
+  });
+
+  it('should set and clear baseline from current KPI snapshot', () => {
+    fixture.detectChanges();
+    component.currentKpis = {
+      adsbMsgRate: 50,
+      adsbAircraft: 20,
+      adsbRange: 80,
+      adsbStrongPct: 12,
+      adsbPosPerMsgPct: 40,
+      uatMsgRate: 8,
+      uatAircraft: 4,
+    };
+
+    component.setBaselineFromCurrent();
+
+    expect(component.baselineKpis).toEqual(component.currentKpis);
+    expect(component.compareEnabled).toBeTrue();
+    expect(component.baselineLabel).toContain(component.activePeriod);
+
+    component.clearBaseline();
+
+    expect(component.baselineKpis).toBeNull();
+    expect(component.compareEnabled).toBeFalse();
+    expect(component.baselineLabel).toBe('');
+  });
+
+  it('should format deltas with sign and suffix', () => {
+    expect(component.formatDelta(12, 10)).toBe('+2.0');
+    expect(component.formatDelta(8, 10, '%')).toBe('-2.0%');
+    expect(component.formatDelta(null, 10)).toBe('');
   });
 
   // System Information Tests

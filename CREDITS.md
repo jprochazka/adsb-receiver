@@ -55,7 +55,6 @@ hard work and dedication to their respective projects this project would not hav
 * Airplanes.live Client:   https://github.com/airplanes-live/feed
 * Beast-Splitter:          https://github.com/flightaware/beast-splitter
 * Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
-* Dump1090-Tools:          https://github.com/mutability/dump1090-tools
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
 * Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * Fly Italy ADS-B Client:  https://github.com/flyitalyadsb/fly-italy-adsb

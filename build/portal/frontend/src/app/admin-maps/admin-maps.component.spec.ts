@@ -80,4 +80,5 @@ describe('AdminMapsComponent', () => {
     expect(component.mapItems[1].key).toBe('adsbx');
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('map_links_order', jasmine.any(String));
   });
+
 });

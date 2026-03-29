@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { AccountComponent } from './account/account.component';
+import { LiveComponent } from './live/live.component';
 import { AdminBlogComponent } from './admin-blog/admin-blog.component';
 import { AdminFlightsComponent } from './admin-flights/admin-flights.component';
 import { AdminDevicesComponent } from './admin-devices/admin-devices.component';
+import { AdminLiveComponent } from './admin-live/admin-live.component';
 import { AdminLinksComponent } from './admin-links/admin-links.component';
 import { AdminMapsComponent } from './admin-maps/admin-maps.component';
 import { AdminUsersComponent } from './admin-users/admin-users.component';
@@ -16,6 +18,7 @@ import { DevicesComponent } from './devices/devices.component';
 import { RegisterComponent } from './register/register.component';
 
 export const routes: Routes = [
+    { path: '', component: LiveComponent },
     { path: 'account', component: AccountComponent },
     { path: 'acars', component: AcarsComponent },
     { path: 'acars/:page', component: AcarsComponent },
@@ -23,6 +26,7 @@ export const routes: Routes = [
     { path: 'admin/blog', component: AdminBlogComponent },
     { path: 'admin/flights', component: AdminFlightsComponent },
     { path: 'admin/devices', component: AdminDevicesComponent },
+    { path: 'admin/live', component: AdminLiveComponent },
     { path: 'admin/links', component: AdminLinksComponent },
     { path: 'admin/maps', component: AdminMapsComponent },
     { path: 'admin/scheduler', component: AdminSchedulerComponent },

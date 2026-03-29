@@ -41,6 +41,7 @@ export class AppComponent implements OnInit, OnDestroy {
   infoGraphsEnabled = true;
 
   mapNavEnabled = true;
+  liveMapEnabled = true;
   mapLinks: { key: string; label: string; href: string; enabled: boolean; external: boolean }[] = [];
 
   get enabledMapLinks() {
@@ -115,13 +116,15 @@ export class AppComponent implements OnInit, OnDestroy {
   private loadMapSettings(): void {
     const pfclientUrl = `${window.location.protocol}//${window.location.hostname}:30053`;
     forkJoin({
+      liveMap:  this.dataService.getSetting('live_map_enabled').pipe(catchError(() => of({ value: 'true' }))),
       nav:      this.dataService.getSetting('map_nav_enabled').pipe(catchError(() => of({ value: 'true' }))),
       d1090:    this.dataService.getSetting('map_dump1090_enabled').pipe(catchError(() => of({ value: 'true' }))),
       d978:     this.dataService.getSetting('map_dump978_enabled').pipe(catchError(() => of({ value: 'true' }))),
       adsbx:    this.dataService.getSetting('map_adsbx_enabled').pipe(catchError(() => of({ value: 'true' }))),
       pfclient: this.dataService.getSetting('map_pfclient_enabled').pipe(catchError(() => of({ value: 'false' }))),
       order:    this.dataService.getSetting('map_links_order').pipe(catchError(() => of({ value: DEFAULT_MAP_ORDER }))),
-    }).subscribe(({ nav, d1090, d978, adsbx, pfclient, order }) => {
+    }).subscribe(({ liveMap, nav, d1090, d978, adsbx, pfclient, order }) => {
+      this.liveMapEnabled = liveMap?.value !== 'false';
       this.mapNavEnabled = nav?.value !== 'false';
 
       const enabledMap: Record<string, boolean> = {
