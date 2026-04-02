@@ -58,6 +58,14 @@ describe('LiveComponent', () => {
         live_map_default_zoom: '5',
         live_map_trail_points: '3',
         live_map_show_all_seen: 'true',
+        live_map_spider_overlay_enabled: 'true',
+        live_map_center_icon_enabled: 'true',
+        live_map_distance_rings_enabled: 'false',
+        live_map_distance_ring_compass_lines_enabled: 'true',
+        live_map_distance_ring_count: '4',
+        live_map_distance_ring_interval_miles: '25',
+        live_map_theoretical_range_enabled: 'false',
+        live_map_theoretical_range_json: '',
       };
       return of({ value: values[name] ?? 'true' });
     }),
@@ -74,6 +82,14 @@ describe('LiveComponent', () => {
       live_map_default_zoom: '5',
       live_map_trail_points: '3',
       live_map_show_all_seen: 'true',
+      live_map_spider_overlay_enabled: 'true',
+      live_map_center_icon_enabled: 'true',
+      live_map_distance_rings_enabled: 'false',
+      live_map_distance_ring_compass_lines_enabled: 'true',
+      live_map_distance_ring_count: '4',
+      live_map_distance_ring_interval_miles: '25',
+      live_map_theoretical_range_enabled: 'false',
+      live_map_theoretical_range_json: '',
     };
     return of({ value: values[name] ?? 'true' });
   };
@@ -126,6 +142,13 @@ describe('LiveComponent', () => {
     expect(component.defaultZoom).toBe(5);
     expect(component.trailPoints).toBe(3);
     expect(component.showAllSeen).toBeTrue();
+    expect(component.liveMapCenterIconEnabled).toBeTrue();
+    expect(component.liveMapDistanceRingsEnabled).toBeFalse();
+    expect(component.liveMapDistanceRingCompassLinesEnabled).toBeTrue();
+    expect(component.liveMapDistanceRingCount).toBe(4);
+    expect(component.liveMapDistanceRingIntervalMiles).toBe(25);
+    expect(component.liveMapTheoreticalRangeEnabled).toBeFalse();
+    expect(component.liveMapTheoreticalRangeJson).toBe('');
 
     expect(dataServiceMock.getLiveAircraft).toHaveBeenCalled();
     expect(component.loading).toBeFalse();
@@ -210,5 +233,52 @@ describe('LiveComponent', () => {
     });
 
     expect(link).toBe('/flight-history/uat/AAL123');
+  });
+
+  it('should add compass rays only when enabled on distance rings', () => {
+    fixture.detectChanges();
+
+    (component as any).liveMapDistanceRingsEnabled = true;
+    (component as any).liveMapDistanceRingCount = 3;
+    (component as any).liveMapDistanceRingIntervalMiles = 10;
+    (component as any).liveMapDistanceRingCompassLinesEnabled = true;
+    (component as any).initDistanceRings();
+
+    const withRays = (component as any).distanceRingSource.getFeatures() as Array<{ get: (k: string) => string | undefined }>;
+    const ringCount = withRays.filter(f => f.get('distanceRingKind') === 'ring').length;
+    const rayCount = withRays.filter(f => f.get('distanceRingKind') === 'ray').length;
+
+    expect(ringCount).toBe(3);
+    expect(rayCount).toBe(16);
+
+    (component as any).liveMapDistanceRingCompassLinesEnabled = false;
+    (component as any).initDistanceRings();
+    const withoutRays = (component as any).distanceRingSource.getFeatures() as Array<{ get: (k: string) => string | undefined }>;
+    const rayCountDisabled = withoutRays.filter(f => f.get('distanceRingKind') === 'ray').length;
+
+    expect(rayCountDisabled).toBe(0);
+  });
+
+  it('should parse coordinate-array theoretical range json into rings', () => {
+    fixture.detectChanges();
+
+    const parsed = (component as any).extractTheoreticalRangeRings(
+      JSON.stringify([
+        [-90.0, 40.0],
+        [-90.1, 40.0],
+        [-90.1, 40.1],
+        [-90.0, 40.0]
+      ])
+    ) as number[][][];
+
+    expect(parsed.length).toBeGreaterThan(0);
+    expect(parsed[0].length).toBeGreaterThan(3);
+  });
+
+  it('should ignore invalid theoretical range json', () => {
+    fixture.detectChanges();
+
+    const parsed = (component as any).extractTheoreticalRangeRings('{not-json') as number[][][];
+    expect(parsed.length).toBe(0);
   });
 });

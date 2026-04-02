@@ -22,6 +22,9 @@ uat_flight_model = uat_flight_ns.model('UATFlight', {
     'flight':     restx_fields.String( description='Flight number/callsign'),
     'first_seen': restx_fields.String( description='First seen timestamp'),
     'last_seen':  restx_fields.String( description='Last seen timestamp'),
+    'emitter_category': restx_fields.String(description='Emitter category (A0-D7) from decoder data'),
+    'message_type': restx_fields.String(description='Decoder message type label'),
+    'aircraft_class': restx_fields.String(description='Mapped aircraft class for iconography'),
     'ignore_on_purge': restx_fields.Boolean(description='Whether the flight is ignored by purge operations'),
 })
 

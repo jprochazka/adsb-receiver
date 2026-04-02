@@ -10,6 +10,7 @@ def test_get_flight_200(client):
     assert response.json['aircraft'] == 1
     assert response.json['first_seen'] == "2024-07-17 01:10:11"
     assert response.json['last_seen'] == "2024-06-17 01:11:01"
+    assert response.json['aircraft_class'] == 'unknown'
     assert response.json['ignore_on_purge'] is False
 
 def test_get_flight_404(client):

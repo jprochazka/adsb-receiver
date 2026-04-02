@@ -76,6 +76,75 @@
 
   @if (!loading) {
     <div>
+      <div class="card mb-4">
+        <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+          <span>OpenSky Aircraft Database</span>
+          @if (openSkyLoading) {
+            <span class="badge text-bg-secondary">Checking...</span>
+          } @else if (openSkyStatus?.installed) {
+            <span class="badge text-bg-success">Installed</span>
+          } @else {
+            <span class="badge text-bg-warning">Not Installed</span>
+          }
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-3">
+            Download and keep a local copy of the OpenSky Network aircraft database used for aircraft classification enrichment.
+          </p>
+
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-primary" (click)="updateOpenSkyAircraftDatabase()" [disabled]="openSkyUpdating">
+              {{ openSkyUpdating ? 'Updating...' : 'Download / Update Database' }}
+            </button>
+            <button class="btn btn-outline-secondary" (click)="loadOpenSkyAircraftDatabaseStatus()" [disabled]="openSkyLoading || openSkyUpdating">
+              Refresh Status
+            </button>
+          </div>
+
+          @if (openSkySuccess) {
+            <div class="alert alert-success alert-dismissible mb-3">
+              {{ openSkySuccess }}
+              <button type="button" class="btn-close" (click)="openSkySuccess=''"></button>
+            </div>
+          }
+
+          @if (openSkyError) {
+            <div class="alert alert-danger alert-dismissible mb-3">
+              {{ openSkyError }}
+              <button type="button" class="btn-close" (click)="openSkyError=''"></button>
+            </div>
+          }
+
+          @if (openSkyLoading) {
+            <div class="d-flex align-items-center gap-2 text-muted mb-3">
+              <div class="spinner-border spinner-border-sm"></div>
+              <span>Loading OpenSky database status...</span>
+            </div>
+          }
+
+          @if (openSkyStatus) {
+            <div class="small">
+              <div class="mb-2">
+                <span class="fw-semibold">Installed:</span>
+                <span [class.text-success]="openSkyStatus.installed" [class.text-warning]="!openSkyStatus.installed">
+                  {{ openSkyStatus.installed ? 'Yes' : 'No' }}
+                </span>
+              </div>
+              <div class="mb-2"><span class="fw-semibold">Source URL:</span> <span class="text-break">{{ openSkyStatus.source_url || '-' }}</span></div>
+              <div class="mb-2"><span class="fw-semibold">License:</span> {{ openSkyStatus.license_name || '-' }}</div>
+              <div class="mb-2"><span class="fw-semibold">License URL:</span> <span class="text-break">{{ openSkyStatus.license_url || '-' }}</span></div>
+              <div class="mb-2"><span class="fw-semibold">Attribution:</span> {{ openSkyStatus.attribution || '-' }}</div>
+              <div class="mb-2"><span class="fw-semibold">Downloaded At (UTC):</span> {{ openSkyStatus.downloaded_at || '-' }}</div>
+              <div class="mb-2"><span class="fw-semibold">File Size:</span> {{ formatByteSize(openSkyStatus.size_bytes) }}</div>
+              <div class="mb-2"><span class="fw-semibold">SHA-256:</span> <span class="font-monospace text-break">{{ openSkyStatus.sha256 || '-' }}</span></div>
+              <div class="mb-2"><span class="fw-semibold">Database Path:</span> <span class="font-monospace text-break">{{ openSkyStatus.db_path || '-' }}</span></div>
+              <div class="mb-2"><span class="fw-semibold">Metadata Path:</span> <span class="font-monospace text-break">{{ openSkyStatus.metadata_path || '-' }}</span></div>
+              <div><span class="fw-semibold">Notice Path:</span> <span class="font-monospace text-break">{{ openSkyStatus.notice_path || '-' }}</span></div>
+            </div>
+          }
+        </div>
+      </div>
+
       <div class="row g-4">
         <!-- Stats card spanning full height -->
         <div class="col-md-4 d-flex">

@@ -136,6 +136,9 @@ class Flight(db.Model):
     flight = db.Column(db.String(20), nullable=False)
     first_seen = db.Column(db.String(32), nullable=False)
     last_seen = db.Column(db.String(32))
+    emitter_category = db.Column(db.String(4), nullable=True)
+    message_type = db.Column(db.String(32), nullable=True)
+    aircraft_class = db.Column(db.String(32), nullable=False, default='unknown', server_default='unknown')
     ignore_on_purge = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text('0'))
     
     # Relationships
@@ -150,6 +153,9 @@ class Flight(db.Model):
             'flight': self.flight,
             'first_seen': self.first_seen,
             'last_seen': self.last_seen,
+            'emitter_category': self.emitter_category,
+            'message_type': self.message_type,
+            'aircraft_class': self.aircraft_class,
             'ignore_on_purge': self.ignore_on_purge,
         }
     
@@ -306,6 +312,9 @@ class Dump978Flight(db.Model):
     flight = db.Column(db.String(20), nullable=False)
     first_seen = db.Column(db.String(32), nullable=False)
     last_seen = db.Column(db.String(32))
+    emitter_category = db.Column(db.String(4), nullable=True)
+    message_type = db.Column(db.String(32), nullable=True)
+    aircraft_class = db.Column(db.String(32), nullable=False, default='unknown', server_default='unknown')
     ignore_on_purge = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text('0'))
 
     # Relationships
@@ -320,6 +329,9 @@ class Dump978Flight(db.Model):
             'flight': self.flight,
             'first_seen': self.first_seen,
             'last_seen': self.last_seen,
+            'emitter_category': self.emitter_category,
+            'message_type': self.message_type,
+            'aircraft_class': self.aircraft_class,
             'ignore_on_purge': self.ignore_on_purge,
         }
 

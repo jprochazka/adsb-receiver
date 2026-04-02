@@ -16,6 +16,14 @@ describe('AdminLiveComponent', () => {
     live_map_default_zoom: '6',
     live_map_trail_points: '33',
     live_map_show_all_seen: 'true',
+    live_map_spider_overlay_enabled: 'true',
+    live_map_center_icon_enabled: 'true',
+    live_map_distance_rings_enabled: 'false',
+    live_map_distance_ring_compass_lines_enabled: 'true',
+    live_map_distance_ring_count: '4',
+    live_map_distance_ring_interval_miles: '25',
+    live_map_theoretical_range_enabled: 'false',
+    live_map_theoretical_range_json: '',
     live_map_json_url: 'http://192.168.1.25/dump1090/data/aircraft.json',
     live_map_json_url_dump978: 'http://192.168.1.25/dump978/data/aircraft.json',
     live_map_custom_presets: '[{"label":"Home","refreshMs":2500,"centerLat":39,"centerLon":-95,"zoom":7,"trailPoints":40},{"label":"Summer","refreshMs":5000,"centerLat":20,"centerLon":0,"zoom":3,"trailPoints":20},{"label":"Winter","refreshMs":7000,"centerLat":50,"centerLon":10,"zoom":4,"trailPoints":15}]',
@@ -58,6 +66,14 @@ describe('AdminLiveComponent', () => {
     expect(component.liveMapDefaultZoom).toBe(6);
     expect(component.liveMapTrailPoints).toBe(33);
     expect(component.liveMapShowAllSeen).toBeTrue();
+    expect(component.liveMapSpiderOverlayEnabled).toBeTrue();
+    expect(component.liveMapCenterIconEnabled).toBeTrue();
+    expect(component.liveMapDistanceRingsEnabled).toBeFalse();
+    expect(component.liveMapDistanceRingCompassLinesEnabled).toBeTrue();
+    expect(component.liveMapDistanceRingCount).toBe(4);
+    expect(component.liveMapDistanceRingIntervalMiles).toBe(25);
+    expect(component.liveMapTheoreticalRangeEnabled).toBeFalse();
+    expect(component.liveMapTheoreticalRangeJson).toBe('');
     expect(component.dump1090JsonUrl).toBe('http://192.168.1.25/dump1090/data/aircraft.json');
     expect(component.dump978JsonUrl).toBe('http://192.168.1.25/dump978/data/aircraft.json');
     expect(component.customPresetSlots.length).toBe(3);
@@ -83,6 +99,34 @@ describe('AdminLiveComponent', () => {
     component.saveLiveMapShowAllSeen();
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_show_all_seen', 'false');
 
+    component.liveMapSpiderOverlayEnabled = false;
+    component.saveLiveMapSpiderOverlayEnabled();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_spider_overlay_enabled', 'false');
+
+    component.liveMapCenterIconEnabled = false;
+    component.saveLiveMapCenterIconEnabled();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_center_icon_enabled', 'false');
+
+    component.liveMapDistanceRingsEnabled = true;
+    component.saveLiveMapDistanceRingsEnabled();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_distance_rings_enabled', 'true');
+
+    component.liveMapDistanceRingCompassLinesEnabled = false;
+    component.saveLiveMapDistanceRingCompassLinesEnabled();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_distance_ring_compass_lines_enabled', 'false');
+
+    component.liveMapDistanceRingCount = 20;
+    component.saveLiveMapDistanceRingCount();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_distance_ring_count', '12');
+
+    component.liveMapDistanceRingIntervalMiles = 0;
+    component.saveLiveMapDistanceRingIntervalMiles();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_distance_ring_interval_miles', '1');
+
+    component.liveMapTheoreticalRangeEnabled = true;
+    component.saveLiveMapTheoreticalRangeEnabled();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_theoretical_range_enabled', 'true');
+
     component.dump1090JsonUrl = 'http://localhost:8080/custom-1090.json';
     component.saveDump1090JsonUrl();
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_json_url', 'http://localhost:8080/custom-1090.json');
@@ -90,6 +134,28 @@ describe('AdminLiveComponent', () => {
     component.dump978JsonUrl = 'http://localhost:8080/custom-978.json';
     component.saveDump978JsonUrl();
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_json_url_dump978', 'http://localhost:8080/custom-978.json');
+  });
+
+  it('should reject invalid theoretical range json', () => {
+    fixture.detectChanges();
+
+    component.liveMapTheoreticalRangeJson = '{invalid json';
+    component.saveLiveMapTheoreticalRangeJson();
+
+    expect(component.errorMessage).toContain('not valid JSON');
+    expect(dataServiceMock.updateSetting).not.toHaveBeenCalledWith('live_map_theoretical_range_json', jasmine.any(String));
+  });
+
+  it('should save valid theoretical range json', () => {
+    fixture.detectChanges();
+
+    component.liveMapTheoreticalRangeJson = '{"type":"FeatureCollection","features":[]}';
+    component.saveLiveMapTheoreticalRangeJson();
+
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith(
+      'live_map_theoretical_range_json',
+      '{"type":"FeatureCollection","features":[]}'
+    );
   });
 
   it('should apply preset and persist all fields', () => {
@@ -178,6 +244,14 @@ describe('AdminLiveComponent', () => {
         live_map_default_zoom: '6',
         live_map_trail_points: '33',
         live_map_show_all_seen: 'true',
+        live_map_spider_overlay_enabled: 'true',
+        live_map_center_icon_enabled: 'true',
+        live_map_distance_rings_enabled: 'false',
+        live_map_distance_ring_compass_lines_enabled: 'true',
+        live_map_distance_ring_count: '4',
+        live_map_distance_ring_interval_miles: '25',
+        live_map_theoretical_range_enabled: 'false',
+        live_map_theoretical_range_json: '',
         live_map_json_url: 'http://192.168.1.25/dump1090/data/aircraft.json',
         live_map_json_url_dump978: 'http://192.168.1.25/dump978/data/aircraft.json',
       };

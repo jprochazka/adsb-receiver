@@ -146,4 +146,21 @@ describe('DataService', () => {
     expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush({});
   });
+
+  it('should call getOpenSkyAircraftDatabaseStatus', () => {
+    service.getOpenSkyAircraftDatabaseStatus().subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/setting/opensky-aircraft-database`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ installed: false });
+  });
+
+  it('should call updateOpenSkyAircraftDatabase with auth header', () => {
+    service.updateOpenSkyAircraftDatabase().subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/setting/opensky-aircraft-database/update`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
+    req.flush({ installed: true });
+  });
 });

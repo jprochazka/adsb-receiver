@@ -184,7 +184,9 @@ class TestDataProcessor:
             aircraft_id = 1
             aircraft_data = {
                 "hex": "abc123",
-                "flight": "TST123  "
+                "flight": "TST123  ",
+                "category": "A7",
+                "type": "adsb_icao"
             }
             
             # Ensure no existing flight
@@ -198,6 +200,9 @@ class TestDataProcessor:
             assert new_flight is not None
             assert new_flight.flight == "TST123"
             assert new_flight.aircraft == aircraft_id
+            assert new_flight.aircraft_class == 'helicopter'
+            assert new_flight.emitter_category == 'A7'
+            assert new_flight.message_type == 'adsb_icao'
             
             mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data)
 

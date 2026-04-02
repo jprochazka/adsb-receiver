@@ -79,7 +79,7 @@
           </div>
           <div class="col-md-4">
             <label class="form-label fw-semibold" for="live-map-default-zoom">Default Zoom</label>
-            <input id="live-map-default-zoom" class="form-control" type="number" min="1" max="18" step="0.1"
+            <input id="live-map-default-zoom" class="form-control" type="number" min="1" max="18" step="1"
               [(ngModel)]="liveMapDefaultZoom" (change)="saveLiveMapDefaultZoom()">
             <div class="form-text">Range: 1 to 18</div>
           </div>
@@ -111,6 +111,81 @@
                 Display all seen aircraft
               </label>
               <div class="form-text">When disabled, only aircraft with valid map positions appear in the flyout list.</div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="toggle-live-map-spider-overlay" [(ngModel)]="liveMapSpiderOverlayEnabled" (change)="saveLiveMapSpiderOverlayEnabled()">
+              <label class="form-check-label fw-semibold" for="toggle-live-map-spider-overlay">
+                Display directional overlay ring
+              </label>
+              <div class="form-text">Shows or hides the session-only directional spider/ring overlay on the live map.</div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="toggle-live-map-distance-rings" [(ngModel)]="liveMapDistanceRingsEnabled" (change)="saveLiveMapDistanceRingsEnabled()">
+              <label class="form-check-label fw-semibold" for="toggle-live-map-distance-rings">
+                Display distance rings
+              </label>
+              <div class="form-text">Shows or hides a configurable distance-ring layer centered on the radar site.</div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="toggle-live-map-center-icon" [(ngModel)]="liveMapCenterIconEnabled" (change)="saveLiveMapCenterIconEnabled()">
+              <label class="form-check-label fw-semibold" for="toggle-live-map-center-icon">
+                Display radar site icon
+              </label>
+              <div class="form-text">Shows or hides the radar-site icon at the configured map center.</div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="toggle-live-map-distance-ring-compass-lines" [(ngModel)]="liveMapDistanceRingCompassLinesEnabled" (change)="saveLiveMapDistanceRingCompassLinesEnabled()">
+              <label class="form-check-label fw-semibold" for="toggle-live-map-distance-ring-compass-lines">
+                Display distance ring compass lines
+              </label>
+              <div class="form-text">Shows or hides the 16-point compass guide lines over the distance rings.</div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="toggle-live-map-theoretical-range" [(ngModel)]="liveMapTheoreticalRangeEnabled" (change)="saveLiveMapTheoreticalRangeEnabled()">
+              <label class="form-check-label fw-semibold" for="toggle-live-map-theoretical-range">
+                Display theoretical terrain range
+              </label>
+              <div class="form-text">Shows or hides a theoretical maximum range overlay generated from pasted terrain-profile JSON.</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="live-map-distance-ring-count">Distance Ring Count</label>
+            <input id="live-map-distance-ring-count" class="form-control" type="number" min="1" max="12"
+              [(ngModel)]="liveMapDistanceRingCount" (change)="saveLiveMapDistanceRingCount()">
+            <div class="form-text">Range: 1 to 12 rings</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold" for="live-map-distance-ring-interval">Distance Ring Interval (miles)</label>
+            <input id="live-map-distance-ring-interval" class="form-control" type="number" min="1" max="250"
+              [(ngModel)]="liveMapDistanceRingIntervalMiles" (change)="saveLiveMapDistanceRingIntervalMiles()">
+            <div class="form-text">Distance between each ring in statute miles</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="live-map-theoretical-range-json">Theoretical Range JSON</label>
+            <textarea
+              id="live-map-theoretical-range-json"
+              class="form-control"
+              rows="8"
+              [(ngModel)]="liveMapTheoreticalRangeJson"
+              placeholder='Paste terrain-profile JSON data here'></textarea>
+            <div class="form-text">GeoJSON-style polygons, feature collections, or coordinate arrays are accepted if they contain longitude/latitude points.</div>
+            <div class="mt-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="saveLiveMapTheoreticalRangeJson()">Save Theoretical Range JSON</button>
             </div>
           </div>
         </div>

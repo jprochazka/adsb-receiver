@@ -423,6 +423,17 @@ export class DataService {
     });
   }
 
+  getOpenSkyAircraftDatabaseStatus(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/setting/opensky-aircraft-database`);
+  }
+
+  updateOpenSkyAircraftDatabase(): Observable<any> {
+    const token = localStorage.getItem('access_token');
+    return this.http.post(`${this.apiUrl}/setting/opensky-aircraft-database/update`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
   getSchedulerStatus(): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.get(`${this.apiUrl}/scheduler`, {

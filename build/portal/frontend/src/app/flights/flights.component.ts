@@ -113,7 +113,10 @@ export class FlightsComponent implements OnInit, OnDestroy {
     lastAltitude: number | null;
     lastSpeed: number | null;
     lastSquawk: number | null;
+    aircraftClass: string;
   } | null = null;
+
+  private currentAircraftClass = 'unknown';
 
   get activeTrack() {
     return this.selectedTrackIdx !== null ? this.tracks[this.selectedTrackIdx] : null;
@@ -297,6 +300,8 @@ export class FlightsComponent implements OnInit, OnDestroy {
     forkJoin({ details: details$, posData: posData$ }).subscribe({
       next: ({ details, posData }) => {
         this.loading = false;
+        const aircraftClass = String(details?.aircraft_class || 'unknown').trim().toLowerCase() || 'unknown';
+        this.currentAircraftClass = aircraftClass;
         this.flightInfo = {
           icao: details?.icao ?? '—',
           firstSeen: details?.first_seen ?? '—',
@@ -305,7 +310,8 @@ export class FlightsComponent implements OnInit, OnDestroy {
           trackCount: 0,
           lastAltitude: null,
           lastSpeed: null,
-          lastSquawk: null
+          lastSquawk: null,
+          aircraftClass,
         };
         this.ignoreOnPurge = !!details?.ignore_on_purge;
         if (!posData.positions?.length) {
@@ -673,19 +679,108 @@ export class FlightsComponent implements OnInit, OnDestroy {
 
   private iconFeature(pos: any, color: string): Feature {
     const rotationRad = ((pos.track ?? 0) * Math.PI) / 180;
+    const iconClass = this.currentAircraftClass || 'unknown';
     const f = new Feature({ geometry: new Point(fromLonLat([pos.longitude, pos.latitude])) });
     f.setStyle(new Style({
       image: new Icon({
         opacity: 1,
-        src: 'data:image/svg+xml;utf8,' + encodeURIComponent(this.airlinerSvg('#0b142e', color)),
-        rotation: rotationRad
+        src: 'data:image/svg+xml;utf8,' + encodeURIComponent(this.svgForAircraftClass(iconClass, '#000000', '#ffffff')),
+        rotation: iconClass === 'balloon' || iconClass === 'ground' ? 0 : rotationRad
       })
     }));
     return f;
   }
 
+  private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
+    switch (aircraftClass) {
+      case 'helicopter':
+        return this.helicopterSvg(fill, outline);
+      case 'military':
+        return this.militaryJetSvg(fill, outline);
+      case 'glider':
+        return this.gliderSvg(fill, outline);
+      case 'balloon':
+        return this.balloonSvg(fill, outline);
+      case 'uav':
+        return this.uavSvg(fill, outline);
+      case 'ground':
+        return this.groundVehicleSvg(fill, outline);
+      case 'general_aviation':
+        return this.generalAviationSvg(fill, outline);
+      default:
+        return this.airlinerSvg(fill, outline);
+    }
+  }
+
+  private generalAviationSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<rect x="17" y="2" width="16" height="3.5" rx="1.75" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<path d="M25,4 L27,16 L43,21 L43,24 L27,19 L26,37 L29,41 L27,43 L25,41 L23,43 L21,41 L24,37 L23,19 L7,24 L7,21 L23,16 Z"` +
+      ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `</svg>`;
+  }
+
+  private militaryJetSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="40" height="40">` +
+      `<path d="M25,2 L28,14 L28,24 L47,34 L45,37 L28,28 L27,44 L29,47 L25,48 L21,47 L23,44 L22,28 L5,37 L3,34 L22,24 L22,14 Z"` +
+      ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `</svg>`;
+  }
+
+  private helicopterSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 54" width="42" height="46">` +
+      `<ellipse cx="25" cy="29" rx="7" ry="11" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<rect x="23.5" y="39" width="3" height="11" rx="1" fill="${fill}"/>` +
+      `<rect x="18" y="47" width="14" height="3" rx="1.5" fill="${fill}"/>` +
+      `<rect x="3" y="21" width="44" height="4" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="23" y="3" width="4" height="40" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<circle cx="25" cy="23" r="4.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `</svg>`;
+  }
+
+  private gliderSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 46" width="52" height="40">` +
+      `<ellipse cx="30" cy="24" rx="2.5" ry="18" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<path d="M30,22 L2,26 L2,29 L30,25 L58,29 L58,26 Z" fill="${fill}" stroke="${outline}" stroke-width="0.5" stroke-linejoin="round"/>` +
+      `<rect x="20" y="38" width="20" height="3.5" rx="1.75" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `</svg>`;
+  }
+
+  private balloonSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<circle cx="25" cy="25" r="22" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `</svg>`;
+  }
+
+  private uavSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="40" height="40">` +
+      `<line x1="25" y1="25" x2="10" y2="10" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<line x1="25" y1="25" x2="40" y2="10" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<line x1="25" y1="25" x2="10" y2="40" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<line x1="25" y1="25" x2="40" y2="40" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<circle cx="10" cy="10" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<circle cx="40" cy="10" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<circle cx="10" cy="40" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<circle cx="40" cy="40" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<rect x="19" y="19" width="12" height="12" rx="3" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `</svg>`;
+  }
+
+  private groundVehicleSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<rect x="13" y="7" width="24" height="36" rx="4" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<rect x="8" y="10" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="36" y="10" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="8" y="29" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="36" y="29" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `</svg>`;
+  }
+
   private airlinerSvg(fill: string, outline: string): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 26" width="25px" height="26px"><defs><style>.cls-1{fill:${fill};}.cls-2{fill:${outline};}</style></defs><title>airliner</title><g id="Layer_2" data-name="Layer 2"><g id="Airliner"><path class="cls-1" d="M12.51,25.75c-.26,0-.74-.71-.86-1.41l-3.33.86L8,25.29l.08-1.41.11-.07c1.13-.68,2.68-1.64,3.2-2-.37-1.06-.51-3.92-.43-8.52v0L8,13.31C5.37,14.12,1.2,15.39,1,15.5a.5.5,0,0,1-.21,0,.52.52,0,0,1-.49-.45,1,1,0,0,1,.52-1l1.74-.91c1.36-.71,3.22-1.69,4.66-2.43a4,4,0,0,1,0-.52c0-.69,0-1,0-1.14l.25-.13H7.16A1.07,1.07,0,0,1,8.24,7.73,1.12,1.12,0,0,1,9.06,8a1.46,1.46,0,0,1,.26.87L9.08,9h.25c0,.14,0,.31,0,.58l1.52-.84c0-1.48,0-7.06,1.1-8.25a.74.74,0,0,1,1.13,0c1.15,1.19,1.13,6.78,1.1,8.25l1.52.84c0-.32,0-.48,0-.58l.25-.13H15.7A1.46,1.46,0,0,1,16,8a1.11,1.11,0,0,1,.82-.28,1.06,1.06,0,0,1,1.08,1.16V9c0,.19,0,.48,0,1.17a4,4,0,0,1,0,.52c1.75.9,4.4,2.29,5.67,3l.73.38a.9.9,0,0,1,.5,1,.55.55,0,0,1-.5.47h0l-.11,0c-.28-.11-4.81-1.49-7.16-2.2H14.06v0c.09,4.6-.06,7.46-.43,8.52.52.33,2.07,1.29,3.2,2l.11.07L17,25.29l-.33-.09-3.33-.86c-.12.7-.6,1.41-.86,1.41h0Z"/><path class="cls-2" d="M12.51.5C13.93.5,14,7,13.93,8.91c.3.16,1.64.91,2,1.1,0-.6,0-.85,0-1s0-.09,0-.13a1.18,1.18,0,0,1,.19-.7A.88.88,0,0,1,16.78,8h0a.82.82,0,0,1,.83.91s0,.07,0,.13,0,.44,0,1.17a3.21,3.21,0,0,1-.06.66c2.33,1.19,6.51,3.39,6.56,3.42.59.3.4,1,.11,1h-.07c-.37-.14-7.18-2.21-7.18-2.21l-3.18,0c0,.22.22,7.56-.48,8.91,0,0,2,1.26,3.39,2.08l.06.93L13.15,24a2.14,2.14,0,0,1-.64,1.47A2.14,2.14,0,0,1,11.87,24L8.26,25,8.31,24c1.38-.82,3.39-2.08,3.39-2.08-.7-1.35-.48-8.69-.48-8.91L8,13.06S1.17,15.13.86,15.27l-.11,0c-.32,0-.43-.73.14-1S5.13,12,7.46,10.85a3.21,3.21,0,0,1-.06-.66c0-.73,0-1,0-1.17s0-.09,0-.13A.82.82,0,0,1,8.24,8h0a.88.88,0,0,1,.65.21,1.18,1.18,0,0,1,.19.7s0,.07,0,.13,0,.39,0,1c.36-.19,1.71-.94,2-1.1C11.05,7,11.09.5,12.51.5m0-.5a1,1,0,0,0-.74.34c-1.16,1.2-1.2,6.3-1.18,8.28L10,8.93l-.46.25V8.91a1.68,1.68,0,0,0-.33-1.06,1.34,1.34,0,0,0-1-.36,1.31,1.31,0,0,0-1.33,1.4V9h0v0c0,.16,0,.46,0,1.14,0,.13,0,.26,0,.38l-4.5,2.35-1.74.91A1.2,1.2,0,0,0,0,15.15a.77.77,0,0,0,.73.64.74.74,0,0,0,.31-.07c.29-.12,4.35-1.35,7-2.17l2.6,0c-.1,5.54.17,7.46.38,8.2-.64.4-2,1.25-3,1.86l-.22.13,0,.26-.06.93,0,.81.7-.31,3.06-.79c.19.67.63,1.35,1,1.35s.86-.68,1-1.35l3.06.79.7.31,0-.81L17.2,24l0-.26L17,23.6c-1-.61-2.4-1.47-3-1.86.21-.74.48-2.66.38-8.2l2.6,0c2.72.83,6.81,2.07,7.07,2.18a.68.68,0,0,0,.25,0,.79.79,0,0,0,.74-.67,1.15,1.15,0,0,0-.63-1.29l-.71-.37c-1.23-.65-3.78-2-5.53-2.88,0-.12,0-.25,0-.38,0-.67,0-1,0-1.14h0V8.92a1.32,1.32,0,0,0-1.32-1.44,1.35,1.35,0,0,0-1,.36,1.67,1.67,0,0,0-.33,1V9h0v.22L15,8.93l-.57-.32c0-2,0-7.08-1.18-8.28A1,1,0,0,0,12.51,0Z"/></g></g></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="40" height="40">` +
+      `<path d="M25,2 L29,16 L46,24 L44,27 L29,21 L28,36 L34,43 L32,45 L25,40 L18,45 L16,43 L22,36 L21,21 L6,27 L4,24 L21,16 Z"` +
+      ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `</svg>`;
   }
 
   private makeSmooth(coords: any[], iterations: number): any[] {

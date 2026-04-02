@@ -31,6 +31,13 @@ const DEFAULT_LIVE_MAP_CENTER_LAT = 20;
 const DEFAULT_LIVE_MAP_CENTER_LON = 0;
 const DEFAULT_LIVE_MAP_ZOOM = 3;
 const DEFAULT_LIVE_MAP_TRAIL_POINTS = 20;
+const DEFAULT_LIVE_MAP_CENTER_ICON_ENABLED = true;
+const DEFAULT_LIVE_MAP_DISTANCE_RINGS_ENABLED = false;
+const DEFAULT_LIVE_MAP_DISTANCE_RING_COMPASS_LINES_ENABLED = true;
+const DEFAULT_LIVE_MAP_DISTANCE_RING_COUNT = 4;
+const DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES = 25;
+const DEFAULT_LIVE_MAP_THEORETICAL_RANGE_ENABLED = false;
+const DEFAULT_LIVE_MAP_THEORETICAL_RANGE_JSON = '';
 const DEFAULT_DUMP1090_JSON_URL = 'http://127.0.0.1/dump1090/data/aircraft.json';
 const DEFAULT_DUMP978_JSON_URL = 'http://127.0.0.1/dump978/data/aircraft.json';
 const MAX_CUSTOM_PRESETS = 10;
@@ -92,6 +99,14 @@ export class AdminLiveComponent implements OnInit {
   liveMapDefaultZoom = DEFAULT_LIVE_MAP_ZOOM;
   liveMapTrailPoints = DEFAULT_LIVE_MAP_TRAIL_POINTS;
   liveMapShowAllSeen = true;
+  liveMapSpiderOverlayEnabled = true;
+  liveMapCenterIconEnabled = DEFAULT_LIVE_MAP_CENTER_ICON_ENABLED;
+  liveMapDistanceRingsEnabled = DEFAULT_LIVE_MAP_DISTANCE_RINGS_ENABLED;
+  liveMapDistanceRingCompassLinesEnabled = DEFAULT_LIVE_MAP_DISTANCE_RING_COMPASS_LINES_ENABLED;
+  liveMapDistanceRingCount = DEFAULT_LIVE_MAP_DISTANCE_RING_COUNT;
+  liveMapDistanceRingIntervalMiles = DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES;
+  liveMapTheoreticalRangeEnabled = DEFAULT_LIVE_MAP_THEORETICAL_RANGE_ENABLED;
+  liveMapTheoreticalRangeJson = DEFAULT_LIVE_MAP_THEORETICAL_RANGE_JSON;
   dump1090JsonUrl = DEFAULT_DUMP1090_JSON_URL;
   dump978JsonUrl = DEFAULT_DUMP978_JSON_URL;
   liveMapPresets = LIVE_MAP_PRESETS;
@@ -108,18 +123,34 @@ export class AdminLiveComponent implements OnInit {
       liveZoom: this.dataService.getSetting('live_map_default_zoom').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_ZOOM) }))),
       liveTrailPoints: this.dataService.getSetting('live_map_trail_points').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_TRAIL_POINTS) }))),
       liveShowAllSeen: this.dataService.getSetting('live_map_show_all_seen').pipe(catchError(() => of({ value: 'true' }))),
+      liveSpiderOverlayEnabled: this.dataService.getSetting('live_map_spider_overlay_enabled').pipe(catchError(() => of({ value: 'true' }))),
+      liveCenterIconEnabled: this.dataService.getSetting('live_map_center_icon_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_CENTER_ICON_ENABLED) }))),
+      liveDistanceRingsEnabled: this.dataService.getSetting('live_map_distance_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_DISTANCE_RINGS_ENABLED) }))),
+      liveDistanceRingCompassLinesEnabled: this.dataService.getSetting('live_map_distance_ring_compass_lines_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_DISTANCE_RING_COMPASS_LINES_ENABLED) }))),
+      liveDistanceRingCount: this.dataService.getSetting('live_map_distance_ring_count').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_DISTANCE_RING_COUNT) }))),
+      liveDistanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES) }))),
+      liveTheoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_THEORETICAL_RANGE_ENABLED) }))),
+      liveTheoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_LIVE_MAP_THEORETICAL_RANGE_JSON }))),
       dump1090JsonUrl: this.dataService.getSetting('live_map_json_url').pipe(catchError(() => of({ value: DEFAULT_DUMP1090_JSON_URL }))),
       dump978JsonUrl: this.dataService.getSetting('live_map_json_url_dump978').pipe(catchError(() => of({ value: DEFAULT_DUMP978_JSON_URL }))),
       customPresets: this.dataService.getSetting('live_map_custom_presets').pipe(catchError(() => of({ value: JSON.stringify(DEFAULT_CUSTOM_PRESETS) }))),
     }).subscribe({
-      next: ({ liveEnabled, liveRefreshMs, liveCenterLat, liveCenterLon, liveZoom, liveTrailPoints, liveShowAllSeen, dump1090JsonUrl, dump978JsonUrl, customPresets }) => {
+      next: ({ liveEnabled, liveRefreshMs, liveCenterLat, liveCenterLon, liveZoom, liveTrailPoints, liveShowAllSeen, liveSpiderOverlayEnabled, liveCenterIconEnabled, liveDistanceRingsEnabled, liveDistanceRingCompassLinesEnabled, liveDistanceRingCount, liveDistanceRingIntervalMiles, liveTheoreticalRangeEnabled, liveTheoreticalRangeJson, dump1090JsonUrl, dump978JsonUrl, customPresets }) => {
         this.liveMapEnabled = liveEnabled?.value !== 'false';
         this.liveMapRefreshMs = this.clampInt(liveRefreshMs?.value, 1000, 60000, DEFAULT_LIVE_MAP_REFRESH_MS);
         this.liveMapCenterLat = this.clampFloat(liveCenterLat?.value, -85, 85, DEFAULT_LIVE_MAP_CENTER_LAT);
         this.liveMapCenterLon = this.clampFloat(liveCenterLon?.value, -180, 180, DEFAULT_LIVE_MAP_CENTER_LON);
-        this.liveMapDefaultZoom = this.clampFloat(liveZoom?.value, 1, 18, DEFAULT_LIVE_MAP_ZOOM);
+        this.liveMapDefaultZoom = this.clampInt(liveZoom?.value, 1, 18, DEFAULT_LIVE_MAP_ZOOM);
         this.liveMapTrailPoints = this.clampInt(liveTrailPoints?.value, 0, 200, DEFAULT_LIVE_MAP_TRAIL_POINTS);
         this.liveMapShowAllSeen = liveShowAllSeen?.value !== 'false';
+        this.liveMapSpiderOverlayEnabled = liveSpiderOverlayEnabled?.value !== 'false';
+        this.liveMapCenterIconEnabled = liveCenterIconEnabled?.value !== 'false';
+        this.liveMapDistanceRingsEnabled = liveDistanceRingsEnabled?.value === 'true';
+        this.liveMapDistanceRingCompassLinesEnabled = liveDistanceRingCompassLinesEnabled?.value !== 'false';
+        this.liveMapDistanceRingCount = this.clampInt(liveDistanceRingCount?.value, 1, 12, DEFAULT_LIVE_MAP_DISTANCE_RING_COUNT);
+        this.liveMapDistanceRingIntervalMiles = this.clampInt(liveDistanceRingIntervalMiles?.value, 1, 250, DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES);
+        this.liveMapTheoreticalRangeEnabled = liveTheoreticalRangeEnabled?.value === 'true';
+        this.liveMapTheoreticalRangeJson = this.normalizeJsonSetting(liveTheoreticalRangeJson?.value);
         this.dump1090JsonUrl = this.normalizeJsonUrl(dump1090JsonUrl?.value, DEFAULT_DUMP1090_JSON_URL);
         this.dump978JsonUrl = this.normalizeJsonUrl(dump978JsonUrl?.value, DEFAULT_DUMP978_JSON_URL);
         this.customPresetSlots = this.parseCustomPresets(customPresets?.value);
@@ -156,7 +187,7 @@ export class AdminLiveComponent implements OnInit {
   }
 
   saveLiveMapDefaultZoom(): void {
-    this.liveMapDefaultZoom = this.clampFloat(String(this.liveMapDefaultZoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM);
+    this.liveMapDefaultZoom = this.clampInt(String(this.liveMapDefaultZoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM);
     this.saveNumericSetting('live_map_default_zoom', this.liveMapDefaultZoom);
   }
 
@@ -171,6 +202,71 @@ export class AdminLiveComponent implements OnInit {
       next: () => { this.successMessage = 'Setting saved.'; },
       error: () => { this.errorMessage = 'Failed to save setting.'; }
     });
+  }
+
+  saveLiveMapSpiderOverlayEnabled(): void {
+    this.errorMessage = '';
+    this.dataService.updateSetting('live_map_spider_overlay_enabled', String(this.liveMapSpiderOverlayEnabled)).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; }
+    });
+  }
+
+  saveLiveMapCenterIconEnabled(): void {
+    this.errorMessage = '';
+    this.dataService.updateSetting('live_map_center_icon_enabled', String(this.liveMapCenterIconEnabled)).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; }
+    });
+  }
+
+  saveLiveMapDistanceRingsEnabled(): void {
+    this.errorMessage = '';
+    this.dataService.updateSetting('live_map_distance_rings_enabled', String(this.liveMapDistanceRingsEnabled)).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; }
+    });
+  }
+
+  saveLiveMapDistanceRingCompassLinesEnabled(): void {
+    this.errorMessage = '';
+    this.dataService.updateSetting('live_map_distance_ring_compass_lines_enabled', String(this.liveMapDistanceRingCompassLinesEnabled)).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; }
+    });
+  }
+
+  saveLiveMapDistanceRingCount(): void {
+    this.liveMapDistanceRingCount = this.clampInt(String(this.liveMapDistanceRingCount), 1, 12, DEFAULT_LIVE_MAP_DISTANCE_RING_COUNT);
+    this.saveNumericSetting('live_map_distance_ring_count', this.liveMapDistanceRingCount);
+  }
+
+  saveLiveMapDistanceRingIntervalMiles(): void {
+    this.liveMapDistanceRingIntervalMiles = this.clampInt(String(this.liveMapDistanceRingIntervalMiles), 1, 250, DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES);
+    this.saveNumericSetting('live_map_distance_ring_interval_miles', this.liveMapDistanceRingIntervalMiles);
+  }
+
+  saveLiveMapTheoreticalRangeEnabled(): void {
+    this.errorMessage = '';
+    this.dataService.updateSetting('live_map_theoretical_range_enabled', String(this.liveMapTheoreticalRangeEnabled)).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; }
+    });
+  }
+
+  saveLiveMapTheoreticalRangeJson(): void {
+    const normalized = this.normalizeJsonSetting(this.liveMapTheoreticalRangeJson);
+    if (normalized) {
+      try {
+        JSON.parse(normalized);
+      } catch {
+        this.errorMessage = 'Theoretical range JSON is not valid JSON.';
+        return;
+      }
+    }
+
+    this.liveMapTheoreticalRangeJson = normalized;
+    this.saveStringSetting('live_map_theoretical_range_json', this.liveMapTheoreticalRangeJson);
   }
 
   saveDump1090JsonUrl(): void {
@@ -215,7 +311,7 @@ export class AdminLiveComponent implements OnInit {
     slot.refreshMs = this.clampInt(String(this.liveMapRefreshMs), 1000, 60000, DEFAULT_LIVE_MAP_REFRESH_MS);
     slot.centerLat = this.clampFloat(String(this.liveMapCenterLat), -85, 85, DEFAULT_LIVE_MAP_CENTER_LAT);
     slot.centerLon = this.clampFloat(String(this.liveMapCenterLon), -180, 180, DEFAULT_LIVE_MAP_CENTER_LON);
-    slot.zoom = this.clampFloat(String(this.liveMapDefaultZoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM);
+    slot.zoom = this.clampInt(String(this.liveMapDefaultZoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM);
     slot.trailPoints = this.clampInt(String(this.liveMapTrailPoints), 0, 200, DEFAULT_LIVE_MAP_TRAIL_POINTS);
     slot.label = this.normalizeLabel(slot.label, `Preset ${index + 1}`);
 
@@ -233,7 +329,7 @@ export class AdminLiveComponent implements OnInit {
       refreshMs: this.clampInt(String(this.liveMapRefreshMs), 1000, 60000, DEFAULT_LIVE_MAP_REFRESH_MS),
       centerLat: this.clampFloat(String(this.liveMapCenterLat), -85, 85, DEFAULT_LIVE_MAP_CENTER_LAT),
       centerLon: this.clampFloat(String(this.liveMapCenterLon), -180, 180, DEFAULT_LIVE_MAP_CENTER_LON),
-      zoom: this.clampFloat(String(this.liveMapDefaultZoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM),
+      zoom: this.clampInt(String(this.liveMapDefaultZoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM),
       trailPoints: this.clampInt(String(this.liveMapTrailPoints), 0, 200, DEFAULT_LIVE_MAP_TRAIL_POINTS),
     });
 
@@ -255,7 +351,7 @@ export class AdminLiveComponent implements OnInit {
     this.liveMapRefreshMs = this.clampInt(String(slot.refreshMs), 1000, 60000, DEFAULT_LIVE_MAP_REFRESH_MS);
     this.liveMapCenterLat = this.clampFloat(String(slot.centerLat), -85, 85, DEFAULT_LIVE_MAP_CENTER_LAT);
     this.liveMapCenterLon = this.clampFloat(String(slot.centerLon), -180, 180, DEFAULT_LIVE_MAP_CENTER_LON);
-    this.liveMapDefaultZoom = this.clampFloat(String(slot.zoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM);
+    this.liveMapDefaultZoom = this.clampInt(String(slot.zoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM);
     this.liveMapTrailPoints = this.clampInt(String(slot.trailPoints), 0, 200, DEFAULT_LIVE_MAP_TRAIL_POINTS);
     this.liveMapEnabled = true;
 
@@ -304,7 +400,7 @@ export class AdminLiveComponent implements OnInit {
           refreshMs: this.clampInt(String(source.refreshMs), 1000, 60000, DEFAULT_LIVE_MAP_REFRESH_MS),
           centerLat: this.clampFloat(String(source.centerLat), -85, 85, DEFAULT_LIVE_MAP_CENTER_LAT),
           centerLon: this.clampFloat(String(source.centerLon), -180, 180, DEFAULT_LIVE_MAP_CENTER_LON),
-          zoom: this.clampFloat(String(source.zoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM),
+          zoom: this.clampInt(String(source.zoom), 1, 18, DEFAULT_LIVE_MAP_ZOOM),
           trailPoints: this.clampInt(String(source.trailPoints), 0, 200, DEFAULT_LIVE_MAP_TRAIL_POINTS),
         }));
     } catch {
@@ -336,6 +432,10 @@ export class AdminLiveComponent implements OnInit {
   private normalizeJsonUrl(raw: string | undefined, fallback: string): string {
     const trimmed = (raw || '').trim();
     return trimmed || fallback;
+  }
+
+  private normalizeJsonSetting(raw: string | undefined): string {
+    return (raw || '').trim();
   }
 
   private clampInt(raw: string | undefined, min: number, max: number, fallback: number): number {

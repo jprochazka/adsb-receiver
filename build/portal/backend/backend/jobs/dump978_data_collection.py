@@ -7,6 +7,7 @@ from urllib.request import urlopen
 from flask import current_app
 from sqlalchemy import select
 from backend.models import db, Dump978Aircraft, Dump978Flight, Dump978Position
+from backend.aircraft_classification import classify_aircraft
 
 scheduler = APScheduler()
 now = None
@@ -105,6 +106,9 @@ class UatDataProcessor(object):
 
         if 'flight' in aircraft:
             flight = aircraft["flight"].strip()
+            emitter_category = aircraft.get("category")
+            message_type = aircraft.get("type")
+            aircraft_class = classify_aircraft(emitter_category, message_type, flight)
 
             tracked = False
             try:
@@ -121,6 +125,9 @@ class UatDataProcessor(object):
                 self.log(f'  Updating UAT flight {flight} assigned to aircraft ICAO {aircraft["hex"]}')
                 try:
                     existing_flight.last_seen = str(now)
+                    existing_flight.emitter_category = emitter_category
+                    existing_flight.message_type = message_type
+                    existing_flight.aircraft_class = aircraft_class
                     flight_id = existing_flight.id
                 except Exception as ex:
                     logging.error(f'Error encountered while trying to update UAT flight {flight}', exc_info=ex)
@@ -132,7 +139,10 @@ class UatDataProcessor(object):
                         aircraft=aircraft_id,
                         flight=flight,
                         first_seen=str(now),
-                        last_seen=str(now)
+                        last_seen=str(now),
+                        emitter_category=emitter_category,
+                        message_type=message_type,
+                        aircraft_class=aircraft_class
                     )
                     db.session.add(new_flight)
                     db.session.flush()
@@ -150,7 +160,6 @@ class UatDataProcessor(object):
 
     # Process positions
     def process_positions(self, aircraft_id, flight_id, aircraft):
-
         position_keys = ('lat', 'lon', 'alt_baro', 'gs', 'track', 'geom_rate', 'hex')
         if not all(key in aircraft for key in position_keys):
             self.log(f'  Data required to insert position data for UAT aircraft ICAO {aircraft["hex"]} is not present')

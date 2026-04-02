@@ -12,6 +12,10 @@ import OlMap from 'ol/Map';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import LineString from 'ol/geom/LineString';
+import CircleGeom from 'ol/geom/Circle';
+import Polygon from 'ol/geom/Polygon';
+import { fromCircle as polygonFromCircle } from 'ol/geom/Polygon';
+import GeoJSON from 'ol/format/GeoJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import TileLayer from 'ol/layer/Tile';
@@ -19,6 +23,7 @@ import View from 'ol/View';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 import Stroke from 'ol/style/Stroke';
+import Fill from 'ol/style/Fill';
 import { fromLonLat } from 'ol/proj';
 import { OSM } from 'ol/source';
 import { FullScreen, ZoomSlider } from 'ol/control';
@@ -33,9 +38,18 @@ const DEFAULT_CENTER_LON = 0;
 const DEFAULT_CENTER_LAT = 20;
 const DEFAULT_ZOOM = 3;
 const DEFAULT_TRAIL_POINTS = 20;
+const DEFAULT_CENTER_ICON_ENABLED = true;
+const DEFAULT_DISTANCE_RINGS_ENABLED = false;
+const DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED = true;
+const DEFAULT_DISTANCE_RING_COUNT = 4;
+const DEFAULT_DISTANCE_RING_INTERVAL_MILES = 25;
+const DEFAULT_THEORETICAL_RANGE_ENABLED = false;
+const DEFAULT_THEORETICAL_RANGE_JSON = '';
 const DEFAULT_FLYOUT_WIDTH = 280;
 const MIN_FLYOUT_WIDTH = 240;
 const MAX_FLYOUT_WIDTH = 560;
+const SPIDER_SECTOR_COUNT = 16;
+const SPIDER_MAX_RADIUS_METERS = 300_000;
 
 /** Altitude tiers used for icon/dot colouring. */
 const ALTITUDE_TIERS = [
@@ -80,6 +94,7 @@ export interface LiveAircraft {
   seen:          number | null;
   rssi:          number | null;
   type:          string | null;
+  aircraft_class?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,6 +144,21 @@ export class LiveComponent implements OnInit, OnDestroy {
   defaultZoom = DEFAULT_ZOOM;
   trailPoints = DEFAULT_TRAIL_POINTS;
   showAllSeen = true;
+  liveMapSpiderOverlayEnabled = true;
+  liveMapCenterIconEnabled = DEFAULT_CENTER_ICON_ENABLED;
+  liveMapDistanceRingsEnabled = DEFAULT_DISTANCE_RINGS_ENABLED;
+  liveMapDistanceRingCompassLinesEnabled = DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED;
+  liveMapDistanceRingCount = DEFAULT_DISTANCE_RING_COUNT;
+  liveMapDistanceRingIntervalMiles = DEFAULT_DISTANCE_RING_INTERVAL_MILES;
+  liveMapTheoreticalRangeEnabled = DEFAULT_THEORETICAL_RANGE_ENABLED;
+  liveMapTheoreticalRangeJson = DEFAULT_THEORETICAL_RANGE_JSON;
+
+  // Session-only directional spider graph
+  private readonly spiderSectorMaxDistanceMeters = Array.from(
+    { length: SPIDER_SECTOR_COUNT },
+    () => 0
+  );
+  private spiderCenterProjected: number[] | null = null;
 
   // Computed counts
   get aircraftWithPosition(): number {
@@ -142,12 +172,51 @@ export class LiveComponent implements OnInit, OnDestroy {
   private olMap!: OlMap;
   private aircraftSource = new VectorSource();
   private trailSource = new VectorSource();
+  private distanceRingSource = new VectorSource();
+  private theoreticalRangeSource = new VectorSource();
+  private radarSiteSource = new VectorSource();
+  private spiderSource = new VectorSource();
   /** hex -> OL Feature lookup for in-place position updates */
   private featureIndex: { [hex: string]: Feature } = {};
   /** hex -> list of projected points retained for trail rendering */
   private trailHistory: { [hex: string]: number[][] } = {};
   /** hex -> trail line feature */
   private trailFeatureIndex: { [hex: string]: Feature } = {};
+  private spiderPolygonFeature: Feature | null = null;
+
+  private readonly spiderCenterStyle = new Style({
+    image: new Icon({
+      src: 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">' +
+        '<g fill="none" fill-rule="evenodd">' +
+        '<path d="M13 4.8l5.1 14.8h-2.6l-1.03-3.2h-2.94l-1.04 3.2H7.85L13 4.8Z" fill="rgba(17,24,39,0.92)"/>' +
+        '<path d="M12.18 13.82h1.64L13 11.05l-.82 2.77Z" fill="rgba(255,255,255,0.92)"/>' +
+        '<path d="M7.3 20.55h11.4" stroke="rgba(17,24,39,0.92)" stroke-width="1.55" stroke-linecap="round"/>' +
+        '<circle cx="13" cy="8.85" r="1.65" fill="rgba(17,24,39,0.94)" stroke="rgba(255,255,255,0.92)" stroke-width="0.85"/>' +
+        '<path d="M13 8.85a4.8 4.8 0 0 1 4.8 4.8" stroke="rgba(17,24,39,0.88)" stroke-width="1.1" stroke-linecap="round"/>' +
+        '<path d="M13 8.85a7.15 7.15 0 0 1 7.15 7.15" stroke="rgba(17,24,39,0.5)" stroke-width="1" stroke-linecap="round"/>' +
+        '</g></svg>'
+      ),
+      opacity: 0.98,
+      anchor: [0.5, 0.5],
+      scale: 1.22
+    })
+  });
+  private readonly spiderPolygonStyle = new Style({
+    fill: new Fill({ color: 'rgba(56, 189, 248, 0.20)' }),
+    stroke: new Stroke({ color: 'rgba(56, 189, 248, 0.95)', width: 2.1 })
+  });
+  private readonly distanceRingStyle = new Style({
+    fill: new Fill({ color: 'rgba(0, 0, 0, 0)' }),
+    stroke: new Stroke({ color: 'rgba(55, 55, 55, 0.58)', width: 1 })
+  });
+  private readonly distanceRingRayStyle = new Style({
+    stroke: new Stroke({ color: 'rgba(55, 55, 55, 0.24)', width: 0.8 })
+  });
+  private readonly theoreticalRangeStyle = new Style({
+    fill: new Fill({ color: 'rgba(245, 158, 11, 0.10)' }),
+    stroke: new Stroke({ color: 'rgba(180, 83, 9, 0.72)', width: 1.6 })
+  });
 
   private subscription?: Subscription;
   private cdr = inject(ChangeDetectorRef);
@@ -204,14 +273,30 @@ export class LiveComponent implements OnInit, OnDestroy {
       zoom: this.dataService.getSetting('live_map_default_zoom').pipe(catchError(() => of({ value: String(DEFAULT_ZOOM) }))),
       trailPoints: this.dataService.getSetting('live_map_trail_points').pipe(catchError(() => of({ value: String(DEFAULT_TRAIL_POINTS) }))),
       showAllSeen: this.dataService.getSetting('live_map_show_all_seen').pipe(catchError(() => of({ value: 'true' }))),
-    }).subscribe(({ enabled, refreshMs, centerLat, centerLon, zoom, trailPoints, showAllSeen }) => {
+      spiderOverlayEnabled: this.dataService.getSetting('live_map_spider_overlay_enabled').pipe(catchError(() => of({ value: 'true' }))),
+      centerIconEnabled: this.dataService.getSetting('live_map_center_icon_enabled').pipe(catchError(() => of({ value: String(DEFAULT_CENTER_ICON_ENABLED) }))),
+      distanceRingsEnabled: this.dataService.getSetting('live_map_distance_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RINGS_ENABLED) }))),
+      distanceRingCompassLinesEnabled: this.dataService.getSetting('live_map_distance_ring_compass_lines_enabled').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED) }))),
+      distanceRingCount: this.dataService.getSetting('live_map_distance_ring_count').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_COUNT) }))),
+      distanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_INTERVAL_MILES) }))),
+      theoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_THEORETICAL_RANGE_ENABLED) }))),
+      theoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_THEORETICAL_RANGE_JSON }))),
+    }).subscribe(({ enabled, refreshMs, centerLat, centerLon, zoom, trailPoints, showAllSeen, spiderOverlayEnabled, centerIconEnabled, distanceRingsEnabled, distanceRingCompassLinesEnabled, distanceRingCount, distanceRingIntervalMiles, theoreticalRangeEnabled, theoreticalRangeJson }) => {
       this.liveMapEnabled = enabled?.value !== 'false';
       this.refreshMs = this.clampInt(refreshMs?.value, 1_000, 60_000, DEFAULT_REFRESH_MS);
       this.defaultCenterLat = this.clampFloat(centerLat?.value, -85, 85, DEFAULT_CENTER_LAT);
       this.defaultCenterLon = this.clampFloat(centerLon?.value, -180, 180, DEFAULT_CENTER_LON);
-      this.defaultZoom = this.clampFloat(zoom?.value, 1, 18, DEFAULT_ZOOM);
+      this.defaultZoom = this.clampInt(zoom?.value, 1, 18, DEFAULT_ZOOM);
       this.trailPoints = this.clampInt(trailPoints?.value, 0, 200, DEFAULT_TRAIL_POINTS);
       this.showAllSeen = showAllSeen?.value !== 'false';
+      this.liveMapSpiderOverlayEnabled = spiderOverlayEnabled?.value !== 'false';
+      this.liveMapCenterIconEnabled = centerIconEnabled?.value !== 'false';
+      this.liveMapDistanceRingsEnabled = distanceRingsEnabled?.value === 'true';
+      this.liveMapDistanceRingCompassLinesEnabled = distanceRingCompassLinesEnabled?.value !== 'false';
+      this.liveMapDistanceRingCount = this.clampInt(distanceRingCount?.value, 1, 12, DEFAULT_DISTANCE_RING_COUNT);
+      this.liveMapDistanceRingIntervalMiles = this.clampInt(distanceRingIntervalMiles?.value, 1, 250, DEFAULT_DISTANCE_RING_INTERVAL_MILES);
+      this.liveMapTheoreticalRangeEnabled = theoreticalRangeEnabled?.value === 'true';
+      this.liveMapTheoreticalRangeJson = String(theoreticalRangeJson?.value ?? '').trim();
       afterLoad();
     });
   }
@@ -236,8 +321,28 @@ export class LiveComponent implements OnInit, OnDestroy {
     this.olMap = new OlMap({
       layers: [
         new TileLayer({ source: new OSM() }),
-        new VectorLayer({ source: this.trailSource, zIndex: 8 }),
-        new VectorLayer({ source: this.aircraftSource, zIndex: 10 }),
+        new VectorLayer({
+          source: this.distanceRingSource,
+          zIndex: 9,
+          style: feature => this.distanceRingStyleFor(feature as Feature)
+        }),
+        new VectorLayer({
+          source: this.theoreticalRangeSource,
+          zIndex: 10,
+          style: this.theoreticalRangeStyle
+        }),
+        new VectorLayer({ source: this.trailSource, zIndex: 11 }),
+        new VectorLayer({
+          source: this.radarSiteSource,
+          zIndex: 12,
+          style: this.spiderCenterStyle
+        }),
+        new VectorLayer({
+          source: this.spiderSource,
+          zIndex: 13,
+          style: feature => this.spiderStyleFor(feature as Feature)
+        }),
+        new VectorLayer({ source: this.aircraftSource, zIndex: 14 }),
       ],
       target: 'live',
       view: new View({
@@ -250,6 +355,10 @@ export class LiveComponent implements OnInit, OnDestroy {
     this.olMap.addControl(new FullScreen());
     this.olMap.addControl(new ScaleLine());
     this.olMap.addControl(new ZoomSlider());
+    this.initRadarSiteMarker();
+    this.initDistanceRings();
+    this.initTheoreticalRangeOverlay();
+    this.initSpiderOverlay();
 
     // Pointer cursor over aircraft features
     this.olMap.on('pointermove', evt => {
@@ -287,6 +396,7 @@ export class LiveComponent implements OnInit, OnDestroy {
     this.lastUpdate   = new Date();
     this.messageCount = data.messages ?? null;
     this.aircraft     = data.aircraft ?? [];
+    if (this.liveMapSpiderOverlayEnabled) this.updateSpiderHistory();
 
     this.applyFilter();
     this.syncMapFeatures();
@@ -425,17 +535,18 @@ export class LiveComponent implements OnInit, OnDestroy {
   // -------------------------------------------------------------------------
 
   private makeStyle(ac: LiveAircraft, selected: boolean): Style {
-    const fillColor    = selected ? '#ffffff' : altitudeColor(ac.altitude);
-    const outlineColor = sourceColor(ac.source);
-    const rotation     = ((ac.track ?? 0) * Math.PI) / 180;
-    const scale        = selected ? 1.35 : 1.0;
+    const fillColor = selected ? '#ffffff' : '#000000';
+    const outlineColor = selected ? '#333333' : '#ffffff';
+    const rotation = ((ac.track ?? 0) * Math.PI) / 180;
+    const scale = selected ? 1.35 : 1.0;
+    const aircraftClass = this.classifyAircraftForIcon(ac);
 
     return new Style({
       image: new Icon({
         opacity: 1,
         src: 'data:image/svg+xml;utf8,' +
-          encodeURIComponent(this.airlinerSvg(outlineColor, fillColor)),
-        rotation,
+          encodeURIComponent(this.svgForAircraftClass(aircraftClass, fillColor, outlineColor)),
+        rotation: aircraftClass === 'balloon' || aircraftClass === 'ground' ? 0 : rotation,
         scale,
       }),
     });
@@ -452,44 +563,57 @@ export class LiveComponent implements OnInit, OnDestroy {
     });
   }
 
+  private classifyAircraftForIcon(ac: LiveAircraft): string {
+    const provided = (ac.aircraft_class || '').trim().toLowerCase();
+    if (provided) return provided;
+
+    const category = (ac.category || '').trim().toUpperCase();
+    const callsign = (ac.flight || '').trim().toUpperCase();
+
+    if (callsign.startsWith('RCH') || callsign.startsWith('NAVY') || callsign.startsWith('ARMY')) return 'military';
+    if (category === 'A7') return 'helicopter';
+    if (category === 'A5' || category === 'A6' || category === 'A4') return 'airliner';
+    if (category === 'B1') return 'glider';
+    if (category === 'B2') return 'balloon';
+    if (category === 'B5') return 'uav';
+    if (category.startsWith('C')) return 'ground';
+    if (category.startsWith('D')) return 'military';
+    if (category.startsWith('A') || category.startsWith('B')) return 'general_aviation';
+
+    return 'unknown';
+  }
+
+  private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
+    switch (aircraftClass) {
+      case 'helicopter':
+        return this.helicopterSvg(fill, outline);
+      case 'military':
+        return this.militaryJetSvg(fill, outline);
+      case 'glider':
+        return this.gliderSvg(fill, outline);
+      case 'balloon':
+        return this.balloonSvg(fill, outline);
+      case 'uav':
+        return this.uavSvg(fill, outline);
+      case 'ground':
+        return this.groundVehicleSvg(fill, outline);
+      case 'general_aviation':
+        return this.generalAviationSvg(fill, outline);
+      default:
+        return this.airlinerSvg(fill, outline);
+    }
+  }
+
   /**
    * Returns the same airliner SVG used by the flight-history plot page,
    * allowing reuse of the existing visual language across the portal.
    * The SVG itself is original artwork included under the project's MIT licence.
    */
   private airlinerSvg(fill: string, outline: string): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 26" width="25px" height="26px">` +
-      `<defs><style>.cls-1{fill:${fill};}.cls-2{fill:${outline};}</style></defs>` +
-      `<title>airliner</title><g><g>` +
-      `<path class="cls-1" d="M12.51,25.75c-.26,0-.74-.71-.86-1.41l-3.33.86L8,25.29l.08-1.41.11-.07` +
-      `c1.13-.68,2.68-1.64,3.2-2-.37-1.06-.51-3.92-.43-8.52v0L8,13.31C5.37,14.12,1.2,15.39,1,15.5` +
-      `a.5.5,0,0,1-.21,0,.52.52,0,0,1-.49-.45,1,1,0,0,1,.52-1l1.74-.91c1.36-.71,3.22-1.69,4.66-2.43` +
-      `a4,4,0,0,1,0-.52c0-.69,0-1,0-1.14l.25-.13H7.16A1.07,1.07,0,0,1,8.24,7.73,1.12,1.12,0,0,1,9.06,8` +
-      `a1.46,1.46,0,0,1,.26.87L9.08,9h.25c0,.14,0,.31,0,.58l1.52-.84c0-1.48,0-7.06,1.1-8.25a.74.74,0,0,1,1.13,0` +
-      `c1.15,1.19,1.13,6.78,1.1,8.25l1.52.84c0-.32,0-.48,0-.58l.25-.13H15.7A1.46,1.46,0,0,1,16,8` +
-      `a1.11,1.11,0,0,1,.82-.28,1.06,1.06,0,0,1,1.08,1.16V9c0,.19,0,.48,0,1.17a4,4,0,0,1,0,.52` +
-      `c1.75.9,4.4,2.29,5.67,3l.73.38a.9.9,0,0,1,.5,1,.55.55,0,0,1-.5.47h0l-.11,0` +
-      `c-.28-.11-4.81-1.49-7.16-2.2H14.06v0c.09,4.6-.06,7.46-.43,8.52.52.33,2.07,1.29,3.2,2l.11.07` +
-      `L17,25.29l-.33-.09-3.33-.86c-.12.7-.6,1.41-.86,1.41h0Z"/>` +
-      `<path class="cls-2" d="M12.51.5C13.93.5,14,7,13.93,8.91c.3.16,1.64.91,2,1.1,0-.6,0-.85,0-1` +
-      `s0-.09,0-.13a1.18,1.18,0,0,1,.19-.7A.88.88,0,0,1,16.78,8h0a.82.82,0,0,1,.83.91s0,.07,0,.13` +
-      `s0,.44,0,1.17a3.21,3.21,0,0,1-.06.66c2.33,1.19,6.51,3.39,6.56,3.42.59.3.4,1,.11,1h-.07` +
-      `c-.37-.14-7.18-2.21-7.18-2.21l-3.18,0c0,.22.22,7.56-.48,8.91,0,0,2,1.26,3.39,2.08l.06.93` +
-      `L13.15,24a2.14,2.14,0,0,1-.64,1.47A2.14,2.14,0,0,1,11.87,24L8.26,25,8.31,24` +
-      `c1.38-.82,3.39-2.08,3.39-2.08-.7-1.35-.48-8.69-.48-8.91L8,13.06S1.17,15.13.86,15.27l-.11,0` +
-      `c-.32,0-.43-.73.14-1S5.13,12,7.46,10.85a3.21,3.21,0,0,1-.06-.66c0-.73,0-1,0-1.17` +
-      `s0-.09,0-.13A.82.82,0,0,1,8.24,8h0a.88.88,0,0,1,.65.21,1.18,1.18,0,0,1,.19.7` +
-      `s0,.07,0,.13,0,.39,0,1c.36-.19,1.71-.94,2-1.1C11.05,7,11.09.5,12.51.5m0-.5a1,1,0,0,0-.74.34` +
-      `c-1.16,1.2-1.2,6.3-1.18,8.28L10,8.93l-.46.25V8.91a1.68,1.68,0,0,0-.33-1.06,1.34,1.34,0,0,0-1-.36` +
-      `a1.31,1.31,0,0,0-1.33,1.4V9h0v0c0,.16,0,.46,0,1.14,0,.13,0,.26,0,.38l-4.5,2.35-1.74.91` +
-      `A1.2,1.2,0,0,0,0,15.15a.77.77,0,0,0,.73.64.74.74,0,0,0,.31-.07c.29-.12,4.35-1.35,7-2.17l2.6,0` +
-      `c-.1,5.54.17,7.46.38,8.2-.64.4-2,1.25-3,1.86l-.22.13,0,.26-.06.93,0,.81.7-.31,3.06-.79` +
-      `c.19.67.63,1.35,1,1.35s.86-.68,1-1.35l3.06.79.7.31,0-.81L17.2,24l0-.26L17,23.6` +
-      `c-1-.61-2.4-1.47-3-1.86.21-.74.48-2.66.38-8.2l2.6,0c2.72.83,6.81,2.07,7.07,2.18` +
-      `a.68.68,0,0,0,.25,0,.79.79,0,0,0,.74-.67,1.15,1.15,0,0,0-.63-1.29l-.71-.37` +
-      `c-1.23-.65-3.78-2-5.53-2.88,0-.12,0-.25,0-.38,0-.67,0-1,0-1.14h0V8.92` +
-      `a1.32,1.32,0,0,0-1.32-1.44,1.35,1.35,0,0,0-1,.36,1.67,1.67,0,0,0-.33,1V9h0v.22` +
-      `L15,8.93l-.57-.32c0-2,0-7.08-1.18-8.28A1,1,0,0,0,12.51,0Z"/></g></g></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="40" height="40">` +
+      `<path d="M25,2 L29,16 L46,24 L44,27 L29,21 L28,36 L34,43 L32,45 L25,40 L18,45 L16,43 L22,36 L21,21 L6,27 L4,24 L21,16 Z"` +
+      ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `</svg>`;
   }
 
   // -------------------------------------------------------------------------
@@ -555,6 +679,70 @@ export class LiveComponent implements OnInit, OnDestroy {
     window.addEventListener('mouseup', this.windowMouseUpHandler);
     document.body.style.cursor = 'ew-resize';
     document.body.style.userSelect = 'none';
+  }
+
+  private generalAviationSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<rect x="17" y="2" width="16" height="3.5" rx="1.75" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<path d="M25,4 L27,16 L43,21 L43,24 L27,19 L26,37 L29,41 L27,43 L25,41 L23,43 L21,41 L24,37 L23,19 L7,24 L7,21 L23,16 Z"` +
+      ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `</svg>`;
+  }
+
+  private militaryJetSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="40" height="40">` +
+      `<path d="M25,2 L28,14 L28,24 L47,34 L45,37 L28,28 L27,44 L29,47 L25,48 L21,47 L23,44 L22,28 L5,37 L3,34 L22,24 L22,14 Z"` +
+      ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `</svg>`;
+  }
+
+  private helicopterSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 54" width="42" height="46">` +
+      `<ellipse cx="25" cy="29" rx="7" ry="11" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<rect x="23.5" y="39" width="3" height="11" rx="1" fill="${fill}"/>` +
+      `<rect x="18" y="47" width="14" height="3" rx="1.5" fill="${fill}"/>` +
+      `<rect x="3" y="21" width="44" height="4" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="23" y="3" width="4" height="40" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<circle cx="25" cy="23" r="4.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `</svg>`;
+  }
+
+  private gliderSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 46" width="52" height="40">` +
+      `<ellipse cx="30" cy="24" rx="2.5" ry="18" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<path d="M30,22 L2,26 L2,29 L30,25 L58,29 L58,26 Z" fill="${fill}" stroke="${outline}" stroke-width="0.5" stroke-linejoin="round"/>` +
+      `<rect x="20" y="38" width="20" height="3.5" rx="1.75" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `</svg>`;
+  }
+
+  private balloonSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<circle cx="25" cy="25" r="22" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `</svg>`;
+  }
+
+  private uavSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="40" height="40">` +
+      `<line x1="25" y1="25" x2="10" y2="10" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<line x1="25" y1="25" x2="40" y2="10" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<line x1="25" y1="25" x2="10" y2="40" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<line x1="25" y1="25" x2="40" y2="40" stroke="${fill}" stroke-width="3.5" stroke-linecap="round"/>` +
+      `<circle cx="10" cy="10" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<circle cx="40" cy="10" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<circle cx="10" cy="40" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<circle cx="40" cy="40" r="6.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<rect x="19" y="19" width="12" height="12" rx="3" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `</svg>`;
+  }
+
+  private groundVehicleSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<rect x="13" y="7" width="24" height="36" rx="4" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
+      `<rect x="8" y="10" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="36" y="10" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="8" y="29" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `<rect x="36" y="29" width="6" height="11" rx="3" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `</svg>`;
   }
 
   private onWindowMouseMove(event: MouseEvent): void {
@@ -623,5 +811,293 @@ export class LiveComponent implements OnInit, OnDestroy {
     const viewportMax = Math.max(MIN_FLYOUT_WIDTH, window.innerWidth - 80);
     const max = Math.min(MAX_FLYOUT_WIDTH, viewportMax);
     return Math.max(MIN_FLYOUT_WIDTH, Math.min(max, width));
+  }
+
+  private spiderStyleFor(feature: Feature): Style {
+    switch (feature.get('spiderKind')) {
+      case 'center':
+        return this.spiderCenterStyle;
+      case 'polygon':
+        return this.spiderPolygonStyle;
+      default:
+        return this.spiderPolygonStyle;
+    }
+  }
+
+  private initSpiderOverlay(): void {
+    this.spiderSource.clear();
+    this.spiderPolygonFeature = null;
+
+    if (!this.liveMapSpiderOverlayEnabled) return;
+
+    this.spiderCenterProjected = fromLonLat([this.defaultCenterLon, this.defaultCenterLat]);
+  }
+
+  private initRadarSiteMarker(): void {
+    this.radarSiteSource.clear();
+
+    if (!this.liveMapCenterIconEnabled) return;
+
+    const centerProjected = fromLonLat([this.defaultCenterLon, this.defaultCenterLat]);
+    const center = new Feature({ geometry: new Point(centerProjected) });
+    center.set('spiderKind', 'center');
+    this.radarSiteSource.addFeature(center);
+  }
+
+  private initDistanceRings(): void {
+    this.distanceRingSource.clear();
+
+    if (!this.liveMapDistanceRingsEnabled) return;
+
+    const center = fromLonLat([this.defaultCenterLon, this.defaultCenterLat]);
+    const intervalMeters = this.liveMapDistanceRingIntervalMiles * 1609.344;
+    const outerRadiusMeters = intervalMeters * this.liveMapDistanceRingCount;
+
+    for (let i = 1; i <= this.liveMapDistanceRingCount; i += 1) {
+      const radiusMeters = intervalMeters * i;
+      const ring = new Feature({
+        geometry: polygonFromCircle(new CircleGeom(center, radiusMeters), 128)
+      });
+      ring.set('distanceRingKind', 'ring');
+      this.distanceRingSource.addFeature(ring);
+    }
+
+    if (this.liveMapDistanceRingCompassLinesEnabled) {
+      for (let i = 0; i < 16; i += 1) {
+        const angle = ((i / 16) * 360 - 90) * (Math.PI / 180);
+        const ray = new Feature({
+          geometry: new LineString([
+            center,
+            [
+              center[0] + outerRadiusMeters * Math.cos(angle),
+              center[1] + outerRadiusMeters * Math.sin(angle)
+            ]
+          ])
+        });
+        ray.set('distanceRingKind', 'ray');
+        this.distanceRingSource.addFeature(ray);
+      }
+    }
+  }
+
+  private initTheoreticalRangeOverlay(): void {
+    this.theoreticalRangeSource.clear();
+
+    if (!this.liveMapTheoreticalRangeEnabled || !this.liveMapTheoreticalRangeJson) return;
+
+    for (const ring of this.extractTheoreticalRangeRings(this.liveMapTheoreticalRangeJson)) {
+      this.theoreticalRangeSource.addFeature(new Feature({
+        geometry: new Polygon([ring])
+      }));
+    }
+  }
+
+  private extractTheoreticalRangeRings(rawJson: string): number[][][] {
+    let parsed: unknown;
+
+    try {
+      parsed = JSON.parse(rawJson);
+    } catch {
+      return [];
+    }
+
+    const geoJsonFeatures = this.readGeoJsonFeatures(parsed);
+    if (geoJsonFeatures.length > 0) {
+      return geoJsonFeatures;
+    }
+
+    const rings = this.collectCoordinateRings(parsed)
+      .map(ring => this.projectRing(ring))
+      .filter((ring): ring is number[][] => ring.length >= 4);
+
+    return rings;
+  }
+
+  private readGeoJsonFeatures(parsed: unknown): number[][][] {
+    try {
+      const features = new GeoJSON().readFeatures(parsed as object, {
+        featureProjection: 'EPSG:3857',
+        dataProjection: 'EPSG:4326'
+      });
+
+      return features.flatMap(feature => {
+        const geometry = feature.getGeometry();
+        if (geometry instanceof Polygon) {
+          return [geometry.getCoordinates()[0]];
+        }
+        return [];
+      }).filter(ring => ring.length >= 4);
+    } catch {
+      return [];
+    }
+  }
+
+  private collectCoordinateRings(value: unknown): number[][][] {
+    if (this.isLonLatPairArray(value)) {
+      return [this.closeLonLatRing(value)];
+    }
+
+    if (this.isLonLatObjectArray(value)) {
+      return [this.closeLonLatRing(value.map(point => [point.lon, point.lat]))];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    if (Array.isArray(value)) {
+      return value.flatMap(entry => this.collectCoordinateRings(entry));
+    }
+
+    return Object.values(value).flatMap(entry => this.collectCoordinateRings(entry));
+  }
+
+  private isLonLatPairArray(value: unknown): value is number[][] {
+    return Array.isArray(value) && value.length >= 3 && value.every(item =>
+      Array.isArray(item) && item.length >= 2 &&
+      Number.isFinite(item[0]) && Number.isFinite(item[1])
+    );
+  }
+
+  private isLonLatObjectArray(value: unknown): value is Array<{ lon: number; lat: number }> {
+    return Array.isArray(value) && value.length >= 3 && value.every(item => {
+      if (!item || typeof item !== 'object') return false;
+      const candidate = item as Record<string, unknown>;
+      const lon = candidate['lon'] ?? candidate['lng'] ?? candidate['longitude'];
+      const lat = candidate['lat'] ?? candidate['latitude'];
+      return Number.isFinite(lon) && Number.isFinite(lat);
+    });
+  }
+
+  private closeLonLatRing(points: number[][]): number[][] {
+    const ring = points.map(([lon, lat]) => [Number(lon), Number(lat)]);
+    const first = ring[0];
+    const last = ring[ring.length - 1];
+    if (!first || !last) return [];
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+      ring.push([first[0], first[1]]);
+    }
+    return ring;
+  }
+
+  private projectRing(ring: number[][]): number[][] {
+    return ring
+      .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
+      .map(([lon, lat]) => fromLonLat([lon, lat]));
+  }
+
+  private distanceRingStyleFor(feature: Feature): Style {
+    return feature.get('distanceRingKind') === 'ray'
+      ? this.distanceRingRayStyle
+      : this.distanceRingStyle;
+  }
+
+  private updateSpiderHistory(): void {
+    if (!this.spiderCenterProjected) return;
+
+    for (const ac of this.aircraft) {
+      if (ac.lat == null || ac.lon == null || !ac.hex) continue;
+
+      const bearing = this.calculateBearingDegrees(
+        this.defaultCenterLat,
+        this.defaultCenterLon,
+        ac.lat,
+        ac.lon
+      );
+      const sector = this.bearingToSector(bearing);
+      const distanceMeters = this.calculateDistanceMeters(
+        this.defaultCenterLat,
+        this.defaultCenterLon,
+        ac.lat,
+        ac.lon
+      );
+
+      this.spiderSectorMaxDistanceMeters[sector] = Math.max(
+        this.spiderSectorMaxDistanceMeters[sector],
+        Math.min(distanceMeters, SPIDER_MAX_RADIUS_METERS)
+      );
+    }
+
+    this.rebuildSpiderPolygon();
+  }
+
+  private rebuildSpiderPolygon(): void {
+    const coords = this.buildSpiderPolygonCoords();
+    if (coords.length === 0) {
+      if (this.spiderPolygonFeature) {
+        this.spiderSource.removeFeature(this.spiderPolygonFeature);
+        this.spiderPolygonFeature = null;
+      }
+      return;
+    }
+
+    if (!this.spiderPolygonFeature) {
+      this.spiderPolygonFeature = new Feature({ geometry: new Polygon([coords]) });
+      this.spiderPolygonFeature.set('spiderKind', 'polygon');
+      this.spiderSource.addFeature(this.spiderPolygonFeature);
+      return;
+    }
+
+    (this.spiderPolygonFeature.getGeometry() as Polygon).setCoordinates([coords]);
+  }
+
+  private buildSpiderPolygonCoords(): number[][] {
+    if (!this.spiderCenterProjected) return [];
+
+    const hasData = this.spiderSectorMaxDistanceMeters.some(distance => distance > 0);
+    if (!hasData) return [];
+
+    const coords: number[][] = [];
+
+    for (let i = 0; i < SPIDER_SECTOR_COUNT; i += 1) {
+      const radius = this.spiderSectorMaxDistanceMeters[i];
+      const angle = ((i / SPIDER_SECTOR_COUNT) * 360 - 90) * (Math.PI / 180);
+      coords.push([
+        this.spiderCenterProjected[0] + radius * Math.cos(angle),
+        this.spiderCenterProjected[1] + radius * Math.sin(angle)
+      ]);
+    }
+
+    coords.push(coords[0]);
+    return coords;
+  }
+
+  private bearingToSector(bearing: number): number {
+    const width = 360 / SPIDER_SECTOR_COUNT;
+    const normalized = (bearing + 360 + width / 2) % 360;
+    return Math.floor(normalized / width);
+  }
+
+  private calculateBearingDegrees(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
+    const startLat = this.degToRad(fromLat);
+    const startLon = this.degToRad(fromLon);
+    const endLat = this.degToRad(toLat);
+    const endLon = this.degToRad(toLon);
+    const deltaLon = endLon - startLon;
+
+    const y = Math.sin(deltaLon) * Math.cos(endLat);
+    const x = Math.cos(startLat) * Math.sin(endLat) -
+      Math.sin(startLat) * Math.cos(endLat) * Math.cos(deltaLon);
+
+    return (Math.atan2(y, x) * (180 / Math.PI) + 360) % 360;
+  }
+
+  private calculateDistanceMeters(fromLat: number, fromLon: number, toLat: number, toLon: number): number {
+    const earthRadiusMeters = 6_371_000;
+    const lat1 = this.degToRad(fromLat);
+    const lat2 = this.degToRad(toLat);
+    const deltaLat = this.degToRad(toLat - fromLat);
+    const deltaLon = this.degToRad(toLon - fromLon);
+
+    const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) *
+      Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return earthRadiusMeters * c;
+  }
+
+  private degToRad(degrees: number): number {
+    return degrees * (Math.PI / 180);
   }
 }

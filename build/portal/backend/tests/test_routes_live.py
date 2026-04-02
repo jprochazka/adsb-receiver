@@ -140,6 +140,8 @@ class TestLiveAircraftEndpoint:
         uat_ac = next(a for a in aircraft if a['source'] == 'dump978' and a['hex'] == 'b4c5d6')
         assert adsb_ac['flight'] == 'UAL123'
         assert uat_ac['flight'] == 'FFT321'
+        assert adsb_ac['aircraft_class'] == 'airliner'
+        assert uat_ac['aircraft_class'] == 'general_aviation'
 
     @patch('backend.routes.live.urlopen')
     def test_get_live_aircraft_normalises_ground_alt(self, mock_urlopen, client):

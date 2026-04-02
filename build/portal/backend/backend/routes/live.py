@@ -6,6 +6,7 @@ from urllib.error import URLError
 from flask import Blueprint
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Setting
+from backend.aircraft_classification import classify_aircraft
 from sqlalchemy import select
 
 live = Blueprint('live', __name__)
@@ -31,6 +32,7 @@ aircraft_model = live_ns.model('LiveAircraft', {
     'seen':          restx_fields.Float(description='Seconds since any message was received'),
     'rssi':          restx_fields.Float(description='Signal strength in dBFS'),
     'type':          restx_fields.String(description='ADS-B message type'),
+    'aircraft_class': restx_fields.String(description='Mapped aircraft class for iconography'),
 })
 
 live_response_model = live_ns.model('LiveData', {
@@ -93,21 +95,26 @@ def _normalize_dump1090_aircraft(raw: dict) -> dict:
     if not isinstance(alt, int):
         alt = None
 
+    flight = (raw.get('flight') or '').strip() or None
+    category = raw.get('category')
+    msg_type = raw.get('type')
+
     return {
-        'source':        'dump1090',
-        'hex':           raw.get('hex', ''),
-        'flight':        (raw.get('flight') or '').strip() or None,
-        'lat':           raw.get('lat'),
-        'lon':           raw.get('lon'),
-        'altitude':      alt,
-        'speed':         raw.get('gs'),
-        'track':         raw.get('track'),
-        'vertical_rate': raw.get('baro_rate'),
-        'squawk':        raw.get('squawk'),
-        'category':      raw.get('category'),
-        'seen':          raw.get('seen'),
-        'rssi':          raw.get('rssi'),
-        'type':          raw.get('type'),
+        'source':         'dump1090',
+        'hex':            raw.get('hex', ''),
+        'flight':         flight,
+        'lat':            raw.get('lat'),
+        'lon':            raw.get('lon'),
+        'altitude':       alt,
+        'speed':          raw.get('gs'),
+        'track':          raw.get('track'),
+        'vertical_rate':  raw.get('baro_rate'),
+        'squawk':         raw.get('squawk'),
+        'category':       category,
+        'seen':           raw.get('seen'),
+        'rssi':           raw.get('rssi'),
+        'type':           msg_type,
+        'aircraft_class': classify_aircraft(category, msg_type, flight),
     }
 
 
@@ -136,21 +143,26 @@ def _normalize_dump978_aircraft(raw: dict) -> dict:
     if not isinstance(alt, int):
         alt = None
 
+    flight = (raw.get('flight') or '').strip() or None
+    category = raw.get('category')
+    msg_type = raw.get('type')
+
     return {
-        'source':        'dump978',
-        'hex':           raw.get('hex', ''),
-        'flight':        (raw.get('flight') or '').strip() or None,
-        'lat':           raw.get('lat'),
-        'lon':           raw.get('lon'),
-        'altitude':      alt,
-        'speed':         raw.get('gs'),
-        'track':         raw.get('track'),
-        'vertical_rate': raw.get('geom_rate'),
-        'squawk':        raw.get('squawk'),
-        'category':      raw.get('category'),
-        'seen':          raw.get('seen'),
-        'rssi':          raw.get('rssi'),
-        'type':          raw.get('type'),
+        'source':         'dump978',
+        'hex':            raw.get('hex', ''),
+        'flight':         flight,
+        'lat':            raw.get('lat'),
+        'lon':            raw.get('lon'),
+        'altitude':       alt,
+        'speed':          raw.get('gs'),
+        'track':          raw.get('track'),
+        'vertical_rate':  raw.get('geom_rate'),
+        'squawk':         raw.get('squawk'),
+        'category':       category,
+        'seen':           raw.get('seen'),
+        'rssi':           raw.get('rssi'),
+        'type':           msg_type,
+        'aircraft_class': classify_aircraft(category, msg_type, flight),
     }
 
 

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
@@ -54,6 +55,12 @@ export class AdminFlightsComponent implements OnInit {
   ignoredUatError = '';
   private ignoredUatSaving = new Set<string>();
 
+  openSkyStatus: any = null;
+  openSkyLoading = false;
+  openSkyUpdating = false;
+  openSkyError = '';
+  openSkySuccess = '';
+
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
@@ -61,6 +68,61 @@ export class AdminFlightsComponent implements OnInit {
     this.loadStats();
     this.loadIgnoredAdsbFlights();
     this.loadIgnoredUatFlights();
+    this.loadOpenSkyAircraftDatabaseStatus();
+  }
+
+  loadOpenSkyAircraftDatabaseStatus() {
+    this.openSkyLoading = true;
+    this.openSkyError = '';
+
+    this.dataService.getOpenSkyAircraftDatabaseStatus().subscribe({
+      next: (status) => {
+        this.openSkyStatus = status;
+        this.openSkyLoading = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        this.openSkyLoading = false;
+        if (err.status === 404 && err.error) {
+          this.openSkyStatus = err.error;
+          return;
+        }
+        this.openSkyError = 'Failed to load OpenSky aircraft database status.';
+      }
+    });
+  }
+
+  updateOpenSkyAircraftDatabase() {
+    this.openSkyUpdating = true;
+    this.openSkyError = '';
+    this.openSkySuccess = '';
+
+    this.dataService.updateOpenSkyAircraftDatabase().subscribe({
+      next: (status) => {
+        this.openSkyStatus = status;
+        this.openSkyUpdating = false;
+        this.openSkySuccess = 'OpenSky aircraft database updated successfully.';
+      },
+      error: () => {
+        this.openSkyUpdating = false;
+        this.openSkyError = 'Failed to update OpenSky aircraft database. Ensure you are logged in as an Admin.';
+      }
+    });
+  }
+
+  formatByteSize(bytes: number | null | undefined): string {
+    if (bytes == null || Number.isNaN(bytes)) {
+      return 'Unknown';
+    }
+    if (bytes >= 1073741824) {
+      return `${(bytes / 1073741824).toFixed(2)} GB`;
+    }
+    if (bytes >= 1048576) {
+      return `${(bytes / 1048576).toFixed(2)} MB`;
+    }
+    if (bytes >= 1024) {
+      return `${(bytes / 1024).toFixed(2)} KB`;
+    }
+    return `${bytes} B`;
   }
 
   loadNavSetting() {

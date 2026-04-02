@@ -50,6 +50,16 @@ describe('AdminFlightsComponent', () => {
       flight: 'UAT0001',
       ignore_on_purge: false,
     })),
+    getOpenSkyAircraftDatabaseStatus: jasmine.createSpy('getOpenSkyAircraftDatabaseStatus').and.returnValue(of({
+      installed: false,
+      source_url: 'https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
+      license_name: 'Open Database License (ODbL) v1.0',
+    })),
+    updateOpenSkyAircraftDatabase: jasmine.createSpy('updateOpenSkyAircraftDatabase').and.returnValue(of({
+      installed: true,
+      source_url: 'https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
+      license_name: 'Open Database License (ODbL) v1.0',
+    })),
   };
 
   beforeEach(async () => {
@@ -74,6 +84,38 @@ describe('AdminFlightsComponent', () => {
     expect(dataServiceMock.GetFlightsCount).toHaveBeenCalled();
     expect(dataServiceMock.getIgnoredFlights).toHaveBeenCalled();
     expect(dataServiceMock.getIgnoredUatFlights).toHaveBeenCalled();
+    expect(dataServiceMock.getOpenSkyAircraftDatabaseStatus).toHaveBeenCalled();
+  });
+
+  it('should keep OpenSky not-installed state from 404 payload', () => {
+    dataServiceMock.getOpenSkyAircraftDatabaseStatus.and.returnValue(
+      throwError(() => ({ status: 404, error: { installed: false, msg: 'not installed' } }))
+    );
+
+    component.loadOpenSkyAircraftDatabaseStatus();
+
+    expect(component.openSkyError).toBe('');
+    expect(component.openSkyStatus?.installed).toBeFalse();
+  });
+
+  it('should update OpenSky database and set success message', () => {
+    dataServiceMock.updateOpenSkyAircraftDatabase.and.returnValue(of({ installed: true, sha256: 'abc' }));
+
+    component.updateOpenSkyAircraftDatabase();
+
+    expect(dataServiceMock.updateOpenSkyAircraftDatabase).toHaveBeenCalled();
+    expect(component.openSkyUpdating).toBeFalse();
+    expect(component.openSkySuccess).toContain('updated successfully');
+    expect(component.openSkyStatus?.installed).toBeTrue();
+  });
+
+  it('should handle OpenSky update error', () => {
+    dataServiceMock.updateOpenSkyAircraftDatabase.and.returnValue(throwError(() => new Error('failed')));
+
+    component.updateOpenSkyAircraftDatabase();
+
+    expect(component.openSkyUpdating).toBeFalse();
+    expect(component.openSkyError).toContain('Failed to update OpenSky aircraft database');
   });
 
   it('should save nav settings', () => {
@@ -149,5 +191,16 @@ describe('AdminFlightsComponent', () => {
     const purgeCards = html.querySelectorAll('.card.border-danger.purge-card');
 
     expect(purgeCards.length).toBe(2);
+  });
+
+  it('should render OpenSky status badge in header', () => {
+    component.openSkyLoading = false;
+    component.openSkyStatus = { installed: true };
+    fixture.detectChanges();
+
+    const html = fixture.nativeElement as HTMLElement;
+    const badge = html.querySelector('.card-header .badge');
+
+    expect(badge?.textContent?.trim()).toBe('Installed');
   });
 });
