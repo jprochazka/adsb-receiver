@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { AdminMapsComponent } from './admin-maps.component';
+import { AdminFeedersComponent } from './admin-feeders.component';
 import { DataService } from '../service/data.service';
 
-describe('AdminMapsComponent', () => {
-  let component: AdminMapsComponent;
-  let fixture: ComponentFixture<AdminMapsComponent>;
+describe('AdminFeedersComponent', () => {
+  let component: AdminFeedersComponent;
+  let fixture: ComponentFixture<AdminFeedersComponent>;
 
   const dataServiceMock = {
     getSetting: jasmine.createSpy('getSetting').and.callFake((name: string) => {
@@ -28,11 +28,11 @@ describe('AdminMapsComponent', () => {
     dataServiceMock.updateSetting.calls.reset();
 
     await TestBed.configureTestingModule({
-      imports: [AdminMapsComponent],
+      imports: [AdminFeedersComponent],
       providers: [{ provide: DataService, useValue: dataServiceMock }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AdminMapsComponent);
+    fixture = TestBed.createComponent(AdminFeedersComponent);
     component = fixture.componentInstance;
   });
 

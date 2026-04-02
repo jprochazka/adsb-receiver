@@ -6,7 +6,7 @@ import { AdminFlightsComponent } from './admin-flights/admin-flights.component';
 import { AdminDevicesComponent } from './admin-devices/admin-devices.component';
 import { AdminLiveComponent } from './admin-live/admin-live.component';
 import { AdminLinksComponent } from './admin-links/admin-links.component';
-import { AdminMapsComponent } from './admin-maps/admin-maps.component';
+import { AdminFeedersComponent } from './admin-feeders/admin-feeders.component';
 import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { BlogComponent } from './blog/blog.component';
 import { AcarsComponent } from './acars/acars.component';
@@ -28,7 +28,7 @@ export const routes: Routes = [
     { path: 'admin/devices', component: AdminDevicesComponent },
     { path: 'admin/live', component: AdminLiveComponent },
     { path: 'admin/links', component: AdminLinksComponent },
-    { path: 'admin/maps', component: AdminMapsComponent },
+    { path: 'admin/feeders', component: AdminFeedersComponent },
     { path: 'admin/scheduler', component: AdminSchedulerComponent },
     { path: 'admin/users', component: AdminUsersComponent },
     { path: 'blog', component: BlogComponent },

@@ -23,13 +23,13 @@ const MAP_LINK_DEFS: Omit<MapItem, 'enabled'>[] = [
 const DEFAULT_ORDER = 'dump1090,dump978,adsbx,pfclient';
 
 @Component({
-  selector: 'app-admin-maps',
+  selector: 'app-admin-feeders',
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
-  templateUrl: './admin-maps.component.html',
-  styleUrl: './admin-maps.component.scss'
+  templateUrl: './admin-feeders.component.html',
+  styleUrl: './admin-feeders.component.scss'
 })
-export class AdminMapsComponent implements OnInit {
+export class AdminFeedersComponent implements OnInit {
   loading = true;
   errorMessage = '';
   successMessage = '';
