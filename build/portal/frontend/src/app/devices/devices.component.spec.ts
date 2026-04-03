@@ -44,6 +44,8 @@ describe('DevicesComponent', () => {
           return of({ value: 'true' });
         case 'info_graphs_enabled':
           return of({ value: 'true' });
+        case 'info_stats_enabled':
+          return of({ value: 'true' });
         case 'graphs_measurement_range':
           return of({ value: 'metric' });
         case 'graphs_measurement_temperature':
@@ -66,6 +68,30 @@ describe('DevicesComponent', () => {
     getSystemNetwork: jasmine.createSpy('getSystemNetwork').and.returnValue(of({ network_interface: 'eth0' })),
     getSystemOther: jasmine.createSpy('getSystemOther').and.returnValue(of({ other_boot_time: 1700000000 })),
     getSystemDatabase: jasmine.createSpy('getSystemDatabase').and.returnValue(of({ size: 1024 })),
+    GetFlightsCount: jasmine.createSpy('GetFlightsCount').and.returnValue(of({ flights: 123 })),
+    getUatFlightsCount: jasmine.createSpy('getUatFlightsCount').and.returnValue(of({ flights: 45 })),
+    getAcarsFlightsCount: jasmine.createSpy('getAcarsFlightsCount').and.returnValue(of({ flights: 67 })),
+    getAcarsMessagesCount: jasmine.createSpy('getAcarsMessagesCount').and.returnValue(of({ messages: 890 })),
+    getOpenSkyAircraftDatabaseStatus: jasmine.createSpy('getOpenSkyAircraftDatabaseStatus').and.returnValue(of({
+      installed: true,
+      rows: 125000,
+      downloaded_at: '2026-04-03T01:00:00Z',
+    })),
+    getLiveAircraft: jasmine.createSpy('getLiveAircraft').and.returnValue(of({
+      now: 1700000100,
+      messages: 321,
+      aircraft: [
+        { source: 'dump1090', aircraft_class: 'airliner' },
+        { source: 'dump978', aircraft_class: 'helicopter' },
+      ],
+      classification_stats: {
+        opensky_count: 1,
+        heuristic_count: 1,
+        unknown_count: 0,
+        opensky_cache_entries: 1000,
+        opensky_cache_loaded_at: 1700000000,
+      },
+    })),
   };
 
   beforeEach(async () => {
@@ -77,6 +103,8 @@ describe('DevicesComponent', () => {
         case 'info_system_enabled':
           return of({ value: 'true' });
         case 'info_graphs_enabled':
+          return of({ value: 'true' });
+        case 'info_stats_enabled':
           return of({ value: 'true' });
         case 'graphs_measurement_range':
           return of({ value: 'metric' });
@@ -106,6 +134,30 @@ describe('DevicesComponent', () => {
     dataServiceMock.getSystemNetwork.and.returnValue(of({ network_interface: 'eth0' }));
     dataServiceMock.getSystemOther.and.returnValue(of({ other_boot_time: 1700000000 }));
     dataServiceMock.getSystemDatabase.and.returnValue(of({ size: 1024 }));
+    dataServiceMock.GetFlightsCount.and.returnValue(of({ flights: 123 }));
+    dataServiceMock.getUatFlightsCount.and.returnValue(of({ flights: 45 }));
+    dataServiceMock.getAcarsFlightsCount.and.returnValue(of({ flights: 67 }));
+    dataServiceMock.getAcarsMessagesCount.and.returnValue(of({ messages: 890 }));
+    dataServiceMock.getOpenSkyAircraftDatabaseStatus.and.returnValue(of({
+      installed: true,
+      rows: 125000,
+      downloaded_at: '2026-04-03T01:00:00Z',
+    }));
+    dataServiceMock.getLiveAircraft.and.returnValue(of({
+      now: 1700000100,
+      messages: 321,
+      aircraft: [
+        { source: 'dump1090', aircraft_class: 'airliner' },
+        { source: 'dump978', aircraft_class: 'helicopter' },
+      ],
+      classification_stats: {
+        opensky_count: 1,
+        heuristic_count: 1,
+        unknown_count: 0,
+        opensky_cache_entries: 1000,
+        opensky_cache_loaded_at: 1700000000,
+      },
+    }));
 
     TestBed.overrideComponent(DevicesComponent, {
       remove: {
@@ -136,6 +188,7 @@ describe('DevicesComponent', () => {
 
     expect(dataServiceMock.getSetting).toHaveBeenCalledWith('info_graphs_enabled');
     expect(dataServiceMock.getSetting).toHaveBeenCalledWith('info_system_enabled');
+    expect(dataServiceMock.getSetting).toHaveBeenCalledWith('info_stats_enabled');
     expect(dataServiceMock.getSetting).toHaveBeenCalledWith('graphs_measurement_range');
     expect(component.measurementRange).toBe('metric');
     expect(component.measurementAltitude).toBe('metric');
@@ -147,6 +200,28 @@ describe('DevicesComponent', () => {
     expect(component.d1090Range).toBeDefined();
     expect(component.sysNetwork.title).toContain('wlan0');
     expect(component.receiverLoading).toBeFalse();
+  });
+
+  it('should load public stats when stats tab is enabled', () => {
+    fixture.detectChanges();
+
+    expect(dataServiceMock.GetFlightsCount).toHaveBeenCalled();
+    expect(dataServiceMock.getUatFlightsCount).toHaveBeenCalled();
+    expect(dataServiceMock.getAcarsFlightsCount).toHaveBeenCalled();
+    expect(dataServiceMock.getAcarsMessagesCount).toHaveBeenCalled();
+    expect(dataServiceMock.getLiveAircraft).toHaveBeenCalled();
+    expect(dataServiceMock.getOpenSkyAircraftDatabaseStatus).toHaveBeenCalled();
+    expect(component.statsLoading).toBeFalse();
+    expect(component.publicStats?.adsbFlights).toBe(123);
+    expect(component.publicStats?.liveAircraft).toBe(2);
+    expect(component.publicStats?.liveAdsbAircraft).toBe(1);
+    expect(component.publicStats?.liveUatAircraft).toBe(1);
+    expect(component.publicStats?.topAircraftTypes.length).toBeGreaterThan(0);
+    expect(component.publicStats?.classifiedOpenSky).toBe(1);
+    expect(component.publicStats?.classifiedOpenSkyPct).toBe(50);
+    expect(component.publicStats?.openskyCacheEntries).toBe(1000);
+    expect(component.publicStats?.openskyDbInstalled).toBeTrue();
+    expect(component.publicStats?.openskyDbRows).toBe(125000);
   });
 
   it('should handle receiver settings load failure', () => {
@@ -353,6 +428,8 @@ describe('DevicesComponent', () => {
           return of({ value: 'false' });
         case 'info_graphs_enabled':
           return of({ value: 'true' });
+        case 'info_stats_enabled':
+          return of({ value: 'true' });
         case 'graphs_measurement_range':
           return of({ value: 'metric' });
         case 'graphs_measurement_temperature':
@@ -389,6 +466,8 @@ describe('DevicesComponent', () => {
           return of({ value: 'true' });
         case 'info_graphs_enabled':
           return of({ value: 'false' });
+        case 'info_stats_enabled':
+          return of({ value: 'true' });
         default:
           return of({ value: 'true' });
       }
@@ -411,6 +490,7 @@ describe('DevicesComponent', () => {
       switch (name) {
         case 'info_system_enabled':
         case 'info_graphs_enabled':
+        case 'info_stats_enabled':
           return of({ value: 'false' });
         default:
           return of({ value: 'true' });
@@ -425,6 +505,31 @@ describe('DevicesComponent', () => {
     expect(dataServiceMock.getSetting).not.toHaveBeenCalledWith('graphs_measurement_range');
   });
 
+  it('should hide the stats tab and skip stats requests when stats setting is disabled', () => {
+    dataServiceMock.getSetting.and.callFake((name: string) => {
+      switch (name) {
+        case 'info_system_enabled':
+          return of({ value: 'true' });
+        case 'info_graphs_enabled':
+          return of({ value: 'true' });
+        case 'info_stats_enabled':
+          return of({ value: 'false' });
+        default:
+          return of({ value: 'true' });
+      }
+    });
+
+    fixture.detectChanges();
+
+    const navButtons = Array.from(
+      fixture.nativeElement.querySelectorAll('.nav-tabs .nav-link') as NodeListOf<HTMLButtonElement>
+    ).map((button) => button.textContent?.trim());
+
+    expect(component.infoStatsEnabled).toBeFalse();
+    expect(dataServiceMock.GetFlightsCount).not.toHaveBeenCalled();
+    expect(navButtons).not.toContain('Portal');
+  });
+
   it('should ignore attempts to switch to a disabled tab', () => {
     component.infoGraphsEnabled = false;
     component.infoSystemEnabled = true;
@@ -433,5 +538,45 @@ describe('DevicesComponent', () => {
     component.setActiveTab('receiver');
 
     expect(component.activeTab).toBe('system');
+  });
+
+  it('should render decoder split and OpenSky stats sections', () => {
+    fixture.detectChanges();
+    component.setActiveTab('stats');
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Classification Quality');
+    expect(text).toContain('Top Aircraft Types');
+    expect(text).toContain('OpenSky Database');
+  });
+
+  it('should render public classification stats cards on the stats tab', () => {
+    fixture.detectChanges();
+    component.setActiveTab('stats');
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('OpenSky Classified');
+    expect(text).toContain('Heuristic Classified');
+    expect(text).toContain('OpenSky Cache Entries');
+  });
+
+  it('should render stats dashboard sections in operational order', () => {
+    fixture.detectChanges();
+    component.setActiveTab('stats');
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement.textContent as string)
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const dataQualityIndex = text.indexOf('Data Quality');
+    const trafficVolumeIndex = text.indexOf('Traffic Volume');
+    const systemStatusIndex = text.indexOf('System Status');
+
+    expect(dataQualityIndex).toBeGreaterThan(-1);
+    expect(trafficVolumeIndex).toBeGreaterThan(dataQualityIndex);
+    expect(systemStatusIndex).toBeGreaterThan(trafficVolumeIndex);
   });
 });

@@ -20,6 +20,7 @@ export class AdminDevicesComponent implements OnInit {
   infoNavEnabled    = true;
   infoSystemEnabled = true;
   infoGraphsEnabled = true;
+  infoStatsEnabled  = true;
 
   // Graph settings
   dump1090GraphsEnabled  = true;
@@ -52,6 +53,7 @@ export class AdminDevicesComponent implements OnInit {
       nav:    this.dataService.getSetting('info_nav_enabled').pipe(catchError(() => of({ value: 'true' }))),
       system: this.dataService.getSetting('info_system_enabled').pipe(catchError(() => of({ value: 'true' }))),
       graphs: this.dataService.getSetting('info_graphs_enabled').pipe(catchError(() => of({ value: 'true' }))),
+      stats: this.dataService.getSetting('info_stats_enabled').pipe(catchError(() => of({ value: 'true' }))),
       d1090:  this.dataService.getSetting('graphs_dump1090_enabled').pipe(catchError(() => of({ value: 'true' }))),
       d978:   this.dataService.getSetting('graphs_dump978_enabled').pipe(catchError(() => of({ value: 'false' }))),
       range:  this.dataService.getSetting('graphs_measurement_range').pipe(catchError(() => of({ value: 'imperialNautical' }))),
@@ -59,10 +61,11 @@ export class AdminDevicesComponent implements OnInit {
       iface:  this.dataService.getSetting('graphs_network_interface').pipe(catchError(() => of({ value: 'eth0' }))),
       refresh: this.dataService.getSetting('graphs_refresh_interval_ms').pipe(catchError(() => of({ value: '15000' }))),
     }).subscribe({
-      next: ({ nav, system, graphs, d1090, d978, range, temp, iface, refresh }) => {
+      next: ({ nav, system, graphs, stats, d1090, d978, range, temp, iface, refresh }) => {
         this.infoNavEnabled    = nav?.value    !== 'false';
         this.infoSystemEnabled = system?.value !== 'false';
         this.infoGraphsEnabled = graphs?.value !== 'false';
+        this.infoStatsEnabled  = stats?.value  !== 'false';
         this.dump1090GraphsEnabled  = d1090?.value !== 'false';
         this.dump978GraphsEnabled   = d978?.value  !== 'false';
         this.measurementRange       = range?.value ?? 'imperialNautical';
@@ -87,6 +90,10 @@ export class AdminDevicesComponent implements OnInit {
 
   saveInfoGraphsEnabled(): void {
     this.dataService.updateSetting('info_graphs_enabled', String(this.infoGraphsEnabled)).subscribe();
+  }
+
+  saveInfoStatsEnabled(): void {
+    this.dataService.updateSetting('info_stats_enabled', String(this.infoStatsEnabled)).subscribe();
   }
 
   saveDump1090GraphsEnabled(): void {

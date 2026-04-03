@@ -8,6 +8,7 @@ from flask import current_app
 from sqlalchemy import select
 from backend.models import db, Dump978Aircraft, Dump978Flight, Dump978Position
 from backend.aircraft_classification import classify_aircraft
+from backend.opensky_classification import get_opensky_classification
 
 scheduler = APScheduler()
 now = None
@@ -108,7 +109,8 @@ class UatDataProcessor(object):
             flight = aircraft["flight"].strip()
             emitter_category = aircraft.get("category")
             message_type = aircraft.get("type")
-            aircraft_class = classify_aircraft(emitter_category, message_type, flight)
+            opensky_class, _, _ = get_opensky_classification(aircraft.get("hex"))
+            aircraft_class = classify_aircraft(emitter_category, message_type, flight, opensky_class=opensky_class)
 
             tracked = False
             try:

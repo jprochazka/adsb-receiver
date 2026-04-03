@@ -16,9 +16,10 @@
               <img [src]="photoUrl" class="flyout-photo" alt="Aircraft photo" (error)="photoUrl = null">
             }
             @if (!photoUrl) {
-              <svg class="flyout-img-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-                <path d="M6.428 1.151C6.708.591 7.239 0 8 0s1.292.592 1.572 1.151C9.861 1.73 10 2.431 10 3v3.691l5.17 2.585a1.5 1.5 0 0 1 .83 1.342V12a.5.5 0 0 1-.582.493l-5.507-.088-.375 2.44a1 1 0 0 1-1.967 0l-.375-2.44-5.507.088A.5.5 0 0 1 1 12v-1.382a1.5 1.5 0 0 1 .83-1.342L7 6.691V3c0-.569.14-1.271.428-1.849z"/>
-              </svg>
+              <img
+                class="flyout-img-icon"
+                [src]="flyoutAircraftTypeIconDataUrl()"
+                [attr.alt]="flyoutAircraftTypeLabel() + ' icon'">
             }
             @if (photoUrl && photoAttribution) {
               <span class="flyout-photo-credit">&copy; {{ photoAttribution }}</span>
@@ -332,6 +333,7 @@
                   <tr>
                     <th scope="col">Flight</th>
                     <th scope="col">ICAO</th>
+                    <th scope="col">Aircraft</th>
                     <th scope="col">Type</th>
                     <th scope="col">First Seen</th>
                     <th scope="col">Last Seen</th>
@@ -353,6 +355,14 @@
                         }
                       </td>
                       <td>{{ flight.icao || '—' }}</td>
+                      <td>
+                        <span class="aircraft-type-icon-chip" [attr.title]="aircraftTypeLabelForFlight(flight)">
+                          <img
+                            class="aircraft-type-icon"
+                            [src]="aircraftTypeIconDataUrl(flight)"
+                            [attr.alt]="aircraftTypeLabelForFlight(flight) + ' icon'">
+                        </span>
+                      </td>
                       <td>
                         @if (flight._type === 'adsb') {
                           <span class="badge badge-adsb">ADS-B</span>
@@ -397,6 +407,7 @@
                   <tr>
                     <th scope="col">Flight</th>
                     <th scope="col">ICAO</th>
+                    <th scope="col">Aircraft</th>
                     <th scope="col">Type</th>
                     <th scope="col">First Seen</th>
                     <th scope="col">Last Seen</th>
@@ -410,6 +421,14 @@
                         <a [routerLink]="['/flight-history/adsb', flight.flight]">{{ flight.flight }}</a>
                       </td>
                       <td>{{ flight.icao || '—' }}</td>
+                      <td>
+                        <span class="aircraft-type-icon-chip" [attr.title]="aircraftTypeLabelForFlight(flight)">
+                          <img
+                            class="aircraft-type-icon"
+                            [src]="aircraftTypeIconDataUrl(flight)"
+                            [attr.alt]="aircraftTypeLabelForFlight(flight) + ' icon'">
+                        </span>
+                      </td>
                       <td><span class="badge badge-adsb">ADS-B</span></td>
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
@@ -469,8 +488,9 @@
                 <thead>
                   <tr>
                     <th scope="col">Flight</th>
-                    <th scope="col">Type</th>
                     <th scope="col">ICAO</th>
+                    <th scope="col">Aircraft</th>
+                    <th scope="col">Type</th>
                     <th scope="col">First Seen</th>
                     <th scope="col">Last Seen</th>
                     <th scope="col">Links</th>
@@ -487,8 +507,16 @@
                           <span>—</span>
                         }
                       </td>
-                      <td><span class="badge badge-uat">UAT</span></td>
                       <td>{{ flight.icao }}</td>
+                      <td>
+                        <span class="aircraft-type-icon-chip" [attr.title]="aircraftTypeLabelForFlight(flight)">
+                          <img
+                            class="aircraft-type-icon"
+                            [src]="aircraftTypeIconDataUrl(flight)"
+                            [attr.alt]="aircraftTypeLabelForFlight(flight) + ' icon'">
+                        </span>
+                      </td>
+                      <td><span class="badge badge-uat">UAT</span></td>
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
                       <td>

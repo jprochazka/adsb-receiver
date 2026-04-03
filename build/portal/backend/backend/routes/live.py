@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from urllib.request import urlopen, Request
 from urllib.error import URLError
 
@@ -7,6 +8,7 @@ from flask import Blueprint
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Setting
 from backend.aircraft_classification import classify_aircraft
+from backend.opensky_classification import get_opensky_classification, get_opensky_cache_stats
 from sqlalchemy import select
 
 live = Blueprint('live', __name__)
@@ -33,12 +35,15 @@ aircraft_model = live_ns.model('LiveAircraft', {
     'rssi':          restx_fields.Float(description='Signal strength in dBFS'),
     'type':          restx_fields.String(description='ADS-B message type'),
     'aircraft_class': restx_fields.String(description='Mapped aircraft class for iconography'),
+    'classification_source': restx_fields.String(description='Classification source: opensky or heuristic'),
+    'classification_confidence': restx_fields.String(description='Classification confidence: high, medium, or low'),
 })
 
 live_response_model = live_ns.model('LiveData', {
     'now':      restx_fields.Float(description='Unix epoch timestamp of the feed snapshot'),
     'messages': restx_fields.Integer(description='Total ADS-B messages received by dump1090 since startup'),
     'aircraft': restx_fields.List(restx_fields.Nested(aircraft_model)),
+    'classification_stats': restx_fields.Raw(description='Public aircraft classification and cache stats'),
 })
 
 error_model = live_ns.model('LiveError', {
@@ -52,6 +57,29 @@ error_model = live_ns.model('LiveError', {
 
 _DEFAULT_DUMP1090_JSON_URL = 'http://127.0.0.1/dump1090/data/aircraft.json'
 _DEFAULT_DUMP978_JSON_URL = 'http://127.0.0.1/dump978/data/aircraft.json'
+_LIVE_CACHE_TTL_SECONDS = 2.0
+_LIVE_AIRCRAFT_CACHE = {
+    'expires_at': 0.0,
+    'payload': None,
+}
+
+
+def _get_cached_live_aircraft_payload(now: float):
+    payload = _LIVE_AIRCRAFT_CACHE.get('payload')
+    expires_at = _LIVE_AIRCRAFT_CACHE.get('expires_at', 0.0)
+    if payload is not None and now < expires_at:
+        return payload
+    return None
+
+
+def _set_cached_live_aircraft_payload(payload: dict, now: float):
+    _LIVE_AIRCRAFT_CACHE['payload'] = payload
+    _LIVE_AIRCRAFT_CACHE['expires_at'] = now + _LIVE_CACHE_TTL_SECONDS
+
+
+def _clear_live_aircraft_cache():
+    _LIVE_AIRCRAFT_CACHE['payload'] = None
+    _LIVE_AIRCRAFT_CACHE['expires_at'] = 0.0
 
 
 def _get_dump1090_json_url() -> str:
@@ -98,6 +126,10 @@ def _normalize_dump1090_aircraft(raw: dict) -> dict:
     flight = (raw.get('flight') or '').strip() or None
     category = raw.get('category')
     msg_type = raw.get('type')
+    opensky_class, opensky_source, opensky_confidence = get_opensky_classification(raw.get('hex'))
+    aircraft_class = classify_aircraft(category, msg_type, flight, opensky_class=opensky_class)
+    classification_source = opensky_source or 'heuristic'
+    classification_confidence = opensky_confidence or ('medium' if aircraft_class != 'unknown' else 'low')
 
     return {
         'source':         'dump1090',
@@ -114,7 +146,9 @@ def _normalize_dump1090_aircraft(raw: dict) -> dict:
         'seen':           raw.get('seen'),
         'rssi':           raw.get('rssi'),
         'type':           msg_type,
-        'aircraft_class': classify_aircraft(category, msg_type, flight),
+        'aircraft_class': aircraft_class,
+        'classification_source': classification_source,
+        'classification_confidence': classification_confidence,
     }
 
 
@@ -146,6 +180,10 @@ def _normalize_dump978_aircraft(raw: dict) -> dict:
     flight = (raw.get('flight') or '').strip() or None
     category = raw.get('category')
     msg_type = raw.get('type')
+    opensky_class, opensky_source, opensky_confidence = get_opensky_classification(raw.get('hex'))
+    aircraft_class = classify_aircraft(category, msg_type, flight, opensky_class=opensky_class)
+    classification_source = opensky_source or 'heuristic'
+    classification_confidence = opensky_confidence or ('medium' if aircraft_class != 'unknown' else 'low')
 
     return {
         'source':         'dump978',
@@ -162,7 +200,9 @@ def _normalize_dump978_aircraft(raw: dict) -> dict:
         'seen':           raw.get('seen'),
         'rssi':           raw.get('rssi'),
         'type':           msg_type,
-        'aircraft_class': classify_aircraft(category, msg_type, flight),
+        'aircraft_class': aircraft_class,
+        'classification_source': classification_source,
+        'classification_confidence': classification_confidence,
     }
 
 
@@ -199,6 +239,14 @@ class LiveAircraftResource(Resource):
         aircraft. If one decoder is unavailable, the other decoder's data is
         still returned. A 503 is returned only when both feeds are unavailable.
         """
+        request_started = time.perf_counter()
+        now_ts = time.time()
+        cached = _get_cached_live_aircraft_payload(now_ts)
+        if cached is not None:
+            elapsed_ms = (time.perf_counter() - request_started) * 1000
+            logging.info('live_aircraft cache=hit aircraft=%d elapsed_ms=%.2f', len(cached.get('aircraft', [])), elapsed_ms)
+            return cached, 200
+
         dump1090_data = None
         dump978_data = None
         errors = []
@@ -241,6 +289,11 @@ class LiveAircraftResource(Resource):
         if dump978_data:
             aircraft_list.extend(_normalize_dump978_aircraft(a) for a in dump978_data.get('aircraft', []))
 
+        opensky_count = sum(1 for a in aircraft_list if a.get('classification_source') == 'opensky')
+        heuristic_count = sum(1 for a in aircraft_list if a.get('classification_source') != 'opensky')
+        unknown_count = sum(1 for a in aircraft_list if a.get('aircraft_class') == 'unknown')
+        cache_stats = get_opensky_cache_stats()
+
         now_value = None
         if dump1090_data and dump1090_data.get('now') is not None:
             now_value = dump1090_data.get('now')
@@ -253,8 +306,19 @@ class LiveAircraftResource(Resource):
         if dump978_data and isinstance(dump978_data.get('messages'), int):
             messages_value += dump978_data.get('messages')
 
-        return {
+        payload = {
             'now':      now_value,
             'messages': messages_value,
             'aircraft': aircraft_list,
-        }, 200
+            'classification_stats': {
+                'opensky_count': opensky_count,
+                'heuristic_count': heuristic_count,
+                'unknown_count': unknown_count,
+                'opensky_cache_entries': cache_stats.get('entries', 0),
+                'opensky_cache_loaded_at': cache_stats.get('loaded_at'),
+            },
+        }
+        _set_cached_live_aircraft_payload(payload, now_ts)
+        elapsed_ms = (time.perf_counter() - request_started) * 1000
+        logging.info('live_aircraft cache=miss aircraft=%d elapsed_ms=%.2f', len(aircraft_list), elapsed_ms)
+        return payload, 200

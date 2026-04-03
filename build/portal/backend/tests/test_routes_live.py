@@ -4,6 +4,7 @@ from unittest.mock import patch
 from urllib.error import URLError
 
 import pytest
+from backend.routes.live import _clear_live_aircraft_cache
 
 
 # ---------------------------------------------------------------------------
@@ -101,6 +102,13 @@ def _mock_urlopen_for_both(dump1090_data: dict | Exception, dump978_data: dict |
     return _dispatch
 
 
+@pytest.fixture(autouse=True)
+def _reset_live_aircraft_cache_between_tests():
+    _clear_live_aircraft_cache()
+    yield
+    _clear_live_aircraft_cache()
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -123,6 +131,9 @@ class TestLiveAircraftEndpoint:
             SAMPLE_DUMP978_AIRCRAFT_JSON['messages']
         )
         assert len(data['aircraft']) == 4
+        assert 'classification_stats' in data
+        assert data['classification_stats']['heuristic_count'] >= 1
+        assert data['classification_stats']['unknown_count'] >= 0
 
         sources = {a['source'] for a in data['aircraft']}
         assert sources == {'dump1090', 'dump978'}
@@ -142,6 +153,8 @@ class TestLiveAircraftEndpoint:
         assert uat_ac['flight'] == 'FFT321'
         assert adsb_ac['aircraft_class'] == 'airliner'
         assert uat_ac['aircraft_class'] == 'general_aviation'
+        assert adsb_ac['classification_source'] == 'heuristic'
+        assert uat_ac['classification_source'] == 'heuristic'
 
     @patch('backend.routes.live.urlopen')
     def test_get_live_aircraft_normalises_ground_alt(self, mock_urlopen, client):
@@ -209,3 +222,47 @@ class TestLiveAircraftEndpoint:
         assert data['messages'] == SAMPLE_DUMP978_AIRCRAFT_JSON['messages']
         assert len(data['aircraft']) == 1
         assert data['aircraft'][0]['source'] == 'dump978'
+
+    @patch('backend.routes.live.urlopen')
+    def test_get_live_aircraft_uses_short_ttl_cache(self, mock_urlopen, client):
+        """Second request within TTL should return cached payload and avoid upstream fetch."""
+        mock_urlopen.side_effect = _mock_urlopen_for_both(
+            SAMPLE_DUMP1090_AIRCRAFT_JSON,
+            SAMPLE_DUMP978_AIRCRAFT_JSON,
+        )
+
+        first = client.get('/api/live/aircraft')
+        second = client.get('/api/live/aircraft')
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert first.get_json() == second.get_json()
+        assert mock_urlopen.call_count == 2
+
+    @patch('backend.routes.live.get_opensky_classification')
+    @patch('backend.routes.live.urlopen')
+    def test_get_live_aircraft_prefers_opensky_classification(self, mock_urlopen, mock_opensky, client):
+        """OpenSky match should override heuristic class and expose metadata."""
+        mock_urlopen.side_effect = _mock_urlopen_for_both(
+            SAMPLE_DUMP1090_AIRCRAFT_JSON,
+            SAMPLE_DUMP978_AIRCRAFT_JSON,
+        )
+
+        def _opensky_lookup(hex_code: str):
+            if hex_code == 'a1b2c3':
+                return 'helicopter', 'opensky', 'high'
+            return None, None, None
+
+        mock_opensky.side_effect = _opensky_lookup
+
+        resp = client.get('/api/live/aircraft')
+        assert resp.status_code == 200
+        aircraft = resp.get_json()['aircraft']
+        adsb_ac = next(a for a in aircraft if a['source'] == 'dump1090' and a['hex'] == 'a1b2c3')
+
+        assert adsb_ac['aircraft_class'] == 'helicopter'
+        assert adsb_ac['classification_source'] == 'opensky'
+        assert adsb_ac['classification_confidence'] == 'high'
+
+        stats = resp.get_json()['classification_stats']
+        assert stats['opensky_count'] >= 1

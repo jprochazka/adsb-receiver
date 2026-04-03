@@ -27,6 +27,9 @@ import smooth from 'to-smooth';
 const PAGE_SIZE = 50;
 const TRACK_GAP_HOURS = 2;
 const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
+const TRACK_INTERPOLATION_TARGET_SECONDS = 6;
+const TRACK_INTERPOLATION_TARGET_METERS = 2_000;
+const TRACK_INTERPOLATION_MAX_POINTS_PER_EDGE = 16;
 
 @Component({
   selector: 'app-flights',
@@ -300,7 +303,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
     forkJoin({ details: details$, posData: posData$ }).subscribe({
       next: ({ details, posData }) => {
         this.loading = false;
-        const aircraftClass = String(details?.aircraft_class || 'unknown').trim().toLowerCase() || 'unknown';
+        const aircraftClass = this.aircraftClassForFlight(details);
         this.currentAircraftClass = aircraftClass;
         this.flightInfo = {
           icao: details?.icao ?? '—',
@@ -363,8 +366,8 @@ export class FlightsComponent implements OnInit, OnDestroy {
 
     segments.forEach((segment, idx) => {
       const color = TRACK_COLORS[idx % TRACK_COLORS.length];
-      const coords = segment.map((p: any) => fromLonLat([p.longitude, p.latitude]));
-      const smoothed = coords.length <= 25 ? this.makeSmooth(coords, 3) : coords;
+      const coords = this.buildRenderableSegmentCoords(segment);
+      const smoothed = coords.length <= 25 ? this.makeSmooth(coords, 3) : this.makeSmooth(coords, 2);
 
       const line = new Feature({ geometry: new LineString(smoothed) });
       line.setStyle(new Style({
@@ -691,6 +694,67 @@ export class FlightsComponent implements OnInit, OnDestroy {
     return f;
   }
 
+  aircraftTypeIconDataUrl(flight: any): string {
+    const klass = this.aircraftClassForFlight(flight);
+    const svg = this.svgForAircraftClass(klass, '#f8fafc', '#0f172a');
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  flyoutAircraftTypeIconDataUrl(): string {
+    const klass = this.currentAircraftClass || this.flightInfo?.aircraftClass || 'unknown';
+    const svg = this.svgForAircraftClass(String(klass).trim().toLowerCase(), '#f8fafc', '#0f172a');
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  flyoutAircraftTypeLabel(): string {
+    return this.aircraftTypeLabelForFlight({ aircraft_class: this.currentAircraftClass || this.flightInfo?.aircraftClass || 'unknown' });
+  }
+
+  aircraftTypeLabelForFlight(flight: any): string {
+    switch (this.aircraftClassForFlight(flight)) {
+      case 'airliner':
+        return 'Airliner';
+      case 'general_aviation':
+        return 'General Aviation';
+      case 'helicopter':
+        return 'Helicopter';
+      case 'military':
+        return 'Military';
+      case 'glider':
+        return 'Glider';
+      case 'balloon':
+        return 'Balloon';
+      case 'uav':
+        return 'UAV';
+      case 'ground':
+        return 'Ground Vehicle';
+      case 'space':
+        return 'Space Vehicle';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  private aircraftClassForFlight(flight: any): string {
+    const provided = String(flight?.aircraft_class || '').trim().toLowerCase();
+    if (provided && provided !== 'unknown') return provided;
+
+    const category = String(flight?.emitter_category || '').trim().toUpperCase();
+    const callsign = String(flight?.flight || '').trim().toUpperCase();
+
+    if (callsign.startsWith('RCH') || callsign.startsWith('NAVY') || callsign.startsWith('ARMY')) return 'military';
+    if (category === 'A7') return 'helicopter';
+    if (category === 'A5' || category === 'A6' || category === 'A4') return 'airliner';
+    if (category === 'B1') return 'glider';
+    if (category === 'B2') return 'balloon';
+    if (category === 'B5') return 'uav';
+    if (category.startsWith('C')) return 'ground';
+    if (category.startsWith('D')) return 'military';
+    if (category.startsWith('A') || category.startsWith('B')) return 'general_aviation';
+
+    return 'unknown';
+  }
+
   private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
     switch (aircraftClass) {
       case 'helicopter':
@@ -707,16 +771,28 @@ export class FlightsComponent implements OnInit, OnDestroy {
         return this.groundVehicleSvg(fill, outline);
       case 'general_aviation':
         return this.generalAviationSvg(fill, outline);
+      case 'unknown':
+        return this.unknownAircraftSvg(fill, outline);
       default:
         return this.airlinerSvg(fill, outline);
     }
   }
 
+  private unknownAircraftSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<g fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round">` +
+      `<path d="M25,4 C26.5,4 28,14 28,24 C28,36 26.5,45 25,48 C23.5,45 22,36 22,24 C22,14 23.5,4 25,4 Z"/>` +
+      `<path d="M28,22 L42,32 L40,36 L25,26 L10,36 L8,32 L22,22 Z"/>` +
+      `<path d="M25,44 L32,48 L31,49 L25,46 L19,49 L18,48 Z"/>` +
+      `</g>` +
+      `</svg>`;
+  }
+
   private generalAviationSvg(fill: string, outline: string): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
-      `<rect x="17" y="2" width="16" height="3.5" rx="1.75" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
-      `<path d="M25,4 L27,16 L43,21 L43,24 L27,19 L26,37 L29,41 L27,43 L25,41 L23,43 L21,41 L24,37 L23,19 L7,24 L7,21 L23,16 Z"` +
+      `<path d="M25,3.8 L27.6,11.6 L40.8,16.4 L40.2,19.6 L30,18.7 L27.7,24.2 L27.4,35.9 L31.9,41.8 L29.8,43.6 L25,39.8 L20.2,43.6 L18.1,41.8 L22.6,35.9 L22.3,24.2 L20,18.7 L9.8,19.6 L9.2,16.4 L22.4,11.6 Z"` +
       ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `<circle cx="25" cy="4.8" r="1.1" fill="${fill}" stroke="${outline}" stroke-width="0.8"/>` +
       `</svg>`;
   }
 
@@ -732,8 +808,10 @@ export class FlightsComponent implements OnInit, OnDestroy {
       `<ellipse cx="25" cy="29" rx="7" ry="11" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
       `<rect x="23.5" y="39" width="3" height="11" rx="1" fill="${fill}"/>` +
       `<rect x="18" y="47" width="14" height="3" rx="1.5" fill="${fill}"/>` +
+      `<g transform="rotate(45 25 23)">` +
       `<rect x="3" y="21" width="44" height="4" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
       `<rect x="23" y="3" width="4" height="40" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `</g>` +
       `<circle cx="25" cy="23" r="4.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
       `</svg>`;
   }
@@ -784,9 +862,59 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   private makeSmooth(coords: any[], iterations: number): any[] {
+    if (coords.length < 3) {
+      return coords;
+    }
     iterations = Math.min(Math.max(iterations, 1), 10);
     while (iterations-- > 0) coords = smooth(coords);
     return coords;
+  }
+
+  private buildRenderableSegmentCoords(segment: any[]): number[][] {
+    if (!segment.length) {
+      return [];
+    }
+
+    const baseCoords = segment.map((p: any) => fromLonLat([p.longitude, p.latitude]));
+    if (baseCoords.length < 2) {
+      return baseCoords;
+    }
+
+    const rendered: number[][] = [baseCoords[0]];
+
+    for (let i = 1; i < segment.length; i++) {
+      const prev = segment[i - 1];
+      const curr = segment[i];
+      const prevCoord = baseCoords[i - 1];
+      const currCoord = baseCoords[i];
+
+      const prevMs = new Date(String(prev.time).replace(' ', 'T')).getTime();
+      const currMs = new Date(String(curr.time).replace(' ', 'T')).getTime();
+      const dtMs = Math.max(1, currMs - prevMs);
+
+      const dx = currCoord[0] - prevCoord[0];
+      const dy = currCoord[1] - prevCoord[1];
+      const distance = Math.hypot(dx, dy);
+
+      const dtSteps = Math.ceil(dtMs / (TRACK_INTERPOLATION_TARGET_SECONDS * 1000));
+      const distSteps = Math.ceil(distance / TRACK_INTERPOLATION_TARGET_METERS);
+      const interpolationPoints = Math.min(
+        TRACK_INTERPOLATION_MAX_POINTS_PER_EDGE,
+        Math.max(0, Math.max(dtSteps, distSteps) - 1)
+      );
+
+      for (let j = 1; j <= interpolationPoints; j++) {
+        const t = j / (interpolationPoints + 1);
+        rendered.push([
+          prevCoord[0] + dx * t,
+          prevCoord[1] + dy * t,
+        ]);
+      }
+
+      rendered.push(currCoord);
+    }
+
+    return rendered;
   }
 
   setTab(tab: 'all' | 'adsb' | 'uat') {

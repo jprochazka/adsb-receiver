@@ -11,11 +11,13 @@ WEBROOT="/var/www/adsb-portal"
 NGINX_SITE="adsb-portal"
 SYSTEMD_SERVICE="adsb-portal-backend.service"
 RRD_BASE="${SCRIPT_DIR}/backend/instance/rrd"
+OPENSKY_BASE="${SCRIPT_DIR}/backend/instance/opensky"
 
 # Flags
 REMOVE_WEBROOT=false
 REMOVE_VENV=false
 REMOVE_RRD=false
+REMOVE_OPENSKY=false
 PURGE_PACKAGES=false
 INTERACTIVE=true
 
@@ -32,6 +34,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --remove-rrd)
             REMOVE_RRD=true
+            shift
+            ;;
+        --remove-opensky)
+            REMOVE_OPENSKY=true
             shift
             ;;
         --purge-packages)
@@ -67,16 +73,18 @@ fi
 if [[ "${INTERACTIVE}" == true ]]; then
     # Optional-removal checklist
     CHOICES=$(whiptail --title "ADSB Portal Uninstaller" \
-        --checklist "The systemd service and Nginx config will always be removed.\nSelect any additional items to also remove:" 14 72 4 \
+        --checklist "The systemd service and Nginx config will always be removed.\nSelect any additional items to also remove:" 14 72 5 \
         "webroot"  "Frontend files (${WEBROOT})"                 "OFF" \
         "venv"     "Python virtual environment (${VENV_DIR})"    "OFF" \
         "rrd"      "RRD data directory (${RRD_BASE})"             "OFF" \
-        "packages" "System packages (nginx, python3-pip, curl, rrdtool)"  "OFF" \
+        "opensky"  "OpenSky database files (${OPENSKY_BASE})"     "OFF" \
+        "packages" "System packages (nginx, python3-venv, python3-pip, curl, rrdtool)"  "OFF" \
         3>&1 1>&2 2>&3) || { echo "Uninstallation cancelled."; exit 0; }
 
     [[ "${CHOICES}" == *'"webroot"'*  ]] && REMOVE_WEBROOT=true
     [[ "${CHOICES}" == *'"venv"'*     ]] && REMOVE_VENV=true
     [[ "${CHOICES}" == *'"rrd"'*      ]] && REMOVE_RRD=true
+    [[ "${CHOICES}" == *'"opensky"'*  ]] && REMOVE_OPENSKY=true
     [[ "${CHOICES}" == *'"packages"'* ]] && PURGE_PACKAGES=true
 
     # Build a summary of what will be removed
@@ -84,7 +92,8 @@ if [[ "${INTERACTIVE}" == true ]]; then
     [[ "${REMOVE_WEBROOT}"  == true ]] && SUMMARY+="\n  - Frontend files: ${WEBROOT}"
     [[ "${REMOVE_VENV}"     == true ]] && SUMMARY+="\n  - Virtual environment: ${VENV_DIR}"
     [[ "${REMOVE_RRD}"      == true ]] && SUMMARY+="\n  - RRD data directory: ${RRD_BASE}"
-    [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages: nginx, python3-pip, curl, rrdtool"
+    [[ "${REMOVE_OPENSKY}"  == true ]] && SUMMARY+="\n  - OpenSky database files: ${OPENSKY_BASE}"
+    [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages: nginx, python3-venv, python3-pip, curl, rrdtool"
 
     whiptail --title "Confirm Uninstallation" \
         --yesno "${SUMMARY}\n\nContinue?" 16 64 || { echo "Uninstallation cancelled."; exit 0; }
@@ -153,8 +162,14 @@ _uninstall() {
         rm -rf "${RRD_BASE}"
     fi
 
+    # --- Remove OpenSky data directory (optional) ---
+    _gauge 86 "Removing OpenSky database files..."
+    if [[ "${REMOVE_OPENSKY}" == true ]] && [[ -d "${OPENSKY_BASE}" ]]; then
+        rm -rf "${OPENSKY_BASE}"
+    fi
+
     # --- Purge packages (optional) ---
-    _gauge 88 "Removing system packages..."
+    _gauge 90 "Removing system packages..."
     if [[ "${PURGE_PACKAGES}" == true ]]; then
         apt-get remove -y nginx python3-venv python3-pip curl rrdtool >> "${LOG_FILE}" 2>&1 || true
         apt-get autoremove -y >> "${LOG_FILE}" 2>&1 || true
@@ -184,6 +199,7 @@ SUMMARY="ADSB Portal has been uninstalled.\n\nRemoved:\n  - systemd service\n  -
 [[ "${REMOVE_WEBROOT}"  == true ]] && SUMMARY+="\n  - Frontend files"
 [[ "${REMOVE_VENV}"     == true ]] && SUMMARY+="\n  - Python virtual environment"
 [[ "${REMOVE_RRD}"      == true ]] && SUMMARY+="\n  - RRD data directory"
+[[ "${REMOVE_OPENSKY}"  == true ]] && SUMMARY+="\n  - OpenSky database files"
 [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages"
 SUMMARY+="\n\nFull log: ${LOG_FILE}"
 

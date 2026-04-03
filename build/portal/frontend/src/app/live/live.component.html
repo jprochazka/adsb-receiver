@@ -87,6 +87,14 @@
               <span class="flyout-label">Source</span>
               <span class="flyout-value">{{ sourceLabel(selectedAircraft) }}</span>
             </div>
+            <div class="flyout-row">
+              <span class="flyout-label">Aircraft Type</span>
+              <span class="flyout-value">{{ aircraftTypeLabel(selectedAircraft) }}</span>
+            </div>
+            <div class="flyout-row">
+              <span class="flyout-label">Type Source</span>
+              <span class="flyout-value">{{ aircraftTypeSourceLabel(selectedAircraft) }}</span>
+            </div>
             @if (selectedAircraft.flight) {
               <div class="flyout-row">
                 <span class="flyout-label">Callsign</span>
@@ -251,14 +259,27 @@
     </button>
   </div>
 
-  <!-- Altitude legend -->
+  <!-- Map legends -->
   <div class="legend">
+    <div class="legend-title">Aircraft Types</div>
+    <div class="legend-group">
+      @for (item of aircraftTypeLegend; track item.key) {
+        <div class="legend-item">
+          <span class="legend-icon-wrap"><img class="legend-icon" [src]="aircraftTypeLegendIconDataUrl(item.key)" [alt]="item.label + ' icon'"></span>
+          <span>{{ item.label }}</span>
+        </div>
+      }
+    </div>
+    <div class="legend-divider"></div>
+    <div class="legend-title">Altitude</div>
+    <div class="legend-group">
     <div class="legend-item"><span class="legend-dot" style="background:#64748b"></span><span>Ground / Unknown</span></div>
     <div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>&lt; 5,000 ft</span></div>
     <div class="legend-item"><span class="legend-dot" style="background:#22c55e"></span><span>5–15k ft</span></div>
     <div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>15–30k ft</span></div>
     <div class="legend-item"><span class="legend-dot" style="background:#f97316"></span><span>30–45k ft</span></div>
     <div class="legend-item"><span class="legend-dot" style="background:#ef4444"></span><span>&gt; 45,000 ft</span></div>
+    </div>
   </div>
 
 </div>

@@ -1,5 +1,6 @@
 import datetime
 import logging
+import time
 
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
@@ -199,6 +200,7 @@ def _apply_uat_flight_filters(stmt, q: str | None, ignore_on_purge: bool | None)
 
 
 def _query_uat_flights(q: str | None, offset: int, limit: int, ignore_on_purge: bool | None = None):
+    query_started = time.perf_counter()
     base_stmt = select(Dump978Flight).join(Dump978Aircraft, Dump978Flight.aircraft == Dump978Aircraft.id)
     filtered_stmt = _apply_uat_flight_filters(base_stmt, q=q, ignore_on_purge=ignore_on_purge)
 
@@ -209,6 +211,16 @@ def _query_uat_flights(q: str | None, offset: int, limit: int, ignore_on_purge: 
     ).scalar_one()
 
     flights_result = db.session.execute(stmt.offset(offset).limit(limit))
+    elapsed_ms = (time.perf_counter() - query_started) * 1000
+    logging.info(
+        'uat_query_flights q=%r offset=%d limit=%d ignore_on_purge=%r total=%d elapsed_ms=%.2f',
+        q,
+        offset,
+        limit,
+        ignore_on_purge,
+        total,
+        elapsed_ms,
+    )
     return _serialize_uat_flights(flights_result.scalars()), total
 
 
@@ -279,6 +291,7 @@ class UatFlightsController(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
     def _search_uat_flights(self):
+        request_started = time.perf_counter()
         q = request.args.get('q', '', type=str).strip()
         if not q:
             return {'msg': 'Bad Request - search query required'}, 400
@@ -306,8 +319,12 @@ class UatFlightsController(Resource):
         except Exception as ex:
             logging.error(f'Error encountered while searching UAT flights for query: {q}', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
+        finally:
+            elapsed_ms = (time.perf_counter() - request_started) * 1000
+            logging.info('uat_search_request q=%r elapsed_ms=%.2f', q, elapsed_ms)
 
     def _list_uat_flights(self):
+        request_started = time.perf_counter()
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=50, type=int)
 
@@ -338,6 +355,9 @@ class UatFlightsController(Resource):
         except Exception as ex:
             logging.error('Error encountered while trying to get UAT flights', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
+        finally:
+            elapsed_ms = (time.perf_counter() - request_started) * 1000
+            logging.info('uat_list_request q=%r offset=%d limit=%d elapsed_ms=%.2f', q if 'q' in locals() else '', offset, limit, elapsed_ms)
 
     def _get_uat_flights_count(self):
         try:

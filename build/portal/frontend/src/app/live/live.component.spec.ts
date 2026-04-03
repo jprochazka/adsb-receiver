@@ -28,6 +28,9 @@ describe('LiveComponent', () => {
         seen: 1,
         rssi: -12,
         type: 'adsb_icao',
+        aircraft_class: 'airliner',
+        classification_source: 'opensky',
+        classification_confidence: 'high',
       },
       {
         source: 'dump1090',
@@ -44,6 +47,9 @@ describe('LiveComponent', () => {
         seen: 9,
         rssi: -18,
         type: 'adsb_icao',
+        aircraft_class: 'unknown',
+        classification_source: 'heuristic',
+        classification_confidence: 'low',
       },
     ],
   };
@@ -212,6 +218,34 @@ describe('LiveComponent', () => {
     expect(trailHistory.length).toBeGreaterThan(1);
   });
 
+  it('should interpolate live trail points when updates are sparse', () => {
+    fixture.detectChanges();
+
+    const history: any[] = [{ coord: [0, 0], ts: 0 }];
+    (component as any).appendTrailPoint(history, [6000, 0], 30_000);
+
+    expect(history.length).toBeGreaterThan(2);
+    expect(history[history.length - 1].coord).toEqual([6000, 0]);
+  });
+
+  it('should smooth interior trail coordinates while preserving endpoints', () => {
+    fixture.detectChanges();
+
+    const coords = [
+      [0, 0],
+      [10, 20],
+      [20, 0],
+      [30, 20],
+    ];
+
+    const smoothed = (component as any).smoothTrailCoordinates(coords) as number[][];
+
+    expect(smoothed.length).toBe(coords.length);
+    expect(smoothed[0]).toEqual(coords[0]);
+    expect(smoothed[smoothed.length - 1]).toEqual(coords[coords.length - 1]);
+    expect(smoothed[1][1]).toBeLessThan(coords[1][1]);
+  });
+
   it('should filter aircraft by callsign and hex', () => {
     fixture.detectChanges();
 
@@ -259,6 +293,33 @@ describe('LiveComponent', () => {
     expect(rayCountDisabled).toBe(0);
   });
 
+  it('should render a dedicated unknown icon for unknown aircraft class', () => {
+    fixture.detectChanges();
+
+    const svg = (component as any).svgForAircraftClass('unknown', '#000000', '#ffffff') as string;
+
+    expect(svg).toContain('M25,4 C26.5,4 28,14 28,24');
+    expect(svg).toContain('M28,22 L42,32 L40,36');
+    expect(svg).toContain('M25,44 L32,48');
+  });
+
+  it('should rotate helicopter rotors by 45 degrees', () => {
+    fixture.detectChanges();
+
+    const svg = (component as any).svgForAircraftClass('helicopter', '#000000', '#ffffff') as string;
+
+    expect(svg).toContain('transform="rotate(45 25 23)"');
+  });
+
+  it('should render general aviation as a single-engine light-aircraft silhouette', () => {
+    fixture.detectChanges();
+
+    const svg = (component as any).svgForAircraftClass('general_aviation', '#000000', '#ffffff') as string;
+
+    expect(svg).toContain('<path d="M25,3.8 L27.6,11.6 L40.8,16.4');
+    expect(svg).toContain('<circle cx="25" cy="4.8" r="1.1"');
+  });
+
   it('should parse coordinate-array theoretical range json into rings', () => {
     fixture.detectChanges();
 
@@ -280,5 +341,33 @@ describe('LiveComponent', () => {
 
     const parsed = (component as any).extractTheoreticalRangeRings('{not-json') as number[][][];
     expect(parsed.length).toBe(0);
+  });
+
+  it('should format aircraft type and source labels', () => {
+    fixture.detectChanges();
+
+    const typeLabel = component.aircraftTypeLabel(livePayload.aircraft[0] as any);
+    const sourceLabel = component.aircraftTypeSourceLabel(livePayload.aircraft[0] as any);
+
+    expect(typeLabel).toBe('Airliner');
+    expect(sourceLabel).toBe('OpenSky (high)');
+  });
+
+  it('should render aircraft type legend on map', () => {
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Aircraft Types');
+    expect(text).toContain('General Aviation');
+    expect(text).toContain('Unknown');
+  });
+
+  it('should generate data-url legend icon markup for aircraft types', () => {
+    fixture.detectChanges();
+
+    const icon = component.aircraftTypeLegendIconDataUrl('helicopter');
+
+    expect(icon.startsWith('data:image/svg+xml;utf8,')).toBeTrue();
+    expect(icon).toContain('%3Csvg');
   });
 });

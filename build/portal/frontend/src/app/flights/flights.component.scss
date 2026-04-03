@@ -2,6 +2,24 @@
 	display: block;
 }
 
+.aircraft-type-icon-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.85rem;
+	height: 1.85rem;
+	background: #0f172a;
+	border: 1px solid #334155;
+	border-radius: 0.35rem;
+	box-shadow: inset 0 0 0 1px rgba(248, 250, 252, 0.06);
+}
+
+.aircraft-type-icon {
+	width: 1.15rem;
+	height: 1.15rem;
+	display: block;
+}
+
 .map-page {
 	position: fixed;
 	top: 56px;
@@ -110,10 +128,13 @@ $flyout-tab:   28px;
 }
 
 .flyout-img-icon {
-	width: 72px;
-	height: auto;
-	fill: #38bdf8;
-	opacity: 0.12;
+	width: 86px;
+	height: 86px;
+	display: block;
+	padding: 0.55rem;
+	background: rgba(2, 6, 23, 0.5);
+	border: 1px solid rgba(148, 163, 184, 0.38);
+	border-radius: 0.55rem;
 }
 
 .flyout-info {

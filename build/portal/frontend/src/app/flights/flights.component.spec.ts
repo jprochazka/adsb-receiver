@@ -13,13 +13,13 @@ describe('FlightsComponent', () => {
     getSetting: jasmine.createSpy('getSetting').and.returnValue(of({ value: 'true' })),
     GetFlightsCount: jasmine.createSpy('GetFlightsCount').and.returnValue(of({ flights: 2 })),
     getFlights: jasmine.createSpy('getFlights').and.returnValue(of({
-      flights: [{ flight: 'AAL123', icao: 'a1', last_seen: '2026-01-02 10:00:00' }],
+      flights: [{ flight: 'AAL123', icao: 'a1', aircraft_class: 'airliner', last_seen: '2026-01-02 10:00:00' }],
       offset: 0,
       count: 1,
     })),
     getUatFlightsCount: jasmine.createSpy('getUatFlightsCount').and.returnValue(of({ flights: 1 })),
     getUatFlights: jasmine.createSpy('getUatFlights').and.returnValue(of({
-      flights: [{ flight: 'UAL789', icao: 'u9', last_seen: '2026-01-01 10:00:00' }],
+      flights: [{ flight: 'UAL789', icao: 'u9', aircraft_class: 'helicopter', last_seen: '2026-01-01 10:00:00' }],
       offset: 0,
       count: 1,
     })),
@@ -40,13 +40,13 @@ describe('FlightsComponent', () => {
     dataServiceMock.getSetting.and.returnValue(of({ value: 'true' }));
     dataServiceMock.GetFlightsCount.and.returnValue(of({ flights: 2 }));
     dataServiceMock.getFlights.and.returnValue(of({
-      flights: [{ flight: 'AAL123', icao: 'a1', last_seen: '2026-01-02 10:00:00' }],
+      flights: [{ flight: 'AAL123', icao: 'a1', aircraft_class: 'airliner', last_seen: '2026-01-02 10:00:00' }],
       offset: 0,
       count: 1,
     }));
     dataServiceMock.getUatFlightsCount.and.returnValue(of({ flights: 1 }));
     dataServiceMock.getUatFlights.and.returnValue(of({
-      flights: [{ flight: 'UAL789', icao: 'u9', last_seen: '2026-01-01 10:00:00' }],
+      flights: [{ flight: 'UAL789', icao: 'u9', aircraft_class: 'helicopter', last_seen: '2026-01-01 10:00:00' }],
       offset: 0,
       count: 1,
     }));
@@ -133,5 +133,138 @@ describe('FlightsComponent', () => {
 
     expect(dataServiceMock.updateFlightPurgePreference).toHaveBeenCalledWith('AAL123', true);
     expect(component.ignoreOnPurge).toBeTrue();
+  });
+
+  it('should render aircraft type icons in the flights table', () => {
+    const icons = fixture.nativeElement.querySelectorAll('.aircraft-type-icon');
+    expect(icons.length).toBeGreaterThan(0);
+
+    const firstAlt = icons[0].getAttribute('alt') as string;
+    expect(firstAlt.toLowerCase()).toContain('icon');
+  });
+
+  it('should render aircraft type icons in ADS-B and UAT tabs', () => {
+    component.setTab('adsb');
+    fixture.detectChanges();
+
+    let icons = fixture.nativeElement.querySelectorAll('.aircraft-type-icon');
+    expect(icons.length).toBeGreaterThan(0);
+
+    component.setTab('uat');
+    fixture.detectChanges();
+
+    icons = fixture.nativeElement.querySelectorAll('.aircraft-type-icon');
+    expect(icons.length).toBeGreaterThan(0);
+  });
+
+  it('should generate icon data URLs and fallback labels for unknown classes', () => {
+    const known = {
+      aircraft_class: 'helicopter'
+    };
+    const unknown = {
+      aircraft_class: 'not_a_real_class'
+    };
+
+    const knownIcon = component.aircraftTypeIconDataUrl(known);
+    const unknownIcon = component.aircraftTypeIconDataUrl(unknown);
+
+    expect(knownIcon.startsWith('data:image/svg+xml;utf8,')).toBeTrue();
+    expect(unknownIcon.startsWith('data:image/svg+xml;utf8,')).toBeTrue();
+    expect(component.aircraftTypeLabelForFlight(unknown)).toBe('Unknown');
+  });
+
+  it('should generate flyout fallback icon and label from current aircraft class', () => {
+    (component as any).currentAircraftClass = 'military';
+
+    const icon = component.flyoutAircraftTypeIconDataUrl();
+    const label = component.flyoutAircraftTypeLabel();
+
+    expect(icon.startsWith('data:image/svg+xml;utf8,')).toBeTrue();
+    expect(label).toBe('Military');
+  });
+
+  it('should fall back to emitter_category when aircraft_class is unknown', () => {
+    const classify = (flight: any) => (component as any).aircraftClassForFlight(flight) as string;
+
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'A1' })).toBe('general_aviation');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'A4' })).toBe('airliner');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'A7' })).toBe('helicopter');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'B1' })).toBe('glider');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'B2' })).toBe('balloon');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'B5' })).toBe('uav');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'C1' })).toBe('ground');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: 'D1' })).toBe('military');
+    expect(classify({ aircraft_class: 'helicopter', emitter_category: 'A1' })).toBe('helicopter');
+    expect(classify({ aircraft_class: 'unknown',    emitter_category: null })).toBe('unknown');
+    expect(classify({ aircraft_class: 'unknown',    flight: 'RCH123' })).toBe('military');
+  });
+
+  it('should render a dedicated unknown icon for unknown aircraft class', () => {
+    const svg = (component as any).svgForAircraftClass('unknown', '#000000', '#ffffff') as string;
+
+    expect(svg).toContain('M25,4 C26.5,4 28,14 28,24');
+    expect(svg).toContain('M28,22 L42,32 L40,36');
+    expect(svg).toContain('M25,44 L32,48');
+  });
+
+  it('should render general aviation as a single-engine light-aircraft silhouette', () => {
+    const svg = (component as any).svgForAircraftClass('general_aviation', '#000000', '#ffffff') as string;
+
+    expect(svg).toContain('<path d="M25,3.8 L27.6,11.6 L40.8,16.4');
+    expect(svg).toContain('<circle cx="25" cy="4.8" r="1.1"');
+  });
+
+  it('should return correct label for every aircraft class', () => {
+    const label = (cls: string) => component.aircraftTypeLabelForFlight({ aircraft_class: cls });
+
+    expect(label('airliner')).toBe('Airliner');
+    expect(label('general_aviation')).toBe('General Aviation');
+    expect(label('helicopter')).toBe('Helicopter');
+    expect(label('military')).toBe('Military');
+    expect(label('glider')).toBe('Glider');
+    expect(label('balloon')).toBe('Balloon');
+    expect(label('uav')).toBe('UAV');
+    expect(label('ground')).toBe('Ground Vehicle');
+    expect(label('space')).toBe('Space Vehicle');
+    expect(label('unknown')).toBe('Unknown');
+    expect(label('something_else')).toBe('Unknown');
+  });
+
+  it('should split positions into segments across a large time gap', () => {
+    const split = (positions: any[]) => (component as any).splitIntoSegments(positions) as any[][];
+
+    const contiguous = [
+      { latitude: 41.0, longitude: -82.0, time: '2026-04-03 10:00:00' },
+      { latitude: 41.1, longitude: -82.1, time: '2026-04-03 10:10:00' },
+      { latitude: 41.2, longitude: -82.2, time: '2026-04-03 10:20:00' },
+    ];
+    expect(split(contiguous).length).toBe(1);
+
+    const gapped = [
+      { latitude: 41.0, longitude: -82.0, time: '2026-04-03 07:00:00' },
+      { latitude: 41.1, longitude: -82.1, time: '2026-04-03 10:00:00' },
+      { latitude: 41.2, longitude: -82.2, time: '2026-04-03 10:10:00' },
+    ];
+    const segments = split(gapped);
+    expect(segments.length).toBe(2);
+    expect(segments[0].length).toBe(1);
+    expect(segments[1].length).toBe(2);
+  });
+
+  it('should rotate helicopter rotors by 45 degrees', () => {
+    const svg = (component as any).svgForAircraftClass('helicopter', '#000000', '#ffffff') as string;
+
+    expect(svg).toContain('transform="rotate(45 25 23)"');
+  });
+
+  it('should build interpolated coordinates for sparse flight samples', () => {
+    const segment = [
+      { latitude: 41.0, longitude: -82.0, time: '2026-04-03 10:00:00' },
+      { latitude: 41.2, longitude: -81.7, time: '2026-04-03 10:00:30' },
+    ];
+
+    const coords = (component as any).buildRenderableSegmentCoords(segment) as number[][];
+
+    expect(coords.length).toBeGreaterThan(2);
   });
 });

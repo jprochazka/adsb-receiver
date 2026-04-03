@@ -3,8 +3,9 @@ import json
 from unittest.mock import patch, MagicMock, mock_open
 from datetime import datetime
 from backend import create_app
-from backend.models import db, Aircraft, Flight, Position
+from backend.models import db, Aircraft, Flight, Position, Dump978Flight
 from backend.jobs.dump1090_data_collection import DataProcessor
+from backend.jobs.dump978_data_collection import UatDataProcessor
 
 
 @pytest.fixture
@@ -177,8 +178,9 @@ class TestDataProcessor:
             mock_logging.assert_called()
 
     @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch('backend.jobs.dump1090_data_collection.get_opensky_classification', return_value=(None, None, None))
     @patch.object(DataProcessor, 'process_positions')
-    def test_process_flight_new_flight(self, mock_process_positions, processor, app):
+    def test_process_flight_new_flight(self, mock_process_positions, _mock_opensky, processor, app):
         """Test processing a new flight"""
         with app.app_context():
             aircraft_id = 1
@@ -205,6 +207,28 @@ class TestDataProcessor:
             assert new_flight.message_type == 'adsb_icao'
             
             mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data)
+
+    @patch('backend.jobs.dump1090_data_collection.get_opensky_classification', return_value=('helicopter', 'opensky', 'high'))
+    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch.object(DataProcessor, 'process_positions')
+    def test_process_flight_prefers_opensky_classification(self, mock_process_positions, _mock_opensky, processor, app):
+        """When OpenSky provides a class, it should override heuristic mapping."""
+        with app.app_context():
+            aircraft_id = 1
+            aircraft_data = {
+                "hex": "abc123",
+                "flight": "TST124  ",
+                "category": "A3",
+                "type": "adsb_icao"
+            }
+
+            processor.process_flight(aircraft_id, aircraft_data)
+
+            flight = Flight.query.filter_by(flight="TST124").first()
+            assert flight is not None
+            assert flight.aircraft_class == 'helicopter'
+
+            mock_process_positions.assert_called_once_with(aircraft_id, flight.id, aircraft_data)
 
     @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
@@ -346,3 +370,25 @@ class TestDataProcessor:
         assert mock_log.call_count >= 1
         # Verify the specific log message
         mock_log.assert_called_with('There is no aircraft data to process at this time')
+
+    @patch('backend.jobs.dump978_data_collection.get_opensky_classification', return_value=('uav', 'opensky', 'high'))
+    @patch('backend.jobs.dump978_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
+    @patch.object(UatDataProcessor, 'process_positions')
+    def test_uat_process_flight_prefers_opensky_classification(self, mock_process_positions, _mock_opensky, app):
+        """UAT ingest should honor OpenSky class when available."""
+        with app.app_context():
+            processor = UatDataProcessor()
+            aircraft_id = 1
+            aircraft_data = {
+                "hex": "uat123",
+                "flight": "UAT001  ",
+                "category": "A3",
+                "type": "uat_icao"
+            }
+
+            processor.process_flight(aircraft_id, aircraft_data)
+
+            new_flight = Dump978Flight.query.filter_by(flight="UAT001").first()
+            assert new_flight is not None
+            assert new_flight.aircraft_class == 'uav'
+            mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data)

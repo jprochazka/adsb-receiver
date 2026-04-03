@@ -50,6 +50,10 @@ const MIN_FLYOUT_WIDTH = 240;
 const MAX_FLYOUT_WIDTH = 560;
 const SPIDER_SECTOR_COUNT = 16;
 const SPIDER_MAX_RADIUS_METERS = 300_000;
+const TRAIL_INTERPOLATION_TARGET_SECONDS = 6;
+const TRAIL_INTERPOLATION_TARGET_METERS = 1_500;
+const TRAIL_INTERPOLATION_MAX_POINTS = 12;
+const TRAIL_SMOOTHING_WINDOW = 3;
 
 /** Altitude tiers used for icon/dot colouring. */
 const ALTITUDE_TIERS = [
@@ -95,7 +99,19 @@ export interface LiveAircraft {
   rssi:          number | null;
   type:          string | null;
   aircraft_class?: string | null;
+  classification_source?: string | null;
+  classification_confidence?: string | null;
 }
+
+type AircraftTypeLegendItem = {
+  key: string;
+  label: string;
+};
+
+type TrailPoint = {
+  coord: number[];
+  ts: number;
+};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -167,6 +183,17 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   // Exposed helper for templates
   readonly altColor = altitudeColor;
+  readonly aircraftTypeLegend: AircraftTypeLegendItem[] = [
+    { key: 'airliner', label: 'Airliner' },
+    { key: 'general_aviation', label: 'General Aviation' },
+    { key: 'helicopter', label: 'Helicopter' },
+    { key: 'military', label: 'Military' },
+    { key: 'glider', label: 'Glider' },
+    { key: 'balloon', label: 'Balloon' },
+    { key: 'uav', label: 'UAV' },
+    { key: 'ground', label: 'Ground Vehicle' },
+    { key: 'unknown', label: 'Unknown' },
+  ];
 
   // OL map objects
   private olMap!: OlMap;
@@ -178,8 +205,8 @@ export class LiveComponent implements OnInit, OnDestroy {
   private spiderSource = new VectorSource();
   /** hex -> OL Feature lookup for in-place position updates */
   private featureIndex: { [hex: string]: Feature } = {};
-  /** hex -> list of projected points retained for trail rendering */
-  private trailHistory: { [hex: string]: number[][] } = {};
+  /** hex -> list of projected/time-stamped points retained for trail rendering */
+  private trailHistory: { [hex: string]: TrailPoint[] } = {};
   /** hex -> trail line feature */
   private trailFeatureIndex: { [hex: string]: Feature } = {};
   private spiderPolygonFeature: Feature | null = null;
@@ -465,7 +492,7 @@ export class LiveComponent implements OnInit, OnDestroy {
       const coord = fromLonLat([ac.lon, ac.lat]);
       const isSelected = ac.hex === this.selectedHex;
 
-      this.updateTrail(ac, coord);
+      this.updateTrail(ac, coord, Date.now());
 
       if (this.featureIndex[ac.hex]) {
         const f = this.featureIndex[ac.hex];
@@ -483,15 +510,15 @@ export class LiveComponent implements OnInit, OnDestroy {
     }
   }
 
-  private updateTrail(ac: LiveAircraft, projectedCoord: number[]): void {
+  private updateTrail(ac: LiveAircraft, projectedCoord: number[], sampleTs: number): void {
     if (this.trailPoints <= 0) return;
 
     const history = this.trailHistory[ac.hex] ?? [];
-    const last = history[history.length - 1];
+    const last = history[history.length - 1]?.coord;
     const moved = !last || Math.abs(last[0] - projectedCoord[0]) > 5 || Math.abs(last[1] - projectedCoord[1]) > 5;
 
     if (moved) {
-      history.push(projectedCoord);
+      this.appendTrailPoint(history, projectedCoord, sampleTs);
       if (history.length > this.trailPoints) {
         history.splice(0, history.length - this.trailPoints);
       }
@@ -507,16 +534,73 @@ export class LiveComponent implements OnInit, OnDestroy {
     }
 
     const color = altitudeColor(ac.altitude);
+    const renderCoords = this.smoothTrailCoordinates(history.map(p => p.coord));
     if (this.trailFeatureIndex[ac.hex]) {
       const existing = this.trailFeatureIndex[ac.hex];
-      (existing.getGeometry() as LineString).setCoordinates(history);
+      (existing.getGeometry() as LineString).setCoordinates(renderCoords);
       existing.setStyle(this.makeTrailStyle(color, ac.hex === this.selectedHex));
     } else {
-      const feature = new Feature({ geometry: new LineString(history) });
+      const feature = new Feature({ geometry: new LineString(renderCoords) });
       feature.setStyle(this.makeTrailStyle(color, false));
       this.trailSource.addFeature(feature);
       this.trailFeatureIndex[ac.hex] = feature;
     }
+  }
+
+  private appendTrailPoint(history: TrailPoint[], projectedCoord: number[], sampleTs: number): void {
+    if (history.length === 0) {
+      history.push({ coord: projectedCoord, ts: sampleTs });
+      return;
+    }
+
+    const prev = history[history.length - 1];
+    const dtMs = Math.max(1, sampleTs - prev.ts);
+    const dx = projectedCoord[0] - prev.coord[0];
+    const dy = projectedCoord[1] - prev.coord[1];
+    const distance = Math.hypot(dx, dy);
+
+    const dtSteps = Math.ceil(dtMs / (TRAIL_INTERPOLATION_TARGET_SECONDS * 1000));
+    const distSteps = Math.ceil(distance / TRAIL_INTERPOLATION_TARGET_METERS);
+    const interpolationPoints = Math.min(
+      TRAIL_INTERPOLATION_MAX_POINTS,
+      Math.max(0, Math.max(dtSteps, distSteps) - 1)
+    );
+
+    for (let i = 1; i <= interpolationPoints; i++) {
+      const t = i / (interpolationPoints + 1);
+      history.push({
+        coord: [
+          prev.coord[0] + dx * t,
+          prev.coord[1] + dy * t,
+        ],
+        ts: prev.ts + dtMs * t,
+      });
+    }
+
+    history.push({ coord: projectedCoord, ts: sampleTs });
+  }
+
+  private smoothTrailCoordinates(coords: number[][]): number[][] {
+    if (coords.length < 3) {
+      return coords;
+    }
+
+    const smoothed: number[][] = [coords[0]];
+    for (let i = 1; i < coords.length - 1; i++) {
+      const start = Math.max(0, i - Math.floor(TRAIL_SMOOTHING_WINDOW / 2));
+      const end = Math.min(coords.length - 1, i + Math.floor(TRAIL_SMOOTHING_WINDOW / 2));
+      let sumX = 0;
+      let sumY = 0;
+      let count = 0;
+      for (let j = start; j <= end; j++) {
+        sumX += coords[j][0];
+        sumY += coords[j][1];
+        count++;
+      }
+      smoothed.push([sumX / count, sumY / count]);
+    }
+    smoothed.push(coords[coords.length - 1]);
+    return smoothed;
   }
 
   private refreshAllStyles(): void {
@@ -599,6 +683,8 @@ export class LiveComponent implements OnInit, OnDestroy {
         return this.groundVehicleSvg(fill, outline);
       case 'general_aviation':
         return this.generalAviationSvg(fill, outline);
+      case 'unknown':
+        return this.unknownAircraftSvg(fill, outline);
       default:
         return this.airlinerSvg(fill, outline);
     }
@@ -613,6 +699,16 @@ export class LiveComponent implements OnInit, OnDestroy {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="40" height="40">` +
       `<path d="M25,2 L29,16 L46,24 L44,27 L29,21 L28,36 L34,43 L32,45 L25,40 L18,45 L16,43 L22,36 L21,21 L6,27 L4,24 L21,16 Z"` +
       ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `</svg>`;
+  }
+
+  private unknownAircraftSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
+      `<g fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round">` +
+      `<path d="M25,4 C26.5,4 28,14 28,24 C28,36 26.5,45 25,48 C23.5,45 22,36 22,24 C22,14 23.5,4 25,4 Z"/>` +
+      `<path d="M28,22 L42,32 L40,36 L25,26 L10,36 L8,32 L22,22 Z"/>` +
+      `<path d="M25,44 L32,48 L31,49 L25,46 L19,49 L18,48 Z"/>` +
+      `</g>` +
       `</svg>`;
   }
 
@@ -683,9 +779,9 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   private generalAviationSvg(fill: string, outline: string): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="36" height="36">` +
-      `<rect x="17" y="2" width="16" height="3.5" rx="1.75" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
-      `<path d="M25,4 L27,16 L43,21 L43,24 L27,19 L26,37 L29,41 L27,43 L25,41 L23,43 L21,41 L24,37 L23,19 L7,24 L7,21 L23,16 Z"` +
+      `<path d="M25,3.8 L27.6,11.6 L40.8,16.4 L40.2,19.6 L30,18.7 L27.7,24.2 L27.4,35.9 L31.9,41.8 L29.8,43.6 L25,39.8 L20.2,43.6 L18.1,41.8 L22.6,35.9 L22.3,24.2 L20,18.7 L9.8,19.6 L9.2,16.4 L22.4,11.6 Z"` +
       ` fill="${fill}" stroke="${outline}" stroke-width="1" stroke-linejoin="round"/>` +
+      `<circle cx="25" cy="4.8" r="1.1" fill="${fill}" stroke="${outline}" stroke-width="0.8"/>` +
       `</svg>`;
   }
 
@@ -701,8 +797,10 @@ export class LiveComponent implements OnInit, OnDestroy {
       `<ellipse cx="25" cy="29" rx="7" ry="11" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
       `<rect x="23.5" y="39" width="3" height="11" rx="1" fill="${fill}"/>` +
       `<rect x="18" y="47" width="14" height="3" rx="1.5" fill="${fill}"/>` +
+      `<g transform="rotate(45 25 23)">` +
       `<rect x="3" y="21" width="44" height="4" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
       `<rect x="23" y="3" width="4" height="40" rx="2" fill="${fill}" stroke="${outline}" stroke-width="0.5"/>` +
+      `</g>` +
       `<circle cx="25" cy="23" r="4.5" fill="${fill}" stroke="${outline}" stroke-width="1"/>` +
       `</svg>`;
   }
@@ -783,6 +881,48 @@ export class LiveComponent implements OnInit, OnDestroy {
     if (alt == null) return '—';
     if (alt <= 0)    return 'Ground';
     return `${alt.toLocaleString()} ft`;
+  }
+
+  aircraftTypeLabel(ac: LiveAircraft | null | undefined): string {
+    const klass = (ac?.aircraft_class || '').trim().toLowerCase();
+    switch (klass) {
+      case 'airliner':
+        return 'Airliner';
+      case 'general_aviation':
+        return 'General Aviation';
+      case 'helicopter':
+        return 'Helicopter';
+      case 'military':
+        return 'Military';
+      case 'glider':
+        return 'Glider';
+      case 'balloon':
+        return 'Balloon';
+      case 'uav':
+        return 'UAV';
+      case 'ground':
+        return 'Ground Vehicle';
+      case 'space':
+        return 'Space Vehicle';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  aircraftTypeSourceLabel(ac: LiveAircraft | null | undefined): string {
+    const source = (ac?.classification_source || '').trim().toLowerCase();
+    const confidence = (ac?.classification_confidence || '').trim().toLowerCase();
+    const confidenceLabel = confidence ? ` (${confidence})` : '';
+
+    if (source === 'opensky') {
+      return `OpenSky${confidenceLabel}`;
+    }
+    return `Heuristic${confidenceLabel}`;
+  }
+
+  aircraftTypeLegendIconDataUrl(aircraftClass: string): string {
+    const svg = this.svgForAircraftClass(aircraftClass, '#f8fafc', '#0f172a');
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
 
   flightHistoryLink(ac: LiveAircraft): string | null {

@@ -14,6 +14,7 @@ describe('AdminDevicesComponent', () => {
         info_nav_enabled: 'true',
         info_system_enabled: 'true',
         info_graphs_enabled: 'false',
+        info_stats_enabled: 'true',
         graphs_dump1090_enabled: 'true',
         graphs_dump978_enabled: 'false',
         graphs_measurement_range: 'metric',
@@ -49,6 +50,7 @@ describe('AdminDevicesComponent', () => {
 
     expect(component.infoNavEnabled).toBeTrue();
     expect(component.infoGraphsEnabled).toBeFalse();
+    expect(component.infoStatsEnabled).toBeTrue();
     expect(component.measurementRange).toBe('metric');
     expect(component.networkInterface).toBe('wlan0');
     expect(component.graphRefreshIntervalSeconds).toBe(3);
@@ -69,11 +71,14 @@ describe('AdminDevicesComponent', () => {
     fixture.detectChanges();
     component.infoNavEnabled = false;
     component.dump978GraphsEnabled = true;
+    component.infoStatsEnabled = false;
 
     component.saveInfoNavEnabled();
     component.saveDump978GraphsEnabled();
+    component.saveInfoStatsEnabled();
 
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('info_nav_enabled', 'false');
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('graphs_dump978_enabled', 'true');
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('info_stats_enabled', 'false');
   });
 });

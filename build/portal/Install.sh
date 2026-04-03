@@ -13,7 +13,9 @@ VENV_DIR="${BACKEND_DIR}/.venv"
 WEBROOT="/var/www/adsb-portal"
 NGINX_SITE="adsb-portal"
 SYSTEMD_SERVICE="adsb-portal-backend.service"
+INSTANCE_DIR="${BACKEND_DIR}/instance"
 RRD_BASE="${BACKEND_DIR}/instance/rrd"
+OPENSKY_BASE="${BACKEND_DIR}/instance/opensky"
 
 # Colors for output
 RED='\033[0;31m'
@@ -99,36 +101,6 @@ while true; do
     fi
     whiptail --title "Invalid Input" \
         --msgbox "JWT secret key must be at least 32 characters. Please try again." 8 60
-done
-
-# Admin account
-ADMIN_NAME=$(whiptail --title "Admin Account Setup" \
-    --inputbox "Admin display name:" 8 60 "" \
-    3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
-
-while true; do
-    ADMIN_EMAIL=$(whiptail --title "Admin Account Setup" \
-        --inputbox "Admin email address:" 8 60 "" \
-        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
-    if [[ "${ADMIN_EMAIL}" == *@*.* ]]; then
-        break
-    fi
-    whiptail --title "Invalid Input" \
-        --msgbox "Please enter a valid email address." 8 60
-done
-
-while true; do
-    ADMIN_PASS=$(whiptail --title "Admin Account Setup" \
-        --passwordbox "Admin password (minimum 8 characters):" 8 60 \
-        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
-    ADMIN_PASS2=$(whiptail --title "Admin Account Setup" \
-        --passwordbox "Confirm admin password:" 8 60 \
-        3>&1 1>&2 2>&3) || { print_error "Installation cancelled."; exit 1; }
-    if [[ "${ADMIN_PASS}" == "${ADMIN_PASS2}" && ${#ADMIN_PASS} -ge 8 ]]; then
-        break
-    fi
-    whiptail --title "Invalid Input" \
-        --msgbox "Passwords do not match or are fewer than 8 characters. Please try again." 8 60
 done
 
 # Pre-compute DB variables before entering the gauge subshell
@@ -238,11 +210,13 @@ YMLEOF
     _gauge 43 "Installing Gunicorn..."
     "${VENV_DIR}/bin/pip" install "gunicorn[gthread]" >> "${LOG_FILE}" 2>&1
 
-    # --- RRD storage directory (used by backend rrd_writer job) ---
-    _gauge 47 "Preparing RRD data directory..."
+    # --- Backend runtime data directories ---
+    _gauge 47 "Preparing backend data directories..."
+    mkdir -p "${INSTANCE_DIR}"
     mkdir -p "${RRD_BASE}"
-    chown -R www-data:www-data "${RRD_BASE}"
-    chmod -R 755 "${RRD_BASE}"
+    mkdir -p "${OPENSKY_BASE}"
+    chown -R www-data:www-data "${RRD_BASE}" "${OPENSKY_BASE}"
+    chmod -R 755 "${RRD_BASE}" "${OPENSKY_BASE}"
 
     # --- Create database (MySQL / PostgreSQL; SQLite is created automatically by Alembic) ---
     if [[ "${DB_TYPE}" == "mysql" ]]; then
@@ -264,43 +238,19 @@ SQLEOF
     _gauge 55 "Applying database migrations..."
     (cd "${BACKEND_DIR}" && FLASK_APP=backend "${VENV_DIR}/bin/flask" db upgrade >> "${LOG_FILE}" 2>&1)
 
-    # --- Admin user ---
-    _gauge 60 "Creating admin user..."
-    _SEED_SCRIPT="$(mktemp /tmp/seed_admin_XXXXXX.py)"
-    cat > "${_SEED_SCRIPT}" << 'PYEOF'
-import os
-from backend import create_app
-from backend.models import db, User
-from werkzeug.security import generate_password_hash
-from sqlalchemy import select
-app = create_app()
-with app.app_context():
-    email = os.environ['ADMIN_EMAIL']
-    existing = db.session.execute(select(User).filter_by(email=email)).scalar_one_or_none()
-    if not existing:
-        u = User(
-            name=os.environ['ADMIN_NAME'],
-            email=email,
-            password=generate_password_hash(os.environ['ADMIN_PASS']),
-            administrator=1,
-            role='Admin'
-        )
-        db.session.add(u)
-        db.session.commit()
-PYEOF
-    (cd "${BACKEND_DIR}" && \
-        ADMIN_NAME="${ADMIN_NAME}" ADMIN_EMAIL="${ADMIN_EMAIL}" ADMIN_PASS="${ADMIN_PASS}" \
-        "${VENV_DIR}/bin/python" "${_SEED_SCRIPT}" >> "${LOG_FILE}" 2>&1)
-    rm -f "${_SEED_SCRIPT}"
+    # --- Runtime ownership for SQLite/instance writes (includes OpenSky DB downloads) ---
+    _gauge 63 "Applying backend data permissions..."
+    chown -R www-data:www-data "${INSTANCE_DIR}"
+    chmod -R 755 "${INSTANCE_DIR}"
 
     # --- npm dependencies (skipped if already present) ---
     if [[ ! -d "${FRONTEND_DIR}/node_modules" ]]; then
-        _gauge 65 "Installing npm packages..."
+        _gauge 66 "Installing npm packages..."
         (cd "${FRONTEND_DIR}" && npm ci >> "${LOG_FILE}" 2>&1)
     fi
 
     # --- Angular production build ---
-    _gauge 70 "Building Angular frontend (this may take a while)..."
+    _gauge 71 "Building Angular frontend (this may take a while)..."
     if [[ ! -d "${FRONTEND_DIR}" ]]; then
         echo "Frontend directory not found: ${FRONTEND_DIR}" >> "${LOG_FILE}"
         exit 1
@@ -421,6 +371,8 @@ whiptail --title "Installation Complete" --msgbox "\
 ADSB Portal has been installed successfully!
 
 Portal URL:  http://${PORTAL_IP}/
+
+No user, flight history, or ACARS records were seeded during installation.
 
 Useful commands:
   systemctl status ${SYSTEMD_SERVICE}

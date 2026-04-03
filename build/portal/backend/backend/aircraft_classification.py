@@ -10,7 +10,15 @@ MILITARY_CALLSIGN_PREFIXES = {
 }
 
 
-def classify_aircraft(category: Optional[str], msg_type: Optional[str] = None, flight: Optional[str] = None) -> str:
+def classify_aircraft(
+    category: Optional[str],
+    msg_type: Optional[str] = None,
+    flight: Optional[str] = None,
+    opensky_class: Optional[str] = None,
+) -> str:
+    if opensky_class:
+        return opensky_class
+
     cat = (category or '').strip().upper()
     mtype = (msg_type or '').strip().lower()
     callsign = (flight or '').strip().upper()

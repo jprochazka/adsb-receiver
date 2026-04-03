@@ -44,7 +44,7 @@ threads myself along with other contributors to the cause were able to add these
 * http://discussions.flightaware.com/ads-b-flight-tracking-f21/system-monitoring-t26999.html
 * http://forum.planefinder.net/threads/web-portal-and-collectd-rrd-graphs-automated-installation.256
 
-## Third Party Software Developers
+## Third Party Software Developers and Data Providers
 
 I would like to thank the maintainers and contributors of the following projects. Without their
 hard work and dedication to their respective projects this project would not have been possible.
@@ -72,7 +72,14 @@ with quality closed source packages which they have made available to the commun
 * OpenSky Network:  https://opensky-network.org
 * Plane Finder:     https://planefinder.net
 
-Yet another thanks goes out to those kind enough to share their  photographs the community as well as
+Yet another thanks goes out to those kind enough to share their photographs the community as well as
 those hosting these images and make them avaiable for us to use in projects such as this.
 
 * https://www.planespotters.net
+
+The aircraft identification and metadata enrichment features included with the portal
+make use of the OpenSky Network aircraft database. We gratefully acknowledge OpenSky
+Network for publishing and maintaining this dataset for the community.
+
+* OpenSky Network Aircraft Database:  https://opensky-network.org/datasets/metadata/aircraftDatabase.csv
+* License (ODbL v1.0):                https://opendatacommons.org/licenses/odbl

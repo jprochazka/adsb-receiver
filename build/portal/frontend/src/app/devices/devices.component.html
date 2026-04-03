@@ -26,6 +26,17 @@
           </button>
         </li>
       }
+      @if (infoStatsEnabled) {
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            [class.active]="activeTab === 'stats'"
+            (click)="setActiveTab('stats')"
+            type="button">
+            Portal
+          </button>
+        </li>
+      }
     </ul>
   }
 
@@ -613,6 +624,259 @@
           </div>
         </div>
       </div>
+    }
+  }
+
+  <!-- Public Stats Tab -->
+  @if (infoStatsEnabled && activeTab === 'stats') {
+    @if (statsLoading) {
+      <app-spinner></app-spinner>
+    }
+
+    @if (!statsLoading) {
+      @if (statsError) {
+        <div class="alert alert-danger">{{ statsError }}</div>
+      }
+
+      @if (publicStats) {
+        <div class="row g-4">
+          <div class="col-12 mt-2">
+            <div class="d-flex justify-content-between align-items-end border-bottom pb-2">
+              <h5 class="mb-0">Data Quality</h5>
+              <span class="text-muted small">How complete and trustworthy live classification is</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">OpenSky Classified</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.classifiedOpenSky ?? 0 | number }}</div>
+                <div class="text-muted small">Live aircraft typed from OpenSky records</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Heuristic Classified</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.classifiedHeuristic ?? 0 | number }}</div>
+                <div class="text-muted small">Live aircraft typed using fallback rules</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Unknown Type</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.unknownClassified ?? 0 | number }}</div>
+                <div class="text-muted small">Live aircraft still unresolved</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-3">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">OpenSky Cache Entries</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.openskyCacheEntries ?? 0 | number }}</div>
+                <div class="text-muted small">Loaded ICAO mappings in memory cache</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Classification Quality</div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">OpenSky</td>
+                      <td>{{ publicStats.classifiedOpenSkyPct ?? 0 | number:'1.1-1' }}%</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Heuristic</td>
+                      <td>{{ publicStats.classifiedHeuristicPct ?? 0 | number:'1.1-1' }}%</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Unknown</td>
+                      <td>{{ publicStats.unknownClassifiedPct ?? 0 | number:'1.1-1' }}%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Top Aircraft Types</div>
+              <div class="card-body">
+                @if (publicStats.topAircraftTypes.length > 0) {
+                  <table class="table table-sm mb-0">
+                    <tbody>
+                      @for (item of publicStats.topAircraftTypes; track item.label) {
+                        <tr>
+                          <td class="text-muted">{{ item.label }}</td>
+                          <td>{{ item.count | number }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                } @else {
+                  <div class="text-muted small">No live type data available.</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">OpenSky Database</div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Status</td>
+                      <td>{{ publicStats.openskyDbInstalled ? 'Installed' : 'Not Installed' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Rows</td>
+                      <td>{{ publicStats.openskyDbRows ?? 0 | number }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Downloaded</td>
+                      <td>{{ publicStats.openskyDbDownloadedAt ? (publicStats.openskyDbDownloadedAt | date:'medium') : 'N/A' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 mt-4">
+            <div class="d-flex justify-content-between align-items-end border-bottom pb-2">
+              <h5 class="mb-0">Traffic Volume</h5>
+              <span class="text-muted small">How much traffic is active and stored</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Live Aircraft</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.liveAircraft ?? 0 | number }}</div>
+                <div class="text-muted small">Currently visible across active decoders</div>
+                <div class="text-muted small mt-2">
+                  ADS-B: {{ publicStats.liveAdsbAircraft ?? 0 | number }}
+                  <span class="mx-1">|</span>
+                  UAT: {{ publicStats.liveUatAircraft ?? 0 | number }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Live Message Counter</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.liveMessages ?? 0 | number }}</div>
+                <div class="text-muted small">Decoder cumulative message counter</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">ACARS Messages</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.acarsMessages ?? 0 | number }}</div>
+                <div class="text-muted small">Stored ACARS messages</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">ADS-B Flights</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.adsbFlights ?? 0 | number }}</div>
+                <div class="text-muted small">Tracked flights in database</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">UAT Flights</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.uatFlights ?? 0 | number }}</div>
+                <div class="text-muted small">Tracked UAT flights in database</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">ACARS Flights</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ publicStats.acarsFlights ?? 0 | number }}</div>
+                <div class="text-muted small">Logged ACARS flights</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 mt-4">
+            <div class="d-flex justify-content-between align-items-end border-bottom pb-2">
+              <h5 class="mb-0">System Status</h5>
+              <span class="text-muted small">Host health and data freshness</span>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Database Size</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ formatBytes(publicStats.databaseSize ?? 0) }}</div>
+                <div class="text-muted small">Portal database footprint</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Receiver Uptime</div>
+              <div class="card-body">
+                <div class="display-6 mb-1">{{ formatDuration(publicStats.uptimeSeconds) }}</div>
+                <div class="text-muted small">Based on reported host boot time</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-header fw-semibold">Snapshot Info</div>
+              <div class="card-body">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="text-muted">Live snapshot timestamp</td>
+                      <td>{{ publicStats.snapshotTime ? (publicStats.snapshotTime | date:'medium') : 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Page refresh timestamp</td>
+                      <td>{{ publicStats.updatedAt | date:'medium' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">OpenSky cache loaded</td>
+                      <td>{{ publicStats.openskyCacheLoadedAt ? (publicStats.openskyCacheLoadedAt | date:'medium') : 'Not loaded' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     }
   }
 </div>
