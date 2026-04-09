@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# THE FLIGHTAWARE PIAWARE CLIENT SETUP SCRIPT
-
-# JPROCHAZKA/PIAWARE_BUILDER REPOSITORY
-# -------------------------------------------------------------------------------------
-# I submitted a fix to support Debian Trixie and Ubuntu Noble Numbat to FlightAware's
-# piaware_builder repository. Until the changes are merged into their Git reposiory
-# the installation will be done using the fork I created along with the branch which
-# contains the changes needed in order to build the package.
-#
-# https://github.com/flightaware/piaware_builder/pull/26
-
-
 ## PRE INSTALLATION OPERATIONS
 
 source $RECEIVER_BASH_DIRECTORY/variables.sh
@@ -61,6 +49,7 @@ check_package python3-pip
 check_package python3-setuptools
 check_package python3-venv
 check_package python3-wheel
+check_package rsyslog
 check_package tcl-dev
 check_package tcl-tls
 check_package tcl8.6-dev
@@ -83,11 +72,11 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/piaware_builder && -d $RECEIVER_BUILD_DIRECTO
     cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
     log_message "Updating the local piaware_builder git repository"
     echo ""
-    git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git pull 2>&1 | log_pipe
 else
     log_message "Creating the FlightAware piaware_builder build directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/piaware_builder 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/piaware_builder 2>&1 | log_pipe
     echo ""
     log_message "Entering the ADS-B Receiver Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY
@@ -95,13 +84,13 @@ else
     echo ""
 
     # --- START TEMPORARY NOBLE FIX ---
-    if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
-        git clone -b trixie https://github.com/jprochazka/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" || "${RECEIVER_OS_CODE_NAME}" == "trixie" || "${RECEIVER_OS_CODE_NAME}" == "questing" ]]; then
+        git clone -b dev https://github.com/flightaware/piaware_builder.git 2>&1 | log_pipe
     else
-        git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+        git clone https://github.com/flightaware/piaware_builder.git 2>&1 | log_pipe
     fi
 
-    #git clone https://github.com/flightaware/piaware_builder.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    #git clone https://github.com/flightaware/piaware_builder.git 2>&1 | log_pipe
     # --- END TEMPORARY NOBLE FIX ---
 fi
 
@@ -116,13 +105,13 @@ cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
 log_message "Determining which piaware_builder build strategy should be use"
 distro="bookworm"
 case $RECEIVER_OS_CODE_NAME in
-    bullseye | jammy)
+    jammy)
         distro="bullseye"
         ;;
     bookworm)
         distro="bookworm"
         ;;
-    noble)
+    trixie | questing | noble)
         distro="trixie"
         ;;
 esac
@@ -130,17 +119,17 @@ log_message "Setting distribution to build for to ${distro}"
 
 log_message "Executing the FlightAware PiAware client build script"
 echo ""
-./sensible-build.sh $distro 2>&1 | tee -a $RECEIVER_LOG_FILE
+./sensible-build.sh $distro 2>&1 | log_pipe
 echo ""
 log_message "Entering the FlightAware PiAware client build directory"
 cd $RECEIVER_BUILD_DIRECTORY/piaware_builder/package-${distro}
 log_message "Building the FlightAware PiAware client package"
 echo ""
-dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
+dpkg-buildpackage -b 2>&1 | log_pipe
 echo ""
 log_message "Installing the FlightAware PiAware client package"
 echo ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/piaware_builder/piaware_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/piaware_builder/piaware_*.deb 2>&1 | log_pipe
 echo ""
 
 log_message "Checking that the FlightAware PiAware client package was installed properly"
@@ -159,12 +148,12 @@ else
     if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
         log_message "Creating the package archive directory"
         echo ""
-        mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
+        mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | log_pipe
         echo ""
     fi
     log_message "Copying the FlightAware PiAware client binary package into the archive directory"
     echo ""
-    cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
+    cp -vf $RECEIVER_BUILD_DIRECTORY/piaware_builder/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | log_pipe
 fi
 
 

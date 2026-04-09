@@ -2,13 +2,12 @@
 
 ## VARIABLES
 
-BACKUPDATE=$(date +"%Y-%m-%d-%H%M%S")
-RECEIVER_ROOT_DIRECTORY="${PWD}"
-BACKUPSDIRECTORY="${RECEIVER_ROOT_DIRECTORY}/backups"
-TEMPORARY_DIRECTORY="${RECEIVER_ROOT_DIRECTORY}/backup_${BACKUPDATE}"
-RAWDOCUMENTROOT=`/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root`
-LIGHTTPDDOCUMENTROOT=`sed 's/.*"\(.*\)"[^"]*$/\1/' <<< ${RAWDOCUMENTROOT}`
-COLLECTD_RRD_DIRECTORY="/var/lib/collectd/rrd"
+backup_date=$(date +"%Y-%m-%d-%H%M%S")
+receiver_root_directory="${PWD}"
+backups_directory="${receiver_root_directory}/backups"
+temporary_directory="${receiver_root_directory}/backup_${backup_date}"
+lighttpd_document_root=$(/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root | sed 's/.*"\(.*\)"[^"]*$/\1/')
+collectd_rrd_directory="/var/lib/collectd/rrd"
 
 
 ## BEGIN THE BACKUP PROCESS
@@ -27,83 +26,75 @@ echo -e ""
 ## PREPARE TO BEGIN CREATING BACKUPS
 
 echo -e "\e[94m  Declare the database engine being used...\e[97m"
-DATABASEENGINE=`grep 'db_driver' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-echo -e "\e[94m  Declare whether or not the advanaced portal features were installed...\e[97m"
+database_engine=$(grep 'db_driver' "${lighttpd_document_root}/classes/settings.class.php" | tail -n1 | cut -d\' -f2)
 
-echo -e "\e[94m  Declare whether or not the advanaced portal features were installed...\e[97m"
-if [[ "${DATABASEENGINE}" = "xml" ]] ; then
-    ADVANCED=FALSE
-else
-    ADVANCED=TRUE
+if [[ "${database_engine}" == "sqlite" ]] ; then
+    database_path=$(grep 'db_host' "${lighttpd_document_root}/classes/settings.class.php" | tail -n1 | cut -d\' -f2)
 fi
 
-if [[ "${DATABASEENGINE}" = "sqlite" ]] ; then
-    DATABASEPATH=`grep 'db_host' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+if [[ "${database_engine}" == "mysql" ]] ; then
+    mysql_database=$(grep 'db_database' "${lighttpd_document_root}/classes/settings.class.php" | tail -n1 | cut -d\' -f2)
+    mysql_username=$(grep 'db_username' "${lighttpd_document_root}/classes/settings.class.php" | tail -n1 | cut -d\' -f2)
+    mysql_password=$(grep 'db_password' "${lighttpd_document_root}/classes/settings.class.php" | tail -n1 | cut -d\' -f2)
 fi
 
-if [[ "${DATABASEENGINE}" = "mysql" ]] ; then
-    MYSQLDATABASE=`grep 'db_database' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-    MYSQLUSERNAME=`grep 'db_username' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
-    MYSQLPASSWORD=`grep 'db_password' ${LIGHTTPDDOCUMENTROOT}/classes/settings.class.php | tail -n1 | cut -d\' -f2`
+echo -e "\e[94m  Checking that the directory ${backups_directory} exists...\e[97m"
+if [[ ! -d "${backups_directory}" ]] ; then
+    echo -e "\e[94m  Creating the directory ${backups_directory}...\e[97m"
+    mkdir -vp "${backups_directory}"
 fi
 
-echo -e "\e[94m  Checking that the directory ${BACKUPSDIRECTORY} exists...\e[97m"
-if [[ ! -d "${BACKUPSDIRECTORY}" ]] ; then
-    echo -e "\e[94m  Creating the directory ${BACKUPSDIRECTORY}...\e[97m"
-    mkdir -vp ${BACKUPSDIRECTORY}
-fi
-
-echo -e "\e[94m  Checking that the directory ${TEMPORARY_DIRECTORY} exists...\e[97m"
-if [[ ! -d "${TEMPORARY_DIRECTORY}" ]] ; then
-    echo -e "\e[94m  Creating the directory ${TEMPORARY_DIRECTORY}...\e[97m"
-    mkdir -vp ${TEMPORARY_DIRECTORY}
+echo -e "\e[94m  Checking that the directory ${temporary_directory} exists...\e[97m"
+if [[ ! -d "${temporary_directory}" ]] ; then
+    echo -e "\e[94m  Creating the directory ${temporary_directory}...\e[97m"
+    mkdir -vp "${temporary_directory}"
 fi
 
 
 ## BACKUP THE COLLECTD RRD FILES BY EXPORTING THEM TO XML.
 
-RRD_FILE_LIST=`find ${COLLECTD_RRD_DIRECTORY} -name '*.rrd'`
-if [[ -z "${RRD_FILE_LIST}" ]]; then
-    echo -e "\e[94m  No RRD file found in ${COLLECTD_RRD_DIRECTORY}...\e[97m"
+mapfile -t rrd_files < <(find "${collectd_rrd_directory}" -name '*.rrd')
+if [[ ${#rrd_files[@]} -eq 0 ]]; then
+    echo -e "\e[94m  No RRD file found in ${collectd_rrd_directory}...\e[97m"
     echo -e "\e[94m  Skipping RRD file backups...\e[97m"
 else
-    for RRD_FILE in `find ${COLLECTD_RRD_DIRECTORY} -name '*.rrd'`; do
-        echo -e "\e[94m  Exporting RRD files named $RRD_FILE to XML...\e[97m"
-        RRD_FILE_NAME=`basename -s .rrd $RRD_FILE`
-        RRD_FILE_DIRECTORY=`dirname $RRD_FILE`
-        if [ ! -d ${TEMPORARY_DIRECTORY}/${RRD_FILE_DIRECTORY} ]; then
-            mkdir ${TEMPORARY_DIRECTORY}/${RRD_FILE_DIRECTORY}
+    for rrd_file in "${rrd_files[@]}"; do
+        echo -e "\e[94m  Exporting RRD files named ${rrd_file} to XML...\e[97m"
+        rrd_file_name=$(basename -s .rrd "${rrd_file}")
+        rrd_file_directory=$(dirname "${rrd_file}")
+        if [[ ! -d "${temporary_directory}/${rrd_file_directory}" ]]; then
+            mkdir -p "${temporary_directory}/${rrd_file_directory}"
         fi
-        sudo rrdtool dump $RRD_FILE > ${TEMPORARY_DIRECTORY}/${RRD_FILE_DIRECTORY}/${RRD_FILE_NAME}.xml
+        sudo rrdtool dump "${rrd_file}" > "${temporary_directory}/${rrd_file_directory}/${rrd_file_name}.xml"
     done
 fi
 
 
 ## BACKUP PORTAL USING LITE FEATURES AND XML FILES
 
-if [[ "${ADVANCED}" = "FALSE" ]] ; then
-    echo -e "\e[94m  Checking that the directory ${TEMPORARY_DIRECTORY}/var/www/html/data/ exists...\e[97m"
-    if [[ ! -d "${TEMPORARY_DIRECTORY}/var/www/html/data/" ]] ; then
-        mkdir -vp ${TEMPORARY_DIRECTORY}/var/www/html/data/
+if [[ "${database_engine}" == "xml" ]] ; then
+    echo -e "\e[94m  Checking that the directory ${temporary_directory}/var/www/html/data/ exists...\e[97m"
+    if [[ ! -d "${temporary_directory}/var/www/html/data/" ]] ; then
+        mkdir -vp "${temporary_directory}/var/www/html/data/"
     fi
-    echo -e "\e[94m  Backing up all XML data files to ${TEMPORARY_DIRECTORY}/var/www/html/data/...\e[97m"
-    sudo cp -R /var/www/html/data/*.xml ${TEMPORARY_DIRECTORY}/var/www/html/data/
+    echo -e "\e[94m  Backing up all XML data files to ${temporary_directory}/var/www/html/data/...\e[97m"
+    sudo cp -R /var/www/html/data/*.xml "${temporary_directory}/var/www/html/data/"
 else
 
 
 ## BACKUP PORTAL USING ADVANCED FEATURES AND A SQLITE DATABASE
 
-    if [[ "${DATABASEENGINE}" = "sqlite" ]] ; then
-        echo -e "\e[94m  Backing up the SQLite database file to ${TEMPORARY_DIRECTORY}/var/www/html/data/portal.sqlite...\e[97m"
-        sudo cp -R ${DATABASEPATH} ${TEMPORARY_DIRECTORY}/var/www/html/data/portal.sqlite
+    if [[ "${database_engine}" == "sqlite" ]] ; then
+        echo -e "\e[94m  Backing up the SQLite database file to ${temporary_directory}/var/www/html/data/portal.sqlite...\e[97m"
+        sudo cp -R "${database_path}" "${temporary_directory}/var/www/html/data/portal.sqlite"
     fi
 
 
 ## BACKUP PORTAL USING ADVANCED FEATURES AND A MYSQL DATABASE
 
-    if [[ "${DATABASEENGINE}" = "mysql" ]] ; then
-        echo -e "\e[94m  Dumping the MySQL database ${MYSQLDATABASE} to the file ${TEMPORARY_DIRECTORY}/${MYSQLDATABASE}.sql...\e[97m"
-        mysqldump -u${MYSQLUSERNAME} -p${MYSQLPASSWORD} ${MYSQLDATABASE} > ${TEMPORARY_DIRECTORY}/${MYSQLDATABASE}.sql
+    if [[ "${database_engine}" == "mysql" ]] ; then
+        echo -e "\e[94m  Dumping the MySQL database ${mysql_database} to the file ${temporary_directory}/${mysql_database}.sql...\e[97m"
+        mysqldump -u"${mysql_username}" -p"${mysql_password}" "${mysql_database}" > "${temporary_directory}/${mysql_database}.sql"
     fi
 fi
 
@@ -111,10 +102,10 @@ fi
 
 echo -e "\e[94m  Compressing the backed up files...\e[97m"
 echo -e ""
-tar -zcvf ${BACKUPSDIRECTORY}/adsb-receiver_data_${BACKUPDATE}.tar.gz ${TEMPORARY_DIRECTORY}
+tar -zcvf "${backups_directory}/adsb-receiver_data_${backup_date}.tar.gz" "${temporary_directory}"
 echo -e ""
 echo -e "\e[94m  Removing the temporary backup directory...\e[97m"
-sudo rm -rf ${TEMPORARY_DIRECTORY}
+sudo rm -rf "${temporary_directory}"
 
 
 ## BACKUP PROCESS COMPLETE
@@ -123,14 +114,14 @@ echo -e "\e[32m"
 echo -e "  BACKUP PROCESS COMPLETE\e[93m"
 echo -e ""
 echo -e "  An archive containing the data just backed up can be found at:"
-echo -e "  ${TEMPORARY_DIRECTORY}/adsb-receiver_data_${BACKUPDATE}.tar.gz\e[97m"
+echo -e "  ${backups_directory}/adsb-receiver_data_${backup_date}.tar.gz\e[97m"
 echo -e ""
 
 echo -e "\e[93m  ------------------------------------------------------------------------------"
 echo -e "\e[92m  Finished backing up portal data.\e[39m"
 echo -e ""
-if [[ "${RECEIVER_AUTOMATED_INSTALL}" = "false" ]] ; then
-    read -p "Press enter to continue..." CONTINUE
+if [[ "${receiver_automated_install}" == "false" ]] ; then
+    read -r -p "Press enter to continue..." discard
 fi
 
 exit 0

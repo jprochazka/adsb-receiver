@@ -68,17 +68,17 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978 && -d $RECEIVER_BUILD_DIRE
     cd $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978
     log_message "Pulling the dump1090 git repository"
     echo ""
-    git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git pull 2>&1 | log_pipe
 else
     log_message "Creating the FlightAware dump978 Project build directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/dump978-fa 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/dump978-fa 2>&1 | log_pipe
     echo ""
     log_message "Entering the ADS-B Receiver Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY/dump978-fa
     log_message "Cloning the FlightAware dump978 git repository"
     echo ""
-    git clone https://github.com/flightaware/dump978.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git clone https://github.com/flightaware/dump978.git 2>&1 | log_pipe
 fi
 
 
@@ -91,16 +91,16 @@ cd $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978
 
 log_message "Building the dump978-fa package"
 echo ""
-dpkg-buildpackage -b 2>&1 | tee -a $RECEIVER_LOG_FILE
+dpkg-buildpackage -b 2>&1 | log_pipe
 echo ""
 
 log_message "Installing the dump978-fa Debian package"
 echo ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_*.deb 2>&1 | log_pipe
 echo ""
 log_message "Installing the skyaware978 Debian package"
 echo ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb 2>&1 | log_pipe
 echo ""
 
 log_message "Checking that the dump978-fa Debian package was installed"
@@ -136,16 +136,16 @@ fi
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     log_message "Creating the Debian package archive directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | log_pipe
     echo ""
 fi
 log_message "Copying the dump978-fa Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
+cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/dump978-fa_*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | log_pipe
 echo ""
 log_message "Copying the skyaware978 Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
+cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | log_pipe
 
 
 ## CONFIGURATION

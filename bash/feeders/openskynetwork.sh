@@ -42,7 +42,7 @@ if ! grep -q "^deb .*opensky." /etc/apt/sources.list /etc/apt/sources.list.d/*; 
     if [[ ! -d $RECEIVER_BUILD_DIRECTORY/openskynetwork ]]; then
         log_message "Creating the OpenSky Network build directory"
         echo ""
-        mkdir -v $RECEIVER_BUILD_DIRECTORY/openskynetwork 2>&1 | tee -a $RECEIVER_LOG_FILE
+        mkdir -v $RECEIVER_BUILD_DIRECTORY/openskynetwork 2>&1 | log_pipe
         echo ""
     fi
     log_message "Entering the OpenSky Network build directory"
@@ -50,8 +50,8 @@ if ! grep -q "^deb .*opensky." /etc/apt/sources.list /etc/apt/sources.list.d/*; 
 
     log_message "Downloading and adding the OpenSky Network apt repository GPG key"
     echo ""
-    wget -v -O $RECEIVER_BUILD_DIRECTORY/openskynetwork/opensky.gpg.pub https://opensky-network.org/files/firmware/opensky.gpg.pub 2>&1 | tee -a $RECEIVER_LOG_FILE
-    wget -q -O - https://opensky-network.org/files/firmware/opensky.gpg.pub | sudo apt-key add - 2>&1 | tee -a $RECEIVER_LOG_FILE
+    wget -v -O $RECEIVER_BUILD_DIRECTORY/openskynetwork/opensky.gpg.pub https://opensky-network.org/files/firmware/opensky.gpg.pub 2>&1 | log_pipe
+    wget -q -O - https://opensky-network.org/files/firmware/opensky.gpg.pub | sudo apt-key add - 2>&1 | log_pipe
     echo ""
     log_message "Adding the OpenSky Network apt repository"
     sudo bash -c "echo deb https://opensky-network.org/repos/debian opensky custom > /etc/apt/sources.list.d/opensky.list"
@@ -66,7 +66,7 @@ log_heading "Installing the OpenSky Network feeder package"
 
 log_message "Downloading the latest package lists for all enabled repositories and PPAs"
 echo ""
-sudo apt-get update 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo apt-get update 2>&1 | log_pipe
 echo ""
 log_message "Installing the OpenSky Network fedder package using apt"
 echo ""

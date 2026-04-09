@@ -2,8 +2,8 @@
 
 ## PRE EXECUTION OPERATIONS
 
-source $RECEIVER_BASH_DIRECTORY/variables.sh
-source $RECEIVER_BASH_DIRECTORY/functions.sh
+source "${RECEIVER_BASH_DIRECTORY}/variables.sh"
+source "${RECEIVER_BASH_DIRECTORY}/functions.sh"
 
 
 ## DISPLAY THE WELCOME SCREEN
@@ -25,8 +25,11 @@ fi
 
 ## ATTEMPT TO CHANGE AND/OR UPDATE THE REPOSITORY
 
-if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
-    current_branch=`git rev-parse --abbrev-ref HEAD`
+log_message "Setting Git to ignore permission changes"
+git config core.fileMode false
+
+if [[ "${RECEIVER_DEVELOPMENT_MODE}" != "true" ]]; then
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
 
     clear
     log_project_title
@@ -35,14 +38,14 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
 
     log_heading "Checking out and updating the appropriate branch"
 
-    if [[ `git status --porcelain --untracked-files=no` && `git ls-remote --heads https://github.com/jprochazka/adsb-receiver.git refs/heads/master | wc -l` = 1 ]]; then
+    if [[ $(git status --porcelain --untracked-files=no) && $(git ls-remote --heads https://github.com/jprochazka/adsb-receiver.git refs/heads/master | wc -l) -eq 1 ]]; then
         if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                     --title "Stash Changes To Branch ${current_branch}" \
                     --defaultno \
                     --yesno "There appears to be changes to the current branch. In order to switch to or fetch the ${current_branch} branch these changes will need to be stashed. Would you like to stash these changes now?" \
                     14 78; then
             log_message "Stashing changes made to the ${current_branch} branch"
-            git stash 2>&1 | tee -a $RECEIVER_LOG_FILE
+            git stash 2>&1 | log_pipe
             echo ""
         else
             log_alert_heading "INSTALLATION HALTED"
@@ -55,18 +58,18 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
     if [[ "${current_branch}" != "${RECEIVER_PROJECT_BRANCH}" ]]; then
         log_message "Switching to branch ${RECEIVER_PROJECT_BRANCH}"
         echo ""
-        git checkout $RECEIVER_PROJECT_BRANCH 2>&1 | tee -a $RECEIVER_LOG_FILE
+        git checkout "${RECEIVER_PROJECT_BRANCH}" 2>&1 | log_pipe
         echo ""
     fi
 
-    if [[ `git ls-remote --heads https://github.com/jprochazka/adsb-receiver.git refs/heads/$RECEIVER_PROJECT_BRANCH | wc -l` = 1 ]]; then
+    if [[ $(git ls-remote --heads https://github.com/jprochazka/adsb-receiver.git "refs/heads/${RECEIVER_PROJECT_BRANCH}" | wc -l) -eq 1 ]]; then
         log_message "Fetching branch ${RECEIVER_PROJECT_BRANCH} from origin"
         echo ""
-        git fetch origin 2>&1 | tee -a $RECEIVER_LOG_FILE
+        git fetch origin 2>&1 | log_pipe
         echo ""
         log_message "Performing hard reset of branch ${RECEIVER_PROJECT_BRANCH} so it matches origin/${RECEIVER_PROJECT_BRANCH}"
         echo ""
-        git reset --hard origin/$RECEIVER_PROJECT_BRANCH
+        git reset --hard "origin/${RECEIVER_PROJECT_BRANCH}"
     else
         log_message "The branch ${RECEIVER_PROJECT_BRANCH} does not appear to be in origin"
     fi
@@ -74,7 +77,7 @@ if [[ $RECEIVER_DEVELOPMENT_MODE != "true" ]]; then
     log_title_message "-----------------------------------------------------------------------------"
     log_title_heading "Finished fetching the latest version the '${RECEIVER_PROJECT_BRANCH}' branch."
     echo ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 fi
 
 
@@ -96,12 +99,12 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
     log_message "Updating the operating system using apt-get"
     echo ""
-    sudo apt-get -y dist-upgrade 2>&1 | tee -a $RECEIVER_LOG_FILE
+    sudo apt-get -y dist-upgrade 2>&1 | log_pipe
     echo ""
     log_title_message "------------------------------------------------------------------------"
     log_title_heading "Your operating system should now be up to date"
     echo ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 fi
 
 
@@ -112,16 +115,20 @@ clear
 log_heading "Executing the script bash/main.sh"
 
 log_message "Executing bash/main"
-bash $RECEIVER_BASH_DIRECTORY/main.sh
-if [[ $? -ne 0 ]] ; then
+bash "${RECEIVER_BASH_DIRECTORY}/main.sh"
+main_exit_code=$?
+if [[ $main_exit_code -ne 0 ]] ; then
     echo ""
-    log_alert_heading "ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINIATED"
+    log_alert_heading "ANY FURTHER SETUP AND/OR INSTALLATION REQUESTS HAVE BEEN TERMINATED"
     echo ""
     exit 1
 fi
 
 
 ## INSTALLATION COMPLETE
+
+log_message "Setting Git to notice permission changes"
+git config core.fileMode true
 
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "Software Installation Complete" \

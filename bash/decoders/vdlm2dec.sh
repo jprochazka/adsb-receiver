@@ -100,7 +100,7 @@ case $RECEIVER_OS_DISTRIBUTION in
         ;;
     debian)
         if [[ "${RECEIVER_OS_CODE_NAME}" == "bookworm" ]]; then distro_php_version="8.2"; fi
-        if [[ "${RECEIVER_OS_CODE_NAME}" == "bullseye" ]]; then distro_php_version="7.4"; fi
+        if [[ "${RECEIVER_OS_CODE_NAME}" == "trixie" ]]; then distro_php_version="8.4"; fi
         ;;
 esac
 check_package sqlite3

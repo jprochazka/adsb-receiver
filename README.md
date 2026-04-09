@@ -78,12 +78,10 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 The project currently supports the following Linux distributions.
 
-* Armbian _(Bookworm and Noble)_
-* Debian _(Bookworm and Bullseye)_
-* DietPi _(Bookworm and Bullseye)_
-* Raspberry PI OS _(Bookworm and Bullseye)_
-* Ubuntu _(Jammy Jellyfish and Noble Numbat*)_
+* Raspberry PI OS _(Legacy, Current)_
+* Debian _(Bookworm, Trixie)_
+* Ubuntu _(Jammy Jellyfish, Noble Numbat, Questing Quokka)_
+
+_These scripts should work most any Debian based distributions_
 
 Support is available via this repository through the use of the issue tracker or discussions.
-
-_* Please Note that Ubuntu Noble Numbat support employs an unofficial fix for PiAware._

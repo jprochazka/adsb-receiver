@@ -42,7 +42,7 @@ log_message "Entering the tar1090 build directory"
 cd $RECEIVER_BUILD_DIRECTORY/tar1090
 log_message "Downloading the tar1090 install script"
 echo ""
-wget -v -O $RECEIVER_BUILD_DIRECTORY/tar1090/install.sh https://raw.githubusercontent.com/wiedehopf/tar1090/master/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
+wget -v -O $RECEIVER_BUILD_DIRECTORY/tar1090/install.sh https://raw.githubusercontent.com/wiedehopf/tar1090/master/install.sh 2>&1 | log_pipe
 log_message "Executing the tar1090 install script"
 echo ""
 sudo bash $RECEIVER_BUILD_DIRECTORY/tar1090/install.sh

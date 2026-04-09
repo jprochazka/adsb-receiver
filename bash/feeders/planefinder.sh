@@ -30,7 +30,7 @@ log_heading "Installing packages needed to fulfill PlaneFinder client dependenci
 
 check_package wget
 
-case "${RECIEVER_CPU_ARCHITECTURE}" in
+case "${RECEIVER_CPU_ARCHITECTURE}" in
     "aarch64")
         sudo dpkg --add-architecture armhf
         check_package libc6:armhf
@@ -45,15 +45,12 @@ log_heading "Begining the PlaneFinder client installation process"
 
 
 log_message "Determining which Debian package to install"
-case "${RECIEVER_CPU_ARCHITECTURE}" in
+case "${RECEIVER_CPU_ARCHITECTURE}" in
     "armv7l"|"armv6l"|"aarch64")
         package_name="pfclient_${pfclient_current_version_armhf}_armhf.deb"
         ;;
     "x86_64")
         package_name="pfclient_${pfclient_current_version_amd64}_amd64.deb"
-        ;;
-    "i386")
-        package_name="pfclient_${pfclient_current_version_amd64}_i386.deb"
         ;;
     *)
         echo ""
@@ -82,23 +79,23 @@ cd $RECEIVER_BUILD_DIRECTORY/planefinder
 
 log_message "Downloading the appropriate PlaneFinder client Debian package"
 echo ""
-wget -v -O $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name http://client.planefinder.net/$package_name 2>&1 | tee -a $RECEIVER_LOG_FILE
+wget -v -O $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name http://client.planefinder.net/$package_name 2>&1 | log_pipe
 echo ""
 
 log_message "Installing the PlaneFinder Client Debian package"
 echo -e ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name 2>&1 | log_pipe
 echo ""
 
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     log_message "Creating the package archive directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | log_pipe
     echo ""
 fi
 log_message "Copying the PlaneFinder client Debian package into the archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
+cp -vf $RECEIVER_BUILD_DIRECTORY/planefinder/$package_name $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | log_pipe
 echo ""
 
 

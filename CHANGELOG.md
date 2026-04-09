@@ -2,6 +2,20 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.10 *(April 9th, 2026)*
+
+* Trixie, Noble and Questing uses the official piaware_builder dev branch.
+* Correct Ubuntu versions are associated with matching Debian version.
+* Specify correct versions of PHP for Noble and Questing.
+* Check for the rsyslog package before installing PiAware.
+* Refactored core bash scripts.
+* The no logging parameter option is now respected.
+* Correct install script is used when BeastSpliter is selected.
+* Correct CPU architecture is used to pick Plane Finder client.
+* Update Flightradar24 client version.
+* Updated Plane Finder ADS-B client versions.
+* Removed i386 Plane Finder ADS-B client option.
+
 ## v2.8.9 *(November 11th, 2025)*
 
 * Added the option to install the AirNav Radar rbfeeder client.

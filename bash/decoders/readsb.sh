@@ -71,17 +71,17 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/readsb/readsb && -d $RECEIVER_BUILD_DIRECTORY
     cd $RECEIVER_BUILD_DIRECTORY/readsb/readsb
     log_message "Pulling the Readsb git repository"
     echo ""
-    git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git pull 2>&1 | log_pipe
 else
     log_message "Creating the Readsb Project build directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/readsb 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/readsb 2>&1 | log_pipe
     echo ""
     log_message "Entering the Readsb Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY/readsb
     log_message "Cloning the readsb git repository"
     echo ""
-    git clone https://github.com/wiedehopf/readsb.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git clone https://github.com/wiedehopf/readsb.git 2>&1 | log_pipe
 fi
 
 
@@ -120,12 +120,12 @@ fi
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     log_message "Creating the Debian package archive directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | log_pipe
     echo ""
 fi
 log_message "Copying the Readsb Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/readsb/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
+cp -vf $RECEIVER_BUILD_DIRECTORY/readsb/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | log_pipe
 
 
 ## CONFIGURATION

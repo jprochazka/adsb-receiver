@@ -44,7 +44,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/airplaneslive ]]; then
     log_message "Creating the airplanes.live build directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/airplaneslive 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/airplaneslive 2>&1 | log_pipe
     echo ""
 fi
 log_message "Entering the airplanes.live build directory"
@@ -52,7 +52,7 @@ cd $RECEIVER_BUILD_DIRECTORY/airplaneslive
 
 log_message "Downloading the airplanes.live client installation script"
 echo ""
-wget -v -O $RECEIVER_BUILD_DIRECTORY/airplaneslive/install.sh https://raw.githubusercontent.com/airplanes-live/feed/main/install.sh 2>&1 | tee -a $RECEIVER_LOG_FILE
+wget -v -O $RECEIVER_BUILD_DIRECTORY/airplaneslive/install.sh https://raw.githubusercontent.com/airplanes-live/feed/main/install.sh 2>&1 | log_pipe
 
 log_message "Executing the airplanes.live client installation script"
 echo ""

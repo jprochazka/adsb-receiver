@@ -71,17 +71,17 @@ if [[ -d $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090 && -d $RECEIVER_BUILD_DI
     cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090
     log_message "Pulling the dump1090 git repository"
     echo ""
-    git pull 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git pull 2>&1 | log_pipe
 else
     log_message "Creating the FlightAware dump1090 Project build directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/dump1090-fa 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/dump1090-fa 2>&1 | log_pipe
     echo ""
     log_message "Entering the FlightAware dump1090 Project build directory"
     cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa
     log_message "Cloning the dump1090 git repository"
     echo ""
-    git clone https://github.com/flightaware/dump1090.git 2>&1 | tee -a $RECEIVER_LOG_FILE
+    git clone https://github.com/flightaware/dump1090.git 2>&1 | log_pipe
 fi
 
 
@@ -93,24 +93,22 @@ log_message "Entering the dump1090 Git repository"
 cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090
 
 log_message "Determining which distribution to build the package tree for"
-case $RECEIVER_OS_CODE_NAME in
-    bullseye|jammy|bookworm|noble)
-        distro="bullseye"
-        ;;
+distro="bullseye"
+
 esac
 log_message "Preparing to build dump1090-fa for ${distro}"
 echo ""
-./prepare-build.sh $distro 2>&1 | tee -a $RECEIVER_LOG_FILE
+./prepare-build.sh $distro 2>&1 | log_pipe
 echo ""
 log_message "Entering the package-${distro} directory"
 cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/package-$distro
 log_message "Building the dump1090-fa Debian package"
 echo ""
-dpkg-buildpackage -b --no-sign 2>&1 | tee -a $RECEIVER_LOG_FILE
+dpkg-buildpackage -b --no-sign 2>&1 | log_pipe
 echo ""
 log_message "Installing the dump1090-fa Debian package"
 echo ""
-sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/dump1090-fa_$DUMP1090_FA_VERSION_*.deb 2>&1 | tee -a $RECEIVER_LOG_FILE
+sudo dpkg -i $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/dump1090-fa_$DUMP1090_FA_VERSION_*.deb 2>&1 | log_pipe
 echo ""
 
 log_message "Checking that the dump1090-fa Debian package was installed"
@@ -131,12 +129,12 @@ fi
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     log_message "Creating the Debian package archive directory"
     echo ""
-    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | tee -a $RECEIVER_LOG_FILE
+    mkdir -v $RECEIVER_BUILD_DIRECTORY/package-archive 2>&1 | log_pipe
     echo ""
 fi
 log_message "Copying the dump1090-fa Debian package into the Debian package archive directory"
 echo ""
-cp -vf $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | tee -a $RECEIVER_LOG_FILE
+cp -vf $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090/*.deb $RECEIVER_BUILD_DIRECTORY/package-archive/ 2>&1 | log_pipe
 
 
 ## CONFIGURATION
@@ -195,7 +193,7 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
 
             log_message "Downloading JSON data file assigned to panorama ID ${heywhatsthat_panorama_id}"
             echo ""
-            sudo wget -v -O /usr/share/skyaware/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${heywhatsthat_panarama_id}&refraction=0.25&alts=${heywhatsthat_ring_one_altitude},${heywhatsthat_ring_two_altitude}" 2>&1 | tee -a $RECEIVER_LOG_FILE
+            sudo wget -v -O /usr/share/skyaware/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${heywhatsthat_panarama_id}&refraction=0.25&alts=${heywhatsthat_ring_one_altitude},${heywhatsthat_ring_two_altitude}" 2>&1 | log_pipe
             echo ""
             log_message "Heywhatsthat configuration complete"
         fi
