@@ -14,7 +14,7 @@ log_message "Displaying the welcome message to the user"
 echo ""
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "The ADS-B Receiver Project" \
-              --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.net\n\nWould you like to continue setup?" \
+              --yesno "Thanks for choosing The ADS-B Receiver Project to setup your receiver.\n\nMore information on this project as well as news, support, and discussions can be found on the projects official website located at:\n\n  https://www.adsbreceiver.org\n\nWould you like to continue setup?" \
               14 78; then
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted at the request of the user"

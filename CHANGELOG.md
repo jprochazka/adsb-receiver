@@ -2,6 +2,12 @@
 
 The following is a history of the changes made to this project.
 
+## v3.0.0 *(Coming soon...)*
+
+* New version of the portal. (total rewrite with many additions)
+* Console message color fix applied.
+* References to adsbreceiver.net changed to adsbreceiver.org.
+
 ## v2.8.10 *(April 9th, 2026)*
 
 * Trixie, Noble and Questing uses the official piaware_builder dev branch.

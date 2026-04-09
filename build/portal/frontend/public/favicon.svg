@@ -1,4 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="10" fill="#0b0f1e"/>
-  <text x="32" y="48" font-size="40" text-anchor="middle" fill="#0ea5e9" font-family="sans-serif">✈</text>
+  <rect width="64" height="64" rx="12" fill="#0b142e"/>
+  <text
+    x="32"
+    y="46"
+    font-size="38"
+    text-anchor="middle"
+    fill="#38bdf8"
+    font-family="Rajdhani, Inter, sans-serif"
+    transform="rotate(-20 32 32)">✈</text>
 </svg>

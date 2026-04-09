@@ -2,18 +2,18 @@
 
 ## DISPLAY COLORS
 
-readonly display_default="\033[0m"
-readonly display_heading="\033[1;36m"
-readonly display_message="\033[2;36m"
-readonly display_project_name="\033[1;31m"
-readonly display_title_heading="\033[1;32m"
-readonly display_title_message="\033[2;32m"
-readonly display_warning_heading="\033[1;33m"
-readonly display_warning_message="\033[2;33m"
-readonly display_alert_heading="\033[1;31m"
-readonly display_alert_message="\033[2;31m"
-readonly display_false_inline="\033[2;31m"
-readonly display_true_inline="\033[2;32m"
+readonly display_default=$'\033[0m'
+readonly display_heading=$'\033[1;36m'
+readonly display_message=$'\033[2;36m'
+readonly display_project_name=$'\033[1;31m'
+readonly display_title_heading=$'\033[1;32m'
+readonly display_title_message=$'\033[2;32m'
+readonly display_warning_heading=$'\033[1;33m'
+readonly display_warning_message=$'\033[2;33m'
+readonly display_alert_heading=$'\033[1;31m'
+readonly display_alert_message=$'\033[2;31m'
+readonly display_false_inline=$'\033[2;31m'
+readonly display_true_inline=$'\033[2;32m'
 
 ## SOFTWARE VERSIONS
 
