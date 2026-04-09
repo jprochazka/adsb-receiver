@@ -38,6 +38,8 @@ const DEFAULT_LIVE_MAP_DISTANCE_RING_COUNT = 4;
 const DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES = 25;
 const DEFAULT_LIVE_MAP_THEORETICAL_RANGE_ENABLED = false;
 const DEFAULT_LIVE_MAP_THEORETICAL_RANGE_JSON = '';
+const DEFAULT_LIVE_MAP_HEYWHATSTHAT_RINGS_ENABLED = false;
+const DEFAULT_LIVE_MAP_HEYWHATSTHAT_RINGS_JSON = '';
 const DEFAULT_DUMP1090_JSON_URL = 'http://127.0.0.1/dump1090/data/aircraft.json';
 const DEFAULT_DUMP978_JSON_URL = 'http://127.0.0.1/dump978/data/aircraft.json';
 const MAX_CUSTOM_PRESETS = 10;
@@ -107,6 +109,8 @@ export class AdminLiveComponent implements OnInit {
   liveMapDistanceRingIntervalMiles = DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES;
   liveMapTheoreticalRangeEnabled = DEFAULT_LIVE_MAP_THEORETICAL_RANGE_ENABLED;
   liveMapTheoreticalRangeJson = DEFAULT_LIVE_MAP_THEORETICAL_RANGE_JSON;
+  liveMapHeyWhatsThatRingsEnabled = DEFAULT_LIVE_MAP_HEYWHATSTHAT_RINGS_ENABLED;
+  liveMapHeyWhatsThatRingsJson = DEFAULT_LIVE_MAP_HEYWHATSTHAT_RINGS_JSON;
   dump1090JsonUrl = DEFAULT_DUMP1090_JSON_URL;
   dump978JsonUrl = DEFAULT_DUMP978_JSON_URL;
   liveMapPresets = LIVE_MAP_PRESETS;
@@ -131,11 +135,13 @@ export class AdminLiveComponent implements OnInit {
       liveDistanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES) }))),
       liveTheoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_THEORETICAL_RANGE_ENABLED) }))),
       liveTheoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_LIVE_MAP_THEORETICAL_RANGE_JSON }))),
+      liveHeyWhatsThatRingsEnabled: this.dataService.getSetting('live_map_heywhatsthat_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_HEYWHATSTHAT_RINGS_ENABLED) }))),
+      liveHeyWhatsThatRingsJson: this.dataService.getSetting('live_map_heywhatsthat_rings_json').pipe(catchError(() => of({ value: DEFAULT_LIVE_MAP_HEYWHATSTHAT_RINGS_JSON }))),
       dump1090JsonUrl: this.dataService.getSetting('live_map_json_url').pipe(catchError(() => of({ value: DEFAULT_DUMP1090_JSON_URL }))),
       dump978JsonUrl: this.dataService.getSetting('live_map_json_url_dump978').pipe(catchError(() => of({ value: DEFAULT_DUMP978_JSON_URL }))),
       customPresets: this.dataService.getSetting('live_map_custom_presets').pipe(catchError(() => of({ value: JSON.stringify(DEFAULT_CUSTOM_PRESETS) }))),
     }).subscribe({
-      next: ({ liveEnabled, liveRefreshMs, liveCenterLat, liveCenterLon, liveZoom, liveTrailPoints, liveShowAllSeen, liveSpiderOverlayEnabled, liveCenterIconEnabled, liveDistanceRingsEnabled, liveDistanceRingCompassLinesEnabled, liveDistanceRingCount, liveDistanceRingIntervalMiles, liveTheoreticalRangeEnabled, liveTheoreticalRangeJson, dump1090JsonUrl, dump978JsonUrl, customPresets }) => {
+      next: ({ liveEnabled, liveRefreshMs, liveCenterLat, liveCenterLon, liveZoom, liveTrailPoints, liveShowAllSeen, liveSpiderOverlayEnabled, liveCenterIconEnabled, liveDistanceRingsEnabled, liveDistanceRingCompassLinesEnabled, liveDistanceRingCount, liveDistanceRingIntervalMiles, liveTheoreticalRangeEnabled, liveTheoreticalRangeJson, liveHeyWhatsThatRingsEnabled, liveHeyWhatsThatRingsJson, dump1090JsonUrl, dump978JsonUrl, customPresets }) => {
         this.liveMapEnabled = liveEnabled?.value !== 'false';
         this.liveMapRefreshMs = this.clampInt(liveRefreshMs?.value, 1000, 60000, DEFAULT_LIVE_MAP_REFRESH_MS);
         this.liveMapCenterLat = this.clampFloat(liveCenterLat?.value, -85, 85, DEFAULT_LIVE_MAP_CENTER_LAT);
@@ -151,6 +157,8 @@ export class AdminLiveComponent implements OnInit {
         this.liveMapDistanceRingIntervalMiles = this.clampInt(liveDistanceRingIntervalMiles?.value, 1, 250, DEFAULT_LIVE_MAP_DISTANCE_RING_INTERVAL_MILES);
         this.liveMapTheoreticalRangeEnabled = liveTheoreticalRangeEnabled?.value === 'true';
         this.liveMapTheoreticalRangeJson = this.normalizeJsonSetting(liveTheoreticalRangeJson?.value);
+        this.liveMapHeyWhatsThatRingsEnabled = liveHeyWhatsThatRingsEnabled?.value === 'true';
+        this.liveMapHeyWhatsThatRingsJson = this.normalizeJsonSetting(liveHeyWhatsThatRingsJson?.value);
         this.dump1090JsonUrl = this.normalizeJsonUrl(dump1090JsonUrl?.value, DEFAULT_DUMP1090_JSON_URL);
         this.dump978JsonUrl = this.normalizeJsonUrl(dump978JsonUrl?.value, DEFAULT_DUMP978_JSON_URL);
         this.customPresetSlots = this.parseCustomPresets(customPresets?.value);
@@ -267,6 +275,29 @@ export class AdminLiveComponent implements OnInit {
 
     this.liveMapTheoreticalRangeJson = normalized;
     this.saveStringSetting('live_map_theoretical_range_json', this.liveMapTheoreticalRangeJson);
+  }
+
+  saveLiveMapHeyWhatsThatRingsEnabled(): void {
+    this.errorMessage = '';
+    this.dataService.updateSetting('live_map_heywhatsthat_rings_enabled', String(this.liveMapHeyWhatsThatRingsEnabled)).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; }
+    });
+  }
+
+  saveLiveMapHeyWhatsThatRingsJson(): void {
+    const normalized = this.normalizeJsonSetting(this.liveMapHeyWhatsThatRingsJson);
+    if (normalized) {
+      try {
+        JSON.parse(normalized);
+      } catch {
+        this.errorMessage = 'HeyWhatsThat rings JSON is not valid JSON.';
+        return;
+      }
+    }
+
+    this.liveMapHeyWhatsThatRingsJson = normalized;
+    this.saveStringSetting('live_map_heywhatsthat_rings_json', this.liveMapHeyWhatsThatRingsJson);
   }
 
   saveDump1090JsonUrl(): void {

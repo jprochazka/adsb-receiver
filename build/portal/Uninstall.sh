@@ -78,7 +78,7 @@ if [[ "${INTERACTIVE}" == true ]]; then
         "venv"     "Python virtual environment (${VENV_DIR})"    "OFF" \
         "rrd"      "RRD data directory (${RRD_BASE})"             "OFF" \
         "opensky"  "OpenSky database files (${OPENSKY_BASE})"     "OFF" \
-        "packages" "System packages (nginx, python3-venv, python3-pip, curl, rrdtool)"  "OFF" \
+        "packages" "System packages (nginx, python3-venv, python3-pip, curl, rrdtool, nodejs, npm)"  "OFF" \
         3>&1 1>&2 2>&3) || { echo "Uninstallation cancelled."; exit 0; }
 
     [[ "${CHOICES}" == *'"webroot"'*  ]] && REMOVE_WEBROOT=true
@@ -93,7 +93,7 @@ if [[ "${INTERACTIVE}" == true ]]; then
     [[ "${REMOVE_VENV}"     == true ]] && SUMMARY+="\n  - Virtual environment: ${VENV_DIR}"
     [[ "${REMOVE_RRD}"      == true ]] && SUMMARY+="\n  - RRD data directory: ${RRD_BASE}"
     [[ "${REMOVE_OPENSKY}"  == true ]] && SUMMARY+="\n  - OpenSky database files: ${OPENSKY_BASE}"
-    [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages: nginx, python3-venv, python3-pip, curl, rrdtool"
+    [[ "${PURGE_PACKAGES}"  == true ]] && SUMMARY+="\n  - System packages: nginx, python3-venv, python3-pip, curl, rrdtool, nodejs, npm"
 
     whiptail --title "Confirm Uninstallation" \
         --yesno "${SUMMARY}\n\nContinue?" 16 64 || { echo "Uninstallation cancelled."; exit 0; }
@@ -171,7 +171,7 @@ _uninstall() {
     # --- Purge packages (optional) ---
     _gauge 90 "Removing system packages..."
     if [[ "${PURGE_PACKAGES}" == true ]]; then
-        apt-get remove -y nginx python3-venv python3-pip curl rrdtool >> "${LOG_FILE}" 2>&1 || true
+        apt-get remove -y nginx python3-venv python3-pip curl rrdtool nodejs npm >> "${LOG_FILE}" 2>&1 || true
         apt-get autoremove -y >> "${LOG_FILE}" 2>&1 || true
     fi
 

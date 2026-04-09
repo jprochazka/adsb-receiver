@@ -157,6 +157,18 @@ describe('FlightsComponent', () => {
     expect(icons.length).toBeGreaterThan(0);
   });
 
+  it('should render compact external link icon set in flights table', () => {
+    const linkIcons = fixture.nativeElement.querySelectorAll('.flight-link-icon');
+    expect(linkIcons.length).toBeGreaterThan(0);
+
+    const titles = Array.from(linkIcons).map((el: any) => String(el.getAttribute('title') || ''));
+    expect(titles).toContain('FlightAware');
+    expect(titles).toContain('PlaneFinder');
+    expect(titles).toContain('Flightradar24');
+    expect(titles).toContain('OpenSky Network');
+    expect(titles).toContain('ADS-B Exchange');
+  });
+
   it('should generate icon data URLs and fallback labels for unknown classes', () => {
     const known = {
       aircraft_class: 'helicopter'
@@ -266,5 +278,60 @@ describe('FlightsComponent', () => {
     const coords = (component as any).buildRenderableSegmentCoords(segment) as number[][];
 
     expect(coords.length).toBeGreaterThan(2);
+  });
+
+  it('should navigate ADS-B pagination with canonical page 1 and preserve UAT page', () => {
+    const navigateSpy = spyOn(component.router, 'navigate');
+
+    component.adsbTotalPages = 10;
+    component.adsbCurrentPage = 2;
+    component.uatCurrentPage = 4;
+    component.goToAdsbPage(1);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights'], { queryParams: { uatPage: 4 } });
+
+    component.goToAdsbPage(3);
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights', 3], { queryParams: { uatPage: 4 } });
+  });
+
+  it('should navigate UAT pagination with canonical page 1 and preserve ADS-B page', () => {
+    const navigateSpy = spyOn(component.router, 'navigate');
+
+    component.uatTotalPages = 10;
+    component.uatCurrentPage = 2;
+    component.adsbCurrentPage = 3;
+    component.goToUatPage(1);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights', 3], { queryParams: {} });
+
+    component.goToUatPage(5);
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights', 3], { queryParams: { uatPage: 5 } });
+  });
+
+  it('should navigate All pagination by keeping ADS-B and UAT pages in sync', () => {
+    const navigateSpy = spyOn(component.router, 'navigate');
+
+    component.adsbTotalPages = 10;
+    component.uatTotalPages = 8;
+    component.adsbCurrentPage = 2;
+    component.uatCurrentPage = 2;
+
+    component.goToAllPage(1);
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights'], { queryParams: {} });
+
+    component.goToAllPage(4);
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights', 4], { queryParams: { uatPage: 4 } });
+  });
+
+  it('should compute all-tab display range and total like other pagers', () => {
+    component.adsbCurrentPage = 2;
+    component.uatCurrentPage = 2;
+    component.adsbTotalFlights = 123;
+    component.uatTotalFlights = 57;
+    component.combinedFlights = new Array(100).fill(null);
+
+    expect(component.allTotalFlights).toBe(180);
+    expect(component.allDisplayStart).toBe(101);
+    expect(component.allDisplayEnd).toBe(180);
   });
 });

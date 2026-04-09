@@ -20,6 +20,38 @@
 	display: block;
 }
 
+.flight-link-icons {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+
+.flight-link-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.85rem;
+	height: 1.85rem;
+	border: 1px solid #334155;
+	border-radius: 0.35rem;
+	background: #0f172a;
+	padding: 0.1rem;
+	line-height: 1;
+	box-shadow: none;
+
+	img {
+		width: 1.15rem;
+		height: 1.15rem;
+		display: block;
+		border-radius: 0.2rem;
+	}
+
+	&:hover {
+		border-color: #334155;
+	}
+}
+
 .map-page {
 	position: fixed;
 	top: 56px;

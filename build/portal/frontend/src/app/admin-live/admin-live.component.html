@@ -163,6 +163,16 @@
               <div class="form-text">Shows or hides a theoretical maximum range overlay generated from pasted terrain-profile JSON.</div>
             </div>
           </div>
+          <div class="col-12">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" role="switch"
+                id="toggle-live-map-heywhatsthat-rings" [(ngModel)]="liveMapHeyWhatsThatRingsEnabled" (change)="saveLiveMapHeyWhatsThatRingsEnabled()">
+              <label class="form-check-label fw-semibold" for="toggle-live-map-heywhatsthat-rings">
+                Display HeyWhatsThat up-in-the-air rings
+              </label>
+              <div class="form-text">Shows or hides an overlay from pasted heywhatsthat.com up-in-the-air distance rings JSON.</div>
+            </div>
+          </div>
           <div class="col-md-4">
             <label class="form-label fw-semibold" for="live-map-distance-ring-count">Distance Ring Count</label>
             <input id="live-map-distance-ring-count" class="form-control" type="number" min="1" max="12"
@@ -186,6 +196,48 @@
             <div class="form-text">GeoJSON-style polygons, feature collections, or coordinate arrays are accepted if they contain longitude/latitude points.</div>
             <div class="mt-2">
               <button type="button" class="btn btn-sm btn-outline-secondary" (click)="saveLiveMapTheoreticalRangeJson()">Save Theoretical Range JSON</button>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold" for="live-map-heywhatsthat-rings-json">HeyWhatsThat Rings JSON</label>
+            <textarea
+              id="live-map-heywhatsthat-rings-json"
+              class="form-control"
+              rows="8"
+              [(ngModel)]="liveMapHeyWhatsThatRingsJson"
+              placeholder='Paste heywhatsthat.com up-in-the-air rings JSON here'></textarea>
+            <div class="form-text">GeoJSON-style polygons, feature collections, or coordinate arrays are accepted if they contain longitude/latitude points.</div>
+            <details class="mt-2">
+              <summary class="small text-muted">Example format</summary>
+              <pre class="small mt-2 mb-0"><code>[
+  [-87.90, 41.90],
+  [-87.70, 41.90],
+  [-87.70, 42.10],
+  [-87.90, 42.10],
+  [-87.90, 41.90]
+]</code></pre>
+              <div class="small text-muted mt-2">FeatureCollection example:</div>
+              <pre class="small mt-2 mb-0"><code>&#123;
+  "type": "FeatureCollection",
+  "features": [
+    &#123;
+      "type": "Feature",
+      "geometry": &#123;
+        "type": "Polygon",
+        "coordinates": [[
+          [-87.90, 41.90],
+          [-87.70, 41.90],
+          [-87.70, 42.10],
+          [-87.90, 42.10],
+          [-87.90, 41.90]
+        ]]
+      &#125;
+    &#125;
+  ]
+&#125;</code></pre>
+            </details>
+            <div class="mt-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="saveLiveMapHeyWhatsThatRingsJson()">Save HeyWhatsThat Rings JSON</button>
             </div>
           </div>
         </div>

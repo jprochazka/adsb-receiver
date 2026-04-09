@@ -352,12 +352,27 @@ export class BlogComponent implements OnInit {
     }
   }
 
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    if (page === 1) {
+      this.router.navigate(['/blog']);
+      return;
+    }
+    this.router.navigate(['/blog', page]);
+  }
+
   get pageNumbers(): number[] {
-    const range: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end   = Math.min(this.totalPages, this.currentPage + 2);
-    for (let i = start; i <= end; i++) range.push(i);
-    return range;
+    if (this.totalPages <= 7) {
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    }
+
+    const pages = new Set<number>();
+    pages.add(1);
+    pages.add(this.totalPages);
+    for (let i = Math.max(1, this.currentPage - 2); i <= Math.min(this.totalPages, this.currentPage + 2); i++) {
+      pages.add(i);
+    }
+    return Array.from(pages).sort((a, b) => a - b);
   }
 
   truncate(text: string, limit: number): string {

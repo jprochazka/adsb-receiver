@@ -138,6 +138,8 @@ def _ensure_setting(name: str, value: str):
         ("live_map_distance_ring_interval_miles", "25"),
         ("live_map_theoretical_range_enabled", "false"),
         ("live_map_theoretical_range_json", ""),
+        ("live_map_heywhatsthat_rings_enabled", "false"),
+        ("live_map_heywhatsthat_rings_json", ""),
     ],
 )
 def test_get_new_live_map_settings_200(client, app, setting_name, default_value):
@@ -161,6 +163,8 @@ def test_get_new_live_map_settings_200(client, app, setting_name, default_value)
         ("live_map_distance_ring_interval_miles", "40"),
         ("live_map_theoretical_range_enabled", "true"),
         ("live_map_theoretical_range_json", "{\"type\":\"FeatureCollection\",\"features\":[]}"),
+        ("live_map_heywhatsthat_rings_enabled", "true"),
+        ("live_map_heywhatsthat_rings_json", "{\"type\":\"FeatureCollection\",\"features\":[]}"),
     ],
 )
 def test_put_new_live_map_settings_200(client, app, setting_name, new_value):

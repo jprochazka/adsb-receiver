@@ -30,6 +30,8 @@ const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#0
 const TRACK_INTERPOLATION_TARGET_SECONDS = 6;
 const TRACK_INTERPOLATION_TARGET_METERS = 2_000;
 const TRACK_INTERPOLATION_MAX_POINTS_PER_EDGE = 16;
+const OPENSTREETMAP_ATTRIBUTION_HTML = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
+const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/metadata/aircraftDatabase.csv" target="_blank" rel="noopener noreferrer">OpenSky Network Aircraft Database (ODbL v1.0)</a>';
 
 @Component({
   selector: 'app-flights',
@@ -282,8 +284,12 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   private initMap(): void {
+    const osmSource = new OSM({
+      attributions: [OPENSTREETMAP_ATTRIBUTION_HTML, OPENSKY_ATTRIBUTION_HTML]
+    });
+
     this.map = new Map({
-      layers: [new TileLayer({ source: new OSM() })],
+      layers: [new TileLayer({ source: osmSource })],
       target: 'map',
       view: new View({ center: fromLonLat([0, 20]), zoom: 3, maxZoom: 18 })
     });
@@ -923,12 +929,20 @@ export class FlightsComponent implements OnInit, OnDestroy {
 
   goToAdsbPage(page: number) {
     if (page < 1 || page > this.adsbTotalPages || page === this.adsbCurrentPage) return;
-    this.router.navigate(['/flights', page]);
+
+    const commands = page === 1 ? ['/flights'] : ['/flights', page];
+    const queryParams = this.uatCurrentPage > 1 ? { uatPage: this.uatCurrentPage } : {};
+
+    this.router.navigate(commands, { queryParams });
   }
 
   goToUatPage(page: number) {
     if (page < 1 || page > this.uatTotalPages || page === this.uatCurrentPage) return;
-    this.router.navigate(['/flights'], { queryParams: { uatPage: page } });
+
+    const commands = this.adsbCurrentPage === 1 ? ['/flights'] : ['/flights', this.adsbCurrentPage];
+    const queryParams = page > 1 ? { uatPage: page } : {};
+
+    this.router.navigate(commands, { queryParams });
   }
 
   get filteredCombinedFlights(): any[] {
@@ -964,6 +978,41 @@ export class FlightsComponent implements OnInit, OnDestroy {
   get uatTabCount(): number {
     if (!this.filterQuery.trim()) return this.uatTotalFlights;
     return this.filteredUatFlights.length;
+  }
+
+  get allCurrentPage(): number {
+    return Math.max(this.adsbCurrentPage, this.uatCurrentPage);
+  }
+
+  get allTotalPages(): number {
+    return Math.max(this.adsbTotalPages, this.uatTotalPages);
+  }
+
+  get allPageNumbers(): number[] {
+    return this.buildPageNumbers(this.allCurrentPage, this.allTotalPages);
+  }
+
+  get allTotalFlights(): number {
+    return this.adsbTotalFlights + this.uatTotalFlights;
+  }
+
+  get allDisplayStart(): number {
+    if (this.combinedFlights.length === 0) return 0;
+    const combinedPageSize = PAGE_SIZE * 2;
+    return (this.allCurrentPage - 1) * combinedPageSize + 1;
+  }
+
+  get allDisplayEnd(): number {
+    if (this.combinedFlights.length === 0) return 0;
+    return Math.min(this.allDisplayStart + this.combinedFlights.length - 1, this.allTotalFlights);
+  }
+
+  goToAllPage(page: number): void {
+    if (page < 1 || page > this.allTotalPages || page === this.allCurrentPage) return;
+
+    const commands = page === 1 ? ['/flights'] : ['/flights', page];
+    const queryParams = page > 1 ? { uatPage: page } : {};
+    this.router.navigate(commands, { queryParams });
   }
 
   private matchesFlight(flight: any, q: string): boolean {

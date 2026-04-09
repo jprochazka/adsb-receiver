@@ -72,6 +72,8 @@ describe('LiveComponent', () => {
         live_map_distance_ring_interval_miles: '25',
         live_map_theoretical_range_enabled: 'false',
         live_map_theoretical_range_json: '',
+        live_map_heywhatsthat_rings_enabled: 'false',
+        live_map_heywhatsthat_rings_json: '',
       };
       return of({ value: values[name] ?? 'true' });
     }),
@@ -96,6 +98,8 @@ describe('LiveComponent', () => {
       live_map_distance_ring_interval_miles: '25',
       live_map_theoretical_range_enabled: 'false',
       live_map_theoretical_range_json: '',
+      live_map_heywhatsthat_rings_enabled: 'false',
+      live_map_heywhatsthat_rings_json: '',
     };
     return of({ value: values[name] ?? 'true' });
   };
@@ -116,6 +120,8 @@ describe('LiveComponent', () => {
 
   beforeEach(async () => {
     dataServiceMock.getSetting.and.callFake(defaultGetSetting);
+    dataServiceMock.getLiveAircraft.and.returnValue(of(livePayload));
+    dataServiceMock.getAircraftPhoto.and.returnValue(of({ photos: [] }));
     dataServiceMock.getSetting.calls.reset();
     dataServiceMock.getLiveAircraft.calls.reset();
     dataServiceMock.getAircraftPhoto.calls.reset();
@@ -155,6 +161,8 @@ describe('LiveComponent', () => {
     expect(component.liveMapDistanceRingIntervalMiles).toBe(25);
     expect(component.liveMapTheoreticalRangeEnabled).toBeFalse();
     expect(component.liveMapTheoreticalRangeJson).toBe('');
+    expect(component.liveMapHeyWhatsThatRingsEnabled).toBeFalse();
+    expect(component.liveMapHeyWhatsThatRingsJson).toBe('');
 
     expect(dataServiceMock.getLiveAircraft).toHaveBeenCalled();
     expect(component.loading).toBeFalse();
@@ -323,7 +331,7 @@ describe('LiveComponent', () => {
   it('should parse coordinate-array theoretical range json into rings', () => {
     fixture.detectChanges();
 
-    const parsed = (component as any).extractTheoreticalRangeRings(
+    const parsed = (component as any).extractOverlayRings(
       JSON.stringify([
         [-90.0, 40.0],
         [-90.1, 40.0],
@@ -339,8 +347,25 @@ describe('LiveComponent', () => {
   it('should ignore invalid theoretical range json', () => {
     fixture.detectChanges();
 
-    const parsed = (component as any).extractTheoreticalRangeRings('{not-json') as number[][][];
+    const parsed = (component as any).extractOverlayRings('{not-json') as number[][][];
     expect(parsed.length).toBe(0);
+  });
+
+  it('should render heywhatsthat overlay rings when enabled', () => {
+    fixture.detectChanges();
+
+    (component as any).liveMapHeyWhatsThatRingsEnabled = true;
+    (component as any).liveMapHeyWhatsThatRingsJson = JSON.stringify([
+      [-90.0, 40.0],
+      [-90.2, 40.0],
+      [-90.1, 40.2],
+      [-90.0, 40.0]
+    ]);
+
+    (component as any).initHeyWhatsThatRingsOverlay();
+
+    const features = (component as any).heyWhatsThatRingsSource.getFeatures();
+    expect(features.length).toBe(1);
   });
 
   it('should format aircraft type and source labels', () => {
@@ -360,6 +385,27 @@ describe('LiveComponent', () => {
     expect(text).toContain('Aircraft Types');
     expect(text).toContain('General Aviation');
     expect(text).toContain('Unknown');
+  });
+
+  it('should include OpenSky attribution in map source attributions', () => {
+    ((component as any).initMap as jasmine.Spy).and.callThrough();
+    fixture.detectChanges();
+
+    const source = (component as any).olMap.getLayers().item(0).getSource();
+    const attributionLike = source.getAttributions();
+    const attributions = typeof attributionLike === 'function'
+      ? String(attributionLike(undefined as any))
+      : String(attributionLike ?? '');
+
+    expect(attributions).toContain('OpenSky Network Aircraft Database (ODbL v1.0)');
+    expect(attributions).toContain('openstreetmap.org/copyright');
+  });
+
+  it('should keep map container rendered', () => {
+    fixture.detectChanges();
+
+    const mapContainer = fixture.nativeElement.querySelector('#live');
+    expect(mapContainer).withContext('OpenLayers map target element missing').not.toBeNull();
   });
 
   it('should generate data-url legend icon markup for aircraft types', () => {

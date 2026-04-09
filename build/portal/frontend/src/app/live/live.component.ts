@@ -45,6 +45,8 @@ const DEFAULT_DISTANCE_RING_COUNT = 4;
 const DEFAULT_DISTANCE_RING_INTERVAL_MILES = 25;
 const DEFAULT_THEORETICAL_RANGE_ENABLED = false;
 const DEFAULT_THEORETICAL_RANGE_JSON = '';
+const DEFAULT_HEYWHATSTHAT_RINGS_ENABLED = false;
+const DEFAULT_HEYWHATSTHAT_RINGS_JSON = '';
 const DEFAULT_FLYOUT_WIDTH = 280;
 const MIN_FLYOUT_WIDTH = 240;
 const MAX_FLYOUT_WIDTH = 560;
@@ -54,6 +56,8 @@ const TRAIL_INTERPOLATION_TARGET_SECONDS = 6;
 const TRAIL_INTERPOLATION_TARGET_METERS = 1_500;
 const TRAIL_INTERPOLATION_MAX_POINTS = 12;
 const TRAIL_SMOOTHING_WINDOW = 3;
+const OPENSTREETMAP_ATTRIBUTION_HTML = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
+const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/metadata/aircraftDatabase.csv" target="_blank" rel="noopener noreferrer">OpenSky Network Aircraft Database (ODbL v1.0)</a>';
 
 /** Altitude tiers used for icon/dot colouring. */
 const ALTITUDE_TIERS = [
@@ -168,6 +172,8 @@ export class LiveComponent implements OnInit, OnDestroy {
   liveMapDistanceRingIntervalMiles = DEFAULT_DISTANCE_RING_INTERVAL_MILES;
   liveMapTheoreticalRangeEnabled = DEFAULT_THEORETICAL_RANGE_ENABLED;
   liveMapTheoreticalRangeJson = DEFAULT_THEORETICAL_RANGE_JSON;
+  liveMapHeyWhatsThatRingsEnabled = DEFAULT_HEYWHATSTHAT_RINGS_ENABLED;
+  liveMapHeyWhatsThatRingsJson = DEFAULT_HEYWHATSTHAT_RINGS_JSON;
 
   // Session-only directional spider graph
   private readonly spiderSectorMaxDistanceMeters = Array.from(
@@ -201,6 +207,7 @@ export class LiveComponent implements OnInit, OnDestroy {
   private trailSource = new VectorSource();
   private distanceRingSource = new VectorSource();
   private theoreticalRangeSource = new VectorSource();
+  private heyWhatsThatRingsSource = new VectorSource();
   private radarSiteSource = new VectorSource();
   private spiderSource = new VectorSource();
   /** hex -> OL Feature lookup for in-place position updates */
@@ -244,6 +251,10 @@ export class LiveComponent implements OnInit, OnDestroy {
     fill: new Fill({ color: 'rgba(245, 158, 11, 0.10)' }),
     stroke: new Stroke({ color: 'rgba(180, 83, 9, 0.72)', width: 1.6 })
   });
+  private readonly heyWhatsThatRingsStyle = new Style({
+    fill: new Fill({ color: 'rgba(59, 130, 246, 0.07)' }),
+    stroke: new Stroke({ color: 'rgba(37, 99, 235, 0.78)', width: 1.5 })
+  });
 
   private subscription?: Subscription;
   private cdr = inject(ChangeDetectorRef);
@@ -285,6 +296,7 @@ export class LiveComponent implements OnInit, OnDestroy {
   @HostListener('window:resize')
   onWindowResize(): void {
     this.flyoutWidth = this.clampFlyoutWidth(this.flyoutWidth);
+    this.scheduleMapResize();
   }
 
   // -------------------------------------------------------------------------
@@ -308,7 +320,9 @@ export class LiveComponent implements OnInit, OnDestroy {
       distanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_INTERVAL_MILES) }))),
       theoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_THEORETICAL_RANGE_ENABLED) }))),
       theoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_THEORETICAL_RANGE_JSON }))),
-    }).subscribe(({ enabled, refreshMs, centerLat, centerLon, zoom, trailPoints, showAllSeen, spiderOverlayEnabled, centerIconEnabled, distanceRingsEnabled, distanceRingCompassLinesEnabled, distanceRingCount, distanceRingIntervalMiles, theoreticalRangeEnabled, theoreticalRangeJson }) => {
+      heyWhatsThatRingsEnabled: this.dataService.getSetting('live_map_heywhatsthat_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_HEYWHATSTHAT_RINGS_ENABLED) }))),
+      heyWhatsThatRingsJson: this.dataService.getSetting('live_map_heywhatsthat_rings_json').pipe(catchError(() => of({ value: DEFAULT_HEYWHATSTHAT_RINGS_JSON }))),
+    }).subscribe(({ enabled, refreshMs, centerLat, centerLon, zoom, trailPoints, showAllSeen, spiderOverlayEnabled, centerIconEnabled, distanceRingsEnabled, distanceRingCompassLinesEnabled, distanceRingCount, distanceRingIntervalMiles, theoreticalRangeEnabled, theoreticalRangeJson, heyWhatsThatRingsEnabled, heyWhatsThatRingsJson }) => {
       this.liveMapEnabled = enabled?.value !== 'false';
       this.refreshMs = this.clampInt(refreshMs?.value, 1_000, 60_000, DEFAULT_REFRESH_MS);
       this.defaultCenterLat = this.clampFloat(centerLat?.value, -85, 85, DEFAULT_CENTER_LAT);
@@ -324,6 +338,8 @@ export class LiveComponent implements OnInit, OnDestroy {
       this.liveMapDistanceRingIntervalMiles = this.clampInt(distanceRingIntervalMiles?.value, 1, 250, DEFAULT_DISTANCE_RING_INTERVAL_MILES);
       this.liveMapTheoreticalRangeEnabled = theoreticalRangeEnabled?.value === 'true';
       this.liveMapTheoreticalRangeJson = String(theoreticalRangeJson?.value ?? '').trim();
+      this.liveMapHeyWhatsThatRingsEnabled = heyWhatsThatRingsEnabled?.value === 'true';
+      this.liveMapHeyWhatsThatRingsJson = String(heyWhatsThatRingsJson?.value ?? '').trim();
       afterLoad();
     });
   }
@@ -345,9 +361,13 @@ export class LiveComponent implements OnInit, OnDestroy {
   }
 
   private initMap(): void {
+    const osmSource = new OSM({
+      attributions: [OPENSTREETMAP_ATTRIBUTION_HTML, OPENSKY_ATTRIBUTION_HTML]
+    });
+
     this.olMap = new OlMap({
       layers: [
-        new TileLayer({ source: new OSM() }),
+        new TileLayer({ source: osmSource }),
         new VectorLayer({
           source: this.distanceRingSource,
           zIndex: 9,
@@ -357,6 +377,11 @@ export class LiveComponent implements OnInit, OnDestroy {
           source: this.theoreticalRangeSource,
           zIndex: 10,
           style: this.theoreticalRangeStyle
+        }),
+        new VectorLayer({
+          source: this.heyWhatsThatRingsSource,
+          zIndex: 10,
+          style: this.heyWhatsThatRingsStyle
         }),
         new VectorLayer({ source: this.trailSource, zIndex: 11 }),
         new VectorLayer({
@@ -385,6 +410,7 @@ export class LiveComponent implements OnInit, OnDestroy {
     this.initRadarSiteMarker();
     this.initDistanceRings();
     this.initTheoreticalRangeOverlay();
+    this.initHeyWhatsThatRingsOverlay();
     this.initSpiderOverlay();
 
     // Pointer cursor over aircraft features
@@ -411,6 +437,8 @@ export class LiveComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+
+    this.scheduleMapResize();
   }
 
   // -------------------------------------------------------------------------
@@ -761,6 +789,8 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   togglePanel(): void {
     this.panelOpen = !this.panelOpen;
+    // Wait for the panel transition to settle before forcing map re-layout.
+    window.setTimeout(() => this.scheduleMapResize(), 320);
   }
 
   startResize(event: MouseEvent): void {
@@ -858,6 +888,12 @@ export class LiveComponent implements OnInit, OnDestroy {
     window.removeEventListener('mouseup', this.windowMouseUpHandler);
     document.body.style.cursor = '';
     document.body.style.userSelect = '';
+    this.scheduleMapResize();
+  }
+
+  private scheduleMapResize(): void {
+    if (!this.olMap || typeof this.olMap.updateSize !== 'function') return;
+    window.setTimeout(() => this.olMap.updateSize(), 0);
   }
 
   // -------------------------------------------------------------------------
@@ -1025,14 +1061,26 @@ export class LiveComponent implements OnInit, OnDestroy {
 
     if (!this.liveMapTheoreticalRangeEnabled || !this.liveMapTheoreticalRangeJson) return;
 
-    for (const ring of this.extractTheoreticalRangeRings(this.liveMapTheoreticalRangeJson)) {
+    for (const ring of this.extractOverlayRings(this.liveMapTheoreticalRangeJson)) {
       this.theoreticalRangeSource.addFeature(new Feature({
         geometry: new Polygon([ring])
       }));
     }
   }
 
-  private extractTheoreticalRangeRings(rawJson: string): number[][][] {
+  private initHeyWhatsThatRingsOverlay(): void {
+    this.heyWhatsThatRingsSource.clear();
+
+    if (!this.liveMapHeyWhatsThatRingsEnabled || !this.liveMapHeyWhatsThatRingsJson) return;
+
+    for (const ring of this.extractOverlayRings(this.liveMapHeyWhatsThatRingsJson)) {
+      this.heyWhatsThatRingsSource.addFeature(new Feature({
+        geometry: new Polygon([ring])
+      }));
+    }
+  }
+
+  private extractOverlayRings(rawJson: string): number[][][] {
     let parsed: unknown;
 
     try {

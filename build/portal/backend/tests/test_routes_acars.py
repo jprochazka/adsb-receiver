@@ -104,6 +104,20 @@ class TestAcarsRoutes:
         assert data['total'] == 2
         assert len(data['flights']) == 2
         assert data['flights'][0]['flight_number'] == 'UA200'  # ordered by LastTime DESC
+        assert 'aircraft_class' in data['flights'][0]
+        assert 'classification_source' in data['flights'][0]
+
+    def test_get_flights_uses_opensky_classification_by_registration(self, client, mock_acars_engine):
+        with patch('backend.routes.acars.get_opensky_classification_by_registration') as mock_lookup:
+            mock_lookup.return_value = ('helicopter', 'opensky', 'high')
+
+            response = client.get('/api/acars/flights')
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['flights'][0]['aircraft_class'] == 'helicopter'
+        assert data['flights'][0]['classification_source'] == 'opensky'
+        assert data['flights'][0]['classification_confidence'] == 'high'
 
     def test_get_flights_pagination(self, client, mock_acars_engine):
         response = client.get('/api/acars/flights?offset=0&limit=1')

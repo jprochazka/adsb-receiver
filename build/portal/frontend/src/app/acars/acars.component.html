@@ -23,6 +23,7 @@
           <tr>
             <th scope="col">Flight</th>
             <th scope="col">Registration</th>
+            <th scope="col">Aircraft</th>
             <th scope="col">Start Time</th>
             <th scope="col">Last Time</th>
             <th scope="col" class="text-end">Messages</th>
@@ -35,6 +36,14 @@
               (click)="toggleMessages(flight)" style="cursor: pointer;">
               <td><strong>{{ flight.flight_number || '—' }}</strong></td>
               <td>{{ flight.registration || '—' }}</td>
+              <td>
+                <span class="aircraft-type-icon-chip" [attr.title]="aircraftTypeLabelForFlight(flight)">
+                  <img
+                    class="aircraft-type-icon"
+                    [src]="aircraftTypeIconDataUrl(flight)"
+                    [attr.alt]="aircraftTypeLabelForFlight(flight) + ' icon'">
+                </span>
+              </td>
               <td>{{ flight.start_time }}</td>
               <td>{{ flight.last_time }}</td>
               <td class="text-end">{{ flight.nb_messages }}</td>

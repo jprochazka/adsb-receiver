@@ -438,6 +438,10 @@ class TestModels:
             db.session.add(oa1)
             db.session.commit()
 
+            # Remove persisted instance from identity map to avoid SAWarning while
+            # still verifying duplicate primary-key insert fails at commit time.
+            db.session.expunge(oa1)
+
             # Inserting with same icao24 should conflict
             oa2 = OpenSkyAircraft(icao24='abc123', aircraft_class='glider', confidence='low')
             db.session.add(oa2)

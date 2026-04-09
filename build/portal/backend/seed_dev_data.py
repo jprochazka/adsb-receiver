@@ -177,6 +177,8 @@ with app.app_context():
         ('live_map_distance_ring_interval_miles', '25'),
         ('live_map_theoretical_range_enabled', 'false'),
         ('live_map_theoretical_range_json', ''),
+        ('live_map_heywhatsthat_rings_enabled', 'false'),
+        ('live_map_heywhatsthat_rings_json', ''),
         ('live_map_json_url', 'http://127.0.0.1/dump1090/data/aircraft.json'),
         ('live_map_json_url_dump978', 'http://127.0.0.1/dump978/data/aircraft.json'),
         ('live_map_custom_presets', '[]'),

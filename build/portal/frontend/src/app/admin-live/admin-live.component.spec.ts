@@ -24,6 +24,8 @@ describe('AdminLiveComponent', () => {
     live_map_distance_ring_interval_miles: '25',
     live_map_theoretical_range_enabled: 'false',
     live_map_theoretical_range_json: '',
+    live_map_heywhatsthat_rings_enabled: 'false',
+    live_map_heywhatsthat_rings_json: '',
     live_map_json_url: 'http://192.168.1.25/dump1090/data/aircraft.json',
     live_map_json_url_dump978: 'http://192.168.1.25/dump978/data/aircraft.json',
     live_map_custom_presets: '[{"label":"Home","refreshMs":2500,"centerLat":39,"centerLon":-95,"zoom":7,"trailPoints":40},{"label":"Summer","refreshMs":5000,"centerLat":20,"centerLon":0,"zoom":3,"trailPoints":20},{"label":"Winter","refreshMs":7000,"centerLat":50,"centerLon":10,"zoom":4,"trailPoints":15}]',
@@ -74,6 +76,8 @@ describe('AdminLiveComponent', () => {
     expect(component.liveMapDistanceRingIntervalMiles).toBe(25);
     expect(component.liveMapTheoreticalRangeEnabled).toBeFalse();
     expect(component.liveMapTheoreticalRangeJson).toBe('');
+    expect(component.liveMapHeyWhatsThatRingsEnabled).toBeFalse();
+    expect(component.liveMapHeyWhatsThatRingsJson).toBe('');
     expect(component.dump1090JsonUrl).toBe('http://192.168.1.25/dump1090/data/aircraft.json');
     expect(component.dump978JsonUrl).toBe('http://192.168.1.25/dump978/data/aircraft.json');
     expect(component.customPresetSlots.length).toBe(3);
@@ -127,6 +131,10 @@ describe('AdminLiveComponent', () => {
     component.saveLiveMapTheoreticalRangeEnabled();
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_theoretical_range_enabled', 'true');
 
+    component.liveMapHeyWhatsThatRingsEnabled = true;
+    component.saveLiveMapHeyWhatsThatRingsEnabled();
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_heywhatsthat_rings_enabled', 'true');
+
     component.dump1090JsonUrl = 'http://localhost:8080/custom-1090.json';
     component.saveDump1090JsonUrl();
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('live_map_json_url', 'http://localhost:8080/custom-1090.json');
@@ -154,6 +162,28 @@ describe('AdminLiveComponent', () => {
 
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith(
       'live_map_theoretical_range_json',
+      '{"type":"FeatureCollection","features":[]}'
+    );
+  });
+
+  it('should reject invalid heywhatsthat rings json', () => {
+    fixture.detectChanges();
+
+    component.liveMapHeyWhatsThatRingsJson = '{invalid json';
+    component.saveLiveMapHeyWhatsThatRingsJson();
+
+    expect(component.errorMessage).toContain('not valid JSON');
+    expect(dataServiceMock.updateSetting).not.toHaveBeenCalledWith('live_map_heywhatsthat_rings_json', jasmine.any(String));
+  });
+
+  it('should save valid heywhatsthat rings json', () => {
+    fixture.detectChanges();
+
+    component.liveMapHeyWhatsThatRingsJson = '{"type":"FeatureCollection","features":[]}';
+    component.saveLiveMapHeyWhatsThatRingsJson();
+
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith(
+      'live_map_heywhatsthat_rings_json',
       '{"type":"FeatureCollection","features":[]}'
     );
   });
@@ -252,6 +282,8 @@ describe('AdminLiveComponent', () => {
         live_map_distance_ring_interval_miles: '25',
         live_map_theoretical_range_enabled: 'false',
         live_map_theoretical_range_json: '',
+        live_map_heywhatsthat_rings_enabled: 'false',
+        live_map_heywhatsthat_rings_json: '',
         live_map_json_url: 'http://192.168.1.25/dump1090/data/aircraft.json',
         live_map_json_url_dump978: 'http://192.168.1.25/dump978/data/aircraft.json',
       };

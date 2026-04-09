@@ -17,6 +17,7 @@ _IMPORT_STATE = {
     'next_check_at': 0.0,
     'mtime': None,
 }
+_REGISTRATION_CLASS_INDEX: Dict[str, Tuple[str, str]] = {}
 
 
 def _opensky_csv_path() -> Optional[str]:
@@ -27,6 +28,11 @@ def _opensky_csv_path() -> Optional[str]:
 
 def _normalize_icao24(value: Optional[str]) -> str:
     return (value or '').strip().lower()
+
+
+def _normalize_registration(value: Optional[str]) -> str:
+    raw = (value or '').strip().upper()
+    return ''.join(ch for ch in raw if ch.isalnum())
 
 
 def _map_from_category_description(category_description: str) -> Tuple[Optional[str], Optional[str]]:
@@ -84,6 +90,7 @@ def _map_row_to_class(row: Dict[str, str]) -> Tuple[Optional[str], Optional[str]
 def _import_csv_to_db(path: str) -> int:
     """Read the CSV, classify each row, and bulk-insert into opensky_aircraft."""
     rows = []
+    reg_index: Dict[str, Tuple[str, str]] = {}
     with open(path, mode='r', encoding='utf-8', newline='') as handle:
         reader = csv.DictReader(handle)
         for row in reader:
@@ -93,13 +100,21 @@ def _import_csv_to_db(path: str) -> int:
             klass, confidence = _map_row_to_class(row)
             if not klass:
                 continue
+            conf = confidence or 'low'
             rows.append({'icao24': icao, 'aircraft_class': klass, 'confidence': confidence or 'low'})
+
+            registration = _normalize_registration(row.get('registration'))
+            if registration and registration not in reg_index:
+                reg_index[registration] = (klass, conf)
 
     db.session.execute(text('DELETE FROM opensky_aircraft'))
     batch_size = 5000
     for i in range(0, len(rows), batch_size):
         db.session.execute(OpenSkyAircraft.__table__.insert(), rows[i:i + batch_size])
     db.session.commit()
+
+    _REGISTRATION_CLASS_INDEX.clear()
+    _REGISTRATION_CLASS_INDEX.update(reg_index)
     return len(rows)
 
 
@@ -115,7 +130,10 @@ def _ensure_imported() -> None:
     if not path or not os.path.exists(path):
         return
 
-    mtime = os.path.getmtime(path)
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        return
     if _IMPORT_STATE['mtime'] == mtime:
         return
 
@@ -139,6 +157,7 @@ def import_opensky_csv() -> int:
 def clear_opensky_classification_cache() -> None:
     _IMPORT_STATE['next_check_at'] = 0.0
     _IMPORT_STATE['mtime'] = None
+    _REGISTRATION_CLASS_INDEX.clear()
 
 
 def get_opensky_cache_stats() -> Dict[str, Optional[float]]:
@@ -171,3 +190,20 @@ def get_opensky_classification(icao24: Optional[str]) -> Tuple[Optional[str], Op
         return None, None, None
 
     return row.aircraft_class, 'opensky', row.confidence
+
+
+def get_opensky_classification_by_registration(registration: Optional[str]) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    reg = _normalize_registration(registration)
+    if not reg:
+        return None, None, None
+
+    if not has_app_context():
+        return None, None, None
+
+    _ensure_imported()
+    hit = _REGISTRATION_CLASS_INDEX.get(reg)
+    if not hit:
+        return None, None, None
+
+    klass, confidence = hit
+    return klass, 'opensky', confidence

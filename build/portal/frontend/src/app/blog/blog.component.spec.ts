@@ -92,11 +92,11 @@ describe('BlogComponent', () => {
     expect(component.loading).toBeFalse();
   });
 
-  it('should build page number range around current page', () => {
+  it('should build acars-style page window with first/last pages', () => {
     component.currentPage = 4;
     component.totalPages = 8;
 
-    expect(component.pageNumbers).toEqual([2, 3, 4, 5, 6]);
+    expect(component.pageNumbers).toEqual([1, 2, 3, 4, 5, 6, 8]);
   });
 
   it('should load detail post mode when id route param is present', () => {

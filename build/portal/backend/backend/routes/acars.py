@@ -9,6 +9,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 
 from backend.auth import require_admin
+from backend.aircraft_classification import classify_aircraft
+from backend.opensky_classification import get_opensky_classification_by_registration
 
 acars = Blueprint('acars', __name__)
 
@@ -27,6 +29,9 @@ acars_flight_model = acars_flights_ns.model('AcarsFlight', {
     'start_time': restx_fields.String(description='Flight start time'),
     'last_time': restx_fields.String(description='Flight last seen time'),
     'nb_messages': restx_fields.Integer(description='Number of messages'),
+    'aircraft_class': restx_fields.String(description='Mapped aircraft class for iconography'),
+    'classification_source': restx_fields.String(description='Classification source: opensky or heuristic'),
+    'classification_confidence': restx_fields.String(description='Classification confidence: high, medium, or low'),
 })
 
 acars_flights_list_model = acars_flights_ns.model('AcarsFlightsList', {
@@ -138,13 +143,23 @@ def _get_acars_engine():
 
 
 def _row_to_flight(row):
+    registration = row[1]
+    flight_number = row[2]
+    opensky_class, opensky_source, opensky_confidence = get_opensky_classification_by_registration(registration)
+    aircraft_class = classify_aircraft(None, None, flight_number, opensky_class=opensky_class)
+    classification_source = opensky_source or 'heuristic'
+    classification_confidence = opensky_confidence or ('medium' if aircraft_class != 'unknown' else 'low')
+
     return {
         'id': row[0],
-        'registration': row[1],
-        'flight_number': row[2],
+        'registration': registration,
+        'flight_number': flight_number,
         'start_time': str(row[3]) if row[3] else None,
         'last_time': str(row[4]) if row[4] else None,
         'nb_messages': row[5],
+        'aircraft_class': aircraft_class,
+        'classification_source': classification_source,
+        'classification_confidence': classification_confidence,
     }
 
 

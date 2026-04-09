@@ -212,22 +212,32 @@
             }
             @if (totalPages > 1) {
               <nav aria-label="Blog pagination">
-                <ul class="pagination">
+                <ul class="pagination flex-wrap">
                   <li class="page-item" [class.disabled]="currentPage === 1">
-                    <a class="page-link" [routerLink]="['/blog', currentPage - 1]">Previous</a>
+                    <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
                   </li>
-                  @for (p of pageNumbers; track p) {
+                  @for (p of pageNumbers; track p; let i = $index) {
+                    @if (i > 0 && p !== pageNumbers[i - 1] + 1) {
+                      <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                      </li>
+                    }
                     <li class="page-item" [class.active]="p === currentPage">
-                      <a class="page-link" [routerLink]="['/blog', p]">{{ p }}</a>
+                      <a class="page-link" (click)="goToPage(p)" style="cursor:pointer">{{ p }}</a>
                     </li>
                   }
                   <li class="page-item" [class.disabled]="currentPage === totalPages">
-                    <a class="page-link" [routerLink]="['/blog', currentPage + 1]">Next</a>
+                    <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor:pointer">Next &#8250;</a>
                   </li>
                 </ul>
               </nav>
             }
-            <p class="fw-light">{{ total }} total post{{ total === 1 ? '' : 's' }}</p>
+            <p class="fw-light text-secondary small">
+              {{ total }} total post{{ total === 1 ? '' : 's' }}
+              @if (totalPages > 1) {
+                <span>— page {{ currentPage }} of {{ totalPages }}</span>
+              }
+            </p>
           </div>
           <div class="col-lg-3">
             <div class="card mb-4">

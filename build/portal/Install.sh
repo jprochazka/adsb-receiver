@@ -188,7 +188,7 @@ YMLEOF
         DB_PKGS="postgresql-client"
     fi
     # shellcheck disable=SC2086
-    apt-get install -y nginx python3-venv python3-pip curl whiptail rrdtool ${DB_PKGS} >> "${LOG_FILE}" 2>&1
+    apt-get install -y nginx python3-venv python3-pip curl whiptail rrdtool nodejs npm ${DB_PKGS} >> "${LOG_FILE}" 2>&1
 
     # --- Python virtual environment ---
     _gauge 20 "Setting up Python virtual environment..."

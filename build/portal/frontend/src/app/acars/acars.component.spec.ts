@@ -81,4 +81,12 @@ describe('AcarsComponent', () => {
     expect(component.expandedFlightId).toBeNull();
     expect(component.messages.length).toBe(0);
   });
+
+  it('should render aircraft type icons in ACARS flights table', () => {
+    const icons = fixture.nativeElement.querySelectorAll('.aircraft-type-icon');
+    expect(icons.length).toBeGreaterThan(0);
+
+    const firstAlt = icons[0].getAttribute('alt') as string;
+    expect(firstAlt.toLowerCase()).toContain('icon');
+  });
 });

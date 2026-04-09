@@ -377,10 +377,85 @@
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
                       <td>
-                        @if (flight.flight) {
-                          <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
-                          <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
-                          <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
+                        @if (flight.flight || flight.icao) {
+                          <div class="flight-link-icons" aria-label="External flight links">
+                            @if (flight.flight) {
+                              <a
+                                class="flight-link-icon"
+                                href="https://flightaware.com/live/flight/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="FlightAware"
+                                aria-label="Open FlightAware">
+                                <img src="media/icons/flight-links/flightaware.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://planefinder.net/flight/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="PlaneFinder"
+                                aria-label="Open PlaneFinder">
+                                <img src="media/icons/flight-links/planefinder.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Flightradar24"
+                                aria-label="Open Flightradar24">
+                                <img src="media/icons/flight-links/flightradar24.png" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://www.airnavradar.com/data/registration/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="AirNav Radar"
+                                aria-label="Open AirNav Radar">
+                                <img src="media/icons/flight-links/airnavradar.ico" alt="">
+                              </a>
+                            }
+                            @if (flight.icao) {
+                              <a
+                                class="flight-link-icon"
+                                href="https://map.opensky-network.org/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="OpenSky Network"
+                                aria-label="Open OpenSky Network map">
+                                <img src="media/icons/flight-links/opensky.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://globe.adsbexchange.com/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="ADS-B Exchange"
+                                aria-label="Open ADS-B Exchange globe">
+                                <img src="media/icons/flight-links/adsbexchange.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://globe.airplanes.live/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Airplanes.live"
+                                aria-label="Open Airplanes.live globe">
+                                <img src="media/icons/flight-links/airplaneslive.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://mappa.flyitalyadsb.com/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="FlyItalyADSB"
+                                aria-label="Open FlyItalyADSB map">
+                                <img src="media/icons/flight-links/flyitalyadsb.ico" alt="">
+                              </a>
+                            }
+                          </div>
                         } @else {
                           &mdash;
                         }
@@ -389,6 +464,33 @@
                   }
                 </tbody>
               </table>
+              @if (!searchQuery && !filterQuery && allTotalPages > 1) {
+                <nav aria-label="All flight pages">
+                  <ul class="pagination flex-wrap">
+                    <li class="page-item" [class.disabled]="allCurrentPage === 1">
+                      <a class="page-link" (click)="goToAllPage(allCurrentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
+                    </li>
+                    @for (p of allPageNumbers; track p; let i = $index) {
+                      @if (i > 0 && p !== allPageNumbers[i - 1] + 1) {
+                        <li class="page-item disabled">
+                          <span class="page-link">…</span>
+                        </li>
+                      }
+                      <li class="page-item" [class.active]="p === allCurrentPage">
+                        <a class="page-link" (click)="goToAllPage(p)" style="cursor:pointer">{{ p }}</a>
+                      </li>
+                    }
+                    <li class="page-item" [class.disabled]="allCurrentPage === allTotalPages">
+                      <a class="page-link" (click)="goToAllPage(allCurrentPage + 1)" style="cursor:pointer">Next &#8250;</a>
+                    </li>
+                  </ul>
+                </nav>
+              }
+              @if (!searchQuery && !filterQuery) {
+                <p class="fw-light text-secondary small">
+                  Displaying {{ allDisplayStart }}–{{ allDisplayEnd }} of {{ allTotalFlights }} flights &mdash; page {{ allCurrentPage }} of {{ allTotalPages }}
+                </p>
+              }
               @if (filterQuery) {
                 <p class="fw-light text-secondary small">
                   {{ filteredCombinedFlights.length }} result(s) found for &ldquo;{{ filterQuery }}&rdquo;
@@ -436,9 +538,88 @@
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
                       <td>
-                        <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
-                        <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
-                        <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
+                        @if (flight.flight || flight.icao) {
+                          <div class="flight-link-icons" aria-label="External flight links">
+                            @if (flight.flight) {
+                              <a
+                                class="flight-link-icon"
+                                href="https://flightaware.com/live/flight/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="FlightAware"
+                                aria-label="Open FlightAware">
+                                <img src="media/icons/flight-links/flightaware.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://planefinder.net/flight/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="PlaneFinder"
+                                aria-label="Open PlaneFinder">
+                                <img src="media/icons/flight-links/planefinder.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Flightradar24"
+                                aria-label="Open Flightradar24">
+                                <img src="media/icons/flight-links/flightradar24.png" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://www.airnavradar.com/data/registration/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="AirNav Radar"
+                                aria-label="Open AirNav Radar">
+                                <img src="media/icons/flight-links/airnavradar.ico" alt="">
+                              </a>
+                            }
+                            @if (flight.icao) {
+                              <a
+                                class="flight-link-icon"
+                                href="https://map.opensky-network.org/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="OpenSky Network"
+                                aria-label="Open OpenSky Network map">
+                                <img src="media/icons/flight-links/opensky.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://globe.adsbexchange.com/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="ADS-B Exchange"
+                                aria-label="Open ADS-B Exchange globe">
+                                <img src="media/icons/flight-links/adsbexchange.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://globe.airplanes.live/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Airplanes.live"
+                                aria-label="Open Airplanes.live globe">
+                                <img src="media/icons/flight-links/airplaneslive.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://mappa.flyitalyadsb.com/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="FlyItalyADSB"
+                                aria-label="Open FlyItalyADSB map">
+                                <img src="media/icons/flight-links/flyitalyadsb.ico" alt="">
+                              </a>
+                            }
+                          </div>
+                        } @else {
+                          &mdash;
+                        }
                       </td>
                     </tr>
                   }
@@ -523,10 +704,85 @@
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
                       <td>
-                        @if (flight.flight) {
-                          <a href="https://flightaware.com/live/flight/{{ flight.flight }}" target="_blank">FlightAware</a> |
-                          <a href="https://planefinder.net/flight/{{ flight.flight }}" target="_blank">Planefinder</a> |
-                          <a href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}" target="_blank">Flightradar24</a>
+                        @if (flight.flight || flight.icao) {
+                          <div class="flight-link-icons" aria-label="External flight links">
+                            @if (flight.flight) {
+                              <a
+                                class="flight-link-icon"
+                                href="https://flightaware.com/live/flight/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="FlightAware"
+                                aria-label="Open FlightAware">
+                                <img src="media/icons/flight-links/flightaware.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://planefinder.net/flight/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="PlaneFinder"
+                                aria-label="Open PlaneFinder">
+                                <img src="media/icons/flight-links/planefinder.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://www.flightradar24.com/data/flights/{{ flight.flight.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Flightradar24"
+                                aria-label="Open Flightradar24">
+                                <img src="media/icons/flight-links/flightradar24.png" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://www.airnavradar.com/data/registration/{{ flight.flight }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="AirNav Radar"
+                                aria-label="Open AirNav Radar">
+                                <img src="media/icons/flight-links/airnavradar.ico" alt="">
+                              </a>
+                            }
+                            @if (flight.icao) {
+                              <a
+                                class="flight-link-icon"
+                                href="https://map.opensky-network.org/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="OpenSky Network"
+                                aria-label="Open OpenSky Network map">
+                                <img src="media/icons/flight-links/opensky.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://globe.adsbexchange.com/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="ADS-B Exchange"
+                                aria-label="Open ADS-B Exchange globe">
+                                <img src="media/icons/flight-links/adsbexchange.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://globe.airplanes.live/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Airplanes.live"
+                                aria-label="Open Airplanes.live globe">
+                                <img src="media/icons/flight-links/airplaneslive.ico" alt="">
+                              </a>
+                              <a
+                                class="flight-link-icon"
+                                href="https://mappa.flyitalyadsb.com/?icao={{ flight.icao.toLowerCase() }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="FlyItalyADSB"
+                                aria-label="Open FlyItalyADSB map">
+                                <img src="media/icons/flight-links/flyitalyadsb.ico" alt="">
+                              </a>
+                            }
+                          </div>
                         } @else {
                           &mdash;
                         }
