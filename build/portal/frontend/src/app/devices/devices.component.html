@@ -442,6 +442,14 @@
                       <td class="text-muted">Interrupts</td>
                       <td>{{ cpu?.cpu_stats_interupts_since_boot | number }}</td>
                     </tr>
+                    @if (cpu?.cpu_temperature != null) {
+                      <tr>
+                        <td class="text-muted">Temperature</td>
+                        <td [class.text-danger]="cpu?.cpu_temperature > 80" [class.text-warning]="cpu?.cpu_temperature > 60 && cpu?.cpu_temperature <= 80">
+                          {{ cpu?.cpu_temperature | number:'1.1-1' }}°C
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>
@@ -582,6 +590,23 @@
                     </tr>
                   </tbody>
                 </table>
+                @if (network?.network_interface_addresses) {
+                  <h6 class="text-muted mt-3">Interface Addresses</h6>
+                  <table class="table table-sm mb-0">
+                    <tbody>
+                      @for (iface of network.network_interface_addresses | keyvalue; track iface.key) {
+                        @for (addr of iface.value; track $index) {
+                          @if (addr[0] === 2) {
+                            <tr>
+                              <td class="text-muted">{{ iface.key }}</td>
+                              <td>{{ addr[1] }}</td>
+                            </tr>
+                          }
+                        }
+                      }
+                    </tbody>
+                  </table>
+                }
               </div>
             </div>
           </div>
@@ -640,6 +665,72 @@
 
       @if (publicStats) {
         <div class="row g-4">
+
+          @if (publicStats.receiverVersion || publicStats.signalLevel != null) {
+            <div class="col-12 mt-2">
+              <div class="d-flex justify-content-between align-items-end border-bottom pb-2">
+                <h5 class="mb-0">Receiver</h5>
+                <span class="text-muted small">Decoder version, location, and signal health</span>
+              </div>
+            </div>
+
+            @if (publicStats.receiverVersion) {
+              <div class="col-md-6 col-xl-3">
+                <div class="card h-100">
+                  <div class="card-header fw-semibold">Decoder Version</div>
+                  <div class="card-body">
+                    <div class="display-6 mb-1" style="font-size: 1.5rem;">{{ publicStats.receiverVersion }}</div>
+                    <div class="text-muted small">dump1090-fa software version</div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (publicStats.receiverLat != null && publicStats.receiverLon != null) {
+              <div class="col-md-6 col-xl-3">
+                <div class="card h-100">
+                  <div class="card-header fw-semibold">Receiver Location</div>
+                  <div class="card-body">
+                    <div class="display-6 mb-1" style="font-size: 1.25rem;">{{ publicStats.receiverLat | number:'1.4-4' }}, {{ publicStats.receiverLon | number:'1.4-4' }}</div>
+                    <div class="text-muted small">Configured antenna position</div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (publicStats.signalLevel != null) {
+              <div class="col-md-6 col-xl-3">
+                <div class="card h-100">
+                  <div class="card-header fw-semibold">Signal Level</div>
+                  <div class="card-body">
+                    <div class="display-6 mb-1">{{ publicStats.signalLevel | number:'1.1-1' }}
+                      <span class="fs-6 text-muted">dBFS</span>
+                    </div>
+                    <div class="text-muted small">
+                      Peak {{ publicStats.peakSignal != null ? (publicStats.peakSignal | number:'1.1-1') : '—' }} dBFS
+                      &middot;
+                      Noise {{ publicStats.noiseLevel != null ? (publicStats.noiseLevel | number:'1.1-1') : '—' }} dBFS
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (publicStats.avgRssi != null) {
+              <div class="col-md-6 col-xl-3">
+                <div class="card h-100">
+                  <div class="card-header fw-semibold">Avg Aircraft RSSI</div>
+                  <div class="card-body">
+                    <div class="display-6 mb-1">{{ publicStats.avgRssi | number:'1.1-1' }}
+                      <span class="fs-6 text-muted">dBFS</span>
+                    </div>
+                    <div class="text-muted small">Mean signal across {{ publicStats.liveAircraft ?? 0 }} live aircraft</div>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+
           <div class="col-12 mt-2">
             <div class="d-flex justify-content-between align-items-end border-bottom pb-2">
               <h5 class="mb-0">Data Quality</h5>
@@ -677,10 +768,10 @@
 
           <div class="col-md-6 col-xl-3">
             <div class="card h-100">
-              <div class="card-header fw-semibold">OpenSky Cache Entries</div>
+              <div class="card-header fw-semibold">OpenSky DB Entries</div>
               <div class="card-body">
-                <div class="display-6 mb-1">{{ publicStats.openskyCacheEntries ?? 0 | number }}</div>
-                <div class="text-muted small">Loaded ICAO mappings in memory cache</div>
+                <div class="display-6 mb-1">{{ publicStats.openskyDbEntries ?? 0 | number }}</div>
+                <div class="text-muted small">Classified ICAO mappings in database</div>
               </div>
             </div>
           </div>
@@ -742,8 +833,8 @@
                       <td>{{ publicStats.openskyDbInstalled ? 'Installed' : 'Not Installed' }}</td>
                     </tr>
                     <tr>
-                      <td class="text-muted">Rows</td>
-                      <td>{{ publicStats.openskyDbRows ?? 0 | number }}</td>
+                      <td class="text-muted">Entries</td>
+                      <td>{{ publicStats.openskyDbEntries ?? 0 | number }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Downloaded</td>
@@ -834,6 +925,20 @@
             </div>
           </div>
 
+          @if (publicStats.cpuTemperature != null) {
+            <div class="col-md-6 col-xl-4">
+              <div class="card h-100">
+                <div class="card-header fw-semibold">CPU Temperature</div>
+                <div class="card-body">
+                  <div class="display-6 mb-1" [class.text-danger]="publicStats.cpuTemperature > 80" [class.text-warning]="publicStats.cpuTemperature > 60 && publicStats.cpuTemperature <= 80">
+                    {{ publicStats.cpuTemperature | number:'1.1-1' }}°C
+                  </div>
+                  <div class="text-muted small">Current CPU thermal reading</div>
+                </div>
+              </div>
+            </div>
+          }
+
           <div class="col-md-6 col-xl-4">
             <div class="card h-100">
               <div class="card-header fw-semibold">Database Size</div>
@@ -866,10 +971,7 @@
                       <td class="text-muted">Page refresh timestamp</td>
                       <td>{{ publicStats.updatedAt | date:'medium' }}</td>
                     </tr>
-                    <tr>
-                      <td class="text-muted">OpenSky cache loaded</td>
-                      <td>{{ publicStats.openskyCacheLoadedAt ? (publicStats.openskyCacheLoadedAt | date:'medium') : 'Not loaded' }}</td>
-                    </tr>
+
                   </tbody>
                 </table>
               </div>

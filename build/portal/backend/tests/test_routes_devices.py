@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 from backend import create_app
 from backend.models import db
 from tests.conftest import create_admin_token
+from io import BytesIO
 
 
 @pytest.fixture
@@ -434,3 +435,158 @@ class TestDevicesRoutes:
             
             if 'cpu_load_averages' in data:
                 assert isinstance(data['cpu_load_averages'], list), "cpu_load_averages should be a list"
+
+    @patch('backend.routes.devices.psutil.sensors_temperatures')
+    @patch('backend.routes.devices.psutil.cpu_freq')
+    @patch('backend.routes.devices.psutil.cpu_stats')
+    @patch('backend.routes.devices.psutil.cpu_count')
+    @patch('backend.routes.devices.psutil.getloadavg')
+    @patch('backend.routes.devices.psutil.cpu_percent')
+    @patch('backend.routes.devices.psutil.cpu_times')
+    @patch('backend.routes.devices.psutil.cpu_times_percent')
+    def test_cpu_temperature_present(self, mock_ctp, mock_ct, mock_cp, mock_la,
+                                     mock_cc, mock_cs, mock_cf, mock_st,
+                                     client, admin_headers):
+        """Test CPU endpoint includes cpu_temperature when sensor data available"""
+        mock_freq = MagicMock()
+        mock_freq.current = 2400.0
+        mock_freq.max = 3600.0
+        mock_freq.min = 800.0
+        mock_cf.return_value = mock_freq
+
+        mock_stats = MagicMock()
+        mock_stats.ctx_switches = 1
+        mock_stats.interrupts = 1
+        mock_stats.soft_interrupts = 1
+        mock_stats.syscalls = 1
+        mock_cs.return_value = mock_stats
+
+        mock_cc.side_effect = [4, 8]
+        mock_la.return_value = [0.1, 0.2, 0.3]
+        mock_cp.return_value = 10.0
+
+        mock_times = MagicMock()
+        mock_times._asdict.return_value = {'user': 1.0, 'system': 1.0, 'idle': 1.0}
+        mock_ct.return_value = mock_times
+
+        mock_tpct = MagicMock()
+        mock_tpct._asdict.return_value = {'user': 1.0, 'system': 1.0, 'idle': 98.0}
+        mock_ctp.return_value = mock_tpct
+
+        entry = MagicMock()
+        entry.current = 52.3
+        mock_st.return_value = {'coretemp': [entry]}
+
+        response = client.get('/api/devices/cpu', headers=admin_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['cpu_temperature'] == 52.3
+
+    @patch('backend.routes.devices.psutil.sensors_temperatures')
+    @patch('backend.routes.devices.psutil.cpu_freq')
+    @patch('backend.routes.devices.psutil.cpu_stats')
+    @patch('backend.routes.devices.psutil.cpu_count')
+    @patch('backend.routes.devices.psutil.getloadavg')
+    @patch('backend.routes.devices.psutil.cpu_percent')
+    @patch('backend.routes.devices.psutil.cpu_times')
+    @patch('backend.routes.devices.psutil.cpu_times_percent')
+    def test_cpu_temperature_null_when_unavailable(self, mock_ctp, mock_ct,
+                                                   mock_cp, mock_la, mock_cc,
+                                                   mock_cs, mock_cf, mock_st,
+                                                   client, admin_headers):
+        """Test CPU endpoint returns null temperature when no sensors"""
+        mock_freq = MagicMock()
+        mock_freq.current = 2400.0
+        mock_freq.max = 3600.0
+        mock_freq.min = 800.0
+        mock_cf.return_value = mock_freq
+
+        mock_stats = MagicMock()
+        mock_stats.ctx_switches = 1
+        mock_stats.interrupts = 1
+        mock_stats.soft_interrupts = 1
+        mock_stats.syscalls = 1
+        mock_cs.return_value = mock_stats
+
+        mock_cc.side_effect = [4, 8]
+        mock_la.return_value = [0.1, 0.2, 0.3]
+        mock_cp.return_value = 10.0
+
+        mock_times = MagicMock()
+        mock_times._asdict.return_value = {'user': 1.0, 'system': 1.0, 'idle': 1.0}
+        mock_ct.return_value = mock_times
+
+        mock_tpct = MagicMock()
+        mock_tpct._asdict.return_value = {'user': 1.0, 'system': 1.0, 'idle': 98.0}
+        mock_ctp.return_value = mock_tpct
+
+        mock_st.return_value = {}
+
+        response = client.get('/api/devices/cpu', headers=admin_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['cpu_temperature'] is None
+
+    @patch('backend.routes.devices.urlopen')
+    def test_receiver_endpoint_dump1090(self, mock_urlopen, client):
+        """Test receiver endpoint returns dump1090 data"""
+        receiver_json = json.dumps({'version': 'v9.0', 'lat': 40.0, 'lon': -74.0}).encode()
+        stats_json = json.dumps({
+            'last1min': {'local': {'signal': -3.5, 'peak_signal': -0.5, 'noise': -30.0}}
+        }).encode()
+
+        def side_effect(req, **kwargs):
+            url = req.full_url if hasattr(req, 'full_url') else str(req)
+            mock_resp = MagicMock()
+            if 'receiver.json' in url and 'dump978' not in url:
+                mock_resp.read.return_value = receiver_json
+                mock_resp.__enter__ = lambda s: BytesIO(receiver_json)
+            elif 'stats.json' in url:
+                mock_resp.read.return_value = stats_json
+                mock_resp.__enter__ = lambda s: BytesIO(stats_json)
+            else:
+                from urllib.error import URLError
+                raise URLError('not found')
+            mock_resp.__exit__ = lambda s, *a: None
+            return mock_resp
+
+        mock_urlopen.side_effect = side_effect
+
+        response = client.get('/api/devices/receiver')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['dump1090'] is not None
+        assert data['dump1090']['version'] == 'v9.0'
+        assert data['dump1090']['lat'] == 40.0
+        assert data['dump1090']['signal'] == -3.5
+
+    @patch('backend.routes.devices.urlopen')
+    def test_receiver_endpoint_503_when_no_receivers(self, mock_urlopen, client):
+        """Test receiver endpoint returns 503 when no receiver reachable"""
+        from urllib.error import URLError
+        mock_urlopen.side_effect = URLError('connection refused')
+
+        response = client.get('/api/devices/receiver')
+        assert response.status_code == 503
+
+    @patch('backend.routes.devices.config', {'database': {'use': 'SQLite'}})
+    def test_flights_tables_endpoint_success(self, client, admin_headers):
+        """Test flights-tables endpoint returns size for admin"""
+        response = client.get('/api/devices/flights-tables', headers=admin_headers)
+        assert response.status_code == 200
+        data = response.get_json()
+        assert 'size' in data
+        assert isinstance(data['size'], (int, float))
+
+    def test_receiver_endpoint_exists(self, client):
+        """Test that receiver endpoint is accessible without authentication"""
+        response = client.get('/api/devices/receiver')
+        assert response.status_code != 401
+        assert response.status_code != 403
+
+    def test_cpu_endpoint_includes_temperature_key(self, client):
+        """Test CPU endpoint response structure includes cpu_temperature key"""
+        response = client.get('/api/devices/cpu')
+        if response.status_code == 200:
+            data = response.get_json()
+            assert 'cpu_temperature' in data

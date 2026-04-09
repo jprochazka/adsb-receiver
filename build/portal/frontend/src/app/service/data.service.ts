@@ -352,6 +352,10 @@ export class DataService {
     });
   }
 
+  getReceiverInfo(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/devices/receiver`);
+  }
+
   getNotifications(): Observable<any> {
     const token = localStorage.getItem('access_token');
     return this.http.get(`${this.apiUrl}/notifications`, {

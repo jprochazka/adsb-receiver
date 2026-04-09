@@ -163,4 +163,13 @@ describe('DataService', () => {
     expect(req.request.headers.get('Authorization')).toBe('Bearer test-token');
     req.flush({ installed: true });
   });
+
+  it('should call getReceiverInfo without auth header', () => {
+    service.getReceiverInfo().subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/devices/receiver`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+    req.flush({ dump1090: { version: 'v9.0' }, dump978: null });
+  });
 });

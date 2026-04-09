@@ -81,8 +81,8 @@ describe('DevicesComponent', () => {
       now: 1700000100,
       messages: 321,
       aircraft: [
-        { source: 'dump1090', aircraft_class: 'airliner' },
-        { source: 'dump978', aircraft_class: 'helicopter' },
+        { source: 'dump1090', aircraft_class: 'airliner', rssi: -5.2 },
+        { source: 'dump978', aircraft_class: 'helicopter', rssi: -8.1 },
       ],
       classification_stats: {
         opensky_count: 1,
@@ -91,6 +91,10 @@ describe('DevicesComponent', () => {
         opensky_cache_entries: 1000,
         opensky_cache_loaded_at: 1700000000,
       },
+    })),
+    getReceiverInfo: jasmine.createSpy('getReceiverInfo').and.returnValue(of({
+      dump1090: { version: 'v9.0', lat: 40.0, lon: -74.0, signal: -3.5, peak_signal: -0.5, noise: -30.0 },
+      dump978: null,
     })),
   };
 
@@ -147,8 +151,8 @@ describe('DevicesComponent', () => {
       now: 1700000100,
       messages: 321,
       aircraft: [
-        { source: 'dump1090', aircraft_class: 'airliner' },
-        { source: 'dump978', aircraft_class: 'helicopter' },
+        { source: 'dump1090', aircraft_class: 'airliner', rssi: -5.2 },
+        { source: 'dump978', aircraft_class: 'helicopter', rssi: -8.1 },
       ],
       classification_stats: {
         opensky_count: 1,
@@ -157,6 +161,10 @@ describe('DevicesComponent', () => {
         opensky_cache_entries: 1000,
         opensky_cache_loaded_at: 1700000000,
       },
+    }));
+    dataServiceMock.getReceiverInfo.and.returnValue(of({
+      dump1090: { version: 'v9.0', lat: 40.0, lon: -74.0, signal: -3.5, peak_signal: -0.5, noise: -30.0 },
+      dump978: null,
     }));
 
     TestBed.overrideComponent(DevicesComponent, {
@@ -219,9 +227,23 @@ describe('DevicesComponent', () => {
     expect(component.publicStats?.topAircraftTypes.length).toBeGreaterThan(0);
     expect(component.publicStats?.classifiedOpenSky).toBe(1);
     expect(component.publicStats?.classifiedOpenSkyPct).toBe(50);
-    expect(component.publicStats?.openskyCacheEntries).toBe(1000);
+    expect(component.publicStats?.openskyDbEntries).toBe(1000);
     expect(component.publicStats?.openskyDbInstalled).toBeTrue();
-    expect(component.publicStats?.openskyDbRows).toBe(125000);
+    expect(component.publicStats?.cpuTemperature).toBeNull();
+    expect(component.publicStats?.receiverVersion).toBe('v9.0');
+    expect(component.publicStats?.signalLevel).toBe(-3.5);
+    expect(component.publicStats?.avgRssi).toBeCloseTo(-6.65, 1);
+  });
+
+  it('should populate receiver fields from getReceiverInfo', () => {
+    fixture.detectChanges();
+
+    expect(dataServiceMock.getReceiverInfo).toHaveBeenCalled();
+    expect(component.publicStats?.receiverLat).toBe(40.0);
+    expect(component.publicStats?.receiverLon).toBe(-74.0);
+    expect(component.publicStats?.peakSignal).toBe(-0.5);
+    expect(component.publicStats?.noiseLevel).toBe(-30.0);
+    expect(component.publicStats?.dump978Available).toBeFalse();
   });
 
   it('should handle receiver settings load failure', () => {
@@ -455,7 +477,6 @@ describe('DevicesComponent', () => {
 
     expect(component.infoSystemEnabled).toBeFalse();
     expect(component.activeTab).toBe('receiver');
-    expect(dataServiceMock.getSystemCpu).not.toHaveBeenCalled();
     expect(navButtons).not.toContain('System');
   });
 
@@ -559,7 +580,7 @@ describe('DevicesComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('OpenSky Classified');
     expect(text).toContain('Heuristic Classified');
-    expect(text).toContain('OpenSky Cache Entries');
+    expect(text).toContain('OpenSky DB Entries');
   });
 
   it('should render stats dashboard sections in operational order', () => {

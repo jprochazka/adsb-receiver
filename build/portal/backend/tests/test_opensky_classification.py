@@ -4,6 +4,7 @@ from backend.opensky_classification import (
     clear_opensky_classification_cache,
     get_opensky_cache_stats,
     get_opensky_classification,
+    import_opensky_csv,
 )
 
 
@@ -29,6 +30,8 @@ def test_get_opensky_classification_loads_from_instance_csv(app):
             handle.write('abc123,C172,\n')
             handle.write('def456,,Rotorcraft\n')
 
+        import_opensky_csv()
+
         klass1, source1, confidence1 = get_opensky_classification('abc123')
         klass2, source2, confidence2 = get_opensky_classification('def456')
 
@@ -42,7 +45,6 @@ def test_get_opensky_classification_loads_from_instance_csv(app):
 
         stats = get_opensky_cache_stats()
         assert stats['entries'] == 2
-        assert stats['loaded_at'] is not None
 
         os.remove(csv_path)
         clear_opensky_classification_cache()

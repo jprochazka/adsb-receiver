@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import psutil
@@ -5,8 +6,11 @@ import yaml
 
 from flask import abort, Blueprint, current_app, jsonify
 from flask_restx import Namespace, Resource, fields as restx_fields
-from backend.models import db
+from backend.models import db, Setting
 from backend.auth import require_admin
+from sqlalchemy import select
+from urllib.request import urlopen, Request
+from urllib.error import URLError
 
 with open("config.yml") as _f:
     config = yaml.safe_load(_f)
@@ -80,8 +84,15 @@ class CPUResource(Resource):
                 'cpu_stats_soft_interupts_since_boot': stats.soft_interrupts,
                 'cpu_stats_system_calls_since_boot': stats.syscalls,
                 'cpu_times': psutil.cpu_times()._asdict(),
-                'cpu_times_percent': psutil.cpu_times_percent(1)._asdict()
+                'cpu_times_percent': psutil.cpu_times_percent(1)._asdict(),
+                'cpu_temperature': None,
             }
+            temps = psutil.sensors_temperatures(fahrenheit=False) if hasattr(psutil, 'sensors_temperatures') else {}
+            if temps:
+                for _, entries in temps.items():
+                    if entries:
+                        cpu_data['cpu_temperature'] = round(entries[0].current, 1)
+                        break
             return jsonify(cpu_data)
         except Exception as e:
             logging.error(f'Error encountered while getting CPU information: {e}')
@@ -269,5 +280,80 @@ class FlightsTablesResource(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
+@devices_ns.route('/receiver')
+class ReceiverResource(Resource):
+    @devices_ns.response(200, 'Receiver information retrieved successfully')
+    @devices_ns.response(503, 'Receiver data unavailable')
+    @devices_ns.response(500, 'Internal server error')
+    @devices_ns.doc('get_receiver_info')
+    def get(self):
+        """Get dump1090/dump978 receiver information and signal stats (Public)"""
+        try:
+            dump1090_url = 'http://127.0.0.1/dump1090'
+            dump978_url = 'http://127.0.0.1/dump978'
+            try:
+                setting = db.session.execute(
+                    select(Setting).filter_by(name='live_map_json_url')
+                ).scalar_one_or_none()
+                if setting and setting.value:
+                    dump1090_url = setting.value.rsplit('/data/', 1)[0]
+            except Exception:
+                pass
+            try:
+                setting = db.session.execute(
+                    select(Setting).filter_by(name='live_map_json_url_dump978')
+                ).scalar_one_or_none()
+                if setting and setting.value:
+                    dump978_url = setting.value.rsplit('/data/', 1)[0]
+            except Exception:
+                pass
 
+            result = {
+                'dump1090': None,
+                'dump978': None,
+            }
 
+            # dump1090 receiver.json + stats.json
+            try:
+                with urlopen(Request(f'{dump1090_url}/data/receiver.json'), timeout=5) as resp:
+                    receiver = json.load(resp)
+                d1090 = {
+                    'version': receiver.get('version'),
+                    'lat': receiver.get('lat'),
+                    'lon': receiver.get('lon'),
+                    'signal': None,
+                    'peak_signal': None,
+                    'noise': None,
+                }
+                try:
+                    with urlopen(Request(f'{dump1090_url}/data/stats.json'), timeout=5) as resp:
+                        stats = json.load(resp)
+                    last1min = stats.get('last1min', {}).get('local', {})
+                    d1090['signal'] = last1min.get('signal')
+                    d1090['peak_signal'] = last1min.get('peak_signal')
+                    d1090['noise'] = last1min.get('noise')
+                except Exception:
+                    pass
+                result['dump1090'] = d1090
+            except Exception as exc:
+                logging.debug('Could not reach dump1090 receiver.json: %s', exc)
+
+            # dump978 receiver.json
+            try:
+                with urlopen(Request(f'{dump978_url}/data/receiver.json'), timeout=5) as resp:
+                    receiver = json.load(resp)
+                result['dump978'] = {
+                    'version': receiver.get('version'),
+                    'lat': receiver.get('lat'),
+                    'lon': receiver.get('lon'),
+                }
+            except Exception as exc:
+                logging.debug('Could not reach dump978 receiver.json: %s', exc)
+
+            if result['dump1090'] is None and result['dump978'] is None:
+                return {'msg': 'No receiver data available'}, 503
+
+            return jsonify(result)
+        except Exception as e:
+            logging.error(f'Error retrieving receiver info: {e}')
+            return {'msg': 'Internal Server Error'}, 500

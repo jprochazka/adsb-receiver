@@ -130,11 +130,20 @@ export class DevicesComponent implements OnInit {
     classifiedOpenSkyPct: number | null;
     classifiedHeuristicPct: number | null;
     unknownClassifiedPct: number | null;
-    openskyCacheEntries: number | null;
-    openskyCacheLoadedAt: Date | null;
+    openskyDbEntries: number | null;
     openskyDbInstalled: boolean;
-    openskyDbRows: number | null;
     openskyDbDownloadedAt: Date | null;
+    cpuTemperature: number | null;
+    flightTablesSize: number | null;
+    receiverVersion: string | null;
+    receiverLat: number | null;
+    receiverLon: number | null;
+    signalLevel: number | null;
+    peakSignal: number | null;
+    noiseLevel: number | null;
+    dump978Available: boolean;
+    avgRssi: number | null;
+    mlatAircraft: number | null;
     updatedAt: Date;
   } | null = null;
 
@@ -212,8 +221,10 @@ export class DevicesComponent implements OnInit {
       opensky: this.dataService.getOpenSkyAircraftDatabaseStatus().pipe(catchError(() => of(null))),
       database: this.dataService.getSystemDatabase().pipe(catchError(() => of(null))),
       other: this.dataService.getSystemOther().pipe(catchError(() => of(null))),
+      cpu: this.dataService.getSystemCpu().pipe(catchError(() => of(null))),
+      receiver: this.dataService.getReceiverInfo().pipe(catchError(() => of(null))),
     }).subscribe({
-      next: ({ adsb, uat, acarsFlights, acarsMessages, live, opensky, database, other }) => {
+      next: ({ adsb, uat, acarsFlights, acarsMessages, live, opensky, database, other, cpu, receiver }) => {
         const now = Date.now();
         const bootSeconds = typeof other?.other_boot_time === 'number' ? other.other_boot_time : null;
         const uptimeSeconds = bootSeconds != null ? Math.max(0, Math.floor(now / 1000) - Math.floor(bootSeconds)) : null;
@@ -244,6 +255,21 @@ export class DevicesComponent implements OnInit {
           return (count / totalLiveClassified) * 100;
         };
 
+        // Aggregate RSSI from live aircraft
+        const rssiValues = liveAircraft
+          .map((a: any) => a?.rssi)
+          .filter((v: any): v is number => typeof v === 'number' && Number.isFinite(v));
+        const avgRssi = rssiValues.length > 0
+          ? rssiValues.reduce((sum: number, v: number) => sum + v, 0) / rssiValues.length
+          : null;
+
+        // Count MLAT aircraft (those with classification_source containing 'mlat' in their lat source)
+        const mlatAircraft = liveAircraft.filter((a: any) => a?.type === 'mlat' || a?.mlat_lat === true).length || null;
+
+        // Receiver info
+        const d1090 = receiver?.dump1090;
+        const d978 = receiver?.dump978;
+
         this.publicStats = {
           adsbFlights: typeof adsb?.flights === 'number' ? adsb.flights : null,
           uatFlights: typeof uat?.flights === 'number' ? uat.flights : null,
@@ -263,13 +289,20 @@ export class DevicesComponent implements OnInit {
           classifiedOpenSkyPct: ratio(openskyCount),
           classifiedHeuristicPct: ratio(heuristicCount),
           unknownClassifiedPct: ratio(unknownCount),
-          openskyCacheEntries: typeof classificationStats?.opensky_cache_entries === 'number' ? classificationStats.opensky_cache_entries : null,
-          openskyCacheLoadedAt: typeof classificationStats?.opensky_cache_loaded_at === 'number'
-            ? new Date(classificationStats.opensky_cache_loaded_at * 1000)
-            : null,
+          openskyDbEntries: typeof classificationStats?.opensky_cache_entries === 'number' ? classificationStats.opensky_cache_entries : null,
           openskyDbInstalled: !!opensky?.installed,
-          openskyDbRows: typeof opensky?.rows === 'number' ? opensky.rows : null,
           openskyDbDownloadedAt: opensky?.downloaded_at ? new Date(opensky.downloaded_at) : null,
+          cpuTemperature: typeof cpu?.cpu_temperature === 'number' ? cpu.cpu_temperature : null,
+          flightTablesSize: null,
+          receiverVersion: d1090?.version ?? d978?.version ?? null,
+          receiverLat: d1090?.lat ?? d978?.lat ?? null,
+          receiverLon: d1090?.lon ?? d978?.lon ?? null,
+          signalLevel: typeof d1090?.signal === 'number' ? d1090.signal : null,
+          peakSignal: typeof d1090?.peak_signal === 'number' ? d1090.peak_signal : null,
+          noiseLevel: typeof d1090?.noise === 'number' ? d1090.noise : null,
+          dump978Available: d978 != null,
+          avgRssi,
+          mlatAircraft,
           updatedAt: new Date(now),
         };
         this.statsLoading = false;

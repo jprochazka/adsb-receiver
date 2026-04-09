@@ -1,23 +1,25 @@
 from __future__ import annotations
 
 import csv
+import logging
 import os
 import time
 from typing import Dict, Optional, Tuple
 
 from flask import current_app, has_app_context
+from sqlalchemy import select, text
+
+from backend.models import db, OpenSkyAircraft
 
 
-_CACHE_CHECK_INTERVAL_SECONDS = 30.0
-_CACHE = {
-    'loaded_at': 0.0,
+_IMPORT_CHECK_INTERVAL_SECONDS = 30.0
+_IMPORT_STATE = {
     'next_check_at': 0.0,
     'mtime': None,
-    'map': None,
 }
 
 
-def _opensky_db_path() -> Optional[str]:
+def _opensky_csv_path() -> Optional[str]:
     if not has_app_context():
         return None
     return os.path.join(current_app.instance_path, 'opensky', 'aircraftDatabase.csv')
@@ -79,66 +81,74 @@ def _map_row_to_class(row: Dict[str, str]) -> Tuple[Optional[str], Optional[str]
     return _map_from_typecode(row.get('typecode') or '')
 
 
-def _load_map(path: str) -> Dict[str, Tuple[str, str]]:
-    mapped: Dict[str, Tuple[str, str]] = {}
-
+def _import_csv_to_db(path: str) -> int:
+    """Read the CSV, classify each row, and bulk-insert into opensky_aircraft."""
+    rows = []
     with open(path, mode='r', encoding='utf-8', newline='') as handle:
         reader = csv.DictReader(handle)
         for row in reader:
             icao = _normalize_icao24(row.get('icao24'))
             if not icao:
                 continue
-
             klass, confidence = _map_row_to_class(row)
             if not klass:
                 continue
+            rows.append({'icao24': icao, 'aircraft_class': klass, 'confidence': confidence or 'low'})
 
-            mapped[icao] = (klass, confidence or 'low')
+    db.session.execute(text('DELETE FROM opensky_aircraft'))
+    batch_size = 5000
+    for i in range(0, len(rows), batch_size):
+        db.session.execute(OpenSkyAircraft.__table__.insert(), rows[i:i + batch_size])
+    db.session.commit()
+    return len(rows)
 
-    return mapped
 
-
-def _get_cached_map() -> Dict[str, Tuple[str, str]]:
+def _ensure_imported() -> None:
+    """Check if the CSV has changed and re-import if needed."""
     now = time.time()
-    cached_map = _CACHE.get('map')
-    if cached_map is not None and now < float(_CACHE.get('next_check_at', 0.0)):
-        return cached_map
+    if now < _IMPORT_STATE['next_check_at']:
+        return
 
-    path = _opensky_db_path()
+    _IMPORT_STATE['next_check_at'] = now + _IMPORT_CHECK_INTERVAL_SECONDS
+
+    path = _opensky_csv_path()
     if not path or not os.path.exists(path):
-        _CACHE['map'] = {}
-        _CACHE['mtime'] = None
-        _CACHE['loaded_at'] = now
-        _CACHE['next_check_at'] = now + _CACHE_CHECK_INTERVAL_SECONDS
-        return _CACHE['map']
+        return
 
     mtime = os.path.getmtime(path)
-    if cached_map is not None and _CACHE.get('mtime') == mtime:
-        _CACHE['next_check_at'] = now + _CACHE_CHECK_INTERVAL_SECONDS
-        return cached_map
+    if _IMPORT_STATE['mtime'] == mtime:
+        return
 
-    mapped = _load_map(path)
-    _CACHE['map'] = mapped
-    _CACHE['mtime'] = mtime
-    _CACHE['loaded_at'] = now
-    _CACHE['next_check_at'] = now + _CACHE_CHECK_INTERVAL_SECONDS
-    return mapped
+    logging.info('OpenSky CSV changed (mtime=%s), re-importing to database...', mtime)
+    count = _import_csv_to_db(path)
+    _IMPORT_STATE['mtime'] = mtime
+    logging.info('OpenSky import complete: %d classified aircraft', count)
+
+
+def import_opensky_csv() -> int:
+    """Force a full re-import of the OpenSky CSV into the database. Returns row count."""
+    path = _opensky_csv_path()
+    if not path or not os.path.exists(path):
+        return 0
+    count = _import_csv_to_db(path)
+    _IMPORT_STATE['mtime'] = os.path.getmtime(path)
+    _IMPORT_STATE['next_check_at'] = time.time() + _IMPORT_CHECK_INTERVAL_SECONDS
+    return count
 
 
 def clear_opensky_classification_cache() -> None:
-    _CACHE['loaded_at'] = 0.0
-    _CACHE['next_check_at'] = 0.0
-    _CACHE['mtime'] = None
-    _CACHE['map'] = None
+    _IMPORT_STATE['next_check_at'] = 0.0
+    _IMPORT_STATE['mtime'] = None
 
 
 def get_opensky_cache_stats() -> Dict[str, Optional[float]]:
-    mapped = _CACHE.get('map')
-    entries = len(mapped) if isinstance(mapped, dict) else 0
-    loaded_at = _CACHE.get('loaded_at') or 0.0
+    try:
+        count = db.session.scalar(text('SELECT COUNT(*) FROM opensky_aircraft'))
+    except Exception:
+        count = 0
     return {
-        'entries': entries,
-        'loaded_at': float(loaded_at) if loaded_at else None,
+        'entries': count,
+        'loaded_at': None,
     }
 
 
@@ -147,10 +157,17 @@ def get_opensky_classification(icao24: Optional[str]) -> Tuple[Optional[str], Op
     if not icao:
         return None, None, None
 
-    mapped = _get_cached_map()
-    match = mapped.get(icao)
-    if not match:
+    if not has_app_context():
         return None, None, None
 
-    klass, confidence = match
-    return klass, 'opensky', confidence
+    _ensure_imported()
+
+    row = db.session.execute(
+        select(OpenSkyAircraft.aircraft_class, OpenSkyAircraft.confidence)
+        .where(OpenSkyAircraft.icao24 == icao)
+    ).first()
+
+    if not row:
+        return None, None, None
+
+    return row.aircraft_class, 'opensky', row.confidence

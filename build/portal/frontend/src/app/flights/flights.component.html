@@ -24,6 +24,9 @@
             @if (photoUrl && photoAttribution) {
               <span class="flyout-photo-credit">&copy; {{ photoAttribution }}</span>
             }
+            @if (flightInfo?.aircraftClass && flightInfo?.aircraftClass !== 'unknown') {
+              <span class="badge flyout-class-badge">{{ flyoutAircraftTypeLabel() }}</span>
+            }
           </div>
 
           <div class="flyout-info">

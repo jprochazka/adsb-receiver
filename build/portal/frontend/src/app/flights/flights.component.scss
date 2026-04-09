@@ -117,6 +117,19 @@ $flyout-tab:   28px;
 	font-size: 0.65rem;
 }
 
+.flyout-class-badge {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+	z-index: 2;
+	font-size: 0.6rem;
+	background: rgba(0, 0, 0, 0.65);
+	color: #f8fafc;
+	backdrop-filter: blur(4px);
+	padding: 0.2rem 0.45rem;
+	letter-spacing: 0.03em;
+}
+
 .flyout-photo-credit {
 	position: absolute;
 	bottom: 0;

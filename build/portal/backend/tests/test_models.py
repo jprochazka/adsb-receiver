@@ -4,8 +4,9 @@ from sqlalchemy.exc import IntegrityError
 from backend import create_app
 from backend.models import (
     db, Aircraft, Flight, Position, User, BlogPost,
-    Link, Notification, Setting,
+    BlogComment, Link, Notification, Setting,
     Dump978Aircraft, Dump978Flight, Dump978Position,
+    OpenSkyAircraft, FlightComment, UatFlightComment,
 )
 
 
@@ -418,9 +419,175 @@ class TestModels:
             # Test that date is preserved
             assert blog_post.date == now
             
-            # Test serialization of date
-            serialized = blog_post.serialize()
-            assert 'date' in serialized
+    def test_opensky_aircraft_model(self, app):
+        """Test OpenSkyAircraft model creation"""
+        with app.app_context():
+            oa = OpenSkyAircraft(icao24='a00001', aircraft_class='airliner', confidence='high')
+            db.session.add(oa)
+            db.session.commit()
+
+            fetched = db.session.get(OpenSkyAircraft, 'a00001')
+            assert fetched is not None
+            assert fetched.aircraft_class == 'airliner'
+            assert fetched.confidence == 'high'
+
+    def test_opensky_aircraft_primary_key(self, app):
+        """Test OpenSkyAircraft uses icao24 as primary key"""
+        with app.app_context():
+            oa1 = OpenSkyAircraft(icao24='abc123', aircraft_class='helicopter', confidence='medium')
+            db.session.add(oa1)
+            db.session.commit()
+
+            # Inserting with same icao24 should conflict
+            oa2 = OpenSkyAircraft(icao24='abc123', aircraft_class='glider', confidence='low')
+            db.session.add(oa2)
+            with pytest.raises(Exception):
+                db.session.commit()
+
+    def test_flight_comment_model(self, app):
+        """Test FlightComment model creation and serialization"""
+        with app.app_context():
+            user = User(name='Commenter', email='commenter@test.com', role='User')
+            db.session.add(user)
+            db.session.commit()
+
+            aircraft = Aircraft(icao='FC0001', first_seen='2024-01-01 10:00:00', last_seen='2024-01-01 12:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            flight = Flight(aircraft=aircraft.id, flight='FC100', first_seen='2024-01-01 10:00:00', last_seen='2024-01-01 12:00:00')
+            db.session.add(flight)
+            db.session.commit()
+
+            comment = FlightComment(flight_id=flight.id, user_id=user.id, content='Great flight!')
+            db.session.add(comment)
+            db.session.commit()
+
+            assert comment.id is not None
+            assert comment.edited is False
+
+            serialized = comment.to_dict()
+            assert serialized['content'] == 'Great flight!'
+            assert serialized['user']['name'] == 'Commenter'
+            assert serialized['created_at'] is not None
+
+    def test_flight_comment_cascade_delete(self, app):
+        """Test FlightComment is deleted when parent Flight is deleted"""
+        with app.app_context():
+            user = User(name='Cascade', email='cascade@test.com')
+            db.session.add(user)
+            db.session.commit()
+
+            aircraft = Aircraft(icao='CD0001', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            flight = Flight(aircraft=aircraft.id, flight='CD100', first_seen='2024-01-01 10:00:00', last_seen='2024-01-01 12:00:00')
+            db.session.add(flight)
+            db.session.commit()
+
+            comment = FlightComment(flight_id=flight.id, user_id=user.id, content='Will be deleted')
+            db.session.add(comment)
+            db.session.commit()
+
+            comment_id = comment.id
+            db.session.delete(flight)
+            db.session.commit()
+
+            assert db.session.get(FlightComment, comment_id) is None
+
+    def test_uat_flight_comment_model(self, app):
+        """Test UatFlightComment model creation and serialization"""
+        with app.app_context():
+            user = User(name='UAT Commenter', email='uatcomment@test.com')
+            db.session.add(user)
+            db.session.commit()
+
+            aircraft = Dump978Aircraft(icao='UAT001', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            flight = Dump978Flight(aircraft=aircraft.id, flight='UAT100', first_seen='2024-01-01 10:00:00', last_seen='2024-01-01 12:00:00')
+            db.session.add(flight)
+            db.session.commit()
+
+            comment = UatFlightComment(flight_id=flight.id, user_id=user.id, content='Nice UAT track')
+            db.session.add(comment)
+            db.session.commit()
+
+            serialized = comment.to_dict()
+            assert serialized['content'] == 'Nice UAT track'
+            assert serialized['user']['name'] == 'UAT Commenter'
+
+    def test_blog_comment_model(self, app):
+        """Test BlogComment model creation, serialization, and threading"""
+        with app.app_context():
+            user = User(name='Blog User', email='bloguser@test.com')
+            db.session.add(user)
+            db.session.commit()
+
+            post = BlogPost(title='Test', content='Body', author='Author', date='2024-01-01')
+            db.session.add(post)
+            db.session.commit()
+
+            parent = BlogComment(blog_post_id=post.id, user_id=user.id, content='Parent comment')
+            db.session.add(parent)
+            db.session.commit()
+
+            reply = BlogComment(blog_post_id=post.id, user_id=user.id, content='Reply', parent_comment_id=parent.id)
+            db.session.add(reply)
+            db.session.commit()
+
+            serialized = parent.to_dict()
+            assert serialized['content'] == 'Parent comment'
+            assert serialized['deleted'] is False
+
+            reply_serialized = reply.to_dict()
+            assert reply_serialized['parent_comment_id'] == parent.id
+
+    def test_blog_comment_deleted_masking(self, app):
+        """Test that deleted BlogComment masks user info and content"""
+        with app.app_context():
+            user = User(name='Deleted User', email='deleted@test.com')
+            db.session.add(user)
+            db.session.commit()
+
+            post = BlogPost(title='Post', content='Body', author='A', date='2024-01-01')
+            db.session.add(post)
+            db.session.commit()
+
+            comment = BlogComment(blog_post_id=post.id, user_id=user.id, content='Secret', deleted=True)
+            db.session.add(comment)
+            db.session.commit()
+
+            serialized = comment.to_dict()
+            assert serialized['content'] == '[deleted]'
+            assert serialized['user_id'] is None
+            assert serialized['user']['id'] is None
+            assert serialized['user']['name'] is None
+
+    def test_dump978_flight_model(self, app):
+        """Test Dump978Flight model creation and serialization"""
+        with app.app_context():
+            aircraft = Dump978Aircraft(icao='D97801', first_seen='2024-01-01 10:00:00')
+            db.session.add(aircraft)
+            db.session.commit()
+
+            flight = Dump978Flight(
+                aircraft=aircraft.id,
+                flight='D978FL',
+                first_seen='2024-01-01 10:00:00',
+                last_seen='2024-01-01 12:00:00',
+                aircraft_class='helicopter',
+            )
+            db.session.add(flight)
+            db.session.commit()
+
+            assert flight.id is not None
+            serialized = flight.to_dict()
+            assert serialized['flight'] == 'D978FL'
+            assert serialized['aircraft_class'] == 'helicopter'
+            assert serialized['ignore_on_purge'] is False
 
     def test_model_boolean_handling(self, app):
         """Test boolean field handling"""

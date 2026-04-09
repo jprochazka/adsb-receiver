@@ -133,12 +133,12 @@ class Flight(db.Model):
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     aircraft = db.Column(db.Integer, db.ForeignKey('dump1090_aircraft.id'), nullable=False)
-    flight = db.Column(db.String(20), nullable=False)
-    first_seen = db.Column(db.String(32), nullable=False)
-    last_seen = db.Column(db.String(32))
+    flight = db.Column(db.String(20), nullable=False, index=True)
+    first_seen = db.Column(db.String(32), nullable=False, index=True)
+    last_seen = db.Column(db.String(32), index=True)
     emitter_category = db.Column(db.String(4), nullable=True)
     message_type = db.Column(db.String(32), nullable=True)
-    aircraft_class = db.Column(db.String(32), nullable=False, default='unknown', server_default='unknown')
+    aircraft_class = db.Column(db.String(32), nullable=False, default='unknown', server_default='unknown', index=True)
     ignore_on_purge = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text('0'))
     
     # Relationships
@@ -309,12 +309,12 @@ class Dump978Flight(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     aircraft = db.Column(db.Integer, db.ForeignKey('dump978_aircraft.id'), nullable=False)
-    flight = db.Column(db.String(20), nullable=False)
-    first_seen = db.Column(db.String(32), nullable=False)
-    last_seen = db.Column(db.String(32))
+    flight = db.Column(db.String(20), nullable=False, index=True)
+    first_seen = db.Column(db.String(32), nullable=False, index=True)
+    last_seen = db.Column(db.String(32), index=True)
     emitter_category = db.Column(db.String(4), nullable=True)
     message_type = db.Column(db.String(32), nullable=True)
-    aircraft_class = db.Column(db.String(32), nullable=False, default='unknown', server_default='unknown')
+    aircraft_class = db.Column(db.String(32), nullable=False, default='unknown', server_default='unknown', index=True)
     ignore_on_purge = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text('0'))
 
     # Relationships
@@ -377,6 +377,14 @@ class Dump978Position(db.Model):
 
     def serialize(self):
         return self.to_dict()
+
+
+class OpenSkyAircraft(db.Model):
+    __tablename__ = 'opensky_aircraft'
+
+    icao24 = db.Column(db.String(8), primary_key=True)
+    aircraft_class = db.Column(db.String(32), nullable=False)
+    confidence = db.Column(db.String(8), nullable=False)
 
 
 class FlightComment(db.Model):

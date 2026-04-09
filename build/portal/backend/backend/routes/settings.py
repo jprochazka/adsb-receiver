@@ -14,6 +14,7 @@ from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Setting
 from backend.auth import require_admin
+from backend.opensky_classification import import_opensky_csv
 from sqlalchemy import select
 
 settings = Blueprint('settings', __name__)
@@ -249,6 +250,8 @@ class OpenSkyAircraftDatabaseUpdateResource(Resource):
             tmp_path = None
 
             _write_metadata_and_notice(final_path)
+            count = import_opensky_csv()
+            logging.info('OpenSky CSV imported into database: %d classified aircraft', count)
             return _build_opensky_status(), 200
 
         except (HTTPError, URLError, TimeoutError) as ex:
