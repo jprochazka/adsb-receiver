@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { forkJoin, combineLatest } from 'rxjs';
-import { catchError, of } from 'rxjs';
+import { catchError, map, of } from 'rxjs';
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import Feature from 'ol/Feature';
@@ -24,7 +24,7 @@ import { ZoomSlider, FullScreen } from 'ol/control';
 import ControlScaleLine from 'ol/control/ScaleLine';
 import smooth from 'to-smooth';
 
-const PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 50;
 const TRACK_GAP_HOURS = 2;
 const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
 const TRACK_INTERPOLATION_TARGET_SECONDS = 6;
@@ -41,6 +41,9 @@ const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/
   styleUrl: './flights.component.scss'
 })
 export class FlightsComponent implements OnInit, OnDestroy {
+  readonly pageSizeOptions = [10, 25, 50, 100];
+  perPage = DEFAULT_PAGE_SIZE;
+
   // ADS-B
   adsbData: any;
   adsbCurrentPage = 1;
@@ -74,6 +77,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
     this._filterQuery = val;
   }
   activeTab: 'all' | 'adsb' | 'uat' = 'all';
+  allCurrentPage = 1;
 
   // Flight detail/map mode
   detailMode = false;
@@ -188,6 +192,8 @@ export class FlightsComponent implements OnInit, OnDestroy {
       this.commentsError = '';
       const q = queryParams.get('q') || '';
       this.searchQuery = q;
+      const requestedPerPage = Number(queryParams.get('perPage') || DEFAULT_PAGE_SIZE);
+      this.perPage = this.pageSizeOptions.includes(requestedPerPage) ? requestedPerPage : DEFAULT_PAGE_SIZE;
       this.loading = true;
       this.errorMessage = '';
 
@@ -213,36 +219,90 @@ export class FlightsComponent implements OnInit, OnDestroy {
       } else {
         const adsbPage = Math.max(1, parseInt(params.get('page') || '1', 10) || 1);
         const uatPage  = Math.max(1, parseInt(params.get('uatPage') || '1', 10) || 1);
+        const allPage = Math.max(1, parseInt(queryParams.get('allPage') || '1', 10) || 1);
         this.adsbCurrentPage = adsbPage;
         this.uatCurrentPage  = uatPage;
+        this.allCurrentPage = allPage;
 
         forkJoin({
           adsbCount: this.data_service.GetFlightsCount(),
-          adsbFlights: this.data_service.getFlights((adsbPage - 1) * PAGE_SIZE, PAGE_SIZE),
           uatCount: this.data_service.getUatFlightsCount().pipe(catchError(() => of({ flights: 0 }))),
-          uatFlights: this.data_service.getUatFlights((uatPage - 1) * PAGE_SIZE, PAGE_SIZE).pipe(catchError(() => of(null))),
-        }).subscribe(({ adsbCount, adsbFlights, uatCount, uatFlights }) => {
+        }).subscribe(({ adsbCount, uatCount }) => {
           this.adsbTotalFlights = adsbCount.flights;
-          this.adsbTotalPages   = Math.max(1, Math.ceil(adsbCount.flights / PAGE_SIZE));
+          this.adsbTotalPages   = Math.max(1, Math.ceil(adsbCount.flights / this.perPage));
           this.adsbCurrentPage  = Math.min(adsbPage, this.adsbTotalPages);
           this.adsbPageNumbers  = this.buildPageNumbers(this.adsbCurrentPage, this.adsbTotalPages);
-          this.adsbData = adsbFlights;
 
           this.uatTotalFlights = uatCount.flights;
-          this.uatTotalPages   = Math.max(1, Math.ceil(uatCount.flights / PAGE_SIZE));
+          this.uatTotalPages   = Math.max(1, Math.ceil(uatCount.flights / this.perPage));
           this.uatCurrentPage  = Math.min(uatPage, this.uatTotalPages);
           this.uatPageNumbers  = this.buildPageNumbers(this.uatCurrentPage, this.uatTotalPages);
-          this.uatData = uatFlights;
 
-          const adsbMapped = (adsbFlights?.flights || []).map((f: any) => ({ ...f, _type: 'adsb' }));
-          const uatMapped  = (uatFlights?.flights  || []).map((f: any) => ({ ...f, _type: 'uat'  }));
-          this.combinedFlights = [...adsbMapped, ...uatMapped]
-            .sort((a, b) => (b.last_seen > a.last_seen ? 1 : -1));
+          const allTotalPages = Math.max(1, Math.ceil(this.allTotalFlights / this.perPage));
+          this.allCurrentPage = Math.min(allPage, allTotalPages);
 
-          this.loading = false;
+          const combinedNeeded = this.allCurrentPage * this.perPage;
+          forkJoin({
+            adsbFlights: this.data_service.getFlights((this.adsbCurrentPage - 1) * this.perPage, this.perPage),
+            uatFlights: this.data_service.getUatFlights((this.uatCurrentPage - 1) * this.perPage, this.perPage).pipe(catchError(() => of(null))),
+            adsbTopFlights: this.loadTopAdsbFlights(combinedNeeded),
+            uatTopFlights: this.loadTopUatFlights(combinedNeeded),
+          }).subscribe(({ adsbFlights, uatFlights, adsbTopFlights, uatTopFlights }) => {
+            this.adsbData = adsbFlights;
+            this.uatData = uatFlights;
+
+            const allMapped = [
+              ...adsbTopFlights.map((f: any) => ({ ...f, _type: 'adsb' })),
+              ...uatTopFlights.map((f: any) => ({ ...f, _type: 'uat' })),
+            ].sort((a, b) => (b.last_seen > a.last_seen ? 1 : -1));
+
+            const allOffset = (this.allCurrentPage - 1) * this.perPage;
+            this.combinedFlights = allMapped.slice(allOffset, allOffset + this.perPage);
+
+            this.loading = false;
+          });
         });
       }
     });
+  }
+
+  private loadTopAdsbFlights(limit: number) {
+    return this.loadTopFlights(
+      (offset, size) => this.data_service.getFlights(offset, size),
+      this.adsbTotalFlights,
+      limit,
+    );
+  }
+
+  private loadTopUatFlights(limit: number) {
+    return this.loadTopFlights(
+      (offset, size) => this.data_service.getUatFlights(offset, size).pipe(catchError(() => of({ flights: [] }))),
+      this.uatTotalFlights,
+      limit,
+    );
+  }
+
+  private loadTopFlights(
+    fetchPage: (offset: number, limit: number) => any,
+    total: number,
+    neededLimit: number,
+  ) {
+    const target = Math.min(Math.max(0, neededLimit), Math.max(0, total));
+    if (target === 0) {
+      return of([] as any[]);
+    }
+
+    const requests = [];
+    for (let offset = 0; offset < target; offset += 100) {
+      const chunk = Math.min(100, target - offset);
+      requests.push(fetchPage(offset, chunk));
+    }
+
+    return forkJoin(requests).pipe(
+      map((responses: any[]) =>
+        responses.flatMap((response) => Array.isArray(response?.flights) ? response.flights : [])
+      )
+    );
   }
 
   private enterDetailMode(flight: string): void {
@@ -315,8 +375,8 @@ export class FlightsComponent implements OnInit, OnDestroy {
           icao: details?.icao ?? '—',
           firstSeen: details?.first_seen ?? '—',
           lastSeen: details?.last_seen ?? '—',
-          totalPositions: posData.positions?.length ?? 0,
-          trackCount: 0,
+          totalPositions: this.normalizeCount(posData?.total, posData.positions?.length ?? 0),
+          trackCount: this.normalizeSightingsCount(details?.sightings_count, 0),
           lastAltitude: null,
           lastSpeed: null,
           lastSquawk: null,
@@ -417,13 +477,31 @@ export class FlightsComponent implements OnInit, OnDestroy {
     });
 
     if (this.flightInfo) {
-      this.flightInfo.trackCount = segments.length;
+      if (!this.flightInfo.trackCount || this.flightInfo.trackCount < 1) {
+        this.flightInfo.trackCount = segments.length;
+      }
       const lastSeg = segments[segments.length - 1];
       const lastPos = lastSeg[lastSeg.length - 1];
       this.flightInfo.lastAltitude = lastPos.altitude ?? null;
       this.flightInfo.lastSpeed = lastPos.speed ?? null;
       this.flightInfo.lastSquawk = lastPos.squawk ?? null;
     }
+  }
+
+  private normalizeSightingsCount(value: unknown, fallback: number): number {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed >= 1) {
+      return Math.floor(parsed);
+    }
+    return fallback;
+  }
+
+  private normalizeCount(value: unknown, fallback: number): number {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      return Math.floor(parsed);
+    }
+    return fallback;
   }
 
   selectTrack(val: string): void {
@@ -931,7 +1009,10 @@ export class FlightsComponent implements OnInit, OnDestroy {
     if (page < 1 || page > this.adsbTotalPages || page === this.adsbCurrentPage) return;
 
     const commands = page === 1 ? ['/flights'] : ['/flights', page];
-    const queryParams = this.uatCurrentPage > 1 ? { uatPage: this.uatCurrentPage } : {};
+    const queryParams = this.buildFlightsListQueryParams(
+      this.uatCurrentPage > 1 ? this.uatCurrentPage : undefined,
+      this.allCurrentPage > 1 ? this.allCurrentPage : undefined,
+    );
 
     this.router.navigate(commands, { queryParams });
   }
@@ -940,15 +1021,39 @@ export class FlightsComponent implements OnInit, OnDestroy {
     if (page < 1 || page > this.uatTotalPages || page === this.uatCurrentPage) return;
 
     const commands = this.adsbCurrentPage === 1 ? ['/flights'] : ['/flights', this.adsbCurrentPage];
-    const queryParams = page > 1 ? { uatPage: page } : {};
+    const queryParams = this.buildFlightsListQueryParams(
+      page > 1 ? page : undefined,
+      this.allCurrentPage > 1 ? this.allCurrentPage : undefined,
+    );
 
     this.router.navigate(commands, { queryParams });
+  }
+
+  updatePerPage(perPage: number): void {
+    if (!this.pageSizeOptions.includes(perPage)) return;
+
+    this.perPage = perPage;
+    this.allCurrentPage = 1;
+    this.adsbCurrentPage = 1;
+    this.uatCurrentPage = 1;
+
+    this.router.navigate(['/flights'], {
+      queryParams: this.buildFlightsListQueryParams(),
+    });
   }
 
   get filteredCombinedFlights(): any[] {
     const q = this.filterQuery.trim().toLowerCase();
     if (!q) return this.combinedFlights;
     return this.combinedFlights.filter(f => this.matchesFlight(f, q));
+  }
+
+  get displayedCombinedFlights(): any[] {
+    const filtered = this.filteredCombinedFlights;
+    if (this.searchQuery || this.filterQuery.trim()) {
+      return filtered;
+    }
+    return filtered.slice(0, this.perPage);
   }
 
   get filteredAdsbFlights(): any[] {
@@ -980,12 +1085,8 @@ export class FlightsComponent implements OnInit, OnDestroy {
     return this.filteredUatFlights.length;
   }
 
-  get allCurrentPage(): number {
-    return Math.max(this.adsbCurrentPage, this.uatCurrentPage);
-  }
-
   get allTotalPages(): number {
-    return Math.max(this.adsbTotalPages, this.uatTotalPages);
+    return Math.max(1, Math.ceil(this.allTotalFlights / this.perPage));
   }
 
   get allPageNumbers(): number[] {
@@ -997,21 +1098,23 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   get allDisplayStart(): number {
-    if (this.combinedFlights.length === 0) return 0;
-    const combinedPageSize = PAGE_SIZE * 2;
-    return (this.allCurrentPage - 1) * combinedPageSize + 1;
+    if (this.displayedCombinedFlights.length === 0) return 0;
+    return (this.allCurrentPage - 1) * this.perPage + 1;
   }
 
   get allDisplayEnd(): number {
-    if (this.combinedFlights.length === 0) return 0;
-    return Math.min(this.allDisplayStart + this.combinedFlights.length - 1, this.allTotalFlights);
+    if (this.displayedCombinedFlights.length === 0) return 0;
+    return Math.min(this.allDisplayStart + this.displayedCombinedFlights.length - 1, this.allTotalFlights);
   }
 
   goToAllPage(page: number): void {
     if (page < 1 || page > this.allTotalPages || page === this.allCurrentPage) return;
 
-    const commands = page === 1 ? ['/flights'] : ['/flights', page];
-    const queryParams = page > 1 ? { uatPage: page } : {};
+    const commands = this.adsbCurrentPage === 1 ? ['/flights'] : ['/flights', this.adsbCurrentPage];
+    const queryParams = this.buildFlightsListQueryParams(
+      this.uatCurrentPage > 1 ? this.uatCurrentPage : undefined,
+      page > 1 ? page : undefined,
+    );
     this.router.navigate(commands, { queryParams });
   }
 
@@ -1020,11 +1123,27 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   private buildPageNumbers(current: number, total: number): number[] {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    const pages = new Set<number>();
-    pages.add(1);
-    pages.add(total);
-    for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) pages.add(i);
-    return Array.from(pages).sort((a, b) => a - b);
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    const range: number[] = [];
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
+  }
+
+  private buildFlightsListQueryParams(
+    uatPage?: number,
+    allPage?: number,
+  ): { uatPage?: number; allPage?: number; perPage?: number } {
+    const queryParams: { uatPage?: number; allPage?: number; perPage?: number } = {};
+    if (uatPage && uatPage > 1) {
+      queryParams.uatPage = uatPage;
+    }
+    if (allPage && allPage > 1) {
+      queryParams.allPage = allPage;
+    }
+    if (this.perPage !== DEFAULT_PAGE_SIZE) {
+      queryParams.perPage = this.perPage;
+    }
+    return queryParams;
   }
 }

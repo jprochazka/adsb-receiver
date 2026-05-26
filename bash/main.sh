@@ -520,7 +520,7 @@ fi
 
 # Portals
 if [[ "${install_portal}" == "true" ]]; then
-    run_installer "portal/install.sh"
+    run_installer "extras/portal.sh"
 fi
 
 # Extras

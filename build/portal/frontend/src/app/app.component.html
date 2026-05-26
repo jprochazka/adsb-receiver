@@ -114,5 +114,17 @@
     <button class="tracked-alert-dismiss" (click)="dismissAlert()" aria-label="Dismiss">&times;</button>
   </div>
 }
-<router-outlet></router-outlet>
+<main class="portal-content">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="portal-footer">
+  <div class="portal-footer-inner">
+    <span>Frontend {{ frontendVersion }}</span>
+    <span class="portal-footer-sep">|</span>
+    <span>Backend API {{ backendVersion }}</span>
+    <span class="portal-footer-sep">|</span>
+    <span>&copy; {{ currentYear }} ADS-B Receiver Portal</span>
+  </div>
+</footer>
 

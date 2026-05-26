@@ -202,7 +202,7 @@ class AcarsController(Resource):
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=50, type=int)
 
-        if offset < 0 or limit < 1 or limit > 200:
+        if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
 
         try:
@@ -248,7 +248,7 @@ class AcarsController(Resource):
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=100, type=int)
 
-        if offset < 0 or limit < 1 or limit > 500:
+        if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
 
         try:

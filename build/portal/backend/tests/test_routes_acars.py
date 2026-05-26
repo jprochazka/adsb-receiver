@@ -136,8 +136,14 @@ class TestAcarsRoutes:
         assert response.status_code == 400
 
     def test_get_flights_limit_too_large(self, client, mock_acars_engine):
-        response = client.get('/api/acars/flights?limit=201')
+        response = client.get('/api/acars/flights?limit=101')
         assert response.status_code == 400
+
+    def test_get_flights_limit_100(self, client, mock_acars_engine):
+        response = client.get('/api/acars/flights?limit=100')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['limit'] == 100
 
     def test_get_flights_db_unavailable(self, client):
         with patch('backend.routes.acars._get_acars_engine', side_effect=OperationalError('', '', '')):
@@ -194,8 +200,14 @@ class TestAcarsRoutes:
         assert response.status_code == 404
 
     def test_get_flight_messages_bad_params(self, client, mock_acars_engine):
-        response = client.get('/api/acars/flight/1/messages?limit=501')
+        response = client.get('/api/acars/flight/1/messages?limit=101')
         assert response.status_code == 400
+
+    def test_get_flight_messages_limit_100(self, client, mock_acars_engine):
+        response = client.get('/api/acars/flight/1/messages?limit=100')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['limit'] == 100
 
     def test_get_flight_messages_db_unavailable(self, client):
         with patch('backend.routes.acars._get_acars_engine', side_effect=OperationalError('', '', '')):

@@ -193,6 +193,23 @@ $border-radius-sm: 0.25rem;
 @import '@fontsource/rajdhani/600.css';
 @import '@fontsource/rajdhani/700.css';
 
+.scheduler-refresh-button {
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  color: #dbeafe;
+  background: rgba(14, 116, 144, 0.22);
+}
+
+.scheduler-refresh-button:hover:not(:disabled),
+.scheduler-refresh-button:focus-visible:not(:disabled) {
+  border-color: rgba(125, 211, 252, 0.85);
+  color: #f8fafc;
+  background: rgba(14, 116, 144, 0.36);
+}
+
+.scheduler-refresh-button:disabled {
+  opacity: 0.55;
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // AVIATION THEME — custom overrides
 // ═════════════════════════════════════════════════════════════════════════════

@@ -261,6 +261,47 @@ def test_post_opensky_aircraft_database_update_200(client, app, tmp_path, monkey
     assert status_response.json['installed'] is True
 
 
+def test_post_opensky_aircraft_database_update_200_with_duplicate_icao24_rows(client, app, tmp_path, monkeypatch):
+    opensky_dir = tmp_path / 'opensky'
+    db_path = opensky_dir / settings_routes.OPENSKY_DB_FILE
+    metadata_path = opensky_dir / settings_routes.OPENSKY_METADATA_FILE
+    notice_path = opensky_dir / settings_routes.OPENSKY_NOTICE_FILE
+
+    monkeypatch.setattr(settings_routes, '_opensky_db_dir', lambda: str(opensky_dir))
+    monkeypatch.setattr(settings_routes, '_opensky_db_path', lambda: str(db_path))
+    monkeypatch.setattr(settings_routes, '_opensky_metadata_path', lambda: str(metadata_path))
+    monkeypatch.setattr(settings_routes, '_opensky_notice_path', lambda: str(notice_path))
+
+    csv_bytes = (
+        b'icao24,registration,typecode,categoryDescription\n'
+        b'abc123,N123AB,C172,\n'
+        b'abc123,N123AB,C172,\n'
+        b'def456,N456CD,,Rotorcraft\n'
+    )
+
+    class _FakeResponse(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            self.close()
+            return False
+
+    monkeypatch.setattr(settings_routes, 'urlopen', lambda req, timeout=60: _FakeResponse(csv_bytes))
+
+    with app.app_context():
+        access_token = create_admin_token()
+
+    response = client.post(
+        '/api/setting/opensky-aircraft-database/update',
+        headers={'Authorization': f'Bearer {access_token}'},
+    )
+
+    assert response.status_code == 200
+    assert response.json['installed'] is True
+    assert response.json['downloaded_at'] is not None
+
+
 def test_post_opensky_aircraft_database_update_502_on_download_error(client, app, monkeypatch):
     monkeypatch.setattr(settings_routes, 'urlopen', lambda req, timeout=60: (_ for _ in ()).throw(URLError('network down')))
 
@@ -276,3 +317,20 @@ def test_post_opensky_aircraft_database_update_502_on_download_error(client, app
     assert response.json['msg'] == 'Unable to download OpenSky aircraft database'
     assert response.json['source_url'] == settings_routes.OPENSKY_DB_URL
     assert response.json['license_name'] == settings_routes.OPENSKY_LICENSE_NAME
+
+
+def test_get_api_version_200(client):
+    response = client.get('/api/setting/api-version')
+
+    assert response.status_code == 200
+    assert response.json['version'] == 'v3.0.0'
+
+
+def test_get_api_version_uses_app_config(client, app):
+    with app.app_context():
+        app.config['PORTAL_BACKEND_VERSION'] = 'v3.1.5'
+
+    response = client.get('/api/setting/api-version')
+
+    assert response.status_code == 200
+    assert response.json['version'] == 'v3.1.5'

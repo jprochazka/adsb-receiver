@@ -1,5 +1,5 @@
 from tests.conftest import create_admin_token, create_another_user_token, create_user_token
-from backend.models import db, User
+from backend.models import db, Dump978Aircraft, Dump978Flight, User
 
 # GET /api/uat/flight/{flight}
 
@@ -14,6 +14,7 @@ def test_get_uat_flight_200(client):
     assert response.json['icao'] == 'uicao01'
     assert response.json['aircraft_class'] == 'unknown'
     assert response.json['ignore_on_purge'] is False
+    assert response.json['sightings_count'] == 1
 
 def test_get_uat_flight_404(client):
     response = client.get('/api/uat/flight/UAT0000')
@@ -27,6 +28,7 @@ def test_get_uat_flight_positions_200(client):
     assert response.json['offset'] == 0
     assert response.json['limit'] == 500
     assert response.json['count'] == 2
+    assert response.json['total'] == 2
     assert response.json['positions'][0]['id'] == 1
     assert response.json['positions'][0]['flight'] == 1
     assert response.json['positions'][0]['aircraft'] == 1
@@ -58,6 +60,13 @@ def test_get_uat_flight_positions_400_limit_too_high(client):
     response = client.get('/api/uat/flight/UAT0001/positions?limit=1001')
     assert response.status_code == 400
 
+
+def test_get_uat_flight_positions_200_total_reflects_full_database_count(client):
+    response = client.get('/api/uat/flight/UAT0001/positions?limit=1')
+    assert response.status_code == 200
+    assert response.json['count'] == 1
+    assert response.json['total'] == 2
+
 # GET /api/uat/flights
 
 def test_get_uat_flights_200(client):
@@ -72,12 +81,30 @@ def test_get_uat_flights_200(client):
     assert response.json['flights'][0]['flight'] == 'UAT0002'
     assert response.json['flights'][0]['first_seen'] == '2024-07-17 02:20:22'
     assert response.json['flights'][0]['last_seen'] == '2024-06-17 02:22:02'
+    assert response.json['flights'][0]['sightings_count'] == 1
     assert response.json['flights'][1]['id'] == 1
     assert response.json['flights'][1]['icao'] == 'uicao01'
     assert response.json['flights'][1]['aircraft'] == 1
     assert response.json['flights'][1]['flight'] == 'UAT0001'
     assert response.json['flights'][1]['first_seen'] == '2024-07-17 01:10:11'
     assert response.json['flights'][1]['last_seen'] == '2024-06-17 01:11:01'
+    assert response.json['flights'][1]['sightings_count'] == 1
+
+
+def test_get_uat_flights_200_sightings_count_uses_30_min_gap(client, app):
+    with app.app_context():
+        aircraft = db.session.execute(db.select(Dump978Aircraft).filter_by(icao='uicao01')).scalar_one()
+        db.session.add_all([
+            Dump978Flight(aircraft=aircraft.id, flight='UAT9000', first_seen='2024-07-18 10:00:00', last_seen='2024-07-18 10:08:00'),
+            Dump978Flight(aircraft=aircraft.id, flight='UAT9000', first_seen='2024-07-18 10:20:00', last_seen='2024-07-18 10:29:00'),
+            Dump978Flight(aircraft=aircraft.id, flight='UAT9000', first_seen='2024-07-18 11:00:00', last_seen='2024-07-18 11:06:00'),
+        ])
+        db.session.commit()
+
+    response = client.get('/api/uat/flights/search?q=UAT9000')
+    assert response.status_code == 200
+    assert response.json['count'] == 3
+    assert all(f['sightings_count'] == 2 for f in response.json['flights'])
 
 def test_get_uat_flights_200_offset(client):
     response = client.get('/api/uat/flights?offset=1')

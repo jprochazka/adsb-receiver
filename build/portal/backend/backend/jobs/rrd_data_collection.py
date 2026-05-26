@@ -26,7 +26,7 @@ class RrdWriter:
         self.step = int(writer_cfg.get('step_seconds', 30))
         self.timeout = float(writer_cfg.get('http_timeout_seconds', 5.0))
 
-        self.rrd_base = graphs_cfg.get('rrd_base', '/var/lib/collectd/rrd')
+        self.rrd_base = graphs_cfg.get('rrd_base') or os.environ.get('RRD_BASE', 'instance/rrd')
         self.hostname = graphs_cfg.get('hostname', socket.gethostname())
         self.dump1090_instance = graphs_cfg.get('dump1090_instance', 'localhost')
         self.dump978_instance = graphs_cfg.get('dump978_instance', 'localhost')

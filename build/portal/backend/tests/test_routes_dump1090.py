@@ -1,5 +1,5 @@
 from tests.conftest import create_admin_token, create_another_user_token, create_user_token
-from backend.models import db, User
+from backend.models import db, Aircraft, Flight, User
 
 # GET /api/adsb/flight/{flight}
 
@@ -12,6 +12,7 @@ def test_get_flight_200(client):
     assert response.json['last_seen'] == "2024-06-17 01:11:01"
     assert response.json['aircraft_class'] == 'unknown'
     assert response.json['ignore_on_purge'] is False
+    assert response.json['sightings_count'] == 1
 
 def test_get_flight_404(client):
     response = client.get('/api/adsb/flight/FLT0000')
@@ -25,6 +26,7 @@ def test_get_flight_positions_200(client):
     assert response.json['offset'] == 0
     assert response.json['limit'] == 500
     assert response.json['count'] == 4
+    assert response.json['total'] == 4
     assert response.json['positions'][0]['id'] == 11
     assert response.json['positions'][0]['flight'] == 4
     assert response.json['positions'][0]['aircraft'] == 5
@@ -90,6 +92,13 @@ def test_get_flight_positions_400_limit_too_high(client):
     response = client.get('/api/adsb/flight/FLT0001/positions?limit=1001')
     assert response.status_code == 400
 
+
+def test_get_flight_positions_200_total_reflects_full_database_count(client):
+    response = client.get('/api/adsb/flight/FLT0001/positions?limit=3')
+    assert response.status_code == 200
+    assert response.json['count'] == 3
+    assert response.json['total'] == 10
+
 # GET /api/adsb/flights
 
 def test_get_flights_200(client):
@@ -104,22 +113,42 @@ def test_get_flights_200(client):
     assert response.json['flights'][0]['flight'] == "FLT0005"
     assert response.json['flights'][0]['first_seen'] == "2024-07-17 04:40:44"
     assert response.json['flights'][0]['last_seen'] == "2024-06-17 04:44:04"
+    assert response.json['flights'][0]['sightings_count'] == 1
     assert response.json['flights'][1]['id'] == 3
     assert response.json['flights'][1]['aircraft'] == 3
     assert response.json['flights'][1]['icao'] == 'icao03'
     assert response.json['flights'][1]['flight'] == "FLT0003"
     assert response.json['flights'][1]['first_seen'] == "2024-07-17 03:30:33"
     assert response.json['flights'][1]['last_seen'] == "2024-06-17 03:33:03"
+    assert response.json['flights'][1]['sightings_count'] == 1
     assert response.json['flights'][2]['id'] == 2
     assert response.json['flights'][2]['aircraft'] == 2
     assert response.json['flights'][2]['flight'] == "FLT0002"
     assert response.json['flights'][2]['first_seen'] == "2024-07-17 02:20:22"
     assert response.json['flights'][2]['last_seen'] == "2024-06-17 02:22:02"
+    assert response.json['flights'][2]['sightings_count'] == 1
     assert response.json['flights'][3]['id'] == 1
     assert response.json['flights'][3]['aircraft'] == 1
     assert response.json['flights'][3]['flight'] == "FLT0001"
     assert response.json['flights'][3]['first_seen'] == "2024-07-17 01:10:11"
     assert response.json['flights'][3]['last_seen'] == "2024-06-17 01:11:01"
+    assert response.json['flights'][3]['sightings_count'] == 1
+
+
+def test_get_flights_200_sightings_count_uses_30_min_gap(client, app):
+    with app.app_context():
+        aircraft = db.session.execute(db.select(Aircraft).filter_by(icao='icao01')).scalar_one()
+        db.session.add_all([
+            Flight(aircraft=aircraft.id, flight='FLT9000', first_seen='2024-07-18 10:00:00', last_seen='2024-07-18 10:10:00'),
+            Flight(aircraft=aircraft.id, flight='FLT9000', first_seen='2024-07-18 10:20:00', last_seen='2024-07-18 10:25:00'),
+            Flight(aircraft=aircraft.id, flight='FLT9000', first_seen='2024-07-18 10:55:00', last_seen='2024-07-18 11:05:00'),
+        ])
+        db.session.commit()
+
+    response = client.get('/api/adsb/flights/search?q=FLT9000')
+    assert response.status_code == 200
+    assert response.json['count'] == 3
+    assert all(f['sightings_count'] == 2 for f in response.json['flights'])
     
 def test_get_flights_200_offset(client):
     response = client.get('/api/adsb/flights?offset=2')

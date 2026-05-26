@@ -24,11 +24,18 @@ describe('AdminBlogComponent', () => {
     dataServiceMock.createBlogPost.and.returnValue(of({}));
     dataServiceMock.updateBlogPost.and.returnValue(of({}));
     dataServiceMock.deleteBlogPost.and.returnValue(of({}));
-    dataServiceMock.getAdminBlogPosts.and.returnValue(of({
-      blog_posts: [
-        { id: 1, title: 'Post 1', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
-      ],
-    }));
+    dataServiceMock.getAdminBlogPosts.and.returnValues(
+      of({
+        blog_posts: [
+          { id: 1, title: 'Post 1', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
+        ],
+      }),
+      of({
+        blog_posts: [
+          { id: 1, title: 'Post 1', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
+        ],
+      })
+    );
 
     await TestBed.configureTestingModule({
       imports: [AdminBlogComponent],
@@ -48,8 +55,10 @@ describe('AdminBlogComponent', () => {
     fixture.detectChanges();
 
     expect(dataServiceMock.getSetting).toHaveBeenCalledWith('blog_nav_enabled');
-    expect(dataServiceMock.getAdminBlogPosts).toHaveBeenCalledWith(0, 10000);
+    expect(dataServiceMock.getAdminBlogPosts).toHaveBeenCalledWith(0, 100);
+    expect(dataServiceMock.getAdminBlogPosts).toHaveBeenCalledWith(0, 10, { q: '', status: 'all' });
     expect(component.allPosts.length).toBe(1);
+    expect(component.posts.length).toBe(1);
     expect(component.loading).toBeFalse();
   });
 
@@ -205,20 +214,66 @@ describe('AdminBlogComponent', () => {
   it('switchTab should change activeTab and reset pagination', () => {
     fixture.detectChanges();
     component.allPage = 3;
+    dataServiceMock.getAdminBlogPosts.calls.reset();
 
     component.switchTab('published');
 
     expect(component.activeTab).toBe('published');
     expect(component.allPage).toBe(1);
+    expect(dataServiceMock.getAdminBlogPosts).toHaveBeenCalledWith(0, 10, { q: '', status: 'published' });
   });
 
-  it('searchQuery setter should filter tabPosts', () => {
+  it('searchQuery setter should reload paged posts with the query', () => {
     fixture.detectChanges();
-    component.searchQuery = 'Post 1';
-    expect(component.tabPosts.length).toBe(1);
+    dataServiceMock.getAdminBlogPosts.calls.reset();
 
-    component.searchQuery = 'nonexistent';
-    expect(component.tabPosts.length).toBe(0);
+    component.searchQuery = 'Post 1';
+
+    expect(dataServiceMock.getAdminBlogPosts).toHaveBeenCalledWith(0, 10, { q: 'Post 1', status: 'all' });
+  });
+
+  it('should reload paged posts when page size changes', () => {
+    fixture.detectChanges();
+    dataServiceMock.getAdminBlogPosts.calls.reset();
+    component.allPage = 4;
+
+    component.updatePerPage(25);
+
+    expect(component.perPage).toBe(25);
+    expect(component.currentPage).toBe(1);
+    expect(dataServiceMock.getAdminBlogPosts).toHaveBeenCalledWith(0, 25, { q: '', status: 'all' });
+  });
+
+  it('should locally preserve the selected tab when legacy paged responses ignore status filtering', () => {
+    dataServiceMock.getAdminBlogPosts.and.returnValues(
+      of({
+        blog_posts: [
+          { id: 3, title: 'Published 1', author: 'Admin', content: 'Content', date: '2001-01-03T10:00', visible: true },
+          { id: 2, title: 'Draft 1', author: 'Admin', content: 'Content', date: '2001-01-02T10:00', visible: false },
+          { id: 1, title: 'Published 2', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
+        ],
+        total: 3,
+        offset: 0,
+        limit: 10,
+      }),
+      of({
+        blog_posts: [
+          { id: 3, title: 'Published 1', author: 'Admin', content: 'Content', date: '2001-01-03T10:00', visible: true },
+          { id: 2, title: 'Draft 1', author: 'Admin', content: 'Content', date: '2001-01-02T10:00', visible: false },
+          { id: 1, title: 'Published 2', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
+        ],
+        total: 3,
+        offset: 0,
+        limit: 10,
+      })
+    );
+
+    fixture.detectChanges();
+
+    component.switchTab('draft');
+
+    expect(component.posts.length).toBe(1);
+    expect(component.posts[0].visible).toBeFalse();
   });
 
   it('addNewTag should add a trimmed tag and clear the input', () => {

@@ -96,7 +96,7 @@
             <button class="btn btn-primary" (click)="updateOpenSkyAircraftDatabase()" [disabled]="openSkyUpdating">
               {{ openSkyUpdating ? 'Updating...' : 'Download / Update Database' }}
             </button>
-            <button class="btn btn-outline-secondary" (click)="loadOpenSkyAircraftDatabaseStatus()" [disabled]="openSkyLoading || openSkyUpdating">
+            <button class="btn scheduler-refresh-button" (click)="loadOpenSkyAircraftDatabaseStatus()" [disabled]="openSkyLoading || openSkyUpdating">
               Refresh Status
             </button>
           </div>
@@ -356,14 +356,24 @@
               </div>
 
               <div class="ignored-pagination">
-                <small class="text-muted">
-                  Showing {{ adsbIgnoredStart() }}-{{ adsbIgnoredEnd() }} of {{ ignoredAdsbTotal }}
-                </small>
+                <div class="ignored-pagination-meta">
+                  <small class="text-muted">
+                    Showing {{ adsbIgnoredStart() }}-{{ adsbIgnoredEnd() }} of {{ ignoredAdsbTotal }}
+                  </small>
+                  <div class="ignored-page-size-control">
+                    <label class="ignored-page-size-label">Items per page</label>
+                    <select class="form-select form-select-sm ignored-page-size-select" [(ngModel)]="ignoredAdsbPageSize" (ngModelChange)="updateIgnoredAdsbPageSize($event)">
+                      @for (pageSize of pageSizeOptions; track pageSize) {
+                        <option [ngValue]="pageSize">{{ pageSize }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
                 <div class="btn-group btn-group-sm" role="group" aria-label="ADS-B ignored pagination">
                   <button class="btn btn-outline-secondary" (click)="prevIgnoredAdsbPage()" [disabled]="ignoredAdsbOffset === 0 || ignoredAdsbLoading">
                     Previous
                   </button>
-                  <button class="btn btn-outline-secondary" (click)="nextIgnoredAdsbPage()" [disabled]="ignoredAdsbOffset + ignoredPageSize >= ignoredAdsbTotal || ignoredAdsbLoading">
+                  <button class="btn btn-outline-secondary" (click)="nextIgnoredAdsbPage()" [disabled]="ignoredAdsbOffset + ignoredAdsbPageSize >= ignoredAdsbTotal || ignoredAdsbLoading">
                     Next
                   </button>
                 </div>
@@ -422,14 +432,24 @@
               </div>
 
               <div class="ignored-pagination">
-                <small class="text-muted">
-                  Showing {{ uatIgnoredStart() }}-{{ uatIgnoredEnd() }} of {{ ignoredUatTotal }}
-                </small>
+                <div class="ignored-pagination-meta">
+                  <small class="text-muted">
+                    Showing {{ uatIgnoredStart() }}-{{ uatIgnoredEnd() }} of {{ ignoredUatTotal }}
+                  </small>
+                  <div class="ignored-page-size-control">
+                    <label class="ignored-page-size-label">Items per page</label>
+                    <select class="form-select form-select-sm ignored-page-size-select" [(ngModel)]="ignoredUatPageSize" (ngModelChange)="updateIgnoredUatPageSize($event)">
+                      @for (pageSize of pageSizeOptions; track pageSize) {
+                        <option [ngValue]="pageSize">{{ pageSize }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
                 <div class="btn-group btn-group-sm" role="group" aria-label="UAT ignored pagination">
                   <button class="btn btn-outline-secondary" (click)="prevIgnoredUatPage()" [disabled]="ignoredUatOffset === 0 || ignoredUatLoading">
                     Previous
                   </button>
-                  <button class="btn btn-outline-secondary" (click)="nextIgnoredUatPage()" [disabled]="ignoredUatOffset + ignoredPageSize >= ignoredUatTotal || ignoredUatLoading">
+                  <button class="btn btn-outline-secondary" (click)="nextIgnoredUatPage()" [disabled]="ignoredUatOffset + ignoredUatPageSize >= ignoredUatTotal || ignoredUatLoading">
                     Next
                   </button>
                 </div>

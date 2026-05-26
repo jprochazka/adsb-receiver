@@ -1,0 +1,33 @@
+:host {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.portal-content {
+	flex: 1 0 auto;
+}
+
+.portal-footer {
+	flex-shrink: 0;
+	border-top: 1px solid rgba(56, 189, 248, 0.18);
+	background: linear-gradient(90deg, #05081a 0%, #0b142e 50%, #05081a 100%);
+	color: rgba(203, 213, 225, 0.58);
+	font-size: 0.875rem;
+}
+
+.portal-footer-inner {
+	margin: 0 auto;
+	max-width: 1200px;
+	padding: 0.65rem 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	text-align: center;
+}
+
+.portal-footer-sep {
+	color: #38bdf8;
+}

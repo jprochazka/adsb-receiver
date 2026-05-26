@@ -110,12 +110,25 @@ describe('AdminFlightsComponent', () => {
   });
 
   it('should handle OpenSky update error', () => {
-    dataServiceMock.updateOpenSkyAircraftDatabase.and.returnValue(throwError(() => new Error('failed')));
+    dataServiceMock.updateOpenSkyAircraftDatabase.and.returnValue(
+      throwError(() => ({ status: 500, error: { msg: 'Internal Server Error' } }))
+    );
 
     component.updateOpenSkyAircraftDatabase();
 
     expect(component.openSkyUpdating).toBeFalse();
-    expect(component.openSkyError).toContain('Failed to update OpenSky aircraft database');
+    expect(component.openSkyError).toBe('Failed to update OpenSky aircraft database: Internal Server Error.');
+  });
+
+  it('should show admin-specific OpenSky update error for forbidden responses', () => {
+    dataServiceMock.updateOpenSkyAircraftDatabase.and.returnValue(
+      throwError(() => ({ status: 403, error: {} }))
+    );
+
+    component.updateOpenSkyAircraftDatabase();
+
+    expect(component.openSkyUpdating).toBeFalse();
+    expect(component.openSkyError).toBe('Failed to update OpenSky aircraft database: admin access required.');
   });
 
   it('should save nav settings', () => {
@@ -175,6 +188,28 @@ describe('AdminFlightsComponent', () => {
     component.updateIgnoredUatFlight({ flight: 'UAT0001' }, event);
 
     expect(dataServiceMock.updateUatFlightPurgePreference).toHaveBeenCalledWith('UAT0001', false);
+  });
+
+  it('should reload ADS-B ignored flights when ADS-B page size changes', () => {
+    dataServiceMock.getIgnoredFlights.calls.reset();
+    component.ignoredAdsbOffset = 20;
+
+    component.updateIgnoredAdsbPageSize(25);
+
+    expect(component.ignoredAdsbPageSize).toBe(25);
+    expect(component.ignoredAdsbOffset).toBe(0);
+    expect(dataServiceMock.getIgnoredFlights).toHaveBeenCalledWith(0, 25);
+  });
+
+  it('should reload UAT ignored flights when UAT page size changes', () => {
+    dataServiceMock.getIgnoredUatFlights.calls.reset();
+    component.ignoredUatOffset = 20;
+
+    component.updateIgnoredUatPageSize(25);
+
+    expect(component.ignoredUatPageSize).toBe(25);
+    expect(component.ignoredUatOffset).toBe(0);
+    expect(dataServiceMock.getIgnoredUatFlights).toHaveBeenCalledWith(0, 25);
   });
 
   it('should render ignore-during-purge warning in both purge cards', () => {

@@ -47,6 +47,10 @@ opensky_database_model = setting_ns.model('OpenSkyAircraftDatabase', {
     'attribution': restx_fields.String(description='Required attribution text for OpenSky data')
 })
 
+api_version_model = setting_ns.model('ApiVersion', {
+    'version': restx_fields.String(description='Backend API version string')
+})
+
 OPENSKY_DB_URL = 'https://opensky-network.org/datasets/metadata/aircraftDatabase.csv'
 OPENSKY_DB_FILE = 'aircraftDatabase.csv'
 OPENSKY_METADATA_FILE = 'aircraftDatabase.metadata.json'
@@ -271,5 +275,15 @@ class OpenSkyAircraftDatabaseUpdateResource(Resource):
                 os.remove(tmp_path)
             logging.error('Unexpected error while updating OpenSky aircraft database', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
+
+
+@setting_ns.route('/api-version')
+class ApiVersionResource(Resource):
+    @setting_ns.response(200, 'Backend API version', api_version_model)
+    @setting_ns.doc('get_api_version')
+    def get(self):
+        """Get backend API version"""
+        version = current_app.config.get('PORTAL_BACKEND_VERSION', 'v3.0.0')
+        return {'version': version}, 200
 
 

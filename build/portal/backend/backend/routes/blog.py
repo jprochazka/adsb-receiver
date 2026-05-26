@@ -52,7 +52,11 @@ blog_posts_list_model = blog_ns.model('BlogPostsList', {
     'offset': restx_fields.Integer(description='Pagination offset'),
     'limit': restx_fields.Integer(description='Pagination limit'),
     'count': restx_fields.Integer(description='Number of blog posts returned'),
-    'total': restx_fields.Integer(description='Total number of blog posts')
+    'total': restx_fields.Integer(description='Total number of blog posts'),
+    'all_total': restx_fields.Integer(description='Total number of matching posts across all statuses'),
+    'published_total': restx_fields.Integer(description='Total number of matching published posts'),
+    'draft_total': restx_fields.Integer(description='Total number of matching draft posts'),
+    'scheduled_total': restx_fields.Integer(description='Total number of matching scheduled posts')
 })
 
 blog_tag_count_model = blog_ns.model('BlogTagCount', {
@@ -640,21 +644,50 @@ class BlogPostsAdminListResource(Resource):
     @blog_ns.response(500, 'Internal server error')
     @blog_ns.doc('get_all_blog_posts_list', security='Bearer', params={
         'offset': {'description': 'Number of posts to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
-        'limit': {'description': 'Maximum number of posts to return', 'type': 'integer', 'in': 'query', 'default': 25, 'minimum': 1, 'maximum': 10000}
+        'limit': {'description': 'Maximum number of posts to return', 'type': 'integer', 'in': 'query', 'default': 25, 'minimum': 1, 'maximum': 100},
+        'q': {'description': 'Optional title/author search query', 'type': 'string', 'in': 'query'},
+        'status': {'description': 'Optional admin status filter: all, published, draft, scheduled', 'type': 'string', 'in': 'query'}
     })
     @require_admin()
     def get(self):
         """Get all blog posts including hidden and future-dated (Admin only)"""
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=25, type=int)
+        search_query = (request.args.get('q') or '').strip()
+        status = (request.args.get('status') or 'all').strip().lower()
 
-        if offset < 0 or limit < 1 or limit > 10000:
+        if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+        if status not in {'all', 'published', 'draft', 'scheduled'}:
+            return {'msg': 'Bad Request - invalid status parameter'}, 400
 
         try:
+            now_iso = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
+
+            def apply_filters(statement, status_filter='all'):
+                filtered_statement = statement
+                if search_query:
+                    pattern = f"%{search_query}%"
+                    filtered_statement = filtered_statement.where(
+                        BlogPost.title.ilike(pattern) | BlogPost.author.ilike(pattern)
+                    )
+
+                if status_filter == 'published':
+                    filtered_statement = filtered_statement.where(BlogPost.visible.is_(True), BlogPost.date <= now_iso)
+                elif status_filter == 'draft':
+                    filtered_statement = filtered_statement.where(BlogPost.visible.is_(False))
+                elif status_filter == 'scheduled':
+                    filtered_statement = filtered_statement.where(BlogPost.visible.is_(True), BlogPost.date > now_iso)
+
+                return filtered_statement
+
             total = db.session.execute(select(func.count()).select_from(BlogPost)).scalar()
+            all_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost))).scalar()
+            published_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost), 'published')).scalar()
+            draft_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost), 'draft')).scalar()
+            scheduled_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost), 'scheduled')).scalar()
             blog_posts_result = db.session.execute(
-                select(BlogPost)
+                apply_filters(select(BlogPost), status)
                 .order_by(BlogPost.date.desc())
                 .offset(offset)
                 .limit(limit)
@@ -666,6 +699,10 @@ class BlogPostsAdminListResource(Resource):
                 'limit': limit,
                 'count': len(blog_posts_data),
                 'total': total,
+                'all_total': all_total,
+                'published_total': published_total,
+                'draft_total': draft_total,
+                'scheduled_total': scheduled_total,
                 'blog_posts': blog_posts_data
             }, 200
         except Exception as ex:

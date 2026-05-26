@@ -155,6 +155,14 @@ describe('DataService', () => {
     req.flush({ installed: false });
   });
 
+  it('should call getApiVersion', () => {
+    service.getApiVersion().subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/setting/api-version`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ version: 'v3.0.0' });
+  });
+
   it('should call updateOpenSkyAircraftDatabase with auth header', () => {
     service.updateOpenSkyAircraftDatabase().subscribe();
 

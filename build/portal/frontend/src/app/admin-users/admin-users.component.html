@@ -102,8 +102,18 @@
         </div>
       }
       <!-- Search -->
-      <div class="mb-3">
-        <input type="search" class="form-control" placeholder="Search by name or email…" [(ngModel)]="searchQuery">
+      <div class="row g-3 align-items-end mb-3">
+        <div class="col">
+          <input type="search" class="form-control" placeholder="Search by name or email…" [(ngModel)]="searchQuery">
+        </div>
+        <div class="col-md-auto">
+          <label class="form-label mb-1">Users per page</label>
+          <select class="form-select users-per-page-select" [(ngModel)]="perPage" (ngModelChange)="updatePerPage($event)">
+            @for (pageSize of pageSizeOptions; track pageSize) {
+              <option [ngValue]="pageSize">{{ pageSize }}</option>
+            }
+          </select>
+        </div>
       </div>
 
       <!-- Tab nav -->
@@ -171,7 +181,7 @@
           </tbody>
         </table>
       }
-      @if (tabUsers.length === 0) {
+      @if (currentTabTotal === 0) {
         <p class="text-muted">No {{ activeTab === 'active' ? 'active' : activeTab === 'locked' ? 'locked' : '' }} users found.</p>
       }
       @if (totalPages > 1) {
@@ -191,9 +201,9 @@
           </ul>
         </nav>
       }
-      @if (tabUsers.length > 0) {
+      @if (currentTabTotal > 0) {
         <p class="fw-light text-secondary small">
-          Page {{ currentPage }} of {{ totalPages }} &mdash; {{ tabUsers.length }} {{ activeTab === 'active' ? 'active' : activeTab === 'locked' ? 'locked' : 'total' }} user{{ tabUsers.length === 1 ? '' : 's' }}
+          Page {{ currentPage }} of {{ totalPages }} &mdash; {{ currentTabTotal }} {{ activeTab === 'active' ? 'active' : activeTab === 'locked' ? 'locked' : 'total' }} user{{ currentTabTotal === 1 ? '' : 's' }}
         </p>
       }
     </div>

@@ -33,9 +33,22 @@ export class DataService {
     });
   }
 
-  getUsers(offset = 0, limit = 10): Observable<any> {
+  getUsers(offset = 0, limit = 10, options?: { q?: string; locked?: boolean | null }): Observable<any> {
     const token = localStorage.getItem('access_token');
-    return this.http.get(`${this.apiUrl}/users/users?offset=${offset}&limit=${limit}`, {
+    let params = new HttpParams()
+      .set('offset', offset)
+      .set('limit', limit);
+
+    if (options?.q?.trim()) {
+      params = params.set('q', options.q.trim());
+    }
+
+    if (options?.locked !== undefined && options?.locked !== null) {
+      params = params.set('locked', String(options.locked));
+    }
+
+    return this.http.get(`${this.apiUrl}/users/users`, {
+      params,
       headers: { Authorization: `Bearer ${token}` }
     });
   }
@@ -100,9 +113,22 @@ export class DataService {
     return this.http.get(`${this.apiUrl}/blog/posts/meta`);
   }
 
-  getAdminBlogPosts(offset = 0, limit = 10): Observable<any> {
+  getAdminBlogPosts(offset = 0, limit = 10, options?: { q?: string; status?: string }): Observable<any> {
     const token = localStorage.getItem('access_token');
-    return this.http.get(`${this.apiUrl}/blog/posts/all?offset=${offset}&limit=${limit}`, {
+    let params = new HttpParams()
+      .set('offset', offset)
+      .set('limit', limit);
+
+    if (options?.q?.trim()) {
+      params = params.set('q', options.q.trim());
+    }
+
+    if (options?.status && options.status !== 'all') {
+      params = params.set('status', options.status);
+    }
+
+    return this.http.get(`${this.apiUrl}/blog/posts/all`, {
+      params,
       headers: { Authorization: `Bearer ${token}` }
     });
   }
@@ -397,6 +423,10 @@ export class DataService {
 
   getSetting(name: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/setting/${encodeURIComponent(name)}`);
+  }
+
+  getApiVersion(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/setting/api-version`);
   }
 
   getGraphData(

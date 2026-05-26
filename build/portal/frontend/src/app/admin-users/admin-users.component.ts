@@ -12,59 +12,45 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   styleUrl: './admin-users.component.scss'
 })
 export class AdminUsersComponent implements OnInit {
-  allUsers: any[] = [];
+  users: any[] = [];
   loading = true;
   errorMessage = '';
   successMessage = '';
+  totalUsers = 0;
+  allMatchingCount = 0;
+  activeMatchingCount = 0;
+  lockedMatchingCount = 0;
 
   // Tabs
   activeTab: 'active' | 'locked' | 'all' = 'all';
   activePage = 1;
   lockedPage = 1;
   allPage    = 1;
-  readonly perPage = 10;
+  readonly pageSizeOptions = [10, 25, 50, 100];
+  perPage = 50;
   private _searchQuery = '';
   get searchQuery(): string { return this._searchQuery; }
   set searchQuery(val: string) {
     this._searchQuery = val;
     this.activePage = 1; this.lockedPage = 1; this.allPage = 1;
+    this.loadUsers();
   }
 
-  get unlockedUsers(): any[] { return this.allUsers.filter(u => !u.locked); }
-  get lockedUsers(): any[]   { return this.allUsers.filter(u => u.locked); }
-  get baseTabUsers(): any[] {
-    if (this.activeTab === 'active') return this.unlockedUsers;
-    if (this.activeTab === 'locked') return this.lockedUsers;
-    return this.allUsers;
-  }
-  get tabUsers(): any[] {
-    const q = this.searchQuery.trim().toLowerCase();
-    if (!q) return this.baseTabUsers;
-    return this.baseTabUsers.filter(u =>
-      u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q)
-    );
-  }
-
-  private filterUsers(users: any[]): any[] {
-    const q = this.searchQuery.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(u =>
-      u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q)
-    );
-  }
-  get allCount(): number      { return this.filterUsers(this.allUsers).length; }
-  get activeCount(): number   { return this.filterUsers(this.unlockedUsers).length; }
-  get lockedCount(): number   { return this.filterUsers(this.lockedUsers).length; }
+  get allCount(): number      { return this.allMatchingCount; }
+  get activeCount(): number   { return this.activeMatchingCount; }
+  get lockedCount(): number   { return this.lockedMatchingCount; }
   get currentPage(): number  {
     if (this.activeTab === 'active') return this.activePage;
     if (this.activeTab === 'locked') return this.lockedPage;
     return this.allPage;
   }
-  get totalPages(): number   { return Math.max(1, Math.ceil(this.tabUsers.length / this.perPage)); }
-  get pagedUsers(): any[] {
-    const start = (this.currentPage - 1) * this.perPage;
-    return this.tabUsers.slice(start, start + this.perPage);
+  get totalPages(): number   { return Math.max(1, Math.ceil(this.currentTabTotal / this.perPage)); }
+  get currentTabTotal(): number {
+    if (this.activeTab === 'active') return this.activeMatchingCount;
+    if (this.activeTab === 'locked') return this.lockedMatchingCount;
+    return this.allMatchingCount;
   }
+  get pagedUsers(): any[] { return this.users; }
 
   // Create form state
   showCreateForm = false;
@@ -92,12 +78,42 @@ export class AdminUsersComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
-    this.dataService.getUsers(0, 1000).subscribe({
+    this.errorMessage = '';
+
+    const offset = (this.currentPage - 1) * this.perPage;
+    const locked = this.activeTab === 'all' ? null : this.activeTab === 'locked';
+
+    this.dataService.getUsers(offset, this.perPage, {
+      q: this.searchQuery,
+      locked,
+    }).subscribe({
       next: (data) => {
-        this.allUsers = data.users;
+        this.users = Array.isArray(data.users) ? data.users : [];
+        this.totalUsers = Number(data.total ?? 0);
+
+        const allTotal = data.all_total;
+        const activeTotal = data.active_total;
+        const lockedTotal = data.locked_total;
+        const hasLegacyFullResultFallback =
+          (allTotal === undefined || activeTotal === undefined || lockedTotal === undefined) &&
+          Number(data.offset ?? 0) === 0 &&
+          this.users.length === this.totalUsers;
+
+        if (hasLegacyFullResultFallback && this.activeTab !== 'all') {
+          this.users = this.users.filter((user) => this.activeTab === 'locked' ? !!user.locked : !user.locked);
+        }
+
+        this.allMatchingCount = Number(allTotal ?? data.total ?? 0);
+        this.activeMatchingCount = Number(
+          activeTotal ?? (hasLegacyFullResultFallback ? this.users.filter((user) => !user.locked).length : 0)
+        );
+        this.lockedMatchingCount = Number(
+          lockedTotal ?? (hasLegacyFullResultFallback ? this.users.filter((user) => !!user.locked).length : 0)
+        );
         this.loading = false;
       },
       error: () => {
+        this.users = [];
         this.errorMessage = 'Failed to load users.';
         this.loading = false;
       }
@@ -109,6 +125,7 @@ export class AdminUsersComponent implements OnInit {
     this.activePage = 1;
     this.lockedPage = 1;
     this.allPage = 1;
+    this.loadUsers();
   }
 
   goToPage(page: number) {
@@ -116,6 +133,15 @@ export class AdminUsersComponent implements OnInit {
     if (this.activeTab === 'active') this.activePage = page;
     else if (this.activeTab === 'locked') this.lockedPage = page;
     else this.allPage = page;
+    this.loadUsers();
+  }
+
+  updatePerPage(perPage: number) {
+    this.perPage = perPage;
+    this.activePage = 1;
+    this.lockedPage = 1;
+    this.allPage = 1;
+    this.loadUsers();
   }
 
   get pageNumbers(): number[] {

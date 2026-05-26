@@ -794,6 +794,8 @@ def test_get_all_blog_posts_200_admin(client, app):
     assert response.status_code == 200
     assert 'blog_posts' in response.json
     assert 'total' in response.json
+    assert 'all_total' in response.json
+    assert 'published_total' in response.json
     assert response.json['total'] >= 10
 
 def test_get_all_blog_posts_200_includes_hidden(client, app):
@@ -826,7 +828,38 @@ def test_get_all_blog_posts_400_limit_too_large(client, app):
     with app.app_context():
         access_token = create_admin_token()
         request_headers = {'Authorization': 'Bearer {}'.format(access_token)}
-    response = client.get('/api/blog/posts/all?limit=10001', headers=request_headers)
+    response = client.get('/api/blog/posts/all?limit=101', headers=request_headers)
+    assert response.status_code == 400
+
+def test_get_all_blog_posts_200_limit_100(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+        request_headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    response = client.get('/api/blog/posts/all?limit=100', headers=request_headers)
+    assert response.status_code == 200
+    assert response.json['limit'] == 100
+
+def test_get_all_blog_posts_200_status_filter(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+        request_headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    response = client.get('/api/blog/posts/all?status=draft', headers=request_headers)
+    assert response.status_code == 200
+    assert 'draft_total' in response.json
+
+def test_get_all_blog_posts_200_search_query(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+        request_headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    response = client.get('/api/blog/posts/all?q=Title', headers=request_headers)
+    assert response.status_code == 200
+    assert 'blog_posts' in response.json
+
+def test_get_all_blog_posts_400_invalid_status(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+        request_headers = {'Authorization': 'Bearer {}'.format(access_token)}
+    response = client.get('/api/blog/posts/all?status=weird', headers=request_headers)
     assert response.status_code == 400
 
 # GET /blog/post/{id}/comments - additional coverage

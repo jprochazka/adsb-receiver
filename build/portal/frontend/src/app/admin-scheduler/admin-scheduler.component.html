@@ -1,7 +1,7 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h1>Scheduler Management</h1>
-    <button class="btn btn-outline-secondary" (click)="refresh()" [disabled]="loading || actionBusy">Refresh</button>
+    <button class="btn scheduler-refresh-button" (click)="refresh()" [disabled]="loading || actionBusy">Refresh</button>
   </div>
   <hr />
 
@@ -13,14 +13,27 @@
     <div class="card mb-4">
       <div class="card-header fw-semibold">Scheduler Controls</div>
       <div class="card-body">
-        <p class="mb-3">Current state: <strong>{{ schedulerStateLabel() }}</strong></p>
+        <p class="mb-0">Current state: <strong>{{ schedulerStateLabel() }}</strong></p>
 
-        <div class="d-flex flex-wrap gap-2">
-          <button class="btn btn-success" (click)="start()" [disabled]="actionBusy">Start</button>
-          <button class="btn btn-warning" (click)="pause()" [disabled]="actionBusy">Pause</button>
-          <button class="btn btn-primary" (click)="resume()" [disabled]="actionBusy">Resume</button>
-          <button class="btn btn-danger" (click)="shutdown()" [disabled]="actionBusy">Shutdown</button>
-        </div>
+        @if (isSchedulerStateUnknown()) {
+          <p class="text-muted small scheduler-controls-note">Scheduler controls will appear after a valid scheduler state is reported.</p>
+        }
+        @if (canStartScheduler() || canPauseScheduler() || canResumeScheduler() || canShutdownScheduler()) {
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            @if (canStartScheduler()) {
+              <button class="btn btn-success" (click)="start()" [disabled]="actionBusy">Start</button>
+            }
+            @if (canPauseScheduler()) {
+              <button class="btn btn-warning" (click)="pause()" [disabled]="actionBusy">Pause</button>
+            }
+            @if (canResumeScheduler()) {
+              <button class="btn btn-primary" (click)="resume()" [disabled]="actionBusy">Resume</button>
+            }
+            @if (canShutdownScheduler()) {
+              <button class="btn btn-danger" (click)="shutdown()" [disabled]="actionBusy">Shutdown</button>
+            }
+          </div>
+        }
       </div>
     </div>
 
@@ -45,12 +58,18 @@
                     <td><code>{{ job.id }}</code></td>
                     <td>{{ job.trigger || '—' }}</td>
                     <td>{{ job.next_run_time || '—' }}</td>
-                    <td>{{ job.pending ? 'Pending' : 'Active' }}</td>
+                    <td>{{ job.pending ? 'Pending' : (isJobPaused(job) ? 'Paused' : 'Active') }}</td>
                     <td class="text-end">
                       <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" (click)="runJob(job.id)" [disabled]="jobsBusy[job.id]">Run</button>
-                        <button class="btn btn-outline-warning" (click)="pauseJob(job.id)" [disabled]="jobsBusy[job.id]">Pause</button>
-                        <button class="btn btn-outline-success" (click)="resumeJob(job.id)" [disabled]="jobsBusy[job.id]">Resume</button>
+                        @if (canRunJob(job)) {
+                          <button class="btn btn-outline-primary" (click)="runJob(job.id)" [disabled]="jobsBusy[job.id]">Run</button>
+                        }
+                        @if (canPauseJob(job)) {
+                          <button class="btn btn-outline-warning" (click)="pauseJob(job.id)" [disabled]="jobsBusy[job.id]">Pause</button>
+                        }
+                        @if (canResumeJob(job)) {
+                          <button class="btn btn-outline-success" (click)="resumeJob(job.id)" [disabled]="jobsBusy[job.id]">Resume</button>
+                        }
                       </div>
                     </td>
                   </tr>

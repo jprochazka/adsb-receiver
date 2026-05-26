@@ -8,6 +8,7 @@ from typing import Dict, Optional, Tuple
 
 from flask import current_app, has_app_context
 from sqlalchemy import select, text
+from sqlalchemy.exc import SQLAlchemyError
 
 from backend.models import db, OpenSkyAircraft
 
@@ -89,7 +90,7 @@ def _map_row_to_class(row: Dict[str, str]) -> Tuple[Optional[str], Optional[str]
 
 def _import_csv_to_db(path: str) -> int:
     """Read the CSV, classify each row, and bulk-insert into opensky_aircraft."""
-    rows = []
+    rows_by_icao: Dict[str, Dict[str, str]] = {}
     reg_index: Dict[str, Tuple[str, str]] = {}
     with open(path, mode='r', encoding='utf-8', newline='') as handle:
         reader = csv.DictReader(handle)
@@ -101,17 +102,23 @@ def _import_csv_to_db(path: str) -> int:
             if not klass:
                 continue
             conf = confidence or 'low'
-            rows.append({'icao24': icao, 'aircraft_class': klass, 'confidence': confidence or 'low'})
+            rows_by_icao[icao] = {'icao24': icao, 'aircraft_class': klass, 'confidence': conf}
 
             registration = _normalize_registration(row.get('registration'))
             if registration and registration not in reg_index:
                 reg_index[registration] = (klass, conf)
 
-    db.session.execute(text('DELETE FROM opensky_aircraft'))
-    batch_size = 5000
-    for i in range(0, len(rows), batch_size):
-        db.session.execute(OpenSkyAircraft.__table__.insert(), rows[i:i + batch_size])
-    db.session.commit()
+    rows = list(rows_by_icao.values())
+
+    try:
+        db.session.execute(text('DELETE FROM opensky_aircraft'))
+        batch_size = 5000
+        for i in range(0, len(rows), batch_size):
+            db.session.execute(OpenSkyAircraft.__table__.insert(), rows[i:i + batch_size])
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise
 
     _REGISTRATION_CLASS_INDEX.clear()
     _REGISTRATION_CLASS_INDEX.update(reg_index)

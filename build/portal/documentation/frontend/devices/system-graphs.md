@@ -3,7 +3,9 @@
 Seven RRD-backed charts tracking the health of the machine running your receiver.
 These appear at the bottom of the **Receiver** tab and help you distinguish radio or antenna problems from computer hardware limitations.
 
-System graphs use `collectd` as their data source. If collectd is not installed or not running, these charts will be empty.
+System graphs use the portal's built-in RRD writer and read from the configured `graphs.rrd_base` directory (default: `instance/rrd`).
+If no RRD files are present yet, charts will be empty until data collection runs.
+Legacy RRD files from older portal setups can be migrated during portal installation.
 
 ---
 

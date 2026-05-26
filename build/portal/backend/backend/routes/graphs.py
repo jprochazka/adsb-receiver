@@ -20,7 +20,7 @@ with open("config.yml") as _f:
     _config = yaml.safe_load(_f)
 
 _g              = _config.get('graphs', {})
-_RRD_BASE       = _g.get('rrd_base', '/var/lib/collectd/rrd')
+_RRD_BASE       = _g.get('rrd_base') or os.environ.get('RRD_BASE', 'instance/rrd')
 _RRD_HOST       = _g.get('hostname', socket.gethostname())
 _D1090_INSTANCE = _g.get('dump1090_instance', 'localhost')
 _D978_INSTANCE  = _g.get('dump978_instance', 'localhost')

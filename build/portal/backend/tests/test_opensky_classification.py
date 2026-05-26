@@ -76,3 +76,37 @@ def test_get_opensky_classification_by_registration_uses_normalized_registration
 
         os.remove(csv_path)
         clear_opensky_classification_cache()
+
+
+def test_import_opensky_csv_deduplicates_duplicate_icao24_rows(app):
+    with app.app_context():
+        clear_opensky_classification_cache()
+
+        opensky_dir = os.path.join(app.instance_path, 'opensky')
+        os.makedirs(opensky_dir, exist_ok=True)
+        csv_path = os.path.join(opensky_dir, 'aircraftDatabase.csv')
+        with open(csv_path, 'w', encoding='utf-8') as handle:
+            handle.write('icao24,registration,typecode,categoryDescription\n')
+            handle.write('abc123,N-123AB,C172,\n')
+            handle.write('abc123,N-123AB,C172,\n')
+            handle.write('def456,N-456CD,,Rotorcraft\n')
+
+        imported = import_opensky_csv()
+
+        assert imported == 2
+
+        stats = get_opensky_cache_stats()
+        assert stats['entries'] == 2
+
+        klass1, source1, confidence1 = get_opensky_classification('abc123')
+        assert klass1 == 'general_aviation'
+        assert source1 == 'opensky'
+        assert confidence1 == 'low'
+
+        klass2, source2, confidence2 = get_opensky_classification('def456')
+        assert klass2 == 'helicopter'
+        assert source2 == 'opensky'
+        assert confidence2 == 'high'
+
+        os.remove(csv_path)
+        clear_opensky_classification_cache()

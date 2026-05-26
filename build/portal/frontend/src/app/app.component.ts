@@ -7,6 +7,7 @@ import { catchError, filter, of } from 'rxjs';
 import { LinksComponent } from './links/links.component';
 import { LogoutComponent } from './logout/logout.component';
 import { DataService } from './service/data.service';
+import { environment } from '../environments/environment';
 
 const MAP_LINK_DEFS: Record<string, { label: string; href: string; external: boolean }> = {
   dump1090: { label: 'Dump1090',            href: '/dump1090', external: false },
@@ -25,6 +26,9 @@ const DEFAULT_MAP_ORDER = 'dump1090,dump978,adsbx,pfclient';
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'frontend';
+  frontendVersion = environment.frontendVersion;
+  backendVersion = environment.backendVersion;
+  currentYear = new Date().getFullYear();
   searchQuery = '';
   trackedFlights: any[] = [];
   alertBarDismissed = false;
@@ -57,6 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.pollRecentNotifications();
     this.pollInterval = setInterval(() => this.pollRecentNotifications(), 60000);
+    this.loadBackendVersion();
     this.loadFlightsSettings();
     this.loadInfoSettings();
     this.loadMapSettings();
@@ -67,6 +72,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     clearInterval(this.pollInterval);
+  }
+
+  private loadBackendVersion(): void {
+    this.dataService.getApiVersion().pipe(catchError(() => of(null))).subscribe((result) => {
+      if (result?.version) {
+        this.backendVersion = result.version;
+      }
+    });
   }
 
   private pollRecentNotifications(): void {

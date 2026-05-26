@@ -25,6 +25,40 @@ describe('FlightsComponent', () => {
     })),
     searchFlights: jasmine.createSpy('searchFlights').and.returnValue(of({ flights: [], count: 0 })),
     searchUatFlights: jasmine.createSpy('searchUatFlights').and.returnValue(of({ flights: [], count: 0 })),
+    getFlightDetails: jasmine.createSpy('getFlightDetails').and.returnValue(of({
+      flight: 'N24680',
+      first_seen: '2026-01-01 01:00:00',
+      last_seen: '2026-01-01 02:00:00',
+      icao: null,
+      sightings_count: 7,
+    })),
+    getUatFlightDetails: jasmine.createSpy('getUatFlightDetails').and.returnValue(of({
+      flight: 'UAT24680',
+      first_seen: '2026-01-01 01:00:00',
+      last_seen: '2026-01-01 02:00:00',
+      icao: null,
+      sightings_count: 5,
+    })),
+    getFlightPositions: jasmine.createSpy('getFlightPositions').and.returnValue(of({
+      offset: 0,
+      limit: 1000,
+      count: 2,
+      total: 1234,
+      positions: [
+        { latitude: 41, longitude: -83, time: '2026-01-01 01:00:00', altitude: 10000, speed: 200, squawk: 1200 },
+        { latitude: 41.1, longitude: -83.1, time: '2026-01-01 01:10:00', altitude: 10100, speed: 205, squawk: 1200 },
+      ],
+    })),
+    getUatFlightPositions: jasmine.createSpy('getUatFlightPositions').and.returnValue(of({
+      offset: 0,
+      limit: 1000,
+      count: 1,
+      total: 45,
+      positions: [
+        { latitude: 40, longitude: -82, time: '2026-01-01 01:00:00', altitude: 5000, speed: 120, squawk: 1200 },
+      ],
+    })),
+    getAircraftPhoto: jasmine.createSpy('getAircraftPhoto').and.returnValue(of(null)),
     updateFlightPurgePreference: jasmine.createSpy('updateFlightPurgePreference').and.returnValue(of({
       flight: 'AAL123',
       ignore_on_purge: true,
@@ -50,6 +84,24 @@ describe('FlightsComponent', () => {
       offset: 0,
       count: 1,
     }));
+    dataServiceMock.getFlightDetails.and.returnValue(of({
+      flight: 'N24680',
+      first_seen: '2026-01-01 01:00:00',
+      last_seen: '2026-01-01 02:00:00',
+      icao: null,
+      sightings_count: 7,
+    }));
+    dataServiceMock.getFlightPositions.and.returnValue(of({
+      offset: 0,
+      limit: 1000,
+      count: 2,
+      total: 1234,
+      positions: [
+        { latitude: 41, longitude: -83, time: '2026-01-01 01:00:00', altitude: 10000, speed: 200, squawk: 1200 },
+        { latitude: 41.1, longitude: -83.1, time: '2026-01-01 01:10:00', altitude: 10100, speed: 205, squawk: 1200 },
+      ],
+    }));
+    dataServiceMock.getAircraftPhoto.and.returnValue(of(null));
 
     await TestBed.configureTestingModule({
       imports: [FlightsComponent],
@@ -85,6 +137,52 @@ describe('FlightsComponent', () => {
     expect(component.uatTotalFlights).toBe(1);
     expect(component.combinedFlights.length).toBe(2);
     expect(component.loading).toBeFalse();
+  });
+
+  it('should cap All Flights visible rows to per-page size', () => {
+    component.searchQuery = '';
+    component.filterQuery = '';
+    component.perPage = 1;
+
+    expect(component.displayedCombinedFlights.length).toBe(1);
+  });
+
+  it('should compute All Flights total pages from combined totals and per-page size', () => {
+    component.adsbTotalFlights = 20;
+    component.uatTotalFlights = 5;
+    component.perPage = 10;
+
+    expect(component.allTotalPages).toBe(3);
+  });
+
+  it('should update flights per page like admin users list pagination', () => {
+    const navigateSpy = spyOn(component.router, 'navigate').and.returnValue(Promise.resolve(true));
+    component.adsbCurrentPage = 3;
+    component.uatCurrentPage = 2;
+
+    component.updatePerPage(25);
+
+    expect(component.perPage).toBe(25);
+    expect(component.adsbCurrentPage).toBe(1);
+    expect(component.uatCurrentPage).toBe(1);
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights'], {
+      queryParams: { perPage: 25 },
+    });
+  });
+
+  it('should refresh flights list when ngModel already applied the new per-page value', () => {
+    const navigateSpy = spyOn(component.router, 'navigate').and.returnValue(Promise.resolve(true));
+    component.perPage = 25;
+    component.adsbCurrentPage = 2;
+    component.uatCurrentPage = 2;
+
+    component.updatePerPage(25);
+
+    expect(component.adsbCurrentPage).toBe(1);
+    expect(component.uatCurrentPage).toBe(1);
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights'], {
+      queryParams: { perPage: 25 },
+    });
   });
 
   it('should filter combined flights and update tab counts', () => {
@@ -333,5 +431,20 @@ describe('FlightsComponent', () => {
     expect(component.allTotalFlights).toBe(180);
     expect(component.allDisplayStart).toBe(101);
     expect(component.allDisplayEnd).toBe(180);
+  });
+
+  it('should use API totals for detail positions and sightings from JSON', () => {
+    component.flightType = 'adsb';
+    component.flightId = 'N24680';
+    component.loading = true;
+
+    spyOn<any>(component, 'plotTracks').and.callFake(() => {});
+
+    (component as any).loadDetailPositions();
+
+    expect(dataServiceMock.getFlightDetails).toHaveBeenCalledWith('N24680');
+    expect(dataServiceMock.getFlightPositions).toHaveBeenCalledWith('N24680');
+    expect(component.flightInfo?.totalPositions).toBe(1234);
+    expect(component.flightInfo?.trackCount).toBe(7);
   });
 });

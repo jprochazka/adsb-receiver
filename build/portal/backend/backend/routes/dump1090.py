@@ -10,6 +10,8 @@ from werkzeug.exceptions import HTTPException
 from sqlalchemy import select, func, delete, or_
 
 flights = Blueprint('dump1090', __name__)
+SIGHTING_GAP = datetime.timedelta(minutes=30)
+TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 # Create Flask-RESTX namespaces for flight operations
 adsb_ns = Namespace('adsb', description='ADS-B operations')
@@ -28,6 +30,7 @@ flight_model = flight_ns.model('Flight', {
     'message_type': restx_fields.String(description='Decoder message type label'),
     'aircraft_class': restx_fields.String(description='Mapped aircraft class for iconography'),
     'ignore_on_purge': restx_fields.Boolean(description='Whether the flight is ignored by purge operations'),
+    'sightings_count': restx_fields.Integer(description='Sightings count grouped by callsign with a 30-minute separation threshold'),
 })
 
 flights_list_model = flights_ns.model('FlightsList', {
@@ -62,17 +65,66 @@ positions_list_model = flight_ns.model('PositionsList', {
     'positions': restx_fields.List(restx_fields.Nested(position_model)),
     'offset': restx_fields.Integer(description='Pagination offset'),
     'limit': restx_fields.Integer(description='Pagination limit'),
-    'count': restx_fields.Integer(description='Number of positions returned')
+    'count': restx_fields.Integer(description='Number of positions returned'),
+    'total': restx_fields.Integer(description='Total number of positions in the database for this flight')
 })
 
 
 def _serialize_adsb_flights(rows):
+    flights_rows = list(rows)
     flights_data = []
-    for flight_obj in rows:
+    for flight_obj in flights_rows:
         data = flight_obj.to_dict()
         data['icao'] = flight_obj.aircraft_ref.icao if flight_obj.aircraft_ref else None
         flights_data.append(data)
+
+    sightings_counts = _get_adsb_sightings_counts(
+        [data.get('flight') for data in flights_data if data.get('flight')]
+    )
+    for data in flights_data:
+        flight_code = data.get('flight')
+        data['sightings_count'] = sightings_counts.get(flight_code, 1 if flight_code else 0)
+
     return flights_data
+
+
+def _parse_timestamp(value: str | None):
+    if not value:
+        return None
+
+    try:
+        return datetime.datetime.strptime(value, TIMESTAMP_FORMAT)
+    except ValueError:
+        return None
+
+
+def _get_adsb_sightings_counts(flights: list[str]):
+    unique_flights = sorted({flight for flight in flights if flight})
+    if not unique_flights:
+        return {}
+
+    rows = db.session.execute(
+        select(Flight.flight, Flight.first_seen)
+        .where(Flight.flight.in_(unique_flights))
+        .order_by(Flight.flight.asc(), Flight.first_seen.asc(), Flight.id.asc())
+    ).all()
+
+    counts: dict[str, int] = {}
+    previous_seen: dict[str, datetime.datetime | None] = {}
+
+    for flight, first_seen in rows:
+        current_seen = _parse_timestamp(first_seen)
+        if current_seen is None:
+            counts[flight] = counts.get(flight, 0) + 1
+            continue
+
+        prior_seen = previous_seen.get(flight)
+        if prior_seen is None or (current_seen - prior_seen) >= SIGHTING_GAP:
+            counts[flight] = counts.get(flight, 0) + 1
+
+        previous_seen[flight] = current_seen
+
+    return counts
 
 
 def _parse_ignore_on_purge(value: str | None):
@@ -249,6 +301,7 @@ class AdsbFlightsController(Resource):
 
             data = flight_obj.to_dict()
             data['icao'] = flight_obj.aircraft_ref.icao if flight_obj.aircraft_ref else None
+            data['sightings_count'] = _get_adsb_sightings_counts([flight_obj.flight]).get(flight_obj.flight, 1)
             return data, 200
         except Exception as ex:
             logging.error(f"Error encountered while trying to get flight {flight}", exc_info=ex)
@@ -274,11 +327,15 @@ class AdsbFlightsController(Resource):
                 .limit(limit)
             )
             positions = [pos.to_dict() for pos in positions_result.scalars()]
+            total = db.session.execute(
+                select(func.count(Position.id)).where(Position.flight == flight_obj.id)
+            ).scalar_one()
 
             return {
                 'offset': offset,
                 'limit': limit,
                 'count': len(positions),
+                'total': total,
                 'positions': positions
             }, 200
 

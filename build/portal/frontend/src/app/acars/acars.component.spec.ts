@@ -39,6 +39,7 @@ describe('AcarsComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             paramMap: of(convertToParamMap({})),
+            queryParamMap: of(convertToParamMap({})),
           },
         },
         { provide: DataService, useValue: dataServiceMock },
@@ -60,6 +61,19 @@ describe('AcarsComponent', () => {
     expect(component.totalFlights).toBe(2);
     expect(component.flights.length).toBe(2);
     expect(component.loading).toBeFalse();
+  });
+
+  it('should update ACARS flights per page and navigate with query params', () => {
+    const navigateSpy = spyOn(component['router'], 'navigate').and.returnValue(Promise.resolve(true));
+    component.currentPage = 3;
+
+    component.updatePerPage(25);
+
+    expect(component.perPage).toBe(25);
+    expect(component.currentPage).toBe(1);
+    expect(navigateSpy).toHaveBeenCalledWith(['/acars'], {
+      queryParams: { perPage: 25 },
+    });
   });
 
   it('should filter flights by query', () => {

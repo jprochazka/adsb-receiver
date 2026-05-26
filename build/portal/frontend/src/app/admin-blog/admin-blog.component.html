@@ -307,8 +307,18 @@
       }
       <!-- Search -->
       <p class="text-muted small mb-4">All changes are saved automatically.</p>
-      <div class="mb-3">
-        <input type="search" class="form-control" placeholder="Search by title or author…" [(ngModel)]="searchQuery">
+      <div class="row g-3 align-items-end mb-3">
+        <div class="col">
+          <input type="search" class="form-control" placeholder="Search by title or author…" [(ngModel)]="searchQuery">
+        </div>
+        <div class="col-md-auto">
+          <label class="form-label mb-1">Posts per page</label>
+          <select class="form-select blog-per-page-select" [(ngModel)]="perPage" (ngModelChange)="updatePerPage($event)">
+            @for (pageSize of pageSizeOptions; track pageSize) {
+              <option [ngValue]="pageSize">{{ pageSize }}</option>
+            }
+          </select>
+        </div>
       </div>
 
       <!-- Tab nav -->

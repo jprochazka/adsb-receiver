@@ -287,12 +287,25 @@
   }
   <hr />
 
-  <div class="mb-3">
-    <input
-      type="search"
-      class="form-control"
-      placeholder="Search by flight number or ICAO…"
-      [(ngModel)]="filterQuery">
+  <div class="row g-3 align-items-end mb-3">
+    <div class="col">
+      <input
+        type="search"
+        class="form-control"
+        placeholder="Search by flight number or ICAO…"
+        [(ngModel)]="filterQuery">
+    </div>
+
+    @if (!searchQuery) {
+      <div class="col-md-auto">
+        <label class="form-label mb-1">Flights per page</label>
+        <select class="form-select flights-per-page-select" [(ngModel)]="perPage" (ngModelChange)="updatePerPage($event)">
+          @for (pageSize of pageSizeOptions; track pageSize) {
+            <option [ngValue]="pageSize">{{ pageSize }}</option>
+          }
+        </select>
+      </div>
+    }
   </div>
 
   @if (loading) {
@@ -329,7 +342,7 @@
       <!-- All Flights Tab -->
       @if (allTabEnabled && activeTab === 'all') {
         <div>
-          @if (filteredCombinedFlights.length) {
+          @if (displayedCombinedFlights.length) {
             <div>
               <table class="table table-striped table-hover">
                 <thead>
@@ -338,13 +351,14 @@
                     <th scope="col">ICAO</th>
                     <th scope="col">Aircraft</th>
                     <th scope="col">Type</th>
+                    <th scope="col">Sightings</th>
                     <th scope="col">First Seen</th>
                     <th scope="col">Last Seen</th>
                     <th scope="col">Links</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (flight of filteredCombinedFlights; track flight) {
+                  @for (flight of displayedCombinedFlights; track flight) {
                     <tr>
                       <td>
                         @if (flight._type === 'adsb') {
@@ -374,6 +388,7 @@
                           <span  class="badge badge-uat">UAT</span>
                         }
                       </td>
+                      <td>{{ flight.sightings_count ?? 1 }}</td>
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
                       <td>
@@ -470,12 +485,7 @@
                     <li class="page-item" [class.disabled]="allCurrentPage === 1">
                       <a class="page-link" (click)="goToAllPage(allCurrentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
                     </li>
-                    @for (p of allPageNumbers; track p; let i = $index) {
-                      @if (i > 0 && p !== allPageNumbers[i - 1] + 1) {
-                        <li class="page-item disabled">
-                          <span class="page-link">…</span>
-                        </li>
-                      }
+                    @for (p of allPageNumbers; track p) {
                       <li class="page-item" [class.active]="p === allCurrentPage">
                         <a class="page-link" (click)="goToAllPage(p)" style="cursor:pointer">{{ p }}</a>
                       </li>
@@ -514,6 +524,7 @@
                     <th scope="col">ICAO</th>
                     <th scope="col">Aircraft</th>
                     <th scope="col">Type</th>
+                    <th scope="col">Sightings</th>
                     <th scope="col">First Seen</th>
                     <th scope="col">Last Seen</th>
                     <th scope="col">Links</th>
@@ -535,6 +546,7 @@
                         </span>
                       </td>
                       <td><span class="badge badge-adsb">ADS-B</span></td>
+                      <td>{{ flight.sightings_count ?? 1 }}</td>
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
                       <td>
@@ -631,12 +643,7 @@
                     <li class="page-item" [class.disabled]="adsbCurrentPage === 1">
                       <a class="page-link" (click)="goToAdsbPage(adsbCurrentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
                     </li>
-                    @for (p of adsbPageNumbers; track p; let i = $index) {
-                      @if (i > 0 && p !== adsbPageNumbers[i - 1] + 1) {
-                        <li class="page-item disabled">
-                          <span class="page-link">…</span>
-                        </li>
-                      }
+                    @for (p of adsbPageNumbers; track p) {
                       <li class="page-item" [class.active]="p === adsbCurrentPage">
                         <a class="page-link" (click)="goToAdsbPage(p)" style="cursor:pointer">{{ p }}</a>
                       </li>
@@ -675,6 +682,7 @@
                     <th scope="col">ICAO</th>
                     <th scope="col">Aircraft</th>
                     <th scope="col">Type</th>
+                    <th scope="col">Sightings</th>
                     <th scope="col">First Seen</th>
                     <th scope="col">Last Seen</th>
                     <th scope="col">Links</th>
@@ -701,6 +709,7 @@
                         </span>
                       </td>
                       <td><span class="badge badge-uat">UAT</span></td>
+                      <td>{{ flight.sightings_count ?? 1 }}</td>
                       <td>{{ flight.first_seen }}</td>
                       <td>{{ flight.last_seen }}</td>
                       <td>
@@ -797,12 +806,7 @@
                     <li class="page-item" [class.disabled]="uatCurrentPage === 1">
                       <a class="page-link" (click)="goToUatPage(uatCurrentPage - 1)" style="cursor:pointer">&#8249; Prev</a>
                     </li>
-                    @for (p of uatPageNumbers; track p; let i = $index) {
-                      @if (i > 0 && p !== uatPageNumbers[i - 1] + 1) {
-                        <li class="page-item disabled">
-                          <span class="page-link">…</span>
-                        </li>
-                      }
+                    @for (p of uatPageNumbers; track p) {
                       <li class="page-item" [class.active]="p === uatCurrentPage">
                         <a class="page-link" (click)="goToUatPage(p)" style="cursor:pointer">{{ p }}</a>
                       </li>

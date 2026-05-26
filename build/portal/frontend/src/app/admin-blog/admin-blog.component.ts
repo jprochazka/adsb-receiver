@@ -14,6 +14,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 })
 export class AdminBlogComponent implements OnInit {
   allPosts: any[] = [];
+  posts: any[] = [];
   loading = true;
   errorMessage = '';
   successMessage = '';
@@ -26,12 +27,14 @@ export class AdminBlogComponent implements OnInit {
   publishedPage = 1;
   draftPage     = 1;
   scheduledPage = 1;
-  readonly perPage = 10;
+  readonly pageSizeOptions = [10, 25, 50, 100];
+  perPage = 10;
   private _searchQuery = '';
   get searchQuery(): string { return this._searchQuery; }
   set searchQuery(val: string) {
     this._searchQuery = val;
     this.allPage = 1; this.publishedPage = 1; this.draftPage = 1; this.scheduledPage = 1;
+    this.loadPagedPosts();
   }
 
   get publishedPosts(): any[]  { return this.allPosts.filter(p => p.visible && !this.isFuture(p.date)); }
@@ -69,10 +72,7 @@ export class AdminBlogComponent implements OnInit {
     return this.allPage;
   }
   get totalPages(): number { return Math.max(1, Math.ceil(this.tabPosts.length / this.perPage)); }
-  get pagedPosts(): any[] {
-    const start = (this.currentPage - 1) * this.perPage;
-    return this.tabPosts.slice(start, start + this.perPage);
-  }
+  get pagedPosts(): any[] { return this.posts; }
   // Create form state
   showCreateForm = false;
   creating = false;
@@ -214,12 +214,60 @@ export class AdminBlogComponent implements OnInit {
 
   loadPosts() {
     this.loading = true;
-    this.dataService.getAdminBlogPosts(0, 10000).subscribe({
+    this.errorMessage = '';
+
+    this.loadAllPostsSnapshot(0, []);
+  }
+
+  private loadAllPostsSnapshot(offset: number, accumulatedPosts: any[]): void {
+    this.dataService.getAdminBlogPosts(offset, 100).subscribe({
       next: (data) => {
-        this.allPosts = data.blog_posts;
+        const fetchedPosts = Array.isArray(data.blog_posts) ? data.blog_posts : [];
+        const mergedPosts = [...accumulatedPosts, ...fetchedPosts];
+        const reportedTotal = Number(data.total ?? mergedPosts.length);
+        const isComplete = fetchedPosts.length < 100 || mergedPosts.length >= reportedTotal;
+
+        if (isComplete) {
+          this.allPosts = mergedPosts;
+          this.loadPagedPosts();
+          return;
+        }
+
+        this.loadAllPostsSnapshot(offset + 100, mergedPosts);
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load blog posts.';
+        this.loading = false;
+      }
+    });
+  }
+
+  loadPagedPosts() {
+    const offset = (this.currentPage - 1) * this.perPage;
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.dataService.getAdminBlogPosts(offset, this.perPage, {
+      q: this.searchQuery,
+      status: this.activeTab,
+    }).subscribe({
+      next: (data) => {
+        this.posts = Array.isArray(data.blog_posts) ? data.blog_posts : [];
+
+        const hasLegacyLocalPagingFallback =
+          (data.all_total === undefined || data.published_total === undefined || data.draft_total === undefined || data.scheduled_total === undefined) &&
+          Number(data.offset ?? 0) === offset &&
+          this.allPosts.length > 0 &&
+          this.allPosts.length === Number(data.total ?? this.allPosts.length);
+
+        if (hasLegacyLocalPagingFallback) {
+          this.posts = this.tabPosts.slice(offset, offset + this.perPage);
+        }
+
         this.loading = false;
       },
       error: () => {
+        this.posts = [];
         this.errorMessage = 'Failed to load blog posts.';
         this.loading = false;
       }
@@ -292,6 +340,7 @@ export class AdminBlogComponent implements OnInit {
   switchTab(tab: 'all' | 'published' | 'draft' | 'scheduled') {
     this.activeTab = tab;
     this.allPage = 1; this.publishedPage = 1; this.draftPage = 1; this.scheduledPage = 1;
+    this.loadPagedPosts();
   }
 
   goToPage(page: number) {
@@ -300,6 +349,16 @@ export class AdminBlogComponent implements OnInit {
     else if (this.activeTab === 'draft') this.draftPage = page;
     else if (this.activeTab === 'scheduled') this.scheduledPage = page;
     else this.allPage = page;
+    this.loadPagedPosts();
+  }
+
+  updatePerPage(perPage: number) {
+    this.perPage = perPage;
+    this.allPage = 1;
+    this.publishedPage = 1;
+    this.draftPage = 1;
+    this.scheduledPage = 1;
+    this.loadPagedPosts();
   }
 
   get pageNumbers(): number[] {

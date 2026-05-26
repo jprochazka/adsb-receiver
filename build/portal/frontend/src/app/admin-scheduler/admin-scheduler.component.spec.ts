@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -86,6 +87,86 @@ describe('AdminSchedulerComponent', () => {
 
     component.schedulerStatus = { state: 'STATE_SHUTDOWN' };
     expect(component.schedulerStateLabel()).toBe('Stopped');
+  });
+
+  it('should expose scheduler state helper booleans', () => {
+    component.schedulerStatus = { state: 'STATE_RUNNING' };
+    expect(component.isSchedulerRunning()).toBeTrue();
+    expect(component.isSchedulerPaused()).toBeFalse();
+    expect(component.isSchedulerStopped()).toBeFalse();
+    expect(component.canPauseScheduler()).toBeTrue();
+    expect(component.canShutdownScheduler()).toBeTrue();
+
+    component.schedulerStatus = { state: 'STATE_PAUSED' };
+    expect(component.isSchedulerPaused()).toBeTrue();
+    expect(component.canResumeScheduler()).toBeTrue();
+    expect(component.canShutdownScheduler()).toBeTrue();
+
+    component.schedulerStatus = { state: 'STATE_SHUTDOWN' };
+    expect(component.isSchedulerStopped()).toBeTrue();
+    expect(component.canStartScheduler()).toBeTrue();
+
+    component.schedulerStatus = null;
+    expect(component.isSchedulerStateUnknown()).toBeTrue();
+  });
+
+  it('should only render usable scheduler actions for the current scheduler state', () => {
+    component.loading = false;
+
+    component.schedulerStatus = { state: 'STATE_RUNNING' };
+    fixture.detectChanges();
+    let controlButtons = fixture.debugElement
+      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .map((button) => button.nativeElement.textContent.trim());
+    expect(controlButtons).toEqual(['Pause', 'Shutdown']);
+
+    component.schedulerStatus = { state: 'STATE_PAUSED' };
+    fixture.detectChanges();
+    controlButtons = fixture.debugElement
+      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .map((button) => button.nativeElement.textContent.trim());
+    expect(controlButtons).toEqual(['Resume', 'Shutdown']);
+
+    component.schedulerStatus = { state: 'STATE_SHUTDOWN' };
+    fixture.detectChanges();
+    controlButtons = fixture.debugElement
+      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .map((button) => button.nativeElement.textContent.trim());
+    expect(controlButtons).toEqual(['Start']);
+
+    component.schedulerStatus = null;
+    fixture.detectChanges();
+    controlButtons = fixture.debugElement
+      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .map((button) => button.nativeElement.textContent.trim());
+    expect(controlButtons).toEqual([]);
+    expect(fixture.nativeElement.textContent).toContain('Scheduler controls will appear after a valid scheduler state is reported.');
+  });
+
+  it('should infer paused job state from missing next run time', () => {
+    expect(component.isJobPaused({ id: 'maintenance', next_run_time: null, pending: false })).toBeTrue();
+    expect(component.canResumeJob({ id: 'maintenance', next_run_time: null, pending: false })).toBeTrue();
+    expect(component.canPauseJob({ id: 'maintenance', next_run_time: null, pending: false })).toBeFalse();
+  });
+
+  it('should only render usable job actions for the current job status', () => {
+    component.loading = false;
+    component.jobs = [
+      { id: 'active-job', trigger: 'interval', next_run_time: '2026-05-26T12:00:00Z', pending: false },
+      { id: 'paused-job', trigger: 'interval', next_run_time: null, pending: false },
+      { id: 'pending-job', trigger: 'date', next_run_time: '2026-05-26T12:30:00Z', pending: true },
+    ];
+
+    fixture.detectChanges();
+
+    const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+    const rowButtons = rows.map((row) =>
+      row.queryAll(By.css('button')).map((button) => button.nativeElement.textContent.trim())
+    );
+
+    expect(rowButtons[0]).toEqual(['Run', 'Pause']);
+    expect(rowButtons[1]).toEqual(['Run', 'Resume']);
+    expect(rowButtons[2]).toEqual([]);
   });
 
   it('should map unknown scheduler state safely', () => {

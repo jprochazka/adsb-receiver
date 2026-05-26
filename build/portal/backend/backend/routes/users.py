@@ -48,7 +48,10 @@ users_list_model = users_ns.model('UsersList', {
     'offset': restx_fields.Integer(description='Pagination offset'),
     'limit': restx_fields.Integer(description='Pagination limit'),
     'count': restx_fields.Integer(description='Number of users returned'),
-    'total': restx_fields.Integer(description='Total number of users')
+    'total': restx_fields.Integer(description='Total number of users'),
+    'all_total': restx_fields.Integer(description='Total number of matching users across all statuses'),
+    'active_total': restx_fields.Integer(description='Total number of matching unlocked users'),
+    'locked_total': restx_fields.Integer(description='Total number of matching locked users')
 })
 
 user_response_model = users_ns.model('UserResponse', {
@@ -402,20 +405,53 @@ class UsersListResource(Resource):
     @users_ns.doc('list_users', security='Bearer', 
                   params={
                       'offset': {'description': 'Pagination offset', 'type': 'integer', 'default': 0},
-                      'limit': {'description': 'Results per page (max 10000)', 'type': 'integer', 'default': 50}
+                      'limit': {'description': 'Results per page (max 100)', 'type': 'integer', 'default': 50},
+                      'q': {'description': 'Optional name/email search query', 'type': 'string'},
+                      'locked': {'description': 'Optional locked filter (true/false)', 'type': 'boolean'}
                   })
     @require_admin()
     def get(self):
         """Get all users (Admin only)"""
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=50, type=int)
+        locked_param = request.args.get('locked')
+        search_query = (request.args.get('q') or '').strip()
+
         if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Invalid offset or limit parameters'}, 400
 
+        locked_filter = None
+        if locked_param is not None:
+            normalized_locked = locked_param.strip().lower()
+            if normalized_locked not in {'true', 'false'}:
+                return {'msg': 'Invalid locked parameter'}, 400
+            locked_filter = normalized_locked == 'true'
+
         try:
+            def apply_filters(statement, locked_value=None):
+                filtered_statement = statement
+                if search_query:
+                    pattern = f"%{search_query}%"
+                    filtered_statement = filtered_statement.where(
+                        User.name.ilike(pattern) | User.email.ilike(pattern)
+                    )
+                if locked_value is not None:
+                    filtered_statement = filtered_statement.where(User.locked.is_(locked_value))
+                return filtered_statement
+
             total = db.session.execute(select(func.count()).select_from(User)).scalar()
+            all_total = db.session.execute(
+                apply_filters(select(func.count()).select_from(User))
+            ).scalar()
+            active_total = db.session.execute(
+                apply_filters(select(func.count()).select_from(User), locked_value=False)
+            ).scalar()
+            locked_total = db.session.execute(
+                apply_filters(select(func.count()).select_from(User), locked_value=True)
+            ).scalar()
+
             users_result = db.session.execute(
-                select(User)
+                apply_filters(select(User), locked_value=locked_filter)
                 .order_by(User.locked.asc(), User.created_at.desc())
                 .offset(offset)
                 .limit(limit)
@@ -432,7 +468,10 @@ class UsersListResource(Resource):
                 'offset': offset,
                 'limit': limit,
                 'count': len(users_data),
-                'total': total
+                'total': total,
+                'all_total': all_total,
+                'active_total': active_total,
+                'locked_total': locked_total
             }, 200
             
         except Exception as ex:

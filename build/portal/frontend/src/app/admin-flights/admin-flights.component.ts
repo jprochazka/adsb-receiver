@@ -39,7 +39,9 @@ export class AdminFlightsComponent implements OnInit {
   uatSuccessMessage = '';
   uatErrorMessage = '';
 
-  ignoredPageSize = 10;
+  readonly pageSizeOptions = [10, 25, 50, 100];
+  ignoredAdsbPageSize = 10;
+  ignoredUatPageSize = 10;
 
   ignoredAdsbFlights: any[] = [];
   ignoredAdsbOffset = 0;
@@ -86,7 +88,7 @@ export class AdminFlightsComponent implements OnInit {
           this.openSkyStatus = err.error;
           return;
         }
-        this.openSkyError = 'Failed to load OpenSky aircraft database status.';
+        this.openSkyError = this.buildOpenSkyErrorMessage(err, 'load OpenSky aircraft database status');
       }
     });
   }
@@ -102,11 +104,28 @@ export class AdminFlightsComponent implements OnInit {
         this.openSkyUpdating = false;
         this.openSkySuccess = 'OpenSky aircraft database updated successfully.';
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.openSkyUpdating = false;
-        this.openSkyError = 'Failed to update OpenSky aircraft database. Ensure you are logged in as an Admin.';
+        this.openSkyError = this.buildOpenSkyErrorMessage(err, 'update OpenSky aircraft database');
       }
     });
+  }
+
+  private buildOpenSkyErrorMessage(err: HttpErrorResponse, action: string): string {
+    const backendMessage = typeof err.error?.msg === 'string' ? err.error.msg.trim() : '';
+    if (backendMessage) {
+      return `Failed to ${action}: ${backendMessage}.`;
+    }
+
+    if (err.status === 401) {
+      return `Failed to ${action}: authentication required.`;
+    }
+
+    if (err.status === 403) {
+      return `Failed to ${action}: admin access required.`;
+    }
+
+    return `Failed to ${action}: unexpected server error.`;
   }
 
   formatByteSize(bytes: number | null | undefined): string {
@@ -263,14 +282,14 @@ export class AdminFlightsComponent implements OnInit {
     this.ignoredAdsbLoading = true;
     this.ignoredAdsbError = '';
 
-    this.dataService.getIgnoredFlights(this.ignoredAdsbOffset, this.ignoredPageSize).subscribe({
+    this.dataService.getIgnoredFlights(this.ignoredAdsbOffset, this.ignoredAdsbPageSize).subscribe({
       next: (res) => {
         this.ignoredAdsbFlights = res?.flights ?? [];
         this.ignoredAdsbTotal = res?.total ?? this.ignoredAdsbFlights.length;
         this.ignoredAdsbLoading = false;
 
         if (this.ignoredAdsbTotal > 0 && this.ignoredAdsbOffset >= this.ignoredAdsbTotal) {
-          this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredPageSize);
+          this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredAdsbPageSize);
           this.loadIgnoredAdsbFlights();
         }
       },
@@ -285,14 +304,14 @@ export class AdminFlightsComponent implements OnInit {
     this.ignoredUatLoading = true;
     this.ignoredUatError = '';
 
-    this.dataService.getIgnoredUatFlights(this.ignoredUatOffset, this.ignoredPageSize).subscribe({
+    this.dataService.getIgnoredUatFlights(this.ignoredUatOffset, this.ignoredUatPageSize).subscribe({
       next: (res) => {
         this.ignoredUatFlights = res?.flights ?? [];
         this.ignoredUatTotal = res?.total ?? this.ignoredUatFlights.length;
         this.ignoredUatLoading = false;
 
         if (this.ignoredUatTotal > 0 && this.ignoredUatOffset >= this.ignoredUatTotal) {
-          this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredPageSize);
+          this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredUatPageSize);
           this.loadIgnoredUatFlights();
         }
       },
@@ -308,7 +327,7 @@ export class AdminFlightsComponent implements OnInit {
   }
 
   adsbIgnoredEnd() {
-    return Math.min(this.ignoredAdsbOffset + this.ignoredPageSize, this.ignoredAdsbTotal);
+    return Math.min(this.ignoredAdsbOffset + this.ignoredAdsbPageSize, this.ignoredAdsbTotal);
   }
 
   uatIgnoredStart() {
@@ -316,22 +335,22 @@ export class AdminFlightsComponent implements OnInit {
   }
 
   uatIgnoredEnd() {
-    return Math.min(this.ignoredUatOffset + this.ignoredPageSize, this.ignoredUatTotal);
+    return Math.min(this.ignoredUatOffset + this.ignoredUatPageSize, this.ignoredUatTotal);
   }
 
   prevIgnoredAdsbPage() {
     if (this.ignoredAdsbOffset === 0 || this.ignoredAdsbLoading) {
       return;
     }
-    this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredPageSize);
+    this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredAdsbPageSize);
     this.loadIgnoredAdsbFlights();
   }
 
   nextIgnoredAdsbPage() {
-    if (this.ignoredAdsbLoading || this.ignoredAdsbOffset + this.ignoredPageSize >= this.ignoredAdsbTotal) {
+    if (this.ignoredAdsbLoading || this.ignoredAdsbOffset + this.ignoredAdsbPageSize >= this.ignoredAdsbTotal) {
       return;
     }
-    this.ignoredAdsbOffset += this.ignoredPageSize;
+    this.ignoredAdsbOffset += this.ignoredAdsbPageSize;
     this.loadIgnoredAdsbFlights();
   }
 
@@ -339,15 +358,27 @@ export class AdminFlightsComponent implements OnInit {
     if (this.ignoredUatOffset === 0 || this.ignoredUatLoading) {
       return;
     }
-    this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredPageSize);
+    this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredUatPageSize);
     this.loadIgnoredUatFlights();
   }
 
   nextIgnoredUatPage() {
-    if (this.ignoredUatLoading || this.ignoredUatOffset + this.ignoredPageSize >= this.ignoredUatTotal) {
+    if (this.ignoredUatLoading || this.ignoredUatOffset + this.ignoredUatPageSize >= this.ignoredUatTotal) {
       return;
     }
-    this.ignoredUatOffset += this.ignoredPageSize;
+    this.ignoredUatOffset += this.ignoredUatPageSize;
+    this.loadIgnoredUatFlights();
+  }
+
+  updateIgnoredAdsbPageSize(pageSize: number) {
+    this.ignoredAdsbPageSize = pageSize;
+    this.ignoredAdsbOffset = 0;
+    this.loadIgnoredAdsbFlights();
+  }
+
+  updateIgnoredUatPageSize(pageSize: number) {
+    this.ignoredUatPageSize = pageSize;
+    this.ignoredUatOffset = 0;
     this.loadIgnoredUatFlights();
   }
 

@@ -63,6 +63,57 @@ export class AdminSchedulerComponent implements OnInit {
     return this.schedulerStatus.state ?? 'Unknown';
   }
 
+  isSchedulerRunning(): boolean {
+    const state = String(this.schedulerStatus?.state ?? '').toUpperCase();
+    return state.includes('RUNNING') || this.schedulerStatus?.running === true;
+  }
+
+  isSchedulerPaused(): boolean {
+    const state = String(this.schedulerStatus?.state ?? '').toUpperCase();
+    return state.includes('PAUSED') || this.schedulerStatus?.paused === true;
+  }
+
+  isSchedulerStopped(): boolean {
+    const state = String(this.schedulerStatus?.state ?? '').toUpperCase();
+    return state.includes('STOPPED') || state.includes('SHUTDOWN');
+  }
+
+  isSchedulerStateUnknown(): boolean {
+    return !this.isSchedulerRunning() && !this.isSchedulerPaused() && !this.isSchedulerStopped();
+  }
+
+  canStartScheduler(): boolean {
+    return this.isSchedulerStopped();
+  }
+
+  canPauseScheduler(): boolean {
+    return this.isSchedulerRunning();
+  }
+
+  canResumeScheduler(): boolean {
+    return this.isSchedulerPaused();
+  }
+
+  canShutdownScheduler(): boolean {
+    return this.isSchedulerRunning() || this.isSchedulerPaused();
+  }
+
+  isJobPaused(job: any): boolean {
+    return !job?.next_run_time && !job?.pending;
+  }
+
+  canRunJob(job: any): boolean {
+    return !job?.pending;
+  }
+
+  canPauseJob(job: any): boolean {
+    return !this.isJobPaused(job) && !job?.pending;
+  }
+
+  canResumeJob(job: any): boolean {
+    return this.isJobPaused(job);
+  }
+
   start(): void {
     this.performSchedulerAction(() => this.dataService.startScheduler(), 'Scheduler started.');
   }

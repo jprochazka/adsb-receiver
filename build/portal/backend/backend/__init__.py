@@ -26,8 +26,11 @@ from backend.routes.tokens import tokens, auth_ns
 from backend.routes.users import users, users_ns
 from backend.models import db
 
+BACKEND_VERSION = os.environ.get('PORTAL_BACKEND_VERSION', 'v3.0.0')
+
 def create_app(test_config=None):
     app = Flask(__name__)
+    app.config['PORTAL_BACKEND_VERSION'] = BACKEND_VERSION
     
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
@@ -50,7 +53,7 @@ def create_app(test_config=None):
     # Initialize Flask-RESTX API documentation
     api = Api(
         app,
-        version='1.0',
+        version=BACKEND_VERSION,
         title='ADSB Receiver Portal API',
         description='A comprehensive API for managing ADSB receiver data, flights, and system administration',
         doc='/api/docs/',

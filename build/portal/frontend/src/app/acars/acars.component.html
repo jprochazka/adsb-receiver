@@ -2,13 +2,23 @@
   <h1>ACARS Messages</h1>
   <hr />
 
-  <div class="mb-3">
-    <input
-      class="form-control"
-      type="search"
-      placeholder="Filter loaded rows by flight number or registration…"
-      [(ngModel)]="filterQuery"
-      name="filterQuery" />
+  <div class="row g-3 align-items-end mb-3">
+    <div class="col">
+      <input
+        class="form-control"
+        type="search"
+        placeholder="Filter loaded rows by flight number or registration…"
+        [(ngModel)]="filterQuery"
+        name="filterQuery" />
+    </div>
+    <div class="col-md-auto">
+      <label class="form-label mb-1">Flights per page</label>
+      <select class="form-select acars-per-page-select" [(ngModel)]="perPage" (ngModelChange)="updatePerPage($event)">
+        @for (pageSize of pageSizeOptions; track pageSize) {
+          <option [ngValue]="pageSize">{{ pageSize }}</option>
+        }
+      </select>
+    </div>
   </div>
 
   @if (loading) {

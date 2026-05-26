@@ -2,11 +2,11 @@ import { Component, OnInit, inject } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { combineLatest, forkJoin } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
-const PAGE_SIZE = 50;
+const DEFAULT_PAGE_SIZE = 50;
 const MSG_PAGE_SIZE = 25;
 
 @Component({
@@ -19,6 +19,8 @@ const MSG_PAGE_SIZE = 25;
 export class AcarsComponent implements OnInit {
   flights: any[] = [];
   loading = true;
+  readonly pageSizeOptions = [10, 25, 50, 100];
+  perPage = DEFAULT_PAGE_SIZE;
   private _filterQuery = '';
   get filterQuery(): string {
     return this._filterQuery;
@@ -54,21 +56,23 @@ export class AcarsComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
+    combineLatest([this.route.paramMap, this.route.queryParamMap]).subscribe(([params, queryParams]) => {
       this.loading = true;
       this.collapseMessages();
 
       const page = Math.max(1, parseInt(params.get('page') || '1', 10) || 1);
+      const requestedPerPage = Number(queryParams.get('perPage') || DEFAULT_PAGE_SIZE);
+      this.perPage = this.pageSizeOptions.includes(requestedPerPage) ? requestedPerPage : DEFAULT_PAGE_SIZE;
       this.currentPage = page;
-      const offset = (page - 1) * PAGE_SIZE;
+      const offset = (page - 1) * this.perPage;
 
       forkJoin({
         count: this.dataService.getAcarsFlightsCount(),
-        flights: this.dataService.getAcarsFlights(offset, PAGE_SIZE),
+        flights: this.dataService.getAcarsFlights(offset, this.perPage),
       }).subscribe({
         next: ({ count, flights }) => {
           this.totalFlights = count.flights;
-          this.totalPages = Math.max(1, Math.ceil(count.flights / PAGE_SIZE));
+          this.totalPages = Math.max(1, Math.ceil(count.flights / this.perPage));
           this.currentPage = Math.min(page, this.totalPages);
           this.pageNumbers = this.buildPageNumbers(this.currentPage, this.totalPages);
           this.flights = flights.flights ?? [];
@@ -123,7 +127,22 @@ export class AcarsComponent implements OnInit {
 
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages || page === this.currentPage) return;
-    this.router.navigate(['/acars', page]);
+
+    const commands = page === 1 ? ['/acars'] : ['/acars', page];
+    this.router.navigate(commands, {
+      queryParams: this.buildAcarsListQueryParams(),
+    });
+  }
+
+  updatePerPage(perPage: number): void {
+    if (!this.pageSizeOptions.includes(perPage)) return;
+
+    this.perPage = perPage;
+    this.currentPage = 1;
+
+    this.router.navigate(['/acars'], {
+      queryParams: this.buildAcarsListQueryParams(),
+    });
   }
 
   openTextModal(msg: any, event: Event): void {
@@ -311,5 +330,13 @@ export class AcarsComponent implements OnInit {
     pages.add(total);
     for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) pages.add(i);
     return Array.from(pages).sort((a, b) => a - b);
+  }
+
+  private buildAcarsListQueryParams(): { perPage?: number } {
+    const queryParams: { perPage?: number } = {};
+    if (this.perPage !== DEFAULT_PAGE_SIZE) {
+      queryParams.perPage = this.perPage;
+    }
+    return queryParams;
   }
 }

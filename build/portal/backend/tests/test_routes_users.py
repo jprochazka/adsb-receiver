@@ -333,6 +333,9 @@ def test_get_users_200(client, app):
         assert response.json['offset'] == 0
         assert response.json['limit'] == 50
         assert response.json['count'] == 3
+        assert response.json['all_total'] == 3
+        assert response.json['active_total'] == 3
+        assert response.json['locked_total'] == 0
         assert response.json['users'][0]['id'] == 1
         assert response.json['users'][0]['name'] == "Admin User"
         assert response.json['users'][0]['email'] == "noreply@email-one.com"
@@ -389,6 +392,52 @@ def test_get_users_200_limit(client, app):
 # Password field should not be returned for security reasons
         assert response.json['users'][0]['administrator'] == 1
 
+def test_get_users_200_limit_1000(client, app):
+    with app.app_context():
+        access_token = create_admin_token(app)
+        request_headers = {
+            'Authorization': f"Bearer {access_token}",
+            'accept': 'application/json'
+        }
+        response = client.get('/api/users/users?limit=100', headers=request_headers)
+        assert response.status_code == 200
+        assert response.json['offset'] == 0
+        assert response.json['limit'] == 100
+        assert response.json['count'] == 3
+
+def test_get_users_200_locked_filter(client, app):
+    with app.app_context():
+        access_token = create_admin_token(app)
+        request_headers = {
+            'Authorization': f"Bearer {access_token}",
+            'accept': 'application/json'
+        }
+
+        from backend.models import User, db
+        locked_user = db.session.get(User, 2)
+        locked_user.locked = True
+        db.session.commit()
+
+        response = client.get('/api/users/users?locked=true', headers=request_headers)
+        assert response.status_code == 200
+        assert response.json['count'] == 1
+        assert response.json['locked_total'] == 1
+        assert response.json['active_total'] == 2
+        assert response.json['users'][0]['id'] == 2
+
+def test_get_users_200_search_query(client, app):
+    with app.app_context():
+        access_token = create_admin_token(app)
+        request_headers = {
+            'Authorization': f"Bearer {access_token}",
+            'accept': 'application/json'
+        }
+        response = client.get('/api/users/users?q=three', headers=request_headers)
+        assert response.status_code == 200
+        assert response.json['count'] == 1
+        assert response.json['all_total'] == 1
+        assert response.json['users'][0]['email'] == 'noreply@email-three.com'
+
 def test_get_users_200_offset_and_limit(client, app):
     with app.app_context():
         access_token = create_admin_token(app)
@@ -435,4 +484,14 @@ def test_get_users_400_limit_greater_than_100(client, app):
             'accept': 'application/json'
         }
         response = client.get('/api/users/users?limit=101', headers=request_headers)
+        assert response.status_code == 400
+
+def test_get_users_400_invalid_locked_parameter(client, app):
+    with app.app_context():
+        access_token = create_admin_token(app)
+        request_headers = {
+            'Authorization': f"Bearer {access_token}",
+            'accept': 'application/json'
+        }
+        response = client.get('/api/users/users?locked=maybe', headers=request_headers)
         assert response.status_code == 400
