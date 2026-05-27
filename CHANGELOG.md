@@ -7,6 +7,7 @@ The following is a history of the changes made to this project.
 * New version of the portal. (total rewrite with many additions)
 * Added a new Airframes.io feeder setup script for ACARSDEC/dumpvdl2/vdlm2dec.
 * Added a new stream1090 installer capable of integrating it with Readsb or dump1090-fa.
+* The ACARSDEC script now uses a maintained fork of the original.
 * Console message color fix applied.
 * References to adsbreceiver.net changed to adsbreceiver.org.
 * Fixed a syntax error in the dump1090-fa installer script.
@@ -19,7 +20,6 @@ The following is a history of the changes made to this project.
 * Updated dump1090-fa build target selection to use OS codename-aware mapping with fallback behavior.
 * Updated AirNav rbfeeder repository selection to probe available upstream distro releases.
 * Updated OpenSky feeder repository setup to validate upstream apt metadata before source configuration.
-
 
 ## v2.8.10 *(April 9th, 2026)*
 

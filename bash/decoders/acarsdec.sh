@@ -66,7 +66,10 @@ current_acars_frequencies="130.025 130.425 130.450 131.125 131.550"
 if [[ "${acars_decoder_installed}" == "true" ]]; then
     log_message "Determining which frequencies are currently assigned"
     exec_start=$(get_config "ExecStart" "/etc/systemd/system/acarsdec.service")
-    current_acars_frequencies=$(sed -e "s#.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} \(\)#\1#" <<< "${exec_start}")
+    parsed_frequencies=$(grep -Eo '[0-9]{3}\.[0-9]{3}' <<< "${exec_start}" | tr '\n' ' ' | sed -e 's/[[:space:]]\+$//')
+    if [[ -n "${parsed_frequencies}" ]]; then
+        current_acars_frequencies="${parsed_frequencies}"
+    fi
 fi
 log_message "Asking the user for ACARS frequencies to monitor"
 acars_fequencies_title="Enter ACARS Frequencies"
@@ -95,7 +98,9 @@ log_heading "Installing packages needed to fulfill dependencies for FlightAware 
 
 check_package cmake
 check_package libjansson-dev
+check_package libcjson-dev
 check_package libpaho-mqtt-dev
+check_package libasound2-dev
 check_package libsndfile1-dev
 check_package libsqlite3-dev
 check_package libusb-1.0-0-dev
@@ -113,7 +118,19 @@ case "${device}" in
         check_package libairspy-dev
         ;;
     "SDRPlay")
-        check_package libmirisdr-dev
+        if apt-cache show libsdrplay3-dev > /dev/null 2>&1; then
+            check_package libsdrplay3-dev
+        elif apt-cache show libsdrplay-api-dev > /dev/null 2>&1; then
+            check_package libsdrplay-api-dev
+        elif apt-cache show libmirisdr-dev > /dev/null 2>&1; then
+            log_warning_message "Falling back to legacy package libmirisdr-dev for SDRPlay support"
+            check_package libmirisdr-dev
+        else
+            log_alert_heading "INSTALLATION HALTED"
+            log_alert_message "Unable to locate an SDRPlay development package for ACARSDEC"
+            log_alert_message "Tried: libsdrplay3-dev, libsdrplay-api-dev, libmirisdr-dev"
+            exit 1
+        fi
         ;;
 esac
 
@@ -183,6 +200,8 @@ log_heading "Preparing the ACARSDEC Git repository"
 if [[ -d $RECEIVER_BUILD_DIRECTORY/acarsdec && -d $RECEIVER_BUILD_DIRECTORY/acarsdec/.git ]]; then
     log_message "Entering the ACARSDEC git repository directory"
     cd $RECEIVER_BUILD_DIRECTORY/acarsdec
+    log_message "Ensuring the ACARSDEC git remote points to the maintained repository"
+    git remote set-url origin https://github.com/f00b4r0/acarsdec.git
     log_message "Updating the local ACARSDEC git repository"
     echo ""
     git pull
@@ -191,7 +210,7 @@ else
     cd $RECEIVER_BUILD_DIRECTORY
     log_message "Cloning the ACARSDEC git repository locally"
     echo ""
-    git clone https://github.com/TLeconte/acarsdec.git
+    git clone https://github.com/f00b4r0/acarsdec.git
 fi
 
 
@@ -216,13 +235,13 @@ log_message "Executing cmake"
 echo ""
 case "${device}" in
     "RTL-SDR")
-        cmake .. -Drtl=ON
+        cmake .. -DRTLSDR=ON -DAIRSPY=OFF -DSDRPLAY=OFF -DSOAPYSDR=OFF
         ;;
     "AirSpy")
-        cmake .. -Dairspy=ON
+        cmake .. -DRTLSDR=OFF -DAIRSPY=ON -DSDRPLAY=OFF -DSOAPYSDR=OFF
         ;;
     "SDRPlay")
-        cmake .. -Dsdrplay=ON
+        cmake .. -DRTLSDR=OFF -DAIRSPY=OFF -DSDRPLAY=ON -DSOAPYSDR=OFF
         ;;
 esac
 echo ""
@@ -270,13 +289,24 @@ echo ""
 ## RUN ACARSDECO AND ACARSSERV
 
 log_message "Creating the ACARSDEC systemd service script"
+case "${device}" in
+    "RTL-SDR")
+        acarsdec_input_args="--rtlsdr ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} ${acars_fequencies}"
+        ;;
+    "AirSpy")
+        acarsdec_input_args="--airspy ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} ${acars_fequencies}"
+        ;;
+    "SDRPlay")
+        acarsdec_input_args="--sdrplay ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} ${acars_fequencies}"
+        ;;
+esac
 sudo tee /etc/systemd/system/acarsdec.service > /dev/null <<EOF
 [Unit]
 Description=ARCARSDEC multi-channel acars decoder.
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/acarsdec -j 127.0.0.1:5555 -o2 -g280 -r 0 130.025 130.425 130.450 131.125 131.550
+ExecStart=/usr/local/bin/acarsdec --output json:udp:host=127.0.0.1,port=5555 ${acarsdec_input_args}
 WorkingDirectory=/usr/local/bin
 StandardOutput=null
 TimeoutSec=30
@@ -324,7 +354,7 @@ assign_devices_to_decoders
 
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "ACARSDEC Decoder Setup Complete" \
-         --msgbox "The setup process currently sets basic parameters needed to feed acarsserv. You can fine tune your installation by modifying the startup command found in the file /etc/systemd/system/acarsdec.service. Usage information for ACARSDEC can be found in the projects README at https://github.com/TLeconte/acarsdec." \
+         --msgbox "The setup process currently sets basic parameters needed to feed acarsserv. You can fine tune your installation by modifying the startup command found in the file /etc/systemd/system/acarsdec.service. Usage information for ACARSDEC can be found in the project README at https://github.com/f00b4r0/acarsdec." \
          12 78
 
 

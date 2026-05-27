@@ -49,7 +49,7 @@ threads myself along with other contributors to the cause were able to add these
 I would like to thank the maintainers and contributors of the following projects. Without their
 hard work and dedication to their respective projects this project would not have been possible.
 
-* ACARSDEC Decoder:        https://github.com/TLeconte/acarsdec
+* ACARSDEC Decoder:        https://github.com/f00b4r0/acarsdec
 * ACARSSERV:               https://github.com/TLeconte/acarsserv
 * ADS-B Exchange Client:   https://github.com/adsbexchange/feedclient
 * Airplanes.live Client:   https://github.com/airplanes-live/feed
