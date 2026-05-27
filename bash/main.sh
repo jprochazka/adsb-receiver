@@ -211,6 +211,12 @@ else
 fi
 
 
+# Airframes.io
+if [[ -f /etc/systemd/system/acarsdec.service || -f /etc/systemd/system/dumpvdl2.service || -f /lib/systemd/system/acarsdec.service || -f /lib/systemd/system/dumpvdl2.service ]]; then
+    feeder_list=("${feeder_list[@]}" 'airframes.io Feeder Setup' '' OFF)
+fi
+
+
 # FlightAware PiAware
 if ! is_package_installed "piaware"; then
     feeder_list=("${feeder_list[@]}" 'FlightAware PiAware' '' OFF)
@@ -334,6 +340,16 @@ else
 fi
 
 
+# stream1090
+if [[ -f /etc/default/readsb || -f /etc/default/dump1090-fa ]]; then
+    if [[ ! -f /etc/systemd/system/stream1090.service ]]; then
+        extras_list=("${extras_list[@]}" 'stream1090' '' OFF)
+    else
+        extras_list=("${extras_list[@]}" 'stream1090 (reinstall)' '' OFF)
+    fi
+fi
+
+
 # tar1090
 if [[ ! -f /lib/systemd/system/tar1090.service ]]; then
     extras_list=("${extras_list[@]}" 'tar1090' '' OFF)
@@ -347,7 +363,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --checklist \
          --nocancel \
          --separate-output "The following extras are available for installation, please select any which you wish to install." \
-         11 65 4 "${extras_list[@]}" 2>"${RECEIVER_ROOT_DIRECTORY}/extras_choices.txt"
+         13 65 5 "${extras_list[@]}" 2>"${RECEIVER_ROOT_DIRECTORY}/extras_choices.txt"
 
 
 ## Setup Confirmation
@@ -499,6 +515,9 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/feeder_choices.txt" ]]; then
             "Airplanes.live Feeder"*)
                 run_installer "feeders/airplaneslive.sh"
                 ;;
+            "airframes.io Feeder Setup"*)
+                run_installer "feeders/airframesio.sh"
+                ;;
             "FlightAware PiAware"*)
                 run_installer "feeders/piaware.sh"
                 ;;
@@ -537,6 +556,9 @@ if [[ -s "${RECEIVER_ROOT_DIRECTORY}/extras_choices.txt" ]]; then
                 ;;
             "Graphs1090"*)
                 run_installer "extras/graphs1090.sh"
+                ;;
+            "stream1090"*)
+                run_installer "extras/stream1090.sh"
                 ;;
             "tar1090"*)
                 run_installer "extras/tar1090.sh"

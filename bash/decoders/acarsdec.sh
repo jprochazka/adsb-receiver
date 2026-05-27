@@ -65,8 +65,8 @@ fi
 current_acars_frequencies="130.025 130.425 130.450 131.125 131.550"
 if [[ "${acars_decoder_installed}" == "true" ]]; then
     log_message "Determining which frequencies are currently assigned"
-    exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
-    current_acars_frequencies=`sed -e "s#.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} \(\)#\1#" <<< "${exec_start}"`
+    exec_start=$(get_config "ExecStart" "/etc/systemd/system/acarsdec.service")
+    current_acars_frequencies=$(sed -e "s#.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} \(\)#\1#" <<< "${exec_start}")
 fi
 log_message "Asking the user for ACARS frequencies to monitor"
 acars_fequencies_title="Enter ACARS Frequencies"
@@ -103,17 +103,7 @@ check_package libxml2-dev
 check_package pkg-config
 check_package zlib1g-dev
 
-case $RECEIVER_OS_DISTRIBUTION in
-    ubuntu)
-        distro_php_version=""
-        ;;
-    debian)
-        if [[ "${RECEIVER_OS_CODE_NAME}" == "bookworm" ]]; then distro_php_version="8.2"; fi
-        if [[ "${RECEIVER_OS_CODE_NAME}" == "trixie" ]]; then distro_php_version="8.4"; fi
-        ;;
-esac
 check_package sqlite3
-check_package php${distro_php_version}-sqlite3
 
 case "${device}" in
     "RTL-SDR")

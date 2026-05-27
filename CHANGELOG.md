@@ -5,8 +5,21 @@ The following is a history of the changes made to this project.
 ## v3.0.0 *(Coming soon...)*
 
 * New version of the portal. (total rewrite with many additions)
+* Added a new Airframes.io feeder setup script for ACARSDEC/dumpvdl2/vdlm2dec.
+* Added a new stream1090 installer capable of integrating it with Readsb or dump1090-fa.
 * Console message color fix applied.
 * References to adsbreceiver.net changed to adsbreceiver.org.
+* Fixed a syntax error in the dump1090-fa installer script.
+* Replaced deprecated apt-key usage with keyring-based apt repository setup in feeder scripts.
+* Hardened apt repository detection and source list writes for OpenSky and AirNav scripts.
+* Normalized installer OS distribution detection so Raspberry Pi OS and Debian-like IDs are handled consistently.
+* Updated OpenSky feeder install to use non-interactive apt package installation for unattended compatibility.
+* Fixed malformed Airplanes.live web interface installer command execution.
+* Updated Plane Finder receiver IP detection to use route-based lookup with safe fallbacks.
+* Updated dump1090-fa build target selection to use OS codename-aware mapping with fallback behavior.
+* Updated AirNav rbfeeder repository selection to probe available upstream distro releases.
+* Updated OpenSky feeder repository setup to validate upstream apt metadata before source configuration.
+
 
 ## v2.8.10 *(April 9th, 2026)*
 

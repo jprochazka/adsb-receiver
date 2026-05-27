@@ -28,7 +28,7 @@ fi
 
 log_heading "Installing packages needed to fulfill FlightAware Dump1090 decoder dependencies"
 
-check_package net-tools
+check_package iproute2
 
 
 ## DOWNLOAD AND EXECUTE THE AIRPLANES.LIVE CLIENT INSTALL SCRIPT
@@ -65,8 +65,12 @@ echo ""
 log_heading "Checking if the reciver is now feeding airplanes.live"
 
 log_message "Checking for connections on ports 30004 and 31090 to IP address 78.46.234.18"
-netstat_output=`netstat -t -n | grep -E '30004|31090'`
-if [[ $netstat_output == *"78.46.234.18:30004 ESTABLISHED"* && $netstat_output == *"78.46.234.18:31090 ESTABLISHED"* ]]; then
+if command -v ss >/dev/null 2>&1; then
+    connection_output=$(ss -tn)
+else
+    connection_output=$(netstat -t -n)
+fi
+if [[ $connection_output == *"78.46.234.18:30004"* && $connection_output == *"78.46.234.18:31090"* ]]; then
     log_message "This device appears to be connected to  airplanes.live"
 else
     echo ""
@@ -90,7 +94,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     echo ""
     log_message "Executing the airplanes.live web interface installation script"
     echo ""
-    sudo bash sudo bash /usr/local/share/airplanes/git/install-or-update-interface.sh
+    sudo bash /usr/local/share/airplanes/git/install-or-update-interface.sh
 else
     log_message "The user opted out of installing the airplanes.live web interface"
 fi

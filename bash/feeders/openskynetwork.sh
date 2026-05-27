@@ -35,9 +35,25 @@ check_package apt-transport-https
 
 log_heading "Setting up the OpenSky Network apt repository if it has not yet been setup...\e[97m"
 
+opensky_repo_url="https://opensky-network.org/repos/debian"
+opensky_repo_suite="opensky"
+opensky_repo_component="custom"
+
 log_message "Checking if the OpenSky Network apt repository is set up"
-if ! grep -q "^deb .*opensky." /etc/apt/sources.list /etc/apt/sources.list.d/*; then
+if ! grep -Rqs "^deb .*opensky." /etc/apt/sources.list.d /etc/apt/sources.list 2>/dev/null; then
     log_message "The OpenSky Network apt repository is not set up"
+
+    log_message "Checking OpenSky repository availability"
+    if ! curl -fsSL "${opensky_repo_url}/dists/${opensky_repo_suite}/Release" >/dev/null 2>&1; then
+        log_alert_heading "INSTALLATION HALTED"
+        log_alert_message "Unable to verify OpenSky apt repository metadata at ${opensky_repo_url}"
+        log_alert_message "Setup has been terminated"
+        echo ""
+        log_title_message "------------------------------------------------------------------------------"
+        log_title_heading "OpenSky Network client setup halted"
+        echo ""
+        exit 1
+    fi
 
     if [[ ! -d $RECEIVER_BUILD_DIRECTORY/openskynetwork ]]; then
         log_message "Creating the OpenSky Network build directory"
@@ -51,10 +67,12 @@ if ! grep -q "^deb .*opensky." /etc/apt/sources.list /etc/apt/sources.list.d/*; 
     log_message "Downloading and adding the OpenSky Network apt repository GPG key"
     echo ""
     wget -v -O $RECEIVER_BUILD_DIRECTORY/openskynetwork/opensky.gpg.pub https://opensky-network.org/files/firmware/opensky.gpg.pub 2>&1 | log_pipe
-    wget -q -O - https://opensky-network.org/files/firmware/opensky.gpg.pub | sudo apt-key add - 2>&1 | log_pipe
+    sudo install -d -m 0755 /etc/apt/keyrings
+    sudo gpg --dearmor -o /etc/apt/keyrings/opensky.gpg $RECEIVER_BUILD_DIRECTORY/openskynetwork/opensky.gpg.pub 2>&1 | log_pipe
+    sudo chmod 0644 /etc/apt/keyrings/opensky.gpg
     echo ""
     log_message "Adding the OpenSky Network apt repository"
-    sudo bash -c "echo deb https://opensky-network.org/repos/debian opensky custom > /etc/apt/sources.list.d/opensky.list"
+    echo "deb [signed-by=/etc/apt/keyrings/opensky.gpg] ${opensky_repo_url} ${opensky_repo_suite} ${opensky_repo_component}" | sudo tee /etc/apt/sources.list.d/opensky.list > /dev/null
 else
     log_message "The OpenSky Network apt repository is already set up"
 fi
@@ -70,7 +88,7 @@ sudo apt-get update 2>&1 | log_pipe
 echo ""
 log_message "Installing the OpenSky Network fedder package using apt"
 echo ""
-sudo apt-get install opensky-feeder
+sudo apt-get install -y opensky-feeder 2>&1 | log_pipe
 echo ""
 
 

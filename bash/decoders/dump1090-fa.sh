@@ -94,8 +94,21 @@ cd $RECEIVER_BUILD_DIRECTORY/dump1090-fa/dump1090
 
 log_message "Determining which distribution to build the package tree for"
 distro="bullseye"
-
+case "${RECEIVER_OS_CODE_NAME}" in
+    bullseye | bookworm | trixie)
+        distro="${RECEIVER_OS_CODE_NAME}"
+        ;;
+    jammy)
+        distro="bullseye"
+        ;;
+    noble | questing)
+        distro="trixie"
+        ;;
+    *)
+        log_warning_message "Unknown OS codename '${RECEIVER_OS_CODE_NAME}', defaulting dump1090-fa build target to ${distro}"
+        ;;
 esac
+
 log_message "Preparing to build dump1090-fa for ${distro}"
 echo ""
 ./prepare-build.sh $distro 2>&1 | log_pipe

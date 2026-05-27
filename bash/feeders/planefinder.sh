@@ -104,7 +104,13 @@ echo ""
 log_heading "Performing post installation operations"
 
 log_message "Displaying the message informing the user on how to complete setup"
-RECEIVER_IP_ADDRESS=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
+RECEIVER_IP_ADDRESS=$(ip route get 1.1.1.1 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i == "src") {print $(i+1); exit}}')
+if [[ -z "${RECEIVER_IP_ADDRESS}" ]]; then
+    RECEIVER_IP_ADDRESS=$(hostname -I 2>/dev/null | awk '{print $1}')
+fi
+if [[ -z "${RECEIVER_IP_ADDRESS}" ]]; then
+    RECEIVER_IP_ADDRESS="127.0.0.1"
+fi
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "PlaneFinder ADS-B Client Setup Instructions" \
          --msgbox "At this point the PlaneFinder ADS-B Client should be installed and running; however this script is only capable of installing the PlaneFinder ADS-B Client. There are still a few steps left which you must manually do through the PlaneFinder ADS-B Client at the following URL:\n\n  http://${RECEIVER_IP_ADDRESS}:30053\n\nThe follow the instructions supplied by the PlaneFinder ADS-B Client.\n\nUse the following settings when asked for them.\n\nData Format: Beast\nTcp Address: 127.0.0.1\nTcp Port: 30005" \

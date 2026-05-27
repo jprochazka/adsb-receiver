@@ -105,6 +105,9 @@ cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
 log_message "Determining which piaware_builder build strategy should be use"
 distro="bookworm"
 case $RECEIVER_OS_CODE_NAME in
+    bullseye)
+        distro="bullseye"
+        ;;
     jammy)
         distro="bullseye"
         ;;
@@ -113,6 +116,9 @@ case $RECEIVER_OS_CODE_NAME in
         ;;
     trixie | questing | noble)
         distro="trixie"
+        ;;
+    *)
+        log_warning_message "Unknown OS codename '${RECEIVER_OS_CODE_NAME}', defaulting PiAware build strategy to ${distro}"
         ;;
 esac
 log_message "Setting distribution to build for to ${distro}"

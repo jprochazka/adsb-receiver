@@ -154,7 +154,19 @@ fi
 
 RECEIVER_OS_CODE_NAME=$(lsb_release -c -s)
 export RECEIVER_OS_CODE_NAME
-RECEIVER_OS_DISTRIBUTION=$(. /etc/os-release; echo "${ID/*, /}")
+RECEIVER_OS_DISTRIBUTION=$(
+    . /etc/os-release
+    id_lower=$(echo "${ID}" | tr '[:upper:]' '[:lower:]')
+    id_like_lower=$(echo "${ID_LIKE:-}" | tr '[:upper:]' '[:lower:]')
+
+    if [[ "${id_lower}" == "ubuntu" ]]; then
+        echo "ubuntu"
+    elif [[ "${id_lower}" == "debian" || "${id_lower}" == "raspbian" || " ${id_like_lower} " == *" debian "* ]]; then
+        echo "debian"
+    else
+        echo "${id_lower}"
+    fi
+)
 export RECEIVER_OS_DISTRIBUTION
 RECEIVER_OS_RELEASE=$(. /etc/os-release; echo "${VERSION_ID/*, /}")
 export RECEIVER_OS_RELEASE

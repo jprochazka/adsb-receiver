@@ -61,8 +61,8 @@ fi
 current_vdlm2_frequencies="136.100 136.650 136.700 136.800 136.975"
 if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
     log_message "Determining which frequencies are currently assigned"
-    exec_start=`get_config "ExecStart" "/etc/systemd/system/vdlm2dec.service"`
-    current_vdlm2_frequencies=`sed -e "s#.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER} \(\)#\1#" <<< "${exec_start}"`
+    exec_start=$(get_config "ExecStart" "/etc/systemd/system/vdlm2dec.service")
+    current_vdlm2_frequencies=$(sed -e "s#.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER} \(\)#\1#" <<< "${exec_start}")
 fi
 log_message "Asking the user for VDL Mode 2 frequencies to monitor"
 vdlm2_fequencies_title="Enter VDL Mode 2 Frequencies"
@@ -94,17 +94,7 @@ check_package libxml2-dev
 check_package zlib1g-dev
 
 
-case $RECEIVER_OS_DISTRIBUTION in
-    ubuntu)
-        distro_php_version=""
-        ;;
-    debian)
-        if [[ "${RECEIVER_OS_CODE_NAME}" == "bookworm" ]]; then distro_php_version="8.2"; fi
-        if [[ "${RECEIVER_OS_CODE_NAME}" == "trixie" ]]; then distro_php_version="8.4"; fi
-        ;;
-esac
 check_package sqlite3
-check_package php${distro_php_version}-sqlite3
 
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES

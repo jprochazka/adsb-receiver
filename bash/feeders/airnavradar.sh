@@ -43,31 +43,64 @@ check_package dirmngr
 log_heading "Adding the rb24 apt repository"
 
 log_message "Importing the key"
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
+sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://apt.rb24.com/airnavradar.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/rb24.gpg
+sudo chmod 0644 /etc/apt/keyrings/rb24.gpg
 
 log_message "Removing the old source list"
-/bin/rm -f /etc/apt/sources.list.d/rb24.list
+sudo /bin/rm -f /etc/apt/sources.list.d/rb24.list
 
 log_message "Setting repository based on distribution"
-distro="bookworm"
-case $RECEIVER_OS_CODE_NAME in
+distro=""
+rb24_candidates=""
+case "${RECEIVER_OS_CODE_NAME}" in
+    bullseye)
+        rb24_candidates="bullseye bookworm trixie"
+        ;;
     jammy)
-        echo 'deb https://apt.rb24.com/ bullseye main' > /etc/apt/sources.list.d/rb24.list
+        rb24_candidates="jammy bullseye bookworm trixie"
         ;;
     bookworm)
-        echo 'deb https://apt.rb24.com/ bookworm main' > /etc/apt/sources.list.d/rb24.list
+        rb24_candidates="bookworm bullseye trixie"
         ;;
-    trixie | questing | noble)
-         echo 'deb https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
+    trixie)
+        rb24_candidates="trixie bookworm bullseye"
+        ;;
+    noble | questing)
+        rb24_candidates="${RECEIVER_OS_CODE_NAME} trixie bookworm bullseye"
+        ;;
+    *)
+        log_warning_message "Unknown OS codename '${RECEIVER_OS_CODE_NAME}', probing rb24 repository using safe defaults"
+        rb24_candidates="bookworm trixie bullseye"
         ;;
 esac
+
+for candidate in ${rb24_candidates}; do
+    if curl -fsSL "https://apt.rb24.com/dists/${candidate}/Release" >/dev/null 2>&1; then
+        distro="${candidate}"
+        break
+    fi
+done
+
+if [[ -z "${distro}" ]]; then
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "No compatible rb24 repository release was found for this system"
+    log_alert_message "Setup has been terminated"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "AirNav Radar client setup halted"
+    echo ""
+    exit 1
+fi
+
+echo "deb [signed-by=/etc/apt/keyrings/rb24.gpg] https://apt.rb24.com/ ${distro} main" | sudo tee /etc/apt/sources.list.d/rb24.list > /dev/null
 log_message "Setting repository distribution to ${distro}"
 
 
 ## UPDATE APT REPOSITORY AND INSTALL RBFEEDER
 
 log_heading "Updating apt repositories"
-apt update -y
+sudo apt-get update -y
 
 log_heading "Installing rbfeeder"
 check_package rbfeeder
@@ -107,7 +140,7 @@ for ((i=0; i<wait_time; i++)); do
 done
 
 log_message "Attempting to retreive sharing-key from AirNav Radar"
-real_sharing_key=`sudo rbfeeder --showkey`
+real_sharing_key=$(sudo rbfeeder --showkey)
 log_message "Sharing-key set to ${real_sharing_key}"
 
 

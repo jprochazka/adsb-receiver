@@ -30,6 +30,8 @@ DB_ADMIN_USER_DEFAULT="root"
 CONFIG_FILE="${BACKEND_DIR}/config.yml"
 RRD_MIGRATE_SOURCE=""
 RRD_MIGRATION_STATUS="No legacy RRD migration needed"
+LE_ENABLE="false"
+LE_DOMAIN=""
 
 find_legacy_rrd_source() {
     local -a candidates=(
@@ -55,6 +57,60 @@ strip_yaml_value() {
     raw_value="${raw_value#\"}"
     raw_value="${raw_value%\"}"
     echo "${raw_value}"
+}
+
+run_le_preflight() {
+    local domain="$1"
+    local domain_ips=""
+    local public_ipv4=""
+    local dns_status="FAILED"
+    local ip_status="UNKNOWN"
+    local port80_status="FAILED"
+    local port443_status="FAILED"
+
+    domain_ips=$(getent ahostsv4 "${domain}" 2>/dev/null | awk '{print $1}' | sort -u)
+    if [[ -z "${domain_ips}" ]]; then
+        domain_ips=$(getent ahosts "${domain}" 2>/dev/null | awk '/^[0-9.]+$/ {print $1}' | sort -u)
+    fi
+    if [[ -n "${domain_ips}" ]]; then
+        dns_status="OK"
+    fi
+
+    public_ipv4=$(curl -4fsS --max-time 8 https://api.ipify.org 2>/dev/null || true)
+    if [[ -n "${public_ipv4}" && -n "${domain_ips}" ]]; then
+        ip_status="FAILED"
+        while read -r ip; do
+            if [[ "${ip}" == "${public_ipv4}" ]]; then
+                ip_status="OK"
+                break
+            fi
+        done <<< "${domain_ips}"
+    fi
+
+    if command -v ss >/dev/null 2>&1; then
+        if ss -ltn | awk '{print $4}' | grep -Eq '(:80|\]:80)$'; then
+            port80_status="OK"
+        fi
+        if ss -ltn | awk '{print $4}' | grep -Eq '(:443|\]:443)$'; then
+            port443_status="OK"
+        fi
+    fi
+
+    whiptail --title "Let's Encrypt Preflight" --msgbox "\
+Domain: ${domain}
+
+DNS resolution: ${dns_status}
+Resolved IPv4: ${domain_ips:-none}
+
+Public IPv4 (this host): ${public_ipv4:-unknown}
+DNS includes host public IPv4: ${ip_status}
+
+Local listener on :80: ${port80_status}
+Local listener on :443: ${port443_status}
+
+Notes:
+- This is a best-effort local preflight.
+- External reachability from the internet (NAT/firewall) still cannot be fully verified from this host alone." 22 78
 }
 
 if [[ -f "${CONFIG_FILE}" ]]; then
@@ -195,7 +251,7 @@ fi
 
 if ! command -v whiptail &>/dev/null; then
     log_message "Installing whiptail"
-    sudo apt-get install -y whiptail 2>&1 | log_pipe
+    check_package whiptail
 fi
 
 if [[ -f "${CONFIG_FILE}" && -n "${existing_db_type:-}" ]]; then
@@ -345,6 +401,21 @@ while true; do
         --msgbox "JWT secret key must be at least 32 characters. Please try again." 8 60
 done
 
+if whiptail --title "HTTPS Configuration" \
+            --yesno "Would you like to configure HTTPS with Let's Encrypt now?\n\nFor now this installer only records your choice and does not perform automatic certificate provisioning." \
+            16 78; then
+    LE_ENABLE="true"
+    while [[ -z "${LE_DOMAIN}" ]]; do
+        LE_DOMAIN=$(whiptail --title "Let's Encrypt Domain" \
+            --inputbox "Enter the domain you plan to use for HTTPS preflight checks:" 8 78 \
+            3>&1 1>&2 2>&3) || {
+            log_alert_heading "INSTALLATION HALTED"
+            log_alert_message "Setup has been halted at the request of the user"
+            exit 1
+        }
+    done
+fi
+
 MYSQL_HOST="${DB_HOST:-127.0.0.1}"
 MYSQL_USER="${DB_USER:-portaluser}"
 MYSQL_PASS="${DB_PASS:-password}"
@@ -415,14 +486,28 @@ YMLEOF
     sudo apt-get update >> "${LOG_FILE}" 2>&1
 
     _gauge 14 "Installing system packages..."
-    DB_PKGS=""
+    CORE_PKGS="nginx python3-venv python3-pip python3-dev build-essential pkg-config curl whiptail rrdtool gnupg ca-certificates"
+    PY_DB_BUILD_PKGS="default-libmysqlclient-dev libpq-dev"
+    DB_CLIENT_PKGS=""
+    DB_SERVER_PKGS=""
+
     if [[ "${DB_TYPE}" == "mysql" ]]; then
-        DB_PKGS="default-mysql-client"
+        DB_CLIENT_PKGS="default-mysql-client"
+        if [[ "${DB_SKIP_PROVISION}" != "true" ]]; then
+            DB_SERVER_PKGS="default-mysql-server"
+        fi
     elif [[ "${DB_TYPE}" == "postgresql" ]]; then
-        DB_PKGS="postgresql-client"
+        DB_CLIENT_PKGS="postgresql-client"
+        if [[ "${DB_SKIP_PROVISION}" != "true" ]]; then
+            DB_SERVER_PKGS="postgresql"
+        fi
     fi
-    # shellcheck disable=SC2086
-    sudo apt-get install -y nginx python3-venv python3-pip curl whiptail rrdtool gnupg ca-certificates ${DB_PKGS} >> "${LOG_FILE}" 2>&1
+
+    for pkg in ${CORE_PKGS} ${PY_DB_BUILD_PKGS} ${DB_CLIENT_PKGS} ${DB_SERVER_PKGS}; do
+        if [[ -n "${pkg}" ]]; then
+            check_package "${pkg}"
+        fi
+    done
 
     _gauge 18 "Configuring NodeSource repository..."
     sudo install -d -m 0755 /etc/apt/keyrings
@@ -431,7 +516,7 @@ YMLEOF
 deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main
 NODESOURCEEOF
     sudo apt-get update >> "${LOG_FILE}" 2>&1
-    sudo apt-get install -y nodejs >> "${LOG_FILE}" 2>&1
+    check_package nodejs
 
     _gauge 24 "Setting up Python virtual environment..."
     if [[ ! -d "${VENV_DIR}" ]]; then
@@ -605,7 +690,7 @@ PY
     sudo chmod -R 755 "${WEBROOT}"
 
     _gauge 94 "Configuring Nginx..."
-    cat << 'NGINXEOF' | sudo tee "/etc/nginx/sites-available/${NGINX_SITE}" >/dev/null
+    cat << NGINXEOF | sudo tee "/etc/nginx/sites-available/${NGINX_SITE}" >/dev/null
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -619,10 +704,10 @@ server {
 
     location /api/ {
         proxy_pass http://127.0.0.1:8000/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_redirect off;
     }
 }
@@ -700,6 +785,16 @@ Useful commands:
   journalctl -u ${SYSTEMD_SERVICE} -f
 
 Full installation log: ${LOG_FILE}" 18 64
+
+if [[ "${LE_ENABLE}" == "true" ]]; then
+    whiptail --title "Let's Encrypt Selection" --msgbox "\
+You selected Let's Encrypt setup.
+
+Automatic certificate provisioning is not enabled in this installer yet.
+
+Complete HTTPS setup manually after installation using certbot when your DNS and firewall are ready." 14 78
+    run_le_preflight "${LE_DOMAIN}"
+fi
 
 whiptail --title "Database Status" --msgbox "\
 Database handling result:
