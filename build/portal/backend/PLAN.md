@@ -100,10 +100,10 @@ Record each cleanup commit here as work proceeds:
 | Status | Phase | Commit | Notes |
 | --- | --- | --- | --- |
 | [x] | Planning | `0d712ad` | Added initial `PLAN.md` on `cleanup`. |
-| [~] | 0 | `7d34682` | Requirements file normalized to UTF-8. |
+| [x] | 0 | `7d34682`, `ba0e6ab`, `0bbbf6f` | Tooling baseline complete. |
 | [x] | 0.2-0.3 | `ba0e6ab` | Requirements install verified; backend testing guide added. |
-| [x] | 0.4 |  | Added conservative Ruff configuration. |
-| [x] | 0.5-0.6 | TBD | Removed mechanical unused imports; `ruff check .`, `compileall`, and `pytest` pass. |
+| [x] | 0.4 | `0bbbf6f` | Added conservative Ruff configuration. |
+| [x] | 0.5-0.6 | `0bbbf6f` | Removed mechanical unused imports; `ruff check .`, `compileall`, and `pytest` pass. |
 | [ ] | 1 | TBD | App factory cleanup. |
 | [ ] | 2 | TBD | Config loader cleanup. |
 | [ ] | 3 | TBD | Shared route helper extraction. |
