@@ -25,7 +25,7 @@ DEFAULT_RETENTION_DAYS = 7300
 
 class MaintenanceProcessor(object):
     def log(self, string):
-        # print(f'[{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}] {string}')
+        logging.info('[maintenance] %s', string)
         return
 
     def begin_maintenance(self):

@@ -7,17 +7,22 @@ from urllib.request import urlopen
 from flask import current_app
 from sqlalchemy import select
 from backend.models import db, Aircraft, Flight, Position
-from backend.aircraft_classification import classify_aircraft
-from backend.opensky_classification import get_opensky_classification
+from backend.jobs.aircraft_data_collection import (
+    aircraft_altitude,
+    aircraft_has_position_fields,
+    aircraft_squawk,
+    classified_flight_fields,
+    log_job_message,
+)
 
 scheduler = APScheduler()
 now = None
 
 class DataProcessor(object):
 
-    # Log infromation to console
+    # Log information through the application logger.
     def log(self, string):
-        print(f'[{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}] {string}') # uncomment to enable debug logging
+        log_job_message('dump1090_data_collection', string)
         return
 
     # Read JSON supplied by dump1090
@@ -27,8 +32,8 @@ class DataProcessor(object):
             raw_json = urlopen('http://127.0.0.1/dump1090/data/aircraft.json')
             json_object = json.load(raw_json)
             return json_object
-        except:
-            logging.error("There was a problem consuming aircraft.json")
+        except Exception as ex:
+            logging.error("There was a problem consuming aircraft.json", exc_info=ex)
             return
 
     # Begin processing data retrived from dump1090
@@ -98,11 +103,7 @@ class DataProcessor(object):
         flight_id = None
         
         if 'flight' in aircraft:
-            flight = aircraft["flight"].strip()
-            emitter_category = aircraft.get("category")
-            message_type = aircraft.get("type")
-            opensky_class, _, _ = get_opensky_classification(aircraft.get("hex"))
-            aircraft_class = classify_aircraft(emitter_category, message_type, flight, opensky_class=opensky_class)
+            flight, emitter_category, message_type, aircraft_class = classified_flight_fields(aircraft)
 
             tracked = False
             try:
@@ -154,8 +155,7 @@ class DataProcessor(object):
 
     # Process positions
     def process_positions(self, aircraft_id, flight_id, aircraft):
-        position_keys = ('lat', 'lon', 'alt_baro', 'gs', 'track', 'geom_rate', 'hex')
-        if (all(key in aircraft for key in position_keys)):
+        if aircraft_has_position_fields(aircraft):
 
             tracked = False
             try:
@@ -174,13 +174,8 @@ class DataProcessor(object):
             if tracked:
                 return
 
-            squawk = None
-            if 'squawk' in aircraft:
-                squawk = aircraft["squawk"]
-
-            altitude = aircraft["alt_baro"]
-            if 'alt_geom' in aircraft:
-                altitude = aircraft["alt_geom"]
+            squawk = aircraft_squawk(aircraft)
+            altitude = aircraft_altitude(aircraft)
 
             try:
                 if flight_id is None:

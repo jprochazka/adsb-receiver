@@ -82,10 +82,10 @@ Legend:
 
 ### Jobs, Models, and Final Cleanup
 
-- [ ] Phase 8.1 — Replace debug `print()` usage in jobs with logging where appropriate.
-- [ ] Phase 8.2 — Extract repeated dump1090/dump978 collection helpers only where safe.
-- [ ] Phase 8.3 — Reduce long RRD writer methods with metric/helper extraction.
-- [ ] Phase 8.4 — Verify job targeted tests and full pytest suite.
+- [x] Phase 8.1 — Replace debug `print()` usage in jobs with logging where appropriate.
+- [x] Phase 8.2 — Extract repeated dump1090/dump978 collection helpers only where safe.
+- [x] Phase 8.3 — Reduce long RRD writer methods with metric/helper extraction.
+- [x] Phase 8.4 — Verify job targeted tests and full pytest suite.
 - [ ] Phase 9.1 — Decide whether to keep `models.py` monolithic or organize/split it.
 - [ ] Phase 9.2 — If changing models, preserve existing imports and avoid migration noise.
 - [ ] Phase 9.3 — Verify model tests and full pytest suite.
@@ -109,9 +109,9 @@ Record each cleanup commit here as work proceeds:
 | [x] | 3 | `38253f1` | Shared route query parsing helpers added and adopted in users, blog, ADS-B, and UAT routes; targeted and full tests pass. |
 | [x] | 4 | `6f17c92` | Users route simplified with private helpers; targeted and full tests pass. |
 | [x] | 5 | `034e6fa` | Blog route simplified with post/comment helper extraction; targeted and full tests pass. |
-| [x] | 6 | `a432929` | Shared ADS-B/UAT route helper module added; dump1090/dump978 use shared helpers; targeted and full tests pass. |
-| [x] | 7 | `2418466` | Live and graphs route internals simplified; targeted and full tests pass. |
-| [ ] | 8 | TBD | Background job cleanup. |
+| [x] | 6 | `21f651a` | Shared ADS-B/UAT route helper module added; dump1090/dump978 use shared helpers; targeted and full tests pass. |
+| [x] | 7 | `4cd507b` | Live and graphs route internals simplified; targeted and full tests pass. |
+| [x] | 8 | `9eadd4d` | Job print logging replaced; shared ADS-B/UAT ingest helpers and RRD writer helpers extracted; targeted and full tests pass. |
 | [ ] | 9-10 | TBD | Optional model organization and final cleanup. |
 
 ---

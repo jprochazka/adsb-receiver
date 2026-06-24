@@ -1,5 +1,6 @@
 import pytest
 import json
+import logging
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 from backend import create_app
@@ -33,14 +34,14 @@ def processor():
 class TestDataProcessor:
     """Test data collection processor"""
 
-    def test_log_method(self, processor, capsys):
+    def test_log_method(self, processor, caplog):
         """Test logging functionality"""
         test_message = "Test log message"
-        processor.log(test_message)
-        
-        captured = capsys.readouterr()
-        assert test_message in captured.out
-        assert datetime.now().strftime("%Y/%m/%d") in captured.out
+        with caplog.at_level(logging.INFO):
+            processor.log(test_message)
+
+        assert test_message in caplog.text
+        assert 'dump1090_data_collection' in caplog.text
 
     @patch('backend.jobs.dump1090_data_collection.urlopen')
     def test_read_json_success(self, mock_urlopen, processor):
@@ -99,15 +100,15 @@ class TestDataProcessor:
         assert mock_process_aircraft.call_count == 2
 
     @patch.object(DataProcessor, 'read_json')
-    def test_process_all_aircraft_no_data(self, mock_read_json, processor, capsys):
+    def test_process_all_aircraft_no_data(self, mock_read_json, processor, caplog):
         """Test processing when no aircraft data available"""
         mock_data = {"aircraft": []}
         mock_read_json.return_value = mock_data
-        
-        processor.process_all_aircraft()
-        
-        captured = capsys.readouterr()
-        assert "no aircraft data to process" in captured.out
+
+        with caplog.at_level(logging.INFO):
+            processor.process_all_aircraft()
+
+        assert "no aircraft data to process" in caplog.text
 
     @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_flight')
@@ -178,7 +179,7 @@ class TestDataProcessor:
             mock_logging.assert_called()
 
     @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
-    @patch('backend.jobs.dump1090_data_collection.get_opensky_classification', return_value=(None, None, None))
+    @patch('backend.jobs.aircraft_data_collection.get_opensky_classification', return_value=(None, None, None))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_flight_new_flight(self, mock_process_positions, _mock_opensky, processor, app):
         """Test processing a new flight"""
@@ -208,7 +209,7 @@ class TestDataProcessor:
             
             mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data)
 
-    @patch('backend.jobs.dump1090_data_collection.get_opensky_classification', return_value=('helicopter', 'opensky', 'high'))
+    @patch('backend.jobs.aircraft_data_collection.get_opensky_classification', return_value=('helicopter', 'opensky', 'high'))
     @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_flight_prefers_opensky_classification(self, mock_process_positions, _mock_opensky, processor, app):
@@ -300,7 +301,7 @@ class TestDataProcessor:
             assert new_position.longitude == -74.0060
             assert new_position.aircraft == aircraft_id
 
-    def test_process_positions_without_coordinates(self, processor, app, capsys):
+    def test_process_positions_without_coordinates(self, processor, app, caplog):
         """Test processing positions without coordinates"""
         with app.app_context():
             aircraft_id = 1
@@ -310,16 +311,16 @@ class TestDataProcessor:
                 "altitude": 30000
                 # Missing required lat/lon/alt_baro/gs/track/geom_rate
             }
-            
-            processor.process_positions(aircraft_id, flight_id, aircraft_data)
-            
+
+            with caplog.at_level(logging.INFO):
+                processor.process_positions(aircraft_id, flight_id, aircraft_data)
+
             # Should not create any position
             positions = Position.query.filter_by(flight=flight_id).all()
             assert len(positions) == 0
-            
+
             # Should log that data is not present
-            captured = capsys.readouterr()
-            assert "is not present" in captured.out
+            assert "is not present" in caplog.text
 
     @patch('backend.jobs.dump1090_data_collection.Position')
     @patch('backend.jobs.dump1090_data_collection.logging.error')
@@ -371,7 +372,7 @@ class TestDataProcessor:
         # Verify the specific log message
         mock_log.assert_called_with('There is no aircraft data to process at this time')
 
-    @patch('backend.jobs.dump978_data_collection.get_opensky_classification', return_value=('uav', 'opensky', 'high'))
+    @patch('backend.jobs.aircraft_data_collection.get_opensky_classification', return_value=('uav', 'opensky', 'high'))
     @patch('backend.jobs.dump978_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(UatDataProcessor, 'process_positions')
     def test_uat_process_flight_prefers_opensky_classification(self, mock_process_positions, _mock_opensky, app):
