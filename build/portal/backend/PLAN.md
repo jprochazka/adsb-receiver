@@ -1,6 +1,6 @@
 # ADS-B Receiver Portal Backend Cleanup Plan
 
-This plan covers a cleanup/refactor pass for the Flask application in `build/portal/backend` on the `portal` branch. The goal is to improve readability, maintainability, and testability without changing external API behavior.
+This plan covers a cleanup/refactor pass for the Flask application in `build/portal/backend` on the `cleanup` branch. The goal is to improve readability, maintainability, and testability without changing external API behavior.
 
 ## Goals
 
@@ -10,15 +10,15 @@ This plan covers a cleanup/refactor pass for the Flask application in `build/por
 - Make each cleanup step small enough to test independently.
 - Keep the test suite passing after each phase.
 
-## Current Baseline
+## Initial Baseline Snapshot
 
 - Backend source: about 6,947 lines across 21 Python files.
 - Tests: about 6,712 lines across 20 test files.
-- Current test result from local review environment: `452 passed`.
+- Initial test result from local review environment: `452 passed`; latest completed cleanup verification: `471 passed`.
 - Main readability concerns:
   - `backend/__init__.py` does too much.
   - `backend/models.py` contains all model classes in one file.
-  - Large route modules mix API docs, schemas, helper logic, and handlers.
+  - Large route modules mix API docs, schemas, helper logic, and handlers; Swagger coverage is also weaker on multiplexed `add_resource()` controllers.
   - `dump1090` and `dump978` route/job logic has duplication.
   - Background job code is procedural and side-effect heavy.
   - `requirements.txt` is UTF-16LE instead of normal UTF-8.
@@ -93,6 +93,16 @@ Legend:
 - [x] Phase 10.2 — Run final lint, compileall, and full pytest suite.
 - [x] Phase 10.3 — Update this checklist with completed items and any deferred work.
 
+
+### Swagger/API Documentation Follow-up
+
+- [ ] Phase 11.1 — Add Swagger coverage tests against `/api/swagger.json` for ADS-B, UAT, and ACARS endpoints.
+- [ ] Phase 11.2 — Split or otherwise document multiplexed `add_resource()` controllers so generated summaries, query parameters, response models, and error responses are accurate per path.
+- [ ] Phase 11.3 — Add missing query/path parameter docs for flight lists, search, positions, purge, and ACARS list/message endpoints.
+- [ ] Phase 11.4 — Attach existing RESTX response models to read/count/database endpoints where models already exist.
+- [ ] Phase 11.5 — Adjust stale or misleading wording only where it affects generated API docs; remove low-value boilerplate comments only when touching the file for documentation work.
+- [ ] Phase 11.6 — Verify `/api/swagger.json`, targeted route tests, Ruff, compileall, and full pytest suite.
+
 ### Commit Tracking
 
 Record each cleanup commit here as work proceeds:
@@ -113,7 +123,8 @@ Record each cleanup commit here as work proceeds:
 | [x] | 7 | `4cd507b` | Live and graphs route internals simplified; targeted and full tests pass. |
 | [x] | 8 | `dc4ae54` | Job print logging replaced; shared ADS-B/UAT ingest helpers and RRD writer helpers extracted; targeted and full tests pass. |
 | [x] | 9 | `7f8afbf` | Kept models module monolithic; shared serialization helpers added; model and full tests pass. |
-| [x] | 10 | `ddbceff` | Final exception-handling cleanup; targeted and full verification pass. Deferred broad DB exception narrowing where tests still model generic failures. |
+| [x] | 10 | `d6d890b` | Final exception-handling cleanup; targeted and full verification pass. Deferred broad DB exception narrowing where tests still model generic failures. |
+| [ ] | 11 | TBD | Swagger/API documentation follow-up. Add spec tests, improve generated docs for multiplexed ADS-B/UAT/ACARS endpoints, and tighten misleading wording without changing API behavior. |
 
 ---
 
@@ -398,3 +409,59 @@ Start with the lowest-risk cleanup:
 5. Run the full test suite.
 
 That establishes clean tooling before structural refactors.
+
+## Phase 11: Swagger/API Documentation Follow-up
+
+Current issue: `/api/swagger.json` generates successfully, but several multiplexed controllers expose weak generated docs because one `Resource.get()` handles multiple paths. The main gaps are missing summaries, missing query parameters, missing per-path response models, and incomplete documented error responses.
+
+Primary targets:
+- `backend/routes/dump1090.py`
+- `backend/routes/dump978.py`
+- `backend/routes/acars.py`
+- `backend/routes/live.py` wording only, if touched
+- tests under `tests/` for generated Swagger/spec assertions
+
+1. Add generated Swagger coverage tests.
+   - Build a test app and fetch `/api/swagger.json`.
+   - Assert key paths exist for ADS-B, UAT, and ACARS.
+   - Assert documented query parameters for list/search/positions/purge endpoints.
+   - Assert response models or response codes are present for read/count/database endpoints.
+
+2. Improve ADS-B and UAT Swagger output without changing endpoint behavior.
+   - Preferred: split multiplexed `AdsbFlightsController` and `UatFlightsController` into one `Resource` class per URL family.
+   - Alternative: keep routing structure but add explicit RESTX docs where generated output can be made accurate.
+   - Document `offset`, `limit`, `q`, `ignore_on_purge`, `days`, `flight`, and `comment_id` where applicable.
+   - Reuse existing models: `Flight`, `FlightsList`, `Position`, `PositionsList`, `FlightCount`, comments, purge result, and purge preference models.
+
+3. Improve ACARS Swagger output without changing endpoint behavior.
+   - Preferred: split `AcarsController` into per-route resources for flights, counts, database info, and flight messages.
+   - Document `offset`, `limit`, `flight_id`, and `days`.
+   - Reuse existing models: `AcarsFlightsList`, `AcarsFlightCount`, `AcarsMessagesList`, `AcarsMessagesCount`, `AcarsDatabaseInfo`, and `AcarsPurgeResult`.
+   - Include `503 ACARS database unavailable` where ACARS DB access can fail.
+
+4. Wording cleanup rules.
+   - Change misleading generated-doc wording:
+     - `ADSB` should become `ADS-B` in the API title/description unless a path/model name requires backward compatibility.
+     - `live_ns = Namespace('live', description='Live aircraft data from dump1090')` should mention both dump1090 and dump978 because the endpoint merges both feeds.
+     - Any `count` field that counts top-level comments should say so explicitly; otherwise use `Number of comments returned`.
+     - `Publication date (YYYY-MM-DD)` should be changed to `Publication date/time string` where the API accepts or returns minute-level timestamps.
+   - Keep useful domain comments that explain metric sets or response shape.
+   - Remove or avoid adding boilerplate comments such as `# Define API models for documentation` only when already editing that file; do not churn files just to remove comments.
+   - Do not rename public model names, endpoint paths, JSON keys, or auth scheme names in a docs-only phase.
+
+5. Verification.
+   - Run generated spec tests first.
+   - Run targeted route tests for changed files:
+     - `tests/test_routes_dump1090.py`
+     - `tests/test_routes_dump978.py`
+     - `tests/test_routes_acars.py`
+     - any new Swagger/spec test file
+   - Run `ruff check .`.
+   - Run `python -m compileall backend tests`.
+   - Run full `pytest -q`.
+
+Acceptance criteria:
+- `/api/swagger.json` still returns HTTP 200.
+- Swagger paths for ADS-B, UAT, and ACARS include accurate summaries, query/path parameters, response codes, and response models where available.
+- No endpoint paths, response payload keys, auth behavior, or database behavior change.
+- Targeted tests and full backend suite pass.
