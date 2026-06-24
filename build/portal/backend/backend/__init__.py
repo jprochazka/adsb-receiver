@@ -1,6 +1,4 @@
 import os
-import yaml
-
 from datetime import timedelta
 from flask import Flask, jsonify, redirect, request
 from flask_apscheduler import APScheduler
@@ -25,6 +23,7 @@ from backend.routes.devices import devices, devices_ns
 from backend.routes.tokens import tokens, auth_ns
 from backend.routes.users import users, users_ns
 from backend.models import db
+from backend.config_loader import get_database_config, get_security_config, load_portal_config
 
 BACKEND_VERSION = os.environ.get('PORTAL_BACKEND_VERSION', 'v3.0.0')
 
@@ -114,17 +113,11 @@ def _register_api_namespaces(api):
     api.add_namespace(setting_ns)
 
 
-def _load_config_yml():
-    with open("config.yml") as f:
-        return yaml.safe_load(f)
-
-
 def _configure_database(app):
     # Load database configuration from yaml only if SQLALCHEMY_DATABASE_URI is
     # not already set (e.g. passed directly via test_config).
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
-        config = _load_config_yml()
-        db_config = config['database']
+        db_config = get_database_config()
         if db_config['use'].lower() == 'mysql':
             mysql_config = db_config['mysql']
             app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{mysql_config['user']}:***@{mysql_config['host']}/{mysql_config['database']}"
@@ -143,8 +136,8 @@ def _configure_database(app):
 
 def _configure_jwt(app):
     if not app.config.get('JWT_SECRET_KEY'):
-        security_config = _load_config_yml()
-        jwt_secret = security_config.get('security', {}).get('jwt_secret_key', '')
+        security_config = get_security_config(load_portal_config())
+        jwt_secret = security_config.get('jwt_secret_key', '')
         if not jwt_secret or jwt_secret == 'CHANGE_THIS_BEFORE_RUNNING':
             raise ValueError(
                 "JWT secret key has not been set. Update 'security.jwt_secret_key' in config.yml."

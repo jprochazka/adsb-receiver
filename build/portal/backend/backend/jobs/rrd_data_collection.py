@@ -6,21 +6,19 @@ import shutil
 import socket
 import subprocess
 import time
-import yaml
 import psutil
 
 from urllib.error import URLError
 from urllib.request import urlopen
 from flask import current_app
+from backend.config_loader import get_graphs_config, get_rrd_writer_config, load_portal_config
 
 
 class RrdWriter:
     def __init__(self):
-        with open('config.yml') as f:
-            cfg = yaml.safe_load(f)
-
-        graphs_cfg = cfg.get('graphs', {})
-        writer_cfg = cfg.get('rrd_writer', {})
+        cfg = load_portal_config()
+        graphs_cfg = get_graphs_config(cfg)
+        writer_cfg = get_rrd_writer_config(cfg)
 
         self.enabled = bool(writer_cfg.get('enabled', True))
         self.step = int(writer_cfg.get('step_seconds', 30))

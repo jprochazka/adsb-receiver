@@ -1,7 +1,6 @@
 import datetime
 import logging
 import os
-import yaml
 
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
@@ -10,6 +9,7 @@ from sqlalchemy.exc import OperationalError
 
 from backend.auth import require_admin
 from backend.aircraft_classification import classify_aircraft
+from backend.config_loader import get_acars_config, load_portal_config
 from backend.opensky_classification import get_opensky_classification_by_registration
 
 acars = Blueprint('acars', __name__)
@@ -136,9 +136,7 @@ def _purge_acars_flights():
 
 def _get_acars_engine():
     """Create and return a SQLAlchemy engine connected to the ACARS SQLite database."""
-    with open("config.yml") as f:
-        config = yaml.safe_load(f)
-    db_path = config.get('acars', {}).get('database', '/run/acarsdec.sqlite')
+    db_path = get_acars_config().get('database', '/run/acarsdec.sqlite')
     return create_engine(f"sqlite:///{db_path}", connect_args={"check_same_thread": False})
 
 
@@ -291,9 +289,7 @@ class AcarsController(Resource):
 
     def _get_database_info(self):
         try:
-            with open('config.yml') as f:
-                config = yaml.safe_load(f)
-            db_path = config.get('acars', {}).get('database', '/run/acarsdec.sqlite')
+            db_path = get_acars_config(load_portal_config()).get('database', '/run/acarsdec.sqlite')
             if not os.path.exists(db_path):
                 return {'msg': 'ACARS database unavailable'}, 503
             size = os.path.getsize(db_path)

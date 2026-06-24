@@ -1,11 +1,11 @@
 import logging
 import datetime
-import yaml
 
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Notification, Flight, Dump978Flight, Setting
 from backend.auth import require_user_or_admin
+from backend.config_loader import get_acars_config
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.exc import OperationalError
 
@@ -190,9 +190,7 @@ class RecentNotificationsResource(Resource):
 
             # Check ACARS database if available
             try:
-                with open('config.yml') as f:
-                    config = yaml.safe_load(f)
-                acars_db_path = config.get('acars', {}).get('database', '/run/acarsdec.sqlite')
+                acars_db_path = get_acars_config().get('database', '/run/acarsdec.sqlite')
                 acars_engine = create_engine(f'sqlite:///{acars_db_path}', connect_args={'check_same_thread': False})
                 with acars_engine.connect() as conn:
                     placeholders = ','.join(f':m{i}' for i in range(len(monitored)))

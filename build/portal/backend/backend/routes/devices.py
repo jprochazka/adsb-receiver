@@ -2,17 +2,16 @@ import json
 import logging
 import os
 import psutil
-import yaml
 
 from flask import Blueprint, current_app, jsonify
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Setting
 from backend.auth import require_admin
+from backend.config_loader import load_portal_config
 from sqlalchemy import select
 from urllib.request import urlopen, Request
 
-with open("config.yml") as _f:
-    config = yaml.safe_load(_f)
+config = load_portal_config()
 
 
 devices = Blueprint('devices', __name__)

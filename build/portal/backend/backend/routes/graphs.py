@@ -3,11 +3,11 @@ import os
 import re
 import socket
 import subprocess
-import yaml
 
 from flask import Blueprint, abort, jsonify, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from sqlalchemy import select
+from backend.config_loader import get_graphs_config
 
 graphs = Blueprint('graphs', __name__)
 graphs_ns = Namespace('graphs', description='Historical RRD graph data for Chart.js')
@@ -16,10 +16,7 @@ graphs_ns = Namespace('graphs', description='Historical RRD graph data for Chart
 # Configuration
 # ---------------------------------------------------------------------------
 
-with open("config.yml") as _f:
-    _config = yaml.safe_load(_f)
-
-_g              = _config.get('graphs', {})
+_g              = get_graphs_config()
 _RRD_BASE       = _g.get('rrd_base') or os.environ.get('RRD_BASE', 'instance/rrd')
 _RRD_HOST       = _g.get('hostname', socket.gethostname())
 _D1090_INSTANCE = _g.get('dump1090_instance', 'localhost')

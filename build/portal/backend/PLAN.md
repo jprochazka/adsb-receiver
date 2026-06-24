@@ -58,10 +58,10 @@ Legend:
 - [x] Phase 1.1 — Split `create_app()` setup into focused helper functions inside `backend/__init__.py`.
 - [x] Phase 1.2 — Verify route registration and scheduler API protection still work.
 - [x] Phase 1.3 — Run targeted app factory/database tests and full pytest suite.
-- [ ] Phase 2.1 — Add centralized config loader module.
-- [ ] Phase 2.2 — Replace direct `open("config.yml")` reads in app setup.
-- [ ] Phase 2.3 — Replace direct `open("config.yml")` reads in graphs and RRD jobs.
-- [ ] Phase 2.4 — Verify app/tests work from expected working directories.
+- [x] Phase 2.1 — Add centralized config loader module.
+- [x] Phase 2.2 — Replace direct `open("config.yml")` reads in app setup.
+- [x] Phase 2.3 — Replace direct `open("config.yml")` reads in graphs and RRD jobs.
+- [x] Phase 2.4 — Verify app/tests work from expected working directories.
 
 ### Route Cleanup
 
@@ -104,8 +104,8 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0.2-0.3 | `ba0e6ab` | Requirements install verified; backend testing guide added. |
 | [x] | 0.4 | `0bbbf6f` | Added conservative Ruff configuration. |
 | [x] | 0.5-0.6 | `0bbbf6f` | Removed mechanical unused imports; `ruff check .`, `compileall`, and `pytest` pass. |
-| [x] | 1 | `7432cd3` | App factory split into focused setup helpers; targeted and full tests pass. |
-| [ ] | 2 | TBD | Config loader cleanup. |
+| [x] | 1 | `0c2358e` | App factory split into focused setup helpers; targeted and full tests pass. |
+| [x] | 2 | `fd56fcb` | Centralized config loader added; direct config.yml reads migrated; targeted and full tests pass. |
 | [ ] | 3 | TBD | Shared route helper extraction. |
 | [ ] | 4-7 | TBD | Route module cleanup. |
 | [ ] | 8 | TBD | Background job cleanup. |
