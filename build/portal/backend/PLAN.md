@@ -72,10 +72,10 @@ Legend:
 - [x] Phase 4.2 — Verify `tests/test_routes_users.py` and full pytest suite.
 - [x] Phase 5.1 — Simplify `routes/blog.py` post/comment helpers.
 - [x] Phase 5.2 — Verify `tests/test_routes_blog.py` and full pytest suite.
-- [ ] Phase 6.1 — Extract common ADS-B/UAT route helpers where behavior is truly shared.
-- [ ] Phase 6.2 — Simplify `routes/dump1090.py` using shared helpers.
-- [ ] Phase 6.3 — Simplify `routes/dump978.py` using shared helpers.
-- [ ] Phase 6.4 — Verify dump1090/dump978 targeted tests and full pytest suite.
+- [x] Phase 6.1 — Extract common ADS-B/UAT route helpers where behavior is truly shared.
+- [x] Phase 6.2 — Simplify `routes/dump1090.py` using shared helpers.
+- [x] Phase 6.3 — Simplify `routes/dump978.py` using shared helpers.
+- [x] Phase 6.4 — Verify dump1090/dump978 targeted tests and full pytest suite.
 - [ ] Phase 7.1 — Simplify `routes/live.py` internals without changing response shape.
 - [ ] Phase 7.2 — Simplify `routes/graphs.py` internals without changing metric behavior.
 - [ ] Phase 7.3 — Verify live/graphs targeted tests and full pytest suite.
@@ -108,8 +108,9 @@ Record each cleanup commit here as work proceeds:
 | [x] | 2 | `57076e5` | Centralized config loader added; direct config.yml reads migrated; targeted and full tests pass. |
 | [x] | 3 | `38253f1` | Shared route query parsing helpers added and adopted in users, blog, ADS-B, and UAT routes; targeted and full tests pass. |
 | [x] | 4 | `6f17c92` | Users route simplified with private helpers; targeted and full tests pass. |
-| [x] | 5 | `acec211` | Blog route simplified with post/comment helper extraction; targeted and full tests pass. |
-| [ ] | 6-7 | TBD | Remaining route module cleanup. |
+| [x] | 5 | `034e6fa` | Blog route simplified with post/comment helper extraction; targeted and full tests pass. |
+| [x] | 6 | `a432929` | Shared ADS-B/UAT route helper module added; dump1090/dump978 use shared helpers; targeted and full tests pass. |
+| [ ] | 7 | TBD | Remaining route module cleanup. |
 | [ ] | 8 | TBD | Background job cleanup. |
 | [ ] | 9-10 | TBD | Optional model organization and final cleanup. |
 

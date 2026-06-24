@@ -6,8 +6,16 @@ from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.auth import get_current_user, require_admin, require_user_or_admin
 from backend.models import db, Aircraft, Flight, FlightComment, Position
-from backend.routes.common import QueryParamError, get_stripped_arg, parse_bool_arg, parse_pagination
-from sqlalchemy import select, func, delete, or_
+from backend.routes.common import QueryParamError, get_stripped_arg, parse_pagination
+from backend.routes.flight_common import (
+    apply_flight_filters,
+    can_modify_comment,
+    get_sightings_counts,
+    parse_ignore_on_purge,
+    serialize_flights,
+    validate_flight_comment_content,
+)
+from sqlalchemy import select, func, delete
 
 flights = Blueprint('dump1090', __name__)
 SIGHTING_GAP = datetime.timedelta(minutes=30)
@@ -71,85 +79,24 @@ positions_list_model = flight_ns.model('PositionsList', {
 
 
 def _serialize_adsb_flights(rows):
-    flights_rows = list(rows)
-    flights_data = []
-    for flight_obj in flights_rows:
-        data = flight_obj.to_dict()
-        data['icao'] = flight_obj.aircraft_ref.icao if flight_obj.aircraft_ref else None
-        flights_data.append(data)
-
-    sightings_counts = _get_adsb_sightings_counts(
-        [data.get('flight') for data in flights_data if data.get('flight')]
-    )
-    for data in flights_data:
-        flight_code = data.get('flight')
-        data['sightings_count'] = sightings_counts.get(flight_code, 1 if flight_code else 0)
-
-    return flights_data
-
-
-def _parse_timestamp(value: str | None):
-    if not value:
-        return None
-
-    try:
-        return datetime.datetime.strptime(value, TIMESTAMP_FORMAT)
-    except ValueError:
-        return None
+    return serialize_flights(rows, _get_adsb_sightings_counts)
 
 
 def _get_adsb_sightings_counts(flights: list[str]):
-    unique_flights = sorted({flight for flight in flights if flight})
-    if not unique_flights:
-        return {}
-
-    rows = db.session.execute(
-        select(Flight.flight, Flight.first_seen)
-        .where(Flight.flight.in_(unique_flights))
-        .order_by(Flight.flight.asc(), Flight.first_seen.asc(), Flight.id.asc())
-    ).all()
-
-    counts: dict[str, int] = {}
-    previous_seen: dict[str, datetime.datetime | None] = {}
-
-    for flight, first_seen in rows:
-        current_seen = _parse_timestamp(first_seen)
-        if current_seen is None:
-            counts[flight] = counts.get(flight, 0) + 1
-            continue
-
-        prior_seen = previous_seen.get(flight)
-        if prior_seen is None or (current_seen - prior_seen) >= SIGHTING_GAP:
-            counts[flight] = counts.get(flight, 0) + 1
-
-        previous_seen[flight] = current_seen
-
-    return counts
-
-
-def _parse_ignore_on_purge(value: str | None):
-    return parse_bool_arg(
-        {'ignore_on_purge': value},
-        'ignore_on_purge',
-        true_values={'true', '1'},
-        false_values={'false', '0'},
-        error_message='invalid ignore_on_purge value',
+    return get_sightings_counts(
+        Flight,
+        flights,
+        gap=SIGHTING_GAP,
+        timestamp_format=TIMESTAMP_FORMAT,
     )
 
 
+def _parse_ignore_on_purge(value: str | None):
+    return parse_ignore_on_purge(value)
+
+
 def _apply_adsb_flight_filters(stmt, q: str | None, ignore_on_purge: bool | None):
-    if q:
-        stmt = stmt.filter(
-            or_(
-                Flight.flight.ilike(f'%{q}%'),
-                Aircraft.icao.ilike(f'%{q}%')
-            )
-        )
-
-    if ignore_on_purge is not None:
-        stmt = stmt.filter(Flight.ignore_on_purge.is_(ignore_on_purge))
-
-    return stmt
+    return apply_flight_filters(stmt, Flight, Aircraft, q, ignore_on_purge)
 
 
 def _query_adsb_flights(q: str | None, offset: int, limit: int, ignore_on_purge: bool | None = None):
@@ -505,11 +452,11 @@ class AdsbFlightCommentsController(Resource):
     @require_user_or_admin()
     def post(self, flight):
         """Create a comment for an ADS-B flight (authenticated unlocked user/admin)"""
-        content = (request.json or {}).get('content', '').strip()
-        if not content:
-            return {'msg': 'Bad Request - content is required'}, 400
-        if len(content) > 5000:
-            return {'msg': 'Bad Request - content cannot exceed 5000 characters'}, 400
+        content, error_body, error_status = validate_flight_comment_content(
+            (request.json or {}).get('content', '')
+        )
+        if error_body:
+            return error_body, error_status
 
         try:
             flight_obj = db.session.execute(select(Flight).filter_by(flight=flight)).scalar_one_or_none()
@@ -547,11 +494,11 @@ class AdsbFlightCommentModerationController(Resource):
     @require_user_or_admin()
     def put(self, flight, comment_id):
         """Update an ADS-B flight comment (comment owner or admin)"""
-        content = (request.json or {}).get('content', '').strip()
-        if not content:
-            return {'msg': 'Bad Request - content is required'}, 400
-        if len(content) > 5000:
-            return {'msg': 'Bad Request - content cannot exceed 5000 characters'}, 400
+        content, error_body, error_status = validate_flight_comment_content(
+            (request.json or {}).get('content', '')
+        )
+        if error_body:
+            return error_body, error_status
 
         try:
             flight_obj = db.session.execute(select(Flight).filter_by(flight=flight)).scalar_one_or_none()
@@ -565,7 +512,7 @@ class AdsbFlightCommentModerationController(Resource):
             current_user = get_current_user()
             if not current_user:
                 return {'msg': 'User not found'}, 401
-            if comment.user_id != current_user.id and not current_user.is_admin():
+            if not can_modify_comment(current_user, comment):
                 return {'msg': 'Access denied. You can only edit your own comments'}, 403
 
             comment.content = content
