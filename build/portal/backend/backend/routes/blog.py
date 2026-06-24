@@ -166,6 +166,185 @@ def _validate_comment_content(content):
     return normalized_content, None, None
 
 
+def _now_minute():
+    return datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
+
+
+def _normalize_tags(tags):
+    return ','.join(t.strip() for t in tags if t.strip())
+
+
+def _normalize_category(category):
+    return (category or '').strip() or 'Uncategorized'
+
+
+def _build_blog_post(payload):
+    return BlogPost(
+        date=payload['date'] if payload.get('date') else _now_minute(),
+        title=payload['title'],
+        author=payload['author'],
+        content=payload['content'],
+        visible=payload['visible'],
+        tags=_normalize_tags(payload['tags']),
+        category=_normalize_category(payload.get('category', '')),
+    )
+
+
+def _apply_blog_post_update(blog_post, payload):
+    blog_post.title = payload['title']
+    blog_post.content = payload['content']
+    if payload.get('date') is not None:
+        blog_post.date = payload['date']
+    if payload.get('visible') is not None:
+        blog_post.visible = payload['visible']
+    if payload.get('tags') is not None:
+        blog_post.tags = _normalize_tags(payload['tags'])
+    if payload.get('category') is not None:
+        blog_post.category = _normalize_category(payload['category'])
+
+
+def _is_publicly_visible(blog_post, now=None):
+    now = now or _now_minute()
+    return bool(blog_post and blog_post.visible and blog_post.date <= now)
+
+
+def _comments_by_parent(comments):
+    replies_by_parent = {}
+    root_comments = []
+    for comment in comments:
+        if comment.parent_comment_id is None:
+            root_comments.append(comment)
+            continue
+        replies_by_parent.setdefault(comment.parent_comment_id, []).append(comment)
+    return root_comments, replies_by_parent
+
+
+def _get_comment_for_blog(blog_post_id, comment_id):
+    comment = db.session.get(BlogComment, comment_id)
+    if not comment or comment.blog_post_id != blog_post_id:
+        return None
+    return comment
+
+
+def _can_modify_comment(current_user, comment):
+    return current_user.is_admin() or current_user.id == comment.user_id
+
+
+def _validate_comment_parent(blog_post_id, parent_comment_id):
+    if parent_comment_id is None:
+        return None, None, None
+
+    parent_comment = db.session.get(BlogComment, parent_comment_id)
+    if not parent_comment or parent_comment.blog_post_id != blog_post_id:
+        return None, {'msg': 'Parent comment not found for this blog post'}, 400
+    return parent_comment, None, None
+
+
+def _build_blog_comment(blog_post_id, current_user, parent_comment, content):
+    return BlogComment(
+        blog_post_id=blog_post_id,
+        user_id=current_user.id,
+        parent_comment_id=parent_comment.id if parent_comment else None,
+        content=content,
+    )
+
+
+def _serialize_comment_with_replies(comment):
+    return {
+        **comment.to_dict(),
+        'replies': [reply.to_dict() for reply in comment.replies],
+    }
+
+
+def _apply_public_post_filters(category, tag):
+    base_conditions = [
+        BlogPost.visible == True,
+        BlogPost.date <= _now_minute(),
+    ]
+    if category:
+        if category == 'Uncategorized':
+            base_conditions.append(
+                (BlogPost.category == None) | (BlogPost.category == '') | (BlogPost.category == 'Uncategorized')
+            )
+        else:
+            base_conditions.append(BlogPost.category == category)
+    if tag:
+        base_conditions.append(BlogPost.tags.contains(tag))
+    return select(BlogPost).where(*base_conditions)
+
+
+def _visible_posts_metadata_rows():
+    return db.session.execute(
+        select(BlogPost.tags, BlogPost.category)
+        .where(
+            BlogPost.visible == True,
+            BlogPost.date <= _now_minute(),
+        )
+    ).all()
+
+
+def _tag_and_category_counts(posts):
+    tag_counts = Counter()
+    category_counts = Counter({'Uncategorized': 0})
+
+    for row in posts:
+        raw_tags = row.tags or ''
+        for tag in [t.strip() for t in raw_tags.split(',') if t.strip()]:
+            tag_counts[tag] += 1
+
+        category = (row.category or '').strip() or 'Uncategorized'
+        category_counts[category] += 1
+
+    tags = [
+        {'name': name, 'count': count}
+        for name, count in sorted(tag_counts.items(), key=lambda item: (-item[1], item[0].lower()))
+        if count > 0
+    ]
+    categories = [
+        {'name': name, 'count': count}
+        for name, count in sorted(category_counts.items(), key=lambda item: (-item[1], item[0].lower()))
+        if count > 0
+    ]
+    return tags, categories
+
+
+def _apply_admin_post_filters(statement, search_query, status_filter='all', now_iso=None):
+    now_iso = now_iso or _now_minute()
+    filtered_statement = statement
+    if search_query:
+        pattern = f'%{search_query}%'
+        filtered_statement = filtered_statement.where(
+            BlogPost.title.ilike(pattern) | BlogPost.author.ilike(pattern)
+        )
+
+    if status_filter == 'published':
+        filtered_statement = filtered_statement.where(BlogPost.visible.is_(True), BlogPost.date <= now_iso)
+    elif status_filter == 'draft':
+        filtered_statement = filtered_statement.where(BlogPost.visible.is_(False))
+    elif status_filter == 'scheduled':
+        filtered_statement = filtered_statement.where(BlogPost.visible.is_(True), BlogPost.date > now_iso)
+
+    return filtered_statement
+
+
+def _admin_post_totals(search_query, now_iso):
+    return {
+        'total': db.session.execute(select(func.count()).select_from(BlogPost)).scalar(),
+        'all_total': db.session.execute(
+            _apply_admin_post_filters(select(func.count()).select_from(BlogPost), search_query, now_iso=now_iso)
+        ).scalar(),
+        'published_total': db.session.execute(
+            _apply_admin_post_filters(select(func.count()).select_from(BlogPost), search_query, 'published', now_iso)
+        ).scalar(),
+        'draft_total': db.session.execute(
+            _apply_admin_post_filters(select(func.count()).select_from(BlogPost), search_query, 'draft', now_iso)
+        ).scalar(),
+        'scheduled_total': db.session.execute(
+            _apply_admin_post_filters(select(func.count()).select_from(BlogPost), search_query, 'scheduled', now_iso)
+        ).scalar(),
+    }
+
+
 @blog_ns.route('/post')
 class BlogPostCreateResource(Resource):
     @blog_ns.expect((create_blog_post_model, 'Blog post fields. title, author and content are required.'), validate=True)
@@ -184,17 +363,7 @@ class BlogPostCreateResource(Resource):
             return {'msg': 'Validation error', 'errors': err.messages}, 400
 
         try:
-            now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
-            post_date = payload['date'] if payload.get('date') else now
-            new_post = BlogPost(
-                date=post_date,
-                title=payload['title'],
-                author=payload['author'],
-                content=payload['content'],
-                visible=payload['visible'],
-                tags=','.join(t.strip() for t in payload['tags'] if t.strip()),
-                category=payload.get('category', '').strip() or 'Uncategorized'
-            )
+            new_post = _build_blog_post(payload)
             db.session.add(new_post)
             db.session.commit()
             return {'msg': 'Blog post created successfully', 'id': new_post.id}, 201
@@ -215,10 +384,9 @@ class BlogPostResource(Resource):
     def get(self, blog_post_id):
         """Get a visible, published blog post by ID (public)"""
         try:
-            now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
             blog_post = db.session.get(BlogPost, blog_post_id)
 
-            if not blog_post or not blog_post.visible or blog_post.date > now:
+            if not _is_publicly_visible(blog_post):
                 return {'msg': 'Blog post not found'}, 404
 
             return blog_post.to_dict(), 200
@@ -250,18 +418,8 @@ class BlogPostResource(Resource):
             if not blog_post:
                 return {'msg': 'Blog post not found'}, 404
                 
-            blog_post.title = payload['title']
-            blog_post.content = payload['content']
-            if payload.get('date') is not None:
-                blog_post.date = payload['date']
-            if payload.get('visible') is not None:
-                blog_post.visible = payload['visible']
-            if payload.get('tags') is not None:
-                blog_post.tags = ','.join(t.strip() for t in payload['tags'] if t.strip())
-            if payload.get('category') is not None:
-                new_category = payload['category'].strip()
-                blog_post.category = new_category or 'Uncategorized'
-            
+            _apply_blog_post_update(blog_post, payload)
+
             db.session.commit()
             return {'msg': 'Blog post updated successfully'}, 204
         except Exception as ex:
@@ -318,13 +476,7 @@ class BlogPostCommentsResource(Resource):
                 .order_by(BlogComment.created_at.asc(), BlogComment.id.asc())
             ).scalars().all()
 
-            replies_by_parent = {}
-            root_comments = []
-            for comment in comments:
-                if comment.parent_comment_id is None:
-                    root_comments.append(comment)
-                    continue
-                replies_by_parent.setdefault(comment.parent_comment_id, []).append(comment)
+            root_comments, replies_by_parent = _comments_by_parent(comments)
 
             return {
                 'blog_post_id': blog_post_id,
@@ -362,9 +514,8 @@ class BlogPostCommentsResource(Resource):
             return {'msg': 'Validation error', 'errors': err.messages}, 400
 
         try:
-            now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
             blog_post = _get_commentable_blog_post(blog_post_id)
-            if not blog_post or not blog_post.visible or blog_post.date > now:
+            if not _is_publicly_visible(blog_post):
                 return {'msg': 'Blog post not found'}, 404
 
             current_user = get_current_user()
@@ -375,19 +526,13 @@ class BlogPostCommentsResource(Resource):
             if error_body:
                 return error_body, error_status
 
-            parent_comment = None
-            parent_comment_id = payload.get('parent_comment_id')
-            if parent_comment_id is not None:
-                parent_comment = db.session.get(BlogComment, parent_comment_id)
-                if not parent_comment or parent_comment.blog_post_id != blog_post_id:
-                    return {'msg': 'Parent comment not found for this blog post'}, 400
-
-            new_comment = BlogComment(
-                blog_post_id=blog_post_id,
-                user_id=current_user.id,
-                parent_comment_id=parent_comment.id if parent_comment else None,
-                content=comment_content,
+            parent_comment, error_body, error_status = _validate_comment_parent(
+                blog_post_id, payload.get('parent_comment_id')
             )
+            if error_body:
+                return error_body, error_status
+
+            new_comment = _build_blog_comment(blog_post_id, current_user, parent_comment, comment_content)
             db.session.add(new_comment)
             db.session.commit()
             return {
@@ -432,15 +577,15 @@ class BlogPostCommentResource(Resource):
             if not blog_post:
                 return {'msg': 'Blog post not found'}, 404
 
-            comment = db.session.get(BlogComment, comment_id)
-            if not comment or comment.blog_post_id != blog_post_id:
+            comment = _get_comment_for_blog(blog_post_id, comment_id)
+            if not comment:
                 return {'msg': 'Comment not found for this blog post'}, 404
 
             current_user = get_current_user()
             if not current_user:
                 return {'msg': 'User not found'}, 401
 
-            if not current_user.is_admin() and current_user.id != comment.user_id:
+            if not _can_modify_comment(current_user, comment):
                 return {'msg': 'Access denied. You can only edit your own comments'}, 403
 
             if comment.deleted:
@@ -455,10 +600,7 @@ class BlogPostCommentResource(Resource):
             comment.edited_at = datetime.datetime.now(datetime.timezone.utc)
             db.session.commit()
 
-            return {
-                **comment.to_dict(),
-                'replies': [reply.to_dict() for reply in comment.replies]
-            }, 200
+            return _serialize_comment_with_replies(comment), 200
         except OperationalError as ex:
             db.session.rollback()
             logging.error('Comment update failed due to database schema mismatch', exc_info=ex)
@@ -489,15 +631,15 @@ class BlogPostCommentResource(Resource):
             if not blog_post:
                 return {'msg': 'Blog post not found'}, 404
 
-            comment = db.session.get(BlogComment, comment_id)
-            if not comment or comment.blog_post_id != blog_post_id:
+            comment = _get_comment_for_blog(blog_post_id, comment_id)
+            if not comment:
                 return {'msg': 'Comment not found for this blog post'}, 404
 
             current_user = get_current_user()
             if not current_user:
                 return {'msg': 'User not found'}, 401
 
-            if not current_user.is_admin() and current_user.id != comment.user_id:
+            if not _can_modify_comment(current_user, comment):
                 return {'msg': 'Access denied. You can only delete your own comments'}, 403
 
             # If this comment has no replies, remove it entirely.
@@ -548,21 +690,7 @@ class BlogPostsListResource(Resource):
         tag = get_stripped_arg(request.args, 'tag')
 
         try:
-            now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
-            base_conditions = [
-                BlogPost.visible == True,
-                BlogPost.date <= now
-            ]
-            if category:
-                if category == 'Uncategorized':
-                    base_conditions.append(
-                        (BlogPost.category == None) | (BlogPost.category == '') | (BlogPost.category == 'Uncategorized')
-                    )
-                else:
-                    base_conditions.append(BlogPost.category == category)
-            if tag:
-                base_conditions.append(BlogPost.tags.contains(tag))
-            base_query = select(BlogPost).where(*base_conditions)
+            base_query = _apply_public_post_filters(category, tag)
             total = db.session.execute(
                 select(func.count()).select_from(base_query.subquery())
             ).scalar()
@@ -594,36 +722,8 @@ class BlogPostsMetaResource(Resource):
     def get(self):
         """Get tag and category metadata for visible, published blog posts (public)"""
         try:
-            now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
-            posts = db.session.execute(
-                select(BlogPost.tags, BlogPost.category)
-                .where(
-                    BlogPost.visible == True,
-                    BlogPost.date <= now
-                )
-            ).all()
-
-            tag_counts = Counter()
-            category_counts = Counter({'Uncategorized': 0})  # always present
-
-            for row in posts:
-                raw_tags = row.tags or ''
-                for tag in [t.strip() for t in raw_tags.split(',') if t.strip()]:
-                    tag_counts[tag] += 1
-
-                category = (row.category or '').strip() or 'Uncategorized'
-                category_counts[category] += 1
-
-            tags = [
-                {'name': name, 'count': count}
-                for name, count in sorted(tag_counts.items(), key=lambda item: (-item[1], item[0].lower()))
-                if count > 0
-            ]
-            categories = [
-                {'name': name, 'count': count}
-                for name, count in sorted(category_counts.items(), key=lambda item: (-item[1], item[0].lower()))
-                if count > 0
-            ]
+            posts = _visible_posts_metadata_rows()
+            tags, categories = _tag_and_category_counts(posts)
 
             return {
                 'tags': tags,
@@ -663,32 +763,10 @@ class BlogPostsAdminListResource(Resource):
             return {'msg': 'Bad Request - invalid status parameter'}, 400
 
         try:
-            now_iso = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
-
-            def apply_filters(statement, status_filter='all'):
-                filtered_statement = statement
-                if search_query:
-                    pattern = f"%{search_query}%"
-                    filtered_statement = filtered_statement.where(
-                        BlogPost.title.ilike(pattern) | BlogPost.author.ilike(pattern)
-                    )
-
-                if status_filter == 'published':
-                    filtered_statement = filtered_statement.where(BlogPost.visible.is_(True), BlogPost.date <= now_iso)
-                elif status_filter == 'draft':
-                    filtered_statement = filtered_statement.where(BlogPost.visible.is_(False))
-                elif status_filter == 'scheduled':
-                    filtered_statement = filtered_statement.where(BlogPost.visible.is_(True), BlogPost.date > now_iso)
-
-                return filtered_statement
-
-            total = db.session.execute(select(func.count()).select_from(BlogPost)).scalar()
-            all_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost))).scalar()
-            published_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost), 'published')).scalar()
-            draft_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost), 'draft')).scalar()
-            scheduled_total = db.session.execute(apply_filters(select(func.count()).select_from(BlogPost), 'scheduled')).scalar()
+            now_iso = _now_minute()
+            totals = _admin_post_totals(search_query, now_iso)
             blog_posts_result = db.session.execute(
-                apply_filters(select(BlogPost), status)
+                _apply_admin_post_filters(select(BlogPost), search_query, status, now_iso)
                 .order_by(BlogPost.date.desc())
                 .offset(offset)
                 .limit(limit)
@@ -699,11 +777,11 @@ class BlogPostsAdminListResource(Resource):
                 'offset': offset,
                 'limit': limit,
                 'count': len(blog_posts_data),
-                'total': total,
-                'all_total': all_total,
-                'published_total': published_total,
-                'draft_total': draft_total,
-                'scheduled_total': scheduled_total,
+                'total': totals['total'],
+                'all_total': totals['all_total'],
+                'published_total': totals['published_total'],
+                'draft_total': totals['draft_total'],
+                'scheduled_total': totals['scheduled_total'],
                 'blog_posts': blog_posts_data
             }, 200
         except Exception as ex:
