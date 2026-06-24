@@ -33,6 +33,83 @@ This plan covers a cleanup/refactor pass for the Flask application in `build/por
 - Do not change database table names or migration history unless absolutely required.
 - Do not introduce new runtime services.
 
+
+## Progress Checklist
+
+Use this checklist to track implementation across small commits. Mark an item complete only after the relevant targeted tests and the full backend test suite pass.
+
+Legend:
+- `[ ]` Not started
+- `[~]` In progress
+- `[x]` Complete
+- `[!]` Blocked / needs decision
+
+### Setup and Tooling
+
+- [ ] Phase 0.1 — Convert `requirements.txt` from UTF-16LE to UTF-8 without changing package pins.
+- [ ] Phase 0.2 — Verify `python -m pip install -r requirements.txt` works directly.
+- [ ] Phase 0.3 — Add documented local setup/test commands.
+- [ ] Phase 0.4 — Add conservative Ruff configuration to `pyproject.toml`.
+- [ ] Phase 0.5 — Remove only mechanical lint findings such as unused imports.
+- [ ] Phase 0.6 — Run baseline verification: `python -m pytest -q`, `python -m compileall backend tests`, and `ruff check .` if Ruff is added.
+
+### App Factory and Configuration
+
+- [ ] Phase 1.1 — Split `create_app()` setup into focused helper functions inside `backend/__init__.py`.
+- [ ] Phase 1.2 — Verify route registration and scheduler API protection still work.
+- [ ] Phase 1.3 — Run targeted app factory/database tests and full pytest suite.
+- [ ] Phase 2.1 — Add centralized config loader module.
+- [ ] Phase 2.2 — Replace direct `open("config.yml")` reads in app setup.
+- [ ] Phase 2.3 — Replace direct `open("config.yml")` reads in graphs and RRD jobs.
+- [ ] Phase 2.4 — Verify app/tests work from expected working directories.
+
+### Route Cleanup
+
+- [ ] Phase 3.1 — Add shared request parsing helpers for pagination, booleans, and search terms.
+- [ ] Phase 3.2 — Adopt shared helpers in low-risk routes first.
+- [ ] Phase 3.3 — Run affected route tests and full pytest suite.
+- [ ] Phase 4.1 — Simplify `routes/users.py` with small private helpers.
+- [ ] Phase 4.2 — Verify `tests/test_routes_users.py` and full pytest suite.
+- [ ] Phase 5.1 — Simplify `routes/blog.py` post/comment helpers.
+- [ ] Phase 5.2 — Verify `tests/test_routes_blog.py` and full pytest suite.
+- [ ] Phase 6.1 — Extract common ADS-B/UAT route helpers where behavior is truly shared.
+- [ ] Phase 6.2 — Simplify `routes/dump1090.py` using shared helpers.
+- [ ] Phase 6.3 — Simplify `routes/dump978.py` using shared helpers.
+- [ ] Phase 6.4 — Verify dump1090/dump978 targeted tests and full pytest suite.
+- [ ] Phase 7.1 — Simplify `routes/live.py` internals without changing response shape.
+- [ ] Phase 7.2 — Simplify `routes/graphs.py` internals without changing metric behavior.
+- [ ] Phase 7.3 — Verify live/graphs targeted tests and full pytest suite.
+
+### Jobs, Models, and Final Cleanup
+
+- [ ] Phase 8.1 — Replace debug `print()` usage in jobs with logging where appropriate.
+- [ ] Phase 8.2 — Extract repeated dump1090/dump978 collection helpers only where safe.
+- [ ] Phase 8.3 — Reduce long RRD writer methods with metric/helper extraction.
+- [ ] Phase 8.4 — Verify job targeted tests and full pytest suite.
+- [ ] Phase 9.1 — Decide whether to keep `models.py` monolithic or organize/split it.
+- [ ] Phase 9.2 — If changing models, preserve existing imports and avoid migration noise.
+- [ ] Phase 9.3 — Verify model tests and full pytest suite.
+- [ ] Phase 10.1 — Tighten broad exception handling where expected exception types are clear.
+- [ ] Phase 10.2 — Run final lint, compileall, and full pytest suite.
+- [ ] Phase 10.3 — Update this checklist with completed items and any deferred work.
+
+### Commit Tracking
+
+Record each cleanup commit here as work proceeds:
+
+| Status | Phase | Commit | Notes |
+| --- | --- | --- | --- |
+| [x] | Planning | `0d712ad` | Added initial `PLAN.md` on `cleanup`. |
+| [ ] | 0 | TBD | Normalize requirements / tooling baseline. |
+| [ ] | 1 | TBD | App factory cleanup. |
+| [ ] | 2 | TBD | Config loader cleanup. |
+| [ ] | 3 | TBD | Shared route helper extraction. |
+| [ ] | 4-7 | TBD | Route module cleanup. |
+| [ ] | 8 | TBD | Background job cleanup. |
+| [ ] | 9-10 | TBD | Optional model organization and final cleanup. |
+
+---
+
 ## Phase 0: Tooling and Safety Net
 
 1. Convert `requirements.txt` from UTF-16LE to UTF-8.
