@@ -4,18 +4,49 @@ from datetime import datetime, timezone
 db = SQLAlchemy()
 
 
-class Aircraft(db.Model):
+def _isoformat_or_none(value):
+    return value.isoformat() if value else None
+
+
+def _split_tags(raw_tags):
+    return [tag.strip() for tag in (raw_tags or '').split(',') if tag.strip()]
+
+
+def _category_or_uncategorized(category):
+    return (category or '').strip() or 'Uncategorized'
+
+
+def _comment_user_dict(user, fallback_user_id):
+    return {
+        'id': user.id if user else fallback_user_id,
+        'name': user.name if user else None,
+    }
+
+
+def _deleted_comment_user_dict():
+    return {
+        'id': None,
+        'name': None,
+    }
+
+
+class SerializableMixin:
+    def serialize(self):
+        return self.to_dict()
+
+
+class Aircraft(SerializableMixin, db.Model):
     __tablename__ = 'dump1090_aircraft'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     icao = db.Column(db.String(8), nullable=False, index=True)
     first_seen = db.Column(db.String(32), nullable=False)
     last_seen = db.Column(db.String(32))
-    
+
     # Relationships
     flights = db.relationship('Flight', back_populates='aircraft_ref')
     positions = db.relationship('Position', back_populates='aircraft_ref')
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -23,14 +54,11 @@ class Aircraft(db.Model):
             'first_seen': self.first_seen,
             'last_seen': self.last_seen
         }
-    
-    def serialize(self):
-        return self.to_dict()
 
 
-class BlogPost(db.Model):
+class BlogPost(SerializableMixin, db.Model):
     __tablename__ = 'blog_posts'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(255), nullable=False)
     date = db.Column(db.String(16), nullable=False)
@@ -46,9 +74,8 @@ class BlogPost(db.Model):
         cascade='all, delete-orphan',
         order_by='BlogComment.created_at.asc()'
     )
-    
+
     def to_dict(self):
-        raw_tags = self.tags or ''
         return {
             'id': self.id,
             'title': self.title,
@@ -56,15 +83,12 @@ class BlogPost(db.Model):
             'author': self.author,
             'content': self.content,
             'visible': self.visible,
-            'tags': [t.strip() for t in raw_tags.split(',') if t.strip()],
-            'category': (self.category or '').strip() or 'Uncategorized'
+            'tags': _split_tags(self.tags),
+            'category': _category_or_uncategorized(self.category)
         }
-    
-    def serialize(self):
-        return self.to_dict()
 
 
-class BlogComment(db.Model):
+class BlogComment(SerializableMixin, db.Model):
     __tablename__ = 'blog_comments'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -97,40 +121,31 @@ class BlogComment(db.Model):
             'user_id': None if is_deleted else self.user_id,
             'parent_comment_id': self.parent_comment_id,
             'content': '[deleted]' if is_deleted else self.content,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_at': _isoformat_or_none(self.created_at),
             'edited': self.edited,
-            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
+            'edited_at': _isoformat_or_none(self.edited_at),
             'deleted': self.deleted,
-            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
-            'user': {
-                'id': None if is_deleted else (self.user.id if self.user else self.user_id),
-                'name': None if is_deleted else (self.user.name if self.user else None),
-            },
+            'deleted_at': _isoformat_or_none(self.deleted_at),
+            'user': _deleted_comment_user_dict() if is_deleted else _comment_user_dict(self.user, self.user_id),
         }
 
-    def serialize(self):
-        return self.to_dict()
 
-
-class Notification(db.Model):
+class Notification(SerializableMixin, db.Model):
     __tablename__ = 'notifications'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     flight = db.Column(db.String(20), nullable=False)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
             'flight': self.flight
         }
-    
-    def serialize(self):
-        return self.to_dict()
 
 
-class Flight(db.Model):
+class Flight(SerializableMixin, db.Model):
     __tablename__ = 'dump1090_flights'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     aircraft = db.Column(db.Integer, db.ForeignKey('dump1090_aircraft.id'), nullable=False)
     flight = db.Column(db.String(20), nullable=False, index=True)
@@ -140,12 +155,12 @@ class Flight(db.Model):
     message_type = db.Column(db.String(32), nullable=True)
     aircraft_class = db.Column(db.String(32), nullable=False, default='unknown', server_default='unknown', index=True)
     ignore_on_purge = db.Column(db.Boolean, nullable=False, default=False, server_default=db.text('0'))
-    
+
     # Relationships
     aircraft_ref = db.relationship('Aircraft', back_populates='flights')
     positions = db.relationship('Position', back_populates='flight_ref')
     comments = db.relationship('FlightComment', back_populates='flight_ref', cascade='all, delete-orphan')
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -158,19 +173,16 @@ class Flight(db.Model):
             'aircraft_class': self.aircraft_class,
             'ignore_on_purge': self.ignore_on_purge,
         }
-    
-    def serialize(self):
-        return self.to_dict()
 
 
-class Link(db.Model):
+class Link(SerializableMixin, db.Model):
     __tablename__ = 'links'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     address = db.Column(db.String(512), nullable=False)
     sort_order = db.Column(db.Integer, nullable=False, default=0)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -178,14 +190,11 @@ class Link(db.Model):
             'address': self.address,
             'sort_order': self.sort_order
         }
-    
-    def serialize(self):
-        return self.to_dict()
 
 
-class Position(db.Model):
+class Position(SerializableMixin, db.Model):
     __tablename__ = 'dump1090_positions'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     flight = db.Column(db.Integer, db.ForeignKey('dump1090_flights.id'), nullable=False)
     aircraft = db.Column(db.Integer, db.ForeignKey('dump1090_aircraft.id'), nullable=False)
@@ -198,11 +207,11 @@ class Position(db.Model):
     altitude = db.Column(db.Integer, nullable=False)
     vertical_rate = db.Column('vertical_rate', db.Integer, nullable=False)
     speed = db.Column(db.Integer)
-    
+
     # Relationships
     aircraft_ref = db.relationship('Aircraft', back_populates='positions')
     flight_ref = db.relationship('Flight', back_populates='positions')
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -218,32 +227,26 @@ class Position(db.Model):
             'vertical_rate': self.vertical_rate,
             'speed': self.speed
         }
-    
-    def serialize(self):
-        return self.to_dict()
 
 
-class Setting(db.Model):
+class Setting(SerializableMixin, db.Model):
     __tablename__ = 'settings'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     value = db.Column(db.Text, nullable=False)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
             'value': self.value
         }
-    
-    def serialize(self):
-        return self.to_dict()
 
 
-class User(db.Model):
+class User(SerializableMixin, db.Model):
     __tablename__ = 'users'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(255), nullable=False, unique=True)
@@ -265,22 +268,19 @@ class User(db.Model):
             'administrator': self.administrator,
             'role': self.role,
             'locked': self.locked,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_at': _isoformat_or_none(self.created_at),
         }
-    
-    def serialize(self):
-        return self.to_dict()
-    
+
     def has_role(self, role):
         """Check if user has a specific role"""
         return self.role == role
-    
+
     def is_admin(self):
         """Check if user is an admin"""
         return self.role == 'Admin' or self.administrator == 1
 
 
-class Dump978Aircraft(db.Model):
+class Dump978Aircraft(SerializableMixin, db.Model):
     __tablename__ = 'dump978_aircraft'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -300,11 +300,8 @@ class Dump978Aircraft(db.Model):
             'last_seen': self.last_seen
         }
 
-    def serialize(self):
-        return self.to_dict()
 
-
-class Dump978Flight(db.Model):
+class Dump978Flight(SerializableMixin, db.Model):
     __tablename__ = 'dump978_flights'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -335,11 +332,8 @@ class Dump978Flight(db.Model):
             'ignore_on_purge': self.ignore_on_purge,
         }
 
-    def serialize(self):
-        return self.to_dict()
 
-
-class Dump978Position(db.Model):
+class Dump978Position(SerializableMixin, db.Model):
     __tablename__ = 'dump978_positions'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -375,9 +369,6 @@ class Dump978Position(db.Model):
             'speed': self.speed
         }
 
-    def serialize(self):
-        return self.to_dict()
-
 
 class OpenSkyAircraft(db.Model):
     __tablename__ = 'opensky_aircraft'
@@ -387,7 +378,7 @@ class OpenSkyAircraft(db.Model):
     confidence = db.Column(db.String(8), nullable=False)
 
 
-class FlightComment(db.Model):
+class FlightComment(SerializableMixin, db.Model):
     __tablename__ = 'dump1090_flight_comments'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -407,20 +398,14 @@ class FlightComment(db.Model):
             'flight_id': self.flight_id,
             'user_id': self.user_id,
             'content': self.content,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_at': _isoformat_or_none(self.created_at),
             'edited': self.edited,
-            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
-            'user': {
-                'id': self.user.id if self.user else self.user_id,
-                'name': self.user.name if self.user else None,
-            },
+            'edited_at': _isoformat_or_none(self.edited_at),
+            'user': _comment_user_dict(self.user, self.user_id),
         }
 
-    def serialize(self):
-        return self.to_dict()
 
-
-class UatFlightComment(db.Model):
+class UatFlightComment(SerializableMixin, db.Model):
     __tablename__ = 'dump978_flight_comments'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -440,14 +425,8 @@ class UatFlightComment(db.Model):
             'flight_id': self.flight_id,
             'user_id': self.user_id,
             'content': self.content,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_at': _isoformat_or_none(self.created_at),
             'edited': self.edited,
-            'edited_at': self.edited_at.isoformat() if self.edited_at else None,
-            'user': {
-                'id': self.user.id if self.user else self.user_id,
-                'name': self.user.name if self.user else None,
-            },
+            'edited_at': _isoformat_or_none(self.edited_at),
+            'user': _comment_user_dict(self.user, self.user_id),
         }
-
-    def serialize(self):
-        return self.to_dict()
