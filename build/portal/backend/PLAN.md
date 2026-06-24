@@ -14,7 +14,7 @@ This plan covers a cleanup/refactor pass for the Flask application in `build/por
 
 - Backend source: about 6,947 lines across 21 Python files.
 - Tests: about 6,712 lines across 20 test files.
-- Initial test result from local review environment: `452 passed`; latest completed cleanup verification: `471 passed`.
+- Initial test result from local review environment: `452 passed`; latest completed cleanup verification: `471 passed`; current coverage snapshot: 74% line/branch-weighted coverage from `coverage run --source=backend -m pytest -q && coverage report -m`.
 - Main readability concerns:
   - `backend/__init__.py` does too much.
   - `backend/models.py` contains all model classes in one file.
@@ -103,6 +103,17 @@ Legend:
 - [ ] Phase 11.5 — Adjust stale or misleading wording only where it affects generated API docs; remove low-value boilerplate comments only when touching the file for documentation work.
 - [ ] Phase 11.6 — Verify `/api/swagger.json`, targeted route tests, Ruff, compileall, and full pytest suite.
 
+
+### Test Coverage Follow-up
+
+- [ ] Phase 12.1 — Add a committed coverage command/config so coverage can be reproduced consistently without relying on local-only tooling.
+- [ ] Phase 12.2 — Add focused tests for RRD data collection helpers and writer behavior; this is the largest coverage gap.
+- [ ] Phase 12.3 — Add dump978 job tests that mirror dump1090 ingestion coverage for aircraft/flight/position creation and invalid feed paths.
+- [ ] Phase 12.4 — Add notification route tests for recent notification summaries, duplicate handling, validation, and delete/list error paths.
+- [ ] Phase 12.5 — Add auth decorator/helper tests for missing users, locked users, invalid roles, and admin/user authorization boundaries.
+- [ ] Phase 12.6 — Add route error-path coverage for ACARS, devices, graphs, links, settings, users, and ADS-B/UAT comments only where the behavior is stable and useful.
+- [ ] Phase 12.7 — Re-run coverage and full verification; record before/after coverage and avoid chasing line coverage with brittle implementation-detail tests.
+
 ### Commit Tracking
 
 Record each cleanup commit here as work proceeds:
@@ -125,6 +136,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 9 | `7f8afbf` | Kept models module monolithic; shared serialization helpers added; model and full tests pass. |
 | [x] | 10 | `d6d890b` | Final exception-handling cleanup; targeted and full verification pass. Deferred broad DB exception narrowing where tests still model generic failures. |
 | [ ] | 11 | TBD | Swagger/API documentation follow-up. Add spec tests, improve generated docs for multiplexed ADS-B/UAT/ACARS endpoints, and tighten misleading wording without changing API behavior. |
+| [ ] | 12 | TBD | Test coverage follow-up. Current coverage snapshot is 74%; prioritize RRD jobs, dump978 ingestion jobs, notification routes, auth boundaries, and stable route error paths. |
 
 ---
 
@@ -465,3 +477,56 @@ Acceptance criteria:
 - Swagger paths for ADS-B, UAT, and ACARS include accurate summaries, query/path parameters, response codes, and response models where available.
 - No endpoint paths, response payload keys, auth behavior, or database behavior change.
 - Targeted tests and full backend suite pass.
+
+## Phase 12: Test Coverage Follow-up
+
+Coverage snapshot taken after Phase 11 planning:
+
+```text
+coverage run --source=backend -m pytest -q
+coverage report -m
+471 passed
+TOTAL: 74% coverage
+```
+
+Highest-value gaps from the coverage report:
+- `backend/jobs/rrd_data_collection.py`: 12% — most writer/fetch/update paths are untested.
+- `backend/jobs/dump978_data_collection.py`: 23% — UAT ingestion coverage lags behind dump1090.
+- `backend/routes/notifications.py`: 50% — route validation, recent-summary, duplicate, and error paths need coverage.
+- `backend/auth.py`: 64% — authorization edge cases are under-covered.
+- `backend/opensky_classification.py`: 70% and `backend/aircraft_classification.py`: 71% — classifier edge cases can be improved with pure unit tests.
+- `backend/routes/users.py`: 72%, `backend/routes/graphs.py`: 75%, `backend/routes/devices.py`: 77%, `backend/routes/links.py`: 77% — mostly error/edge paths.
+
+Recommended approach:
+1. Add reproducible coverage tooling.
+   - Add a documented command or lightweight config for `coverage run --source=backend -m pytest -q` and `coverage report -m`.
+   - Do not add an aggressive fail-under gate yet; establish the baseline first.
+
+2. Prioritize behavior-heavy, low-flakiness unit tests.
+   - RRD writer helpers: test URL fetch JSON decode errors, missing RRD files, metric mapping, range calculations, network-interface lookup fallback/error behavior, and `_update_rrd` argument construction with mocks.
+   - dump978 data collection: mirror the dump1090 ingestion cases already covered, including new aircraft, existing aircraft update, flight creation/reuse, position insertion, missing position fields, bad JSON/feed errors, and rollback paths.
+   - auth helpers/decorators: test missing current user, locked user, invalid role, admin-only rejection, and user-or-admin success boundaries.
+   - aircraft/OpenSky classifiers: add table-driven pure unit tests for known emitter categories, message types, cache hit/miss behavior, and unknown/default paths.
+
+3. Add route-level tests only where they verify stable public behavior.
+   - Notifications: list pagination/search, recent summaries, duplicate create behavior, delete success/not-found, and DB error handling.
+   - Users: registration disabled/validation branches, lock/unlock not-found and auth failures, status filters.
+   - Graphs/devices/links/settings: invalid parameters, unavailable data, and 404/503 behavior that clients depend on.
+   - ADS-B/UAT comments: not-found, forbidden owner/admin boundaries, validation errors, and rollback paths where not already covered.
+
+4. Avoid low-value coverage inflation.
+   - Do not write tests that only assert private implementation details after refactors.
+   - Do not over-mock SQLAlchemy internals unless the behavior is otherwise hard to trigger.
+   - Prefer public route responses, pure helper functions, or thin mocks around network/filesystem/rrdtool boundaries.
+
+5. Verification.
+   - For each coverage slice, first run the new focused tests and confirm they fail for the intended missing/incorrect behavior when practical.
+   - Run targeted related tests.
+   - Run `coverage run --source=backend -m pytest -q && coverage report -m`.
+   - Run `ruff check .` and `python -m compileall backend tests` before committing.
+
+Acceptance criteria:
+- Coverage command is reproducible from the backend directory.
+- Each added test protects public behavior or a stable helper boundary.
+- Coverage improves meaningfully in the prioritized low-coverage modules without brittle implementation-detail assertions.
+- Full backend suite, Ruff, and compileall pass.
