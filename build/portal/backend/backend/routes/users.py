@@ -7,6 +7,7 @@ from marshmallow import Schema, fields, ValidationError
 from werkzeug.security import generate_password_hash
 from backend.models import BlogComment, db, User
 from backend.auth import require_admin, require_user_or_admin, validate_role
+from backend.routes.common import QueryParamError, get_stripped_arg, parse_bool_arg, parse_pagination
 from sqlalchemy import delete, select, func
 
 users = Blueprint('users', __name__)
@@ -410,20 +411,18 @@ class UsersListResource(Resource):
     @require_admin()
     def get(self):
         """Get all users (Admin only)"""
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=50, type=int)
-        locked_param = request.args.get('locked')
-        search_query = (request.args.get('q') or '').strip()
+        try:
+            offset, limit = parse_pagination(
+                request.args,
+                default_limit=50,
+                max_limit=100,
+                error_message='Invalid offset or limit parameters',
+            )
+            locked_filter = parse_bool_arg(request.args, 'locked', error_message='Invalid locked parameter')
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
-        if offset < 0 or limit < 1 or limit > 100:
-            return {'msg': 'Invalid offset or limit parameters'}, 400
-
-        locked_filter = None
-        if locked_param is not None:
-            normalized_locked = locked_param.strip().lower()
-            if normalized_locked not in {'true', 'false'}:
-                return {'msg': 'Invalid locked parameter'}, 400
-            locked_filter = normalized_locked == 'true'
+        search_query = get_stripped_arg(request.args, 'q')
 
         try:
             def apply_filters(statement, locked_value=None):

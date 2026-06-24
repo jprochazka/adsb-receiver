@@ -65,9 +65,9 @@ Legend:
 
 ### Route Cleanup
 
-- [ ] Phase 3.1 — Add shared request parsing helpers for pagination, booleans, and search terms.
-- [ ] Phase 3.2 — Adopt shared helpers in low-risk routes first.
-- [ ] Phase 3.3 — Run affected route tests and full pytest suite.
+- [x] Phase 3.1 — Add shared request parsing helpers for pagination, booleans, and search terms.
+- [x] Phase 3.2 — Adopt shared helpers in low-risk routes first.
+- [x] Phase 3.3 — Run affected route tests and full pytest suite.
 - [ ] Phase 4.1 — Simplify `routes/users.py` with small private helpers.
 - [ ] Phase 4.2 — Verify `tests/test_routes_users.py` and full pytest suite.
 - [ ] Phase 5.1 — Simplify `routes/blog.py` post/comment helpers.
@@ -106,7 +106,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0.5-0.6 | `0bbbf6f` | Removed mechanical unused imports; `ruff check .`, `compileall`, and `pytest` pass. |
 | [x] | 1 | `0c2358e` | App factory split into focused setup helpers; targeted and full tests pass. |
 | [x] | 2 | `fd56fcb` | Centralized config loader added; direct config.yml reads migrated; targeted and full tests pass. |
-| [ ] | 3 | TBD | Shared route helper extraction. |
+| [x] | 3 | `6b2fbc0` | Shared route query parsing helpers added and adopted in users, blog, ADS-B, and UAT routes; targeted and full tests pass. |
 | [ ] | 4-7 | TBD | Route module cleanup. |
 | [ ] | 8 | TBD | Background job cleanup. |
 | [ ] | 9-10 | TBD | Optional model organization and final cleanup. |

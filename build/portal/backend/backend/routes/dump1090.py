@@ -6,6 +6,7 @@ from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.auth import get_current_user, require_admin, require_user_or_admin
 from backend.models import db, Aircraft, Flight, FlightComment, Position
+from backend.routes.common import QueryParamError, get_stripped_arg, parse_bool_arg, parse_pagination
 from sqlalchemy import select, func, delete, or_
 
 flights = Blueprint('dump1090', __name__)
@@ -127,16 +128,13 @@ def _get_adsb_sightings_counts(flights: list[str]):
 
 
 def _parse_ignore_on_purge(value: str | None):
-    if value is None or value == '':
-        return None
-
-    normalized = value.strip().lower()
-    if normalized in ('true', '1'):
-        return True
-    if normalized in ('false', '0'):
-        return False
-
-    raise ValueError('invalid ignore_on_purge value')
+    return parse_bool_arg(
+        {'ignore_on_purge': value},
+        'ignore_on_purge',
+        true_values={'true', '1'},
+        false_values={'false', '0'},
+        error_message='invalid ignore_on_purge value',
+    )
 
 
 def _apply_adsb_flight_filters(stmt, q: str | None, ignore_on_purge: bool | None):
@@ -307,11 +305,10 @@ class AdsbFlightsController(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
     def _get_flight_positions(self, flight):
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=500, type=int)
-
-        if offset < 0 or limit < 1 or limit > 1000:
-            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+        try:
+            offset, limit = parse_pagination(request.args, default_limit=500, max_limit=1000)
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
         try:
             flight_obj = db.session.execute(select(Flight).filter_by(flight=flight)).scalar_one_or_none()
@@ -344,7 +341,7 @@ class AdsbFlightsController(Resource):
 
     def _search_flights(self):
         request_started = time.perf_counter()
-        q = request.args.get('q', '', type=str).strip()
+        q = get_stripped_arg(request.args, 'q')
         if not q:
             return {'msg': 'Bad Request - search query required'}, 400
 
@@ -377,11 +374,10 @@ class AdsbFlightsController(Resource):
 
     def _list_flights(self):
         request_started = time.perf_counter()
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=50, type=int)
-
-        if offset < 0 or limit < 1 or limit > 100:
-            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+        try:
+            offset, limit = parse_pagination(request.args, default_limit=50, max_limit=100)
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
         ignore_param = request.args.get('ignore_on_purge', default=None, type=str)
         try:
@@ -390,7 +386,7 @@ class AdsbFlightsController(Resource):
             return {'msg': 'Bad Request - ignore_on_purge must be true, false, 1, or 0'}, 400
 
         try:
-            q = request.args.get('q', default='', type=str).strip()
+            q = get_stripped_arg(request.args, 'q')
             flights_data, total = _query_adsb_flights(
                 q=q or None,
                 offset=offset,

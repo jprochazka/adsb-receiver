@@ -9,6 +9,7 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import OperationalError
 from backend.models import db, BlogComment, BlogPost
 from backend.auth import get_current_user, require_admin, require_user_or_admin
+from backend.routes.common import QueryParamError, get_stripped_arg, parse_pagination
 
 blog = Blueprint('blog', __name__)
 
@@ -538,13 +539,13 @@ class BlogPostsListResource(Resource):
     })
     def get(self):
         """Get list of published, visible blog posts with pagination (public)"""
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=25, type=int)
-        category = request.args.get('category', default='', type=str).strip()
-        tag = request.args.get('tag', default='', type=str).strip()
+        try:
+            offset, limit = parse_pagination(request.args, default_limit=25, max_limit=100)
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
-        if offset < 0 or limit < 1 or limit > 100:
-            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+        category = get_stripped_arg(request.args, 'category')
+        tag = get_stripped_arg(request.args, 'tag')
 
         try:
             now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
@@ -650,13 +651,14 @@ class BlogPostsAdminListResource(Resource):
     @require_admin()
     def get(self):
         """Get all blog posts including hidden and future-dated (Admin only)"""
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=25, type=int)
-        search_query = (request.args.get('q') or '').strip()
-        status = (request.args.get('status') or 'all').strip().lower()
+        try:
+            offset, limit = parse_pagination(request.args, default_limit=25, max_limit=100)
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
-        if offset < 0 or limit < 1 or limit > 100:
-            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+        search_query = get_stripped_arg(request.args, 'q')
+        status = get_stripped_arg(request.args, 'status', default='all').lower()
+
         if status not in {'all', 'published', 'draft', 'scheduled'}:
             return {'msg': 'Bad Request - invalid status parameter'}, 400
 
