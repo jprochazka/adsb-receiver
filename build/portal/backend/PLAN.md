@@ -46,7 +46,7 @@ Legend:
 
 ### Setup and Tooling
 
-- [ ] Phase 0.1 — Convert `requirements.txt` from UTF-16LE to UTF-8 without changing package pins.
+- [x] Phase 0.1 — Convert `requirements.txt` from UTF-16LE to UTF-8 without changing package pins.
 - [ ] Phase 0.2 — Verify `python -m pip install -r requirements.txt` works directly.
 - [ ] Phase 0.3 — Add documented local setup/test commands.
 - [ ] Phase 0.4 — Add conservative Ruff configuration to `pyproject.toml`.
@@ -100,7 +100,7 @@ Record each cleanup commit here as work proceeds:
 | Status | Phase | Commit | Notes |
 | --- | --- | --- | --- |
 | [x] | Planning | `0d712ad` | Added initial `PLAN.md` on `cleanup`. |
-| [ ] | 0 | TBD | Normalize requirements / tooling baseline. |
+| [~] | 0 | TBD | In progress: requirements file normalized to UTF-8. |
 | [ ] | 1 | TBD | App factory cleanup. |
 | [ ] | 2 | TBD | Config loader cleanup. |
 | [ ] | 3 | TBD | Shared route helper extraction. |
