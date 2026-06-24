@@ -1,12 +1,10 @@
 import logging
 
-from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Link
 from backend.auth import require_admin
-from werkzeug.exceptions import HTTPException
 from sqlalchemy import select, func
 
 links = Blueprint('links', __name__)

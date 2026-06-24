@@ -2,12 +2,10 @@ import logging
 import datetime
 import yaml
 
-from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Notification, Flight, Dump978Flight, Setting
-from backend.auth import require_admin, require_user_or_admin
-from werkzeug.exceptions import HTTPException
+from backend.auth import require_user_or_admin
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.exc import OperationalError
 

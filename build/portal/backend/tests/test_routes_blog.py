@@ -1,5 +1,5 @@
 from tests.conftest import create_admin_token, create_another_user_token, create_user_token
-from backend.models import BlogComment, BlogPost, db, User
+from backend.models import BlogComment, db, User
 
 # POST /blog/post
 

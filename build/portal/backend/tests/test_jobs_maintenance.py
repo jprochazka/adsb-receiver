@@ -133,7 +133,7 @@ class TestMaintenanceProcessor:
         """Test successful aircraft purging"""
         with app.app_context():
             from backend import db
-            from backend.models import Aircraft, Flight, Position
+            from backend.models import Aircraft
             
             # Create test aircraft with old last_seen date
             cutoff_date = datetime.now() - timedelta(days=30)

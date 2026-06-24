@@ -1,6 +1,5 @@
 import os
 import pytest
-import tempfile
 
 from backend import create_app
 from backend.models import db

@@ -4,13 +4,12 @@ import os
 import psutil
 import yaml
 
-from flask import abort, Blueprint, current_app, jsonify
+from flask import Blueprint, current_app, jsonify
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Setting
 from backend.auth import require_admin
 from sqlalchemy import select
 from urllib.request import urlopen, Request
-from urllib.error import URLError
 
 with open("config.yml") as _f:
     config = yaml.safe_load(_f)

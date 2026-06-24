@@ -1,5 +1,4 @@
-import logging
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError

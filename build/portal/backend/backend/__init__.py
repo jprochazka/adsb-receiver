@@ -18,7 +18,7 @@ from backend.routes.blog import blog, blog_ns
 from backend.routes.dump1090 import flights, adsb_ns
 from backend.routes.dump978 import uat, uat_ns
 from backend.routes.links import links, links_ns
-from backend.routes.live import live, live_ns
+from backend.routes.live import live_ns
 from backend.routes.notifications import notifications, notifications_ns
 from backend.routes.settings import settings, setting_ns
 from backend.routes.devices import devices, devices_ns

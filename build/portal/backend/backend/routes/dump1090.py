@@ -2,11 +2,10 @@ import datetime
 import logging
 import time
 
-from flask import abort, Blueprint, jsonify, request
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.auth import get_current_user, require_admin, require_user_or_admin
 from backend.models import db, Aircraft, Flight, FlightComment, Position
-from werkzeug.exceptions import HTTPException
 from sqlalchemy import select, func, delete, or_
 
 flights = Blueprint('dump1090', __name__)

@@ -1,6 +1,6 @@
 import pytest
 import json
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock
 from datetime import datetime
 from backend import create_app
 from backend.models import db, Aircraft, Flight, Position, Dump978Flight

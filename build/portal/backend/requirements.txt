@@ -49,6 +49,7 @@ flask-restx==1.3.2
 # Development & Testing
 pytest==8.4.2
 coverage==7.10.7
+ruff==0.15.19
 typeguard==4.4.4
 
 # Utilities

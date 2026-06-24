@@ -9,7 +9,6 @@ from sqlalchemy import select, func
 from sqlalchemy.exc import OperationalError
 from backend.models import db, BlogComment, BlogPost
 from backend.auth import get_current_user, require_admin, require_user_or_admin
-from werkzeug.exceptions import HTTPException
 
 blog = Blueprint('blog', __name__)
 

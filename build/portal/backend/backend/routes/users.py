@@ -1,14 +1,12 @@
 import logging
 from datetime import datetime, timezone
 
-from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from werkzeug.security import generate_password_hash
 from backend.models import BlogComment, db, User
 from backend.auth import require_admin, require_user_or_admin, validate_role
-from werkzeug.exceptions import HTTPException
 from sqlalchemy import delete, select, func
 
 users = Blueprint('users', __name__)

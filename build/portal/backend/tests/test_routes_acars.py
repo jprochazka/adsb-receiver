@@ -1,14 +1,11 @@
-import json
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 
-from backend import create_app
-from backend.models import db
 from tests.conftest import create_admin_token, create_user_token
 
 

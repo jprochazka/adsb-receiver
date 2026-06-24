@@ -1,9 +1,6 @@
 import pytest
 import json
-import os
 from unittest.mock import patch, MagicMock
-from backend import create_app
-from backend.models import db
 from tests.conftest import create_admin_token
 from io import BytesIO
 
