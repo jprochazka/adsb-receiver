@@ -76,9 +76,9 @@ Legend:
 - [x] Phase 6.2 — Simplify `routes/dump1090.py` using shared helpers.
 - [x] Phase 6.3 — Simplify `routes/dump978.py` using shared helpers.
 - [x] Phase 6.4 — Verify dump1090/dump978 targeted tests and full pytest suite.
-- [ ] Phase 7.1 — Simplify `routes/live.py` internals without changing response shape.
-- [ ] Phase 7.2 — Simplify `routes/graphs.py` internals without changing metric behavior.
-- [ ] Phase 7.3 — Verify live/graphs targeted tests and full pytest suite.
+- [x] Phase 7.1 — Simplify `routes/live.py` internals without changing response shape.
+- [x] Phase 7.2 — Simplify `routes/graphs.py` internals without changing metric behavior.
+- [x] Phase 7.3 — Verify live/graphs targeted tests and full pytest suite.
 
 ### Jobs, Models, and Final Cleanup
 
@@ -110,7 +110,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 4 | `6f17c92` | Users route simplified with private helpers; targeted and full tests pass. |
 | [x] | 5 | `034e6fa` | Blog route simplified with post/comment helper extraction; targeted and full tests pass. |
 | [x] | 6 | `a432929` | Shared ADS-B/UAT route helper module added; dump1090/dump978 use shared helpers; targeted and full tests pass. |
-| [ ] | 7 | TBD | Remaining route module cleanup. |
+| [x] | 7 | `2418466` | Live and graphs route internals simplified; targeted and full tests pass. |
 | [ ] | 8 | TBD | Background job cleanup. |
 | [ ] | 9-10 | TBD | Optional model organization and final cleanup. |
 

@@ -98,112 +98,52 @@ def _get_dump978_json_url() -> str:
     return setting.value if (setting and setting.value) else _DEFAULT_DUMP978_JSON_URL
 
 
-def _normalize_dump1090_aircraft(raw: dict) -> dict:
-    """
-    Convert a raw dump1090 aircraft entry into a normalised dict.
-
-    dump1090 field mapping:
-      hex        -> hex
-      flight     -> flight (stripped of whitespace)
-      lat / lon  -> lat / lon
-      alt_baro   -> altitude (alt_geom used as fallback when alt_baro is 'ground')
-      gs         -> speed
-      track      -> track
-      baro_rate  -> vertical_rate
-      squawk     -> squawk
-      category   -> category
-      seen       -> seen
-      rssi       -> rssi
-      type       -> type
-    """
+def _aircraft_altitude(raw: dict):
     alt = raw.get('alt_baro')
-    # dump1090 may report 'ground' as a string instead of an integer
     if not isinstance(alt, int):
         alt = raw.get('alt_geom')
-    if not isinstance(alt, int):
-        alt = None
+    return alt if isinstance(alt, int) else None
 
-    flight = (raw.get('flight') or '').strip() or None
+
+def _aircraft_classification(raw: dict, flight: str | None):
     category = raw.get('category')
     msg_type = raw.get('type')
     opensky_class, opensky_source, opensky_confidence = get_opensky_classification(raw.get('hex'))
     aircraft_class = classify_aircraft(category, msg_type, flight, opensky_class=opensky_class)
-    classification_source = opensky_source or 'heuristic'
-    classification_confidence = opensky_confidence or ('medium' if aircraft_class != 'unknown' else 'low')
-
     return {
-        'source':         'dump1090',
-        'hex':            raw.get('hex', ''),
-        'flight':         flight,
-        'lat':            raw.get('lat'),
-        'lon':            raw.get('lon'),
-        'altitude':       alt,
-        'speed':          raw.get('gs'),
-        'track':          raw.get('track'),
-        'vertical_rate':  raw.get('baro_rate'),
-        'squawk':         raw.get('squawk'),
-        'category':       category,
-        'seen':           raw.get('seen'),
-        'rssi':           raw.get('rssi'),
-        'type':           msg_type,
         'aircraft_class': aircraft_class,
-        'classification_source': classification_source,
-        'classification_confidence': classification_confidence,
+        'classification_source': opensky_source or 'heuristic',
+        'classification_confidence': opensky_confidence or ('medium' if aircraft_class != 'unknown' else 'low'),
     }
+
+
+def _normalize_aircraft(raw: dict, *, source: str, vertical_rate_key: str) -> dict:
+    flight = (raw.get('flight') or '').strip() or None
+    return {
+        'source': source,
+        'hex': raw.get('hex', ''),
+        'flight': flight,
+        'lat': raw.get('lat'),
+        'lon': raw.get('lon'),
+        'altitude': _aircraft_altitude(raw),
+        'speed': raw.get('gs'),
+        'track': raw.get('track'),
+        'vertical_rate': raw.get(vertical_rate_key),
+        'squawk': raw.get('squawk'),
+        'category': raw.get('category'),
+        'seen': raw.get('seen'),
+        'rssi': raw.get('rssi'),
+        'type': raw.get('type'),
+        **_aircraft_classification(raw, flight),
+    }
+
+
+def _normalize_dump1090_aircraft(raw: dict) -> dict:
+    return _normalize_aircraft(raw, source='dump1090', vertical_rate_key='baro_rate')
 
 
 def _normalize_dump978_aircraft(raw: dict) -> dict:
-    """
-    Convert a raw dump978 aircraft entry into a normalised dict.
-
-    dump978 field mapping:
-      hex        -> hex
-      flight     -> flight (stripped of whitespace)
-      lat / lon  -> lat / lon
-      alt_baro   -> altitude (alt_geom used as fallback when alt_baro is 'ground')
-      gs         -> speed
-      track      -> track
-      geom_rate  -> vertical_rate
-      squawk     -> squawk
-      category   -> category
-      seen       -> seen
-      rssi       -> rssi
-      type       -> type
-    """
-    alt = raw.get('alt_baro')
-    # dump978 may report 'ground' as a string instead of an integer
-    if not isinstance(alt, int):
-        alt = raw.get('alt_geom')
-    if not isinstance(alt, int):
-        alt = None
-
-    flight = (raw.get('flight') or '').strip() or None
-    category = raw.get('category')
-    msg_type = raw.get('type')
-    opensky_class, opensky_source, opensky_confidence = get_opensky_classification(raw.get('hex'))
-    aircraft_class = classify_aircraft(category, msg_type, flight, opensky_class=opensky_class)
-    classification_source = opensky_source or 'heuristic'
-    classification_confidence = opensky_confidence or ('medium' if aircraft_class != 'unknown' else 'low')
-
-    return {
-        'source':         'dump978',
-        'hex':            raw.get('hex', ''),
-        'flight':         flight,
-        'lat':            raw.get('lat'),
-        'lon':            raw.get('lon'),
-        'altitude':       alt,
-        'speed':          raw.get('gs'),
-        'track':          raw.get('track'),
-        'vertical_rate':  raw.get('geom_rate'),
-        'squawk':         raw.get('squawk'),
-        'category':       category,
-        'seen':           raw.get('seen'),
-        'rssi':           raw.get('rssi'),
-        'type':           msg_type,
-        'aircraft_class': aircraft_class,
-        'classification_source': classification_source,
-        'classification_confidence': classification_confidence,
-    }
+    return _normalize_aircraft(raw, source='dump978', vertical_rate_key='geom_rate')
 
 
 def _fetch_json_from_url(url: str) -> dict:
@@ -217,6 +157,49 @@ def _fetch_dump1090_json() -> dict:
 
 def _fetch_dump978_json() -> dict:
     return _fetch_json_from_url(_get_dump978_json_url())
+
+
+def _fetch_decoder_feed(source: str, url: str, fetch_func, errors: list[str]):
+    try:
+        return fetch_func()
+    except URLError as exc:
+        logging.warning('Could not reach %s aircraft.json at %s: %s', source, url, exc)
+        errors.append(f'{source}: {exc}')
+    except json.JSONDecodeError as exc:
+        logging.error('Invalid JSON from %s aircraft.json at %s: %s', source, url, exc)
+        errors.append(f'{source} invalid json: {exc}')
+    except Exception as exc:
+        logging.error('Unexpected error fetching %s aircraft.json', source, exc_info=exc)
+        errors.append(f'{source} internal error')
+    return None
+
+
+def _extend_normalized_aircraft(aircraft_list: list, feed_data: dict | None, normalizer):
+    if feed_data:
+        aircraft_list.extend(normalizer(aircraft) for aircraft in feed_data.get('aircraft', []))
+
+
+def _live_now_value(dump1090_data: dict | None, dump978_data: dict | None):
+    if dump1090_data and dump1090_data.get('now') is not None:
+        return dump1090_data.get('now')
+    if dump978_data:
+        return dump978_data.get('now')
+    return None
+
+
+def _live_messages_value(*feeds: dict | None) -> int:
+    return sum(feed.get('messages') for feed in feeds if feed and isinstance(feed.get('messages'), int))
+
+
+def _classification_stats(aircraft_list: list[dict]) -> dict:
+    cache_stats = get_opensky_cache_stats()
+    return {
+        'opensky_count': sum(1 for aircraft in aircraft_list if aircraft.get('classification_source') == 'opensky'),
+        'heuristic_count': sum(1 for aircraft in aircraft_list if aircraft.get('classification_source') != 'opensky'),
+        'unknown_count': sum(1 for aircraft in aircraft_list if aircraft.get('aircraft_class') == 'unknown'),
+        'opensky_cache_entries': cache_stats.get('entries', 0),
+        'opensky_cache_loaded_at': cache_stats.get('loaded_at'),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -247,35 +230,13 @@ class LiveAircraftResource(Resource):
             logging.info('live_aircraft cache=hit aircraft=%d elapsed_ms=%.2f', len(cached.get('aircraft', [])), elapsed_ms)
             return cached, 200
 
-        dump1090_data = None
-        dump978_data = None
         errors = []
-
-        dump1090_url = _get_dump1090_json_url()
-        try:
-            dump1090_data = _fetch_dump1090_json()
-        except URLError as exc:
-            logging.warning('Could not reach dump1090 aircraft.json at %s: %s', dump1090_url, exc)
-            errors.append(f'dump1090: {exc}')
-        except json.JSONDecodeError as exc:
-            logging.error('Invalid JSON from dump1090 aircraft.json at %s: %s', dump1090_url, exc)
-            errors.append(f'dump1090 invalid json: {exc}')
-        except Exception as exc:
-            logging.error('Unexpected error fetching dump1090 aircraft.json', exc_info=exc)
-            errors.append('dump1090 internal error')
-
-        dump978_url = _get_dump978_json_url()
-        try:
-            dump978_data = _fetch_dump978_json()
-        except URLError as exc:
-            logging.warning('Could not reach dump978 aircraft.json at %s: %s', dump978_url, exc)
-            errors.append(f'dump978: {exc}')
-        except json.JSONDecodeError as exc:
-            logging.error('Invalid JSON from dump978 aircraft.json at %s: %s', dump978_url, exc)
-            errors.append(f'dump978 invalid json: {exc}')
-        except Exception as exc:
-            logging.error('Unexpected error fetching dump978 aircraft.json', exc_info=exc)
-            errors.append('dump978 internal error')
+        dump1090_data = _fetch_decoder_feed(
+            'dump1090', _get_dump1090_json_url(), _fetch_dump1090_json, errors
+        )
+        dump978_data = _fetch_decoder_feed(
+            'dump978', _get_dump978_json_url(), _fetch_dump978_json, errors
+        )
 
         if dump1090_data is None and dump978_data is None:
             return {
@@ -284,39 +245,14 @@ class LiveAircraftResource(Resource):
             }, 503
 
         aircraft_list = []
-        if dump1090_data:
-            aircraft_list.extend(_normalize_dump1090_aircraft(a) for a in dump1090_data.get('aircraft', []))
-        if dump978_data:
-            aircraft_list.extend(_normalize_dump978_aircraft(a) for a in dump978_data.get('aircraft', []))
-
-        opensky_count = sum(1 for a in aircraft_list if a.get('classification_source') == 'opensky')
-        heuristic_count = sum(1 for a in aircraft_list if a.get('classification_source') != 'opensky')
-        unknown_count = sum(1 for a in aircraft_list if a.get('aircraft_class') == 'unknown')
-        cache_stats = get_opensky_cache_stats()
-
-        now_value = None
-        if dump1090_data and dump1090_data.get('now') is not None:
-            now_value = dump1090_data.get('now')
-        elif dump978_data:
-            now_value = dump978_data.get('now')
-
-        messages_value = 0
-        if dump1090_data and isinstance(dump1090_data.get('messages'), int):
-            messages_value += dump1090_data.get('messages')
-        if dump978_data and isinstance(dump978_data.get('messages'), int):
-            messages_value += dump978_data.get('messages')
+        _extend_normalized_aircraft(aircraft_list, dump1090_data, _normalize_dump1090_aircraft)
+        _extend_normalized_aircraft(aircraft_list, dump978_data, _normalize_dump978_aircraft)
 
         payload = {
-            'now':      now_value,
-            'messages': messages_value,
+            'now': _live_now_value(dump1090_data, dump978_data),
+            'messages': _live_messages_value(dump1090_data, dump978_data),
             'aircraft': aircraft_list,
-            'classification_stats': {
-                'opensky_count': opensky_count,
-                'heuristic_count': heuristic_count,
-                'unknown_count': unknown_count,
-                'opensky_cache_entries': cache_stats.get('entries', 0),
-                'opensky_cache_loaded_at': cache_stats.get('loaded_at'),
-            },
+            'classification_stats': _classification_stats(aircraft_list),
         }
         _set_cached_live_aircraft_payload(payload, now_ts)
         elapsed_ms = (time.perf_counter() - request_started) * 1000
