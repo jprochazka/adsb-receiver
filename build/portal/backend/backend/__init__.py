@@ -83,8 +83,8 @@ def _create_api(app):
     return Api(
         app,
         version=BACKEND_VERSION,
-        title='ADSB Receiver Portal API',
-        description='A comprehensive API for managing ADSB receiver data, flights, and system administration',
+        title='ADS-B Receiver Portal API',
+        description='A comprehensive API for managing ADS-B receiver data, flights, and system administration',
         doc='/api/docs/',
         prefix='/api',
         authorizations={

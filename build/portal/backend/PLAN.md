@@ -96,12 +96,12 @@ Legend:
 
 ### Swagger/API Documentation Follow-up
 
-- [ ] Phase 11.1 — Add Swagger coverage tests against `/api/swagger.json` for ADS-B, UAT, and ACARS endpoints.
-- [ ] Phase 11.2 — Split or otherwise document multiplexed `add_resource()` controllers so generated summaries, query parameters, response models, and error responses are accurate per path.
-- [ ] Phase 11.3 — Add missing query/path parameter docs for flight lists, search, positions, purge, and ACARS list/message endpoints.
-- [ ] Phase 11.4 — Attach existing RESTX response models to read/count/database endpoints where models already exist.
-- [ ] Phase 11.5 — Adjust stale or misleading wording only where it affects generated API docs; remove low-value boilerplate comments only when touching the file for documentation work.
-- [ ] Phase 11.6 — Verify `/api/swagger.json`, targeted route tests, Ruff, compileall, and full pytest suite.
+- [x] Phase 11.1 — Add Swagger coverage tests against `/api/swagger.json` for ADS-B, UAT, and ACARS endpoints.
+- [x] Phase 11.2 — Split or otherwise document multiplexed `add_resource()` controllers so generated summaries, query parameters, response models, and error responses are accurate per path.
+- [x] Phase 11.3 — Add missing query/path parameter docs for flight lists, search, positions, purge, and ACARS list/message endpoints.
+- [x] Phase 11.4 — Attach existing RESTX response models to read/count/database endpoints where models already exist.
+- [x] Phase 11.5 — Adjust stale or misleading wording only where it affects generated API docs; remove low-value boilerplate comments only when touching the file for documentation work.
+- [x] Phase 11.6 — Verify `/api/swagger.json`, targeted route tests, Ruff, compileall, and full pytest suite.
 
 
 ### Test Coverage Follow-up
@@ -135,7 +135,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 8 | `dc4ae54` | Job print logging replaced; shared ADS-B/UAT ingest helpers and RRD writer helpers extracted; targeted and full tests pass. |
 | [x] | 9 | `7f8afbf` | Kept models module monolithic; shared serialization helpers added; model and full tests pass. |
 | [x] | 10 | `d6d890b` | Final exception-handling cleanup; targeted and full verification pass. Deferred broad DB exception narrowing where tests still model generic failures. |
-| [ ] | 11 | TBD | Swagger/API documentation follow-up. Add spec tests, improve generated docs for multiplexed ADS-B/UAT/ACARS endpoints, and tighten misleading wording without changing API behavior. |
+| [x] | 11 | `d89b122` | Swagger/API documentation follow-up complete. Added generated spec tests, documented multiplexed ADS-B/UAT/ACARS endpoints, attached response models, and fixed targeted generated-doc wording. |
 | [ ] | 12 | TBD | Test coverage follow-up. Current coverage snapshot is 74%; prioritize RRD jobs, dump978 ingestion jobs, notification routes, auth boundaries, and stable route error paths. |
 
 ---

@@ -13,7 +13,7 @@ from sqlalchemy import select
 
 live = Blueprint('live', __name__)
 
-live_ns = Namespace('live', description='Live aircraft data from dump1090')
+live_ns = Namespace('live', description='Live aircraft data from dump1090 and dump978')
 
 # ---------------------------------------------------------------------------
 # API models

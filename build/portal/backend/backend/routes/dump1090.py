@@ -372,6 +372,7 @@ class AdsbFlightsPurgeController(Resource):
     @flights_ns.response(401, 'Unauthorized - authentication required')
     @flights_ns.response(403, 'Forbidden - admin role required')
     @flights_ns.response(500, 'Internal server error')
+    @flights_ns.param('days', 'Number of days of history to keep before purging older flights', _in='query', type='integer', required=True)
     @flights_ns.doc('purge_adsb_flights', security='Bearer')
     @require_admin()
     def delete(self):
@@ -552,20 +553,77 @@ class AdsbFlightCommentModerationController(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
-flights_ns.add_resource(
-    AdsbFlightsController,
-    '/flights',
-    '/flights/search',
-    '/flights/count',
-)
+class AdsbFlightsListResource(AdsbFlightsController):
+    @flights_ns.marshal_with(flights_list_model, code=200)
+    @flights_ns.response(400, 'Bad request - invalid offset, limit, or ignore_on_purge parameter')
+    @flights_ns.response(500, 'Internal server error')
+    @flights_ns.doc('list_adsb_flights', params={
+        'offset': {'description': 'Number of flights to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of flights to return', 'type': 'integer', 'in': 'query', 'default': 50, 'minimum': 1, 'maximum': 100},
+        'q': {'description': 'Optional flight callsign or ICAO search query', 'type': 'string', 'in': 'query'},
+        'ignore_on_purge': {'description': 'Optional purge-protection filter: true, false, 1, or 0', 'type': 'boolean', 'in': 'query'},
+    })
+    def get(self):
+        """List ADS-B flights."""
+        return self._list_flights()
 
+
+class AdsbFlightsSearchResource(AdsbFlightsController):
+    @flights_ns.marshal_with(flights_list_model, code=200)
+    @flights_ns.response(400, 'Bad request - q is required or ignore_on_purge is invalid')
+    @flights_ns.response(500, 'Internal server error')
+    @flights_ns.doc('search_adsb_flights', params={
+        'q': {'description': 'Required flight callsign or ICAO search query', 'type': 'string', 'in': 'query', 'required': True},
+        'ignore_on_purge': {'description': 'Optional purge-protection filter: true, false, 1, or 0', 'type': 'boolean', 'in': 'query'},
+    })
+    def get(self):
+        """Search ADS-B flights by callsign or ICAO."""
+        return self._search_flights()
+
+
+class AdsbFlightsCountResource(AdsbFlightsController):
+    @flights_ns.marshal_with(flight_count_model, code=200)
+    @flights_ns.response(500, 'Internal server error')
+    @flights_ns.doc('count_adsb_flights')
+    def get(self):
+        """Count ADS-B flights."""
+        return self._get_flights_count()
+
+
+class AdsbFlightResource(AdsbFlightsController):
+    @flight_ns.marshal_with(flight_model, code=200)
+    @flight_ns.response(404, 'Flight not found')
+    @flight_ns.response(500, 'Internal server error')
+    @flight_ns.doc('get_adsb_flight', params={
+        'flight': {'description': 'Flight callsign to retrieve', 'type': 'string', 'in': 'path', 'required': True},
+    })
+    def get(self, flight):
+        """Get one ADS-B flight by callsign."""
+        return self._get_flight(flight)
+
+
+class AdsbFlightPositionsResource(AdsbFlightsController):
+    @flight_ns.marshal_with(positions_list_model, code=200)
+    @flight_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @flight_ns.response(404, 'Flight not found')
+    @flight_ns.response(500, 'Internal server error')
+    @flight_ns.doc('get_adsb_flight_positions', params={
+        'flight': {'description': 'Flight callsign whose positions should be returned', 'type': 'string', 'in': 'path', 'required': True},
+        'offset': {'description': 'Number of positions to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of positions to return', 'type': 'integer', 'in': 'query', 'default': 500, 'minimum': 1, 'maximum': 1000},
+    })
+    def get(self, flight):
+        """Get ADS-B positions for one flight."""
+        return self._get_flight_positions(flight)
+
+
+flights_ns.add_resource(AdsbFlightsListResource, '/flights')
+flights_ns.add_resource(AdsbFlightsSearchResource, '/flights/search')
+flights_ns.add_resource(AdsbFlightsCountResource, '/flights/count')
 flights_ns.add_resource(AdsbFlightsPurgeController, '/flights/purge')
 
-flight_ns.add_resource(
-    AdsbFlightsController,
-    '/flight/<string:flight>',
-    '/flight/<string:flight>/positions',
-)
+flight_ns.add_resource(AdsbFlightResource, '/flight/<string:flight>')
+flight_ns.add_resource(AdsbFlightPositionsResource, '/flight/<string:flight>/positions')
 
 flight_ns.add_resource(
     AdsbFlightCommentsController,

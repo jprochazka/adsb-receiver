@@ -320,6 +320,7 @@ class AcarsPurgeController(Resource):
     @acars_flights_ns.response(403, 'Forbidden - admin role required')
     @acars_flights_ns.response(500, 'Internal server error')
     @acars_flights_ns.response(503, 'ACARS database unavailable')
+    @acars_flights_ns.param('days', 'Number of days of history to keep before purging older flights', _in='query', type='integer', required=True)
     @acars_flights_ns.doc('purge_acars_flights', security='Bearer')
     @require_admin()
     def delete(self):
@@ -327,21 +328,70 @@ class AcarsPurgeController(Resource):
         return _purge_acars_flights()
 
 
-acars_flights_ns.add_resource(
-    AcarsController,
-    '/flights',
-    '/flights/count',
-    '/flights/database',
-)
+class AcarsFlightsListResource(AcarsController):
+    @acars_flights_ns.marshal_with(acars_flights_list_model, code=200)
+    @acars_flights_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @acars_flights_ns.response(500, 'Internal server error')
+    @acars_flights_ns.response(503, 'ACARS database unavailable')
+    @acars_flights_ns.doc('list_acars_flights', params={
+        'offset': {'description': 'Number of flights to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of flights to return', 'type': 'integer', 'in': 'query', 'default': 50, 'minimum': 1, 'maximum': 100},
+    })
+    def get(self):
+        """List ACARS flights."""
+        return self._get_flights()
 
+
+class AcarsFlightsCountResource(AcarsController):
+    @acars_flights_ns.marshal_with(acars_flight_count_model, code=200)
+    @acars_flights_ns.response(500, 'Internal server error')
+    @acars_flights_ns.response(503, 'ACARS database unavailable')
+    @acars_flights_ns.doc('count_acars_flights')
+    def get(self):
+        """Count ACARS flights."""
+        return self._get_flights_count()
+
+
+class AcarsFlightsDatabaseResource(AcarsController):
+    @acars_flights_ns.marshal_with(acars_database_model, code=200)
+    @acars_flights_ns.response(500, 'Internal server error')
+    @acars_flights_ns.response(503, 'ACARS database unavailable')
+    @acars_flights_ns.doc('get_acars_database_info')
+    def get(self):
+        """Get ACARS database size information."""
+        return self._get_database_info()
+
+
+class AcarsFlightMessagesResource(AcarsController):
+    @acars_flight_ns.marshal_with(acars_messages_list_model, code=200)
+    @acars_flight_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @acars_flight_ns.response(404, 'Flight not found')
+    @acars_flight_ns.response(500, 'Internal server error')
+    @acars_flight_ns.response(503, 'ACARS database unavailable')
+    @acars_flight_ns.doc('get_acars_flight_messages', params={
+        'flight_id': {'description': 'ACARS flight ID whose messages should be returned', 'type': 'integer', 'in': 'path', 'required': True},
+        'offset': {'description': 'Number of messages to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of messages to return', 'type': 'integer', 'in': 'query', 'default': 100, 'minimum': 1, 'maximum': 100},
+    })
+    def get(self, flight_id):
+        """List messages for one ACARS flight."""
+        return self._get_flight_messages(flight_id)
+
+
+class AcarsMessagesCountResource(AcarsController):
+    @acars_messages_ns.marshal_with(acars_messages_count_model, code=200)
+    @acars_messages_ns.response(500, 'Internal server error')
+    @acars_messages_ns.response(503, 'ACARS database unavailable')
+    @acars_messages_ns.doc('count_acars_messages')
+    def get(self):
+        """Count ACARS messages."""
+        return self._get_messages_count()
+
+
+acars_flights_ns.add_resource(AcarsFlightsListResource, '/flights')
+acars_flights_ns.add_resource(AcarsFlightsCountResource, '/flights/count')
+acars_flights_ns.add_resource(AcarsFlightsDatabaseResource, '/flights/database')
 acars_flights_ns.add_resource(AcarsPurgeController, '/flights/purge')
 
-acars_flight_ns.add_resource(
-    AcarsController,
-    '/flight/<int:flight_id>/messages',
-)
-
-acars_messages_ns.add_resource(
-    AcarsController,
-    '/messages/count',
-)
+acars_flight_ns.add_resource(AcarsFlightMessagesResource, '/flight/<int:flight_id>/messages')
+acars_messages_ns.add_resource(AcarsMessagesCountResource, '/messages/count')

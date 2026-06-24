@@ -375,6 +375,7 @@ class UatFlightsPurgeController(Resource):
     @uat_flights_ns.response(401, 'Unauthorized - authentication required')
     @uat_flights_ns.response(403, 'Forbidden - admin role required')
     @uat_flights_ns.response(500, 'Internal server error')
+    @uat_flights_ns.param('days', 'Number of days of history to keep before purging older flights', _in='query', type='integer', required=True)
     @uat_flights_ns.doc('purge_uat_flights', security='Bearer')
     @require_admin()
     def delete(self):
@@ -555,20 +556,77 @@ class UatFlightCommentModerationController(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
 
-uat_flights_ns.add_resource(
-    UatFlightsController,
-    '/flights',
-    '/flights/search',
-    '/flights/count',
-)
+class UatFlightsListResource(UatFlightsController):
+    @uat_flights_ns.marshal_with(uat_flights_list_model, code=200)
+    @uat_flights_ns.response(400, 'Bad request - invalid offset, limit, or ignore_on_purge parameter')
+    @uat_flights_ns.response(500, 'Internal server error')
+    @uat_flights_ns.doc('list_uat_flights', params={
+        'offset': {'description': 'Number of flights to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of flights to return', 'type': 'integer', 'in': 'query', 'default': 50, 'minimum': 1, 'maximum': 100},
+        'q': {'description': 'Optional flight callsign or ICAO search query', 'type': 'string', 'in': 'query'},
+        'ignore_on_purge': {'description': 'Optional purge-protection filter: true, false, 1, or 0', 'type': 'boolean', 'in': 'query'},
+    })
+    def get(self):
+        """List UAT flights."""
+        return self._list_uat_flights()
 
+
+class UatFlightsSearchResource(UatFlightsController):
+    @uat_flights_ns.marshal_with(uat_flights_list_model, code=200)
+    @uat_flights_ns.response(400, 'Bad request - q is required or ignore_on_purge is invalid')
+    @uat_flights_ns.response(500, 'Internal server error')
+    @uat_flights_ns.doc('search_uat_flights', params={
+        'q': {'description': 'Required flight callsign or ICAO search query', 'type': 'string', 'in': 'query', 'required': True},
+        'ignore_on_purge': {'description': 'Optional purge-protection filter: true, false, 1, or 0', 'type': 'boolean', 'in': 'query'},
+    })
+    def get(self):
+        """Search UAT flights by callsign or ICAO."""
+        return self._search_uat_flights()
+
+
+class UatFlightsCountResource(UatFlightsController):
+    @uat_flights_ns.marshal_with(uat_flight_count_model, code=200)
+    @uat_flights_ns.response(500, 'Internal server error')
+    @uat_flights_ns.doc('count_uat_flights')
+    def get(self):
+        """Count UAT flights."""
+        return self._get_uat_flights_count()
+
+
+class UatFlightResource(UatFlightsController):
+    @uat_flight_ns.marshal_with(uat_flight_model, code=200)
+    @uat_flight_ns.response(404, 'Flight not found')
+    @uat_flight_ns.response(500, 'Internal server error')
+    @uat_flight_ns.doc('get_uat_flight', params={
+        'flight': {'description': 'Flight callsign to retrieve', 'type': 'string', 'in': 'path', 'required': True},
+    })
+    def get(self, flight):
+        """Get one UAT flight by callsign."""
+        return self._get_uat_flight(flight)
+
+
+class UatFlightPositionsResource(UatFlightsController):
+    @uat_flight_ns.marshal_with(uat_positions_list_model, code=200)
+    @uat_flight_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @uat_flight_ns.response(404, 'Flight not found')
+    @uat_flight_ns.response(500, 'Internal server error')
+    @uat_flight_ns.doc('get_uat_flight_positions', params={
+        'flight': {'description': 'Flight callsign whose positions should be returned', 'type': 'string', 'in': 'path', 'required': True},
+        'offset': {'description': 'Number of positions to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of positions to return', 'type': 'integer', 'in': 'query', 'default': 500, 'minimum': 1, 'maximum': 1000},
+    })
+    def get(self, flight):
+        """Get UAT positions for one flight."""
+        return self._get_uat_flight_positions(flight)
+
+
+uat_flights_ns.add_resource(UatFlightsListResource, '/flights')
+uat_flights_ns.add_resource(UatFlightsSearchResource, '/flights/search')
+uat_flights_ns.add_resource(UatFlightsCountResource, '/flights/count')
 uat_flights_ns.add_resource(UatFlightsPurgeController, '/flights/purge')
 
-uat_flight_ns.add_resource(
-    UatFlightsController,
-    '/flight/<string:flight>',
-    '/flight/<string:flight>/positions',
-)
+uat_flight_ns.add_resource(UatFlightResource, '/flight/<string:flight>')
+uat_flight_ns.add_resource(UatFlightPositionsResource, '/flight/<string:flight>/positions')
 
 uat_flight_ns.add_resource(
     UatFlightCommentsController,
