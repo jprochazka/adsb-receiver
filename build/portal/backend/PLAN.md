@@ -55,9 +55,9 @@ Legend:
 
 ### App Factory and Configuration
 
-- [ ] Phase 1.1 — Split `create_app()` setup into focused helper functions inside `backend/__init__.py`.
-- [ ] Phase 1.2 — Verify route registration and scheduler API protection still work.
-- [ ] Phase 1.3 — Run targeted app factory/database tests and full pytest suite.
+- [x] Phase 1.1 — Split `create_app()` setup into focused helper functions inside `backend/__init__.py`.
+- [x] Phase 1.2 — Verify route registration and scheduler API protection still work.
+- [x] Phase 1.3 — Run targeted app factory/database tests and full pytest suite.
 - [ ] Phase 2.1 — Add centralized config loader module.
 - [ ] Phase 2.2 — Replace direct `open("config.yml")` reads in app setup.
 - [ ] Phase 2.3 — Replace direct `open("config.yml")` reads in graphs and RRD jobs.
@@ -104,7 +104,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0.2-0.3 | `ba0e6ab` | Requirements install verified; backend testing guide added. |
 | [x] | 0.4 | `0bbbf6f` | Added conservative Ruff configuration. |
 | [x] | 0.5-0.6 | `0bbbf6f` | Removed mechanical unused imports; `ruff check .`, `compileall`, and `pytest` pass. |
-| [ ] | 1 | TBD | App factory cleanup. |
+| [x] | 1 | `7432cd3` | App factory split into focused setup helpers; targeted and full tests pass. |
 | [ ] | 2 | TBD | Config loader cleanup. |
 | [ ] | 3 | TBD | Shared route helper extraction. |
 | [ ] | 4-7 | TBD | Route module cleanup. |

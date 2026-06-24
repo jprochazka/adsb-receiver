@@ -28,30 +28,60 @@ from backend.models import db
 
 BACKEND_VERSION = os.environ.get('PORTAL_BACKEND_VERSION', 'v3.0.0')
 
+
 def create_app(test_config=None):
     app = Flask(__name__)
     app.config['PORTAL_BACKEND_VERSION'] = BACKEND_VERSION
-    
+
+    _load_app_config(app, test_config)
+    _ensure_instance_path(app)
+    _configure_json(app)
+    _configure_cors(app)
+    _register_index_route(app)
+
+    api = _create_api(app)
+    _register_api_namespaces(api)
+
+    _configure_database(app)
+    _configure_jwt(app)
+    _protect_scheduler_api(app)
+    _register_blueprints(app)
+    _configure_scheduler(app)
+    _init_extensions(app)
+
+    return app
+
+
+def _load_app_config(app, test_config):
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
     else:
         app.config.from_mapping(test_config)
 
+
+def _ensure_instance_path(app):
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
 
+
+def _configure_json(app):
     app.json.sort_keys = False
 
+
+def _configure_cors(app):
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+
+def _register_index_route(app):
     @app.route('/')
     def index():
         return redirect('/api/docs/')
 
-    # Initialize Flask-RESTX API documentation
-    api = Api(
+
+def _create_api(app):
+    return Api(
         app,
         version=BACKEND_VERSION,
         title='ADSB Receiver Portal API',
@@ -67,8 +97,9 @@ def create_app(test_config=None):
             }
         }
     )
-    
-    # Register API namespaces
+
+
+def _register_api_namespaces(api):
     api.add_namespace(graphs_ns)
     api.add_namespace(auth_ns)
     api.add_namespace(users_ns)
@@ -82,18 +113,24 @@ def create_app(test_config=None):
     api.add_namespace(notifications_ns)
     api.add_namespace(setting_ns)
 
+
+def _load_config_yml():
+    with open("config.yml") as f:
+        return yaml.safe_load(f)
+
+
+def _configure_database(app):
     # Load database configuration from yaml only if SQLALCHEMY_DATABASE_URI is
     # not already set (e.g. passed directly via test_config).
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
-        with open("config.yml") as f:
-            config = yaml.safe_load(f)
+        config = _load_config_yml()
         db_config = config['database']
         if db_config['use'].lower() == 'mysql':
             mysql_config = db_config['mysql']
-            app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{mysql_config['user']}:{mysql_config['password']}@{mysql_config['host']}/{mysql_config['database']}"
+            app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{mysql_config['user']}:***@{mysql_config['host']}/{mysql_config['database']}"
         elif db_config['use'].lower() == 'postgresql':
             pg_config = db_config['postgresql']
-            app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{pg_config['user']}:{pg_config['password']}@{pg_config['host']}/{pg_config['database']}"
+            app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{pg_config['user']}:***@{pg_config['host']}/{pg_config['database']}"
         elif db_config['use'].lower() == 'sqlite':
             app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'adsbportal.sqlite3')}"
         else:
@@ -103,32 +140,35 @@ def create_app(test_config=None):
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
+def _configure_jwt(app):
     if not app.config.get('JWT_SECRET_KEY'):
-        with open("config.yml") as f:
-            _security_config = yaml.safe_load(f)
-        jwt_secret = _security_config.get('security', {}).get('jwt_secret_key', '')
+        security_config = _load_config_yml()
+        jwt_secret = security_config.get('security', {}).get('jwt_secret_key', '')
         if not jwt_secret or jwt_secret == 'CHANGE_THIS_BEFORE_RUNNING':
             raise ValueError(
                 "JWT secret key has not been set. Update 'security.jwt_secret_key' in config.yml."
             )
         app.config["JWT_SECRET_KEY"] = jwt_secret
+
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
     jwt = JWTManager(app)
-    
-    # JWT Error handlers for better error messages
+
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
         return jsonify({'msg': 'Token has expired'}), 401
-    
+
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
         return jsonify({'msg': 'Invalid token'}), 401
-    
+
     @jwt.unauthorized_loader
     def missing_token_callback(error):
         return jsonify({'msg': 'Authorization token is required'}), 401
 
+
+def _protect_scheduler_api(app):
     @app.before_request
     def protect_scheduler_api():
         if not request.path.startswith('/api/scheduler'):
@@ -143,6 +183,8 @@ def create_app(test_config=None):
 
         return None
 
+
+def _register_blueprints(app):
     app.register_blueprint(graphs)
     app.register_blueprint(acars)
     app.register_blueprint(blog)
@@ -156,27 +198,18 @@ def create_app(test_config=None):
     app.register_blueprint(users)
 
 
-    # /API/SCHEDULER
-
+def _configure_scheduler(app):
     app.config["SCHEDULER_API_ENABLED"] = True
     app.config["SCHEDULER_API_PREFIX"] = "/api/scheduler"
     scheduler = APScheduler()
-    scheduler.add_job(id = 'dump1090_data_collection', func=dump1090_data_collection_job, trigger="interval", seconds=15)
-    scheduler.add_job(id = 'dump978_data_collection', func=dump978_data_collection_job, trigger="interval", seconds=15)
-    scheduler.add_job(id = 'rrd_data_collection', func=rrd_data_collection_job, trigger="interval", seconds=30)
-    scheduler.add_job(id = 'maintenance', func=maintenance_job, trigger="cron", hour=0)
+    scheduler.add_job(id='dump1090_data_collection', func=dump1090_data_collection_job, trigger="interval", seconds=15)
+    scheduler.add_job(id='dump978_data_collection', func=dump978_data_collection_job, trigger="interval", seconds=15)
+    scheduler.add_job(id='rrd_data_collection', func=rrd_data_collection_job, trigger="interval", seconds=30)
+    scheduler.add_job(id='maintenance', func=maintenance_job, trigger="cron", hour=0)
     scheduler.init_app(app)
-    #scheduler.start()
+    # scheduler.start()
 
 
-    # /API/DOCS
-    # Flask-RESTX automatically provides documentation at /api/docs/
-    
-    
-    # INIT_APP
-    
-    # Initialize SQLAlchemy and Alembic migrations
+def _init_extensions(app):
     db.init_app(app)
     Migrate(app, db)
-    
-    return app
