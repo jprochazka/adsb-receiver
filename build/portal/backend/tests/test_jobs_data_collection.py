@@ -1,6 +1,7 @@
 import pytest
 import json
 import logging
+from urllib.error import URLError
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 from backend import create_app
@@ -75,7 +76,7 @@ class TestDataProcessor:
     @patch('backend.jobs.dump1090_data_collection.logging.error')
     def test_read_json_failure(self, mock_logging, mock_urlopen, processor):
         """Test JSON reading failure handling"""
-        mock_urlopen.side_effect = Exception("Connection failed")
+        mock_urlopen.side_effect = URLError('Connection failed')
         
         result = processor.read_json()
         

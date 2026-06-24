@@ -89,9 +89,9 @@ Legend:
 - [x] Phase 9.1 — Decide whether to keep `models.py` monolithic or organize/split it.
 - [x] Phase 9.2 — Kept `models.py` monolithic; reduced serialization duplication while preserving imports and avoiding migration noise.
 - [x] Phase 9.3 — Verify model tests and full pytest suite.
-- [ ] Phase 10.1 — Tighten broad exception handling where expected exception types are clear.
-- [ ] Phase 10.2 — Run final lint, compileall, and full pytest suite.
-- [ ] Phase 10.3 — Update this checklist with completed items and any deferred work.
+- [x] Phase 10.1 — Tighten broad exception handling where expected exception types are clear.
+- [x] Phase 10.2 — Run final lint, compileall, and full pytest suite.
+- [x] Phase 10.3 — Update this checklist with completed items and any deferred work.
 
 ### Commit Tracking
 
@@ -111,9 +111,9 @@ Record each cleanup commit here as work proceeds:
 | [x] | 5 | `034e6fa` | Blog route simplified with post/comment helper extraction; targeted and full tests pass. |
 | [x] | 6 | `21f651a` | Shared ADS-B/UAT route helper module added; dump1090/dump978 use shared helpers; targeted and full tests pass. |
 | [x] | 7 | `4cd507b` | Live and graphs route internals simplified; targeted and full tests pass. |
-| [x] | 8 | `9eadd4d` | Job print logging replaced; shared ADS-B/UAT ingest helpers and RRD writer helpers extracted; targeted and full tests pass. |
-| [x] | 9 | `f6e4f46` | Kept models module monolithic; shared serialization helpers added; model and full tests pass. |
-| [ ] | 10 | TBD | Final cleanup. |
+| [x] | 8 | `dc4ae54` | Job print logging replaced; shared ADS-B/UAT ingest helpers and RRD writer helpers extracted; targeted and full tests pass. |
+| [x] | 9 | `7f8afbf` | Kept models module monolithic; shared serialization helpers added; model and full tests pass. |
+| [x] | 10 | `ddbceff` | Final exception-handling cleanup; targeted and full verification pass. Deferred broad DB exception narrowing where tests still model generic failures. |
 
 ---
 

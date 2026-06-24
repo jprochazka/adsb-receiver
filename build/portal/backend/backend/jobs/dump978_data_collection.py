@@ -3,6 +3,7 @@ import logging
 
 from datetime import datetime
 from flask_apscheduler import APScheduler
+from urllib.error import URLError
 from urllib.request import urlopen
 from flask import current_app
 from sqlalchemy import select
@@ -32,8 +33,8 @@ class UatDataProcessor(object):
             raw_json = urlopen('http://127.0.0.1/dump978/data/aircraft.json')
             json_object = json.load(raw_json)
             return json_object
-        except Exception as ex:
-            logging.error("There was a problem consuming dump978 aircraft.json", exc_info=ex)
+        except (OSError, URLError, json.JSONDecodeError) as ex:
+            logging.error('There was a problem consuming dump978 aircraft.json', exc_info=True)
             return
 
     # Begin processing data retrieved from dump978

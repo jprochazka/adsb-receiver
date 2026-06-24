@@ -9,6 +9,8 @@ import time
 import psutil
 
 from urllib.error import URLError
+from json import JSONDecodeError
+from sqlalchemy.exc import SQLAlchemyError
 from urllib.request import urlopen
 from flask import current_app
 from backend.config_loader import get_graphs_config, get_rrd_writer_config, load_portal_config
@@ -99,7 +101,7 @@ class RrdWriter:
                 float(aircraft['lat']),
                 float(aircraft['lon']),
             )
-        except Exception as ex:
+        except (KeyError, TypeError, ValueError) as ex:
             self.log(f'could not calculate aircraft range: {ex}')
             return 0
 
@@ -107,10 +109,10 @@ class RrdWriter:
         try:
             with urlopen(url, None, self.timeout) as r:
                 return json.load(r)
-        except URLError as ex:
+        except (OSError, URLError, TimeoutError) as ex:
             self.log(f'fetch failed for {url}: {ex}')
-        except Exception as ex:
-            self.log(f'unexpected fetch error for {url}: {ex}')
+        except JSONDecodeError as ex:
+            self.log(f'invalid JSON from {url}: {ex}')
         return None
 
     def _greatcircle(self, lat0, lon0, lat1, lon1):
@@ -348,7 +350,7 @@ class RrdWriter:
             row = db.session.execute(select(Setting).filter_by(name='graphs_network_interface')).scalar_one_or_none()
             if row and row.value:
                 iface = row.value
-        except Exception as ex:
+        except SQLAlchemyError as ex:
             self.log(f'could not load configured network interface: {ex}')
 
         pernic = psutil.net_io_counters(pernic=True)
