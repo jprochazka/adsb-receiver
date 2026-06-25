@@ -5,6 +5,15 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
+import {
+  AIRCRAFT_TYPE_LEGEND,
+  aircraftTypeLabel,
+  aircraftTypeSourceLabel,
+  altitudeColor,
+  classifyAircraftForIcon,
+  flightHistoryLink,
+  sourceLabel,
+} from './live-display.helpers';
 import { interval, Subscription, of, catchError, forkJoin, startWith, switchMap } from 'rxjs';
 
 import 'ol/ol.css';
@@ -59,30 +68,6 @@ const TRAIL_SMOOTHING_WINDOW = 3;
 const OPENSTREETMAP_ATTRIBUTION_HTML = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
 const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/metadata/aircraftDatabase.csv" target="_blank" rel="noopener noreferrer">OpenSky Network Aircraft Database (ODbL v1.0)</a>';
 
-/** Altitude tiers used for icon/dot colouring. */
-const ALTITUDE_TIERS = [
-  { max: -1,     color: '#64748b' }, // ground / on-ground flag
-  { max: 5_000,  color: '#38bdf8' }, // low
-  { max: 15_000, color: '#22c55e' }, // medium-low
-  { max: 30_000, color: '#f59e0b' }, // medium-high
-  { max: 45_000, color: '#f97316' }, // high
-  { max: Infinity, color: '#ef4444' }, // very high
-] as const;
-
-/** Return a colour string for a given altitude, or gray when unknown. */
-function altitudeColor(alt: number | null | undefined): string {
-  if (alt == null) return '#64748b';
-  for (const tier of ALTITUDE_TIERS) {
-    if (alt <= tier.max) return tier.color;
-  }
-  return '#ef4444';
-}
-
-/** Source colour for icon outlines so ADS-B and UAT are distinguishable on-map. */
-function sourceColor(source: string | null | undefined): string {
-  return source === 'dump978' ? '#f59e0b' : '#22d3ee';
-}
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -106,11 +91,6 @@ export interface LiveAircraft {
   classification_source?: string | null;
   classification_confidence?: string | null;
 }
-
-type AircraftTypeLegendItem = {
-  key: string;
-  label: string;
-};
 
 type TrailPoint = {
   coord: number[];
@@ -189,17 +169,7 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   // Exposed helper for templates
   readonly altColor = altitudeColor;
-  readonly aircraftTypeLegend: AircraftTypeLegendItem[] = [
-    { key: 'airliner', label: 'Airliner' },
-    { key: 'general_aviation', label: 'General Aviation' },
-    { key: 'helicopter', label: 'Helicopter' },
-    { key: 'military', label: 'Military' },
-    { key: 'glider', label: 'Glider' },
-    { key: 'balloon', label: 'Balloon' },
-    { key: 'uav', label: 'UAV' },
-    { key: 'ground', label: 'Ground Vehicle' },
-    { key: 'unknown', label: 'Unknown' },
-  ];
+  readonly aircraftTypeLegend = AIRCRAFT_TYPE_LEGEND;
 
   // OL map objects
   private olMap!: OlMap;
@@ -651,7 +621,7 @@ export class LiveComponent implements OnInit, OnDestroy {
     const outlineColor = selected ? '#333333' : '#ffffff';
     const rotation = ((ac.track ?? 0) * Math.PI) / 180;
     const scale = selected ? 1.35 : 1.0;
-    const aircraftClass = this.classifyAircraftForIcon(ac);
+    const aircraftClass = classifyAircraftForIcon(ac);
 
     return new Style({
       image: new Icon({
@@ -675,25 +645,6 @@ export class LiveComponent implements OnInit, OnDestroy {
     });
   }
 
-  private classifyAircraftForIcon(ac: LiveAircraft): string {
-    const provided = (ac.aircraft_class || '').trim().toLowerCase();
-    if (provided) return provided;
-
-    const category = (ac.category || '').trim().toUpperCase();
-    const callsign = (ac.flight || '').trim().toUpperCase();
-
-    if (callsign.startsWith('RCH') || callsign.startsWith('NAVY') || callsign.startsWith('ARMY')) return 'military';
-    if (category === 'A7') return 'helicopter';
-    if (category === 'A5' || category === 'A6' || category === 'A4') return 'airliner';
-    if (category === 'B1') return 'glider';
-    if (category === 'B2') return 'balloon';
-    if (category === 'B5') return 'uav';
-    if (category.startsWith('C')) return 'ground';
-    if (category.startsWith('D')) return 'military';
-    if (category.startsWith('A') || category.startsWith('B')) return 'general_aviation';
-
-    return 'unknown';
-  }
 
   private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
     switch (aircraftClass) {
@@ -920,40 +871,11 @@ export class LiveComponent implements OnInit, OnDestroy {
   }
 
   aircraftTypeLabel(ac: LiveAircraft | null | undefined): string {
-    const klass = (ac?.aircraft_class || '').trim().toLowerCase();
-    switch (klass) {
-      case 'airliner':
-        return 'Airliner';
-      case 'general_aviation':
-        return 'General Aviation';
-      case 'helicopter':
-        return 'Helicopter';
-      case 'military':
-        return 'Military';
-      case 'glider':
-        return 'Glider';
-      case 'balloon':
-        return 'Balloon';
-      case 'uav':
-        return 'UAV';
-      case 'ground':
-        return 'Ground Vehicle';
-      case 'space':
-        return 'Space Vehicle';
-      default:
-        return 'Unknown';
-    }
+    return aircraftTypeLabel(ac);
   }
 
   aircraftTypeSourceLabel(ac: LiveAircraft | null | undefined): string {
-    const source = (ac?.classification_source || '').trim().toLowerCase();
-    const confidence = (ac?.classification_confidence || '').trim().toLowerCase();
-    const confidenceLabel = confidence ? ` (${confidence})` : '';
-
-    if (source === 'opensky') {
-      return `OpenSky${confidenceLabel}`;
-    }
-    return `Heuristic${confidenceLabel}`;
+    return aircraftTypeSourceLabel(ac);
   }
 
   aircraftTypeLegendIconDataUrl(aircraftClass: string): string {
@@ -962,13 +884,11 @@ export class LiveComponent implements OnInit, OnDestroy {
   }
 
   flightHistoryLink(ac: LiveAircraft): string | null {
-    if (!ac.flight) return null;
-    const flightType = ac.source === 'dump978' ? 'uat' : 'adsb';
-    return `/flight-history/${flightType}/${encodeURIComponent(ac.flight)}`;
+    return flightHistoryLink(ac);
   }
 
   sourceLabel(ac: LiveAircraft): string {
-    return ac.source === 'dump978' ? 'Dump978 (UAT)' : 'Dump1090 (ADS-B)';
+    return sourceLabel(ac);
   }
 
   private clampInt(raw: string | undefined, min: number, max: number, fallback: number): number {

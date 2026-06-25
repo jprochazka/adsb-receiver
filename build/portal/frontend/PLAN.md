@@ -88,7 +88,7 @@ Legend:
 
 - [x] Phase 3.1 — Extract pure formatting/filtering/pagination helpers from `flights.component.ts` without changing template behavior.
 - [x] Phase 3.2 — Extract map/trail/photo/comment helper logic from `flights.component.ts` only where tests can characterize behavior.
-- [ ] Phase 3.3 — Extract live map configuration, aircraft classification legend, overlay-ring parsing, and resize helpers from `live.component.ts`.
+- [~] Phase 3.3 — Extract live map configuration, aircraft classification legend, overlay-ring parsing, and resize helpers from `live.component.ts`.
 - [ ] Phase 3.4 — Extract device graph/KPI formatting helpers from `devices.component.ts`.
 - [ ] Phase 3.5 — Verify affected component specs after each slice and full build/test gate before committing.
 
@@ -135,7 +135,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [x] | 2 | `0500201` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
-| [~] | 3 | `bb35aa5`, `661e7fd` | Continued large component decomposition with flights display and track helper extractions; remaining live/devices/component decomposition phases are pending. |
+| [~] | 3 | `bb35aa5`, `661e7fd`, `abe129a` | Continued large component decomposition with flights display/track helpers and live display helpers; remaining live overlay/config/resize and devices component decomposition phases are pending. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
 | [ ] | 6 | TBD | Test reliability and coverage. |
@@ -328,6 +328,14 @@ Phase 3 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 291 SUCCESS`.
+- Phase 3.3 first live slice: added `src/app/live/live-display.helpers.ts` for altitude/source colors, aircraft classification labels, source labels, flight-history link construction, and aircraft type legend data.
+- Added `src/app/live/live-display.helpers.spec.ts` covering altitude color tiers, ADS-B/UAT source labels, category/callsign classification fallbacks, type/source labels, flight-history link generation, and legend ordering.
+- Migrated `live.component.ts` to use the display helper seam while keeping SVG/icon generation and OpenLayers lifecycle in the component.
+- Focused live display helper spec passes: `TOTAL: 6 SUCCESS`.
+- Focused live component spec passes: `TOTAL: 21 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 297 SUCCESS`.
 
 Acceptance criteria:
 - Large components shrink through behavior-preserving extraction.
