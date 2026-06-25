@@ -111,12 +111,12 @@ Legend:
 
 - [x] Phase 6.1 — Make headless test execution reproducible locally/CI.
 - [x] Phase 6.2 — Add targeted tests for shared auth/session helpers.
-- [ ] Phase 6.3 — Add tests around extracted pure helpers from flights/live/devices.
-- [ ] Phase 6.4 — Add tests for admin save error paths where behavior is stable.
+- [x] Phase 6.3 — Add tests around extracted pure helpers from flights/live/devices.
+- [x] Phase 6.4 — Add tests for admin save error paths where behavior is stable.
 - [x] Phase 6.5 — Add a coverage baseline command/report and record current statement/branch/function/line coverage.
-- [ ] Phase 6.6 — Identify coverage gaps in high-risk user flows and add behavior-focused tests until coverage is up to par.
-- [ ] Phase 6.7 — Set pragmatic coverage thresholds only after the baseline is stable; avoid threshold gaming.
-- [ ] Phase 6.8 — Avoid brittle DOM tests that only assert Angular implementation details.
+- [x] Phase 6.6 — Identify coverage gaps in high-risk user flows and add behavior-focused tests until coverage is up to par.
+- [x] Phase 6.7 — Set pragmatic coverage thresholds only after the baseline is stable; avoid threshold gaming.
+- [x] Phase 6.8 — Avoid brittle DOM tests that only assert Angular implementation details.
 
 ### Dependency and Security Follow-up
 
@@ -138,7 +138,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c`, `81fb12a` | Completed large component decomposition with flights display/track helpers, live display/overlay/settings helpers, and devices display/KPI helpers. |
 | [x] | 4 | `148f7bb`, `4d647b0`, `89f7e9e`, `6d5d914`, `10142ff`, `9051f1a` | Completed admin/settings workflow cleanup with autosave feedback/helper consolidation, admin blog taxonomy helpers, admin live/feeders setting-save consolidation, and admin flights purge/ignore helpers. |
 | [x] | 5 | `c518732`, `3261070`, `58c77d5` | Completed templates/styles cleanup with largest-template inventory, shared admin setting toggle presentational extraction, shared per-page select styling, and build/test/browser-smoke verification. |
-| [~] | 6 | `9cac76d` | Test reliability and coverage started with verified headless/coverage commands, auth-session focused coverage check, and recorded baseline metrics. |
+| [x] | 6 | `9cac76d`, `c86f42a` | Completed test reliability and coverage with verified headless/coverage commands, auth-session and helper focused checks, admin error-path inventory, coverage-gap triage, and threshold/brittle-test decisions. |
 | [ ] | 7 | TBD | Dependency/security follow-up. |
 
 ---
@@ -524,6 +524,11 @@ Phase 6 live verification notes (2026-06-25):
 - Coverage artifact location: `build/portal/frontend/coverage/frontend/` (ignored by `.gitignore`).
 - Baseline from `npm run test:coverage`: Statements 69.72% (2734/3921), Branches 51.14% (757/1480), Functions 61.04% (699/1145), Lines 71.77% (2568/3578).
 - Verification after script addition: `npm run typecheck`, `npm run build`, and `npm run test:headless` all pass; `npm run test:headless` reports `TOTAL: 332 SUCCESS`.
+- Phase 6.3 helper coverage inventory: every extracted helper has a matching spec (`admin-blog`, `admin-flights`, `devices-display`, `flight-display`, `flight-track`, `live-display`, `live-overlay`, `live-settings`). Focused helper suite passes with `TOTAL: 40 SUCCESS`.
+- Phase 6.4 admin save/error path inventory: stable autosave failure feedback is covered in admin Blog, ACARS, Devices, and Links specs; broader admin mutation error paths are covered in Blog, Users, and purge specs. No uncovered stable autosave seam was found in this slice.
+- Phase 6.6 coverage gap triage from the HTML report: lowest/high-risk areas are `app/service` 20.35% statements, `app/admin-users` 52.27%, `app/admin-links` 53.46%, `app/flights` 57.14%, and `app/acars` 62.83%. These are tracked as future behavior-focused candidates rather than percentage-chasing in this cleanup pass.
+- Phase 6.7 threshold decision: no coverage thresholds added yet. Current branch coverage is only 51.14%, so adding thresholds now would either encourage threshold gaming or block safe staged improvements. Revisit after DataService and high-risk route coverage improve.
+- Phase 6.8 brittle-test review: selector/text-content search found 49 DOM assertions. Most are behavior-facing checks; the main brittle candidate is scheduler button tests indexing `.card` order. No test rewrite was necessary for the current refactor, but scheduler DOM assertions are tracked as a future simplification candidate if touched.
 
 ## Phase 7: Dependency and Security Follow-up
 
