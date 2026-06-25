@@ -88,9 +88,9 @@ Legend:
 
 - [x] Phase 3.1 — Extract pure formatting/filtering/pagination helpers from `flights.component.ts` without changing template behavior.
 - [x] Phase 3.2 — Extract map/trail/photo/comment helper logic from `flights.component.ts` only where tests can characterize behavior.
-- [~] Phase 3.3 — Extract live map configuration, aircraft classification legend, overlay-ring parsing, and resize helpers from `live.component.ts`.
-- [ ] Phase 3.4 — Extract device graph/KPI formatting helpers from `devices.component.ts`.
-- [ ] Phase 3.5 — Verify affected component specs after each slice and full build/test gate before committing.
+- [x] Phase 3.3 — Extract live map configuration, aircraft classification legend, overlay-ring parsing, and resize helpers from `live.component.ts`.
+- [x] Phase 3.4 — Extract device graph/KPI formatting helpers from `devices.component.ts`.
+- [x] Phase 3.5 — Verify affected component specs after each slice and full build/test gate before committing.
 
 ### Admin Components and Settings Workflows
 
@@ -135,7 +135,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [x] | 2 | `0500201` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
-| [~] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c` | Continued large component decomposition with flights display/track helpers and live display/overlay/settings helpers; remaining devices component decomposition phases are pending. |
+| [x] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c`, `81fb12a` | Completed large component decomposition with flights display/track helpers, live display/overlay/settings helpers, and devices display/KPI helpers. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
 | [ ] | 6 | TBD | Test reliability and coverage. |
@@ -352,6 +352,14 @@ Phase 3 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 306 SUCCESS`.
+- Phase 3.4 devices slice: added `src/app/devices/devices-display.helpers.ts` for device graph period constants, refresh interval bounds, byte/duration formatting, aircraft type labels, dataset-average KPI extraction, and range-unit conversion.
+- Added `src/app/devices/devices-display.helpers.spec.ts` covering byte/duration formatting, refresh bounds, aircraft type labels, dataset averaging, and range conversions.
+- Migrated `devices.component.ts` to use the devices helper seam while keeping graph chart config construction, data loading, tab state, brush state, and chart lifecycle in the component.
+- RED verified first: the new helper spec initially failed because the helper module did not exist, then failed for missing exported KPI helpers before implementation; after implementation the same spec passed.
+- Focused devices helper + component specs pass: `TOTAL: 33 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 312 SUCCESS`.
 
 Acceptance criteria:
 - Large components shrink through behavior-preserving extraction.
