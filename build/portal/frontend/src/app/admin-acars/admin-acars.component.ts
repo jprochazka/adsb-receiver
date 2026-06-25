@@ -39,7 +39,17 @@ export class AdminAcarsComponent implements OnInit {
   }
 
   saveAcarsNavEnabled(): void {
-    this.dataService.updateSetting('acars_nav_enabled', String(this.acarsNavEnabled)).subscribe();
+    this.saveSetting('acars_nav_enabled', String(this.acarsNavEnabled));
+  }
+
+  private saveSetting(key: string, value: string): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; },
+    });
   }
 
   loadStats(): void {

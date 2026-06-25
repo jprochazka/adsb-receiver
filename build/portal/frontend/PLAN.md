@@ -399,6 +399,13 @@ Phase 4 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 313 SUCCESS`.
+- Phase 4.1/4.2 second admin autosave slice: consolidated silent nav setting saves in `admin-acars.component.ts` and `admin-links.component.ts` behind local `saveSetting(...)` helpers.
+- Added focused admin ACARS and admin Links specs for successful nav autosave feedback and failed nav autosave feedback.
+- RED verified first: the focused specs failed because nav autosaves did not set success/error state and unhandled save errors escaped the subscription; after implementation the same specs passed.
+- Focused admin ACARS + Links specs pass: `TOTAL: 14 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 316 SUCCESS`.
 
 ## Phase 5: Templates and Styles
 

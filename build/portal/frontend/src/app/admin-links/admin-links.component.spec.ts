@@ -20,6 +20,13 @@ describe('AdminLinksComponent', () => {
 
   beforeEach(async () => {
     Object.values(dataServiceMock).forEach((spy) => spy.calls.reset());
+    dataServiceMock.getSetting.and.returnValue(of({ value: 'true' }));
+    dataServiceMock.updateSetting.and.returnValue(of({}));
+    dataServiceMock.getLinks.and.returnValue(of({ links: [{ id: 1, name: 'One', address: 'https://one.test' }, { id: 2, name: 'Two', address: 'https://two.test' }] }));
+    dataServiceMock.createLink.and.returnValue(of({}));
+    dataServiceMock.updateLink.and.returnValue(of({}));
+    dataServiceMock.deleteLink.and.returnValue(of({}));
+    dataServiceMock.reorderLinks.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
       imports: [AdminLinksComponent],
@@ -64,6 +71,28 @@ describe('AdminLinksComponent', () => {
     expect(dataServiceMock.createLink).toHaveBeenCalledWith({ name: 'Example', address: 'https://example.com' });
     expect(component.creating).toBeFalse();
     expect(component.successMessage).toBe('Link created successfully.');
+  });
+
+  it('should save nav setting and show success feedback', () => {
+    fixture.detectChanges();
+    component.linksNavEnabled = false;
+
+    component.saveLinksNavEnabled();
+
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('links_nav_enabled', 'false');
+    expect(component.successMessage).toBe('Setting saved.');
+    expect(component.errorMessage).toBe('');
+  });
+
+  it('should surface nav setting save failures', () => {
+    fixture.detectChanges();
+    dataServiceMock.updateSetting.and.returnValue(throwError(() => new Error('failed')));
+    component.successMessage = 'Previous success';
+
+    component.saveLinksNavEnabled();
+
+    expect(component.successMessage).toBe('');
+    expect(component.errorMessage).toBe('Failed to save setting.');
   });
 
   it('should reorder links on drop', () => {

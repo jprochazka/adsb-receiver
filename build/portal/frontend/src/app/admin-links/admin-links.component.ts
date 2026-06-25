@@ -50,7 +50,17 @@ export class AdminLinksComponent implements OnInit {
   }
 
   saveLinksNavEnabled() {
-    this.dataService.updateSetting('links_nav_enabled', String(this.linksNavEnabled)).subscribe();
+    this.saveSetting('links_nav_enabled', String(this.linksNavEnabled));
+  }
+
+  private saveSetting(key: string, value: string) {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; },
+    });
   }
 
   loadLinks() {
