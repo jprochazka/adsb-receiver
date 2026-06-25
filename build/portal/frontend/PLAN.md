@@ -138,7 +138,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c`, `81fb12a` | Completed large component decomposition with flights display/track helpers, live display/overlay/settings helpers, and devices display/KPI helpers. |
 | [x] | 4 | `148f7bb`, `4d647b0`, `89f7e9e`, `6d5d914`, `10142ff`, `9051f1a` | Completed admin/settings workflow cleanup with autosave feedback/helper consolidation, admin blog taxonomy helpers, admin live/feeders setting-save consolidation, and admin flights purge/ignore helpers. |
 | [x] | 5 | `c518732`, `3261070`, `58c77d5` | Completed templates/styles cleanup with largest-template inventory, shared admin setting toggle presentational extraction, shared per-page select styling, and build/test/browser-smoke verification. |
-| [ ] | 6 | TBD | Test reliability and coverage. |
+| [~] | 6 | `9cac76d` | Test reliability and coverage started with verified headless/coverage commands, auth-session focused coverage check, and recorded baseline metrics. |
 | [ ] | 7 | TBD | Dependency/security follow-up. |
 
 ---
