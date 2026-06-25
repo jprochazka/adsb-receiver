@@ -84,16 +84,18 @@ export class AdminFeedersComponent implements OnInit {
   }
 
   saveNavEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('map_nav_enabled', String(this.mapNavEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('map_nav_enabled', String(this.mapNavEnabled));
   }
 
   saveItemEnabled(item: MapItem): void {
+    this.saveSetting(item.settingKey, String(item.enabled));
+  }
+
+  private saveSetting(key: string, value: string): void {
     this.errorMessage = '';
-    this.dataService.updateSetting(item.settingKey, String(item.enabled)).subscribe({
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
       next: () => { this.successMessage = 'Setting saved.'; },
       error: () => { this.errorMessage = 'Failed to save setting.'; }
     });

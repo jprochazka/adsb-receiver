@@ -172,11 +172,7 @@ export class AdminLiveComponent implements OnInit {
   }
 
   saveLiveMapEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_enabled', String(this.liveMapEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_enabled', String(this.liveMapEnabled));
   }
 
   saveLiveMapRefreshMs(): void {
@@ -205,43 +201,23 @@ export class AdminLiveComponent implements OnInit {
   }
 
   saveLiveMapShowAllSeen(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_show_all_seen', String(this.liveMapShowAllSeen)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_show_all_seen', String(this.liveMapShowAllSeen));
   }
 
   saveLiveMapSpiderOverlayEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_spider_overlay_enabled', String(this.liveMapSpiderOverlayEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_spider_overlay_enabled', String(this.liveMapSpiderOverlayEnabled));
   }
 
   saveLiveMapCenterIconEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_center_icon_enabled', String(this.liveMapCenterIconEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_center_icon_enabled', String(this.liveMapCenterIconEnabled));
   }
 
   saveLiveMapDistanceRingsEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_distance_rings_enabled', String(this.liveMapDistanceRingsEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_distance_rings_enabled', String(this.liveMapDistanceRingsEnabled));
   }
 
   saveLiveMapDistanceRingCompassLinesEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_distance_ring_compass_lines_enabled', String(this.liveMapDistanceRingCompassLinesEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_distance_ring_compass_lines_enabled', String(this.liveMapDistanceRingCompassLinesEnabled));
   }
 
   saveLiveMapDistanceRingCount(): void {
@@ -255,11 +231,7 @@ export class AdminLiveComponent implements OnInit {
   }
 
   saveLiveMapTheoreticalRangeEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_theoretical_range_enabled', String(this.liveMapTheoreticalRangeEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_theoretical_range_enabled', String(this.liveMapTheoreticalRangeEnabled));
   }
 
   saveLiveMapTheoreticalRangeJson(): void {
@@ -278,11 +250,7 @@ export class AdminLiveComponent implements OnInit {
   }
 
   saveLiveMapHeyWhatsThatRingsEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('live_map_heywhatsthat_rings_enabled', String(this.liveMapHeyWhatsThatRingsEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('live_map_heywhatsthat_rings_enabled', String(this.liveMapHeyWhatsThatRingsEnabled));
   }
 
   saveLiveMapHeyWhatsThatRingsJson(): void {
@@ -445,15 +413,17 @@ export class AdminLiveComponent implements OnInit {
   }
 
   private saveNumericSetting(name: string, value: number): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting(name, String(value)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting(name, String(value));
   }
 
   private saveStringSetting(name: string, value: string): void {
+    this.saveSetting(name, value);
+  }
+
+  private saveSetting(name: string, value: string): void {
     this.errorMessage = '';
+    this.successMessage = '';
+
     this.dataService.updateSetting(name, value).subscribe({
       next: () => { this.successMessage = 'Setting saved.'; },
       error: () => { this.errorMessage = 'Failed to save setting.'; }

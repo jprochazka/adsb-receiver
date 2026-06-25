@@ -94,7 +94,7 @@ Legend:
 
 ### Admin Components and Settings Workflows
 
-- [~] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
+- [x] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
 - [x] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
 - [x] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
 - [ ] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
@@ -419,6 +419,12 @@ Phase 4 live verification notes (2026-06-25):
 - Migrated `admin-blog.component.ts` to call the helper seam while keeping API orchestration, prompts/confirms, bulk update subscriptions, and component state in the component.
 - RED verified first: the new helper spec failed because the helper module did not exist yet; after implementation the same spec passed.
 - Focused admin Blog helper + component specs pass: `TOTAL: 34 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 324 SUCCESS`.
+- Phase 4.1 final settings-normalization slice: consolidated repeated boolean autosave handlers in `admin-live.component.ts` and `admin-feeders.component.ts` behind local `saveSetting(...)` helpers.
+- Verified remaining admin setting saves are either routed through local `saveSetting(...)` helpers, explicit numeric/string helpers, explicit order/custom-preset handlers, or `forkJoin` batch saves with success/error handlers.
+- Focused admin Live + Feeders component specs pass before and after refactor: `TOTAL: 19 SUCCESS`.
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 324 SUCCESS`.
