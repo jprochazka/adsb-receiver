@@ -135,7 +135,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [x] | 2 | `0500201` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
-| [~] | 3 | `bb35aa5`, `661e7fd`, `03e99c7` | Continued large component decomposition with flights display/track helpers and live display helpers; remaining live overlay/config/resize and devices component decomposition phases are pending. |
+| [~] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `2ca0047` | Continued large component decomposition with flights display/track helpers and live display/overlay helpers; remaining live config/resize and devices component decomposition phases are pending. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
 | [ ] | 6 | TBD | Test reliability and coverage. |
@@ -336,6 +336,14 @@ Phase 3 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 297 SUCCESS`.
+- Phase 3.3 second live slice: added `src/app/live/live-overlay.helpers.ts` for theoretical-range and HeyWhatsThat overlay-ring JSON parsing.
+- Added `src/app/live/live-overlay.helpers.spec.ts` covering invalid JSON, lon/lat pair arrays, lon/lng/longitude object aliases, nested coordinate configs, and GeoJSON polygon features.
+- Migrated `live.component.ts` to use the overlay helper seam while keeping OpenLayers overlay source/layer lifecycle in the component.
+- Focused live overlay helper spec passes: `TOTAL: 5 SUCCESS`.
+- Focused live component spec passes: `TOTAL: 21 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 302 SUCCESS`.
 
 Acceptance criteria:
 - Large components shrink through behavior-preserving extraction.

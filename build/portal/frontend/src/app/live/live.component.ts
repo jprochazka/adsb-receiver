@@ -14,6 +14,7 @@ import {
   flightHistoryLink,
   sourceLabel,
 } from './live-display.helpers';
+import { extractOverlayRings } from './live-overlay.helpers';
 import { interval, Subscription, of, catchError, forkJoin, startWith, switchMap } from 'rxjs';
 
 import 'ol/ol.css';
@@ -24,7 +25,6 @@ import LineString from 'ol/geom/LineString';
 import CircleGeom from 'ol/geom/Circle';
 import Polygon from 'ol/geom/Polygon';
 import { fromCircle as polygonFromCircle } from 'ol/geom/Polygon';
-import GeoJSON from 'ol/format/GeoJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import TileLayer from 'ol/layer/Tile';
@@ -981,7 +981,7 @@ export class LiveComponent implements OnInit, OnDestroy {
 
     if (!this.liveMapTheoreticalRangeEnabled || !this.liveMapTheoreticalRangeJson) return;
 
-    for (const ring of this.extractOverlayRings(this.liveMapTheoreticalRangeJson)) {
+    for (const ring of extractOverlayRings(this.liveMapTheoreticalRangeJson)) {
       this.theoreticalRangeSource.addFeature(new Feature({
         geometry: new Polygon([ring])
       }));
@@ -993,106 +993,13 @@ export class LiveComponent implements OnInit, OnDestroy {
 
     if (!this.liveMapHeyWhatsThatRingsEnabled || !this.liveMapHeyWhatsThatRingsJson) return;
 
-    for (const ring of this.extractOverlayRings(this.liveMapHeyWhatsThatRingsJson)) {
+    for (const ring of extractOverlayRings(this.liveMapHeyWhatsThatRingsJson)) {
       this.heyWhatsThatRingsSource.addFeature(new Feature({
         geometry: new Polygon([ring])
       }));
     }
   }
 
-  private extractOverlayRings(rawJson: string): number[][][] {
-    let parsed: unknown;
-
-    try {
-      parsed = JSON.parse(rawJson);
-    } catch {
-      return [];
-    }
-
-    const geoJsonFeatures = this.readGeoJsonFeatures(parsed);
-    if (geoJsonFeatures.length > 0) {
-      return geoJsonFeatures;
-    }
-
-    const rings = this.collectCoordinateRings(parsed)
-      .map(ring => this.projectRing(ring))
-      .filter((ring): ring is number[][] => ring.length >= 4);
-
-    return rings;
-  }
-
-  private readGeoJsonFeatures(parsed: unknown): number[][][] {
-    try {
-      const features = new GeoJSON().readFeatures(parsed as object, {
-        featureProjection: 'EPSG:3857',
-        dataProjection: 'EPSG:4326'
-      });
-
-      return features.flatMap(feature => {
-        const geometry = feature.getGeometry();
-        if (geometry instanceof Polygon) {
-          return [geometry.getCoordinates()[0]];
-        }
-        return [];
-      }).filter(ring => ring.length >= 4);
-    } catch {
-      return [];
-    }
-  }
-
-  private collectCoordinateRings(value: unknown): number[][][] {
-    if (this.isLonLatPairArray(value)) {
-      return [this.closeLonLatRing(value)];
-    }
-
-    if (this.isLonLatObjectArray(value)) {
-      return [this.closeLonLatRing(value.map(point => [point.lon, point.lat]))];
-    }
-
-    if (!value || typeof value !== 'object') {
-      return [];
-    }
-
-    if (Array.isArray(value)) {
-      return value.flatMap(entry => this.collectCoordinateRings(entry));
-    }
-
-    return Object.values(value).flatMap(entry => this.collectCoordinateRings(entry));
-  }
-
-  private isLonLatPairArray(value: unknown): value is number[][] {
-    return Array.isArray(value) && value.length >= 3 && value.every(item =>
-      Array.isArray(item) && item.length >= 2 &&
-      Number.isFinite(item[0]) && Number.isFinite(item[1])
-    );
-  }
-
-  private isLonLatObjectArray(value: unknown): value is Array<{ lon: number; lat: number }> {
-    return Array.isArray(value) && value.length >= 3 && value.every(item => {
-      if (!item || typeof item !== 'object') return false;
-      const candidate = item as Record<string, unknown>;
-      const lon = candidate['lon'] ?? candidate['lng'] ?? candidate['longitude'];
-      const lat = candidate['lat'] ?? candidate['latitude'];
-      return Number.isFinite(lon) && Number.isFinite(lat);
-    });
-  }
-
-  private closeLonLatRing(points: number[][]): number[][] {
-    const ring = points.map(([lon, lat]) => [Number(lon), Number(lat)]);
-    const first = ring[0];
-    const last = ring[ring.length - 1];
-    if (!first || !last) return [];
-    if (first[0] !== last[0] || first[1] !== last[1]) {
-      ring.push([first[0], first[1]]);
-    }
-    return ring;
-  }
-
-  private projectRing(ring: number[][]): number[][] {
-    return ring
-      .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
-      .map(([lon, lat]) => fromLonLat([lon, lat]));
-  }
 
   private distanceRingStyleFor(feature: Feature): Style {
     return feature.get('distanceRingKind') === 'ray'
