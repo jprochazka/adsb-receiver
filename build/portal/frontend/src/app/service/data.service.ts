@@ -17,6 +17,20 @@ export class DataService {
     return { Authorization: `Bearer ${token}` };
   }
 
+  private offsetLimitParams(offset: number, limit: number): HttpParams {
+    return new HttpParams()
+      .set('offset', offset)
+      .set('limit', limit);
+  }
+
+  private flightUrl(source: 'adsb' | 'uat', flight: string, suffix = ''): string {
+    return `${this.apiUrl}/${source}/flight/${encodeURIComponent(flight)}${suffix}`;
+  }
+
+  private schedulerJobUrl(jobId: string, action: 'run' | 'pause' | 'resume'): string {
+    return `${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/${action}`;
+  }
+
   login(email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/token/login`, { email, password });
   }
@@ -38,9 +52,7 @@ export class DataService {
   }
 
   getUsers(offset = 0, limit = 10, options?: { q?: string; locked?: boolean | null }): Observable<any> {
-    let params = new HttpParams()
-      .set('offset', offset)
-      .set('limit', limit);
+    let params = this.offsetLimitParams(offset, limit);
 
     if (options?.q?.trim()) {
       params = params.set('q', options.q.trim());
@@ -101,9 +113,7 @@ export class DataService {
   }
 
   getBlogPosts(offset = 0, limit = 10, category = '', tag = ''): Observable<PaginatedResponse<BlogPostSummary>> {
-    let params = new HttpParams()
-      .set('offset', offset)
-      .set('limit', limit);
+    let params = this.offsetLimitParams(offset, limit);
 
     if (category) {
       params = params.set('category', category);
@@ -121,9 +131,7 @@ export class DataService {
   }
 
   getAdminBlogPosts(offset = 0, limit = 10, options?: { q?: string; status?: string }): Observable<any> {
-    let params = new HttpParams()
-      .set('offset', offset)
-      .set('limit', limit);
+    let params = this.offsetLimitParams(offset, limit);
 
     if (options?.q?.trim()) {
       params = params.set('q', options.q.trim());
@@ -158,7 +166,7 @@ export class DataService {
   }
 
   getFlights(offset = 0, limit = 50): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flights`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/adsb/flights`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getIgnoredFlights(offset = 0, limit = 10): Observable<any> {
@@ -168,24 +176,24 @@ export class DataService {
   }
 
   getFlightDetails(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}`);
+    return this.http.get(this.flightUrl('adsb', flight));
   }
 
   updateFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/purge-preference`,
+      this.flightUrl('adsb', flight, '/purge-preference'),
       { ignore_on_purge },
       { headers: this.authHeaders() }
     );
   }
 
   getUatFlightDetails(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}`);
+    return this.http.get(this.flightUrl('uat', flight));
   }
 
   updateUatFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/purge-preference`,
+      this.flightUrl('uat', flight, '/purge-preference'),
       { ignore_on_purge },
       { headers: this.authHeaders() }
     );
@@ -196,24 +204,24 @@ export class DataService {
   }
 
   getFlightPositions(flight: string, limit = 1000): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
+    return this.http.get(this.flightUrl('adsb', flight, '/positions'), { params: { limit } });
   }
 
   getUatFlightPositions(flight: string, limit = 1000): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
+    return this.http.get(this.flightUrl('uat', flight, '/positions'), { params: { limit } });
   }
 
   getFlightComments(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments`);
+    return this.http.get(this.flightUrl('adsb', flight, '/comments'));
   }
 
   getUatFlightComments(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments`);
+    return this.http.get(this.flightUrl('uat', flight, '/comments'));
   }
 
   createFlightComment(flight: string, content: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments`,
+      this.flightUrl('adsb', flight, '/comments'),
       { content },
       { headers: this.authHeaders() }
     );
@@ -221,7 +229,7 @@ export class DataService {
 
   createUatFlightComment(flight: string, content: string): Observable<any> {
     return this.http.post(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments`,
+      this.flightUrl('uat', flight, '/comments'),
       { content },
       { headers: this.authHeaders() }
     );
@@ -229,7 +237,7 @@ export class DataService {
 
   updateFlightComment(flight: string, commentId: number, content: string): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      this.flightUrl('adsb', flight, `/comments/${commentId}`),
       { content },
       { headers: this.authHeaders() }
     );
@@ -237,14 +245,14 @@ export class DataService {
 
   deleteFlightComment(flight: string, commentId: number): Observable<any> {
     return this.http.delete(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      this.flightUrl('adsb', flight, `/comments/${commentId}`),
       { headers: this.authHeaders() }
     );
   }
 
   updateUatFlightComment(flight: string, commentId: number, content: string): Observable<any> {
     return this.http.put(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      this.flightUrl('uat', flight, `/comments/${commentId}`),
       { content },
       { headers: this.authHeaders() }
     );
@@ -252,7 +260,7 @@ export class DataService {
 
   deleteUatFlightComment(flight: string, commentId: number): Observable<any> {
     return this.http.delete(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      this.flightUrl('uat', flight, `/comments/${commentId}`),
       { headers: this.authHeaders() }
     );
   }
@@ -266,7 +274,7 @@ export class DataService {
   }
 
   getUatFlights(offset = 0, limit = 50): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flights`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/uat/flights`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getIgnoredUatFlights(offset = 0, limit = 10): Observable<any> {
@@ -284,7 +292,7 @@ export class DataService {
   }
 
   getAcarsFlights(offset = 0, limit = 50): Observable<any> {
-    return this.http.get(`${this.apiUrl}/acars/flights`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/acars/flights`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getAcarsFlightsCount(): Observable<any> {
@@ -292,7 +300,7 @@ export class DataService {
   }
 
   getAcarsFlightMessages(flightId: number, offset = 0, limit = 25): Observable<any> {
-    return this.http.get(`${this.apiUrl}/acars/flight/${flightId}/messages`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/acars/flight/${flightId}/messages`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getAcarsMessagesCount(): Observable<any> {
@@ -487,19 +495,19 @@ export class DataService {
   }
 
   runSchedulerJob(jobId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/run`, {}, {
+    return this.http.post(this.schedulerJobUrl(jobId, 'run'), {}, {
       headers: this.authHeaders()
     });
   }
 
   pauseSchedulerJob(jobId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/pause`, {}, {
+    return this.http.post(this.schedulerJobUrl(jobId, 'pause'), {}, {
       headers: this.authHeaders()
     });
   }
 
   resumeSchedulerJob(jobId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/resume`, {}, {
+    return this.http.post(this.schedulerJobUrl(jobId, 'resume'), {}, {
       headers: this.authHeaders()
     });
   }
