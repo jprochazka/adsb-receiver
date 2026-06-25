@@ -313,7 +313,7 @@
         </div>
         <div class="col-md-auto">
           <label class="form-label mb-1">Posts per page</label>
-          <select class="form-select blog-per-page-select" [(ngModel)]="perPage" (ngModelChange)="updatePerPage($event)">
+          <select class="form-select per-page-select" [(ngModel)]="perPage" (ngModelChange)="updatePerPage($event)">
             @for (pageSize of pageSizeOptions; track pageSize) {
               <option [ngValue]="pageSize">{{ pageSize }}</option>
             }

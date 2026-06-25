@@ -104,8 +104,8 @@ Legend:
 
 - [x] Phase 5.1 — Review largest templates for repeated button/table/empty-state patterns.
 - [x] Phase 5.2 — Extract small reusable presentational components only when duplication is clear and tests remain simple.
-- [ ] Phase 5.3 — Consolidate repeated SCSS values/classes conservatively; avoid visual redesign.
-- [ ] Phase 5.4 — Verify screenshots manually if browser tooling is available; otherwise rely on component tests and build.
+- [x] Phase 5.3 — Consolidate repeated SCSS values/classes conservatively; avoid visual redesign.
+- [x] Phase 5.4 — Verify screenshots manually if browser tooling is available; otherwise rely on component tests and build.
 
 ### Test Coverage and Reliability
 
@@ -468,6 +468,10 @@ Phase 5 live verification notes (2026-06-25):
 - RED verified first: the new component spec failed because the component module did not exist yet; after implementation the same spec passed.
 - Focused shared toggle + admin Devices specs pass: `TOTAL: 7 SUCCESS`.
 - Full Phase 5.2 gate passed: `npm run typecheck`, `npm run build`, and full `npm run test:headless` with `TOTAL: 332 SUCCESS`.
+- Phase 5.3 consolidated duplicate per-page select sizing into the global `.per-page-select` utility in `src/styles.scss`.
+- Migrated `Flights`, `ACARS`, `Admin Users`, and `Admin Blog` templates from page-specific per-page select classes to `.per-page-select`; removed duplicated 8.5rem width rules from component SCSS.
+- Phase 5.4 visual smoke used the dev server and browser screenshots for public `Flights` and `ACARS` pages; the shared select width/alignment rendered correctly with no obvious visual breakage. Admin Blog/Admin Users are auth-gated, so verification for those stayed on template compile/build/full Karma coverage.
+- Final Phase 5 gate passed: `npm run typecheck`, `npm run build`, and full `npm run test:headless` with `TOTAL: 332 SUCCESS`.
 
 ## Phase 6: Test Reliability and Coverage
 
