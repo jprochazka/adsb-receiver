@@ -136,7 +136,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [x] | 2 | `0500201` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
 | [x] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c`, `81fb12a` | Completed large component decomposition with flights display/track helpers, live display/overlay/settings helpers, and devices display/KPI helpers. |
-| [~] | 4 | TBD | Admin/settings workflow cleanup started with admin devices autosave feedback/helper consolidation. |
+| [x] | 4 | `148f7bb`, `4d647b0`, `89f7e9e`, `6d5d914`, `10142ff`, `9051f1a` | Completed admin/settings workflow cleanup with autosave feedback/helper consolidation, admin blog taxonomy helpers, admin live/feeders setting-save consolidation, and admin flights purge/ignore helpers. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
 | [ ] | 6 | TBD | Test reliability and coverage. |
 | [ ] | 7 | TBD | Dependency/security follow-up. |
