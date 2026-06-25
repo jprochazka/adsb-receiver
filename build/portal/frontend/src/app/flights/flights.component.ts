@@ -3,6 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angula
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
+import { getCurrentAccessTokenPayload } from '../shared/auth-session';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { forkJoin, combineLatest } from 'rxjs';
 import { catchError, map, of } from 'rxjs';
@@ -690,14 +691,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   private getTokenPayload(): any | null {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-    try {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(atob(base64));
-    } catch {
-      return null;
-    }
+    return getCurrentAccessTokenPayload();
   }
 
   beginEditComment(comment: any): void {

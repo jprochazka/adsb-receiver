@@ -2,16 +2,7 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-
-function isTokenExpired(token: string): boolean {
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(base64));
-    return payload.exp * 1000 < Date.now();
-  } catch {
-    return true;
-  }
-}
+import { isTokenExpired } from '../shared/auth-session';
 
 function clearSession(router: Router): void {
   localStorage.removeItem('access_token');

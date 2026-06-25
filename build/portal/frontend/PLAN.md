@@ -79,10 +79,10 @@ Legend:
 
 ### Auth and Session Handling
 
-- [ ] Phase 2.1 — Centralize JWT payload decoding used by `app.component.ts`, `auth.interceptor.ts`, `account.component.ts`, `flights.component.ts`, `blog.component.ts`, and `admin-scheduler.component.ts`.
-- [ ] Phase 2.2 — Add focused unit tests for malformed tokens, expired tokens, missing roles, and returnUrl handling.
-- [ ] Phase 2.3 — Keep localStorage key names and navigation behavior unchanged.
-- [ ] Phase 2.4 — Verify login/register/logout/app/interceptor tests and full build/test gate.
+- [x] Phase 2.1 — Centralize JWT payload decoding used by `app.component.ts`, `auth.interceptor.ts`, `account.component.ts`, `flights.component.ts`, `blog.component.ts`, and `admin-scheduler.component.ts`.
+- [x] Phase 2.2 — Add focused unit tests for malformed tokens, expired tokens, missing roles, and returnUrl handling.
+- [x] Phase 2.3 — Keep localStorage key names and navigation behavior unchanged.
+- [x] Phase 2.4 — Verify login/register/logout/app/interceptor tests and full build/test gate.
 
 ### Large Component Decomposition
 
@@ -131,7 +131,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | Planning | `7e67a31` | Added frontend cleanup plan. |
 | [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
-| [ ] | 2 | TBD | Auth/session handling cleanup. |
+| [x] | 2 | `5304c30` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
 | [ ] | 3 | TBD | Large component decomposition. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
@@ -261,6 +261,17 @@ Acceptance criteria:
 3. Migrate one caller at a time.
    - Start with pure consumers, then interceptor.
    - Do not change localStorage keys.
+
+
+Phase 2 live verification notes (2026-06-25):
+- Added `src/app/shared/auth-session.ts` as the shared JWT/session helper seam.
+- Added `src/app/shared/auth-session.spec.ts` covering missing, malformed, expired, valid admin, and missing-role token behavior.
+- Migrated repeated JWT decode logic in `app.component.ts`, `auth.interceptor.ts`, `account.component.ts`, `flights.component.ts`, `blog.component.ts`, and `admin-scheduler.component.ts`.
+- Preserved `access_token` / `refresh_token` storage keys and existing forced-login returnUrl behavior.
+- Existing `login.component.spec.ts` still covers returnUrl navigation after successful login.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 283 SUCCESS`.
 
 Acceptance criteria:
 - Token/session behavior is centralized.
