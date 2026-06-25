@@ -97,8 +97,8 @@ Legend:
 - [x] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
 - [x] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
 - [x] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
-- [ ] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
-- [ ] Phase 4.5 — Verify admin component specs and full build/test gate.
+- [x] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
+- [x] Phase 4.5 — Verify admin component specs and full build/test gate.
 
 ### Templates and Styles
 
@@ -428,6 +428,12 @@ Phase 4 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 324 SUCCESS`.
+- Phase 4.4 admin flights purge/ignore slice: added `src/app/admin-flights/admin-flights.helpers.ts` for purge completion messages, ignored-flight range/pagination helpers, offset normalization, ignore-toggle event extraction, and purge preference error messages.
+- Added `admin-flights.helpers.spec.ts` covering purge message formatting, empty/bounded ignored-flight ranges, pagination bounds, post-load offset normalization, ignore-toggle extraction, and source-specific preference errors.
+- Migrated `admin-flights.component.ts` to use the helper seam while keeping purge subscriptions, reload orchestration, and saving state in the component.
+- RED verified first: the new helper spec failed because the helper module did not exist yet; after implementation the same spec passed.
+- Focused admin Flights helper + component specs pass: `TOTAL: 24 SUCCESS`.
+- Phase 4.5 final admin verification gate passed: `npm run typecheck`, `npm run build`, and full `npm run test:headless` with `TOTAL: 330 SUCCESS`.
 
 ## Phase 5: Templates and Styles
 

@@ -5,6 +5,17 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
+import {
+  buildPurgeCompleteMessage,
+  buildPurgePreferenceError,
+  canGoToNextIgnoredPage,
+  getIgnoredRangeEnd,
+  getIgnoredRangeStart,
+  getNextIgnoredOffset,
+  getPreviousIgnoredOffset,
+  normalizeIgnoredOffsetAfterLoad,
+  readIgnoreOnPurgeChecked,
+} from './admin-flights.helpers';
 
 @Component({
   selector: 'app-admin-flights',
@@ -252,7 +263,7 @@ export class AdminFlightsComponent implements OnInit {
     this.dataService.purgeFlights(this.purgeDays).subscribe({
       next: (result) => {
         this.purging = false;
-        this.successMessage = `Purge complete: ${result.deleted_flights} flight(s) and ${result.deleted_positions} position(s) deleted (cutoff: ${result.cutoff_date}).`;
+        this.successMessage = buildPurgeCompleteMessage(result);
         this.loadStats();
       },
       error: () => {
@@ -278,7 +289,7 @@ export class AdminFlightsComponent implements OnInit {
     this.dataService.purgeUatFlights(this.uatPurgeDays).subscribe({
       next: (result) => {
         this.uatPurging = false;
-        this.uatSuccessMessage = `Purge complete: ${result.deleted_flights} flight(s) and ${result.deleted_positions} position(s) deleted (cutoff: ${result.cutoff_date}).`;
+        this.uatSuccessMessage = buildPurgeCompleteMessage(result);
         this.loadStats();
       },
       error: () => {
@@ -298,8 +309,9 @@ export class AdminFlightsComponent implements OnInit {
         this.ignoredAdsbTotal = res?.total ?? this.ignoredAdsbFlights.length;
         this.ignoredAdsbLoading = false;
 
-        if (this.ignoredAdsbTotal > 0 && this.ignoredAdsbOffset >= this.ignoredAdsbTotal) {
-          this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredAdsbPageSize);
+        const normalizedOffset = normalizeIgnoredOffsetAfterLoad(this.ignoredAdsbOffset, this.ignoredAdsbPageSize, this.ignoredAdsbTotal);
+        if (normalizedOffset !== this.ignoredAdsbOffset) {
+          this.ignoredAdsbOffset = normalizedOffset;
           this.loadIgnoredAdsbFlights();
         }
       },
@@ -320,8 +332,9 @@ export class AdminFlightsComponent implements OnInit {
         this.ignoredUatTotal = res?.total ?? this.ignoredUatFlights.length;
         this.ignoredUatLoading = false;
 
-        if (this.ignoredUatTotal > 0 && this.ignoredUatOffset >= this.ignoredUatTotal) {
-          this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredUatPageSize);
+        const normalizedOffset = normalizeIgnoredOffsetAfterLoad(this.ignoredUatOffset, this.ignoredUatPageSize, this.ignoredUatTotal);
+        if (normalizedOffset !== this.ignoredUatOffset) {
+          this.ignoredUatOffset = normalizedOffset;
           this.loadIgnoredUatFlights();
         }
       },
@@ -333,34 +346,34 @@ export class AdminFlightsComponent implements OnInit {
   }
 
   adsbIgnoredStart() {
-    return this.ignoredAdsbTotal === 0 ? 0 : this.ignoredAdsbOffset + 1;
+    return getIgnoredRangeStart(this.ignoredAdsbTotal, this.ignoredAdsbOffset);
   }
 
   adsbIgnoredEnd() {
-    return Math.min(this.ignoredAdsbOffset + this.ignoredAdsbPageSize, this.ignoredAdsbTotal);
+    return getIgnoredRangeEnd(this.ignoredAdsbOffset, this.ignoredAdsbPageSize, this.ignoredAdsbTotal);
   }
 
   uatIgnoredStart() {
-    return this.ignoredUatTotal === 0 ? 0 : this.ignoredUatOffset + 1;
+    return getIgnoredRangeStart(this.ignoredUatTotal, this.ignoredUatOffset);
   }
 
   uatIgnoredEnd() {
-    return Math.min(this.ignoredUatOffset + this.ignoredUatPageSize, this.ignoredUatTotal);
+    return getIgnoredRangeEnd(this.ignoredUatOffset, this.ignoredUatPageSize, this.ignoredUatTotal);
   }
 
   prevIgnoredAdsbPage() {
     if (this.ignoredAdsbOffset === 0 || this.ignoredAdsbLoading) {
       return;
     }
-    this.ignoredAdsbOffset = Math.max(0, this.ignoredAdsbOffset - this.ignoredAdsbPageSize);
+    this.ignoredAdsbOffset = getPreviousIgnoredOffset(this.ignoredAdsbOffset, this.ignoredAdsbPageSize);
     this.loadIgnoredAdsbFlights();
   }
 
   nextIgnoredAdsbPage() {
-    if (this.ignoredAdsbLoading || this.ignoredAdsbOffset + this.ignoredAdsbPageSize >= this.ignoredAdsbTotal) {
+    if (!canGoToNextIgnoredPage(this.ignoredAdsbLoading, this.ignoredAdsbOffset, this.ignoredAdsbPageSize, this.ignoredAdsbTotal)) {
       return;
     }
-    this.ignoredAdsbOffset += this.ignoredAdsbPageSize;
+    this.ignoredAdsbOffset = getNextIgnoredOffset(this.ignoredAdsbOffset, this.ignoredAdsbPageSize);
     this.loadIgnoredAdsbFlights();
   }
 
@@ -368,15 +381,15 @@ export class AdminFlightsComponent implements OnInit {
     if (this.ignoredUatOffset === 0 || this.ignoredUatLoading) {
       return;
     }
-    this.ignoredUatOffset = Math.max(0, this.ignoredUatOffset - this.ignoredUatPageSize);
+    this.ignoredUatOffset = getPreviousIgnoredOffset(this.ignoredUatOffset, this.ignoredUatPageSize);
     this.loadIgnoredUatFlights();
   }
 
   nextIgnoredUatPage() {
-    if (this.ignoredUatLoading || this.ignoredUatOffset + this.ignoredUatPageSize >= this.ignoredUatTotal) {
+    if (!canGoToNextIgnoredPage(this.ignoredUatLoading, this.ignoredUatOffset, this.ignoredUatPageSize, this.ignoredUatTotal)) {
       return;
     }
-    this.ignoredUatOffset += this.ignoredUatPageSize;
+    this.ignoredUatOffset = getNextIgnoredOffset(this.ignoredUatOffset, this.ignoredUatPageSize);
     this.loadIgnoredUatFlights();
   }
 
@@ -401,12 +414,11 @@ export class AdminFlightsComponent implements OnInit {
   }
 
   updateIgnoredAdsbFlight(flight: any, event: Event) {
-    const target = event.target as HTMLInputElement | null;
-    if (!target) {
+    const ignoreOnPurge = readIgnoreOnPurgeChecked(event);
+    if (ignoreOnPurge === null) {
       return;
     }
 
-    const ignoreOnPurge = target.checked;
     this.ignoredAdsbSaving.add(flight.flight);
     this.ignoredAdsbError = '';
 
@@ -417,19 +429,18 @@ export class AdminFlightsComponent implements OnInit {
       },
       error: () => {
         this.ignoredAdsbSaving.delete(flight.flight);
-        this.ignoredAdsbError = `Failed to update purge preference for ADS-B flight ${flight.flight}.`;
+        this.ignoredAdsbError = buildPurgePreferenceError('ADS-B', flight.flight);
         this.loadIgnoredAdsbFlights();
       }
     });
   }
 
   updateIgnoredUatFlight(flight: any, event: Event) {
-    const target = event.target as HTMLInputElement | null;
-    if (!target) {
+    const ignoreOnPurge = readIgnoreOnPurgeChecked(event);
+    if (ignoreOnPurge === null) {
       return;
     }
 
-    const ignoreOnPurge = target.checked;
     this.ignoredUatSaving.add(flight.flight);
     this.ignoredUatError = '';
 
@@ -440,7 +451,7 @@ export class AdminFlightsComponent implements OnInit {
       },
       error: () => {
         this.ignoredUatSaving.delete(flight.flight);
-        this.ignoredUatError = `Failed to update purge preference for UAT flight ${flight.flight}.`;
+        this.ignoredUatError = buildPurgePreferenceError('UAT', flight.flight);
         this.loadIgnoredUatFlights();
       }
     });
