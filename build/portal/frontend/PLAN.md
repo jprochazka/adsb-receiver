@@ -103,7 +103,7 @@ Legend:
 ### Templates and Styles
 
 - [x] Phase 5.1 — Review largest templates for repeated button/table/empty-state patterns.
-- [ ] Phase 5.2 — Extract small reusable presentational components only when duplication is clear and tests remain simple.
+- [x] Phase 5.2 — Extract small reusable presentational components only when duplication is clear and tests remain simple.
 - [ ] Phase 5.3 — Consolidate repeated SCSS values/classes conservatively; avoid visual redesign.
 - [ ] Phase 5.4 — Verify screenshots manually if browser tooling is available; otherwise rely on component tests and build.
 
@@ -462,6 +462,12 @@ Phase 5 live verification notes (2026-06-25):
   - `admin-live.component.html` — 306 lines and `admin-devices.component.html` — 205 lines; repeated settings cards/form-switch rows are the clearest candidates for conservative presentational cleanup.
 - Pattern counts across the largest templates showed repeated `card`, `form-check`, `alert`, table, pagination, and spinner structures; no style changes were made in the inventory slice.
 - Phase 5.2 should start with one small presentational component or template-only cleanup where duplication is obvious and covered by existing component specs; avoid redesigning layout, spacing, colors, map controls, or charts.
+- Phase 5.2 first presentational extraction added `src/app/shared/admin-setting-toggle/admin-setting-toggle.component.ts` for repeated admin list-group form-switch rows.
+- Added `admin-setting-toggle.component.spec.ts` covering title/description/state label rendering and `checkedChange` emission.
+- Migrated repeated toggle rows in `admin-devices.component.html` to the shared presentational component while keeping save handlers and settings state in `admin-devices.component.ts`.
+- RED verified first: the new component spec failed because the component module did not exist yet; after implementation the same spec passed.
+- Focused shared toggle + admin Devices specs pass: `TOTAL: 7 SUCCESS`.
+- Full Phase 5.2 gate passed: `npm run typecheck`, `npm run build`, and full `npm run test:headless` with `TOTAL: 332 SUCCESS`.
 
 ## Phase 6: Test Reliability and Coverage
 

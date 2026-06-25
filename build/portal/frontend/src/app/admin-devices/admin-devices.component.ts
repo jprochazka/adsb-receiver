@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
+import { AdminSettingToggleComponent } from '../shared/admin-setting-toggle/admin-setting-toggle.component';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
 @Component({
   selector: 'app-admin-devices',
   standalone: true,
-  imports: [FormsModule, SpinnerComponent],
+  imports: [FormsModule, SpinnerComponent, AdminSettingToggleComponent],
   templateUrl: './admin-devices.component.html',
   styleUrl: './admin-devices.component.scss'
 })
