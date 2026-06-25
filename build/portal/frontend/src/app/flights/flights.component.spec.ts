@@ -3,6 +3,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 
 import { FlightsComponent } from './flights.component';
+import { inferAircraftClass } from './flight-display.helpers';
 import { DataService } from '../service/data.service';
 
 describe('FlightsComponent', () => {
@@ -294,7 +295,7 @@ describe('FlightsComponent', () => {
   });
 
   it('should fall back to emitter_category when aircraft_class is unknown', () => {
-    const classify = (flight: any) => (component as any).aircraftClassForFlight(flight) as string;
+    const classify = (flight: any) => inferAircraftClass(flight);
 
     expect(classify({ aircraft_class: 'unknown',    emitter_category: 'A1' })).toBe('general_aviation');
     expect(classify({ aircraft_class: 'unknown',    emitter_category: 'A4' })).toBe('airliner');

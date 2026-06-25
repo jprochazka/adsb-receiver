@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { getCurrentAccessTokenPayload } from '../shared/auth-session';
+import { aircraftTypeLabelForFlight, buildPageNumbers, inferAircraftClass, normalizeCount, normalizeSightingsCount } from './flight-display.helpers';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { forkJoin, combineLatest } from 'rxjs';
 import { catchError, map, of } from 'rxjs';
@@ -232,12 +233,12 @@ export class FlightsComponent implements OnInit, OnDestroy {
           this.adsbTotalFlights = adsbCount.flights;
           this.adsbTotalPages   = Math.max(1, Math.ceil(adsbCount.flights / this.perPage));
           this.adsbCurrentPage  = Math.min(adsbPage, this.adsbTotalPages);
-          this.adsbPageNumbers  = this.buildPageNumbers(this.adsbCurrentPage, this.adsbTotalPages);
+          this.adsbPageNumbers  = buildPageNumbers(this.adsbCurrentPage, this.adsbTotalPages);
 
           this.uatTotalFlights = uatCount.flights;
           this.uatTotalPages   = Math.max(1, Math.ceil(uatCount.flights / this.perPage));
           this.uatCurrentPage  = Math.min(uatPage, this.uatTotalPages);
-          this.uatPageNumbers  = this.buildPageNumbers(this.uatCurrentPage, this.uatTotalPages);
+          this.uatPageNumbers  = buildPageNumbers(this.uatCurrentPage, this.uatTotalPages);
 
           const allTotalPages = Math.max(1, Math.ceil(this.allTotalFlights / this.perPage));
           this.allCurrentPage = Math.min(allPage, allTotalPages);
@@ -370,14 +371,14 @@ export class FlightsComponent implements OnInit, OnDestroy {
     forkJoin({ details: details$, posData: posData$ }).subscribe({
       next: ({ details, posData }) => {
         this.loading = false;
-        const aircraftClass = this.aircraftClassForFlight(details);
+        const aircraftClass = inferAircraftClass(details);
         this.currentAircraftClass = aircraftClass;
         this.flightInfo = {
           icao: details?.icao ?? '—',
           firstSeen: details?.first_seen ?? '—',
           lastSeen: details?.last_seen ?? '—',
-          totalPositions: this.normalizeCount(posData?.total, posData.positions?.length ?? 0),
-          trackCount: this.normalizeSightingsCount(details?.sightings_count, 0),
+          totalPositions: normalizeCount(posData?.total, posData.positions?.length ?? 0),
+          trackCount: normalizeSightingsCount(details?.sightings_count, 0),
           lastAltitude: null,
           lastSpeed: null,
           lastSquawk: null,
@@ -487,22 +488,6 @@ export class FlightsComponent implements OnInit, OnDestroy {
       this.flightInfo.lastSpeed = lastPos.speed ?? null;
       this.flightInfo.lastSquawk = lastPos.squawk ?? null;
     }
-  }
-
-  private normalizeSightingsCount(value: unknown, fallback: number): number {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed) && parsed >= 1) {
-      return Math.floor(parsed);
-    }
-    return fallback;
-  }
-
-  private normalizeCount(value: unknown, fallback: number): number {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed) && parsed >= 0) {
-      return Math.floor(parsed);
-    }
-    return fallback;
   }
 
   selectTrack(val: string): void {
@@ -773,7 +758,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   aircraftTypeIconDataUrl(flight: any): string {
-    const klass = this.aircraftClassForFlight(flight);
+    const klass = inferAircraftClass(flight);
     const svg = this.svgForAircraftClass(klass, '#f8fafc', '#0f172a');
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
@@ -789,48 +774,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   aircraftTypeLabelForFlight(flight: any): string {
-    switch (this.aircraftClassForFlight(flight)) {
-      case 'airliner':
-        return 'Airliner';
-      case 'general_aviation':
-        return 'General Aviation';
-      case 'helicopter':
-        return 'Helicopter';
-      case 'military':
-        return 'Military';
-      case 'glider':
-        return 'Glider';
-      case 'balloon':
-        return 'Balloon';
-      case 'uav':
-        return 'UAV';
-      case 'ground':
-        return 'Ground Vehicle';
-      case 'space':
-        return 'Space Vehicle';
-      default:
-        return 'Unknown';
-    }
-  }
-
-  private aircraftClassForFlight(flight: any): string {
-    const provided = String(flight?.aircraft_class || '').trim().toLowerCase();
-    if (provided && provided !== 'unknown') return provided;
-
-    const category = String(flight?.emitter_category || '').trim().toUpperCase();
-    const callsign = String(flight?.flight || '').trim().toUpperCase();
-
-    if (callsign.startsWith('RCH') || callsign.startsWith('NAVY') || callsign.startsWith('ARMY')) return 'military';
-    if (category === 'A7') return 'helicopter';
-    if (category === 'A5' || category === 'A6' || category === 'A4') return 'airliner';
-    if (category === 'B1') return 'glider';
-    if (category === 'B2') return 'balloon';
-    if (category === 'B5') return 'uav';
-    if (category.startsWith('C')) return 'ground';
-    if (category.startsWith('D')) return 'military';
-    if (category.startsWith('A') || category.startsWith('B')) return 'general_aviation';
-
-    return 'unknown';
+    return aircraftTypeLabelForFlight(flight);
   }
 
   private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
@@ -1084,7 +1028,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   get allPageNumbers(): number[] {
-    return this.buildPageNumbers(this.allCurrentPage, this.allTotalPages);
+    return buildPageNumbers(this.allCurrentPage, this.allTotalPages);
   }
 
   get allTotalFlights(): number {
@@ -1114,14 +1058,6 @@ export class FlightsComponent implements OnInit, OnDestroy {
 
   private matchesFlight(flight: any, q: string): boolean {
     return (flight.flight || '').toLowerCase().includes(q) || (flight.icao || '').toLowerCase().includes(q);
-  }
-
-  private buildPageNumbers(current: number, total: number): number[] {
-    const start = Math.max(1, current - 2);
-    const end = Math.min(total, current + 2);
-    const range: number[] = [];
-    for (let i = start; i <= end; i++) range.push(i);
-    return range;
   }
 
   private buildFlightsListQueryParams(
