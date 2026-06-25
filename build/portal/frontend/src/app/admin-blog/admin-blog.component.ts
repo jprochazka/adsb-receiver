@@ -4,6 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
+import {
+  buildCategoryCatalog,
+  buildTagCatalog,
+  deduplicateTags,
+  getPostTags,
+  resolveBlogCategory,
+} from './admin-blog.helpers';
 
 @Component({
   selector: 'app-admin-blog',
@@ -103,46 +110,32 @@ export class AdminBlogComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   get tagCatalog(): Array<{ name: string; count: number }> {
-    const counts = new Map<string, { name: string; count: number }>();
-    for (const post of this.allPosts) {
-      for (const rawTag of this.getPostTags(post)) {
-        const tag = rawTag.trim();
-        if (!tag) continue;
-        const key = tag.toLowerCase();
-        const existing = counts.get(key);
-        if (existing) {
-          existing.count += 1;
-          continue;
-        }
-        counts.set(key, { name: tag, count: 1 });
-      }
-    }
-    return Array.from(counts.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return buildTagCatalog(this.allPosts);
   }
 
   toggleNewTag(tag: string): void {
     const idx = this.newTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
     if (idx >= 0) this.newTags.splice(idx, 1);
-    else this.newTags = this.deduplicateTags([...this.newTags, tag]);
+    else this.newTags = deduplicateTags([...this.newTags, tag]);
   }
 
   addNewTag(): void {
     const tag = this.newTagInput.trim();
     if (!tag) return;
-    this.newTags = this.deduplicateTags([...this.newTags, tag]);
+    this.newTags = deduplicateTags([...this.newTags, tag]);
     this.newTagInput = '';
   }
 
   toggleEditTag(tag: string): void {
     const idx = this.editTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
     if (idx >= 0) this.editTags.splice(idx, 1);
-    else this.editTags = this.deduplicateTags([...this.editTags, tag]);
+    else this.editTags = deduplicateTags([...this.editTags, tag]);
   }
 
   addEditTag(): void {
     const tag = this.editTagInput.trim();
     if (!tag) return;
-    this.editTags = this.deduplicateTags([...this.editTags, tag]);
+    this.editTags = deduplicateTags([...this.editTags, tag]);
     this.editTagInput = '';
   }
 
@@ -156,35 +149,16 @@ export class AdminBlogComponent implements OnInit {
 
   /** Returns the category to actually submit for the create form. */
   get resolvedNewCategory(): string {
-    if (this.newCategory === '__new__') {
-      return this.newCategoryCustom.trim() || 'Uncategorized';
-    }
-    return this.newCategory || 'Uncategorized';
+    return resolveBlogCategory(this.newCategory, this.newCategoryCustom);
   }
 
   /** Returns the category to actually submit for the edit form. */
   get resolvedEditCategory(): string {
-    if (this.editCategory === '__new__') {
-      return this.editCategoryCustom.trim() || 'Uncategorized';
-    }
-    return this.editCategory || 'Uncategorized';
+    return resolveBlogCategory(this.editCategory, this.editCategoryCustom);
   }
 
   get categoryCatalog(): Array<{ name: string; count: number }> {
-    const counts = new Map<string, { name: string; count: number }>();
-    // Seed Uncategorized at 0 so it always appears
-    counts.set('uncategorized', { name: 'Uncategorized', count: 0 });
-    for (const post of this.allPosts) {
-      const category = (post.category ?? '').trim() || 'Uncategorized';
-      const key = category.toLowerCase();
-      const existing = counts.get(key);
-      if (existing) {
-        existing.count += 1;
-        continue;
-      }
-      counts.set(key, { name: category, count: 1 });
-    }
-    return Array.from(counts.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return buildCategoryCatalog(this.allPosts);
   }
 
   ngOnInit() {
@@ -287,16 +261,16 @@ export class AdminBlogComponent implements OnInit {
   renameTag(currentTag: string) {
     const nextTag = prompt(`Rename tag "${currentTag}" to:`, currentTag)?.trim() ?? '';
     if (!nextTag || nextTag === currentTag) return;
-    const affectedPosts = this.allPosts.filter(post => this.getPostTags(post).some(t => t.toLowerCase() === currentTag.toLowerCase()));
+    const affectedPosts = this.allPosts.filter(post => getPostTags(post).some(t => t.toLowerCase() === currentTag.toLowerCase()));
     if (affectedPosts.length === 0) return;
 
     this.applyBulkPostUpdates(
       affectedPosts,
       (post) => {
-        const tags = this.getPostTags(post).map(tag =>
+        const tags = getPostTags(post).map(tag =>
           tag.toLowerCase() === currentTag.toLowerCase() ? nextTag : tag
         );
-        return { tags: this.deduplicateTags(tags) };
+        return { tags: deduplicateTags(tags) };
       },
       `Tag "${currentTag}" renamed to "${nextTag}".`,
       'Failed to rename tag.'
@@ -305,13 +279,13 @@ export class AdminBlogComponent implements OnInit {
 
   deleteTag(tagToDelete: string) {
     if (!confirm(`Delete tag "${tagToDelete}" from all posts?`)) return;
-    const affectedPosts = this.allPosts.filter(post => this.getPostTags(post).some(t => t.toLowerCase() === tagToDelete.toLowerCase()));
+    const affectedPosts = this.allPosts.filter(post => getPostTags(post).some(t => t.toLowerCase() === tagToDelete.toLowerCase()));
     if (affectedPosts.length === 0) return;
 
     this.applyBulkPostUpdates(
       affectedPosts,
       (post) => ({
-        tags: this.getPostTags(post).filter(tag => tag.toLowerCase() !== tagToDelete.toLowerCase())
+        tags: getPostTags(post).filter(tag => tag.toLowerCase() !== tagToDelete.toLowerCase())
       }),
       `Tag "${tagToDelete}" removed from ${affectedPosts.length} post${affectedPosts.length === 1 ? '' : 's'}.`,
       'Failed to delete tag.'
@@ -407,7 +381,7 @@ export class AdminBlogComponent implements OnInit {
       content: this.newContent.trim(),
       date: this.newDate,
       visible: this.newVisible,
-      tags: this.deduplicateTags(this.newTags),
+      tags: deduplicateTags(this.newTags),
       category: this.resolvedNewCategory
     }).subscribe({
       next: () => {
@@ -454,7 +428,7 @@ export class AdminBlogComponent implements OnInit {
       content: this.editContent.trim(),
       date: this.editDate,
       visible: this.editVisible,
-      tags: this.deduplicateTags(this.editTags),
+      tags: deduplicateTags(this.editTags),
       category: this.resolvedEditCategory
     }).subscribe({
       next: () => {
@@ -485,27 +459,6 @@ export class AdminBlogComponent implements OnInit {
     });
   }
 
-  private getPostTags(post: any): string[] {
-    if (!Array.isArray(post?.tags)) return [];
-    return post.tags
-      .map((tag: string) => (tag ?? '').trim())
-      .filter((tag: string) => !!tag);
-  }
-
-  private deduplicateTags(tags: string[]): string[] {
-    const seen = new Set<string>();
-    const result: string[] = [];
-    for (const rawTag of tags) {
-      const tag = rawTag.trim();
-      if (!tag) continue;
-      const key = tag.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      result.push(tag);
-    }
-    return result;
-  }
-
   private applyBulkPostUpdates(
     posts: any[],
     mapper: (post: any) => { tags?: string[]; category?: string },
@@ -524,7 +477,7 @@ export class AdminBlogComponent implements OnInit {
         content: post.content,
         date: post.date,
         visible: post.visible,
-        tags: mapped.tags ?? this.getPostTags(post),
+        tags: mapped.tags ?? getPostTags(post),
         category: mapped.category ?? (post.category ?? '').trim(),
       });
     });

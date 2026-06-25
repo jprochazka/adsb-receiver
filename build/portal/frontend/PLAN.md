@@ -96,7 +96,7 @@ Legend:
 
 - [~] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
 - [x] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
-- [ ] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
+- [x] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
 - [ ] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
 - [ ] Phase 4.5 — Verify admin component specs and full build/test gate.
 
@@ -414,6 +414,14 @@ Phase 4 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 319 SUCCESS`.
+- Phase 4.3 admin blog taxonomy slice: added `src/app/admin-blog/admin-blog.helpers.ts` for pure tag/category normalization, deduplication, and catalog aggregation helpers.
+- Added `admin-blog.helpers.spec.ts` covering trimmed tag extraction, case-insensitive tag deduplication, tag/category catalog counts, Uncategorized fallback, and custom category resolution.
+- Migrated `admin-blog.component.ts` to call the helper seam while keeping API orchestration, prompts/confirms, bulk update subscriptions, and component state in the component.
+- RED verified first: the new helper spec failed because the helper module did not exist yet; after implementation the same spec passed.
+- Focused admin Blog helper + component specs pass: `TOTAL: 34 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 324 SUCCESS`.
 
 ## Phase 5: Templates and Styles
 
