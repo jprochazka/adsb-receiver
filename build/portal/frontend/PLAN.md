@@ -109,11 +109,11 @@ Legend:
 
 ### Test Coverage and Reliability
 
-- [ ] Phase 6.1 — Make headless test execution reproducible locally/CI.
-- [ ] Phase 6.2 — Add targeted tests for shared auth/session helpers.
+- [x] Phase 6.1 — Make headless test execution reproducible locally/CI.
+- [x] Phase 6.2 — Add targeted tests for shared auth/session helpers.
 - [ ] Phase 6.3 — Add tests around extracted pure helpers from flights/live/devices.
 - [ ] Phase 6.4 — Add tests for admin save error paths where behavior is stable.
-- [ ] Phase 6.5 — Add a coverage baseline command/report and record current statement/branch/function/line coverage.
+- [x] Phase 6.5 — Add a coverage baseline command/report and record current statement/branch/function/line coverage.
 - [ ] Phase 6.6 — Identify coverage gaps in high-risk user flows and add behavior-focused tests until coverage is up to par.
 - [ ] Phase 6.7 — Set pragmatic coverage thresholds only after the baseline is stable; avoid threshold gaming.
 - [ ] Phase 6.8 — Avoid brittle DOM tests that only assert Angular implementation details.
@@ -515,6 +515,15 @@ Acceptance criteria:
 - Coverage gaps in high-risk flows are identified and either covered or tracked with explicit follow-up notes.
 - Any coverage thresholds are evidence-based and pass without gaming tests.
 - New tests protect behavior introduced or preserved by refactors.
+
+Phase 6 live verification notes (2026-06-25):
+- Phase 6.1 reproducibility check: existing `npm run test:headless` script runs Karma with `--watch=false --browsers=ChromeHeadless`; verified full suite passes with `TOTAL: 332 SUCCESS`.
+- Phase 6.2 auth/session check: existing `src/app/shared/auth-session.spec.ts` covers missing, malformed, expired, valid user-id/role, admin, missing-role, and missing-expiry cases; focused auth-session spec passes with `TOTAL: 3 SUCCESS`.
+- Phase 6.5 RED verified first: `npm run test:coverage` failed because the script did not exist yet; added the script to `package.json` and reran it successfully.
+- Coverage command: `npm run test:coverage` (`ng test --watch=false --browsers=ChromeHeadless --code-coverage`).
+- Coverage artifact location: `build/portal/frontend/coverage/frontend/` (ignored by `.gitignore`).
+- Baseline from `npm run test:coverage`: Statements 69.72% (2734/3921), Branches 51.14% (757/1480), Functions 61.04% (699/1145), Lines 71.77% (2568/3578).
+- Verification after script addition: `npm run typecheck`, `npm run build`, and `npm run test:headless` all pass; `npm run test:headless` reports `TOTAL: 332 SUCCESS`.
 
 ## Phase 7: Dependency and Security Follow-up
 
