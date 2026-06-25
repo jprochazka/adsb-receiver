@@ -102,7 +102,7 @@ Legend:
 
 ### Templates and Styles
 
-- [ ] Phase 5.1 — Review largest templates for repeated button/table/empty-state patterns.
+- [x] Phase 5.1 — Review largest templates for repeated button/table/empty-state patterns.
 - [ ] Phase 5.2 — Extract small reusable presentational components only when duplication is clear and tests remain simple.
 - [ ] Phase 5.3 — Consolidate repeated SCSS values/classes conservatively; avoid visual redesign.
 - [ ] Phase 5.4 — Verify screenshots manually if browser tooling is available; otherwise rely on component tests and build.
@@ -452,6 +452,16 @@ Acceptance criteria:
 - Template duplication is reduced only where clear.
 - Build and strict template checks pass.
 - No visual redesign is introduced.
+
+Phase 5 live verification notes (2026-06-25):
+- Phase 5.1 template inventory reviewed the largest component templates by line count:
+  - `devices.component.html` — 984 lines; heavy card/table/KPI/chart repetition. Best first candidate is presentational extraction only if component tests stay simple.
+  - `flights.component.html` — 839 lines; large map flyout/comments/detail template. Avoid broad extraction because it is tightly coupled to map/flyout state.
+  - `admin-flights.component.html` — 463 lines; repeated pagination, alert, purge-card, and form-switch patterns remain candidate cleanup areas.
+  - `admin-blog.component.html` — 416 lines; repeated alert/pagination/form-switch patterns but less urgent after Phase 4 helper extraction.
+  - `admin-live.component.html` — 306 lines and `admin-devices.component.html` — 205 lines; repeated settings cards/form-switch rows are the clearest candidates for conservative presentational cleanup.
+- Pattern counts across the largest templates showed repeated `card`, `form-check`, `alert`, table, pagination, and spinner structures; no style changes were made in the inventory slice.
+- Phase 5.2 should start with one small presentational component or template-only cleanup where duplication is obvious and covered by existing component specs; avoid redesigning layout, spacing, colors, map controls, or charts.
 
 ## Phase 6: Test Reliability and Coverage
 
