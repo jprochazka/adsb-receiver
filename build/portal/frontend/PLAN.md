@@ -120,10 +120,10 @@ Legend:
 
 ### Dependency and Security Follow-up
 
-- [ ] Phase 7.1 — Update the lockfile in a standalone commit and verify `npm ci` from a clean tree.
-- [ ] Phase 7.2 — Run `npm audit --omit=dev --audit-level=moderate` and decide whether to apply `npm audit fix`.
-- [ ] Phase 7.3 — If Angular packages are updated, run build, headless tests, and a quick UI smoke pass.
-- [ ] Phase 7.4 — Keep dependency updates separate from refactors unless required to unblock tooling.
+- [x] Phase 7.1 — Update the lockfile in a standalone commit and verify `npm ci` from a clean tree.
+- [x] Phase 7.2 — Run `npm audit --omit=dev --audit-level=moderate` and decide whether to apply `npm audit fix`.
+- [x] Phase 7.3 — If Angular packages are updated, run build, headless tests, and a quick UI smoke pass.
+- [x] Phase 7.4 — Keep dependency updates separate from refactors unless required to unblock tooling.
 
 ### Commit Tracking
 
@@ -139,7 +139,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 4 | `148f7bb`, `4d647b0`, `89f7e9e`, `6d5d914`, `10142ff`, `9051f1a` | Completed admin/settings workflow cleanup with autosave feedback/helper consolidation, admin blog taxonomy helpers, admin live/feeders setting-save consolidation, and admin flights purge/ignore helpers. |
 | [x] | 5 | `c518732`, `3261070`, `58c77d5` | Completed templates/styles cleanup with largest-template inventory, shared admin setting toggle presentational extraction, shared per-page select styling, and build/test/browser-smoke verification. |
 | [x] | 6 | `9cac76d`, `c86f42a`, `b7eb81b` | Completed test reliability and coverage with verified headless/coverage commands, auth-session and helper focused checks, admin error-path inventory, coverage-gap triage, and threshold/brittle-test decisions. |
-| [ ] | 7 | TBD | Dependency/security follow-up. |
+| [x] | 7 | `347ea57` | Completed dependency/security follow-up with same-major Angular 21.2.17 updates, production audit clean, `npm ci`, build/typecheck/headless tests, and quick UI smoke. |
 
 ---
 
@@ -545,3 +545,11 @@ Phase 6 live verification notes (2026-06-25):
 Acceptance criteria:
 - Production audit issues are either fixed or documented with a clear reason for deferral.
 - `npm ci`, `npm run build`, and headless tests pass after dependency changes.
+
+Phase 7 live verification notes (2026-06-25):
+- `npm ci` from a clean dependency install completed successfully. It still reports dev-only audit findings in the install summary, but production audit is clean after the targeted update below.
+- Initial `npm audit --omit=dev --audit-level=moderate` found 8 production vulnerabilities: Angular 21.2.6 advisories plus transitive `protocol-buffers-schema <3.6.1`.
+- Applied minimal same-major dependency updates only: Angular packages from 21.2.6/21.2.4 to 21.2.17, and transitive `protocol-buffers-schema` to 3.6.1 via lockfile regeneration. No source refactors were mixed into this dependency slice.
+- Final `npm audit --omit=dev --audit-level=moderate` reports `found 0 vulnerabilities`.
+- Verification after dependency updates: `npm ci`, `npm run typecheck`, `npm run build`, and full `npm run test:headless` all pass; headless suite reports `TOTAL: 332 SUCCESS`.
+- Quick UI smoke after Angular update: dev server served `/flights` and `/acars`; both routes rendered expected headings/controls/table structure, and browser console reported no messages or JS errors.
