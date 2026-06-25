@@ -130,7 +130,7 @@ Record each cleanup commit here as work proceeds:
 | --- | --- | --- | --- |
 | [x] | Planning | `7e67a31` | Added frontend cleanup plan. |
 | [~] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, and `npm run typecheck` pass; Karma still blocked by missing Chrome/Chromium binary / `CHROME_BIN`. |
-| [~] | 1 | TBD | Added shared API response types, centralized DataService auth headers, and converted public blog post query construction to HttpParams; build/typecheck pass, Karma execution still blocked by missing Chrome/Chromium. |
+| [~] | 1 | `d791358` | Added shared API response types, centralized DataService auth headers, and converted public blog post query construction to HttpParams; build/typecheck pass, Karma execution still blocked by missing Chrome/Chromium. |
 | [ ] | 2 | TBD | Auth/session handling cleanup. |
 | [ ] | 3 | TBD | Large component decomposition. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
