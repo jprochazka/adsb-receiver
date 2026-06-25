@@ -135,7 +135,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [x] | 2 | `0500201` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
-| [~] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c` | Continued large component decomposition with flights display/track helpers and live display/overlay helpers; remaining live config/resize and devices component decomposition phases are pending. |
+| [~] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c` | Continued large component decomposition with flights display/track helpers and live display/overlay/settings helpers; remaining devices component decomposition phases are pending. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
 | [ ] | 6 | TBD | Test reliability and coverage. |
