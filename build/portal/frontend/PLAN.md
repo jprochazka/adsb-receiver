@@ -66,7 +66,7 @@ Legend:
 - [x] Phase 0.1 — Sync `package-lock.json` so `npm ci` works without a pre-step.
 - [x] Phase 0.2 — Add documented frontend setup/build/test commands.
 - [x] Phase 0.3 — Decide and document the local browser prerequisite for Karma (`chromium`, `google-chrome`, or CI-provided `CHROME_BIN`).
-- [ ] Phase 0.4 — Add a conservative lint/typecheck script only if it can pass without broad code churn.
+- [x] Phase 0.4 — Add a conservative lint/typecheck script only if it can pass without broad code churn.
 - [!] Phase 0.5 — Record baseline verification: `npm ci`, `npm run build`, and headless Karma once browser support is available.
 
 ### Shared Types and API Client Cleanup
@@ -129,7 +129,7 @@ Record each cleanup commit here as work proceeds:
 | Status | Phase | Commit | Notes |
 | --- | --- | --- | --- |
 | [x] | Planning | `7e67a31` | Added frontend cleanup plan. |
-| [~] | 0 | TBD | Lockfile synced; `npm ci` and `npm run build` pass; Karma still blocked by missing Chrome/Chromium binary / `CHROME_BIN`. |
+| [~] | 0 | `2e1c3b8` | Lockfile synced; `npm ci`, `npm run build`, and `npm run typecheck` pass; Karma still blocked by missing Chrome/Chromium binary / `CHROME_BIN`. |
 | [ ] | 1 | TBD | Shared types and API client cleanup. |
 | [ ] | 2 | TBD | Auth/session handling cleanup. |
 | [ ] | 3 | TBD | Large component decomposition. |
@@ -167,14 +167,17 @@ Record each cleanup commit here as work proceeds:
 
 4. Consider lint/typecheck scripts.
    - Current `npm run build` already performs Angular/TypeScript compilation.
-   - Add ESLint only as a separate, conservative phase if it can be introduced with minimal mechanical churn.
+   - Added `npm run typecheck` as a conservative development Angular build/typecheck alias.
+   - Added `npm run test:headless` as the documented one-shot Karma command.
+   - Add ESLint only as a later separate phase if it can be introduced with minimal mechanical churn.
 
 
 Phase 0 live verification notes (2026-06-25):
 - `npm install --package-lock-only --ignore-scripts --no-audit --no-fund` updated only `package-lock.json` for Angular 21 optional peer dependencies.
 - `npm ci` passes from `build/portal/frontend`.
 - `npm run build` passes.
-- `npm test -- --watch=false --browsers=ChromeHeadless` successfully builds the test bundle, then fails to launch because this environment has no Chrome/Chromium binary and `CHROME_BIN` is unset.
+- `npm run typecheck` passes; it is a conservative Angular development build/typecheck script and adds no new lint dependencies.
+- `npm run test:headless` / `npm test -- --watch=false --browsers=ChromeHeadless` successfully builds the test bundle, then fails to launch because this environment has no Chrome/Chromium binary and `CHROME_BIN` is unset.
 - Local Karma prerequisite decision: install `chromium` or `google-chrome` and set `CHROME_BIN` when the binary is not discoverable by `karma-chrome-launcher`; CI should use an image/action that provides Chrome or exports `CHROME_BIN`.
 
 Acceptance criteria:
