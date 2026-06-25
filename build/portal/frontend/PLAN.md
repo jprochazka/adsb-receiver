@@ -113,7 +113,10 @@ Legend:
 - [ ] Phase 6.2 — Add targeted tests for shared auth/session helpers.
 - [ ] Phase 6.3 — Add tests around extracted pure helpers from flights/live/devices.
 - [ ] Phase 6.4 — Add tests for admin save error paths where behavior is stable.
-- [ ] Phase 6.5 — Avoid brittle DOM tests that only assert Angular implementation details.
+- [ ] Phase 6.5 — Add a coverage baseline command/report and record current statement/branch/function/line coverage.
+- [ ] Phase 6.6 — Identify coverage gaps in high-risk user flows and add behavior-focused tests until coverage is up to par.
+- [ ] Phase 6.7 — Set pragmatic coverage thresholds only after the baseline is stable; avoid threshold gaming.
+- [ ] Phase 6.8 — Avoid brittle DOM tests that only assert Angular implementation details.
 
 ### Dependency and Security Follow-up
 
@@ -378,12 +381,36 @@ Acceptance criteria:
    - Flights/live/devices formatting helpers.
    - Admin settings save error handling.
 
-3. Avoid brittle tests.
+3. Establish a real coverage baseline.
+   - Add or document a repeatable coverage command, preferably `ng test --watch=false --browsers=ChromeHeadless --code-coverage` or an npm script wrapping it.
+   - Record current statement, branch, function, and line coverage in this plan.
+   - Include coverage artifact location, such as `coverage/`, if generated locally.
+
+4. Bring coverage up to par with behavior-focused tests.
+   - Review the coverage report for high-risk low-coverage areas before chasing percentages.
+   - Prioritize user-facing flows and refactor-sensitive seams:
+     - auth/session expiry and role handling
+     - login/register/logout returnUrl and error paths
+     - DataService request URL/params/header helpers
+     - flights/live/devices pure helpers and display decisions
+     - admin save/error paths
+     - blog/comment permission and mutation flows
+   - Add tests for meaningful behavior gaps, not incidental implementation details.
+
+5. Set pragmatic thresholds after the baseline stabilizes.
+   - Do not invent thresholds before measuring the current suite.
+   - Prefer thresholds that prevent regressions while leaving room for staged improvement.
+   - If thresholds are added, verify they pass locally and in CI.
+
+6. Avoid brittle tests.
    - Prefer component behavior and pure helper inputs/outputs.
    - Avoid asserting private Angular implementation details unless no public seam exists.
 
 Acceptance criteria:
 - `npm test -- --watch=false --browsers=ChromeHeadless` runs in the intended environment.
+- A repeatable coverage command exists and its baseline is recorded.
+- Coverage gaps in high-risk flows are identified and either covered or tracked with explicit follow-up notes.
+- Any coverage thresholds are evidence-based and pass without gaming tests.
 - New tests protect behavior introduced or preserved by refactors.
 
 ## Phase 7: Dependency and Security Follow-up
