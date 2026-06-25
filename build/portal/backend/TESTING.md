@@ -50,6 +50,19 @@ Expected baseline when this plan was created:
 452 passed
 ```
 
+## Run coverage
+
+Coverage is configured in `pyproject.toml` and should be run from `build/portal/backend`:
+
+```bash
+python -m coverage erase
+python -m coverage run -m pytest -q
+python -m coverage report -m
+```
+
+This command uses `[tool.coverage.run]` to measure the `backend` package with branch coverage enabled.
+Do not add a hard coverage fail-under gate until the project has intentionally improved and agreed on a stable baseline.
+
 ## Additional validation
 
 ```bash

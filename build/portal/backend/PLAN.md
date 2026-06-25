@@ -14,7 +14,7 @@ This plan covers a cleanup/refactor pass for the Flask application in `build/por
 
 - Backend source: about 6,947 lines across 21 Python files.
 - Tests: about 6,712 lines across 20 test files.
-- Initial test result from local review environment: `452 passed`; latest completed cleanup verification: `471 passed`; current coverage snapshot: 74% line/branch-weighted coverage from `coverage run --source=backend -m pytest -q && coverage report -m`.
+- Initial test result from local review environment: `452 passed`; latest completed cleanup verification: `475 passed`; current coverage snapshot: 73% branch coverage from `coverage run -m pytest -q && coverage report -m` using `pyproject.toml` coverage config.
 - Main readability concerns:
   - `backend/__init__.py` does too much.
   - `backend/models.py` contains all model classes in one file.
@@ -106,7 +106,7 @@ Legend:
 
 ### Test Coverage Follow-up
 
-- [ ] Phase 12.1 — Add a committed coverage command/config so coverage can be reproduced consistently without relying on local-only tooling.
+- [x] Phase 12.1 — Add a committed coverage command/config so coverage can be reproduced consistently without relying on local-only tooling.
 - [ ] Phase 12.2 — Add focused tests for RRD data collection helpers and writer behavior; this is the largest coverage gap.
 - [ ] Phase 12.3 — Add dump978 job tests that mirror dump1090 ingestion coverage for aircraft/flight/position creation and invalid feed paths.
 - [ ] Phase 12.4 — Add notification route tests for recent notification summaries, duplicate handling, validation, and delete/list error paths.
@@ -135,8 +135,8 @@ Record each cleanup commit here as work proceeds:
 | [x] | 8 | `dc4ae54` | Job print logging replaced; shared ADS-B/UAT ingest helpers and RRD writer helpers extracted; targeted and full tests pass. |
 | [x] | 9 | `7f8afbf` | Kept models module monolithic; shared serialization helpers added; model and full tests pass. |
 | [x] | 10 | `d6d890b` | Final exception-handling cleanup; targeted and full verification pass. Deferred broad DB exception narrowing where tests still model generic failures. |
-| [x] | 11 | `d89b122` | Swagger/API documentation follow-up complete. Added generated spec tests, documented multiplexed ADS-B/UAT/ACARS endpoints, attached response models, and fixed targeted generated-doc wording. |
-| [ ] | 12 | TBD | Test coverage follow-up. Current coverage snapshot is 74%; prioritize RRD jobs, dump978 ingestion jobs, notification routes, auth boundaries, and stable route error paths. |
+| [x] | 11 | `b24a9bd` | Swagger/API documentation follow-up complete. Added generated spec tests, documented multiplexed ADS-B/UAT/ACARS endpoints, attached response models, and fixed targeted generated-doc wording. |
+| [~] | 12 | `1458f25` | Test coverage follow-up. Current reproducible branch coverage snapshot is 73%; Phase 12.1 complete; prioritize RRD jobs, dump978 ingestion jobs, notification routes, auth boundaries, and stable route error paths. |
 
 ---
 
@@ -480,13 +480,13 @@ Acceptance criteria:
 
 ## Phase 12: Test Coverage Follow-up
 
-Coverage snapshot taken after Phase 11 planning:
+Coverage snapshot reproduced during Phase 12.1:
 
 ```text
-coverage run --source=backend -m pytest -q
+coverage run -m pytest -q
 coverage report -m
-471 passed
-TOTAL: 74% coverage
+475 passed
+TOTAL: 73% branch coverage
 ```
 
 Highest-value gaps from the coverage report:
@@ -498,8 +498,8 @@ Highest-value gaps from the coverage report:
 - `backend/routes/users.py`: 72%, `backend/routes/graphs.py`: 75%, `backend/routes/devices.py`: 77%, `backend/routes/links.py`: 77% — mostly error/edge paths.
 
 Recommended approach:
-1. Add reproducible coverage tooling.
-   - Add a documented command or lightweight config for `coverage run --source=backend -m pytest -q` and `coverage report -m`.
+1. Add reproducible coverage tooling. [done in Phase 12.1]
+   - Coverage run/report settings live in `pyproject.toml`; `TESTING.md` documents `coverage erase`, `coverage run -m pytest -q`, and `coverage report -m`.
    - Do not add an aggressive fail-under gate yet; establish the baseline first.
 
 2. Prioritize behavior-heavy, low-flakiness unit tests.
