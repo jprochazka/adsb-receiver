@@ -15,6 +15,7 @@ import {
   sourceLabel,
 } from './live-display.helpers';
 import { extractOverlayRings } from './live-overlay.helpers';
+import { DEFAULT_FLYOUT_WIDTH, DEFAULT_LIVE_MAP_SETTINGS, clampFlyoutWidth, parseLiveMapSettings } from './live-settings.helpers';
 import { interval, Subscription, of, catchError, forkJoin, startWith, switchMap } from 'rxjs';
 
 import 'ol/ol.css';
@@ -42,23 +43,6 @@ import ScaleLine from 'ol/control/ScaleLine';
 // Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_REFRESH_MS = 5_000;
-const DEFAULT_CENTER_LON = 0;
-const DEFAULT_CENTER_LAT = 20;
-const DEFAULT_ZOOM = 3;
-const DEFAULT_TRAIL_POINTS = 20;
-const DEFAULT_CENTER_ICON_ENABLED = true;
-const DEFAULT_DISTANCE_RINGS_ENABLED = false;
-const DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED = true;
-const DEFAULT_DISTANCE_RING_COUNT = 4;
-const DEFAULT_DISTANCE_RING_INTERVAL_MILES = 25;
-const DEFAULT_THEORETICAL_RANGE_ENABLED = false;
-const DEFAULT_THEORETICAL_RANGE_JSON = '';
-const DEFAULT_HEYWHATSTHAT_RINGS_ENABLED = false;
-const DEFAULT_HEYWHATSTHAT_RINGS_JSON = '';
-const DEFAULT_FLYOUT_WIDTH = 280;
-const MIN_FLYOUT_WIDTH = 240;
-const MAX_FLYOUT_WIDTH = 560;
 const SPIDER_SECTOR_COUNT = 16;
 const SPIDER_MAX_RADIUS_METERS = 300_000;
 const TRAIL_INTERPOLATION_TARGET_SECONDS = 6;
@@ -137,23 +121,23 @@ export class LiveComponent implements OnInit, OnDestroy {
   photoLoading  = false;
 
   // Settings
-  liveMapEnabled = true;
-  refreshMs = DEFAULT_REFRESH_MS;
-  defaultCenterLon = DEFAULT_CENTER_LON;
-  defaultCenterLat = DEFAULT_CENTER_LAT;
-  defaultZoom = DEFAULT_ZOOM;
-  trailPoints = DEFAULT_TRAIL_POINTS;
-  showAllSeen = true;
-  liveMapSpiderOverlayEnabled = true;
-  liveMapCenterIconEnabled = DEFAULT_CENTER_ICON_ENABLED;
-  liveMapDistanceRingsEnabled = DEFAULT_DISTANCE_RINGS_ENABLED;
-  liveMapDistanceRingCompassLinesEnabled = DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED;
-  liveMapDistanceRingCount = DEFAULT_DISTANCE_RING_COUNT;
-  liveMapDistanceRingIntervalMiles = DEFAULT_DISTANCE_RING_INTERVAL_MILES;
-  liveMapTheoreticalRangeEnabled = DEFAULT_THEORETICAL_RANGE_ENABLED;
-  liveMapTheoreticalRangeJson = DEFAULT_THEORETICAL_RANGE_JSON;
-  liveMapHeyWhatsThatRingsEnabled = DEFAULT_HEYWHATSTHAT_RINGS_ENABLED;
-  liveMapHeyWhatsThatRingsJson = DEFAULT_HEYWHATSTHAT_RINGS_JSON;
+  liveMapEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapEnabled;
+  refreshMs = DEFAULT_LIVE_MAP_SETTINGS.refreshMs;
+  defaultCenterLon = DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLon;
+  defaultCenterLat = DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLat;
+  defaultZoom = DEFAULT_LIVE_MAP_SETTINGS.defaultZoom;
+  trailPoints = DEFAULT_LIVE_MAP_SETTINGS.trailPoints;
+  showAllSeen = DEFAULT_LIVE_MAP_SETTINGS.showAllSeen;
+  liveMapSpiderOverlayEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapSpiderOverlayEnabled;
+  liveMapCenterIconEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapCenterIconEnabled;
+  liveMapDistanceRingsEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingsEnabled;
+  liveMapDistanceRingCompassLinesEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCompassLinesEnabled;
+  liveMapDistanceRingCount = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCount;
+  liveMapDistanceRingIntervalMiles = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingIntervalMiles;
+  liveMapTheoreticalRangeEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeEnabled;
+  liveMapTheoreticalRangeJson = DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeJson;
+  liveMapHeyWhatsThatRingsEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsEnabled;
+  liveMapHeyWhatsThatRingsJson = DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsJson;
 
   // Session-only directional spider graph
   private readonly spiderSectorMaxDistanceMeters = Array.from(
@@ -276,40 +260,42 @@ export class LiveComponent implements OnInit, OnDestroy {
   private loadSettings(afterLoad: () => void): void {
     forkJoin({
       enabled: this.dataService.getSetting('live_map_enabled').pipe(catchError(() => of({ value: 'true' }))),
-      refreshMs: this.dataService.getSetting('live_map_refresh_ms').pipe(catchError(() => of({ value: String(DEFAULT_REFRESH_MS) }))),
-      centerLat: this.dataService.getSetting('live_map_center_lat').pipe(catchError(() => of({ value: String(DEFAULT_CENTER_LAT) }))),
-      centerLon: this.dataService.getSetting('live_map_center_lon').pipe(catchError(() => of({ value: String(DEFAULT_CENTER_LON) }))),
-      zoom: this.dataService.getSetting('live_map_default_zoom').pipe(catchError(() => of({ value: String(DEFAULT_ZOOM) }))),
-      trailPoints: this.dataService.getSetting('live_map_trail_points').pipe(catchError(() => of({ value: String(DEFAULT_TRAIL_POINTS) }))),
+      refreshMs: this.dataService.getSetting('live_map_refresh_ms').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.refreshMs) }))),
+      centerLat: this.dataService.getSetting('live_map_center_lat').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLat) }))),
+      centerLon: this.dataService.getSetting('live_map_center_lon').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLon) }))),
+      zoom: this.dataService.getSetting('live_map_default_zoom').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.defaultZoom) }))),
+      trailPoints: this.dataService.getSetting('live_map_trail_points').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.trailPoints) }))),
       showAllSeen: this.dataService.getSetting('live_map_show_all_seen').pipe(catchError(() => of({ value: 'true' }))),
       spiderOverlayEnabled: this.dataService.getSetting('live_map_spider_overlay_enabled').pipe(catchError(() => of({ value: 'true' }))),
-      centerIconEnabled: this.dataService.getSetting('live_map_center_icon_enabled').pipe(catchError(() => of({ value: String(DEFAULT_CENTER_ICON_ENABLED) }))),
-      distanceRingsEnabled: this.dataService.getSetting('live_map_distance_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RINGS_ENABLED) }))),
-      distanceRingCompassLinesEnabled: this.dataService.getSetting('live_map_distance_ring_compass_lines_enabled').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED) }))),
-      distanceRingCount: this.dataService.getSetting('live_map_distance_ring_count').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_COUNT) }))),
-      distanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_INTERVAL_MILES) }))),
-      theoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_THEORETICAL_RANGE_ENABLED) }))),
-      theoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_THEORETICAL_RANGE_JSON }))),
-      heyWhatsThatRingsEnabled: this.dataService.getSetting('live_map_heywhatsthat_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_HEYWHATSTHAT_RINGS_ENABLED) }))),
-      heyWhatsThatRingsJson: this.dataService.getSetting('live_map_heywhatsthat_rings_json').pipe(catchError(() => of({ value: DEFAULT_HEYWHATSTHAT_RINGS_JSON }))),
+      centerIconEnabled: this.dataService.getSetting('live_map_center_icon_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapCenterIconEnabled) }))),
+      distanceRingsEnabled: this.dataService.getSetting('live_map_distance_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingsEnabled) }))),
+      distanceRingCompassLinesEnabled: this.dataService.getSetting('live_map_distance_ring_compass_lines_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCompassLinesEnabled) }))),
+      distanceRingCount: this.dataService.getSetting('live_map_distance_ring_count').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCount) }))),
+      distanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingIntervalMiles) }))),
+      theoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeEnabled) }))),
+      theoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeJson }))),
+      heyWhatsThatRingsEnabled: this.dataService.getSetting('live_map_heywhatsthat_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsEnabled) }))),
+      heyWhatsThatRingsJson: this.dataService.getSetting('live_map_heywhatsthat_rings_json').pipe(catchError(() => of({ value: DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsJson }))),
     }).subscribe(({ enabled, refreshMs, centerLat, centerLon, zoom, trailPoints, showAllSeen, spiderOverlayEnabled, centerIconEnabled, distanceRingsEnabled, distanceRingCompassLinesEnabled, distanceRingCount, distanceRingIntervalMiles, theoreticalRangeEnabled, theoreticalRangeJson, heyWhatsThatRingsEnabled, heyWhatsThatRingsJson }) => {
-      this.liveMapEnabled = enabled?.value !== 'false';
-      this.refreshMs = this.clampInt(refreshMs?.value, 1_000, 60_000, DEFAULT_REFRESH_MS);
-      this.defaultCenterLat = this.clampFloat(centerLat?.value, -85, 85, DEFAULT_CENTER_LAT);
-      this.defaultCenterLon = this.clampFloat(centerLon?.value, -180, 180, DEFAULT_CENTER_LON);
-      this.defaultZoom = this.clampInt(zoom?.value, 1, 18, DEFAULT_ZOOM);
-      this.trailPoints = this.clampInt(trailPoints?.value, 0, 200, DEFAULT_TRAIL_POINTS);
-      this.showAllSeen = showAllSeen?.value !== 'false';
-      this.liveMapSpiderOverlayEnabled = spiderOverlayEnabled?.value !== 'false';
-      this.liveMapCenterIconEnabled = centerIconEnabled?.value !== 'false';
-      this.liveMapDistanceRingsEnabled = distanceRingsEnabled?.value === 'true';
-      this.liveMapDistanceRingCompassLinesEnabled = distanceRingCompassLinesEnabled?.value !== 'false';
-      this.liveMapDistanceRingCount = this.clampInt(distanceRingCount?.value, 1, 12, DEFAULT_DISTANCE_RING_COUNT);
-      this.liveMapDistanceRingIntervalMiles = this.clampInt(distanceRingIntervalMiles?.value, 1, 250, DEFAULT_DISTANCE_RING_INTERVAL_MILES);
-      this.liveMapTheoreticalRangeEnabled = theoreticalRangeEnabled?.value === 'true';
-      this.liveMapTheoreticalRangeJson = String(theoreticalRangeJson?.value ?? '').trim();
-      this.liveMapHeyWhatsThatRingsEnabled = heyWhatsThatRingsEnabled?.value === 'true';
-      this.liveMapHeyWhatsThatRingsJson = String(heyWhatsThatRingsJson?.value ?? '').trim();
+      Object.assign(this, parseLiveMapSettings({
+        enabled: enabled?.value,
+        refreshMs: refreshMs?.value,
+        centerLat: centerLat?.value,
+        centerLon: centerLon?.value,
+        zoom: zoom?.value,
+        trailPoints: trailPoints?.value,
+        showAllSeen: showAllSeen?.value,
+        spiderOverlayEnabled: spiderOverlayEnabled?.value,
+        centerIconEnabled: centerIconEnabled?.value,
+        distanceRingsEnabled: distanceRingsEnabled?.value,
+        distanceRingCompassLinesEnabled: distanceRingCompassLinesEnabled?.value,
+        distanceRingCount: distanceRingCount?.value,
+        distanceRingIntervalMiles: distanceRingIntervalMiles?.value,
+        theoreticalRangeEnabled: theoreticalRangeEnabled?.value,
+        theoreticalRangeJson: theoreticalRangeJson?.value,
+        heyWhatsThatRingsEnabled: heyWhatsThatRingsEnabled?.value,
+        heyWhatsThatRingsJson: heyWhatsThatRingsJson?.value,
+      }));
       afterLoad();
     });
   }
@@ -891,22 +877,8 @@ export class LiveComponent implements OnInit, OnDestroy {
     return sourceLabel(ac);
   }
 
-  private clampInt(raw: string | undefined, min: number, max: number, fallback: number): number {
-    const parsed = Number.parseInt(String(raw ?? ''), 10);
-    if (!Number.isFinite(parsed)) return fallback;
-    return Math.max(min, Math.min(max, parsed));
-  }
-
-  private clampFloat(raw: string | undefined, min: number, max: number, fallback: number): number {
-    const parsed = Number.parseFloat(String(raw ?? ''));
-    if (!Number.isFinite(parsed)) return fallback;
-    return Math.max(min, Math.min(max, parsed));
-  }
-
   private clampFlyoutWidth(width: number): number {
-    const viewportMax = Math.max(MIN_FLYOUT_WIDTH, window.innerWidth - 80);
-    const max = Math.min(MAX_FLYOUT_WIDTH, viewportMax);
-    return Math.max(MIN_FLYOUT_WIDTH, Math.min(max, width));
+    return clampFlyoutWidth(width, window.innerWidth);
   }
 
   private spiderStyleFor(feature: Feature): Style {

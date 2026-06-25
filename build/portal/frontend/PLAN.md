@@ -344,6 +344,14 @@ Phase 3 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 302 SUCCESS`.
+- Phase 3.3 third live slice: added `src/app/live/live-settings.helpers.ts` for live map defaults, bounded settings parsing, overlay JSON trimming, and flyout-width clamping.
+- Added `src/app/live/live-settings.helpers.spec.ts` covering numeric bounds, invalid fallback values, boolean defaults, true-only flags, and viewport-aware flyout clamping.
+- Migrated `live.component.ts` to use the settings helper seam while keeping setting fetch orchestration and resize event lifecycle in the component.
+- Focused live settings helper spec passes: `TOTAL: 4 SUCCESS`.
+- Focused live component spec passes: `TOTAL: 21 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 306 SUCCESS`.
 
 Acceptance criteria:
 - Large components shrink through behavior-preserving extraction.
