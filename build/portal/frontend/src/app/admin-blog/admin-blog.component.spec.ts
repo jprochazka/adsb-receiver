@@ -60,6 +60,28 @@ describe('AdminBlogComponent', () => {
     expect(component.loading).toBeFalse();
   });
 
+  it('should save nav setting and show success feedback', () => {
+    fixture.detectChanges();
+    component.blogNavEnabled = false;
+
+    component.saveBlogNavEnabled();
+
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('blog_nav_enabled', 'false');
+    expect(component.successMessage).toBe('Setting saved.');
+    expect(component.errorMessage).toBe('');
+  });
+
+  it('should surface nav setting save failures', () => {
+    fixture.detectChanges();
+    dataServiceMock.updateSetting.and.returnValue(throwError(() => new Error('failed')));
+    component.successMessage = 'Previous success';
+
+    component.saveBlogNavEnabled();
+
+    expect(component.successMessage).toBe('');
+    expect(component.errorMessage).toBe('Failed to save setting.');
+  });
+
   it('should validate required fields when creating post', () => {
     fixture.detectChanges();
     component.newTitle = ' ';

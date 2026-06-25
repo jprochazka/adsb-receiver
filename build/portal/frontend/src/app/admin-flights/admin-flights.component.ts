@@ -160,19 +160,29 @@ export class AdminFlightsComponent implements OnInit {
   }
 
   saveFlightsNavEnabled() {
-    this.dataService.updateSetting('flights_nav_enabled', String(this.flightsNavEnabled)).subscribe();
+    this.saveSetting('flights_nav_enabled', String(this.flightsNavEnabled));
   }
 
   saveAllTabEnabled() {
-    this.dataService.updateSetting('all_tab_enabled', String(this.allTabEnabled)).subscribe();
+    this.saveSetting('all_tab_enabled', String(this.allTabEnabled));
   }
 
   saveAdsbTabEnabled() {
-    this.dataService.updateSetting('adsb_tab_enabled', String(this.adsbTabEnabled)).subscribe();
+    this.saveSetting('adsb_tab_enabled', String(this.adsbTabEnabled));
   }
 
   saveUatTabEnabled() {
-    this.dataService.updateSetting('uat_tab_enabled', String(this.uatTabEnabled)).subscribe();
+    this.saveSetting('uat_tab_enabled', String(this.uatTabEnabled));
+  }
+
+  private saveSetting(key: string, value: string): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; },
+    });
   }
 
   loadStats() {

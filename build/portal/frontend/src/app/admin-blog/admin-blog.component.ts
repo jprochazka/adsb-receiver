@@ -199,7 +199,17 @@ export class AdminBlogComponent implements OnInit {
   }
 
   saveBlogNavEnabled() {
-    this.dataService.updateSetting('blog_nav_enabled', String(this.blogNavEnabled)).subscribe();
+    this.saveSetting('blog_nav_enabled', String(this.blogNavEnabled));
+  }
+
+  private saveSetting(key: string, value: string) {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; },
+    });
   }
 
   todayIso(): string {

@@ -95,7 +95,7 @@ Legend:
 ### Admin Components and Settings Workflows
 
 - [~] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
-- [~] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
+- [x] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
 - [ ] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
 - [ ] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
 - [ ] Phase 4.5 — Verify admin component specs and full build/test gate.
@@ -406,6 +406,14 @@ Phase 4 live verification notes (2026-06-25):
 - `npm run typecheck` passes.
 - `npm run build` passes.
 - `npm run test:headless` passes: `TOTAL: 316 SUCCESS`.
+- Phase 4.1/4.2 third admin autosave slice: consolidated silent setting saves in `admin-flights.component.ts` and `admin-blog.component.ts` behind local `saveSetting(...)` helpers.
+- Added focused admin Flights and Blog specs for successful settings autosave feedback and failed settings autosave feedback.
+- Verified no remaining admin `updateSetting(...).subscribe();` silent autosave calls remain; remaining admin `updateSetting` subscriptions have explicit success/error handlers or are batched `forkJoin` saves with handlers.
+- RED verified first: the focused specs failed because settings autosaves did not set success/error state and unhandled save errors escaped the subscription; after implementation the same specs passed.
+- Focused admin Flights + Blog specs pass: `TOTAL: 47 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 319 SUCCESS`.
 
 ## Phase 5: Templates and Styles
 
