@@ -129,7 +129,7 @@ Record each cleanup commit here as work proceeds:
 | Status | Phase | Commit | Notes |
 | --- | --- | --- | --- |
 | [x] | Planning | `7e67a31` | Added frontend cleanup plan. |
-| [~] | 0 | `2e1c3b8` | Lockfile synced; `npm ci`, `npm run build`, and `npm run typecheck` pass; Karma still blocked by missing Chrome/Chromium binary / `CHROME_BIN`. |
+| [~] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, and `npm run typecheck` pass; Karma still blocked by missing Chrome/Chromium binary / `CHROME_BIN`. |
 | [ ] | 1 | TBD | Shared types and API client cleanup. |
 | [ ] | 2 | TBD | Auth/session handling cleanup. |
 | [ ] | 3 | TBD | Large component decomposition. |
