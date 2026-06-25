@@ -1,0 +1,358 @@
+# ADS-B Receiver Portal Frontend Cleanup Plan
+
+This plan covers a cleanup/refactor pass for the Angular application in `build/portal/frontend` on the `cleanup` branch. The goal is to improve maintainability, type safety, testability, and build hygiene without changing user-visible behavior or API contracts.
+
+## Goals
+
+- Keep the existing Angular standalone-component architecture recognizable.
+- Avoid a large rewrite or visual redesign.
+- Preserve routes, UI behavior, backend API paths, localStorage token semantics, map behavior, chart behavior, and admin workflows.
+- Make each cleanup step small enough to test independently.
+- Keep `npm run build` passing after each phase.
+- Keep Karma tests passing once the local Chrome/Chromium prerequisite is available.
+
+## Initial Baseline Snapshot
+
+- Frontend source: about 12,866 lines across 51 TypeScript files under `src/app`.
+- Templates: about 5,114 lines across 20 HTML files.
+- Styles: about 1,705 lines across 21 SCSS files.
+- Tests: about 4,617 lines across 24 spec files.
+- Largest components:
+  - `src/app/live/live.component.ts`: 1,291 lines.
+  - `src/app/flights/flights.component.ts`: 1,149 lines.
+  - `src/app/devices/devices.component.ts`: 942 lines.
+  - `src/app/service/data.service.ts`: 537 lines.
+  - `src/app/admin-blog/admin-blog.component.ts`: 534 lines.
+  - `src/app/admin-live/admin-live.component.ts`: 483 lines.
+  - `src/app/admin-flights/admin-flights.component.ts`: 438 lines.
+- Tooling observations from local review:
+  - `npm ci` initially fails because `package-lock.json` is not fully in sync with `package.json` / Angular 21 optional peer dependencies (`chokidar@5.0.0`, `readdirp@5.0.0`).
+  - `npm install --package-lock-only --ignore-scripts --no-audit --no-fund` makes `npm ci` work locally.
+  - `npm run build` passes after installing dependencies.
+  - `npm test -- --watch=false --browsers=ChromeHeadless` builds the test bundle but cannot launch because no Chrome/Chromium binary is installed in this environment and `CHROME_BIN` is unset.
+  - `npm audit --omit=dev --audit-level=moderate` reports production dependency advisories in Angular 21.2.x and `protocol-buffers-schema`; `npm audit fix` is available but should be done as a dedicated dependency-update phase.
+- Main maintainability concerns:
+  - `DataService` centralizes every backend API call and repeats token/header construction heavily.
+  - Many API methods return `Observable<any>` and many components store `any`/`any[]`, despite strict TypeScript being enabled.
+  - Very large components mix data loading, URL state, formatting, map/chart state, filtering, pagination, admin actions, and template state.
+  - Several components use direct `localStorage` and repeated JWT decoding logic instead of a shared auth/session seam.
+  - Several admin settings saves call `.subscribe()` without surfaced success/error behavior.
+  - Test execution depends on an external browser binary that is not documented/configured here.
+  - No lint script is currently configured.
+
+## Non-Goals
+
+- Do not redesign the UI.
+- Do not change route paths.
+- Do not change backend API endpoint paths or payload keys.
+- Do not replace Angular, Karma/Jasmine, Chart.js, OpenLayers, Bootstrap, or RxJS.
+- Do not convert the app to NgRx or another state-management framework.
+- Do not introduce new runtime services.
+- Do not do broad formatting-only churn.
+- Do not remove working tests to make refactors easier.
+
+## Progress Checklist
+
+Use this checklist to track implementation across small commits. Mark an item complete only after the relevant targeted tests/builds and the full frontend verification gate pass.
+
+Legend:
+- `[ ]` Not started
+- `[~]` In progress
+- `[x]` Complete
+- `[!]` Blocked / needs decision
+
+### Setup and Tooling
+
+- [ ] Phase 0.1 — Sync `package-lock.json` so `npm ci` works without a pre-step.
+- [ ] Phase 0.2 — Add documented frontend setup/build/test commands.
+- [ ] Phase 0.3 — Decide and document the local browser prerequisite for Karma (`chromium`, `google-chrome`, or CI-provided `CHROME_BIN`).
+- [ ] Phase 0.4 — Add a conservative lint/typecheck script only if it can pass without broad code churn.
+- [ ] Phase 0.5 — Record baseline verification: `npm ci`, `npm run build`, and headless Karma once browser support is available.
+
+### Shared Types and API Client Cleanup
+
+- [ ] Phase 1.1 — Add shared API/domain interfaces for common backend payloads currently represented as `any`.
+- [ ] Phase 1.2 — Add a small auth header/session helper to remove repeated `localStorage.getItem('access_token')` and header literals in `DataService`.
+- [ ] Phase 1.3 — Split `DataService` by domain or extract private helper methods in-place, whichever is lower risk after inspection.
+- [ ] Phase 1.4 — Replace manual query-string concatenation with `HttpParams` for routes that accept optional filters.
+- [ ] Phase 1.5 — Verify `data.service.spec.ts`, affected component specs, and full build/test gate.
+
+### Auth and Session Handling
+
+- [ ] Phase 2.1 — Centralize JWT payload decoding used by `app.component.ts`, `auth.interceptor.ts`, `account.component.ts`, `flights.component.ts`, `blog.component.ts`, and `admin-scheduler.component.ts`.
+- [ ] Phase 2.2 — Add focused unit tests for malformed tokens, expired tokens, missing roles, and returnUrl handling.
+- [ ] Phase 2.3 — Keep localStorage key names and navigation behavior unchanged.
+- [ ] Phase 2.4 — Verify login/register/logout/app/interceptor tests and full build/test gate.
+
+### Large Component Decomposition
+
+- [ ] Phase 3.1 — Extract pure formatting/filtering/pagination helpers from `flights.component.ts` without changing template behavior.
+- [ ] Phase 3.2 — Extract map/trail/photo/comment helper logic from `flights.component.ts` only where tests can characterize behavior.
+- [ ] Phase 3.3 — Extract live map configuration, aircraft classification legend, overlay-ring parsing, and resize helpers from `live.component.ts`.
+- [ ] Phase 3.4 — Extract device graph/KPI formatting helpers from `devices.component.ts`.
+- [ ] Phase 3.5 — Verify affected component specs after each slice and full build/test gate before committing.
+
+### Admin Components and Settings Workflows
+
+- [ ] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
+- [ ] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
+- [ ] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
+- [ ] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
+- [ ] Phase 4.5 — Verify admin component specs and full build/test gate.
+
+### Templates and Styles
+
+- [ ] Phase 5.1 — Review largest templates for repeated button/table/empty-state patterns.
+- [ ] Phase 5.2 — Extract small reusable presentational components only when duplication is clear and tests remain simple.
+- [ ] Phase 5.3 — Consolidate repeated SCSS values/classes conservatively; avoid visual redesign.
+- [ ] Phase 5.4 — Verify screenshots manually if browser tooling is available; otherwise rely on component tests and build.
+
+### Test Coverage and Reliability
+
+- [ ] Phase 6.1 — Make headless test execution reproducible locally/CI.
+- [ ] Phase 6.2 — Add targeted tests for shared auth/session helpers.
+- [ ] Phase 6.3 — Add tests around extracted pure helpers from flights/live/devices.
+- [ ] Phase 6.4 — Add tests for admin save error paths where behavior is stable.
+- [ ] Phase 6.5 — Avoid brittle DOM tests that only assert Angular implementation details.
+
+### Dependency and Security Follow-up
+
+- [ ] Phase 7.1 — Update the lockfile in a standalone commit and verify `npm ci` from a clean tree.
+- [ ] Phase 7.2 — Run `npm audit --omit=dev --audit-level=moderate` and decide whether to apply `npm audit fix`.
+- [ ] Phase 7.3 — If Angular packages are updated, run build, headless tests, and a quick UI smoke pass.
+- [ ] Phase 7.4 — Keep dependency updates separate from refactors unless required to unblock tooling.
+
+### Commit Tracking
+
+Record each cleanup commit here as work proceeds:
+
+| Status | Phase | Commit | Notes |
+| --- | --- | --- | --- |
+| [x] | Planning | `edfeb4d` | Added frontend cleanup plan. |
+| [ ] | 0 | TBD | Setup/tooling baseline. |
+| [ ] | 1 | TBD | Shared types and API client cleanup. |
+| [ ] | 2 | TBD | Auth/session handling cleanup. |
+| [ ] | 3 | TBD | Large component decomposition. |
+| [ ] | 4 | TBD | Admin/settings workflow cleanup. |
+| [ ] | 5 | TBD | Templates/styles cleanup. |
+| [ ] | 6 | TBD | Test reliability and coverage. |
+| [ ] | 7 | TBD | Dependency/security follow-up. |
+
+---
+
+## Phase 0: Setup and Tooling
+
+1. Sync the lockfile in a dedicated commit.
+   - Run from `build/portal/frontend`:
+     - `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`
+     - `npm ci`
+   - Commit only `package-lock.json` if it changes.
+   - Do not combine this with source refactors.
+
+2. Add frontend testing documentation.
+   - Create `build/portal/frontend/TESTING.md` only if the user wants checked-in docs.
+   - Otherwise keep commands in this plan.
+   - Include:
+     - `npm ci`
+     - `npm run build`
+     - `npm test -- --watch=false --browsers=ChromeHeadless`
+     - Chrome/Chromium prerequisite and `CHROME_BIN` note.
+
+3. Establish local verification gate.
+   - Required every source-changing phase:
+     - `npm run build`
+     - targeted component/service specs when browser support is present
+     - full `npm test -- --watch=false --browsers=ChromeHeadless` when browser support is present
+   - If Chrome is unavailable, report the blocker explicitly and run build plus any non-browser checks available.
+
+4. Consider lint/typecheck scripts.
+   - Current `npm run build` already performs Angular/TypeScript compilation.
+   - Add ESLint only as a separate, conservative phase if it can be introduced with minimal mechanical churn.
+
+Acceptance criteria:
+- `npm ci` works from a clean tree.
+- `npm run build` passes.
+- Karma test prerequisite is documented or configured.
+- Any new tooling is conservative and does not trigger broad unrelated rewrites.
+
+## Phase 1: Shared Types and API Client Cleanup
+
+1. Inventory backend payloads represented by `any`.
+   - Start with `src/app/service/data.service.ts`.
+   - Prioritize stable payloads already exercised by specs:
+     - users
+     - settings
+     - blog posts/comments
+     - ADS-B/UAT flights and positions
+     - ACARS flights/messages
+     - graph responses
+     - live aircraft
+
+2. Add shared interfaces in a low-risk location.
+   - Candidate: `src/app/shared/api-types.ts` or domain-specific files under `src/app/shared/types/`.
+   - Prefer domain-specific names over generic `ApiResponse` buckets.
+   - Do not require every endpoint to be typed in one pass.
+
+3. Remove repeated auth header construction.
+   - Candidate helper in `DataService` first:
+     - a private helper that returns the existing authorization header object for the current access token.
+   - Later, consider moving token access to an `AuthSessionService` if Phase 2 confirms it is useful.
+   - Keep the current bearer-token header semantics unchanged.
+
+4. Replace manual query strings incrementally.
+   - Example low-risk target:
+     - `getBlogPosts(offset, limit, category, tag)` currently concatenates query strings manually.
+   - Use `HttpParams` and keep generated request URLs semantically identical.
+
+5. Verify.
+   - Run `npm run build` after each slice.
+   - Run `src/app/service/data.service.spec.ts` once headless test support is available.
+   - Run full headless tests before committing.
+
+Acceptance criteria:
+- `DataService` is smaller or has less duplication.
+- Public request URLs/headers are unchanged.
+- Types improve at stable API seams without forcing broad component rewrites.
+
+## Phase 2: Auth and Session Handling
+
+1. Extract JWT decode/session helpers.
+   - Repeated logic appears in:
+     - `src/app/app.component.ts`
+     - `src/app/interceptors/auth.interceptor.ts`
+     - `src/app/account/account.component.ts`
+     - `src/app/flights/flights.component.ts`
+     - `src/app/blog/blog.component.ts`
+     - `src/app/admin-scheduler/admin-scheduler.component.ts`
+   - Candidate helper/service:
+     - `src/app/shared/auth-session.ts` for pure helpers, or
+     - `src/app/service/auth-session.service.ts` if DI is needed.
+
+2. Add tests before migration.
+   - malformed JWT returns unauthenticated/expired
+   - missing token returns unauthenticated
+   - expired token returns expired
+   - valid admin token returns admin role
+   - returnUrl remains preserved on forced login redirect
+
+3. Migrate one caller at a time.
+   - Start with pure consumers, then interceptor.
+   - Do not change localStorage keys.
+
+Acceptance criteria:
+- Token/session behavior is centralized.
+- Existing login/register/logout/app/interceptor specs pass.
+- No route guard or navigation behavior changes.
+
+## Phase 3: Large Component Decomposition
+
+1. `flights.component.ts`.
+   - Extract pure helpers first:
+     - tab normalization
+     - page parsing
+     - display labels
+     - aircraft type/icon formatting
+     - comment sorting/threading if present
+   - Keep stateful map/photo/API logic in the component until covered.
+
+2. `live.component.ts`.
+   - Extract pure helpers first:
+     - overlay-ring JSON parsing
+     - aircraft type/source labels
+     - classification legend data
+     - map style constants
+   - Keep OpenLayers object lifecycle changes isolated and tested.
+
+3. `devices.component.ts`.
+   - Extract pure formatting helpers:
+     - bytes/rates
+     - graph periods
+     - KPI calculations
+     - receiver status labels
+   - Avoid changing chart rendering behavior.
+
+4. Verification.
+   - Add pure helper specs where practical.
+   - Run relevant component specs and `npm run build` after each slice.
+
+Acceptance criteria:
+- Large components shrink through behavior-preserving extraction.
+- Extracted helpers have focused tests.
+- Templates continue to compile under strict templates.
+
+## Phase 4: Admin Components and Settings Workflows
+
+1. Identify repeated setting load/save code.
+   - Admin components with obvious repetition:
+     - `admin-acars.component.ts`
+     - `admin-devices.component.ts`
+     - `admin-feeders.component.ts`
+     - `admin-graphs.component.ts`
+     - `admin-live.component.ts`
+
+2. Extract reusable helpers cautiously.
+   - A small private helper per component may be lower risk than a cross-component abstraction.
+   - Only create a shared settings service/helper after two or three components prove the same shape.
+
+3. Add stable error feedback.
+   - Several save methods call `.subscribe()` without error handling.
+   - Add user-visible error messages only where the component already has an error-message pattern.
+   - Avoid inventing a new global notification system.
+
+Acceptance criteria:
+- Repeated settings code is reduced.
+- Failed save paths are testable and, where appropriate, visible to the user.
+- Existing admin UI behavior remains unchanged on success.
+
+## Phase 5: Templates and Styles
+
+1. Review largest templates.
+   - Focus on repeated table states, pagination controls, action button clusters, and empty/loading/error states.
+
+2. Extract only obvious presentational duplication.
+   - Candidate shared components should be dumb/presentational.
+   - Avoid coupling domain state into shared UI components.
+
+3. Keep style changes conservative.
+   - Prefer variable/class consolidation.
+   - Do not redesign layout, spacing, colors, map controls, or charts in this cleanup pass.
+
+Acceptance criteria:
+- Template duplication is reduced only where clear.
+- Build and strict template checks pass.
+- No visual redesign is introduced.
+
+## Phase 6: Test Reliability and Coverage
+
+1. Make headless Karma reproducible.
+   - Preferred local fix: install Chromium and set `CHROME_BIN` if needed.
+   - Alternative CI fix: use a browser image/action that provides Chrome.
+
+2. Add tests around extracted pure helpers.
+   - Auth/session helpers.
+   - Flights/live/devices formatting helpers.
+   - Admin settings save error handling.
+
+3. Avoid brittle tests.
+   - Prefer component behavior and pure helper inputs/outputs.
+   - Avoid asserting private Angular implementation details unless no public seam exists.
+
+Acceptance criteria:
+- `npm test -- --watch=false --browsers=ChromeHeadless` runs in the intended environment.
+- New tests protect behavior introduced or preserved by refactors.
+
+## Phase 7: Dependency and Security Follow-up
+
+1. Keep dependency updates separate.
+   - First make lockfile reproducible.
+   - Then assess `npm audit --omit=dev` output.
+
+2. Apply minimal safe updates.
+   - Prefer patch/minor updates that keep Angular major version unchanged.
+   - Run build/tests after updates.
+
+3. Do not mix dependency changes with component refactors.
+
+Acceptance criteria:
+- Production audit issues are either fixed or documented with a clear reason for deferral.
+- `npm ci`, `npm run build`, and headless tests pass after dependency changes.
