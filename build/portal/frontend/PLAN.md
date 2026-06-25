@@ -71,11 +71,11 @@ Legend:
 
 ### Shared Types and API Client Cleanup
 
-- [ ] Phase 1.1 — Add shared API/domain interfaces for common backend payloads currently represented as `any`.
-- [ ] Phase 1.2 — Add a small auth header/session helper to remove repeated `localStorage.getItem('access_token')` and header literals in `DataService`.
+- [x] Phase 1.1 — Add shared API/domain interfaces for common backend payloads currently represented as `any`.
+- [x] Phase 1.2 — Add a small auth header/session helper to remove repeated `localStorage.getItem('access_token')` and header literals in `DataService`.
 - [ ] Phase 1.3 — Split `DataService` by domain or extract private helper methods in-place, whichever is lower risk after inspection.
-- [ ] Phase 1.4 — Replace manual query-string concatenation with `HttpParams` for routes that accept optional filters.
-- [ ] Phase 1.5 — Verify `data.service.spec.ts`, affected component specs, and full build/test gate.
+- [x] Phase 1.4 — Replace manual query-string concatenation with `HttpParams` for routes that accept optional filters.
+- [!] Phase 1.5 — Verify `data.service.spec.ts`, affected component specs, and full build/test gate.
 
 ### Auth and Session Handling
 
@@ -130,7 +130,7 @@ Record each cleanup commit here as work proceeds:
 | --- | --- | --- | --- |
 | [x] | Planning | `7e67a31` | Added frontend cleanup plan. |
 | [~] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, and `npm run typecheck` pass; Karma still blocked by missing Chrome/Chromium binary / `CHROME_BIN`. |
-| [ ] | 1 | TBD | Shared types and API client cleanup. |
+| [~] | 1 | TBD | Added shared API response types, centralized DataService auth headers, and converted public blog post query construction to HttpParams; build/typecheck pass, Karma execution still blocked by missing Chrome/Chromium. |
 | [ ] | 2 | TBD | Auth/session handling cleanup. |
 | [ ] | 3 | TBD | Large component decomposition. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
@@ -219,6 +219,14 @@ Acceptance criteria:
    - Run `npm run build` after each slice.
    - Run `src/app/service/data.service.spec.ts` once headless test support is available.
    - Run full headless tests before committing.
+
+Phase 1 live verification notes (2026-06-25):
+- Added `src/app/shared/api-types.ts` with low-risk shared response interfaces.
+- Centralized all `DataService` bearer-token header construction in a private `authHeaders()` helper; no public API paths or token storage keys changed.
+- Converted `getBlogPosts(offset, limit, category, tag)` from manual query-string concatenation to `HttpParams` while preserving the same query keys.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` builds the Karma bundle, then fails to launch because Chrome/Chromium is still unavailable and `CHROME_BIN` is unset.
 
 Acceptance criteria:
 - `DataService` is smaller or has less duplication.
