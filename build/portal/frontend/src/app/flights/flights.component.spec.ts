@@ -406,24 +406,27 @@ describe('FlightsComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/flights', 3], { queryParams: { uatPage: 5 } });
   });
 
-  it('should navigate All pagination by keeping ADS-B and UAT pages in sync', () => {
+  it('should navigate All pagination using the allPage query parameter', () => {
     const navigateSpy = spyOn(component.router, 'navigate');
 
-    component.adsbTotalPages = 10;
-    component.uatTotalPages = 8;
-    component.adsbCurrentPage = 2;
-    component.uatCurrentPage = 2;
+    component.adsbCurrentPage = 1;
+    component.uatCurrentPage = 1;
+    component.allCurrentPage = 2;
+    component.adsbTotalFlights = 123;
+    component.uatTotalFlights = 57;
 
     component.goToAllPage(1);
     expect(navigateSpy).toHaveBeenCalledWith(['/flights'], { queryParams: {} });
 
     component.goToAllPage(4);
-    expect(navigateSpy).toHaveBeenCalledWith(['/flights', 4], { queryParams: { uatPage: 4 } });
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights'], { queryParams: { allPage: 4 } });
   });
 
   it('should compute all-tab display range and total like other pagers', () => {
     component.adsbCurrentPage = 2;
     component.uatCurrentPage = 2;
+    component.allCurrentPage = 2;
+    component.perPage = 100;
     component.adsbTotalFlights = 123;
     component.uatTotalFlights = 57;
     component.combinedFlights = new Array(100).fill(null);

@@ -24,16 +24,14 @@ describe('AdminBlogComponent', () => {
     dataServiceMock.createBlogPost.and.returnValue(of({}));
     dataServiceMock.updateBlogPost.and.returnValue(of({}));
     dataServiceMock.deleteBlogPost.and.returnValue(of({}));
-    dataServiceMock.getAdminBlogPosts.and.returnValues(
+    dataServiceMock.getAdminBlogPosts.and.returnValue(
       of({
         blog_posts: [
           { id: 1, title: 'Post 1', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
         ],
-      }),
-      of({
-        blog_posts: [
-          { id: 1, title: 'Post 1', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
-        ],
+        total: 1,
+        offset: 0,
+        limit: 10,
       })
     );
 
@@ -245,17 +243,7 @@ describe('AdminBlogComponent', () => {
   });
 
   it('should locally preserve the selected tab when legacy paged responses ignore status filtering', () => {
-    dataServiceMock.getAdminBlogPosts.and.returnValues(
-      of({
-        blog_posts: [
-          { id: 3, title: 'Published 1', author: 'Admin', content: 'Content', date: '2001-01-03T10:00', visible: true },
-          { id: 2, title: 'Draft 1', author: 'Admin', content: 'Content', date: '2001-01-02T10:00', visible: false },
-          { id: 1, title: 'Published 2', author: 'Admin', content: 'Content', date: '2001-01-01T10:00', visible: true },
-        ],
-        total: 3,
-        offset: 0,
-        limit: 10,
-      }),
+    dataServiceMock.getAdminBlogPosts.and.returnValue(
       of({
         blog_posts: [
           { id: 3, title: 'Published 1', author: 'Admin', content: 'Content', date: '2001-01-03T10:00', visible: true },

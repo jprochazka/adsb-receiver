@@ -67,7 +67,7 @@ Legend:
 - [x] Phase 0.2 — Add documented frontend setup/build/test commands.
 - [x] Phase 0.3 — Decide and document the local browser prerequisite for Karma (`chromium`, `google-chrome`, or CI-provided `CHROME_BIN`).
 - [x] Phase 0.4 — Add a conservative lint/typecheck script only if it can pass without broad code churn.
-- [!] Phase 0.5 — Record baseline verification: `npm ci`, `npm run build`, and headless Karma once browser support is available.
+- [x] Phase 0.5 — Record baseline verification: `npm ci`, `npm run build`, and headless Karma once browser support is available.
 
 ### Shared Types and API Client Cleanup
 
@@ -75,7 +75,7 @@ Legend:
 - [x] Phase 1.2 — Add a small auth header/session helper to remove repeated `localStorage.getItem('access_token')` and header literals in `DataService`.
 - [x] Phase 1.3 — Split `DataService` by domain or extract private helper methods in-place, whichever is lower risk after inspection.
 - [x] Phase 1.4 — Replace manual query-string concatenation with `HttpParams` for routes that accept optional filters.
-- [!] Phase 1.5 — Verify `data.service.spec.ts`, affected component specs, and full build/test gate.
+- [x] Phase 1.5 — Verify `data.service.spec.ts`, affected component specs, and full build/test gate.
 
 ### Auth and Session Handling
 
@@ -129,8 +129,8 @@ Record each cleanup commit here as work proceeds:
 | Status | Phase | Commit | Notes |
 | --- | --- | --- | --- |
 | [x] | Planning | `7e67a31` | Added frontend cleanup plan. |
-| [~] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, and `npm run typecheck` pass; Karma still blocked by missing Chrome/Chromium binary / `CHROME_BIN`. |
-| [~] | 1 | `d791358`, `f04c879` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, and converted public blog post query construction to HttpParams; build/typecheck pass, Karma execution still blocked by missing Chrome/Chromium. |
+| [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
+| [x] | 1 | `d791358`, `f04c879`, TBD | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [ ] | 2 | TBD | Auth/session handling cleanup. |
 | [ ] | 3 | TBD | Large component decomposition. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
@@ -177,7 +177,7 @@ Phase 0 live verification notes (2026-06-25):
 - `npm ci` passes from `build/portal/frontend`.
 - `npm run build` passes.
 - `npm run typecheck` passes; it is a conservative Angular development build/typecheck script and adds no new lint dependencies.
-- `npm run test:headless` / `npm test -- --watch=false --browsers=ChromeHeadless` successfully builds the test bundle, then fails to launch because this environment has no Chrome/Chromium binary and `CHROME_BIN` is unset.
+- Installed Google Chrome 149 locally in this environment; `npm run test:headless` now launches ChromeHeadless and passes.
 - Local Karma prerequisite decision: install `chromium` or `google-chrome` and set `CHROME_BIN` when the binary is not discoverable by `karma-chrome-launcher`; CI should use an image/action that provides Chrome or exports `CHROME_BIN`.
 
 Acceptance criteria:
@@ -226,9 +226,11 @@ Phase 1 live verification notes (2026-06-25):
 - Converted `getBlogPosts(offset, limit, category, tag)` from manual query-string concatenation to `HttpParams` while preserving the same query keys.
 - Phase 1.3 decision: keep `DataService` intact for now and extract private helpers in-place; splitting into domain services would create broader DI/import churn for little immediate payoff.
 - Added `offsetLimitParams()`, `flightUrl()`, and `schedulerJobUrl()` helpers to reduce repeated URL/parameter construction without changing public methods.
+- Installed Google Chrome 149 locally so Karma can launch `ChromeHeadless` in this environment.
+- Fixed brittle frontend specs exposed by the first real headless run: completed missing service mocks, made repeated admin blog mock calls stable, and aligned pagination/control assertions with current templates/routes.
 - `npm run typecheck` passes.
 - `npm run build` passes.
-- `npm run test:headless` builds the Karma bundle, then fails to launch because Chrome/Chromium is still unavailable and `CHROME_BIN` is unset.
+- `npm run test:headless` passes: `TOTAL: 280 SUCCESS`.
 
 Acceptance criteria:
 - `DataService` is smaller or has less duplication.

@@ -116,28 +116,32 @@ describe('AdminSchedulerComponent', () => {
     component.schedulerStatus = { state: 'STATE_RUNNING' };
     fixture.detectChanges();
     let controlButtons = fixture.debugElement
-      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .queryAll(By.css('.card'))[0]
+      .queryAll(By.css('.card-body button'))
       .map((button) => button.nativeElement.textContent.trim());
     expect(controlButtons).toEqual(['Pause', 'Shutdown']);
 
     component.schedulerStatus = { state: 'STATE_PAUSED' };
     fixture.detectChanges();
     controlButtons = fixture.debugElement
-      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .queryAll(By.css('.card'))[0]
+      .queryAll(By.css('.card-body button'))
       .map((button) => button.nativeElement.textContent.trim());
     expect(controlButtons).toEqual(['Resume', 'Shutdown']);
 
     component.schedulerStatus = { state: 'STATE_SHUTDOWN' };
     fixture.detectChanges();
     controlButtons = fixture.debugElement
-      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .queryAll(By.css('.card'))[0]
+      .queryAll(By.css('.card-body button'))
       .map((button) => button.nativeElement.textContent.trim());
     expect(controlButtons).toEqual(['Start']);
 
     component.schedulerStatus = null;
     fixture.detectChanges();
     controlButtons = fixture.debugElement
-      .queryAll(By.css('.card:first-of-type .card-body button'))
+      .queryAll(By.css('.card'))[0]
+      .queryAll(By.css('.card-body button'))
       .map((button) => button.nativeElement.textContent.trim());
     expect(controlButtons).toEqual([]);
     expect(fixture.nativeElement.textContent).toContain('Scheduler controls will appear after a valid scheduler state is reported.');
