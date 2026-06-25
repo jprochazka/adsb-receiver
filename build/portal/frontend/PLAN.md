@@ -94,8 +94,8 @@ Legend:
 
 ### Admin Components and Settings Workflows
 
-- [ ] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
-- [ ] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
+- [~] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
+- [~] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
 - [ ] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
 - [ ] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
 - [ ] Phase 4.5 — Verify admin component specs and full build/test gate.
@@ -136,7 +136,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [x] | 2 | `0500201` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
 | [x] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c`, `81fb12a` | Completed large component decomposition with flights display/track helpers, live display/overlay/settings helpers, and devices display/KPI helpers. |
-| [ ] | 4 | TBD | Admin/settings workflow cleanup. |
+| [~] | 4 | TBD | Admin/settings workflow cleanup started with admin devices autosave feedback/helper consolidation. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
 | [ ] | 6 | TBD | Test reliability and coverage. |
 | [ ] | 7 | TBD | Dependency/security follow-up. |
@@ -389,6 +389,16 @@ Acceptance criteria:
 - Repeated settings code is reduced.
 - Failed save paths are testable and, where appropriate, visible to the user.
 - Existing admin UI behavior remains unchanged on success.
+
+Phase 4 live verification notes (2026-06-25):
+- Phase 4.1/4.2 first admin devices slice: consolidated repeated `updateSetting(...).subscribe()` autosave methods in `admin-devices.component.ts` behind a private `saveSetting(...)` helper.
+- Added success/error message state and template alerts for admin devices autosaves so failed saves are visible instead of silently swallowed.
+- Added `admin-devices.component.spec.ts` coverage for successful autosave feedback and failed autosave feedback.
+- RED verified first: the focused admin devices spec initially failed because `successMessage` and `errorMessage` did not exist on the component; after implementation the same spec passed.
+- Focused admin devices spec passes: `TOTAL: 5 SUCCESS`.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- `npm run test:headless` passes: `TOTAL: 313 SUCCESS`.
 
 ## Phase 5: Templates and Styles
 

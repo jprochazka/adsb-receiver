@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { AdminDevicesComponent } from './admin-devices.component';
 import { DataService } from '../service/data.service';
@@ -30,6 +30,7 @@ describe('AdminDevicesComponent', () => {
   beforeEach(async () => {
     dataServiceMock.getSetting.calls.reset();
     dataServiceMock.updateSetting.calls.reset();
+    dataServiceMock.updateSetting.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
       imports: [AdminDevicesComponent],
@@ -80,5 +81,18 @@ describe('AdminDevicesComponent', () => {
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('info_nav_enabled', 'false');
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('graphs_dump978_enabled', 'true');
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('info_stats_enabled', 'false');
+    expect(component.successMessage).toBe('Setting saved.');
+    expect(component.errorMessage).toBe('');
+  });
+
+  it('should surface save failures for autosaved settings', () => {
+    fixture.detectChanges();
+    dataServiceMock.updateSetting.and.returnValue(throwError(() => new Error('failed')));
+    component.successMessage = 'Previous success';
+
+    component.saveInfoGraphsEnabled();
+
+    expect(component.successMessage).toBe('');
+    expect(component.errorMessage).toBe('Failed to save setting.');
   });
 });

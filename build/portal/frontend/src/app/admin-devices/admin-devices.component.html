@@ -8,6 +8,13 @@
   }
 
   @if (!loading) {
+    @if (successMessage) {
+      <div class="alert alert-success" role="alert">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+    }
+
     <div class="card mb-4">
       <div class="card-header fw-semibold">Navigation Visibility</div>
       <ul class="list-group list-group-flush">
