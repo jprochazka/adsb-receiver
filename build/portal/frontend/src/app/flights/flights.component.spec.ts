@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 
 import { FlightsComponent } from './flights.component';
 import { inferAircraftClass } from './flight-display.helpers';
+import { buildRenderableSegmentCoords, splitTrackSegments } from './flight-track.helpers';
 import { DataService } from '../service/data.service';
 
 describe('FlightsComponent', () => {
@@ -342,21 +343,19 @@ describe('FlightsComponent', () => {
   });
 
   it('should split positions into segments across a large time gap', () => {
-    const split = (positions: any[]) => (component as any).splitIntoSegments(positions) as any[][];
-
     const contiguous = [
       { latitude: 41.0, longitude: -82.0, time: '2026-04-03 10:00:00' },
       { latitude: 41.1, longitude: -82.1, time: '2026-04-03 10:10:00' },
       { latitude: 41.2, longitude: -82.2, time: '2026-04-03 10:20:00' },
     ];
-    expect(split(contiguous).length).toBe(1);
+    expect(splitTrackSegments(contiguous).length).toBe(1);
 
     const gapped = [
       { latitude: 41.0, longitude: -82.0, time: '2026-04-03 07:00:00' },
       { latitude: 41.1, longitude: -82.1, time: '2026-04-03 10:00:00' },
       { latitude: 41.2, longitude: -82.2, time: '2026-04-03 10:10:00' },
     ];
-    const segments = split(gapped);
+    const segments = splitTrackSegments(gapped);
     expect(segments.length).toBe(2);
     expect(segments[0].length).toBe(1);
     expect(segments[1].length).toBe(2);
@@ -374,7 +373,7 @@ describe('FlightsComponent', () => {
       { latitude: 41.2, longitude: -81.7, time: '2026-04-03 10:00:30' },
     ];
 
-    const coords = (component as any).buildRenderableSegmentCoords(segment) as number[][];
+    const coords = buildRenderableSegmentCoords(segment);
 
     expect(coords.length).toBeGreaterThan(2);
   });

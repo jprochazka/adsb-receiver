@@ -87,7 +87,7 @@ Legend:
 ### Large Component Decomposition
 
 - [x] Phase 3.1 — Extract pure formatting/filtering/pagination helpers from `flights.component.ts` without changing template behavior.
-- [ ] Phase 3.2 — Extract map/trail/photo/comment helper logic from `flights.component.ts` only where tests can characterize behavior.
+- [x] Phase 3.2 — Extract map/trail/photo/comment helper logic from `flights.component.ts` only where tests can characterize behavior.
 - [ ] Phase 3.3 — Extract live map configuration, aircraft classification legend, overlay-ring parsing, and resize helpers from `live.component.ts`.
 - [ ] Phase 3.4 — Extract device graph/KPI formatting helpers from `devices.component.ts`.
 - [ ] Phase 3.5 — Verify affected component specs after each slice and full build/test gate before committing.
@@ -135,7 +135,7 @@ Record each cleanup commit here as work proceeds:
 | [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
 | [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
 | [x] | 2 | `5304c30` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
-| [~] | 3 | `6505e36` | Started large component decomposition with a focused `flights` pure-helper extraction; remaining live/devices/component decomposition phases are pending. |
+| [~] | 3 | `TBD` | Continued large component decomposition with flights display and track helper extractions; remaining live/devices/component decomposition phases are pending. |
 | [ ] | 4 | TBD | Admin/settings workflow cleanup. |
 | [ ] | 5 | TBD | Templates/styles cleanup. |
 | [ ] | 6 | TBD | Test reliability and coverage. |
@@ -319,9 +319,15 @@ Phase 3 live verification notes (2026-06-25):
 - Migrated `flights.component.ts` to use the extracted helper for page-number windows, count normalization, aircraft class inference, and labels while keeping stateful map/photo/API logic in the component.
 - Updated the existing flights component spec to assert aircraft classification through the helper seam instead of the old private component method.
 - Focused helper spec passes: `TOTAL: 4 SUCCESS`.
+- Phase 3.2 slice: added `src/app/flights/flight-track.helpers.ts` for characterized track segmentation and render-coordinate interpolation helpers.
+- Added `src/app/flights/flight-track.helpers.spec.ts` covering time-gap segmentation, empty inputs, non-mutating input order, sparse-coordinate interpolation, and single-position segments.
+- Migrated `flights.component.ts` to use the track helper seam while keeping OpenLayers map/layer lifecycle, photo loading, and comment mutations in the component.
+- Updated the existing flights component spec to assert track segmentation/interpolation through the helper seam instead of removed private component methods.
+- Focused track helper spec passes: `TOTAL: 4 SUCCESS`.
+- Focused flights component spec passes: `TOTAL: 26 SUCCESS`.
 - `npm run typecheck` passes.
 - `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 287 SUCCESS`.
+- `npm run test:headless` passes: `TOTAL: 291 SUCCESS`.
 
 Acceptance criteria:
 - Large components shrink through behavior-preserving extraction.

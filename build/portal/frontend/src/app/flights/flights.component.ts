@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { getCurrentAccessTokenPayload } from '../shared/auth-session';
 import { aircraftTypeLabelForFlight, buildPageNumbers, inferAircraftClass, normalizeCount, normalizeSightingsCount } from './flight-display.helpers';
+import { buildRenderableSegmentCoords, splitTrackSegments, type TrackPositionLike } from './flight-track.helpers';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { forkJoin, combineLatest } from 'rxjs';
 import { catchError, map, of } from 'rxjs';
@@ -27,11 +28,7 @@ import ControlScaleLine from 'ol/control/ScaleLine';
 import smooth from 'to-smooth';
 
 const DEFAULT_PAGE_SIZE = 50;
-const TRACK_GAP_HOURS = 2;
 const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
-const TRACK_INTERPOLATION_TARGET_SECONDS = 6;
-const TRACK_INTERPOLATION_TARGET_METERS = 2_000;
-const TRACK_INTERPOLATION_MAX_POINTS_PER_EDGE = 16;
 const OPENSTREETMAP_ATTRIBUTION_HTML = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
 const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/metadata/aircraftDatabase.csv" target="_blank" rel="noopener noreferrer">OpenSky Network Aircraft Database (ODbL v1.0)</a>';
 
@@ -407,34 +404,14 @@ export class FlightsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private splitIntoSegments(positions: any[]): any[][] {
-    positions.sort((a, b) => a.time.localeCompare(b.time));
-
-    const segments: any[][] = [];
-    let current: any[] = [positions[0]];
-
-    for (let i = 1; i < positions.length; i++) {
-      const prevMs = new Date(positions[i - 1].time.replace(' ', 'T')).getTime();
-      const currMs = new Date(positions[i].time.replace(' ', 'T')).getTime();
-      if ((currMs - prevMs) / 3_600_000 > TRACK_GAP_HOURS) {
-        segments.push(current);
-        current = [positions[i]];
-      } else {
-        current.push(positions[i]);
-      }
-    }
-    segments.push(current);
-    return segments.filter(s => s.length > 0);
-  }
-
   private plotTracks(positions: any[]): void {
-    const segments = this.splitIntoSegments(positions);
+    const segments = splitTrackSegments(positions as TrackPositionLike[]);
     const allFeatures: Feature[] = [];
     this.tracks = [];
 
     segments.forEach((segment, idx) => {
       const color = TRACK_COLORS[idx % TRACK_COLORS.length];
-      const coords = this.buildRenderableSegmentCoords(segment);
+      const coords = buildRenderableSegmentCoords(segment);
       const smoothed = coords.length <= 25 ? this.makeSmooth(coords, 3) : this.makeSmooth(coords, 2);
 
       const line = new Feature({ geometry: new LineString(smoothed) });
@@ -892,52 +869,6 @@ export class FlightsComponent implements OnInit, OnDestroy {
     return coords;
   }
 
-  private buildRenderableSegmentCoords(segment: any[]): number[][] {
-    if (!segment.length) {
-      return [];
-    }
-
-    const baseCoords = segment.map((p: any) => fromLonLat([p.longitude, p.latitude]));
-    if (baseCoords.length < 2) {
-      return baseCoords;
-    }
-
-    const rendered: number[][] = [baseCoords[0]];
-
-    for (let i = 1; i < segment.length; i++) {
-      const prev = segment[i - 1];
-      const curr = segment[i];
-      const prevCoord = baseCoords[i - 1];
-      const currCoord = baseCoords[i];
-
-      const prevMs = new Date(String(prev.time).replace(' ', 'T')).getTime();
-      const currMs = new Date(String(curr.time).replace(' ', 'T')).getTime();
-      const dtMs = Math.max(1, currMs - prevMs);
-
-      const dx = currCoord[0] - prevCoord[0];
-      const dy = currCoord[1] - prevCoord[1];
-      const distance = Math.hypot(dx, dy);
-
-      const dtSteps = Math.ceil(dtMs / (TRACK_INTERPOLATION_TARGET_SECONDS * 1000));
-      const distSteps = Math.ceil(distance / TRACK_INTERPOLATION_TARGET_METERS);
-      const interpolationPoints = Math.min(
-        TRACK_INTERPOLATION_MAX_POINTS_PER_EDGE,
-        Math.max(0, Math.max(dtSteps, distSteps) - 1)
-      );
-
-      for (let j = 1; j <= interpolationPoints; j++) {
-        const t = j / (interpolationPoints + 1);
-        rendered.push([
-          prevCoord[0] + dx * t,
-          prevCoord[1] + dy * t,
-        ]);
-      }
-
-      rendered.push(currCoord);
-    }
-
-    return rendered;
-  }
 
   setTab(tab: 'all' | 'adsb' | 'uat') {
     this.activeTab = tab;
