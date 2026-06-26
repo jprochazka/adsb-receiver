@@ -48,9 +48,24 @@ LIGHTTPD_DOCROOT=""
 LIGHTTPD_TAKEOVER_STATUS="No lighttpd takeover needed"
 
 find_legacy_rrd_source() {
+    # Build candidate list: well-known fixed paths first, then legacy-portal-root-relative
+    # paths when LEGACY_PORTAL_ROOT has been set by find_legacy_portal_root().
     local -a candidates=(
         "/usr/local/share/graphs1090/rrd"
+        "/var/lib/collectd/rrd"
+        "/var/www/html/graphs/rrd"
+        "/var/www/html/data/rrd"
+        "/var/www/html/rrd"
     )
+
+    # Add portal-root-relative candidates when the root is known.
+    if [[ -n "${LEGACY_PORTAL_ROOT:-}" ]]; then
+        candidates+=(
+            "${LEGACY_PORTAL_ROOT}/data/rrd"
+            "${LEGACY_PORTAL_ROOT}/graphs/rrd"
+            "${LEGACY_PORTAL_ROOT}/rrd"
+        )
+    fi
 
     for candidate in "${candidates[@]}"; do
         if [[ "${candidate}" == "${RRD_BASE}" ]]; then
@@ -446,18 +461,6 @@ if [[ "${DB_TYPE}" == "sqlite" ]]; then
     fi
 fi
 
-legacy_rrd_source=$(find_legacy_rrd_source || true)
-if [[ -n "${legacy_rrd_source}" ]]; then
-    if whiptail --title "Legacy RRD Files Detected" \
-                --yesno "Legacy RRD files were found:\n\n  ${legacy_rrd_source}\n\nNew portal location:\n  ${RRD_BASE}\n\nWould you like to migrate these RRD files for use with the new portal graphs?" \
-                16 78; then
-        RRD_MIGRATE_SOURCE="${legacy_rrd_source}"
-        RRD_MIGRATION_STATUS="Legacy RRD files migrated from ${legacy_rrd_source}"
-    else
-        RRD_MIGRATION_STATUS="Legacy RRD files detected but migration was skipped"
-    fi
-fi
-
 ## LEGACY PORTAL DISCOVERY (read-only; no data written here)
 
 LEGACY_PORTAL_ROOT=$(find_legacy_portal_root || true)
@@ -520,6 +523,20 @@ if [[ -n "${LEGACY_PORTAL_ROOT}" ]]; then
     else
         LEGACY_IMPORT_STATUS="Legacy portal detected but import was declined by user"
         log_message "User declined legacy portal import; continuing fresh install"
+    fi
+fi
+
+## LEGACY RRD DISCOVERY (runs after portal root known; uses root-relative candidates)
+
+legacy_rrd_source=$(find_legacy_rrd_source || true)
+if [[ -n "${legacy_rrd_source}" ]]; then
+    if whiptail --title "Legacy RRD Files Detected" \
+                --yesno "Legacy RRD files were found:\n\n  ${legacy_rrd_source}\n\nNew portal location:\n  ${RRD_BASE}\n\nWould you like to migrate these RRD files for use with the new portal graphs?" \
+                16 78; then
+        RRD_MIGRATE_SOURCE="${legacy_rrd_source}"
+        RRD_MIGRATION_STATUS="Legacy RRD files migrated from ${legacy_rrd_source}"
+    else
+        RRD_MIGRATION_STATUS="Legacy RRD files detected but migration was skipped"
     fi
 fi
 
@@ -704,11 +721,24 @@ NODESOURCEEOF
 
     if [[ -n "${RRD_MIGRATE_SOURCE}" ]]; then
         _gauge 53 "Migrating legacy RRD files..."
+
+        _rrd_src_count=$(find "${RRD_MIGRATE_SOURCE}" -type f -name '*.rrd' | wc -l)
+
         if command -v rsync &>/dev/null; then
-            rsync -a --ignore-existing "${RRD_MIGRATE_SOURCE}/" "${RRD_BASE}/" >> "${LOG_FILE}" 2>&1
+            # --ignore-existing preserves new files; -a preserves timestamps/perms.
+            rsync -a --ignore-existing \
+                  --log-file="${LOG_FILE}" \
+                  "${RRD_MIGRATE_SOURCE}/" "${RRD_BASE}/" 2>&1 || true
+            # Count files now present in target after sync.
+            _rrd_dst_count=$(find "${RRD_BASE}" -type f -name '*.rrd' | wc -l)
         else
-            cp -an "${RRD_MIGRATE_SOURCE}/." "${RRD_BASE}/" >> "${LOG_FILE}" 2>&1
+            cp -an "${RRD_MIGRATE_SOURCE}/." "${RRD_BASE}/" >> "${LOG_FILE}" 2>&1 || true
+            _rrd_dst_count=$(find "${RRD_BASE}" -type f -name '*.rrd' | wc -l)
         fi
+
+        # Update the human-readable status with counts.
+        RRD_MIGRATION_STATUS="Legacy RRD files migrated from ${RRD_MIGRATE_SOURCE} (source: ${_rrd_src_count} files; target now: ${_rrd_dst_count} files)"
+        log_message "RRD migration: source=${_rrd_src_count} target=${_rrd_dst_count}"
     fi
 
     sudo chown -R www-data:www-data "${RRD_BASE}" "${OPENSKY_BASE}"

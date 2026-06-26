@@ -182,7 +182,7 @@ Items are only complete after targeted validation and the relevant full verifica
 - [x] Phase 4 — Implement target import helpers with backup and idempotency safeguards.
 - [x] Phase 5 — Integrate import timing with database creation, Alembic stamp/upgrade, and permissions.
 - [x] Phase 6 — Add lighttpd-to-Nginx takeover handling for upgrades from the old portal.
-- [ ] Phase 7 — Expand optional RRD migration discovery/copy behavior.
+- [x] Phase 7 — Expand optional RRD migration discovery/copy behavior.
 - [ ] Phase 8 — Add tests/fixtures for every supported source and target path.
 - [ ] Phase 9 — Run installer-level validation and document operator behavior.
 
@@ -197,7 +197,7 @@ Items are only complete after targeted validation and the relevant full verifica
 | [x] | 4 | `50514c2` | Target import helpers with backups/idempotency. |
 | [x] | 5 | `ba0c091` | `portal.sh` integration and migration ordering. |
 | [x] | 6 | `f39b1f0` | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
-| [ ] | 7 |  | RRD migration expansion. |
+| [x] | 7 | `pending` | RRD migration expansion. |
 | [ ] | 8 |  | Automated tests and fixture coverage. |
 | [ ] | 9 |  | Final validation and docs. |
 
