@@ -190,7 +190,7 @@ Items are only complete after targeted validation and the relevant full verifica
 
 | Status | Phase | Commit SHA | Notes |
 | --- | --- | --- | --- |
-| [ ] | 0 |  | Legacy/source schema inventory and mapping notes. |
+| [x] | 0 | `daadb81` | Legacy/source schema inventory and mapping notes. |
 | [ ] | 1 |  | Read-only discovery helpers; no data writes. |
 | [ ] | 2 |  | Whiptail decision flow for import vs fresh install. |
 | [ ] | 3 |  | Legacy export helpers and fixtures. |
