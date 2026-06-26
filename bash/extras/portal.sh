@@ -786,6 +786,38 @@ PY
     _gauge 59 "Applying database migrations..."
     (cd "${BACKEND_DIR}" && FLASK_APP=backend "${VENV_DIR}/bin/flask" db upgrade >> "${LOG_FILE}" 2>&1)
 
+    ## LEGACY PORTAL IMPORT (runs after schema is ready; only when user confirmed)
+    if [[ "${LEGACY_IMPORT_ENABLED}" == "true" && -n "${LEGACY_PORTAL_ROOT}" ]]; then
+        _gauge 62 "Importing legacy portal data..."
+
+        LEGACY_IMPORT_TOOL="${BACKEND_DIR}/tools/legacy_portal_import.py"
+        LEGACY_IMPORT_LOG="${LOG_FILE%.log}.legacy_import.log"
+
+        if [[ ! -f "${LEGACY_IMPORT_TOOL}" ]]; then
+            echo "WARNING: legacy_portal_import.py not found at ${LEGACY_IMPORT_TOOL}" >> "${LOG_FILE}"
+            LEGACY_IMPORT_STATUS="Import skipped: tool not found"
+        else
+            LEGACY_IMPORT_JSON=$(
+                "${VENV_DIR}/bin/python3" "${LEGACY_IMPORT_TOOL}" \
+                    --config "${BACKEND_DIR}/config.yml" \
+                    --root  "${LEGACY_PORTAL_ROOT}" \
+                    2>> "${LEGACY_IMPORT_LOG}"
+            ) || true
+
+            echo "${LEGACY_IMPORT_JSON}" >> "${LEGACY_IMPORT_LOG}"
+
+            if echo "${LEGACY_IMPORT_JSON}" | python3 -c \
+                "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get('success') else 1)" \
+                2>/dev/null; then
+                LEGACY_IMPORT_STATUS="Legacy data imported successfully from ${LEGACY_PORTAL_ROOT}"
+                log_message "Legacy portal import succeeded"
+            else
+                LEGACY_IMPORT_STATUS="Legacy import attempted but reported an error — see ${LEGACY_IMPORT_LOG}"
+                log_message "Legacy portal import reported failure; check ${LEGACY_IMPORT_LOG}"
+            fi
+        fi
+    fi
+
     _gauge 67 "Applying backend data permissions..."
     sudo chown -R www-data:www-data "${INSTANCE_DIR}"
     sudo chmod -R 755 "${INSTANCE_DIR}"
