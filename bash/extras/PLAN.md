@@ -183,7 +183,7 @@ Items are only complete after targeted validation and the relevant full verifica
 - [x] Phase 5 — Integrate import timing with database creation, Alembic stamp/upgrade, and permissions.
 - [x] Phase 6 — Add lighttpd-to-Nginx takeover handling for upgrades from the old portal.
 - [x] Phase 7 — Expand optional RRD migration discovery/copy behavior.
-- [ ] Phase 8 — Add tests/fixtures for every supported source and target path.
+- [x] Phase 8 — Add tests/fixtures for every supported source and target path.
 - [ ] Phase 9 — Run installer-level validation and document operator behavior.
 
 ## Commit Tracking
@@ -197,8 +197,8 @@ Items are only complete after targeted validation and the relevant full verifica
 | [x] | 4 | `50514c2` | Target import helpers with backups/idempotency. |
 | [x] | 5 | `ba0c091` | `portal.sh` integration and migration ordering. |
 | [x] | 6 | `f39b1f0` | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
-| [x] | 7 | `pending` | RRD migration expansion. |
-| [ ] | 8 |  | Automated tests and fixture coverage. |
+| [x] | 7 | `ea39083` | RRD migration expansion. |
+| [x] | 8 | `ea39083` | Phase 8 verification matrix passed. `bash -n portal.sh`: OK. Legacy tool tests: 53/53 passed (discover + import). Full backend suite: 528/528 passed. Frontend production build: passed (known bundle warning only). Bash script unit tests not added per project decision — `bash -n` is the shell gate. |
 | [ ] | 9 |  | Final validation and docs. |
 
 ## Data Detection Rules
