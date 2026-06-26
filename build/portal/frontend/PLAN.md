@@ -211,7 +211,7 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 
 | Status | Phase | Commit SHA | Notes |
 | --- | --- | --- | --- |
-| [x] | 0 | 56ef661 | Baseline passed: npm ci, typecheck, build, headless tests, coverage, production audit, and breaking-change touchpoint audit. |
+| [x] | 0 | 6e8f55e | Baseline passed: npm ci, typecheck, build, headless tests, coverage, production audit, and breaking-change touchpoint audit. |
 | [ ] | 1 | TBD | Angular CLI v22 migration output. |
 | [ ] | 2 | TBD | TypeScript 6/compiler/template fixes. |
 | [ ] | 3 | TBD | Angular 22 runtime compatibility fixes. |
