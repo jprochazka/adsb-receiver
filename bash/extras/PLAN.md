@@ -184,7 +184,7 @@ Items are only complete after targeted validation and the relevant full verifica
 - [x] Phase 6 — Add lighttpd-to-Nginx takeover handling for upgrades from the old portal.
 - [x] Phase 7 — Expand optional RRD migration discovery/copy behavior.
 - [x] Phase 8 — Add tests/fixtures for every supported source and target path.
-- [ ] Phase 9 — Run installer-level validation and document operator behavior.
+- [x] Phase 9 — Run installer-level validation and document operator behavior.
 
 ## Commit Tracking
 
@@ -199,7 +199,7 @@ Items are only complete after targeted validation and the relevant full verifica
 | [x] | 6 | `f39b1f0` | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
 | [x] | 7 | `ea39083` | RRD migration expansion. |
 | [x] | 8 | `ea39083` | Phase 8 verification matrix passed. `bash -n portal.sh`: OK. Legacy tool tests: 53/53 passed (discover + import). Full backend suite: 528/528 passed. Frontend production build: passed (known bundle warning only). Bash script unit tests not added per project decision — `bash -n` is the shell gate. |
-| [ ] | 9 |  | Final validation and docs. |
+| [x] | 9 | `pending` | Final validation and docs. |
 
 ## Data Detection Rules
 
@@ -701,8 +701,86 @@ Final validation:
 ## Open Questions Before Implementation
 
 - Does the new backend auth verify PHP `password_hash()` bcrypt hashes directly, or do imported users need forced password reset?
+  **Resolved:** werkzeug 2.0+ accepts `$2y$` Bcrypt as `$2b$` transparently. Hashes are imported as-is. Operators should advise users to reset passwords after migration as a precaution.
 - Should old `administrators.login` be preserved anywhere, or is email the sole login identity in the new portal?
+  **Resolved:** email is the sole login identity. `login` column is dropped on import.
 - Which old settings are still consumed by the new Angular/Flask app?
+  **Resolved:** 21-name allow-list defined in `legacy_portal_discover.py::SETTINGS_ALLOWLIST`. All others are silently skipped and logged.
 - Did any old installs store dump978/UAT data separately, or should all old aircraft/flights/positions import into dump1090 tables?
+  **Resolved:** old schema has one generic set. All imported to dump1090 tables. Tracked as a follow-up if UAT-specific source detection is needed.
 - Is ACARS migration required now, or should it remain a follow-up after source/target schema confirmation?
+  **Resolved:** deferred. ACARS database path is detected and logged; no import attempted.
 - Should target import allow merging into a non-empty new portal database, or should first implementation require an empty target for database data import?
+  **Resolved:** merging is supported. Duplicates are skipped by natural key (email, address, icao+first_seen, etc.). A timestamped backup is taken before any write.
+
+## Operator Notes (Phase 9)
+
+This section documents what was built and how it behaves for operators deploying or upgrading the ADS-B Portal.
+
+### What the installer does
+
+1. **Detects** any existing legacy PHP ADS-B Portal installation by scanning well-known document root paths and the lighttpd-configured root. Detection is fully read-only.
+2. **Shows a summary** of what was found (driver, location, record counts) and asks the user whether to import. If no data exists, the prompt is skipped entirely and a fresh install proceeds.
+3. **Requires confirmation** before writing any data. The user must affirmatively accept twice before import begins.
+4. **Backs up** the target SQLite database to a timestamped `.bak` file before writing anything.
+5. **Imports** in FK-safe order: users → settings → blog posts → links → notifications → aircraft → flights → positions.
+6. **Skips duplicates** by natural key. A second run is safe and idempotent.
+7. **Remaps** all old integer IDs to new auto-assigned IDs. Foreign-key relationships (flight → aircraft, position → flight/aircraft) are preserved through in-memory maps.
+8. **Validates** imported data: ICAO codes >8 chars are skipped; coordinates outside ±90/±180 are skipped; rows with NULL flight FKs are skipped. All skipped rows are counted in the summary.
+9. **Does not** delete, modify, or move any legacy source data at any point.
+
+### What is and is not imported
+
+**Imported:**
+- Administrators → `users` (role=Admin, locked=false, password hash preserved)
+- Blog posts → `blog_posts` (visible=true, tags/category default to empty)
+- Links → `links` (sort_order set by source row order)
+- Flight notifications → `notifications`
+- Settings — only the 21-name allow-list consumed by the new backend/frontend
+- Aircraft, flights, positions (SQLite source only in v1 of this tool; MySQL/PostgreSQL noted as requiring Flask app context)
+
+**Not imported:**
+- `login`, `token` fields from administrators
+- Settings with no known new consumer (version, template, emailFrom, etc.)
+- ACARS data (deferred)
+- Dump978/UAT split (deferred; all imported to dump1090 tables)
+
+### Password hashes
+
+PHP `password_hash()` outputs `$2y$` Bcrypt. Python werkzeug 2.0+ accepts this transparently as `$2b$`. Imported users can log in with their existing passwords. Operators are advised to prompt users to reset passwords after a migration as a security precaution.
+
+### lighttpd takeover
+
+If lighttpd is installed and active when the installer runs:
+- The document root is captured before lighttpd is touched (used for legacy data discovery).
+- lighttpd is stopped and disabled only **after** all legacy data handling is complete and `nginx -t` has passed.
+- lighttpd packages and config files are **not** removed.
+- If `systemctl restart nginx` fails, lighttpd is re-enabled and re-started as a best-effort rollback. The result is reported in the post-install status dialog.
+
+### RRD migration
+
+RRD files are discovered in these candidate paths (first match wins):
+- `/usr/local/share/graphs1090/rrd`
+- `/var/lib/collectd/rrd`
+- `/var/www/html/graphs/rrd`
+- `/var/www/html/data/rrd`
+- `/var/www/html/rrd`
+- `<legacy_portal_root>/data/rrd`
+- `<legacy_portal_root>/graphs/rrd`
+- `<legacy_portal_root>/rrd`
+
+RRD migration uses `rsync -a --ignore-existing` (or `cp -an` as fallback). Existing target files are never overwritten. Source files are never deleted.
+
+### Log files
+
+- Main install log: `/tmp/adsb-portal-install.log`
+- Legacy import log: `/tmp/adsb-portal-install.legacy_import.log`
+
+### Phase 9 final validation evidence
+
+- `bash -n bash/extras/portal.sh`: PASSED
+- `python -m pytest tests/test_legacy_portal_discover.py tests/test_legacy_portal_import.py -q`: 53 passed
+- `python -m pytest -q` (full backend suite): 528 passed
+- `npm run build --configuration production` (frontend): PASSED (known bundle warning only — 24.85 kB over 1.65 MB budget)
+- `git status`: clean tree, all commits pushed to `origin/cleanup`
+
