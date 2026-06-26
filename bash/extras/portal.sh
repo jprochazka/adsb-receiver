@@ -469,6 +469,55 @@ else
     log_message "No legacy portal installation detected"
 fi
 
+## LEGACY PORTAL IMPORT DECISION
+
+if [[ -n "${LEGACY_PORTAL_ROOT}" ]]; then
+
+    # Build a human-readable summary of what was detected.
+    legacy_summary="Legacy ADS-B Portal detected:\n\n"
+    legacy_summary+="  Location : ${LEGACY_PORTAL_ROOT}\n"
+    legacy_summary+="  Driver   : ${LEGACY_DB_DRIVER}\n"
+    case "${LEGACY_DB_DRIVER}" in
+        xml)
+            legacy_summary+="  Data     : XML files under ${LEGACY_PORTAL_ROOT}/data/\n"
+            ;;
+        sqlite)
+            legacy_summary+="  Database : ${LEGACY_DB_DATABASE}\n"
+            ;;
+        mysql)
+            legacy_summary+="  Database : ${LEGACY_DB_DATABASE} on ${LEGACY_DB_HOST}\n"
+            legacy_summary+="  User     : ${LEGACY_DB_USER}\n"
+            ;;
+        pgsql|postgresql)
+            legacy_summary+="  Database : ${LEGACY_DB_DATABASE} on ${LEGACY_DB_HOST}\n"
+            legacy_summary+="  User     : ${LEGACY_DB_USER}\n"
+            ;;
+    esac
+    legacy_summary+="\nWould you like to import this data into the new portal?"
+
+    if whiptail --title "Legacy Portal Data Found" \
+                --yesno "${legacy_summary}" \
+                20 78; then
+
+        # Require explicit confirmation before any import takes place.
+        if whiptail --title "Confirm Import" \
+                    --defaultno \
+                    --yesno "Importing will write legacy data into the new portal database.\n\nA backup of the target database will be created before any data is written.\nLegacy source data will NOT be deleted or modified.\n\nProceed with import?" \
+                    14 78; then
+            LEGACY_IMPORT_ENABLED="true"
+            LEGACY_IMPORT_STATUS="Legacy portal import confirmed: driver=${LEGACY_DB_DRIVER} root=${LEGACY_PORTAL_ROOT}"
+            log_message "User confirmed legacy portal import (driver: ${LEGACY_DB_DRIVER})"
+        else
+            LEGACY_IMPORT_STATUS="Legacy portal detected but import was declined at confirmation"
+            log_message "User declined import at confirmation step; continuing fresh install"
+        fi
+
+    else
+        LEGACY_IMPORT_STATUS="Legacy portal detected but import was declined by user"
+        log_message "User declined legacy portal import; continuing fresh install"
+    fi
+fi
+
 while true; do
     JWT_SECRET=$(whiptail --title "Security Configuration" \
         --passwordbox "JWT secret key (minimum 32 characters):" 8 60 \

@@ -177,7 +177,7 @@ Items are only complete after targeted validation and the relevant full verifica
 
 - [x] Phase 0 — Inventory legacy data formats and target schema mappings.
 - [x] Phase 1 — Add read-only legacy discovery to `portal.sh`.
-- [ ] Phase 2 — Add explicit import/fresh-install decision flow.
+- [x] Phase 2 — Add explicit import/fresh-install decision flow.
 - [ ] Phase 3 — Implement database/XML export helpers.
 - [ ] Phase 4 — Implement target import helpers with backup and idempotency safeguards.
 - [ ] Phase 5 — Integrate import timing with database creation, Alembic stamp/upgrade, and permissions.
@@ -191,8 +191,8 @@ Items are only complete after targeted validation and the relevant full verifica
 | Status | Phase | Commit SHA | Notes |
 | --- | --- | --- | --- |
 | [x] | 0 | `daadb81` | Legacy/source schema inventory and mapping notes. |
-| [x] | 1 | `pending` | Read-only discovery helpers; no data writes. |
-| [ ] | 2 |  | Whiptail decision flow for import vs fresh install. |
+| [x] | 1 | `1c0a0f2` | Read-only discovery helpers; no data writes. |
+| [x] | 2 | `pending` | Whiptail decision flow for import vs fresh install. |
 | [ ] | 3 |  | Legacy export helpers and fixtures. |
 | [ ] | 4 |  | Target import helpers with backups/idempotency. |
 | [ ] | 5 |  | `portal.sh` integration and migration ordering. |
