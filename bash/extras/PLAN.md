@@ -179,7 +179,7 @@ Items are only complete after targeted validation and the relevant full verifica
 - [x] Phase 1 — Add read-only legacy discovery to `portal.sh`.
 - [x] Phase 2 — Add explicit import/fresh-install decision flow.
 - [x] Phase 3 — Implement database/XML export helpers.
-- [ ] Phase 4 — Implement target import helpers with backup and idempotency safeguards.
+- [x] Phase 4 — Implement target import helpers with backup and idempotency safeguards.
 - [ ] Phase 5 — Integrate import timing with database creation, Alembic stamp/upgrade, and permissions.
 - [ ] Phase 6 — Add lighttpd-to-Nginx takeover handling for upgrades from the old portal.
 - [ ] Phase 7 — Expand optional RRD migration discovery/copy behavior.
@@ -194,7 +194,7 @@ Items are only complete after targeted validation and the relevant full verifica
 | [x] | 1 | `1c0a0f2` | Read-only discovery helpers; no data writes. |
 | [x] | 2 | `a9cfeb8` | Whiptail decision flow for import vs fresh install. |
 | [x] | 3 | `b98de09` | Legacy export helpers and fixtures. |
-| [ ] | 4 |  | Target import helpers with backups/idempotency. |
+| [x] | 4 | `pending` | Target import helpers with backups/idempotency. |
 | [ ] | 5 |  | `portal.sh` integration and migration ordering. |
 | [ ] | 6 |  | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
 | [ ] | 7 |  | RRD migration expansion. |
