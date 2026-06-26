@@ -117,6 +117,33 @@ Collected after the Angular 22 migration:
   - `npm run test:headless`: passed, `332 SUCCESS`.
   - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
 
+## Phase 4 Frontend Package Update Evidence
+
+Collected after Angular 22 runtime compatibility verification:
+
+- `npm outdated --json || true` initially reported only:
+  - `zone.js`: current/wanted `0.15.1`, latest `0.16.2`.
+  - `@angular/platform-browser-dynamic`: current/wanted `22.0.3`, reported latest `20.0.7`; cross-checked with `npm view @angular/platform-browser-dynamic@22.0.3 version dist-tags --json`, which shows stable latest `22.0.3`, so this is treated as an npm outdated/deprecation reporting anomaly, not a downgrade target.
+- Angular peer compatibility check: `@angular/core@22.0.3` supports `zone.js` `~0.15.0 || ~0.16.0` and RxJS `^6.5.3 || ^7.4.0`.
+- Applied one low-risk runtime/toolchain manifest refresh:
+  - `zone.js` `0.15.1 -> 0.16.2`.
+  - `rxjs` manifest range `~7.8.0 -> ~7.8.2`; installed version remains `7.8.2`.
+  - `tslib` manifest range `^2.3.0 -> ^2.8.1`; installed version remains `2.8.1`.
+- Runtime packages already current after the Angular migration/inventory:
+  - fonts: `@fontsource/inter` `5.2.8`, `@fontsource/rajdhani` `5.2.7`.
+  - Bootstrap: `5.3.8`.
+  - Chart.js: `4.5.1`.
+  - OpenLayers `ol`: `10.8.0`.
+  - `to-smooth`: `2.2.0`.
+- Dev/test packages had no stable updates reported by `npm outdated`.
+- Full audit note: `npm audit --audit-level=moderate` reports no moderate/high/critical advisories. There are 3 low-severity dev/tooling advisories involving current latest Angular build tooling (`@angular/build` `22.0.4`, `@babel/core`, `esbuild`); no newer stable Angular 22 build release is available yet, and production audit remains clean.
+- Verification after the package refresh:
+  - `npm ci`: passed.
+  - `npm run typecheck`: passed.
+  - `npm run build`: passed with the known production bundle warning, now `23.68 kB` over the `1.65MB` warning budget; no build failure.
+  - `npm run test:headless`: passed, `332 SUCCESS`.
+  - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
+
 ## Compatibility Facts
 
 From Angular version compatibility docs:
@@ -205,13 +232,13 @@ Items are complete only after targeted checks and the full frontend verification
 
 ### Phase 4 — Frontend Package Updates
 
-- [ ] Phase 4.1 — Run `npm outdated --json || true` after Angular 22 migration.
-- [ ] Phase 4.2 — Update Angular-managed/toolchain packages together: `@angular/*`, `@angular/build`, `zone.js`, `typescript`.
-- [ ] Phase 4.3 — Update low-risk runtime packages in small groups: fonts, Bootstrap, Chart.js, RxJS patch/minor, `tslib`.
-- [ ] Phase 4.4 — Update high-risk runtime packages separately, especially OpenLayers (`ol`).
-- [ ] Phase 4.5 — Update dev/test packages separately: Jasmine, Karma, launchers/reporters, `@types/jasmine`.
-- [ ] Phase 4.6 — After each package group, run `npm ci`, `npm run typecheck`, `npm run build`, `npm run test:headless`, and production audit.
-- [ ] Phase 4.7 — Commit each package group separately with verification notes.
+- [x] Phase 4.1 — Run `npm outdated --json || true` after Angular 22 migration.
+- [x] Phase 4.2 — Update Angular-managed/toolchain packages together: `@angular/*`, `@angular/build`, `zone.js`, `typescript`.
+- [x] Phase 4.3 — Update low-risk runtime packages in small groups: fonts, Bootstrap, Chart.js, RxJS patch/minor, `tslib`.
+- [x] Phase 4.4 — Update high-risk runtime packages separately, especially OpenLayers (`ol`).
+- [x] Phase 4.5 — Update dev/test packages separately: Jasmine, Karma, launchers/reporters, `@types/jasmine`.
+- [x] Phase 4.6 — After each package group, run `npm ci`, `npm run typecheck`, `npm run build`, `npm run test:headless`, and production audit.
+- [x] Phase 4.7 — Commit each package group separately with verification notes.
 
 ### Phase 5 — Limited Angular 22 Feature Adoption
 
@@ -255,7 +282,7 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 | [x] | 1 | ac467c2 | Angular CLI v22 migration output: package updates, Eager change detection, withXhr, diagnostics migration, and template migration. |
 | [x] | 2 | 985af51 | Added CSS side-effect module declaration for TypeScript 6; typecheck/build/headless tests pass. |
 | [x] | 3 | ac467c2 | Runtime compatibility preserved by Angular migration: Eager change detection and withXhr; removed API/router audits clean; typecheck/build/headless tests pass. |
-| [ ] | 4 | TBD | Frontend package update groups. |
+| [x] | 4 | cc94b98 | Refreshed runtime dependency manifests for `zone.js`, `rxjs`, and `tslib`; package inventory shows no remaining stable updates; verification passed. |
 | [ ] | 5 | TBD | Limited Angular 22 feature adoption. |
 | [ ] | 6 | TBD | TypeScript 6 modernization. |
 | [ ] | 7 | TBD | Final verification and handoff. |
