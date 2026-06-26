@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../service/data.service';
@@ -11,6 +11,7 @@ import { getCurrentUserId } from '../shared/auth-session';
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './account.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './account.component.scss'
 })
 export class AccountComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,7 @@ import { getCurrentUserId, getCurrentUserRole, hasValidAccessToken } from '../sh
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, SpinnerComponent],
   templateUrl: './blog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './blog.component.scss'
 })
 export class BlogComponent implements OnInit {

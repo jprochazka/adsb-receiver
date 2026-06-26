@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
@@ -90,6 +90,7 @@ type TrailPoint = {
   standalone: true,
   imports: [DatePipe, DecimalPipe, FormsModule, SpinnerComponent, RouterLink],
   templateUrl: './live.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './live.component.scss'
 })
 export class LiveComponent implements OnInit, OnDestroy {

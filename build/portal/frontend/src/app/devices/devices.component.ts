@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
@@ -33,6 +33,7 @@ type ReceiverKpis = {
   standalone: true,
   imports: [CommonModule, FormsModule, DecimalPipe, DatePipe, SpinnerComponent, RrdChartComponent],
   templateUrl: './devices.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './devices.component.scss'
 })
 export class DevicesComponent implements OnInit {

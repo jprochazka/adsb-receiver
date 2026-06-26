@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,7 @@ const MSG_PAGE_SIZE = 25;
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './acars.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './acars.component.scss'
 })
 export class AcarsComponent implements OnInit {

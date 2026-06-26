@@ -405,7 +405,7 @@
                             [class.bg-warning]="cpu?.cpu_percent > 50 && cpu?.cpu_percent <= 80"
                             [attr.aria-valuenow]="cpu?.cpu_percent"
                             aria-valuemin="0" aria-valuemax="100">
-                            {{ cpu?.cpu_percent | number:'1.1-1' }}%
+                            {{ $safeNavigationMigration(cpu?.cpu_percent) | number:'1.1-1' }}%
                           </div>
                         </div>
                       </td>
@@ -420,33 +420,33 @@
                     </tr>
                     <tr>
                       <td class="text-muted">Frequency (current)</td>
-                      <td>{{ cpu?.cpu_frequency_current | number:'1.0-0' }} MHz</td>
+                      <td>{{ $safeNavigationMigration(cpu?.cpu_frequency_current) | number:'1.0-0' }} MHz</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Frequency (max)</td>
-                      <td>{{ cpu?.cpu_frequency_max | number:'1.0-0' }} MHz</td>
+                      <td>{{ $safeNavigationMigration(cpu?.cpu_frequency_max) | number:'1.0-0' }} MHz</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Load avg (1/5/15 min)</td>
                       <td>
-                        {{ cpu?.cpu_load_averages?.[0] | number:'1.2-2' }} /
-                        {{ cpu?.cpu_load_averages?.[1] | number:'1.2-2' }} /
-                        {{ cpu?.cpu_load_averages?.[2] | number:'1.2-2' }}
+                        {{ $safeNavigationMigration(cpu?.cpu_load_averages?.[0]) | number:'1.2-2' }} /
+                        {{ $safeNavigationMigration(cpu?.cpu_load_averages?.[1]) | number:'1.2-2' }} /
+                        {{ $safeNavigationMigration(cpu?.cpu_load_averages?.[2]) | number:'1.2-2' }}
                       </td>
                     </tr>
                     <tr>
                       <td class="text-muted">Context switches</td>
-                      <td>{{ cpu?.cpu_stats_context_switches_since_boot | number }}</td>
+                      <td>{{ $safeNavigationMigration(cpu?.cpu_stats_context_switches_since_boot) | number }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Interrupts</td>
-                      <td>{{ cpu?.cpu_stats_interupts_since_boot | number }}</td>
+                      <td>{{ $safeNavigationMigration(cpu?.cpu_stats_interupts_since_boot) | number }}</td>
                     </tr>
                     @if (cpu?.cpu_temperature != null) {
                       <tr>
                         <td class="text-muted">Temperature</td>
                         <td [class.text-danger]="cpu?.cpu_temperature > 80" [class.text-warning]="cpu?.cpu_temperature > 60 && cpu?.cpu_temperature <= 80">
-                          {{ cpu?.cpu_temperature | number:'1.1-1' }}°C
+                          {{ $safeNavigationMigration(cpu?.cpu_temperature) | number:'1.1-1' }}°C
                         </td>
                       </tr>
                     }
@@ -468,22 +468,22 @@
                     [class.bg-warning]="memory?.memory_virtual_percent > 50 && memory?.memory_virtual_percent <= 80"
                     [attr.aria-valuenow]="memory?.memory_virtual_percent"
                     aria-valuemin="0" aria-valuemax="100">
-                    {{ memory?.memory_virtual_percent | number:'1.1-1' }}%
+                    {{ $safeNavigationMigration(memory?.memory_virtual_percent) | number:'1.1-1' }}%
                   </div>
                 </div>
                 <table class="table table-sm mb-3">
                   <tbody>
                     <tr>
                       <td class="text-muted">Total</td>
-                      <td>{{ formatBytes(memory?.memory_virtual_total) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(memory?.memory_virtual_total)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Used</td>
-                      <td>{{ formatBytes(memory?.memory_virtual_used) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(memory?.memory_virtual_used)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Available</td>
-                      <td>{{ formatBytes(memory?.memory_virtual_available) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(memory?.memory_virtual_available)) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -493,22 +493,22 @@
                     [style.width]="memory?.memory_swap_percent + '%'"
                     [attr.aria-valuenow]="memory?.memory_swap_percent"
                     aria-valuemin="0" aria-valuemax="100">
-                    {{ memory?.memory_swap_percent | number:'1.1-1' }}%
+                    {{ $safeNavigationMigration(memory?.memory_swap_percent) | number:'1.1-1' }}%
                   </div>
                 </div>
                 <table class="table table-sm mb-0">
                   <tbody>
                     <tr>
                       <td class="text-muted">Total</td>
-                      <td>{{ formatBytes(memory?.memory_swap_total) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(memory?.memory_swap_total)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Used</td>
-                      <td>{{ formatBytes(memory?.memory_swap_used) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(memory?.memory_swap_used)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Free</td>
-                      <td>{{ formatBytes(memory?.memory_swap_free) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(memory?.memory_swap_free)) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -527,30 +527,30 @@
                     [class.bg-warning]="disk?.disk_usage_percent > 50 && disk?.disk_usage_percent <= 80"
                     [attr.aria-valuenow]="disk?.disk_usage_percent"
                     aria-valuemin="0" aria-valuemax="100">
-                    {{ disk?.disk_usage_percent | number:'1.1-1' }}%
+                    {{ $safeNavigationMigration(disk?.disk_usage_percent) | number:'1.1-1' }}%
                   </div>
                 </div>
                 <table class="table table-sm mb-0">
                   <tbody>
                     <tr>
                       <td class="text-muted">Total</td>
-                      <td>{{ formatBytes(disk?.disk_usage_total) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(disk?.disk_usage_total)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Used</td>
-                      <td>{{ formatBytes(disk?.disk_usage_used) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(disk?.disk_usage_used)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Free</td>
-                      <td>{{ formatBytes(disk?.disk_usage_free) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(disk?.disk_usage_free)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Reads</td>
-                      <td>{{ disk?.disk_io_read_count | number }} ({{ formatBytes(disk?.disk_io_read_bytes) }})</td>
+                      <td>{{ $safeNavigationMigration(disk?.disk_io_read_count) | number }} ({{ formatBytes($safeNavigationMigration(disk?.disk_io_read_bytes)) }})</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Writes</td>
-                      <td>{{ disk?.disk_io_write_count | number }} ({{ formatBytes(disk?.disk_io_write_bytes) }})</td>
+                      <td>{{ $safeNavigationMigration(disk?.disk_io_write_count) | number }} ({{ formatBytes($safeNavigationMigration(disk?.disk_io_write_bytes)) }})</td>
                     </tr>
                   </tbody>
                 </table>
@@ -566,27 +566,27 @@
                   <tbody>
                     <tr>
                       <td class="text-muted">Bytes sent</td>
-                      <td>{{ formatBytes(network?.network_io_bytes_sent) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(network?.network_io_bytes_sent)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Bytes received</td>
-                      <td>{{ formatBytes(network?.network_io_bytes_received) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(network?.network_io_bytes_received)) }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Packets sent</td>
-                      <td>{{ network?.network_io_packets_sent | number }}</td>
+                      <td>{{ $safeNavigationMigration(network?.network_io_packets_sent) | number }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Packets received</td>
-                      <td>{{ network?.network_io_packets_received | number }}</td>
+                      <td>{{ $safeNavigationMigration(network?.network_io_packets_received) | number }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Errors in / out</td>
-                      <td>{{ network?.network_io_errors_in | number }} / {{ network?.network_io_errors_out | number }}</td>
+                      <td>{{ $safeNavigationMigration(network?.network_io_errors_in) | number }} / {{ $safeNavigationMigration(network?.network_io_errors_out) | number }}</td>
                     </tr>
                     <tr>
                       <td class="text-muted">Dropped in / out</td>
-                      <td>{{ network?.network_io_dropped_in | number }} / {{ network?.network_io_dropped_out | number }}</td>
+                      <td>{{ $safeNavigationMigration(network?.network_io_dropped_in) | number }} / {{ $safeNavigationMigration(network?.network_io_dropped_out) | number }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -640,7 +640,7 @@
                   <tbody>
                     <tr>
                       <td class="text-muted">Size</td>
-                      <td>{{ formatBytes(database?.size) }}</td>
+                      <td>{{ formatBytes($safeNavigationMigration(database?.size)) }}</td>
                     </tr>
                   </tbody>
                 </table>

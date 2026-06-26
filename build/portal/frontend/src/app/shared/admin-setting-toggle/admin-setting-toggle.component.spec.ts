@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AdminSettingToggleComponent } from './admin-setting-toggle.component';
@@ -6,6 +6,7 @@ import { AdminSettingToggleComponent } from './admin-setting-toggle.component';
 @Component({
   standalone: true,
   imports: [AdminSettingToggleComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <app-admin-setting-toggle
       id="toggle-test"

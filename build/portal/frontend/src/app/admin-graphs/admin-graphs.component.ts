@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
@@ -11,6 +11,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   standalone: true,
   imports: [NgFor, NgIf, FormsModule, SpinnerComponent],
   templateUrl: './admin-graphs.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-graphs.component.scss'
 })
 export class AdminGraphsComponent implements OnInit {

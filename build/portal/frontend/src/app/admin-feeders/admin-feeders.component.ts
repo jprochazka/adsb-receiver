@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -27,6 +27,7 @@ const DEFAULT_ORDER = 'dump1090,dump978,adsbx,pfclient';
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-feeders.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-feeders.component.scss'
 })
 export class AdminFeedersComponent implements OnInit {

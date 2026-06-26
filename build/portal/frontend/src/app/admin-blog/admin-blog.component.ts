@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
@@ -17,6 +17,7 @@ import {
   standalone: true,
   imports: [SlicePipe, FormsModule, SpinnerComponent],
   templateUrl: './admin-blog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-blog.component.scss'
 })
 export class AdminBlogComponent implements OnInit {

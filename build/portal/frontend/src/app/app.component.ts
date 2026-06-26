@@ -1,5 +1,5 @@
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -23,6 +23,7 @@ const DEFAULT_MAP_ORDER = 'dump1090,dump978,adsbx,pfclient';
   standalone: true,
   imports: [FormsModule, RouterOutlet, RouterLink, RouterLinkActive, LinksComponent, LogoutComponent],
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {

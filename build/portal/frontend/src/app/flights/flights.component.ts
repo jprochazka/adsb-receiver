@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
@@ -37,6 +37,7 @@ const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/
   standalone: true,
   imports: [DatePipe, FormsModule, SpinnerComponent, RouterLink],
   templateUrl: './flights.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './flights.component.scss'
 })
 export class FlightsComponent implements OnInit, OnDestroy {

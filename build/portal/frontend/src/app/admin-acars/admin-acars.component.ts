@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
@@ -10,6 +10,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-acars.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-acars.component.scss'
 })
 export class AdminAcarsComponent implements OnInit {

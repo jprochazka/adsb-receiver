@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs';
@@ -87,6 +87,7 @@ const LIVE_MAP_PRESETS: LiveMapPreset[] = [
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-live.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-live.component.scss'
 })
 export class AdminLiveComponent implements OnInit {

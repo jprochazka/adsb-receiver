@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 
@@ -11,6 +11,7 @@ import { isAdminAccessToken } from '../shared/auth-session';
   standalone: true,
   imports: [SpinnerComponent],
   templateUrl: './admin-scheduler.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-scheduler.component.scss'
 })
 export class AdminSchedulerComponent implements OnInit {

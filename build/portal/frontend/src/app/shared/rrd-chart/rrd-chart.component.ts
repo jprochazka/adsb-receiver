@@ -7,6 +7,7 @@ import {
   SimpleChanges,
   ViewChild,
   AfterViewInit,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Chart, ChartType, registerables } from 'chart.js';
 import { forkJoin } from 'rxjs';
@@ -60,6 +61,7 @@ export interface RrdChartConfig {
       <canvas #chartCanvas [class.d-none]="loading || error"></canvas>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './rrd-chart.component.scss',
 })
 export class RrdChartComponent implements AfterViewInit, OnChanges, OnDestroy {

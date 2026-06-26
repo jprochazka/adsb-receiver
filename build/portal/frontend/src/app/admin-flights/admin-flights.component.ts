@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -22,6 +22,7 @@ import {
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-flights.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-flights.component.scss'
 })
 export class AdminFlightsComponent implements OnInit {

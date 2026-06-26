@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-admin-setting-toggle',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <li class="list-group-item d-flex justify-content-between align-items-center">
       <div>

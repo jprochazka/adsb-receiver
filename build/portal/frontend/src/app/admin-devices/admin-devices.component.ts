@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -12,6 +12,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   standalone: true,
   imports: [FormsModule, SpinnerComponent, AdminSettingToggleComponent],
   templateUrl: './admin-devices.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-devices.component.scss'
 })
 export class AdminDevicesComponent implements OnInit {

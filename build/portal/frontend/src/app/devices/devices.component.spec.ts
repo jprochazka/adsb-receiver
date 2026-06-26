@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 import { DevicesComponent } from './devices.component';
@@ -10,6 +10,7 @@ import { RrdChartComponent } from '../shared/rrd-chart/rrd-chart.component';
 @Component({
   selector: 'app-spinner',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class SpinnerStubComponent {}
@@ -17,6 +18,7 @@ class SpinnerStubComponent {}
 @Component({
   selector: 'app-rrd-chart',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class RrdChartStubComponent {
