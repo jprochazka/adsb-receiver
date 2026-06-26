@@ -144,6 +144,25 @@ Collected after Angular 22 runtime compatibility verification:
   - `npm run test:headless`: passed, `332 SUCCESS`.
   - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
 
+## Phase 5 Limited Angular 22 Feature Adoption Evidence
+
+Implemented one small, verified feature-adoption slice after Phases 1-4 were green:
+
+- Converted remaining legacy structural directive usage in `admin-graphs.component.html` from `*ngIf` / `*ngFor` to Angular built-in control flow `@if` / `@for`.
+- Removed now-unused `NgIf` and `NgFor` imports from `AdminGraphsComponent`.
+- Converted the small presentational `AdminSettingToggleComponent` from decorator-based `@Input` / `@Output` to signal-based `input.required()`, `input()`, and `output()`.
+- Added a local `computed()` value for the toggle state label so the template no longer recomputes `checked ? enabledLabel : disabledLabel` inline.
+- Evaluated Signal Forms and Angular Aria for this phase; no isolated low-risk form or concrete accessibility win was adopted without broader design/API changes, so both were deferred.
+- Legacy structural directive audit after the slice found no remaining `*ngIf`, `*ngFor`, `*ngSwitch`, `ngSwitchCase`, or `ngSwitchDefault` matches in `src/app`.
+- Targeted verification:
+  - `npm run test:headless -- --include='src/app/admin-graphs/admin-graphs.component.spec.ts'`: passed, `4 SUCCESS`.
+  - `npm run test:headless -- --include='src/app/shared/admin-setting-toggle/admin-setting-toggle.component.spec.ts'`: passed, `2 SUCCESS`.
+- Full verification after the feature-adoption slice:
+  - `npm run typecheck`: passed.
+  - `npm run build`: passed with the known production bundle warning, now `24.77 kB` over the `1.65MB` warning budget; no build failure.
+  - `npm run test:headless`: passed, `332 SUCCESS`.
+  - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
+
 ## Compatibility Facts
 
 From Angular version compatibility docs:
@@ -244,12 +263,12 @@ Items are complete only after targeted checks and the full frontend verification
 
 Adopt only small, testable features after Phases 1-4 are green.
 
-- [ ] Phase 5.1 — Confirm remaining legacy structural directive usage and convert only if the file is already touched for upgrade work.
-- [ ] Phase 5.2 — Evaluate signal-based component APIs (`input()`, `output()`, `model()`) on one small presentational component first.
-- [ ] Phase 5.3 — Evaluate `signal()` / `computed()` for local derived UI state in one low-risk component.
-- [ ] Phase 5.4 — Evaluate Signal Forms on one isolated, well-tested form only if it clearly reduces complexity.
-- [ ] Phase 5.5 — Evaluate Angular Aria for concrete accessibility wins without visual redesign.
-- [ ] Phase 5.6 — Commit each feature-adoption slice separately with tests.
+- [x] Phase 5.1 — Confirm remaining legacy structural directive usage and convert only if the file is already touched for upgrade work.
+- [x] Phase 5.2 — Evaluate signal-based component APIs (`input()`, `output()`, `model()`) on one small presentational component first.
+- [x] Phase 5.3 — Evaluate `signal()` / `computed()` for local derived UI state in one low-risk component.
+- [x] Phase 5.4 — Evaluate Signal Forms on one isolated, well-tested form only if it clearly reduces complexity.
+- [x] Phase 5.5 — Evaluate Angular Aria for concrete accessibility wins without visual redesign.
+- [x] Phase 5.6 — Commit each feature-adoption slice separately with tests.
 
 ### Phase 6 — TypeScript 6 Modernization
 
@@ -283,7 +302,7 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 | [x] | 2 | 985af51 | Added CSS side-effect module declaration for TypeScript 6; typecheck/build/headless tests pass. |
 | [x] | 3 | ac467c2 | Runtime compatibility preserved by Angular migration: Eager change detection and withXhr; removed API/router audits clean; typecheck/build/headless tests pass. |
 | [x] | 4 | cc94b98 | Refreshed runtime dependency manifests for `zone.js`, `rxjs`, and `tslib`; package inventory shows no remaining stable updates; verification passed. |
-| [ ] | 5 | TBD | Limited Angular 22 feature adoption. |
+| [x] | 5 | 7094f01 | Adopted built-in control flow in `admin-graphs` and signal-based inputs/output/computed state in `AdminSettingToggleComponent`; verification passed. |
 | [ ] | 6 | TBD | TypeScript 6 modernization. |
 | [ ] | 7 | TBD | Final verification and handoff. |
 
