@@ -194,7 +194,7 @@ Items are only complete after targeted validation and the relevant full verifica
 | [x] | 1 | `1c0a0f2` | Read-only discovery helpers; no data writes. |
 | [x] | 2 | `a9cfeb8` | Whiptail decision flow for import vs fresh install. |
 | [x] | 3 | `b98de09` | Legacy export helpers and fixtures. |
-| [x] | 4 | `pending` | Target import helpers with backups/idempotency. |
+| [x] | 4 | `50514c2` | Target import helpers with backups/idempotency. |
 | [ ] | 5 |  | `portal.sh` integration and migration ordering. |
 | [ ] | 6 |  | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
 | [ ] | 7 |  | RRD migration expansion. |
