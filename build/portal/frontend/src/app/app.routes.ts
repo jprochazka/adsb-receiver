@@ -17,7 +17,7 @@ import { LoginComponent } from './login/login.component';
 import { DevicesComponent } from './devices/devices.component';
 import { RegisterComponent } from './register/register.component';
 
-export const routes: Routes = [
+export const routes = [
     { path: '', component: LiveComponent },
     { path: 'account', component: AccountComponent },
     { path: 'acars', component: AcarsComponent },
@@ -41,4 +41,4 @@ export const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'devices', component: DevicesComponent },
     { path: 'register', component: RegisterComponent }
-];
+] satisfies Routes;

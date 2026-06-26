@@ -5,6 +5,16 @@ import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
+interface PortalLink {
+  id: number;
+  name: string;
+  address: string;
+}
+
+interface LinksResponse {
+  links?: PortalLink[];
+}
+
 @Component({
   selector: 'app-admin-links',
   standalone: true,
@@ -14,7 +24,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   styleUrl: './admin-links.component.scss'
 })
 export class AdminLinksComponent implements OnInit {
-  links: any[] = [];
+  links: PortalLink[] = [];
   loading = true;
   errorMessage = '';
   successMessage = '';
@@ -28,7 +38,7 @@ export class AdminLinksComponent implements OnInit {
   newAddress = '';
 
   // Edit form state
-  editingLink: any = null;
+  editingLink: PortalLink | null = null;
   editName = '';
   editAddress = '';
   saving = false;
@@ -67,8 +77,8 @@ export class AdminLinksComponent implements OnInit {
   loadLinks() {
     this.loading = true;
     this.dataService.getLinks(0, 100).subscribe({
-      next: (data) => {
-        this.links   = data.links;
+      next: (data: LinksResponse) => {
+        this.links   = data.links ?? [];
         this.loading = false;
       },
       error: () => {
@@ -110,7 +120,7 @@ export class AdminLinksComponent implements OnInit {
     });
   }
 
-  startEdit(link: any) {
+  startEdit(link: PortalLink) {
     this.editingLink = link;
     this.editName = link.name;
     this.editAddress = link.address;
@@ -124,6 +134,10 @@ export class AdminLinksComponent implements OnInit {
   }
 
   saveEdit() {
+    if (!this.editingLink) {
+      return;
+    }
+
     if (!this.editName.trim() || !this.editAddress.trim()) {
       this.errorMessage = 'Name and address are required.';
       return;
@@ -147,7 +161,7 @@ export class AdminLinksComponent implements OnInit {
     });
   }
 
-  deleteLink(link: any) {
+  deleteLink(link: PortalLink) {
     if (!confirm(`Delete "${link.name}"? This cannot be undone.`)) return;
     this.errorMessage = '';
     this.dataService.deleteLink(link.id).subscribe({
@@ -186,6 +200,11 @@ export class AdminLinksComponent implements OnInit {
 
     const reordered = [...this.links];
     const [moved] = reordered.splice(this.dragIndex, 1);
+    if (!moved) {
+      this.dragIndex = null;
+      this.dragOverIndex = null;
+      return;
+    }
     reordered.splice(dropIndex, 0, moved);
     this.links = reordered;
     this.dragIndex = null;
