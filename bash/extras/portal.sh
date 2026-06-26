@@ -17,7 +17,8 @@ SYSTEMD_SERVICE="adsb-portal-backend.service"
 INSTANCE_DIR="${BACKEND_DIR}/instance"
 RRD_BASE="${BACKEND_DIR}/instance/rrd"
 OPENSKY_BASE="${BACKEND_DIR}/instance/opensky"
-NODE_MAJOR=20
+NODE_MAJOR=22
+NODE_MIN_VERSION="22.22.3"
 USE_EXISTING_SQLITE_DB="false"
 DB_SKIP_PROVISION="false"
 DB_INSTALL_MODE="New database initialized"
@@ -511,12 +512,18 @@ YMLEOF
 
     _gauge 18 "Configuring NodeSource repository..."
     sudo install -d -m 0755 /etc/apt/keyrings
-    curl -fsSL "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key" | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    curl -fsSL "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key" | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg
     cat << NODESOURCEEOF | sudo tee /etc/apt/sources.list.d/nodesource.list >/dev/null
 deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main
 NODESOURCEEOF
     sudo apt-get update >> "${LOG_FILE}" 2>&1
-    check_package nodejs
+    sudo apt-get install -y nodejs >> "${LOG_FILE}" 2>&1
+
+    NODE_VERSION="$(node --version | sed 's/^v//')"
+    if ! dpkg --compare-versions "${NODE_VERSION}" ge "${NODE_MIN_VERSION}"; then
+        echo "Node.js ${NODE_MIN_VERSION}+ is required for Angular 22; found ${NODE_VERSION}" >> "${LOG_FILE}"
+        exit 1
+    fi
 
     _gauge 24 "Setting up Python virtual environment..."
     if [[ ! -d "${VENV_DIR}" ]]; then
@@ -652,10 +659,8 @@ PY
     sudo chown -R www-data:www-data "${INSTANCE_DIR}"
     sudo chmod -R 755 "${INSTANCE_DIR}"
 
-    if [[ ! -d "${FRONTEND_DIR}/node_modules" ]]; then
-        _gauge 70 "Installing npm packages..."
-        (cd "${FRONTEND_DIR}" && npm ci >> "${LOG_FILE}" 2>&1)
-    fi
+    _gauge 70 "Installing npm packages..."
+    (cd "${FRONTEND_DIR}" && npm ci >> "${LOG_FILE}" 2>&1)
 
     _gauge 75 "Building Angular frontend (this may take a while)..."
     if [[ ! -d "${FRONTEND_DIR}" ]]; then
