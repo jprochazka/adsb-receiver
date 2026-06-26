@@ -199,7 +199,7 @@ Items are only complete after targeted validation and the relevant full verifica
 | [x] | 6 | `f39b1f0` | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
 | [x] | 7 | `ea39083` | RRD migration expansion. |
 | [x] | 8 | `ea39083` | Phase 8 verification matrix passed. `bash -n portal.sh`: OK. Legacy tool tests: 53/53 passed (discover + import). Full backend suite: 528/528 passed. Frontend production build: passed (known bundle warning only). Bash script unit tests not added per project decision — `bash -n` is the shell gate. |
-| [x] | 9 | `pending` | Final validation and docs. |
+| [x] | 9 | `63e73fd` | Final validation and docs. |
 
 ## Data Detection Rules
 
