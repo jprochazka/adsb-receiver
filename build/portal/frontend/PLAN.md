@@ -141,7 +141,7 @@ Items are complete only after targeted checks and the full frontend verification
 - [ ] Phase 1.2 — Run `npx ng update @angular/cli@22 @angular/core@22` without `--force`.
 - [ ] Phase 1.3 — Investigate any peer dependency conflicts instead of bypassing them.
 - [ ] Phase 1.4 — Review migration output in `package.json`, `package-lock.json`, `angular.json`, `tsconfig*.json`, and touched source files.
-- [ ] Phase 1.5 — Run `npm ci` from the migrated lockfile.
+- [ ] Phase 1.5 — Run `npm ci` from the migrated lockfile; if `package.json` and `package-lock.json` are out of sync, regenerate the lockfile and commit both together.
 - [ ] Phase 1.6 — Commit official Angular migration output separately.
 
 ### Phase 2 — TypeScript 6 and Compiler Fixes
