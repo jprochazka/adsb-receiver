@@ -102,6 +102,21 @@ Collected during Angular 22 migration:
   - `npm run test:headless`: passed, `332 SUCCESS`.
   - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
 
+## Phase 3 Runtime Compatibility Evidence
+
+Collected after the Angular 22 migration:
+
+- Angular 22 `OnPush` default risk is mitigated by the official migration adding `ChangeDetectionStrategy.Eager` to app components and relevant test stubs.
+- Existing explicit `ChangeDetectorRef.detectChanges()` usage remains in `flights.component.ts` and `live.component.ts`; no additional runtime compatibility change was needed in this phase.
+- Angular 22 FetchBackend behavior risk is mitigated by the official migration adding `withXhr()` to app/test `provideHttpClient` call sites.
+- Router audit found route-param consumers in `flights`, `acars`, `blog`, `login`, and `register`; no `paramsInheritanceStrategy` override or `canMatch` implementation was found, and no code change was needed.
+- Removed/deprecated API audit found no direct app-source matches for `ComponentFactoryResolver`, `ComponentFactory`, `checkNoChanges`, `createNgModuleRef`, `withFetch`, `paramsInheritanceStrategy`, or `canMatch`.
+- Verification:
+  - `npm run typecheck`: passed.
+  - `npm run build`: passed with the known production bundle warning: initial bundle exceeds the `1.65MB` warning budget by `22.48 kB`; no build failure.
+  - `npm run test:headless`: passed, `332 SUCCESS`.
+  - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
+
 ## Compatibility Facts
 
 From Angular version compatibility docs:
@@ -180,13 +195,13 @@ Items are complete only after targeted checks and the full frontend verification
 
 ### Phase 3 — Angular 22 Runtime Compatibility
 
-- [ ] Phase 3.1 — Audit components affected by Angular 22's default `OnPush` behavior.
-- [ ] Phase 3.2 — Preserve existing UI update behavior for auth/nav, admin saves, live map polling, devices graphs, flights pagination, and blog comments.
-- [ ] Phase 3.3 — Audit `HttpClient` usage for FetchBackend behavior differences.
-- [ ] Phase 3.4 — Audit route-param behavior affected by router default changes.
-- [ ] Phase 3.5 — Replace or remove any removed Angular APIs if present.
-- [ ] Phase 3.6 — Run `npm run typecheck`, `npm run build`, and `npm run test:headless`.
-- [ ] Phase 3.7 — Commit runtime compatibility fixes separately.
+- [x] Phase 3.1 — Audit components affected by Angular 22's default `OnPush` behavior.
+- [x] Phase 3.2 — Preserve existing UI update behavior for auth/nav, admin saves, live map polling, devices graphs, flights pagination, and blog comments.
+- [x] Phase 3.3 — Audit `HttpClient` usage for FetchBackend behavior differences.
+- [x] Phase 3.4 — Audit route-param behavior affected by router default changes.
+- [x] Phase 3.5 — Replace or remove any removed Angular APIs if present.
+- [x] Phase 3.6 — Run `npm run typecheck`, `npm run build`, and `npm run test:headless`.
+- [x] Phase 3.7 — Commit runtime compatibility fixes separately.
 
 ### Phase 4 — Frontend Package Updates
 
@@ -239,7 +254,7 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 | [x] | 0 | 6e8f55e | Baseline passed: npm ci, typecheck, build, headless tests, coverage, production audit, and breaking-change touchpoint audit. |
 | [x] | 1 | ac467c2 | Angular CLI v22 migration output: package updates, Eager change detection, withXhr, diagnostics migration, and template migration. |
 | [x] | 2 | 985af51 | Added CSS side-effect module declaration for TypeScript 6; typecheck/build/headless tests pass. |
-| [ ] | 3 | TBD | Angular 22 runtime compatibility fixes. |
+| [x] | 3 | ac467c2 | Runtime compatibility preserved by Angular migration: Eager change detection and withXhr; removed API/router audits clean; typecheck/build/headless tests pass. |
 | [ ] | 4 | TBD | Frontend package update groups. |
 | [ ] | 5 | TBD | Limited Angular 22 feature adoption. |
 | [ ] | 6 | TBD | TypeScript 6 modernization. |
