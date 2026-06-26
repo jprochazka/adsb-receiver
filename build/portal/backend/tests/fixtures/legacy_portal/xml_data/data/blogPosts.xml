@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blogPosts>
+  <blogPost>
+    <title>First Post</title>
+    <date>2023-01-01</date>
+    <author>Admin User</author>
+    <contents>Hello world.</contents>
+  </blogPost>
+  <blogPost>
+    <title>Second Post</title>
+    <date>2023-06-15</date>
+    <author>Admin User</author>
+    <contents>Another entry.</contents>
+  </blogPost>
+</blogPosts>
