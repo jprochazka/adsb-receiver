@@ -38,6 +38,128 @@ New backend schema reference:
 - `build/portal/backend/backend/models.py`
 - `build/portal/backend/migrations/versions/0001_initial_schema.py`
 
+## Phase 0 Findings: Schema and Settings Inventory
+
+### Table mapping: legacy SQL -> new SQL
+
+| Legacy table (prefix+) | New table            | Notes |
+|------------------------|----------------------|-------|
+| `administrators`       | `users`              | Column renames; login dropped; password hash must be verified; token dropped. |
+| `aircraft`             | `dump1090_aircraft`  | Column renames (firstSeen->first_seen, lastSeen->last_seen). Old icao is VARCHAR(24); new is String(8). ICAO Mode-S hex codes are 6 chars in practice — treat values >8 chars as invalid and skip/log. |
+| `blogPosts`            | `blog_posts`         | Column rename: contents->content. New columns visible/tags/category default to True/''/'' on import. |
+| `flights`              | `dump1090_flights`   | Column renames (firstSeen->first_seen, lastSeen->last_seen). New columns emitter_category/message_type/aircraft_class/ignore_on_purge default to NULL/NULL/'unknown'/False. aircraft FK must be remapped to new dump1090_aircraft.id. |
+| `links`                | `links`              | Direct column match. New sort_order defaults to row order (0-indexed). |
+| `flightNotifications`  | `notifications`      | Direct 1:1 column match (id, flight). |
+| `positions`            | `dump1090_positions` | Column rename: verticleRate->vertical_rate (fixes old typo). Old time is datetime; new is String(32) — convert to ISO-8601 string on import. Old flight FK is BIGINT NULL in MySQL/pgsql (NULL allowed), but new is Integer NOT NULL; positions with NULL flight must be skipped or assigned a synthetic flight record. aircraft and flight FKs must both be remapped to new ids. |
+| `settings`             | `settings`           | Same shape (name/value). Import only the allow-listed names (see below). |
+
+### Column detail: administrators -> users
+
+| Legacy column | New column    | Transform |
+|---------------|---------------|-----------|
+| id            | id            | Remapped (auto-assigned by new DB). |
+| name          | name          | Direct. |
+| email         | email         | Direct. Unique constraint; skip duplicates. |
+| login         | (none)        | Drop — new portal uses email as login identity. |
+| password      | password      | PHP `password_hash()` outputs Bcrypt `$2y$` hashes. Python `werkzeug.security.check_password_hash` accepts `$2y$` as `$2b$` transparently. Import hash as-is; flag user as requiring password reset for safety (set locked=False but add a migration note). |
+| token         | (none)        | Drop — session tokens are ephemeral. |
+| (none)        | administrator | Set to 1 for all imported administrators. |
+| (none)        | role          | Set to 'Admin' for all imported administrators. |
+| (none)        | locked        | Set to False. |
+| (none)        | created_at    | Set to import timestamp (UTC). |
+
+### Column detail: positions -> dump1090_positions
+
+| Legacy column | New column    | Transform |
+|---------------|---------------|-----------|
+| id            | id            | Remapped. |
+| flight        | flight        | Remapped to new dump1090_flights.id. If NULL (MySQL/pgsql old schema), skip row. |
+| aircraft      | aircraft      | Remapped to new dump1090_aircraft.id. |
+| time          | time          | Convert datetime string to ISO-8601 (e.g. `2023-01-15 10:30:00` -> `2023-01-15T10:30:00`). |
+| message       | message       | Direct. |
+| squawk        | squawk        | Direct (nullable). |
+| latitude      | latitude      | Direct. |
+| longitude     | longitude     | Direct. |
+| track         | track         | Direct. |
+| altitude      | altitude      | Direct. |
+| verticleRate  | vertical_rate | Rename (fixes old typo). |
+| speed         | speed         | Direct (nullable). |
+
+### XML file structure (legacy `xml` driver)
+
+Files live under `<legacy_root>/data/`:
+
+| File                       | Root element      | Record element  | Key fields |
+|----------------------------|-------------------|-----------------|------------|
+| `administrators.xml`       | `<administrators>`| `<administrator>`| login, password, name, email, apiKey |
+| `blogPosts.xml`            | `<blogPosts>`     | `<blogPost>`    | title, date, author, contents |
+| `flightNotifications.xml`  | `<flights>`       | `<flight>`      | flight (callsign string) |
+| `links.xml`                | `<links>`         | `<link>`        | name, address |
+| `settings.xml`             | `<settings>`      | `<setting>`     | name, value |
+
+XML installs do not have aircraft/flights/positions tables; those were SQL-only features.
+
+### Settings: legacy name -> new name (allow-list)
+
+The new backend's `settings` table is generic (any name/value pair). Only import old settings whose names are known to be consumed by the new backend. Unknown settings are silently skipped.
+
+| Legacy setting name           | New setting name              | Notes |
+|-------------------------------|-------------------------------|-------|
+| `days_to_save`                | `days_to_save`                | Direct. |
+| `purge_older_data`            | `purge_older_data`            | Direct. |
+| `networkInterface`            | `graphs_network_interface`    | Renamed. |
+| `timeZone`                    | `timeZone`                    | Direct (used by frontend). |
+| `advancedMapCenterLatitude`   | `advancedMapCenterLatitude`   | Direct (used by frontend live map). |
+| `advancedMapCenterLongitude`  | `advancedMapCenterLongitude`  | Direct (used by frontend live map). |
+| `siteName`                    | `siteName`                    | Direct (used by frontend). |
+| `enableBlog`                  | `enableBlog`                  | Direct. |
+| `enableLinks`                 | `enableLinks`                 | Direct. |
+| `enableDump1090`              | `enableDump1090`              | Direct. |
+| `enableDump978`               | `enableDump978`               | Direct. |
+| `enableFlights`               | `enableFlights`               | Direct. |
+| `enableWebNotifications`      | `enableWebNotifications`      | Direct. |
+| `measurementRange`            | `measurementRange`            | Direct. |
+| `measurementTemperature`      | `measurementTemperature`      | Direct. |
+| `measurementBandwidth`        | `measurementBandwidth`        | Direct. |
+| `hideNavbarAndFooter`         | `hideNavbarAndFooter`         | Direct. |
+| `googleMapsApiKey`            | `googleMapsApiKey`            | Direct. |
+| `enableAcars`                 | `enableAcars`                 | Direct. |
+| `acarsserv_database`          | `acarsserv_database`          | Direct. |
+
+Settings NOT imported (no new consumer found): version, patch, template, defaultPage, dateFormat,
+enableInfo, enablePfclient, enableGraphs, enableFlightAwareLink, flightAwareLogin, flightAwareSite,
+enablePlaneFinderLink, planeFinderReceiver, enableFlightRadar24Link, flightRadar24Id,
+enableAdsbExchangeLink, emailFrom, emailReplyTo, useDump1090FaMap, purgeAircraft,
+enableWebNotifications (duplicate removal), enableACars (case variants).
+
+Settings that exist only in the new portal (must be seeded at fresh-install time, not imported):
+`live_map_custom_presets`, `live_map_json_url`, `live_map_json_url_dump978`, `notification_lookback_minutes`,
+`graphs_network_interface` (when networkInterface not in source).
+
+### FK remapping requirement
+
+Legacy source integer IDs have no meaning in the new database. The import tool must maintain in-memory maps for each run:
+
+- `old_aircraft_id -> new_dump1090_aircraft_id`
+- `old_flight_id   -> new_dump1090_flight_id`
+
+Import order must be: aircraft first, then flights (uses aircraft map), then positions (uses both maps).
+
+### Password hash compatibility
+
+PHP `password_hash($pwd, PASSWORD_DEFAULT)` outputs `$2y$` Bcrypt. Python `werkzeug.security.check_password_hash` accepts this as equivalent to `$2b$` since werkzeug 2.0. Import hashes as-is. Consider setting a `password_reset_required` flag or logging imported users so operators know to advise a password reset on first login, since we cannot verify correctness without the original plaintext.
+
+### Schema change risk across upgrade versions (v2.0.0 to v2.8.10)
+
+Inspected all `upgrade-v*.php` files. Key schema changes:
+- v2.1.0: column rename in `positions` (no new tables).
+- v2.2.0: added setting `useDump1090FaMap`.
+- v2.5.0: added settings `enableWebNotifications`, `googleMapsApiKey`, `enableLinks`.
+- v2.7.0: added settings `advancedMapCenterLatitude`, `advancedMapCenterLongitude`.
+- Later versions: mostly added/renamed settings; no new tables relevant to import.
+
+The import tool must tolerate missing columns in old installs (not all upgrades were applied by every user). Use `IF EXISTS` / `PRAGMA table_info` / `SHOW COLUMNS` defensively.
+
 ## Non-Goals
 
 - Do not import anything automatically without a positive user choice.
@@ -53,7 +175,7 @@ Legend: `[ ]` not started, `[~]` in progress, `[x]` complete, `[!]` blocked.
 
 Items are only complete after targeted validation and the relevant full verification pass.
 
-- [ ] Phase 0 — Inventory legacy data formats and target schema mappings.
+- [x] Phase 0 — Inventory legacy data formats and target schema mappings.
 - [ ] Phase 1 — Add read-only legacy discovery to `portal.sh`.
 - [ ] Phase 2 — Add explicit import/fresh-install decision flow.
 - [ ] Phase 3 — Implement database/XML export helpers.
