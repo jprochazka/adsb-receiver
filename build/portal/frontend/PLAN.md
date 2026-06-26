@@ -163,6 +163,26 @@ Implemented one small, verified feature-adoption slice after Phases 1-4 were gre
   - `npm run test:headless`: passed, `332 SUCCESS`.
   - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
 
+## Phase 6 TypeScript 6 Modernization Evidence
+
+Implemented one small TypeScript modernization slice focused on shape checking and local type tightening:
+
+- Kept strict TypeScript and strict Angular template settings enabled; no compiler weakening was introduced.
+- Changed `app.routes.ts` from an explicit `Routes` annotation to `satisfies Routes`, preserving route-object shape checking while avoiding unnecessary type widening.
+- Added local `PortalLink` and `LinksResponse` interfaces in `AdminLinksComponent`.
+- Replaced `links: any[]`, `editingLink: any`, and `startEdit/deleteLink(link: any)` with typed `PortalLink` state and parameters.
+- Added a narrow null guard for `saveEdit()` so `editingLink.id` is only read after the edit target exists.
+- Added a defensive guard for impossible drag/drop splice misses, avoiding unsafe assumptions after tightening array element types.
+- Avoided broader `DataService` API typing churn because that would touch many endpoints and expand the phase beyond a safe modernization slice.
+- Characterization/targeted verification:
+  - Before the refactor, `npm run test:headless -- --include='src/app/admin-links/admin-links.component.spec.ts'` passed, `8 SUCCESS`.
+  - After the refactor, the same targeted spec passed, `8 SUCCESS`.
+- Full verification after the TypeScript modernization slice:
+  - `npm run typecheck`: passed.
+  - `npm run build`: passed with the known production bundle warning, now `24.85 kB` over the `1.65MB` warning budget; no build failure.
+  - `npm run test:headless`: passed, `332 SUCCESS`.
+  - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
+
 ## Compatibility Facts
 
 From Angular version compatibility docs:
@@ -274,12 +294,12 @@ Adopt only small, testable features after Phases 1-4 are green.
 
 Modernize only where it improves upgrade correctness or removes weak typing exposed by the migration.
 
-- [ ] Phase 6.1 — Keep strict compiler settings enabled.
-- [ ] Phase 6.2 — Use `satisfies` where configuration objects need shape checks.
-- [ ] Phase 6.3 — Tighten `Observable<any>` or component `any[]` usage only where touched by upgrade work.
-- [ ] Phase 6.4 — Remove casts introduced during migration if proper types are clear.
-- [ ] Phase 6.5 — Avoid syntax churn that does not improve safety.
-- [ ] Phase 6.6 — Commit TypeScript modernization slices separately.
+- [x] Phase 6.1 — Keep strict compiler settings enabled.
+- [x] Phase 6.2 — Use `satisfies` where configuration objects need shape checks.
+- [x] Phase 6.3 — Tighten `Observable<any>` or component `any[]` usage only where touched by upgrade work.
+- [x] Phase 6.4 — Remove casts introduced during migration if proper types are clear.
+- [x] Phase 6.5 — Avoid syntax churn that does not improve safety.
+- [x] Phase 6.6 — Commit TypeScript modernization slices separately.
 
 ### Phase 7 — Final Verification and Handoff
 
@@ -303,7 +323,7 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 | [x] | 3 | ac467c2 | Runtime compatibility preserved by Angular migration: Eager change detection and withXhr; removed API/router audits clean; typecheck/build/headless tests pass. |
 | [x] | 4 | cc94b98 | Refreshed runtime dependency manifests for `zone.js`, `rxjs`, and `tslib`; package inventory shows no remaining stable updates; verification passed. |
 | [x] | 5 | 7094f01 | Adopted built-in control flow in `admin-graphs` and signal-based inputs/output/computed state in `AdminSettingToggleComponent`; verification passed. |
-| [ ] | 6 | TBD | TypeScript 6 modernization. |
+| [x] | 6 | e8d52c8 | Added `satisfies Routes` and tightened `AdminLinksComponent` link response/state types; verification passed. |
 | [ ] | 7 | TBD | Final verification and handoff. |
 
 ## Execution Commands
