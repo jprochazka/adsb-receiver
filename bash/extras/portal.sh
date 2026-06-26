@@ -41,6 +41,11 @@ LEGACY_DB_USER=""
 LEGACY_DB_PREFIX="adsb_"
 LEGACY_IMPORT_ENABLED="false"
 LEGACY_IMPORT_STATUS="No legacy portal detected"
+LIGHTTPD_INSTALLED="false"
+LIGHTTPD_ACTIVE_BEFORE="false"
+LIGHTTPD_ENABLED_BEFORE="false"
+LIGHTTPD_DOCROOT=""
+LIGHTTPD_TAKEOVER_STATUS="No lighttpd takeover needed"
 
 find_legacy_rrd_source() {
     local -a candidates=(
@@ -548,6 +553,26 @@ if whiptail --title "HTTPS Configuration" \
     done
 fi
 
+## LIGHTTPD DETECTION (before install begins; state vars consumed later in _install)
+
+if dpkg-query -W -f='${Status}' lighttpd 2>/dev/null | grep -q "install ok installed"; then
+    LIGHTTPD_INSTALLED="true"
+    if systemctl is-active --quiet lighttpd 2>/dev/null; then
+        LIGHTTPD_ACTIVE_BEFORE="true"
+    fi
+    if systemctl is-enabled --quiet lighttpd 2>/dev/null; then
+        LIGHTTPD_ENABLED_BEFORE="true"
+    fi
+    # Capture document root now — we need it before lighttpd is stopped.
+    if [[ -f /etc/lighttpd/lighttpd.conf ]]; then
+        _raw=$(/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p 2>/dev/null \
+               | grep 'server.document-root' | sed 's/.*"\(.*\)".*/\1/' | head -n1)
+        [[ -n "${_raw}" ]] && LIGHTTPD_DOCROOT="${_raw}"
+    fi
+    [[ -z "${LIGHTTPD_DOCROOT}" ]] && LIGHTTPD_DOCROOT="/var/www/html"
+    log_message "lighttpd detected: active=${LIGHTTPD_ACTIVE_BEFORE} docroot=${LIGHTTPD_DOCROOT}"
+fi
+
 MYSQL_HOST="${DB_HOST:-127.0.0.1}"
 MYSQL_USER="${DB_USER:-portaluser}"
 MYSQL_PASS="${DB_PASS:-password}"
@@ -888,6 +913,20 @@ NGINXEOF
     fi
     sudo nginx -t >> "${LOG_FILE}" 2>&1
 
+    ## LIGHTTPD-TO-NGINX TAKEOVER (runs after legacy data handling; before nginx restart)
+    if [[ "${LIGHTTPD_INSTALLED}" == "true" && "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
+        _gauge 96 "Stopping lighttpd to hand port 80 to Nginx..."
+
+        if sudo systemctl stop lighttpd >> "${LOG_FILE}" 2>&1 && \
+           sudo systemctl disable lighttpd >> "${LOG_FILE}" 2>&1; then
+            LIGHTTPD_TAKEOVER_STATUS="lighttpd stopped and disabled; Nginx will own port 80"
+            log_message "lighttpd stopped and disabled"
+        else
+            LIGHTTPD_TAKEOVER_STATUS="WARNING: failed to stop/disable lighttpd — Nginx may fail to bind port 80"
+            log_message "WARNING: could not stop lighttpd"
+        fi
+    fi
+
     _gauge 97 "Creating systemd service..."
     cat << SVCEOF | sudo tee "/etc/systemd/system/${SYSTEMD_SERVICE}" >/dev/null
 [Unit]
@@ -912,7 +951,21 @@ SVCEOF
     _gauge 99 "Starting services..."
     sudo systemctl daemon-reload >> "${LOG_FILE}" 2>&1
     sudo systemctl enable nginx >> "${LOG_FILE}" 2>&1
-    sudo systemctl restart nginx >> "${LOG_FILE}" 2>&1
+
+    if ! sudo systemctl restart nginx >> "${LOG_FILE}" 2>&1; then
+        # Nginx failed to start — attempt lighttpd rollback if we stopped it.
+        if [[ "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
+            log_message "Nginx failed; attempting lighttpd rollback..."
+            if sudo systemctl enable lighttpd >> "${LOG_FILE}" 2>&1 && \
+               sudo systemctl start  lighttpd >> "${LOG_FILE}" 2>&1; then
+                LIGHTTPD_TAKEOVER_STATUS="Nginx failed; lighttpd rolled back and re-started"
+            else
+                LIGHTTPD_TAKEOVER_STATUS="Nginx failed AND lighttpd rollback failed — port 80 may be unserved"
+            fi
+        fi
+        echo "Nginx failed to restart — see ${LOG_FILE}" >> "${LOG_FILE}"
+        exit 1
+    fi
     sudo systemctl enable "${SYSTEMD_SERVICE}" >> "${LOG_FILE}" 2>&1
     sudo systemctl start "${SYSTEMD_SERVICE}" >> "${LOG_FILE}" 2>&1
 
@@ -987,6 +1040,13 @@ Legacy PHP portal detection result:
     ${LEGACY_IMPORT_STATUS}
 
 No legacy data has been modified or deleted." 12 78
+
+whiptail --title "Web Server Takeover Status" --msgbox "\
+lighttpd-to-Nginx takeover result:
+
+    ${LIGHTTPD_TAKEOVER_STATUS}
+
+lighttpd packages and configuration were not removed." 12 78
 
 
 ## SETUP COMPLETE
