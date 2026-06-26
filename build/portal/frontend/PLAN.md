@@ -46,6 +46,37 @@ Verified before starting upgrade implementation:
   - `npm run test:coverage`
 - Current production audit: `npm audit --omit=dev --audit-level=moderate` reports 0 production vulnerabilities.
 
+
+## Phase 0 Baseline Evidence
+
+Collected before changing Angular packages:
+
+- Branch/status: `cleanup`, clean working tree at start.
+- Node: `v22.23.1`.
+- npm: `10.9.8`.
+- `npm outdated --json || true` shows Angular 22 and TypeScript 6 available:
+  - `@angular/cli`: current `21.2.17`, latest `22.0.4`.
+  - `@angular/core`: current `21.2.17`, latest `22.0.3`.
+  - `typescript`: current `5.9.3`, latest `6.0.3`.
+  - `zone.js`: current `0.15.1`, latest `0.16.2`.
+- `npm ci`: passed; npm reported dev dependency advisories, but production audit remains clean.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- `npm run test:headless`: passed, `332 SUCCESS` on `Chrome Headless 149.0.0.0`.
+- `npm run test:coverage`: passed, `332 SUCCESS`.
+- Coverage baseline:
+  - Statements: `69.72%` (`2734/3921`).
+  - Branches: `51.14%` (`757/1480`).
+  - Functions: `61.04%` (`699/1145`).
+  - Lines: `71.77%` (`2568/3578`).
+- `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
+- Angular 22 breaking-change touchpoint audit found:
+  - `ChangeDetectorRef.detectChanges()` usage in `flights.component.ts` and `live.component.ts`.
+  - `provideHttpClient(withInterceptors([authInterceptor]))` in `app.config.ts`.
+  - `@Input` / `@Output` usage in shared chart/toggle components and test stubs.
+  - No direct matches for `ComponentFactoryResolver`, `ComponentFactory`, `checkNoChanges`, `createNgModuleRef`, `withFetch`, `paramsInheritanceStrategy`, or `canMatch` in app source.
+
+
 ## Compatibility Facts
 
 From Angular version compatibility docs:
@@ -97,12 +128,12 @@ Items are complete only after targeted checks and the full frontend verification
 
 ### Phase 0 — Baseline Before Upgrade
 
-- [ ] Phase 0.1 — Confirm clean tree and current branch.
-- [ ] Phase 0.2 — Record current Node, npm, Angular, TypeScript, RxJS, and package inventory.
-- [ ] Phase 0.3 — Run Angular 21 baseline: `npm ci`, `npm run typecheck`, `npm run build`, `npm run test:headless`, `npm run test:coverage`.
-- [ ] Phase 0.4 — Run `npm audit --omit=dev --audit-level=moderate` and `npm outdated --json || true`.
-- [ ] Phase 0.5 — Audit codebase for Angular 22 breaking-change touchpoints before package changes.
-- [ ] Phase 0.6 — Commit baseline plan/inventory update.
+- [x] Phase 0.1 — Confirm clean tree and current branch.
+- [x] Phase 0.2 — Record current Node, npm, Angular, TypeScript, RxJS, and package inventory.
+- [x] Phase 0.3 — Run Angular 21 baseline: `npm ci`, `npm run typecheck`, `npm run build`, `npm run test:headless`, `npm run test:coverage`.
+- [x] Phase 0.4 — Run `npm audit --omit=dev --audit-level=moderate` and `npm outdated --json || true`.
+- [x] Phase 0.5 — Audit codebase for Angular 22 breaking-change touchpoints before package changes.
+- [x] Phase 0.6 — Commit baseline plan/inventory update.
 
 ### Phase 1 — Angular CLI v22 Migration
 
@@ -180,7 +211,7 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 
 | Status | Phase | Commit SHA | Notes |
 | --- | --- | --- | --- |
-| [ ] | 0 | TBD | Baseline and pre-upgrade inventory. |
+| [x] | 0 | 56ef661 | Baseline passed: npm ci, typecheck, build, headless tests, coverage, production audit, and breaking-change touchpoint audit. |
 | [ ] | 1 | TBD | Angular CLI v22 migration output. |
 | [ ] | 2 | TBD | TypeScript 6/compiler/template fixes. |
 | [ ] | 3 | TBD | Angular 22 runtime compatibility fixes. |
