@@ -183,6 +183,58 @@ Implemented one small TypeScript modernization slice focused on shape checking a
   - `npm run test:headless`: passed, `332 SUCCESS`.
   - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
 
+## Phase 7 Final Verification and Handoff Evidence
+
+Collected after Phases 0-6 were complete and the working tree was clean:
+
+- Branch/status before final gate: `cleanup`, clean working tree.
+- Final local toolchain/version inventory:
+  - Node: `v22.23.1`.
+  - npm: `10.9.8`.
+  - `@angular/core`: `22.0.3`.
+  - `@angular/cli`: `22.0.4`.
+  - `@angular/build`: `22.0.4`.
+  - TypeScript: `6.0.3`.
+  - `zone.js`: `0.16.2`.
+  - RxJS: `7.8.2`.
+  - `tslib`: `2.8.1`.
+- Final gate from a clean install:
+  - `npm ci`: passed. npm reported 3 low-severity dev/tooling advisories and deprecation warnings, but install completed.
+  - `npm run typecheck`: passed.
+  - `npm run build`: passed with the known production bundle warning: initial bundle exceeded the `1.65MB` warning budget by `24.85 kB`; no build failure.
+  - `npm run test:headless`: passed, `332 SUCCESS`.
+  - `npm run test:coverage`: passed, `332 SUCCESS`.
+  - Final coverage:
+    - Statements: `69.66%` (`2737/3929`).
+    - Branches: `51.14%` (`760/1486`).
+    - Functions: `61.08%` (`700/1146`).
+    - Lines: `71.68%` (`2570/3585`).
+  - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
+- Browser/runtime smoke check:
+  - Served `dist/frontend/browser` locally with `python3 -m http.server 4300 --bind 127.0.0.1`.
+  - `curl -fsSI http://127.0.0.1:4300/`: returned `HTTP/1.0 200 OK`.
+  - `curl -fsS http://127.0.0.1:4300/`: returned built `index.html` with title `ADS-B Portal`, `<app-root>`, and production bundle script/style references.
+  - Browser loaded `http://127.0.0.1:4300/` with title `ADS-B Portal`; main navigation and live-map UI rendered.
+  - Browser console check reported 0 console messages and 0 JavaScript errors.
+  - Live aircraft API showed the expected offline-runtime message under static smoke conditions: `Unable to reach aircraft data. Ensure the decoder(s) are running and reachable.`
+- Known deferrals / non-blocking findings:
+  - Production bundle warning remains: initial bundle is `24.85 kB` over the current `1.65MB` warning budget. This is tracked for post-upgrade optimization rather than blocking the Angular 22 migration.
+  - `npm ci` reports 3 low-severity dev/tooling advisories; production audit is clean at moderate-or-higher severity.
+  - `@angular/platform-browser-dynamic` prints an npm deprecation warning, but it remains present for the current Karma/Jasmine test setup, which is intentionally retained by this plan.
+- Final ordered upgrade commits on `cleanup` after the baseline commit:
+  - `267c110` — `docs: record Angular phase 0 commit`.
+  - `b02e3af` — `docs: track frontend lockfile sync during upgrade`.
+  - `ac467c2` — `chore: migrate frontend to Angular 22`.
+  - `985af51` — `fix: declare CSS module imports for TypeScript 6`.
+  - `40fbdfe` — `docs: record Angular 22 migration progress`.
+  - `d05c950` — `docs: close Angular runtime compatibility phase`.
+  - `cc94b98` — `chore: refresh Angular runtime dependencies`.
+  - `78a09fd` — `docs: record frontend package refresh`.
+  - `7094f01` — `refactor: adopt Angular control flow and signal inputs`.
+  - `d8083e8` — `docs: record Angular feature adoption phase`.
+  - `e8d52c8` — `refactor: tighten TypeScript types in frontend`.
+  - `9922058` — `docs: record TypeScript modernization phase`.
+
 ## Compatibility Facts
 
 From Angular version compatibility docs:
@@ -191,7 +243,7 @@ From Angular version compatibility docs:
 - Angular `22.0.x` requires TypeScript `>=6.0.0 <6.1.0`.
 - Angular `22.0.x` supports RxJS `^6.5.3 || ^7.4.0`.
 
-Current local Node `v22.23.1` satisfies Angular 22. Current RxJS `~7.8.0` is in the supported range.
+Current local Node `v22.23.1` satisfies Angular 22. Current RxJS `7.8.2` is in the supported range.
 
 Latest package lookup at plan time:
 
@@ -303,15 +355,15 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 
 ### Phase 7 — Final Verification and Handoff
 
-- [ ] Phase 7.1 — Run `npm ci` from a clean tree.
-- [ ] Phase 7.2 — Run `npm run typecheck`.
-- [ ] Phase 7.3 — Run `npm run build`.
-- [ ] Phase 7.4 — Run `npm run test:headless`.
-- [ ] Phase 7.5 — Run `npm run test:coverage`.
-- [ ] Phase 7.6 — Run `npm audit --omit=dev --audit-level=moderate`.
-- [ ] Phase 7.7 — Run browser smoke checks if a browser is available.
-- [ ] Phase 7.8 — Record final versions, test output, audit output, known deferrals, and final commit SHAs.
-- [ ] Phase 7.9 — Confirm clean working tree.
+- [x] Phase 7.1 — Run `npm ci` from a clean tree.
+- [x] Phase 7.2 — Run `npm run typecheck`.
+- [x] Phase 7.3 — Run `npm run build`.
+- [x] Phase 7.4 — Run `npm run test:headless`.
+- [x] Phase 7.5 — Run `npm run test:coverage`.
+- [x] Phase 7.6 — Run `npm audit --omit=dev --audit-level=moderate`.
+- [x] Phase 7.7 — Run browser smoke checks if a browser is available.
+- [x] Phase 7.8 — Record final versions, test output, audit output, known deferrals, and final commit SHAs.
+- [x] Phase 7.9 — Confirm clean working tree.
 
 ## Commit Tracking
 
@@ -324,7 +376,7 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 | [x] | 4 | cc94b98 | Refreshed runtime dependency manifests for `zone.js`, `rxjs`, and `tslib`; package inventory shows no remaining stable updates; verification passed. |
 | [x] | 5 | 7094f01 | Adopted built-in control flow in `admin-graphs` and signal-based inputs/output/computed state in `AdminSettingToggleComponent`; verification passed. |
 | [x] | 6 | e8d52c8 | Added `satisfies Routes` and tightened `AdminLinksComponent` link response/state types; verification passed. |
-| [ ] | 7 | TBD | Final verification and handoff. |
+| [x] | 7 | final docs commit | Final clean install, typecheck, production build, headless tests, coverage, production audit, static browser smoke, and clean-tree verification passed. |
 
 ## Execution Commands
 
