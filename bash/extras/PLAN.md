@@ -196,7 +196,7 @@ Items are only complete after targeted validation and the relevant full verifica
 | [x] | 3 | `b98de09` | Legacy export helpers and fixtures. |
 | [x] | 4 | `50514c2` | Target import helpers with backups/idempotency. |
 | [x] | 5 | `ba0c091` | `portal.sh` integration and migration ordering. |
-| [x] | 6 | `pending` | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
+| [x] | 6 | `f39b1f0` | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
 | [ ] | 7 |  | RRD migration expansion. |
 | [ ] | 8 |  | Automated tests and fixture coverage. |
 | [ ] | 9 |  | Final validation and docs. |
