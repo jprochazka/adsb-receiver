@@ -33,6 +33,14 @@ RRD_MIGRATE_SOURCE=""
 RRD_MIGRATION_STATUS="No legacy RRD migration needed"
 LE_ENABLE="false"
 LE_DOMAIN=""
+LEGACY_PORTAL_ROOT=""
+LEGACY_DB_DRIVER=""
+LEGACY_DB_DATABASE=""
+LEGACY_DB_HOST=""
+LEGACY_DB_USER=""
+LEGACY_DB_PREFIX="adsb_"
+LEGACY_IMPORT_ENABLED="false"
+LEGACY_IMPORT_STATUS="No legacy portal detected"
 
 find_legacy_rrd_source() {
     local -a candidates=(
@@ -58,6 +66,64 @@ strip_yaml_value() {
     raw_value="${raw_value#\"}"
     raw_value="${raw_value%\"}"
     echo "${raw_value}"
+}
+
+# Find the document root of a legacy PHP ADS-B Portal installation.
+# Returns the root path on stdout and exits 0, or exits 1 if not found.
+# This function is READ-ONLY — it never writes or modifies any file.
+find_legacy_portal_root() {
+    local -a candidates=()
+
+    # If lighttpd is installed, ask it for its configured document root.
+    if command -v lighttpd >/dev/null 2>&1 && [[ -f /etc/lighttpd/lighttpd.conf ]]; then
+        local raw_root
+        raw_root=$(/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p 2>/dev/null \
+                   | grep 'server.document-root' | sed 's/.*"\(.*\)".*/\1/' | head -n1)
+        [[ -n "${raw_root}" ]] && candidates+=("${raw_root}")
+    fi
+
+    # Well-known fallback paths used by old installers.
+    candidates+=(
+        "/var/www/html"
+        "/var/www"
+        "/usr/share/adsb-receiver/build/portal/html"
+    )
+
+    for candidate in "${candidates[@]}"; do
+        if [[ -f "${candidate}/classes/settings.class.php" ]]; then
+            echo "${candidate}"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Parse legacy PHP settings.class.php and populate LEGACY_* globals.
+# Accepts the portal root path as $1.
+# This function is READ-ONLY — it never writes or modifies any file.
+load_legacy_portal_settings() {
+    local root="$1"
+    local settings_file="${root}/classes/settings.class.php"
+
+    [[ -f "${settings_file}" ]] || return 1
+
+    LEGACY_DB_DRIVER=$(grep 'db_driver'   "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_DATABASE=$(grep 'db_database' "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_HOST=$(grep 'db_host'      "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_USER=$(grep 'db_username'  "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    local raw_prefix
+    raw_prefix=$(grep 'db_prefix' "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_PREFIX="${raw_prefix:-adsb_}"
+
+    # For SQLite the old installer stored the full path in db_host.
+    # If db_database is empty but db_host looks like a file path, use it.
+    if [[ "${LEGACY_DB_DRIVER}" == "sqlite" && -z "${LEGACY_DB_DATABASE}" && -n "${LEGACY_DB_HOST}" ]]; then
+        LEGACY_DB_DATABASE="${LEGACY_DB_HOST}"
+        LEGACY_DB_HOST=""
+    fi
+
+    return 0
 }
 
 run_le_preflight() {
@@ -385,6 +451,22 @@ if [[ -n "${legacy_rrd_source}" ]]; then
     else
         RRD_MIGRATION_STATUS="Legacy RRD files detected but migration was skipped"
     fi
+fi
+
+## LEGACY PORTAL DISCOVERY (read-only; no data written here)
+
+LEGACY_PORTAL_ROOT=$(find_legacy_portal_root || true)
+if [[ -n "${LEGACY_PORTAL_ROOT}" ]]; then
+    if load_legacy_portal_settings "${LEGACY_PORTAL_ROOT}"; then
+        log_message "Legacy portal found at ${LEGACY_PORTAL_ROOT} (driver: ${LEGACY_DB_DRIVER})"
+        LEGACY_IMPORT_STATUS="Legacy portal detected: driver=${LEGACY_DB_DRIVER} root=${LEGACY_PORTAL_ROOT}"
+    else
+        log_message "Legacy portal root found but settings.class.php could not be parsed; skipping import"
+        LEGACY_PORTAL_ROOT=""
+        LEGACY_IMPORT_STATUS="Legacy portal root found but settings unreadable"
+    fi
+else
+    log_message "No legacy portal installation detected"
 fi
 
 while true; do
@@ -817,6 +899,13 @@ RRD handling result:
 
 RRD files used by the portal are stored under:
     ${RRD_BASE}" 12 78
+
+whiptail --title "Legacy Portal Import Status" --msgbox "\
+Legacy PHP portal detection result:
+
+    ${LEGACY_IMPORT_STATUS}
+
+No legacy data has been modified or deleted." 12 78
 
 
 ## SETUP COMPLETE
