@@ -59,9 +59,10 @@ Items are only complete after targeted validation and the relevant full verifica
 - [ ] Phase 3 — Implement database/XML export helpers.
 - [ ] Phase 4 — Implement target import helpers with backup and idempotency safeguards.
 - [ ] Phase 5 — Integrate import timing with database creation, Alembic stamp/upgrade, and permissions.
-- [ ] Phase 6 — Expand optional RRD migration discovery/copy behavior.
-- [ ] Phase 7 — Add tests/fixtures for every supported source and target path.
-- [ ] Phase 8 — Run installer-level validation and document operator behavior.
+- [ ] Phase 6 — Add lighttpd-to-Nginx takeover handling for upgrades from the old portal.
+- [ ] Phase 7 — Expand optional RRD migration discovery/copy behavior.
+- [ ] Phase 8 — Add tests/fixtures for every supported source and target path.
+- [ ] Phase 9 — Run installer-level validation and document operator behavior.
 
 ## Commit Tracking
 
@@ -73,9 +74,10 @@ Items are only complete after targeted validation and the relevant full verifica
 | [ ] | 3 |  | Legacy export helpers and fixtures. |
 | [ ] | 4 |  | Target import helpers with backups/idempotency. |
 | [ ] | 5 |  | `portal.sh` integration and migration ordering. |
-| [ ] | 6 |  | RRD migration expansion. |
-| [ ] | 7 |  | Automated tests and fixture coverage. |
-| [ ] | 8 |  | Final validation and docs. |
+| [ ] | 6 |  | Detect existing lighttpd, preserve legacy document root for import, then safely stop/disable it before Nginx takes port 80. |
+| [ ] | 7 |  | RRD migration expansion. |
+| [ ] | 8 |  | Automated tests and fixture coverage. |
+| [ ] | 9 |  | Final validation and docs. |
 
 ## Data Detection Rules
 
@@ -432,7 +434,8 @@ Ordering recommendation:
 5. Run `flask db upgrade` to create new schema for fresh target DB.
 6. If `LEGACY_IMPORT_ENABLED=true`, run export/import helper.
 7. Run a final `flask db upgrade` or schema validation check.
-8. Continue permissions/frontend/nginx/systemd setup.
+8. Complete lighttpd-to-Nginx takeover handling after all legacy source data has been discovered/exported and before Nginx is restarted.
+9. Continue permissions/frontend/nginx/systemd setup.
 
 Notes:
 - Do not try to Alembic-stamp an old PHP schema as if it were the new schema. Old tables use different names/columns and must be converted into the new schema.
@@ -444,7 +447,54 @@ Verification:
 - Dry-run/mocked import command path.
 - Full backend tests.
 
-### Phase 6 — RRD migration expansion
+### Phase 6 — lighttpd-to-Nginx takeover
+
+Objective: handle upgrades from the old PHP/lighttpd portal safely before Nginx takes ownership of port 80.
+
+Modify:
+- `bash/extras/portal.sh`
+
+Requirements:
+- Detect whether lighttpd is installed and/or active:
+  - `dpkg-query -W lighttpd`
+  - `systemctl is-active lighttpd`
+  - `systemctl is-enabled lighttpd`
+  - `ss -ltnp` or equivalent best-effort check for port 80 ownership.
+- Determine the lighttpd document root before stopping lighttpd:
+  - Prefer `/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p | grep server.document-root` when available.
+  - Fall back to common paths such as `/var/www/html`.
+- Feed the detected document root into legacy portal discovery so old data is inspected before any web-server takeover.
+- If Nginx will be the selected/default web server and lighttpd is active on port 80:
+  - Tell the user Nginx will replace lighttpd for the new Flask/Angular portal.
+  - Stop and disable lighttpd after legacy data discovery/export is complete, but before `nginx -t`/Nginx restart.
+  - Do not purge/remove lighttpd packages by default.
+  - Keep old lighttpd document root files intact unless the user explicitly requests cleanup in a future phase.
+- If stopping/disabling lighttpd fails, abort before restarting Nginx and show the log.
+- If Nginx configuration/start fails after lighttpd was stopped, attempt a best-effort rollback:
+  - re-enable/restart lighttpd if it was active/enabled before takeover;
+  - log rollback success/failure clearly.
+- Record final status in the installer completion dialog:
+  - lighttpd not installed/not active;
+  - lighttpd stopped and disabled;
+  - lighttpd rollback attempted because Nginx failed.
+
+Recommended variables:
+- `LIGHTTPD_INSTALLED=false`
+- `LIGHTTPD_ACTIVE_BEFORE=false`
+- `LIGHTTPD_ENABLED_BEFORE=false`
+- `LIGHTTPD_DOCROOT=""`
+- `LIGHTTPD_TAKEOVER_STATUS="No lighttpd takeover needed"`
+
+Verification:
+- `bash -n bash/extras/portal.sh`.
+- Mocked shell-function test or temporary script harness for these cases:
+  - no lighttpd installed;
+  - lighttpd installed but inactive;
+  - lighttpd active and Nginx starts successfully;
+  - lighttpd active and Nginx fails, triggering rollback attempt.
+- Manual integration check on a VM/container with lighttpd listening on port 80 before running installer.
+
+### Phase 7 — RRD migration expansion
 
 Objective: migrate existing `.rrd` files only when present and approved.
 
@@ -461,7 +511,7 @@ Verification:
 - Shell syntax check.
 - Temporary-directory test where candidate source has `.rrd` files and target receives copies without overwrites.
 
-### Phase 7 — Test matrix
+### Phase 8 — Test matrix
 
 Automated/unit tests:
 - Parser handles PHP constants with single quotes, spaces, and missing optional constants.
@@ -480,6 +530,8 @@ Manual/integration checks:
 - MySQL old portal -> new SQLite target import, if source test DB is available.
 - PostgreSQL target provisioning still works.
 - RRD present/declined and RRD present/accepted.
+- lighttpd installed/active before upgrade -> legacy document root detected -> lighttpd stopped/disabled only after legacy data handling -> Nginx starts on port 80.
+- lighttpd installed/active and Nginx start fails -> best-effort lighttpd rollback is attempted and logged.
 
 Commands:
 
@@ -493,7 +545,7 @@ npm ci
 npm run build
 ```
 
-### Phase 8 — Operator documentation and final handoff
+### Phase 9 — Operator documentation and final handoff
 
 Update installation messaging so users understand:
 - Import is optional.
@@ -502,6 +554,8 @@ Update installation messaging so users understand:
 - Backups are created before target writes where possible.
 - Old PHP portal settings not used by the new Angular/Flask app may be skipped.
 - RRD migration copies existing files and does not overwrite new files.
+- Nginx is the default web server for the new Flask/Angular portal.
+- Existing lighttpd installs are treated as legacy sources: document root is inspected before takeover, lighttpd is stopped/disabled only when Nginx is ready to take port 80, and lighttpd packages/config are not purged by default.
 
 Final validation:
 - `bash -n bash/extras/portal.sh` passes.
@@ -518,6 +572,8 @@ Final validation:
 - Old password hashes must be verified against the new Python auth stack. If incompatible, import users as locked/admin-disabled and require password reset rather than silently creating unusable accounts.
 - Importing large positions tables can be slow. Use batched inserts and progress logging.
 - Existing target data creates merge conflicts. Default to skip duplicates and log them rather than destructive replacement.
+- lighttpd may already own port 80 on old installs. The installer must discover/export legacy data before stopping it, and should disable rather than purge lighttpd by default so rollback remains possible.
+- Nginx takeover can temporarily break the old portal if new Nginx config/start fails. Add best-effort rollback and clear failure messaging.
 - RRD file compatibility depends on existing graph definitions. Copying files is low-risk, but graph readers must tolerate legacy filenames/layouts.
 
 ## Open Questions Before Implementation
