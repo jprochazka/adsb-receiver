@@ -68,7 +68,7 @@ Plan default: preserve behavior first. Adopt new features only after the base mi
 
 - Do not redesign the UI.
 - Do not change backend endpoint paths, payload keys, auth token keys, or route paths.
-- Do not replace Karma/Jasmine, Chart.js, OpenLayers, Bootstrap, or RxJS during the Angular migration.
+- Do not replace Karma/Jasmine, Chart.js, OpenLayers, Bootstrap, or RxJS with different libraries during the Angular migration. Version upgrades are allowed when handled in isolated, verified package-update commits.
 - Do not introduce NgRx or broad state-management rewrites.
 - Do not convert every component to signals in one pass.
 - Do not mix package upgrade commits with broad feature refactors.
