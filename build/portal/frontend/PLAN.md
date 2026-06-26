@@ -77,6 +77,31 @@ Collected before changing Angular packages:
   - No direct matches for `ComponentFactoryResolver`, `ComponentFactory`, `checkNoChanges`, `createNgModuleRef`, `withFetch`, `paramsInheritanceStrategy`, or `canMatch` in app source.
 
 
+## Phase 1 / Phase 2 Migration Evidence
+
+Collected during Angular 22 migration:
+
+- `npx ng update` recommended updating `@angular/cli` `21.2.17 -> 22.0.4` and `@angular/core` `21.2.17 -> 22.0.3`.
+- `npx ng update @angular/cli@22 @angular/core@22` completed without `--force`.
+- Angular CLI migrated package versions to Angular `22.0.x` and TypeScript `6.0.3`.
+- Angular CLI added `istanbul-lib-instrument` for Karma coverage.
+- Optional CLI migrations were intentionally not run in this phase:
+  - Karma to Vitest migration is out of scope because the plan keeps Karma/Jasmine.
+  - Application-builder migration was not needed; the app already uses `@angular/build:application`.
+- Angular core migrations applied compatibility changes:
+  - Added `ChangeDetectionStrategy.Eager` to components to preserve pre-v22 eager behavior.
+  - Added `withXhr()` to `provideHttpClient` call sites to preserve pre-v22 XHR backend behavior.
+  - Wrapped affected optional chaining expressions in `devices.component.html`.
+  - Added temporary extended-diagnostic suppressions for `nullishCoalescingNotNullable` and `optionalChainNotNullable` to retain pre-v22 behavior while strict templates remain enabled.
+- First TypeScript 6 typecheck failed with `TS2882` for side-effect CSS imports of `ol/ol.css` in `flights.component.ts` and `live.component.ts`.
+- Added `src/styles.d.ts` with `declare module '*.css';` to satisfy TypeScript 6 side-effect import declarations without weakening strict settings.
+- Verification after the CSS module declaration:
+  - `npm ci`: passed.
+  - `npm run typecheck`: passed.
+  - `npm run build`: passed with a production bundle budget warning: initial bundle exceeded the `1.65MB` warning budget by `22.48 kB`; no build failure.
+  - `npm run test:headless`: passed, `332 SUCCESS`.
+  - `npm audit --omit=dev --audit-level=moderate`: passed with 0 production vulnerabilities.
+
 ## Compatibility Facts
 
 From Angular version compatibility docs:
@@ -137,21 +162,21 @@ Items are complete only after targeted checks and the full frontend verification
 
 ### Phase 1 — Angular CLI v22 Migration
 
-- [ ] Phase 1.1 — Run `npx ng update` and record migration guidance.
-- [ ] Phase 1.2 — Run `npx ng update @angular/cli@22 @angular/core@22` without `--force`.
-- [ ] Phase 1.3 — Investigate any peer dependency conflicts instead of bypassing them.
-- [ ] Phase 1.4 — Review migration output in `package.json`, `package-lock.json`, `angular.json`, `tsconfig*.json`, and touched source files.
-- [ ] Phase 1.5 — Run `npm ci` from the migrated lockfile; if `package.json` and `package-lock.json` are out of sync, regenerate the lockfile and commit both together.
-- [ ] Phase 1.6 — Commit official Angular migration output separately.
+- [x] Phase 1.1 — Run `npx ng update` and record migration guidance.
+- [x] Phase 1.2 — Run `npx ng update @angular/cli@22 @angular/core@22` without `--force`.
+- [x] Phase 1.3 — Investigate any peer dependency conflicts instead of bypassing them.
+- [x] Phase 1.4 — Review migration output in `package.json`, `package-lock.json`, `angular.json`, `tsconfig*.json`, and touched source files.
+- [x] Phase 1.5 — Run `npm ci` from the migrated lockfile; if `package.json` and `package-lock.json` are out of sync, regenerate the lockfile and commit both together.
+- [x] Phase 1.6 — Commit official Angular migration output separately.
 
 ### Phase 2 — TypeScript 6 and Compiler Fixes
 
-- [ ] Phase 2.1 — Ensure TypeScript is in Angular's supported `>=6.0.0 <6.1.0` range.
-- [ ] Phase 2.2 — Run `npm run typecheck` and classify all failures.
-- [ ] Phase 2.3 — Fix TypeScript 6 errors without weakening `strict` settings.
-- [ ] Phase 2.4 — Fix Angular template/compiler diagnostics without disabling `strictTemplates`.
-- [ ] Phase 2.5 — Run `npm run build`.
-- [ ] Phase 2.6 — Commit TypeScript/compiler fixes separately.
+- [x] Phase 2.1 — Ensure TypeScript is in Angular's supported `>=6.0.0 <6.1.0` range.
+- [x] Phase 2.2 — Run `npm run typecheck` and classify all failures.
+- [x] Phase 2.3 — Fix TypeScript 6 errors without weakening `strict` settings.
+- [x] Phase 2.4 — Fix Angular template/compiler diagnostics without disabling `strictTemplates`.
+- [x] Phase 2.5 — Run `npm run build`.
+- [x] Phase 2.6 — Commit TypeScript/compiler fixes separately.
 
 ### Phase 3 — Angular 22 Runtime Compatibility
 
@@ -212,8 +237,8 @@ Modernize only where it improves upgrade correctness or removes weak typing expo
 | Status | Phase | Commit SHA | Notes |
 | --- | --- | --- | --- |
 | [x] | 0 | 6e8f55e | Baseline passed: npm ci, typecheck, build, headless tests, coverage, production audit, and breaking-change touchpoint audit. |
-| [ ] | 1 | TBD | Angular CLI v22 migration output. |
-| [ ] | 2 | TBD | TypeScript 6/compiler/template fixes. |
+| [x] | 1 | ac467c2 | Angular CLI v22 migration output: package updates, Eager change detection, withXhr, diagnostics migration, and template migration. |
+| [x] | 2 | 985af51 | Added CSS side-effect module declaration for TypeScript 6; typecheck/build/headless tests pass. |
 | [ ] | 3 | TBD | Angular 22 runtime compatibility fixes. |
 | [ ] | 4 | TBD | Frontend package update groups. |
 | [ ] | 5 | TBD | Limited Angular 22 feature adoption. |
