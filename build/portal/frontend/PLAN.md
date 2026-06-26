@@ -1,59 +1,80 @@
-# ADS-B Receiver Portal Frontend Cleanup Plan
+# ADS-B Receiver Portal Angular 22 Upgrade Plan
 
-This plan covers a cleanup/refactor pass for the Angular application in `build/portal/frontend` on the `cleanup` branch. The goal is to improve maintainability, type safety, testability, and build hygiene without changing user-visible behavior or API contracts.
+This plan replaces the completed frontend cleanup plan. It covers upgrading the Angular application in `build/portal/frontend` from Angular 21.2.x to Angular 22.x, adopting the Angular 22 / TypeScript 6 toolchain, updating Angular-adjacent packages, and then selectively modernizing code where the change is safe and testable.
 
-## Goals
+## Goal
 
-- Keep the existing Angular standalone-component architecture recognizable.
-- Avoid a large rewrite or visual redesign.
-- Preserve routes, UI behavior, backend API paths, localStorage token semantics, map behavior, chart behavior, and admin workflows.
-- Make each cleanup step small enough to test independently.
-- Keep `npm run build` passing after each phase.
-- Keep Karma tests passing once the local Chrome/Chromium prerequisite is available.
+Upgrade the frontend to the latest stable Angular 22 release while preserving routes, backend API contracts, UI behavior, authentication semantics, map/chart behavior, and the existing Karma/Jasmine test workflow.
 
-## Initial Baseline Snapshot
+## Current Baseline
 
-- Frontend source: about 12,866 lines across 51 TypeScript files under `src/app`.
-- Templates: about 5,114 lines across 20 HTML files.
-- Styles: about 1,705 lines across 21 SCSS files.
-- Tests: about 4,617 lines across 24 spec files.
-- Largest components:
-  - `src/app/live/live.component.ts`: 1,291 lines.
-  - `src/app/flights/flights.component.ts`: 1,149 lines.
-  - `src/app/devices/devices.component.ts`: 942 lines.
-  - `src/app/service/data.service.ts`: 537 lines.
-  - `src/app/admin-blog/admin-blog.component.ts`: 534 lines.
-  - `src/app/admin-live/admin-live.component.ts`: 483 lines.
-  - `src/app/admin-flights/admin-flights.component.ts`: 438 lines.
-- Tooling observations from local review:
-  - `npm ci` initially fails because `package-lock.json` is not fully in sync with `package.json` / Angular 21 optional peer dependencies (`chokidar@5.0.0`, `readdirp@5.0.0`).
-  - `npm install --package-lock-only --ignore-scripts --no-audit --no-fund` makes `npm ci` work locally.
-  - `npm run build` passes after installing dependencies.
-  - `npm test -- --watch=false --browsers=ChromeHeadless` builds the test bundle but cannot launch because no Chrome/Chromium binary is installed in this environment and `CHROME_BIN` is unset.
-  - `npm audit --omit=dev --audit-level=moderate` reports production dependency advisories in Angular 21.2.x and `protocol-buffers-schema`; `npm audit fix` is available but should be done as a dedicated dependency-update phase.
-- Main maintainability concerns:
-  - `DataService` centralizes every backend API call and repeats token/header construction heavily.
-  - Many API methods return `Observable<any>` and many components store `any`/`any[]`, despite strict TypeScript being enabled.
-  - Very large components mix data loading, URL state, formatting, map/chart state, filtering, pagination, admin actions, and template state.
-  - Several components use direct `localStorage` and repeated JWT decoding logic instead of a shared auth/session seam.
-  - Several admin settings saves call `.subscribe()` without surfaced success/error behavior.
-  - Test execution depends on an external browser binary that is not documented/configured here.
-  - No lint script is currently configured.
+Verified locally on this branch before writing the plan:
+
+- Repo: `/tmp/adsb-receiver-review`
+- Frontend: `build/portal/frontend`
+- Branch: `cleanup`
+- Current Angular packages in `package.json`: `^21.2.17`
+- Current TypeScript: `~5.9.3`
+- Current Node in this environment: `v22.23.1`
+- Current npm in this environment: `10.9.8`
+- Current Angular build system: `@angular/build:application` and `@angular/build:karma`
+- Current app architecture: standalone components with strict TypeScript and strict Angular templates enabled
+- Current test scripts:
+  - `npm run typecheck`
+  - `npm run build`
+  - `npm run test:headless`
+  - `npm run test:coverage`
+- `npm audit --omit=dev --audit-level=moderate` currently reports 0 production vulnerabilities.
+
+## External Compatibility Facts Checked
+
+From Angular version compatibility docs:
+
+- Angular `22.0.x` requires Node `^22.22.3 || ^24.15.0 || ^26.0.0`.
+- Angular `22.0.x` requires TypeScript `>=6.0.0 <6.1.0`.
+- Angular `22.0.x` supports RxJS `^6.5.3 || ^7.4.0`.
+
+Current local Node `v22.23.1` satisfies Angular 22. Current RxJS `~7.8.0` is in the supported range.
+
+Latest package lookup at plan time:
+
+- `@angular/core`: `22.0.3`
+- `@angular/cli`: `22.0.4`
+- `typescript`: `6.0.3`
+- `zone.js`: `0.16.2`
+- `rxjs`: `7.8.2`
+
+Use Angular CLI migrations as the source of truth for exact package versions and code migrations. Do not hand-edit all Angular package versions first unless `ng update` is blocked.
+
+## Angular 22 Risks to Manage Explicitly
+
+Angular 22 has real breaking-change risk. Treat this as a migration, not a casual dependency bump.
+
+High-priority risks from Angular 22 changelog/release notes:
+
+- TypeScript older than 6.0 is no longer supported.
+- Components with undefined `changeDetection` are now `OnPush` by default. This app currently has many standalone components without explicit `changeDetection`; this can affect UI refresh behavior and tests.
+- `HttpBackend` defaults to FetchBackend. If any code depends on XHR-specific behavior or upload progress, keep or opt back to XHR explicitly.
+- Template diagnostics may become stricter, including nullable optional chaining/nullish coalescing warnings.
+- Data-prefixed attributes no longer bind inputs/outputs.
+- Template expression use of `in` variables can fail.
+- Forms `min`/`max` validators no longer support string values; bound values must be numbers or null.
+- Deprecated/removed APIs include Hammer.js integration, `ComponentFactoryResolver`, `ComponentFactory`, `createNgModuleRef`, and `ChangeDetectorRef.checkNoChanges`.
+- Router defaults changed, notably `paramsInheritanceStrategy` defaulting to `always`.
+
+Plan default: preserve behavior first. Adopt new features only after the base migration is green.
 
 ## Non-Goals
 
 - Do not redesign the UI.
-- Do not change route paths.
-- Do not change backend API endpoint paths or payload keys.
-- Do not replace Angular, Karma/Jasmine, Chart.js, OpenLayers, Bootstrap, or RxJS.
-- Do not convert the app to NgRx or another state-management framework.
-- Do not introduce new runtime services.
-- Do not do broad formatting-only churn.
-- Do not remove working tests to make refactors easier.
+- Do not change backend endpoint paths, payload keys, auth token keys, or route paths.
+- Do not replace Karma/Jasmine, Chart.js, OpenLayers, Bootstrap, or RxJS during the Angular migration.
+- Do not introduce NgRx or broad state-management rewrites.
+- Do not convert every component to signals in one pass.
+- Do not mix package upgrade commits with broad feature refactors.
+- Do not loosen strict TypeScript/template settings except as a short-lived, explicitly tracked blocker workaround.
 
 ## Progress Checklist
-
-Use this checklist to track implementation across small commits. Mark an item complete only after the relevant targeted tests/builds and the full frontend verification gate pass.
 
 Legend:
 - `[ ]` Not started
@@ -61,495 +82,382 @@ Legend:
 - `[x]` Complete
 - `[!]` Blocked / needs decision
 
-### Setup and Tooling
+Items are only complete after the listed targeted checks and the full frontend verification gate pass.
 
-- [x] Phase 0.1 — Sync `package-lock.json` so `npm ci` works without a pre-step.
-- [x] Phase 0.2 — Add documented frontend setup/build/test commands.
-- [x] Phase 0.3 — Decide and document the local browser prerequisite for Karma (`chromium`, `google-chrome`, or CI-provided `CHROME_BIN`).
-- [x] Phase 0.4 — Add a conservative lint/typecheck script only if it can pass without broad code churn.
-- [x] Phase 0.5 — Record baseline verification: `npm ci`, `npm run build`, and headless Karma once browser support is available.
+### Phase 0 — Baseline and Safety Net
 
-### Shared Types and API Client Cleanup
+- [ ] Phase 0.1 — Confirm clean tree, current branch, and current dependency/test baseline.
+- [ ] Phase 0.2 — Save package inventory and current Angular/TypeScript versions in this plan.
+- [ ] Phase 0.3 — Run baseline verification on Angular 21: `npm ci`, `npm run typecheck`, `npm run build`, `npm run test:headless`, and `npm run test:coverage` if feasible.
+- [ ] Phase 0.4 — Audit Angular 22 breaking-change touchpoints in this codebase before changing packages.
+- [ ] Phase 0.5 — Commit the baseline plan/inventory update separately.
 
-- [x] Phase 1.1 — Add shared API/domain interfaces for common backend payloads currently represented as `any`.
-- [x] Phase 1.2 — Add a small auth header/session helper to remove repeated `localStorage.getItem('access_token')` and header literals in `DataService`.
-- [x] Phase 1.3 — Split `DataService` by domain or extract private helper methods in-place, whichever is lower risk after inspection.
-- [x] Phase 1.4 — Replace manual query-string concatenation with `HttpParams` for routes that accept optional filters.
-- [x] Phase 1.5 — Verify `data.service.spec.ts`, affected component specs, and full build/test gate.
+### Phase 1 — Angular CLI Migration to v22
 
-### Auth and Session Handling
+- [ ] Phase 1.1 — Run Angular CLI update dry-run/recommendation commands and record any migration warnings.
+- [ ] Phase 1.2 — Run `ng update @angular/cli@22 @angular/core@22` without `--force`; do not bypass peer conflicts until investigated.
+- [ ] Phase 1.3 — Review and commit only CLI/package/migration output if it is coherent.
+- [ ] Phase 1.4 — Run `npm ci` from a clean lockfile and fix lockfile/package consistency.
+- [ ] Phase 1.5 — Run `npm run typecheck`; classify failures as TypeScript 6, Angular template, OnPush, FetchBackend, router, or package peer issues.
 
-- [x] Phase 2.1 — Centralize JWT payload decoding used by `app.component.ts`, `auth.interceptor.ts`, `account.component.ts`, `flights.component.ts`, `blog.component.ts`, and `admin-scheduler.component.ts`.
-- [x] Phase 2.2 — Add focused unit tests for malformed tokens, expired tokens, missing roles, and returnUrl handling.
-- [x] Phase 2.3 — Keep localStorage key names and navigation behavior unchanged.
-- [x] Phase 2.4 — Verify login/register/logout/app/interceptor tests and full build/test gate.
+### Phase 2 — TypeScript 6 and Compiler Strictness Cleanup
 
-### Large Component Decomposition
+- [ ] Phase 2.1 — Update TypeScript to the Angular-supported `>=6.0.0 <6.1.0` range, preferably via CLI migration output.
+- [ ] Phase 2.2 — Fix TypeScript 6 errors without weakening `strict`, `strictTemplates`, or existing compiler options.
+- [ ] Phase 2.3 — Address new Angular template diagnostics directly unless a temporary diagnostic suppression is justified and recorded.
+- [ ] Phase 2.4 — Replace remaining easy `any` seams touched by compiler errors with existing shared domain types.
+- [ ] Phase 2.5 — Commit TypeScript/compiler cleanup separately from feature modernization.
 
-- [x] Phase 3.1 — Extract pure formatting/filtering/pagination helpers from `flights.component.ts` without changing template behavior.
-- [x] Phase 3.2 — Extract map/trail/photo/comment helper logic from `flights.component.ts` only where tests can characterize behavior.
-- [x] Phase 3.3 — Extract live map configuration, aircraft classification legend, overlay-ring parsing, and resize helpers from `live.component.ts`.
-- [x] Phase 3.4 — Extract device graph/KPI formatting helpers from `devices.component.ts`.
-- [x] Phase 3.5 — Verify affected component specs after each slice and full build/test gate before committing.
+### Phase 3 — Angular 22 Behavior Compatibility
 
-### Admin Components and Settings Workflows
+- [ ] Phase 3.1 — Audit every standalone component for implicit Angular 22 `OnPush` behavior.
+- [ ] Phase 3.2 — For components where behavior must stay eager, add explicit compatibility configuration or update data flow/tests to be OnPush-safe.
+- [ ] Phase 3.3 — Verify async UI updates in auth/nav, admin save flows, live map polling, devices graphs, flights pagination, and blog comments.
+- [ ] Phase 3.4 — Audit `HttpClient` usage for FetchBackend behavior differences; preserve XHR only if a concrete issue appears.
+- [ ] Phase 3.5 — Audit router behavior affected by inherited route params; pin router config only if a concrete route regression appears.
+- [ ] Phase 3.6 — Commit Angular 22 behavior compatibility fixes.
 
-- [x] Phase 4.1 — Normalize repeated boolean setting save/load patterns in admin components.
-- [x] Phase 4.2 — Add consistent error feedback for setting save failures where current UI silently subscribes.
-- [x] Phase 4.3 — Extract reusable taxonomy/tag/category helpers from `admin-blog.component.ts`.
-- [x] Phase 4.4 — Extract purge/ignore-on-purge helper logic from `admin-flights.component.ts`.
-- [x] Phase 4.5 — Verify admin component specs and full build/test gate.
+### Phase 4 — Third-Party Package Updates
 
-### Templates and Styles
+- [ ] Phase 4.1 — Run `npm outdated --json` after Angular 22 migration and classify packages into Angular-managed, runtime, dev/test, and risky UI/runtime packages.
+- [ ] Phase 4.2 — Update Angular-managed packages together: `@angular/*`, `@angular/build`, `zone.js`, and TypeScript within Angular compatibility bounds.
+- [ ] Phase 4.3 — Update low-risk runtime packages in small groups: fonts, `bootstrap`, `chart.js`, `rxjs` patch/minor, `tslib`.
+- [ ] Phase 4.4 — Update high-risk runtime packages separately: `ol` and anything that affects map rendering or projection behavior.
+- [ ] Phase 4.5 — Update dev/test packages separately: `jasmine-core`, `karma`, launchers/reporters, and `@types/jasmine`.
+- [ ] Phase 4.6 — Run `npm audit --omit=dev --audit-level=moderate` and document/fix any production advisories.
+- [ ] Phase 4.7 — Commit each package group separately with verification evidence.
 
-- [x] Phase 5.1 — Review largest templates for repeated button/table/empty-state patterns.
-- [x] Phase 5.2 — Extract small reusable presentational components only when duplication is clear and tests remain simple.
-- [x] Phase 5.3 — Consolidate repeated SCSS values/classes conservatively; avoid visual redesign.
-- [x] Phase 5.4 — Verify screenshots manually if browser tooling is available; otherwise rely on component tests and build.
+### Phase 5 — Angular 22 Feature Adoption
 
-### Test Coverage and Reliability
+Adopt features only after Phases 1-4 are green. Prefer small, reversible, behavior-preserving improvements.
 
-- [x] Phase 6.1 — Make headless test execution reproducible locally/CI.
-- [x] Phase 6.2 — Add targeted tests for shared auth/session helpers.
-- [x] Phase 6.3 — Add tests around extracted pure helpers from flights/live/devices.
-- [x] Phase 6.4 — Add tests for admin save error paths where behavior is stable.
-- [x] Phase 6.5 — Add a coverage baseline command/report and record current statement/branch/function/line coverage.
-- [x] Phase 6.6 — Identify coverage gaps in high-risk user flows and add behavior-focused tests until coverage is up to par.
-- [x] Phase 6.7 — Set pragmatic coverage thresholds only after the baseline is stable; avoid threshold gaming.
-- [x] Phase 6.8 — Avoid brittle DOM tests that only assert Angular implementation details.
+- [ ] Phase 5.1 — Replace any remaining legacy structural directives with built-in control flow only where templates are already being touched; many templates already use `@if`/`@for`.
+- [ ] Phase 5.2 — Evaluate signal-based component APIs (`input()`, `output()`, `model()`) for small presentational components first, such as `SpinnerComponent`, `AdminSettingToggleComponent`, and chart wrapper inputs.
+- [ ] Phase 5.3 — Evaluate `computed()`/`signal()` for local derived UI state in one low-risk component before any broad conversion.
+- [ ] Phase 5.4 — Evaluate Angular 22 stable Signal Forms for one isolated form only after existing form behavior is covered by tests; do not migrate all forms at once.
+- [ ] Phase 5.5 — Evaluate Angular Aria only where it improves existing accessibility without visual churn.
+- [ ] Phase 5.6 — Avoid adopting new APIs in large stateful components (`live`, `flights`, `devices`) until smaller components prove the pattern.
 
-### Dependency and Security Follow-up
+### Phase 6 — TypeScript 6 Modernization
 
-- [x] Phase 7.1 — Update the lockfile in a standalone commit and verify `npm ci` from a clean tree.
-- [x] Phase 7.2 — Run `npm audit --omit=dev --audit-level=moderate` and decide whether to apply `npm audit fix`.
-- [x] Phase 7.3 — If Angular packages are updated, run build, headless tests, and a quick UI smoke pass.
-- [x] Phase 7.4 — Keep dependency updates separate from refactors unless required to unblock tooling.
+Use TypeScript 6 to improve correctness, not to churn syntax.
 
-### Commit Tracking
+- [ ] Phase 6.1 — Keep `strict`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `noImplicitReturns`, and `strictTemplates` enabled.
+- [ ] Phase 6.2 — Use stricter inferred types from TS 6 to remove redundant annotations where they obscure domain types.
+- [ ] Phase 6.3 — Replace weak object literals with typed helpers or `satisfies` where route/config/admin setting maps need shape checks.
+- [ ] Phase 6.4 — Tighten remaining `Observable<any>` and component `any[]` usage touched by upgrade work.
+- [ ] Phase 6.5 — Do not add TS 6-specific cleverness unless it reduces an actual bug risk or removes casts.
 
-Record each cleanup commit here as work proceeds:
+### Phase 7 — Full Verification and Smoke Testing
 
-| Status | Phase | Commit | Notes |
+- [ ] Phase 7.1 — Run `npm ci` from a clean tree.
+- [ ] Phase 7.2 — Run `npm run typecheck`.
+- [ ] Phase 7.3 — Run `npm run build` production build.
+- [ ] Phase 7.4 — Run `npm run test:headless`.
+- [ ] Phase 7.5 — Run `npm run test:coverage` and compare against existing thresholds.
+- [ ] Phase 7.6 — Run a browser smoke pass for login/nav, live map, flights, devices graphs, blog, account, and admin workflows if a browser is available.
+- [ ] Phase 7.7 — Run `npm audit --omit=dev --audit-level=moderate`.
+- [ ] Phase 7.8 — Confirm clean working tree and record final commit SHAs.
+
+## Commit Tracking
+
+Record each upgrade slice here as work proceeds.
+
+| Status | Phase | Commit SHA | Notes |
 | --- | --- | --- | --- |
-| [x] | Planning | `7e67a31` | Added frontend cleanup plan. |
-| [x] | 0 | `2e1c3b8`, `67045de` | Lockfile synced; `npm ci`, `npm run build`, `npm run typecheck`, and headless Karma pass after installing Google Chrome. |
-| [x] | 1 | `d791358`, `f04c879`, `12ca91d` | Added shared API response types, centralized DataService auth headers, extracted low-risk in-place URL/pagination helpers, converted public blog post query construction to HttpParams, and fixed brittle specs revealed by headless Karma. |
-| [x] | 2 | `0500201` | Centralized JWT payload/session helpers, migrated existing decode callers, preserved token key/navigation behavior, and verified full headless Karma/build gate. |
-| [x] | 3 | `bb35aa5`, `661e7fd`, `03e99c7`, `0bab12c`, `db5d16c`, `81fb12a` | Completed large component decomposition with flights display/track helpers, live display/overlay/settings helpers, and devices display/KPI helpers. |
-| [x] | 4 | `148f7bb`, `4d647b0`, `89f7e9e`, `6d5d914`, `10142ff`, `9051f1a` | Completed admin/settings workflow cleanup with autosave feedback/helper consolidation, admin blog taxonomy helpers, admin live/feeders setting-save consolidation, and admin flights purge/ignore helpers. |
-| [x] | 5 | `c518732`, `3261070`, `58c77d5` | Completed templates/styles cleanup with largest-template inventory, shared admin setting toggle presentational extraction, shared per-page select styling, and build/test/browser-smoke verification. |
-| [x] | 6 | `9cac76d`, `c86f42a`, `b7eb81b` | Completed test reliability and coverage with verified headless/coverage commands, auth-session and helper focused checks, admin error-path inventory, coverage-gap triage, and threshold/brittle-test decisions. |
-| [x] | 7 | `347ea57` | Completed dependency/security follow-up with same-major Angular 21.2.17 updates, production audit clean, `npm ci`, build/typecheck/headless tests, and quick UI smoke. |
+| [ ] | 0 | TBD | Baseline inventory and Angular 22 upgrade plan. |
+| [ ] | 1 | TBD | Angular CLI v22 package/migration output. |
+| [ ] | 2 | TBD | TypeScript 6/compiler/template cleanup. |
+| [ ] | 3 | TBD | Angular 22 behavior compatibility fixes. |
+| [ ] | 4 | TBD | Third-party package update groups. |
+| [ ] | 5 | TBD | Angular 22 feature adoption slices. |
+| [ ] | 6 | TBD | TypeScript 6 modernization slices. |
+| [ ] | 7 | TBD | Final verification and smoke/audit evidence. |
 
----
+## Detailed Execution Plan
 
-## Phase 0: Setup and Tooling
+### Phase 0: Baseline and Safety Net
 
-1. Sync the lockfile in a dedicated commit.
-   - Run from `build/portal/frontend`:
-     - `npm install --package-lock-only --ignore-scripts --no-audit --no-fund`
-     - `npm ci`
-   - Commit only `package-lock.json` if it changes.
-   - Do not combine this with source refactors.
+Objective: establish a known-good starting point before the Angular 22 migration.
 
-2. Add frontend testing documentation.
-   - Create `build/portal/frontend/TESTING.md` only if the user wants checked-in docs.
-   - Otherwise keep commands in this plan.
-   - Include:
-     - `npm ci`
-     - `npm run build`
-     - `npm test -- --watch=false --browsers=ChromeHeadless`
-     - Chrome/Chromium prerequisite and `CHROME_BIN` note.
+Commands:
 
-3. Establish local verification gate.
-   - Required every source-changing phase:
-     - `npm run build`
-     - targeted component/service specs when browser support is present
-     - full `npm test -- --watch=false --browsers=ChromeHeadless` when browser support is present
-   - If Chrome is unavailable, report the blocker explicitly and run build plus any non-browser checks available.
+```bash
+cd /tmp/adsb-receiver-review
+git status --short
+git branch --show-current
 
-4. Consider lint/typecheck scripts.
-   - Current `npm run build` already performs Angular/TypeScript compilation.
-   - Added `npm run typecheck` as a conservative development Angular build/typecheck alias.
-   - Added `npm run test:headless` as the documented one-shot Karma command.
-   - Add ESLint only as a later separate phase if it can be introduced with minimal mechanical churn.
+cd build/portal/frontend
+node --version
+npm --version
+npm ci
+npm run typecheck
+npm run build
+npm run test:headless
+npm run test:coverage
+npm audit --omit=dev --audit-level=moderate
+npm outdated --json || true
+```
 
+Expected outcome:
 
-Phase 0 live verification notes (2026-06-25):
-- `npm install --package-lock-only --ignore-scripts --no-audit --no-fund` updated only `package-lock.json` for Angular 21 optional peer dependencies.
-- `npm ci` passes from `build/portal/frontend`.
-- `npm run build` passes.
-- `npm run typecheck` passes; it is a conservative Angular development build/typecheck script and adds no new lint dependencies.
-- Installed Google Chrome 149 locally in this environment; `npm run test:headless` now launches ChromeHeadless and passes.
-- Local Karma prerequisite decision: install `chromium` or `google-chrome` and set `CHROME_BIN` when the binary is not discoverable by `karma-chrome-launcher`; CI should use an image/action that provides Chrome or exports `CHROME_BIN`.
+- Working tree starts clean except this plan update.
+- Baseline tests/builds pass on Angular 21 before upgrade work begins.
+- If coverage or headless tests fail for environmental reasons, capture the exact blocker in this plan before proceeding.
 
-Acceptance criteria:
-- `npm ci` works from a clean tree.
-- `npm run build` passes.
-- Karma test prerequisite is documented or configured.
-- Any new tooling is conservative and does not trigger broad unrelated rewrites.
+Commit:
 
-## Phase 1: Shared Types and API Client Cleanup
+```bash
+git add build/portal/frontend/PLAN.md
+git commit -m "docs: plan Angular 22 frontend upgrade"
+```
 
-1. Inventory backend payloads represented by `any`.
-   - Start with `src/app/service/data.service.ts`.
-   - Prioritize stable payloads already exercised by specs:
-     - users
-     - settings
-     - blog posts/comments
-     - ADS-B/UAT flights and positions
-     - ACARS flights/messages
-     - graph responses
-     - live aircraft
+### Phase 1: Angular CLI Migration to v22
 
-2. Add shared interfaces in a low-risk location.
-   - Candidate: `src/app/shared/api-types.ts` or domain-specific files under `src/app/shared/types/`.
-   - Prefer domain-specific names over generic `ApiResponse` buckets.
-   - Do not require every endpoint to be typed in one pass.
+Objective: let Angular's official migrations update package metadata and code before any manual modernization.
 
-3. Remove repeated auth header construction.
-   - Candidate helper in `DataService` first:
-     - a private helper that returns the existing authorization header object for the current access token.
-   - Later, consider moving token access to an `AuthSessionService` if Phase 2 confirms it is useful.
-   - Keep the current bearer-token header semantics unchanged.
+Commands:
 
-4. Replace manual query strings incrementally.
-   - Example low-risk target:
-     - `getBlogPosts(offset, limit, category, tag)` currently concatenates query strings manually.
-   - Use `HttpParams` and keep generated request URLs semantically identical.
+```bash
+cd /tmp/adsb-receiver-review/build/portal/frontend
+npx ng update
+npx ng update @angular/cli@22 @angular/core@22
+npm ci
+npm run typecheck
+```
 
-5. Verify.
-   - Run `npm run build` after each slice.
-   - Run `src/app/service/data.service.spec.ts` once headless test support is available.
-   - Run full headless tests before committing.
+Rules:
 
-Phase 1 live verification notes (2026-06-25):
-- Added `src/app/shared/api-types.ts` with low-risk shared response interfaces.
-- Centralized all `DataService` bearer-token header construction in a private `authHeaders()` helper; no public API paths or token storage keys changed.
-- Converted `getBlogPosts(offset, limit, category, tag)` from manual query-string concatenation to `HttpParams` while preserving the same query keys.
-- Phase 1.3 decision: keep `DataService` intact for now and extract private helpers in-place; splitting into domain services would create broader DI/import churn for little immediate payoff.
-- Added `offsetLimitParams()`, `flightUrl()`, and `schedulerJobUrl()` helpers to reduce repeated URL/parameter construction without changing public methods.
-- Installed Google Chrome 149 locally so Karma can launch `ChromeHeadless` in this environment.
-- Fixed brittle frontend specs exposed by the first real headless run: completed missing service mocks, made repeated admin blog mock calls stable, and aligned pagination/control assertions with current templates/routes.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 280 SUCCESS`.
+- Do not use `--force` first.
+- If peer conflicts appear, inspect the peer range and package owner before deciding.
+- Keep the migration output commit focused on files changed by `ng update` and package manager lockfile updates.
+- If Angular CLI suggests incremental update steps, follow them instead of jumping manually.
 
-Acceptance criteria:
-- `DataService` is smaller or has less duplication.
-- Public request URLs/headers are unchanged.
-- Types improve at stable API seams without forcing broad component rewrites.
+Likely files:
 
-## Phase 2: Auth and Session Handling
+- `package.json`
+- `package-lock.json`
+- `angular.json`
+- `tsconfig*.json`
+- Angular migration-touched source files, if any
 
-1. Extract JWT decode/session helpers.
-   - Repeated logic appears in:
-     - `src/app/app.component.ts`
-     - `src/app/interceptors/auth.interceptor.ts`
-     - `src/app/account/account.component.ts`
-     - `src/app/flights/flights.component.ts`
-     - `src/app/blog/blog.component.ts`
-     - `src/app/admin-scheduler/admin-scheduler.component.ts`
-   - Candidate helper/service:
-     - `src/app/shared/auth-session.ts` for pure helpers, or
-     - `src/app/service/auth-session.service.ts` if DI is needed.
+Commit:
 
-2. Add tests before migration.
-   - malformed JWT returns unauthenticated/expired
-   - missing token returns unauthenticated
-   - expired token returns expired
-   - valid admin token returns admin role
-   - returnUrl remains preserved on forced login redirect
+```bash
+git add build/portal/frontend/package.json build/portal/frontend/package-lock.json build/portal/frontend/angular.json build/portal/frontend/tsconfig*.json build/portal/frontend/src
+git commit -m "chore: upgrade frontend to Angular 22"
+```
 
-3. Migrate one caller at a time.
-   - Start with pure consumers, then interceptor.
-   - Do not change localStorage keys.
+### Phase 2: TypeScript 6 and Compiler Strictness Cleanup
 
+Objective: fix compiler/template failures from Angular 22 and TypeScript 6 without weakening type safety.
 
-Phase 2 live verification notes (2026-06-25):
-- Added `src/app/shared/auth-session.ts` as the shared JWT/session helper seam.
-- Added `src/app/shared/auth-session.spec.ts` covering missing, malformed, expired, valid admin, and missing-role token behavior.
-- Migrated repeated JWT decode logic in `app.component.ts`, `auth.interceptor.ts`, `account.component.ts`, `flights.component.ts`, `blog.component.ts`, and `admin-scheduler.component.ts`.
-- Preserved `access_token` / `refresh_token` storage keys and existing forced-login returnUrl behavior.
-- Existing `login.component.spec.ts` still covers returnUrl navigation after successful login.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 283 SUCCESS`.
+Commands:
 
-Acceptance criteria:
-- Token/session behavior is centralized.
-- Existing login/register/logout/app/interceptor specs pass.
-- No route guard or navigation behavior changes.
+```bash
+cd /tmp/adsb-receiver-review/build/portal/frontend
+npm run typecheck
+npm run build
+```
 
-## Phase 3: Large Component Decomposition
+Fix order:
 
-1. `flights.component.ts`.
-   - Extract pure helpers first:
-     - tab normalization
-     - page parsing
-     - display labels
-     - aircraft type/icon formatting
-     - comment sorting/threading if present
-   - Keep stateful map/photo/API logic in the component until covered.
+1. TypeScript syntax/API errors.
+2. Angular template type errors.
+3. Nullable/optional-chain/nullish-coalescing diagnostics.
+4. Test compile errors.
+5. Remaining app build errors.
 
-2. `live.component.ts`.
-   - Extract pure helpers first:
-     - overlay-ring JSON parsing
-     - aircraft type/source labels
-     - classification legend data
-     - map style constants
-   - Keep OpenLayers object lifecycle changes isolated and tested.
+Rules:
 
-3. `devices.component.ts`.
-   - Extract pure formatting helpers:
-     - bytes/rates
-     - graph periods
-     - KPI calculations
-     - receiver status labels
-   - Avoid changing chart rendering behavior.
+- Prefer precise model/interface fixes over casts.
+- Avoid broad `as any` patches.
+- If a diagnostic must be suppressed temporarily, add a checklist item in this plan explaining where and why.
 
-4. Verification.
-   - Add pure helper specs where practical.
-   - Run relevant component specs and `npm run build` after each slice.
+Commit:
 
+```bash
+git add build/portal/frontend/src build/portal/frontend/tsconfig*.json build/portal/frontend/PLAN.md
+git commit -m "fix: satisfy TypeScript 6 frontend checks"
+```
 
-Phase 3 live verification notes (2026-06-25):
-- Phase 3.1 slice: added `src/app/flights/flight-display.helpers.ts` for pure flights display/pagination helpers.
-- Added `src/app/flights/flight-display.helpers.spec.ts` covering page-number windows, count normalization, aircraft class inference, and aircraft display labels.
-- Migrated `flights.component.ts` to use the extracted helper for page-number windows, count normalization, aircraft class inference, and labels while keeping stateful map/photo/API logic in the component.
-- Updated the existing flights component spec to assert aircraft classification through the helper seam instead of the old private component method.
-- Focused helper spec passes: `TOTAL: 4 SUCCESS`.
-- Phase 3.2 slice: added `src/app/flights/flight-track.helpers.ts` for characterized track segmentation and render-coordinate interpolation helpers.
-- Added `src/app/flights/flight-track.helpers.spec.ts` covering time-gap segmentation, empty inputs, non-mutating input order, sparse-coordinate interpolation, and single-position segments.
-- Migrated `flights.component.ts` to use the track helper seam while keeping OpenLayers map/layer lifecycle, photo loading, and comment mutations in the component.
-- Updated the existing flights component spec to assert track segmentation/interpolation through the helper seam instead of removed private component methods.
-- Focused track helper spec passes: `TOTAL: 4 SUCCESS`.
-- Focused flights component spec passes: `TOTAL: 26 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 291 SUCCESS`.
-- Phase 3.3 first live slice: added `src/app/live/live-display.helpers.ts` for altitude/source colors, aircraft classification labels, source labels, flight-history link construction, and aircraft type legend data.
-- Added `src/app/live/live-display.helpers.spec.ts` covering altitude color tiers, ADS-B/UAT source labels, category/callsign classification fallbacks, type/source labels, flight-history link generation, and legend ordering.
-- Migrated `live.component.ts` to use the display helper seam while keeping SVG/icon generation and OpenLayers lifecycle in the component.
-- Focused live display helper spec passes: `TOTAL: 6 SUCCESS`.
-- Focused live component spec passes: `TOTAL: 21 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 297 SUCCESS`.
-- Phase 3.3 second live slice: added `src/app/live/live-overlay.helpers.ts` for theoretical-range and HeyWhatsThat overlay-ring JSON parsing.
-- Added `src/app/live/live-overlay.helpers.spec.ts` covering invalid JSON, lon/lat pair arrays, lon/lng/longitude object aliases, nested coordinate configs, and GeoJSON polygon features.
-- Migrated `live.component.ts` to use the overlay helper seam while keeping OpenLayers overlay source/layer lifecycle in the component.
-- Focused live overlay helper spec passes: `TOTAL: 5 SUCCESS`.
-- Focused live component spec passes: `TOTAL: 21 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 302 SUCCESS`.
-- Phase 3.3 third live slice: added `src/app/live/live-settings.helpers.ts` for live map defaults, bounded settings parsing, overlay JSON trimming, and flyout-width clamping.
-- Added `src/app/live/live-settings.helpers.spec.ts` covering numeric bounds, invalid fallback values, boolean defaults, true-only flags, and viewport-aware flyout clamping.
-- Migrated `live.component.ts` to use the settings helper seam while keeping setting fetch orchestration and resize event lifecycle in the component.
-- Focused live settings helper spec passes: `TOTAL: 4 SUCCESS`.
-- Focused live component spec passes: `TOTAL: 21 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 306 SUCCESS`.
-- Phase 3.4 devices slice: added `src/app/devices/devices-display.helpers.ts` for device graph period constants, refresh interval bounds, byte/duration formatting, aircraft type labels, dataset-average KPI extraction, and range-unit conversion.
-- Added `src/app/devices/devices-display.helpers.spec.ts` covering byte/duration formatting, refresh bounds, aircraft type labels, dataset averaging, and range conversions.
-- Migrated `devices.component.ts` to use the devices helper seam while keeping graph chart config construction, data loading, tab state, brush state, and chart lifecycle in the component.
-- RED verified first: the new helper spec initially failed because the helper module did not exist, then failed for missing exported KPI helpers before implementation; after implementation the same spec passed.
-- Focused devices helper + component specs pass: `TOTAL: 33 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 312 SUCCESS`.
+### Phase 3: Angular 22 Behavior Compatibility
 
-Acceptance criteria:
-- Large components shrink through behavior-preserving extraction.
-- Extracted helpers have focused tests.
-- Templates continue to compile under strict templates.
+Objective: preserve runtime behavior under Angular 22 defaults.
 
-## Phase 4: Admin Components and Settings Workflows
+Audit commands:
 
-1. Identify repeated setting load/save code.
-   - Admin components with obvious repetition:
-     - `admin-acars.component.ts`
-     - `admin-devices.component.ts`
-     - `admin-feeders.component.ts`
-     - `admin-graphs.component.ts`
-     - `admin-live.component.ts`
+```bash
+cd /tmp/adsb-receiver-review/build/portal/frontend
+rg "changeDetection|ChangeDetectionStrategy|ChangeDetectorRef|markForCheck|detectChanges|ComponentFactoryResolver|checkNoChanges|provideHttpClient|withFetch|paramsInheritanceStrategy|canMatch|@Input|@Output" src/app angular.json
+```
 
-2. Extract reusable helpers cautiously.
-   - A small private helper per component may be lower risk than a cross-component abstraction.
-   - Only create a shared settings service/helper after two or three components prove the same shape.
+Checks:
 
-3. Add stable error feedback.
-   - Several save methods call `.subscribe()` without error handling.
-   - Add user-visible error messages only where the component already has an error-message pattern.
-   - Avoid inventing a new global notification system.
+- Components with async subscriptions and no explicit change detection.
+- Components whose tests assume eager change detection.
+- Polling components (`app`, `live`, `devices`, `rrd-chart`).
+- Route-param consumers.
+- HTTP operations that may be affected by FetchBackend.
 
-Acceptance criteria:
-- Repeated settings code is reduced.
-- Failed save paths are testable and, where appropriate, visible to the user.
-- Existing admin UI behavior remains unchanged on success.
+Default strategy:
 
-Phase 4 live verification notes (2026-06-25):
-- Phase 4.1/4.2 first admin devices slice: consolidated repeated `updateSetting(...).subscribe()` autosave methods in `admin-devices.component.ts` behind a private `saveSetting(...)` helper.
-- Added success/error message state and template alerts for admin devices autosaves so failed saves are visible instead of silently swallowed.
-- Added `admin-devices.component.spec.ts` coverage for successful autosave feedback and failed autosave feedback.
-- RED verified first: the focused admin devices spec initially failed because `successMessage` and `errorMessage` did not exist on the component; after implementation the same spec passed.
-- Focused admin devices spec passes: `TOTAL: 5 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 313 SUCCESS`.
-- Phase 4.1/4.2 second admin autosave slice: consolidated silent nav setting saves in `admin-acars.component.ts` and `admin-links.component.ts` behind local `saveSetting(...)` helpers.
-- Added focused admin ACARS and admin Links specs for successful nav autosave feedback and failed nav autosave feedback.
-- RED verified first: the focused specs failed because nav autosaves did not set success/error state and unhandled save errors escaped the subscription; after implementation the same specs passed.
-- Focused admin ACARS + Links specs pass: `TOTAL: 14 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 316 SUCCESS`.
-- Phase 4.1/4.2 third admin autosave slice: consolidated silent setting saves in `admin-flights.component.ts` and `admin-blog.component.ts` behind local `saveSetting(...)` helpers.
-- Added focused admin Flights and Blog specs for successful settings autosave feedback and failed settings autosave feedback.
-- Verified no remaining admin `updateSetting(...).subscribe();` silent autosave calls remain; remaining admin `updateSetting` subscriptions have explicit success/error handlers or are batched `forkJoin` saves with handlers.
-- RED verified first: the focused specs failed because settings autosaves did not set success/error state and unhandled save errors escaped the subscription; after implementation the same specs passed.
-- Focused admin Flights + Blog specs pass: `TOTAL: 47 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 319 SUCCESS`.
-- Phase 4.3 admin blog taxonomy slice: added `src/app/admin-blog/admin-blog.helpers.ts` for pure tag/category normalization, deduplication, and catalog aggregation helpers.
-- Added `admin-blog.helpers.spec.ts` covering trimmed tag extraction, case-insensitive tag deduplication, tag/category catalog counts, Uncategorized fallback, and custom category resolution.
-- Migrated `admin-blog.component.ts` to call the helper seam while keeping API orchestration, prompts/confirms, bulk update subscriptions, and component state in the component.
-- RED verified first: the new helper spec failed because the helper module did not exist yet; after implementation the same spec passed.
-- Focused admin Blog helper + component specs pass: `TOTAL: 34 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 324 SUCCESS`.
-- Phase 4.1 final settings-normalization slice: consolidated repeated boolean autosave handlers in `admin-live.component.ts` and `admin-feeders.component.ts` behind local `saveSetting(...)` helpers.
-- Verified remaining admin setting saves are either routed through local `saveSetting(...)` helpers, explicit numeric/string helpers, explicit order/custom-preset handlers, or `forkJoin` batch saves with success/error handlers.
-- Focused admin Live + Feeders component specs pass before and after refactor: `TOTAL: 19 SUCCESS`.
-- `npm run typecheck` passes.
-- `npm run build` passes.
-- `npm run test:headless` passes: `TOTAL: 324 SUCCESS`.
-- Phase 4.4 admin flights purge/ignore slice: added `src/app/admin-flights/admin-flights.helpers.ts` for purge completion messages, ignored-flight range/pagination helpers, offset normalization, ignore-toggle event extraction, and purge preference error messages.
-- Added `admin-flights.helpers.spec.ts` covering purge message formatting, empty/bounded ignored-flight ranges, pagination bounds, post-load offset normalization, ignore-toggle extraction, and source-specific preference errors.
-- Migrated `admin-flights.component.ts` to use the helper seam while keeping purge subscriptions, reload orchestration, and saving state in the component.
-- RED verified first: the new helper spec failed because the helper module did not exist yet; after implementation the same spec passed.
-- Focused admin Flights helper + component specs pass: `TOTAL: 24 SUCCESS`.
-- Phase 4.5 final admin verification gate passed: `npm run typecheck`, `npm run build`, and full `npm run test:headless` with `TOTAL: 330 SUCCESS`.
+- First preserve behavior. If a component breaks because Angular 22 defaults to OnPush, either make the component's data flow OnPush-safe or explicitly preserve eager behavior for that component.
+- Do not convert large components to signals just to satisfy OnPush; isolate behavior changes.
 
-## Phase 5: Templates and Styles
+Verification:
 
-1. Review largest templates.
-   - Focus on repeated table states, pagination controls, action button clusters, and empty/loading/error states.
+```bash
+npm run typecheck
+npm run build
+npm run test:headless
+```
 
-2. Extract only obvious presentational duplication.
-   - Candidate shared components should be dumb/presentational.
-   - Avoid coupling domain state into shared UI components.
+Commit:
 
-3. Keep style changes conservative.
-   - Prefer variable/class consolidation.
-   - Do not redesign layout, spacing, colors, map controls, or charts in this cleanup pass.
+```bash
+git add build/portal/frontend/src build/portal/frontend/angular.json build/portal/frontend/PLAN.md
+git commit -m "fix: preserve frontend behavior on Angular 22"
+```
 
-Acceptance criteria:
-- Template duplication is reduced only where clear.
-- Build and strict template checks pass.
-- No visual redesign is introduced.
+### Phase 4: Third-Party Package Updates
 
-Phase 5 live verification notes (2026-06-25):
-- Phase 5.1 template inventory reviewed the largest component templates by line count:
-  - `devices.component.html` — 984 lines; heavy card/table/KPI/chart repetition. Best first candidate is presentational extraction only if component tests stay simple.
-  - `flights.component.html` — 839 lines; large map flyout/comments/detail template. Avoid broad extraction because it is tightly coupled to map/flyout state.
-  - `admin-flights.component.html` — 463 lines; repeated pagination, alert, purge-card, and form-switch patterns remain candidate cleanup areas.
-  - `admin-blog.component.html` — 416 lines; repeated alert/pagination/form-switch patterns but less urgent after Phase 4 helper extraction.
-  - `admin-live.component.html` — 306 lines and `admin-devices.component.html` — 205 lines; repeated settings cards/form-switch rows are the clearest candidates for conservative presentational cleanup.
-- Pattern counts across the largest templates showed repeated `card`, `form-check`, `alert`, table, pagination, and spinner structures; no style changes were made in the inventory slice.
-- Phase 5.2 should start with one small presentational component or template-only cleanup where duplication is obvious and covered by existing component specs; avoid redesigning layout, spacing, colors, map controls, or charts.
-- Phase 5.2 first presentational extraction added `src/app/shared/admin-setting-toggle/admin-setting-toggle.component.ts` for repeated admin list-group form-switch rows.
-- Added `admin-setting-toggle.component.spec.ts` covering title/description/state label rendering and `checkedChange` emission.
-- Migrated repeated toggle rows in `admin-devices.component.html` to the shared presentational component while keeping save handlers and settings state in `admin-devices.component.ts`.
-- RED verified first: the new component spec failed because the component module did not exist yet; after implementation the same spec passed.
-- Focused shared toggle + admin Devices specs pass: `TOTAL: 7 SUCCESS`.
-- Full Phase 5.2 gate passed: `npm run typecheck`, `npm run build`, and full `npm run test:headless` with `TOTAL: 332 SUCCESS`.
-- Phase 5.3 consolidated duplicate per-page select sizing into the global `.per-page-select` utility in `src/styles.scss`.
-- Migrated `Flights`, `ACARS`, `Admin Users`, and `Admin Blog` templates from page-specific per-page select classes to `.per-page-select`; removed duplicated 8.5rem width rules from component SCSS.
-- Phase 5.4 visual smoke used the dev server and browser screenshots for public `Flights` and `ACARS` pages; the shared select width/alignment rendered correctly with no obvious visual breakage. Admin Blog/Admin Users are auth-gated, so verification for those stayed on template compile/build/full Karma coverage.
-- Final Phase 5 gate passed: `npm run typecheck`, `npm run build`, and full `npm run test:headless` with `TOTAL: 332 SUCCESS`.
+Objective: update non-Angular packages without hiding regressions inside the framework migration.
 
-## Phase 6: Test Reliability and Coverage
+Commands:
 
-1. Make headless Karma reproducible.
-   - Preferred local fix: install Chromium and set `CHROME_BIN` if needed.
-   - Alternative CI fix: use a browser image/action that provides Chrome.
+```bash
+cd /tmp/adsb-receiver-review/build/portal/frontend
+npm outdated --json || true
+npm audit --omit=dev --audit-level=moderate
+```
 
-2. Add tests around extracted pure helpers.
-   - Auth/session helpers.
-   - Flights/live/devices formatting helpers.
-   - Admin settings save error handling.
+Recommended grouping:
 
-3. Establish a real coverage baseline.
-   - Add or document a repeatable coverage command, preferably `ng test --watch=false --browsers=ChromeHeadless --code-coverage` or an npm script wrapping it.
-   - Record current statement, branch, function, and line coverage in this plan.
-   - Include coverage artifact location, such as `coverage/`, if generated locally.
+1. Angular-adjacent/toolchain:
+   - `zone.js`
+   - `typescript`
+   - `@angular/*`
+2. Low-risk runtime:
+   - `@fontsource/inter`
+   - `@fontsource/rajdhani`
+   - `bootstrap`
+   - `chart.js`
+   - `rxjs` patch/minor within Angular support
+   - `tslib`
+3. High-risk runtime:
+   - `ol`
+   - any package that changes map/chart rendering behavior
+4. Dev/test:
+   - `jasmine-core`
+   - `karma`
+   - `karma-*`
+   - `@types/jasmine`
 
-4. Bring coverage up to par with behavior-focused tests.
-   - Review the coverage report for high-risk low-coverage areas before chasing percentages.
-   - Prioritize user-facing flows and refactor-sensitive seams:
-     - auth/session expiry and role handling
-     - login/register/logout returnUrl and error paths
-     - DataService request URL/params/header helpers
-     - flights/live/devices pure helpers and display decisions
-     - admin save/error paths
-     - blog/comment permission and mutation flows
-   - Add tests for meaningful behavior gaps, not incidental implementation details.
+Verification after each group:
 
-5. Set pragmatic thresholds after the baseline stabilizes.
-   - Do not invent thresholds before measuring the current suite.
-   - Prefer thresholds that prevent regressions while leaving room for staged improvement.
-   - If thresholds are added, verify they pass locally and in CI.
+```bash
+npm ci
+npm run typecheck
+npm run build
+npm run test:headless
+npm audit --omit=dev --audit-level=moderate
+```
 
-6. Avoid brittle tests.
-   - Prefer component behavior and pure helper inputs/outputs.
-   - Avoid asserting private Angular implementation details unless no public seam exists.
+Commit each group separately.
 
-Acceptance criteria:
-- `npm test -- --watch=false --browsers=ChromeHeadless` runs in the intended environment.
-- A repeatable coverage command exists and its baseline is recorded.
-- Coverage gaps in high-risk flows are identified and either covered or tracked with explicit follow-up notes.
-- Any coverage thresholds are evidence-based and pass without gaming tests.
-- New tests protect behavior introduced or preserved by refactors.
+### Phase 5: Angular 22 Feature Adoption
 
-Phase 6 live verification notes (2026-06-25):
-- Phase 6.1 reproducibility check: existing `npm run test:headless` script runs Karma with `--watch=false --browsers=ChromeHeadless`; verified full suite passes with `TOTAL: 332 SUCCESS`.
-- Phase 6.2 auth/session check: existing `src/app/shared/auth-session.spec.ts` covers missing, malformed, expired, valid user-id/role, admin, missing-role, and missing-expiry cases; focused auth-session spec passes with `TOTAL: 3 SUCCESS`.
-- Phase 6.5 RED verified first: `npm run test:coverage` failed because the script did not exist yet; added the script to `package.json` and reran it successfully.
-- Coverage command: `npm run test:coverage` (`ng test --watch=false --browsers=ChromeHeadless --code-coverage`).
-- Coverage artifact location: `build/portal/frontend/coverage/frontend/` (ignored by `.gitignore`).
-- Baseline from `npm run test:coverage`: Statements 69.72% (2734/3921), Branches 51.14% (757/1480), Functions 61.04% (699/1145), Lines 71.77% (2568/3578).
-- Verification after script addition: `npm run typecheck`, `npm run build`, and `npm run test:headless` all pass; `npm run test:headless` reports `TOTAL: 332 SUCCESS`.
-- Phase 6.3 helper coverage inventory: every extracted helper has a matching spec (`admin-blog`, `admin-flights`, `devices-display`, `flight-display`, `flight-track`, `live-display`, `live-overlay`, `live-settings`). Focused helper suite passes with `TOTAL: 40 SUCCESS`.
-- Phase 6.4 admin save/error path inventory: stable autosave failure feedback is covered in admin Blog, ACARS, Devices, and Links specs; broader admin mutation error paths are covered in Blog, Users, and purge specs. No uncovered stable autosave seam was found in this slice.
-- Phase 6.6 coverage gap triage from the HTML report: lowest/high-risk areas are `app/service` 20.35% statements, `app/admin-users` 52.27%, `app/admin-links` 53.46%, `app/flights` 57.14%, and `app/acars` 62.83%. These are tracked as future behavior-focused candidates rather than percentage-chasing in this cleanup pass.
-- Phase 6.7 threshold decision: no coverage thresholds added yet. Current branch coverage is only 51.14%, so adding thresholds now would either encourage threshold gaming or block safe staged improvements. Revisit after DataService and high-risk route coverage improve.
-- Phase 6.8 brittle-test review: selector/text-content search found 49 DOM assertions. Most are behavior-facing checks; the main brittle candidate is scheduler button tests indexing `.card` order. No test rewrite was necessary for the current refactor, but scheduler DOM assertions are tracked as a future simplification candidate if touched.
+Objective: use new Angular features where they reduce code or improve correctness.
 
-## Phase 7: Dependency and Security Follow-up
+Candidate low-risk first slices:
 
-1. Keep dependency updates separate.
-   - First make lockfile reproducible.
-   - Then assess `npm audit --omit=dev` output.
+1. Small standalone components:
+   - `src/app/shared/spinner/spinner.component.ts`
+   - `src/app/shared/admin-setting-toggle/admin-setting-toggle.component.ts`
+   - `src/app/shared/rrd-chart/rrd-chart.component.ts`
+2. Presentational inputs/outputs:
+   - evaluate `input()`/`output()` only when tests can validate behavior.
+3. Local derived state:
+   - evaluate `signal()`/`computed()` for small local UI state, not shared application state.
+4. Forms:
+   - evaluate Signal Forms only in one isolated, well-tested form before any broad migration.
+5. Accessibility:
+   - evaluate Angular Aria for concrete a11y improvements, not a broad rewrite.
 
-2. Apply minimal safe updates.
-   - Prefer patch/minor updates that keep Angular major version unchanged.
-   - Run build/tests after updates.
+Rules:
 
-3. Do not mix dependency changes with component refactors.
+- One feature-adoption pattern per commit.
+- No large component conversion until the pattern is proven in a small component.
+- Every feature-adoption commit must include or update tests.
 
-Acceptance criteria:
-- Production audit issues are either fixed or documented with a clear reason for deferral.
-- `npm ci`, `npm run build`, and headless tests pass after dependency changes.
+### Phase 6: TypeScript 6 Modernization
 
-Phase 7 live verification notes (2026-06-25):
-- `npm ci` from a clean dependency install completed successfully. It still reports dev-only audit findings in the install summary, but production audit is clean after the targeted update below.
-- Initial `npm audit --omit=dev --audit-level=moderate` found 8 production vulnerabilities: Angular 21.2.6 advisories plus transitive `protocol-buffers-schema <3.6.1`.
-- Applied minimal same-major dependency updates only: Angular packages from 21.2.6/21.2.4 to 21.2.17, and transitive `protocol-buffers-schema` to 3.6.1 via lockfile regeneration. No source refactors were mixed into this dependency slice.
-- Final `npm audit --omit=dev --audit-level=moderate` reports `found 0 vulnerabilities`.
-- Verification after dependency updates: `npm ci`, `npm run typecheck`, `npm run build`, and full `npm run test:headless` all pass; headless suite reports `TOTAL: 332 SUCCESS`.
-- Quick UI smoke after Angular update: dev server served `/flights` and `/acars`; both routes rendered expected headings/controls/table structure, and browser console reported no messages or JS errors.
+Objective: reduce weak typing exposed by the upgrade.
+
+Targets:
+
+- Remaining `Observable<any>` in `src/app/service/data.service.ts`.
+- Remaining component `any[]` in admin/blog/user/link/app components.
+- Weak payload objects around admin user/blog/link forms.
+- Route/nav/link configuration object shapes.
+
+Rules:
+
+- Use existing shared API/domain interfaces where possible.
+- Prefer `satisfies` on config maps where it catches shape drift.
+- Avoid syntax churn that does not improve safety.
+- Keep each typing slice tied to a test/build gate.
+
+Verification:
+
+```bash
+npm run typecheck
+npm run build
+npm run test:headless
+```
+
+### Phase 7: Final Verification and Handoff
+
+Objective: prove the upgraded app works and leave a clean branch.
+
+Commands:
+
+```bash
+cd /tmp/adsb-receiver-review/build/portal/frontend
+npm ci
+npm run typecheck
+npm run build
+npm run test:headless
+npm run test:coverage
+npm audit --omit=dev --audit-level=moderate
+
+cd /tmp/adsb-receiver-review
+git status --short
+git log --oneline -10
+```
+
+Manual smoke checklist if browser access is available:
+
+- Login, logout, register, account page.
+- Navbar visibility by auth/admin state.
+- Live map loads, polls, and shows expected overlays.
+- Flights pages paginate/search/detail/comment flows.
+- Devices graphs render and period/range controls work.
+- Blog list/detail/comment flows.
+- Admin users/blog/flights/live/devices/graphs/settings save and error paths.
+
+Final handoff should include:
+
+- Final Angular/CLI/TypeScript/Node versions.
+- Package groups updated.
+- Test/build/audit output summary.
+- Known deferred modernization items, if any.
+- Clean working tree evidence.
+
+## Open Questions / Decisions
+
+- If Angular 22 OnPush default creates regressions, should we preserve eager behavior explicitly for existing components first, then migrate to OnPush intentionally later? Default recommendation: yes.
+- If FetchBackend creates a concrete HTTP behavior difference, should we opt back to XHR globally or only for affected paths? Default recommendation: only preserve XHR where evidence requires it.
+- How aggressively should we adopt Signal Forms? Default recommendation: one isolated form as a spike after the upgrade is green.
+- Should package updates beyond Angular 22 be included in this branch? Default recommendation: yes, but only as separate commits grouped by risk.
