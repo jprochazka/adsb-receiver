@@ -6,21 +6,21 @@ import shutil
 import socket
 import subprocess
 import time
-import yaml
 import psutil
 
 from urllib.error import URLError
+from json import JSONDecodeError
+from sqlalchemy.exc import SQLAlchemyError
 from urllib.request import urlopen
 from flask import current_app
+from backend.config_loader import get_graphs_config, get_rrd_writer_config, load_portal_config
 
 
 class RrdWriter:
     def __init__(self):
-        with open('config.yml') as f:
-            cfg = yaml.safe_load(f)
-
-        graphs_cfg = cfg.get('graphs', {})
-        writer_cfg = cfg.get('rrd_writer', {})
+        cfg = load_portal_config()
+        graphs_cfg = get_graphs_config(cfg)
+        writer_cfg = get_rrd_writer_config(cfg)
 
         self.enabled = bool(writer_cfg.get('enabled', True))
         self.step = int(writer_cfg.get('step_seconds', 30))
@@ -80,14 +80,39 @@ class RrdWriter:
         if result.returncode != 0:
             self.log(f'failed to update {path}: {result.stderr.strip()}')
 
+    def _write_rrd_values(self, path: str, ds_defs: list[str], values: list):
+        self._ensure_rrd(path, ds_defs)
+        self._update_rrd(path, values)
+
+    def _write_value_rrd(self, path: str, ds_def: str, value):
+        self._write_rrd_values(path, [ds_def], [value])
+
+    def _write_metric_map(self, base_dir: str, prefix: str, metric_values: dict, ds_def: str):
+        for name, value in metric_values.items():
+            self._write_value_rrd(f'{base_dir}/{prefix}-{name}.rrd', ds_def, value)
+
+    def _max_range_from_aircraft(self, receiver_lat, receiver_lon, aircraft):
+        if receiver_lat is None or receiver_lon is None:
+            return 0
+        try:
+            return self._greatcircle(
+                float(receiver_lat),
+                float(receiver_lon),
+                float(aircraft['lat']),
+                float(aircraft['lon']),
+            )
+        except (KeyError, TypeError, ValueError) as ex:
+            self.log(f'could not calculate aircraft range: {ex}')
+            return 0
+
     def _fetch_json(self, url: str):
         try:
             with urlopen(url, None, self.timeout) as r:
                 return json.load(r)
-        except URLError as ex:
+        except (OSError, URLError, TimeoutError) as ex:
             self.log(f'fetch failed for {url}: {ex}')
-        except Exception as ex:
-            self.log(f'unexpected fetch error for {url}: {ex}')
+        except JSONDecodeError as ex:
+            self.log(f'invalid JSON from {url}: {ex}')
         return None
 
     def _greatcircle(self, lat0, lon0, lat1, lon1):
@@ -118,44 +143,46 @@ class RrdWriter:
             strong = local.get('strong_signals', 0)
             positions = cpr.get('global_ok', 0) + cpr.get('local_ok', 0)
 
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_messages-local_accepted.rrd', ['DS:value:DERIVE:120:0:800000'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_messages-local_accepted.rrd', [local_acc])
-
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_messages-remote_accepted.rrd', ['DS:value:DERIVE:120:0:800000'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_messages-remote_accepted.rrd', [remote_acc])
-
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_messages-strong_signals.rrd', ['DS:value:DERIVE:120:0:800000'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_messages-strong_signals.rrd', [strong])
-
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_messages-positions.rrd', ['DS:value:DERIVE:120:0:800000'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_messages-positions.rrd', [positions])
+            message_metrics = {
+                'local_accepted': local_acc,
+                'remote_accepted': remote_acc,
+                'strong_signals': strong,
+                'positions': positions,
+            }
+            self._write_metric_map(
+                self.d1090_dir,
+                'dump1090_messages',
+                message_metrics,
+                'DS:value:DERIVE:120:0:800000',
+            )
 
             local_types = local.get('accepted', [])
             for idx in [4, 5, 11, 17, 18, 20, 21]:
                 value = local_types[idx] if idx < len(local_types) else 0
                 path = f'{self.d1090_dir}/dump1090_messages-local_accepted_{idx}.rrd'
-                self._ensure_rrd(path, ['DS:value:DERIVE:120:0:800000'])
-                self._update_rrd(path, [value])
+                self._write_value_rrd(path, 'DS:value:DERIVE:120:0:800000', value)
 
             all_tracks = tracks.get('all', 0)
             single_message_tracks = tracks.get('single_message', 0)
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_tracks-all.rrd', ['DS:value:DERIVE:120:0:500000'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_tracks-all.rrd', [all_tracks])
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_tracks-single_message.rrd', ['DS:value:DERIVE:120:0:500000'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_tracks-single_message.rrd', [single_message_tracks])
-
-            for k in ['demod', 'reader', 'background']:
-                path = f'{self.d1090_dir}/dump1090_cpu-{k}.rrd'
-                self._ensure_rrd(path, ['DS:value:DERIVE:120:0:1200000'])
-                self._update_rrd(path, [cpu.get(k, 0)])
+            self._write_metric_map(
+                self.d1090_dir,
+                'dump1090_tracks',
+                {'all': all_tracks, 'single_message': single_message_tracks},
+                'DS:value:DERIVE:120:0:500000',
+            )
+            self._write_metric_map(
+                self.d1090_dir,
+                'dump1090_cpu',
+                {k: cpu.get(k, 0) for k in ['demod', 'reader', 'background']},
+                'DS:value:DERIVE:120:0:1200000',
+            )
 
             one_min = stats.get('last1min', {}).get('local', {})
             if one_min:
                 for k in ['signal', 'peak_signal', 'min_signal', 'noise']:
                     if k in one_min:
                         path = f'{self.d1090_dir}/dump1090_dbfs-{k}.rrd'
-                        self._ensure_rrd(path, ['DS:value:GAUGE:120:U:0'])
-                        self._update_rrd(path, [one_min[k]])
+                        self._write_value_rrd(path, 'DS:value:GAUGE:120:U:0', one_min[k])
 
         if receiver and aircraft_data:
             rlat = receiver.get('lat')
@@ -172,25 +199,21 @@ class RrdWriter:
                 if a.get('seen_pos', 9999) < 60 and 'lat' in a and 'lon' in a:
                     with_pos += 1
                     if rlat is not None and rlon is not None:
-                        try:
-                            d = self._greatcircle(float(rlat), float(rlon), float(a['lat']), float(a['lon']))
-                            max_range = max(max_range, d)
-                        except Exception:
-                            pass
+                        max_range = max(max_range, self._max_range_from_aircraft(rlat, rlon, a))
                     if 'lat' in a.get('mlat', []):
                         mlat += 1
 
-            self._ensure_rrd(
+            self._write_rrd_values(
                 f'{self.d1090_dir}/dump1090_aircraft-recent.rrd',
-                ['DS:total:GAUGE:120:0:500', 'DS:positions:GAUGE:120:0:500']
+                ['DS:total:GAUGE:120:0:500', 'DS:positions:GAUGE:120:0:500'],
+                [total, with_pos],
             )
-            self._update_rrd(f'{self.d1090_dir}/dump1090_aircraft-recent.rrd', [total, with_pos])
-
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_mlat-recent.rrd', ['DS:value:GAUGE:120:0:500'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_mlat-recent.rrd', [mlat])
-
-            self._ensure_rrd(f'{self.d1090_dir}/dump1090_range-max_range.rrd', ['DS:value:GAUGE:120:0:1000000'])
-            self._update_rrd(f'{self.d1090_dir}/dump1090_range-max_range.rrd', [max_range])
+            self._write_value_rrd(f'{self.d1090_dir}/dump1090_mlat-recent.rrd', 'DS:value:GAUGE:120:0:500', mlat)
+            self._write_value_rrd(
+                f'{self.d1090_dir}/dump1090_range-max_range.rrd',
+                'DS:value:GAUGE:120:0:1000000',
+                max_range,
+            )
 
     def _write_dump978(self):
         receiver = self._fetch_json(f'{self.dump978_url}/data/receiver.json')
@@ -223,33 +246,35 @@ class RrdWriter:
             if a.get('seen_pos', 9999) < 60 and 'lat' in a and 'lon' in a:
                 with_pos += 1
                 if rlat is not None and rlon is not None:
-                    try:
-                        d = self._greatcircle(float(rlat), float(rlon), float(a['lat']), float(a['lon']))
-                        max_range = max(max_range, d)
-                    except Exception:
-                        pass
+                    max_range = max(max_range, self._max_range_from_aircraft(rlat, rlon, a))
                 if isinstance(a.get('altitude'), (int, float)):
                     alt_values.append(a['altitude'])
 
-        self._ensure_rrd(
+        self._write_rrd_values(
             f'{self.d978_dir}/dump978_aircraft-recent.rrd',
-            ['DS:total:GAUGE:120:0:500', 'DS:positions:GAUGE:120:0:500', 'DS:with_callsign:GAUGE:120:0:500']
+            ['DS:total:GAUGE:120:0:500', 'DS:positions:GAUGE:120:0:500', 'DS:with_callsign:GAUGE:120:0:500'],
+            [total, with_pos, with_callsign],
         )
-        self._update_rrd(f'{self.d978_dir}/dump978_aircraft-recent.rrd', [total, with_pos, with_callsign])
-
-        self._ensure_rrd(f'{self.d978_dir}/dump978_range-max_range.rrd', ['DS:value:GAUGE:120:0:1000000'])
-        self._update_rrd(f'{self.d978_dir}/dump978_range-max_range.rrd', [max_range])
-
-        self._ensure_rrd(f'{self.d978_dir}/dump978_messages-messages.rrd', ['DS:value:DERIVE:120:0:U'])
-        self._update_rrd(f'{self.d978_dir}/dump978_messages-messages.rrd', [total_messages])
+        self._write_value_rrd(
+            f'{self.d978_dir}/dump978_range-max_range.rrd',
+            'DS:value:GAUGE:120:0:1000000',
+            max_range,
+        )
+        self._write_value_rrd(
+            f'{self.d978_dir}/dump978_messages-messages.rrd',
+            'DS:value:DERIVE:120:0:U',
+            total_messages,
+        )
 
         avg_rssi = (sum(rssi_values) / len(rssi_values)) if rssi_values else -30.0
-        self._ensure_rrd(f'{self.d978_dir}/dump978_dbfs-signal.rrd', ['DS:value:GAUGE:120:-200:200'])
-        self._update_rrd(f'{self.d978_dir}/dump978_dbfs-signal.rrd', [avg_rssi])
+        self._write_value_rrd(f'{self.d978_dir}/dump978_dbfs-signal.rrd', 'DS:value:GAUGE:120:-200:200', avg_rssi)
 
         avg_alt = (sum(alt_values) / len(alt_values)) if alt_values else 0
-        self._ensure_rrd(f'{self.d978_dir}/dump978_altitude-average.rrd', ['DS:value:GAUGE:120:-2000:100000'])
-        self._update_rrd(f'{self.d978_dir}/dump978_altitude-average.rrd', [avg_alt])
+        self._write_value_rrd(
+            f'{self.d978_dir}/dump978_altitude-average.rrd',
+            'DS:value:GAUGE:120:-2000:100000',
+            avg_alt,
+        )
 
     def _write_system(self):
         # CPU percentages
@@ -325,8 +350,8 @@ class RrdWriter:
             row = db.session.execute(select(Setting).filter_by(name='graphs_network_interface')).scalar_one_or_none()
             if row and row.value:
                 iface = row.value
-        except Exception:
-            pass
+        except SQLAlchemyError as ex:
+            self.log(f'could not load configured network interface: {ex}')
 
         pernic = psutil.net_io_counters(pernic=True)
         io = pernic.get(iface)

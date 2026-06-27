@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <setting>
+    <name>siteName</name>
+    <value>My ADS-B Receiver</value>
+  </setting>
+  <setting>
+    <name>timeZone</name>
+    <value>America/New_York</value>
+  </setting>
+  <setting>
+    <name>networkInterface</name>
+    <value>eth0</value>
+  </setting>
+  <setting>
+    <name>version</name>
+    <value>2.8.10</value>
+  </setting>
+  <setting>
+    <name>advancedMapCenterLatitude</name>
+    <value>41.3683798</value>
+  </setting>
+  <setting>
+    <name>advancedMapCenterLongitude</name>
+    <value>-82.1076486</value>
+  </setting>
+</settings>

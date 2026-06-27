@@ -3,8 +3,7 @@ Authentication and authorization utilities for role-based JWT authentication.
 """
 
 from functools import wraps
-from flask import jsonify
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request, get_jwt
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from backend.models import db, User
 from sqlalchemy import select
 
@@ -32,7 +31,10 @@ def require_role(required_role):
                 
                 if not current_user:
                     return {'msg': 'User not found'}, 401
-                
+
+                if current_user.locked:
+                    return {'msg': 'Account is locked'}, 403
+
                 if current_user.role != required_role and current_user.role != 'Admin':
                     return {'msg': f'Access denied. {required_role} role required'}, 403
             except Exception as e:

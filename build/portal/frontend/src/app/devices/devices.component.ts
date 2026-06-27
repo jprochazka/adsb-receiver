@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
@@ -6,17 +6,15 @@ import { catchError } from 'rxjs/operators';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { RrdChartComponent, RrdChartConfig } from '../shared/rrd-chart/rrd-chart.component';
-
-type PeriodOption = { label: string; value: string; durationHours: number };
-
-const PERIODS: PeriodOption[] = [
-  { label: 'Hourly',    value: '1h',  durationHours: 1 },
-  { label: 'Six Hours', value: '6h',  durationHours: 6 },
-  { label: 'Daily',     value: '24h', durationHours: 24 },
-  { label: 'Two Days',  value: '2d',  durationHours: 48 },
-  { label: 'Weekly',    value: '7d',  durationHours: 168 },
-  { label: 'Monthly',   value: '30d', durationHours: 720 },
-];
+import {
+  aircraftTypeLabel,
+  convertRangeFromMeters,
+  DEVICE_GRAPH_PERIODS,
+  extractDatasetAverage,
+  formatBytes as formatDeviceBytes,
+  formatDuration as formatDeviceDuration,
+  normalizeRefreshMs,
+} from './devices-display.helpers';
 
 type GraphResolution = 'auto' | 'fine' | 'balanced' | 'compact';
 
@@ -35,6 +33,7 @@ type ReceiverKpis = {
   standalone: true,
   imports: [CommonModule, FormsModule, DecimalPipe, DatePipe, SpinnerComponent, RrdChartComponent],
   templateUrl: './devices.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './devices.component.scss'
 })
 export class DevicesComponent implements OnInit {
@@ -43,9 +42,9 @@ export class DevicesComponent implements OnInit {
   infoStatsEnabled = true;
 
   // ---- Receiver Information ----
-  periods = PERIODS;
+  periods = DEVICE_GRAPH_PERIODS;
   activePeriod = '24h';
-  periodIndex = PERIODS.findIndex((p) => p.value === this.activePeriod);
+  periodIndex = DEVICE_GRAPH_PERIODS.findIndex((p) => p.value === this.activePeriod);
   rangeStart = '';
   rangeEnd = '';
   resolution: GraphResolution = 'auto';
@@ -235,7 +234,7 @@ export class DevicesComponent implements OnInit {
 
         const typeCounts = new Map<string, number>();
         for (const aircraft of liveAircraft) {
-          const label = this.aircraftTypeLabel(String(aircraft?.aircraft_class ?? 'unknown').toLowerCase());
+          const label = aircraftTypeLabel(String(aircraft?.aircraft_class ?? 'unknown').toLowerCase());
           typeCounts.set(label, (typeCounts.get(label) ?? 0) + 1);
         }
 
@@ -316,9 +315,9 @@ export class DevicesComponent implements OnInit {
 
   private loadReceiverData(): void {
     forkJoin({
-      range: this.dataService.getSetting('graphs_measurement_range'),
-      temp:  this.dataService.getSetting('graphs_measurement_temperature'),
-      iface: this.dataService.getSetting('graphs_network_interface'),
+      range: this.dataService.getSetting('graphs_measurement_range').pipe(catchError(() => of({ value: 'imperialNautical' }))),
+      temp:  this.dataService.getSetting('graphs_measurement_temperature').pipe(catchError(() => of({ value: 'imperial' }))),
+      iface: this.dataService.getSetting('graphs_network_interface').pipe(catchError(() => of({ value: 'eth0' }))),
       refresh: this.dataService.getSetting('graphs_refresh_interval_ms').pipe(catchError(() => of({ value: '15000' }))),
       d1090: this.dataService.getSetting('graphs_dump1090_enabled').pipe(catchError(() => of({ value: 'true' }))),
       d978:  this.dataService.getSetting('graphs_dump978_enabled').pipe(catchError(() => of({ value: 'false' }))),
@@ -328,7 +327,7 @@ export class DevicesComponent implements OnInit {
         this.measurementAltitude    = this.measurementRange === 'metric' ? 'metric' : 'imperial';
         this.measurementTemperature = temp?.value  ?? 'imperial';
         this.networkInterface       = iface?.value ?? 'eth0';
-        this.graphRefreshIntervalMs = this.normalizeRefreshMs(refresh?.value);
+        this.graphRefreshIntervalMs = normalizeRefreshMs(refresh?.value);
         this.dump1090GraphsEnabled  = d1090?.value !== 'false';
         this.dump978GraphsEnabled   = d978?.value  !== 'false';
         this.buildChartConfigs();
@@ -364,13 +363,6 @@ export class DevicesComponent implements OnInit {
     });
   }
 
-  private normalizeRefreshMs(value: string | number | null | undefined): number {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) {
-      return 15000;
-    }
-    return Math.min(120000, Math.max(3000, Math.round(parsed)));
-  }
 
   setPeriod(period: string): void {
     this.activePeriod = period;
@@ -608,19 +600,19 @@ export class DevicesComponent implements OnInit {
       d978Messages: this.dataService.getGraphData('dump978', 'messages', options).pipe(catchError(() => of(null))),
       d978Aircraft: this.dataService.getGraphData('dump978', 'aircraft', options).pipe(catchError(() => of(null))),
     }).subscribe(({ d1090Rate, d1090Aircraft, d1090Range, d978Messages, d978Aircraft }) => {
-      const msgRate = this.extractDatasetAverage(d1090Rate, 'messages');
-      const positions = this.extractDatasetAverage(d1090Rate, 'positions');
-      const strongSignals = this.extractDatasetAverage(d1090Rate, 'strong_signals');
-      const rangeMeters = this.extractDatasetAverage(d1090Range, 'max_range');
+      const msgRate = extractDatasetAverage(d1090Rate, 'messages');
+      const positions = extractDatasetAverage(d1090Rate, 'positions');
+      const strongSignals = extractDatasetAverage(d1090Rate, 'strong_signals');
+      const rangeMeters = extractDatasetAverage(d1090Range, 'max_range');
 
       this.currentKpis = {
         adsbMsgRate: msgRate,
-        adsbAircraft: this.extractDatasetAverage(d1090Aircraft, 'total'),
-        adsbRange: rangeMeters != null ? this.convertRangeFromMeters(rangeMeters) : null,
+        adsbAircraft: extractDatasetAverage(d1090Aircraft, 'total'),
+        adsbRange: rangeMeters != null ? convertRangeFromMeters(rangeMeters, this.measurementRange) : null,
         adsbStrongPct: (strongSignals != null && msgRate != null && msgRate > 0) ? (strongSignals * 100) / msgRate : null,
         adsbPosPerMsgPct: (positions != null && msgRate != null && msgRate > 0) ? (positions * 100) / msgRate : null,
-        uatMsgRate: this.extractDatasetAverage(d978Messages, 'messages'),
-        uatAircraft: this.extractDatasetAverage(d978Aircraft, 'total'),
+        uatMsgRate: extractDatasetAverage(d978Messages, 'messages'),
+        uatAircraft: extractDatasetAverage(d978Aircraft, 'total'),
       };
     });
   }
@@ -672,34 +664,6 @@ export class DevicesComponent implements OnInit {
     return 900;
   }
 
-  private extractDatasetAverage(response: any, label: string): number | null {
-    if (!response?.datasets || !Array.isArray(response.datasets)) {
-      return null;
-    }
-
-    const dataset = response.datasets.find((d: any) => d?.label === label);
-    if (!dataset || !Array.isArray(dataset.data)) {
-      return null;
-    }
-
-    const values = dataset.data.filter((v: number | null) => typeof v === 'number') as number[];
-    if (!values.length) {
-      return null;
-    }
-
-    const sum = values.reduce((acc, v) => acc + v, 0);
-    return sum / values.length;
-  }
-
-  private convertRangeFromMeters(value: number): number {
-    if (this.measurementRange === 'metric') {
-      return value * 0.001;
-    }
-    if (this.measurementRange === 'imperialStatute') {
-      return value * 0.000621371;
-    }
-    return value * 0.000539957;
-  }
 
   private getBrushDeltaPct(): number {
     const option = this.periods.find((p) => p.value === this.activePeriod);
@@ -736,54 +700,11 @@ export class DevicesComponent implements OnInit {
   }
 
   formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+    return formatDeviceBytes(bytes);
   }
 
   formatDuration(seconds: number | null): string {
-    if (seconds == null || !Number.isFinite(seconds) || seconds < 0) {
-      return 'N/A';
-    }
-
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (days > 0) {
-      return `${days}d ${hours}h ${minutes}m`;
-    }
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  }
-
-  private aircraftTypeLabel(typeCode: string): string {
-    switch (typeCode) {
-      case 'airliner':
-        return 'Airliner';
-      case 'general_aviation':
-        return 'General Aviation';
-      case 'helicopter':
-        return 'Helicopter';
-      case 'military':
-        return 'Military';
-      case 'glider':
-        return 'Glider';
-      case 'balloon':
-        return 'Balloon';
-      case 'uav':
-        return 'UAV';
-      case 'ground':
-        return 'Ground Vehicle';
-      case 'space':
-        return 'Space Vehicle';
-      default:
-        return 'Unknown';
-    }
+    return formatDeviceDuration(seconds);
   }
 
   bootTime(): Date {

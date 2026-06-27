@@ -39,14 +39,14 @@ def _yaml_config(db_type):
 # these tests patch yaml and omit a pre-set URI to exercise each code path.
 # ---------------------------------------------------------------------------
 
-@patch('backend.yaml.safe_load')
+@patch('backend.config_loader.yaml.safe_load')
 def test_create_app_sets_sqlite_uri(mock_yaml):
     mock_yaml.return_value = _yaml_config('sqlite')
     app = create_app({'TESTING': True})
     assert 'sqlite' in app.config['SQLALCHEMY_DATABASE_URI']
 
 
-@patch('backend.yaml.safe_load')
+@patch('backend.config_loader.yaml.safe_load')
 def test_create_app_sets_mysql_uri(mock_yaml):
     mock_yaml.return_value = _yaml_config('mysql')
     app = create_app({'TESTING': True})
@@ -56,7 +56,7 @@ def test_create_app_sets_mysql_uri(mock_yaml):
     assert 'testdb' in uri
 
 
-@patch('backend.yaml.safe_load')
+@patch('backend.config_loader.yaml.safe_load')
 def test_create_app_sets_postgresql_uri(mock_yaml):
     mock_yaml.return_value = _yaml_config('postgresql')
     app = create_app({'TESTING': True})
@@ -66,7 +66,7 @@ def test_create_app_sets_postgresql_uri(mock_yaml):
     assert 'testdb' in uri
 
 
-@patch('backend.yaml.safe_load')
+@patch('backend.config_loader.yaml.safe_load')
 def test_create_app_invalid_database_use_raises(mock_yaml):
     mock_yaml.return_value = _yaml_config('oracle')
     # Don't pass SQLALCHEMY_DATABASE_URI so the yaml branch runs

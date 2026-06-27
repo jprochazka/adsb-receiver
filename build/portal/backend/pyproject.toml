@@ -5,3 +5,18 @@ pythonpath = ["."]
 [tool.coverage.run]
 branch = true
 source = ["backend"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+
+[tool.ruff]
+target-version = "py312"
+src = ["backend", "tests"]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["F401", "F821"]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/env.py" = ["F401"]

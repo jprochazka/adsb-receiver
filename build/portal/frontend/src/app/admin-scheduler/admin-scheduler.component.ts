@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
+import { isAdminAccessToken } from '../shared/auth-session';
 
 @Component({
   selector: 'app-admin-scheduler',
   standalone: true,
   imports: [SpinnerComponent],
   templateUrl: './admin-scheduler.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-scheduler.component.scss'
 })
 export class AdminSchedulerComponent implements OnInit {
@@ -179,14 +181,6 @@ export class AdminSchedulerComponent implements OnInit {
   }
 
   private isAdmin(): boolean {
-    const token = localStorage.getItem('access_token');
-    if (!token) return false;
-    try {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(base64));
-      return payload.role === 'Admin' && payload.exp * 1000 > Date.now();
-    } catch {
-      return false;
-    }
+    return isAdminAccessToken();
   }
 }

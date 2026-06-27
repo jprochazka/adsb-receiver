@@ -3,6 +3,8 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 
 import { FlightsComponent } from './flights.component';
+import { inferAircraftClass } from './flight-display.helpers';
+import { buildRenderableSegmentCoords, splitTrackSegments } from './flight-track.helpers';
 import { DataService } from '../service/data.service';
 
 describe('FlightsComponent', () => {
@@ -294,7 +296,7 @@ describe('FlightsComponent', () => {
   });
 
   it('should fall back to emitter_category when aircraft_class is unknown', () => {
-    const classify = (flight: any) => (component as any).aircraftClassForFlight(flight) as string;
+    const classify = (flight: any) => inferAircraftClass(flight);
 
     expect(classify({ aircraft_class: 'unknown',    emitter_category: 'A1' })).toBe('general_aviation');
     expect(classify({ aircraft_class: 'unknown',    emitter_category: 'A4' })).toBe('airliner');
@@ -341,21 +343,19 @@ describe('FlightsComponent', () => {
   });
 
   it('should split positions into segments across a large time gap', () => {
-    const split = (positions: any[]) => (component as any).splitIntoSegments(positions) as any[][];
-
     const contiguous = [
       { latitude: 41.0, longitude: -82.0, time: '2026-04-03 10:00:00' },
       { latitude: 41.1, longitude: -82.1, time: '2026-04-03 10:10:00' },
       { latitude: 41.2, longitude: -82.2, time: '2026-04-03 10:20:00' },
     ];
-    expect(split(contiguous).length).toBe(1);
+    expect(splitTrackSegments(contiguous).length).toBe(1);
 
     const gapped = [
       { latitude: 41.0, longitude: -82.0, time: '2026-04-03 07:00:00' },
       { latitude: 41.1, longitude: -82.1, time: '2026-04-03 10:00:00' },
       { latitude: 41.2, longitude: -82.2, time: '2026-04-03 10:10:00' },
     ];
-    const segments = split(gapped);
+    const segments = splitTrackSegments(gapped);
     expect(segments.length).toBe(2);
     expect(segments[0].length).toBe(1);
     expect(segments[1].length).toBe(2);
@@ -373,7 +373,7 @@ describe('FlightsComponent', () => {
       { latitude: 41.2, longitude: -81.7, time: '2026-04-03 10:00:30' },
     ];
 
-    const coords = (component as any).buildRenderableSegmentCoords(segment) as number[][];
+    const coords = buildRenderableSegmentCoords(segment);
 
     expect(coords.length).toBeGreaterThan(2);
   });
@@ -406,24 +406,27 @@ describe('FlightsComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/flights', 3], { queryParams: { uatPage: 5 } });
   });
 
-  it('should navigate All pagination by keeping ADS-B and UAT pages in sync', () => {
+  it('should navigate All pagination using the allPage query parameter', () => {
     const navigateSpy = spyOn(component.router, 'navigate');
 
-    component.adsbTotalPages = 10;
-    component.uatTotalPages = 8;
-    component.adsbCurrentPage = 2;
-    component.uatCurrentPage = 2;
+    component.adsbCurrentPage = 1;
+    component.uatCurrentPage = 1;
+    component.allCurrentPage = 2;
+    component.adsbTotalFlights = 123;
+    component.uatTotalFlights = 57;
 
     component.goToAllPage(1);
     expect(navigateSpy).toHaveBeenCalledWith(['/flights'], { queryParams: {} });
 
     component.goToAllPage(4);
-    expect(navigateSpy).toHaveBeenCalledWith(['/flights', 4], { queryParams: { uatPage: 4 } });
+    expect(navigateSpy).toHaveBeenCalledWith(['/flights'], { queryParams: { allPage: 4 } });
   });
 
   it('should compute all-tab display range and total like other pagers', () => {
     component.adsbCurrentPage = 2;
     component.uatCurrentPage = 2;
+    component.allCurrentPage = 2;
+    component.perPage = 100;
     component.adsbTotalFlights = 123;
     component.uatTotalFlights = 57;
     component.combinedFlights = new Array(100).fill(null);

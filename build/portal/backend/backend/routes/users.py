@@ -1,15 +1,15 @@
 import logging
 from datetime import datetime, timezone
 
-from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from werkzeug.security import generate_password_hash
-from backend.models import BlogComment, db, User
+from backend.models import BlogComment, FlightComment, UatFlightComment, db, User
 from backend.auth import require_admin, require_user_or_admin, validate_role
-from werkzeug.exceptions import HTTPException
+from backend.routes.common import QueryParamError, get_stripped_arg, parse_bool_arg, parse_pagination
 from sqlalchemy import delete, select, func
+from sqlalchemy.exc import IntegrityError
 
 users = Blueprint('users', __name__)
 
@@ -74,9 +74,128 @@ class CreateUserRequestSchema(Schema):
 class UpdateUserRequestSchema(Schema):
     name = fields.String(required=True)
     email = fields.Email()
-    password = fields.String(required=True)
+    password = fields.String(required=False)
     administrator = fields.Boolean()  # Keep for backward compatibility
     role = fields.String()  # New role field
+
+
+def _role_and_administrator_from_payload(payload):
+    role = payload.get('role', 'User')
+    if not validate_role(role):
+        return None, None, {'msg': 'Invalid role. Must be Admin or User'}
+
+    administrator = 1 if role == 'Admin' else 0
+    if 'administrator' in payload:
+        administrator = 1 if payload['administrator'] else 0
+        role = 'Admin' if administrator == 1 else 'User'
+
+    return role, administrator, None
+
+
+def _public_user_dict(user):
+    data = user.to_dict()
+    data.pop('password', None)
+    return data
+
+
+def _can_access_user(current_user, user_id):
+    return current_user.role == 'Admin' or current_user.id == user_id
+
+
+def _apply_user_updates(user, payload, current_user):
+    user.name = payload['name']
+    if 'email' in payload:
+        user.email = payload['email']
+    if 'password' in payload:
+        user.password = generate_password_hash(payload['password'])
+
+    if 'role' in payload and validate_role(payload['role']):
+        if current_user.role != 'Admin':
+            return {'msg': 'Only admins can change user roles'}, 403
+        user.role = payload['role']
+        user.administrator = 1 if payload['role'] == 'Admin' else 0
+
+    if 'administrator' in payload and current_user.role == 'Admin':
+        user.administrator = 1 if payload['administrator'] else 0
+        user.role = 'Admin' if payload['administrator'] else 'User'
+
+    return None, None
+
+
+def _updated_user_response(user):
+    return {
+        'id': user.id,
+        'name': user.name,
+        'email': user.email,
+        'role': user.role,
+        'administrator': user.administrator,
+    }
+
+
+def _select_comment_replacement_user_id(current_user, user_id):
+    if current_user and current_user.id != user_id:
+        return current_user.id
+
+    replacement_user = db.session.execute(
+        select(User)
+        .where(User.id != user_id)
+        .order_by(User.id.asc())
+    ).scalar_one_or_none()
+    return replacement_user.id if replacement_user else None
+
+
+def _split_comments_by_replies(comments):
+    comments_with_replies = [comment for comment in comments if comment.replies]
+    comments_without_replies = [comment for comment in comments if not comment.replies]
+    return comments_with_replies, comments_without_replies
+
+
+def _delete_or_reassign_authored_comments(comments, replacement_user_id):
+    comments_with_replies, comments_without_replies = _split_comments_by_replies(comments)
+    if comments_with_replies and replacement_user_id is None:
+        return {'msg': 'Cannot delete this user because no replacement user is available for authored comments'}, 400
+
+    for comment in comments_without_replies:
+        db.session.delete(comment)
+
+    for comment in comments_with_replies:
+        if not comment.deleted:
+            comment.deleted = True
+            comment.deleted_at = datetime.now(timezone.utc)
+        comment.user_id = replacement_user_id
+
+    return None, None
+
+
+def _apply_user_filters(statement, search_query, locked_value=None):
+    filtered_statement = statement
+    if search_query:
+        pattern = f'%{search_query}%'
+        filtered_statement = filtered_statement.where(
+            User.name.ilike(pattern) | User.email.ilike(pattern)
+        )
+    if locked_value is not None:
+        filtered_statement = filtered_statement.where(User.locked.is_(locked_value))
+    return filtered_statement
+
+
+def _user_list_totals(search_query):
+    return {
+        'total': db.session.execute(select(func.count()).select_from(User)).scalar(),
+        'all_total': db.session.execute(
+            _apply_user_filters(select(func.count()).select_from(User), search_query)
+        ).scalar(),
+        'active_total': db.session.execute(
+            _apply_user_filters(select(func.count()).select_from(User), search_query, locked_value=False)
+        ).scalar(),
+        'locked_total': db.session.execute(
+            _apply_user_filters(select(func.count()).select_from(User), search_query, locked_value=True)
+        ).scalar(),
+    }
+
+
+def _serialize_users(users):
+    return [_public_user_dict(user) for user in users]
 
 
 @users_ns.route('/create')
@@ -95,17 +214,10 @@ class UserCreateResource(Resource):
         except ValidationError as err:
             return {'msg': 'Invalid request data', 'errors': err.messages}, 400
         
-        # Validate role if provided
-        role = payload.get('role', 'User')
-        if not validate_role(role):
-            return {'msg': 'Invalid role. Must be Admin or User'}, 400
-        
-        # Set administrator field based on role for backward compatibility
-        administrator = 1 if role == 'Admin' else 0
-        if 'administrator' in payload:
-            administrator = 1 if payload['administrator'] else 0
-            role = 'Admin' if administrator == 1 else 'User'
-        
+        role, administrator, error = _role_and_administrator_from_payload(payload)
+        if error:
+            return error, 400
+
         try:
             # Check if user already exists
             existing_user = db.session.execute(select(User).filter_by(email=payload['email'])).scalar_one_or_none()
@@ -128,6 +240,9 @@ class UserCreateResource(Resource):
                 'user': new_user.to_dict()
             }, 201
             
+        except IntegrityError:
+            db.session.rollback()
+            return {'msg': 'User with this email already exists'}, 409
         except Exception as ex:
             db.session.rollback()
             logging.error('Error encountered while trying to create user', exc_info=ex)
@@ -205,8 +320,7 @@ class UserResource(Resource):
         try:
             current_user = get_current_user()
             
-            # Users can only access their own data, admins can access any
-            if current_user.role != 'Admin' and current_user.id != user_id:
+            if not _can_access_user(current_user, user_id):
                 return {'msg': 'Access denied. You can only access your own data'}, 403
             
             user = db.session.get(User, user_id)
@@ -214,10 +328,7 @@ class UserResource(Resource):
             if not user:
                 return {'msg': 'User not found'}, 404
                 
-            # Don't include password in response
-            data = user.to_dict()
-            data.pop('password', None)
-            return data, 200
+            return _public_user_dict(user), 200
             
         except Exception as ex:
             logging.error(f"Error encountered while trying to get user with ID {user_id}", exc_info=ex)
@@ -248,41 +359,18 @@ class UserResource(Resource):
             if not user:
                 return {'msg': 'User not found'}, 404
             
-            # Users can only update their own data, admins can update any
-            if current_user.role != 'Admin' and current_user.id != user_id:
+            if not _can_access_user(current_user, user_id):
                 return {'msg': 'Access denied. You can only update your own data'}, 403
-            
-            # Update basic fields
-            user.name = payload['name']
-            if 'email' in payload:
-                user.email = payload['email']
-            if 'password' in payload:
-                user.password = generate_password_hash(payload['password'])
-            
-            # Only admins can change roles
-            if 'role' in payload and validate_role(payload['role']):
-                if current_user.role == 'Admin':
-                    user.role = payload['role']
-                    user.administrator = 1 if payload['role'] == 'Admin' else 0
-                else:
-                    return {'msg': 'Only admins can change user roles'}, 403
-            
-            # Handle backward compatibility with administrator field
-            if 'administrator' in payload and current_user.role == 'Admin':
-                user.administrator = 1 if payload['administrator'] else 0
-                user.role = 'Admin' if payload['administrator'] else 'User'
-            
+
+            error, status = _apply_user_updates(user, payload, current_user)
+            if error:
+                return error, status
+
             db.session.commit()
             
             return {
                 'msg': 'User updated successfully',
-                'user': {
-                    'id': user.id,
-                    'name': user.name,
-                    'email': user.email,
-                    'role': user.role,
-                    'administrator': user.administrator
-                }
+                'user': _updated_user_response(user)
             }, 200
             
         except Exception as ex:
@@ -309,41 +397,22 @@ class UserResource(Resource):
 
             current_user = get_current_user()
 
-            # Preserve comment threads when a user is removed by soft-deleting
-            # authored comments and reassigning ownership to another existing user.
-            replacement_user_id = None
-            if current_user and current_user.id != user_id:
-                replacement_user_id = current_user.id
-            else:
-                replacement_user = db.session.execute(
-                    select(User)
-                    .where(User.id != user_id)
-                    .order_by(User.id.asc())
-                ).scalar_one_or_none()
-                if replacement_user:
-                    replacement_user_id = replacement_user.id
+            replacement_user_id = _select_comment_replacement_user_id(current_user, user_id)
 
-            authored_comments = db.session.execute(
+            # Handle BlogComments — reassign or soft-delete
+            authored_blog_comments = db.session.execute(
                 select(BlogComment).where(BlogComment.user_id == user_id)
             ).scalars().all()
+            error, status = _delete_or_reassign_authored_comments(authored_blog_comments, replacement_user_id)
+            if error:
+                return error, status
 
-            comments_with_replies = [comment for comment in authored_comments if comment.replies]
-            comments_without_replies = [comment for comment in authored_comments if not comment.replies]
+            # Handle FlightComments — delete directly (no soft-delete on this model)
+            db.session.execute(delete(FlightComment).where(FlightComment.user_id == user_id))
 
-            if comments_with_replies and replacement_user_id is None:
-                return {'msg': 'Cannot delete this user because no replacement user is available for authored comments'}, 400
+            # Handle UatFlightComments — delete directly
+            db.session.execute(delete(UatFlightComment).where(UatFlightComment.user_id == user_id))
 
-            # Leaf comments can be removed outright.
-            for comment in comments_without_replies:
-                db.session.delete(comment)
-
-            # Preserve threaded comments by soft-deleting and reassigning to a replacement user.
-            for comment in comments_with_replies:
-                if not comment.deleted:
-                    comment.deleted = True
-                    comment.deleted_at = datetime.now(timezone.utc)
-                comment.user_id = replacement_user_id
-                
             db.session.execute(delete(User).where(User.id == user_id))
             db.session.commit()
             
@@ -412,66 +481,38 @@ class UsersListResource(Resource):
     @require_admin()
     def get(self):
         """Get all users (Admin only)"""
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=50, type=int)
-        locked_param = request.args.get('locked')
-        search_query = (request.args.get('q') or '').strip()
+        try:
+            offset, limit = parse_pagination(
+                request.args,
+                default_limit=50,
+                max_limit=100,
+                error_message='Invalid offset or limit parameters',
+            )
+            locked_filter = parse_bool_arg(request.args, 'locked', error_message='Invalid locked parameter')
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
-        if offset < 0 or limit < 1 or limit > 100:
-            return {'msg': 'Invalid offset or limit parameters'}, 400
-
-        locked_filter = None
-        if locked_param is not None:
-            normalized_locked = locked_param.strip().lower()
-            if normalized_locked not in {'true', 'false'}:
-                return {'msg': 'Invalid locked parameter'}, 400
-            locked_filter = normalized_locked == 'true'
+        search_query = get_stripped_arg(request.args, 'q')
 
         try:
-            def apply_filters(statement, locked_value=None):
-                filtered_statement = statement
-                if search_query:
-                    pattern = f"%{search_query}%"
-                    filtered_statement = filtered_statement.where(
-                        User.name.ilike(pattern) | User.email.ilike(pattern)
-                    )
-                if locked_value is not None:
-                    filtered_statement = filtered_statement.where(User.locked.is_(locked_value))
-                return filtered_statement
-
-            total = db.session.execute(select(func.count()).select_from(User)).scalar()
-            all_total = db.session.execute(
-                apply_filters(select(func.count()).select_from(User))
-            ).scalar()
-            active_total = db.session.execute(
-                apply_filters(select(func.count()).select_from(User), locked_value=False)
-            ).scalar()
-            locked_total = db.session.execute(
-                apply_filters(select(func.count()).select_from(User), locked_value=True)
-            ).scalar()
-
+            totals = _user_list_totals(search_query)
             users_result = db.session.execute(
-                apply_filters(select(User), locked_value=locked_filter)
+                _apply_user_filters(select(User), search_query, locked_value=locked_filter)
                 .order_by(User.locked.asc(), User.created_at.desc())
                 .offset(offset)
                 .limit(limit)
             )
-            users_data = []
-            
-            for user in users_result.scalars():
-                user_dict = user.to_dict()
-                user_dict.pop('password', None)  # Don't include passwords in response
-                users_data.append(user_dict)
-            
+            users_data = _serialize_users(users_result.scalars())
+
             return {
                 'users': users_data,
                 'offset': offset,
                 'limit': limit,
                 'count': len(users_data),
-                'total': total,
-                'all_total': all_total,
-                'active_total': active_total,
-                'locked_total': locked_total
+                'total': totals['total'],
+                'all_total': totals['all_total'],
+                'active_total': totals['active_total'],
+                'locked_total': totals['locked_total']
             }, 200
             
         except Exception as ex:

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { DataService } from '../service/data.service';
 
@@ -7,6 +7,7 @@ import { DataService } from '../service/data.service';
   standalone: true,
   imports: [],
   templateUrl: './links.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './links.component.scss'
 })
 export class LinksComponent implements OnInit  {

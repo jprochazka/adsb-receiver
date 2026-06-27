@@ -17,7 +17,8 @@ SYSTEMD_SERVICE="adsb-portal-backend.service"
 INSTANCE_DIR="${BACKEND_DIR}/instance"
 RRD_BASE="${BACKEND_DIR}/instance/rrd"
 OPENSKY_BASE="${BACKEND_DIR}/instance/opensky"
-NODE_MAJOR=20
+NODE_MAJOR=22
+NODE_MIN_VERSION="22.22.3"
 USE_EXISTING_SQLITE_DB="false"
 DB_SKIP_PROVISION="false"
 DB_INSTALL_MODE="New database initialized"
@@ -32,11 +33,39 @@ RRD_MIGRATE_SOURCE=""
 RRD_MIGRATION_STATUS="No legacy RRD migration needed"
 LE_ENABLE="false"
 LE_DOMAIN=""
+LEGACY_PORTAL_ROOT=""
+LEGACY_DB_DRIVER=""
+LEGACY_DB_DATABASE=""
+LEGACY_DB_HOST=""
+LEGACY_DB_USER=""
+LEGACY_DB_PREFIX="adsb_"
+LEGACY_IMPORT_ENABLED="false"
+LEGACY_IMPORT_STATUS="No legacy portal detected"
+LIGHTTPD_INSTALLED="false"
+LIGHTTPD_ACTIVE_BEFORE="false"
+LIGHTTPD_ENABLED_BEFORE="false"
+LIGHTTPD_DOCROOT=""
+LIGHTTPD_TAKEOVER_STATUS="No lighttpd takeover needed"
 
 find_legacy_rrd_source() {
+    # Build candidate list: well-known fixed paths first, then legacy-portal-root-relative
+    # paths when LEGACY_PORTAL_ROOT has been set by find_legacy_portal_root().
     local -a candidates=(
         "/usr/local/share/graphs1090/rrd"
+        "/var/lib/collectd/rrd"
+        "/var/www/html/graphs/rrd"
+        "/var/www/html/data/rrd"
+        "/var/www/html/rrd"
     )
+
+    # Add portal-root-relative candidates when the root is known.
+    if [[ -n "${LEGACY_PORTAL_ROOT:-}" ]]; then
+        candidates+=(
+            "${LEGACY_PORTAL_ROOT}/data/rrd"
+            "${LEGACY_PORTAL_ROOT}/graphs/rrd"
+            "${LEGACY_PORTAL_ROOT}/rrd"
+        )
+    fi
 
     for candidate in "${candidates[@]}"; do
         if [[ "${candidate}" == "${RRD_BASE}" ]]; then
@@ -57,6 +86,64 @@ strip_yaml_value() {
     raw_value="${raw_value#\"}"
     raw_value="${raw_value%\"}"
     echo "${raw_value}"
+}
+
+# Find the document root of a legacy PHP ADS-B Portal installation.
+# Returns the root path on stdout and exits 0, or exits 1 if not found.
+# This function is READ-ONLY — it never writes or modifies any file.
+find_legacy_portal_root() {
+    local -a candidates=()
+
+    # If lighttpd is installed, ask it for its configured document root.
+    if command -v lighttpd >/dev/null 2>&1 && [[ -f /etc/lighttpd/lighttpd.conf ]]; then
+        local raw_root
+        raw_root=$(/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p 2>/dev/null \
+                   | grep 'server.document-root' | sed 's/.*"\(.*\)".*/\1/' | head -n1)
+        [[ -n "${raw_root}" ]] && candidates+=("${raw_root}")
+    fi
+
+    # Well-known fallback paths used by old installers.
+    candidates+=(
+        "/var/www/html"
+        "/var/www"
+        "/usr/share/adsb-receiver/build/portal/html"
+    )
+
+    for candidate in "${candidates[@]}"; do
+        if [[ -f "${candidate}/classes/settings.class.php" ]]; then
+            echo "${candidate}"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+# Parse legacy PHP settings.class.php and populate LEGACY_* globals.
+# Accepts the portal root path as $1.
+# This function is READ-ONLY — it never writes or modifies any file.
+load_legacy_portal_settings() {
+    local root="$1"
+    local settings_file="${root}/classes/settings.class.php"
+
+    [[ -f "${settings_file}" ]] || return 1
+
+    LEGACY_DB_DRIVER=$(grep 'db_driver'   "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_DATABASE=$(grep 'db_database' "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_HOST=$(grep 'db_host'      "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_USER=$(grep 'db_username'  "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    local raw_prefix
+    raw_prefix=$(grep 'db_prefix' "${settings_file}" | tail -n1 | cut -d"'" -f2)
+    LEGACY_DB_PREFIX="${raw_prefix:-adsb_}"
+
+    # For SQLite the old installer stored the full path in db_host.
+    # If db_database is empty but db_host looks like a file path, use it.
+    if [[ "${LEGACY_DB_DRIVER}" == "sqlite" && -z "${LEGACY_DB_DATABASE}" && -n "${LEGACY_DB_HOST}" ]]; then
+        LEGACY_DB_DATABASE="${LEGACY_DB_HOST}"
+        LEGACY_DB_HOST=""
+    fi
+
+    return 0
 }
 
 run_le_preflight() {
@@ -111,6 +198,46 @@ Local listener on :443: ${port443_status}
 Notes:
 - This is a best-effort local preflight.
 - External reachability from the internet (NAT/firewall) still cannot be fully verified from this host alone." 22 78
+}
+
+check_portal_platform_compatibility() {
+    local dpkg_arch=""
+    local kernel_arch=""
+
+    dpkg_arch="$(dpkg --print-architecture 2>/dev/null || true)"
+    kernel_arch="$(uname -m 2>/dev/null || true)"
+
+    case "${dpkg_arch}" in
+        arm64|amd64)
+            return 0
+            ;;
+        armhf)
+            log_alert_heading "INSTALLATION HALTED"
+            log_alert_message "Unsupported operating system architecture: ${dpkg_arch} (${kernel_arch})"
+            log_alert_message "ADS-B Portal requires a 64-bit OS with the current setup process"
+            whiptail --title "Unsupported Platform" --msgbox "\
+ADS-B Portal cannot be installed on this system with the current setup process.
+
+Detected architecture: ${dpkg_arch} (${kernel_arch})
+
+32-bit Raspberry Pi OS is not currently supported for ADS-B Portal because frontend Node.js requirements cannot be satisfied on armhf.
+
+Use Raspberry Pi OS 64-bit (arm64) to install ADS-B Portal." 17 78
+            exit 1
+            ;;
+        *)
+            log_alert_heading "INSTALLATION HALTED"
+            log_alert_message "Unsupported operating system architecture: ${dpkg_arch:-unknown} (${kernel_arch:-unknown})"
+            log_alert_message "ADS-B Portal currently supports amd64 and arm64 only"
+            whiptail --title "Unsupported Platform" --msgbox "\
+ADS-B Portal cannot be installed on this system with the current setup process.
+
+Detected architecture: ${dpkg_arch:-unknown} (${kernel_arch:-unknown})
+
+Supported architectures: amd64, arm64." 13 78
+            exit 1
+            ;;
+    esac
 }
 
 if [[ -f "${CONFIG_FILE}" ]]; then
@@ -254,6 +381,8 @@ if ! command -v whiptail &>/dev/null; then
     check_package whiptail
 fi
 
+check_portal_platform_compatibility
+
 if [[ -f "${CONFIG_FILE}" && -n "${existing_db_type:-}" ]]; then
     if whiptail --title "Existing Portal Configuration Detected" \
                 --yesno "An existing portal configuration file was found:\n\n  ${CONFIG_FILE}\n\nWould you like to use the current database settings as defaults?" \
@@ -374,6 +503,73 @@ if [[ "${DB_TYPE}" == "sqlite" ]]; then
     fi
 fi
 
+## LEGACY PORTAL DISCOVERY (read-only; no data written here)
+
+LEGACY_PORTAL_ROOT=$(find_legacy_portal_root || true)
+if [[ -n "${LEGACY_PORTAL_ROOT}" ]]; then
+    if load_legacy_portal_settings "${LEGACY_PORTAL_ROOT}"; then
+        log_message "Legacy portal found at ${LEGACY_PORTAL_ROOT} (driver: ${LEGACY_DB_DRIVER})"
+        LEGACY_IMPORT_STATUS="Legacy portal detected: driver=${LEGACY_DB_DRIVER} root=${LEGACY_PORTAL_ROOT}"
+    else
+        log_message "Legacy portal root found but settings.class.php could not be parsed; skipping import"
+        LEGACY_PORTAL_ROOT=""
+        LEGACY_IMPORT_STATUS="Legacy portal root found but settings unreadable"
+    fi
+else
+    log_message "No legacy portal installation detected"
+fi
+
+## LEGACY PORTAL IMPORT DECISION
+
+if [[ -n "${LEGACY_PORTAL_ROOT}" ]]; then
+
+    # Build a human-readable summary of what was detected.
+    legacy_summary="Legacy ADS-B Portal detected:\n\n"
+    legacy_summary+="  Location : ${LEGACY_PORTAL_ROOT}\n"
+    legacy_summary+="  Driver   : ${LEGACY_DB_DRIVER}\n"
+    case "${LEGACY_DB_DRIVER}" in
+        xml)
+            legacy_summary+="  Data     : XML files under ${LEGACY_PORTAL_ROOT}/data/\n"
+            ;;
+        sqlite)
+            legacy_summary+="  Database : ${LEGACY_DB_DATABASE}\n"
+            ;;
+        mysql)
+            legacy_summary+="  Database : ${LEGACY_DB_DATABASE} on ${LEGACY_DB_HOST}\n"
+            legacy_summary+="  User     : ${LEGACY_DB_USER}\n"
+            ;;
+        pgsql|postgresql)
+            legacy_summary+="  Database : ${LEGACY_DB_DATABASE} on ${LEGACY_DB_HOST}\n"
+            legacy_summary+="  User     : ${LEGACY_DB_USER}\n"
+            ;;
+    esac
+    legacy_summary+="\nWould you like to import this data into the new portal?"
+
+    if whiptail --title "Legacy Portal Data Found" \
+                --yesno "${legacy_summary}" \
+                20 78; then
+
+        # Require explicit confirmation before any import takes place.
+        if whiptail --title "Confirm Import" \
+                    --defaultno \
+                    --yesno "Importing will write legacy data into the new portal database.\n\nA backup of the target database will be created before any data is written.\nLegacy source data will NOT be deleted or modified.\n\nProceed with import?" \
+                    14 78; then
+            LEGACY_IMPORT_ENABLED="true"
+            LEGACY_IMPORT_STATUS="Legacy portal import confirmed: driver=${LEGACY_DB_DRIVER} root=${LEGACY_PORTAL_ROOT}"
+            log_message "User confirmed legacy portal import (driver: ${LEGACY_DB_DRIVER})"
+        else
+            LEGACY_IMPORT_STATUS="Legacy portal detected but import was declined at confirmation"
+            log_message "User declined import at confirmation step; continuing fresh install"
+        fi
+
+    else
+        LEGACY_IMPORT_STATUS="Legacy portal detected but import was declined by user"
+        log_message "User declined legacy portal import; continuing fresh install"
+    fi
+fi
+
+## LEGACY RRD DISCOVERY (runs after portal root known; uses root-relative candidates)
+
 legacy_rrd_source=$(find_legacy_rrd_source || true)
 if [[ -n "${legacy_rrd_source}" ]]; then
     if whiptail --title "Legacy RRD Files Detected" \
@@ -414,6 +610,26 @@ if whiptail --title "HTTPS Configuration" \
             exit 1
         }
     done
+fi
+
+## LIGHTTPD DETECTION (before install begins; state vars consumed later in _install)
+
+if dpkg-query -W -f='${Status}' lighttpd 2>/dev/null | grep -q "install ok installed"; then
+    LIGHTTPD_INSTALLED="true"
+    if systemctl is-active --quiet lighttpd 2>/dev/null; then
+        LIGHTTPD_ACTIVE_BEFORE="true"
+    fi
+    if systemctl is-enabled --quiet lighttpd 2>/dev/null; then
+        LIGHTTPD_ENABLED_BEFORE="true"
+    fi
+    # Capture document root now — we need it before lighttpd is stopped.
+    if [[ -f /etc/lighttpd/lighttpd.conf ]]; then
+        _raw=$(/usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf -p 2>/dev/null \
+               | grep 'server.document-root' | sed 's/.*"\(.*\)".*/\1/' | head -n1)
+        [[ -n "${_raw}" ]] && LIGHTTPD_DOCROOT="${_raw}"
+    fi
+    [[ -z "${LIGHTTPD_DOCROOT}" ]] && LIGHTTPD_DOCROOT="/var/www/html"
+    log_message "lighttpd detected: active=${LIGHTTPD_ACTIVE_BEFORE} docroot=${LIGHTTPD_DOCROOT}"
 fi
 
 MYSQL_HOST="${DB_HOST:-127.0.0.1}"
@@ -511,12 +727,18 @@ YMLEOF
 
     _gauge 18 "Configuring NodeSource repository..."
     sudo install -d -m 0755 /etc/apt/keyrings
-    curl -fsSL "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key" | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    curl -fsSL "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key" | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/nodesource.gpg
     cat << NODESOURCEEOF | sudo tee /etc/apt/sources.list.d/nodesource.list >/dev/null
 deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main
 NODESOURCEEOF
     sudo apt-get update >> "${LOG_FILE}" 2>&1
-    check_package nodejs
+    sudo apt-get install -y nodejs >> "${LOG_FILE}" 2>&1
+
+    NODE_VERSION="$(node --version | sed 's/^v//')"
+    if ! dpkg --compare-versions "${NODE_VERSION}" ge "${NODE_MIN_VERSION}"; then
+        echo "Node.js ${NODE_MIN_VERSION}+ is required for Angular 22; found ${NODE_VERSION}" >> "${LOG_FILE}"
+        exit 1
+    fi
 
     _gauge 24 "Setting up Python virtual environment..."
     if [[ ! -d "${VENV_DIR}" ]]; then
@@ -541,11 +763,24 @@ NODESOURCEEOF
 
     if [[ -n "${RRD_MIGRATE_SOURCE}" ]]; then
         _gauge 53 "Migrating legacy RRD files..."
+
+        _rrd_src_count=$(find "${RRD_MIGRATE_SOURCE}" -type f -name '*.rrd' | wc -l)
+
         if command -v rsync &>/dev/null; then
-            rsync -a --ignore-existing "${RRD_MIGRATE_SOURCE}/" "${RRD_BASE}/" >> "${LOG_FILE}" 2>&1
+            # --ignore-existing preserves new files; -a preserves timestamps/perms.
+            rsync -a --ignore-existing \
+                  --log-file="${LOG_FILE}" \
+                  "${RRD_MIGRATE_SOURCE}/" "${RRD_BASE}/" 2>&1 || true
+            # Count files now present in target after sync.
+            _rrd_dst_count=$(find "${RRD_BASE}" -type f -name '*.rrd' | wc -l)
         else
-            cp -an "${RRD_MIGRATE_SOURCE}/." "${RRD_BASE}/" >> "${LOG_FILE}" 2>&1
+            cp -an "${RRD_MIGRATE_SOURCE}/." "${RRD_BASE}/" >> "${LOG_FILE}" 2>&1 || true
+            _rrd_dst_count=$(find "${RRD_BASE}" -type f -name '*.rrd' | wc -l)
         fi
+
+        # Update the human-readable status with counts.
+        RRD_MIGRATION_STATUS="Legacy RRD files migrated from ${RRD_MIGRATE_SOURCE} (source: ${_rrd_src_count} files; target now: ${_rrd_dst_count} files)"
+        log_message "RRD migration: source=${_rrd_src_count} target=${_rrd_dst_count}"
     fi
 
     sudo chown -R www-data:www-data "${RRD_BASE}" "${OPENSKY_BASE}"
@@ -648,14 +883,44 @@ PY
     _gauge 59 "Applying database migrations..."
     (cd "${BACKEND_DIR}" && FLASK_APP=backend "${VENV_DIR}/bin/flask" db upgrade >> "${LOG_FILE}" 2>&1)
 
+    ## LEGACY PORTAL IMPORT (runs after schema is ready; only when user confirmed)
+    if [[ "${LEGACY_IMPORT_ENABLED}" == "true" && -n "${LEGACY_PORTAL_ROOT}" ]]; then
+        _gauge 62 "Importing legacy portal data..."
+
+        LEGACY_IMPORT_TOOL="${BACKEND_DIR}/tools/legacy_portal_import.py"
+        LEGACY_IMPORT_LOG="${LOG_FILE%.log}.legacy_import.log"
+
+        if [[ ! -f "${LEGACY_IMPORT_TOOL}" ]]; then
+            echo "WARNING: legacy_portal_import.py not found at ${LEGACY_IMPORT_TOOL}" >> "${LOG_FILE}"
+            LEGACY_IMPORT_STATUS="Import skipped: tool not found"
+        else
+            LEGACY_IMPORT_JSON=$(
+                "${VENV_DIR}/bin/python3" "${LEGACY_IMPORT_TOOL}" \
+                    --config "${BACKEND_DIR}/config.yml" \
+                    --root  "${LEGACY_PORTAL_ROOT}" \
+                    2>> "${LEGACY_IMPORT_LOG}"
+            ) || true
+
+            echo "${LEGACY_IMPORT_JSON}" >> "${LEGACY_IMPORT_LOG}"
+
+            if echo "${LEGACY_IMPORT_JSON}" | python3 -c \
+                "import json,sys; d=json.load(sys.stdin); sys.exit(0 if d.get('success') else 1)" \
+                2>/dev/null; then
+                LEGACY_IMPORT_STATUS="Legacy data imported successfully from ${LEGACY_PORTAL_ROOT}"
+                log_message "Legacy portal import succeeded"
+            else
+                LEGACY_IMPORT_STATUS="Legacy import attempted but reported an error — see ${LEGACY_IMPORT_LOG}"
+                log_message "Legacy portal import reported failure; check ${LEGACY_IMPORT_LOG}"
+            fi
+        fi
+    fi
+
     _gauge 67 "Applying backend data permissions..."
     sudo chown -R www-data:www-data "${INSTANCE_DIR}"
     sudo chmod -R 755 "${INSTANCE_DIR}"
 
-    if [[ ! -d "${FRONTEND_DIR}/node_modules" ]]; then
-        _gauge 70 "Installing npm packages..."
-        (cd "${FRONTEND_DIR}" && npm ci >> "${LOG_FILE}" 2>&1)
-    fi
+    _gauge 70 "Installing npm packages..."
+    (cd "${FRONTEND_DIR}" && npm ci >> "${LOG_FILE}" 2>&1)
 
     _gauge 75 "Building Angular frontend (this may take a while)..."
     if [[ ! -d "${FRONTEND_DIR}" ]]; then
@@ -720,6 +985,20 @@ NGINXEOF
     fi
     sudo nginx -t >> "${LOG_FILE}" 2>&1
 
+    ## LIGHTTPD-TO-NGINX TAKEOVER (runs after legacy data handling; before nginx restart)
+    if [[ "${LIGHTTPD_INSTALLED}" == "true" && "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
+        _gauge 96 "Stopping lighttpd to hand port 80 to Nginx..."
+
+        if sudo systemctl stop lighttpd >> "${LOG_FILE}" 2>&1 && \
+           sudo systemctl disable lighttpd >> "${LOG_FILE}" 2>&1; then
+            LIGHTTPD_TAKEOVER_STATUS="lighttpd stopped and disabled; Nginx will own port 80"
+            log_message "lighttpd stopped and disabled"
+        else
+            LIGHTTPD_TAKEOVER_STATUS="WARNING: failed to stop/disable lighttpd — Nginx may fail to bind port 80"
+            log_message "WARNING: could not stop lighttpd"
+        fi
+    fi
+
     _gauge 97 "Creating systemd service..."
     cat << SVCEOF | sudo tee "/etc/systemd/system/${SYSTEMD_SERVICE}" >/dev/null
 [Unit]
@@ -744,7 +1023,21 @@ SVCEOF
     _gauge 99 "Starting services..."
     sudo systemctl daemon-reload >> "${LOG_FILE}" 2>&1
     sudo systemctl enable nginx >> "${LOG_FILE}" 2>&1
-    sudo systemctl restart nginx >> "${LOG_FILE}" 2>&1
+
+    if ! sudo systemctl restart nginx >> "${LOG_FILE}" 2>&1; then
+        # Nginx failed to start — attempt lighttpd rollback if we stopped it.
+        if [[ "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
+            log_message "Nginx failed; attempting lighttpd rollback..."
+            if sudo systemctl enable lighttpd >> "${LOG_FILE}" 2>&1 && \
+               sudo systemctl start  lighttpd >> "${LOG_FILE}" 2>&1; then
+                LIGHTTPD_TAKEOVER_STATUS="Nginx failed; lighttpd rolled back and re-started"
+            else
+                LIGHTTPD_TAKEOVER_STATUS="Nginx failed AND lighttpd rollback failed — port 80 may be unserved"
+            fi
+        fi
+        echo "Nginx failed to restart — see ${LOG_FILE}" >> "${LOG_FILE}"
+        exit 1
+    fi
     sudo systemctl enable "${SYSTEMD_SERVICE}" >> "${LOG_FILE}" 2>&1
     sudo systemctl start "${SYSTEMD_SERVICE}" >> "${LOG_FILE}" 2>&1
 
@@ -812,6 +1105,20 @@ RRD handling result:
 
 RRD files used by the portal are stored under:
     ${RRD_BASE}" 12 78
+
+whiptail --title "Legacy Portal Import Status" --msgbox "\
+Legacy PHP portal detection result:
+
+    ${LEGACY_IMPORT_STATUS}
+
+No legacy data has been modified or deleted." 12 78
+
+whiptail --title "Web Server Takeover Status" --msgbox "\
+lighttpd-to-Nginx takeover result:
+
+    ${LIGHTTPD_TAKEOVER_STATUS}
+
+lighttpd packages and configuration were not removed." 12 78
 
 
 ## SETUP COMPLETE

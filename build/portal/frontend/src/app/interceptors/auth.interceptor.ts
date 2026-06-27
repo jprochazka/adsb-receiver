@@ -2,16 +2,7 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-
-function isTokenExpired(token: string): boolean {
-  try {
-    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const payload = JSON.parse(atob(base64));
-    return payload.exp * 1000 < Date.now();
-  } catch {
-    return true;
-  }
-}
+import { isTokenExpired } from '../shared/auth-session';
 
 function clearSession(router: Router): void {
   localStorage.removeItem('access_token');
@@ -22,15 +13,16 @@ function clearSession(router: Router): void {
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = localStorage.getItem('access_token');
+  const hasAuthHeader = req.headers.has('Authorization');
 
-  if (token && isTokenExpired(token)) {
+  if (hasAuthHeader && token && isTokenExpired(token)) {
     clearSession(router);
     return throwError(() => new Error('Session expired. Please log in again.'));
   }
 
   return next(req).pipe(
     catchError((error) => {
-      if (error instanceof HttpErrorResponse && error.status === 401) {
+      if (error instanceof HttpErrorResponse && error.status === 401 && hasAuthHeader) {
         clearSession(router);
       }
       return throwError(() => error);

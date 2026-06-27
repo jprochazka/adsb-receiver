@@ -3,18 +3,24 @@
     <p class="text-muted mb-4">Configure which graph variants are displayed on the Receiver Information page.</p>
     <hr />
 
-    <app-spinner *ngIf="loading"></app-spinner>
+    @if (loading) {
+        <app-spinner></app-spinner>
+    }
 
-    <div *ngIf="successMessage" class="alert alert-success alert-dismissible">
-        {{ successMessage }}
-        <button type="button" class="btn-close" (click)="successMessage=''"></button>
-    </div>
-    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible">
-        {{ errorMessage }}
-        <button type="button" class="btn-close" (click)="errorMessage=''"></button>
-    </div>
+    @if (successMessage) {
+        <div class="alert alert-success alert-dismissible">
+            {{ successMessage }}
+            <button type="button" class="btn-close" (click)="successMessage=''"></button>
+        </div>
+    }
+    @if (errorMessage) {
+        <div class="alert alert-danger alert-dismissible">
+            {{ errorMessage }}
+            <button type="button" class="btn-close" (click)="errorMessage=''"></button>
+        </div>
+    }
 
-    <ng-container *ngIf="!loading">
+    @if (!loading) {
 
         <div class="card mb-4">
             <div class="card-header fw-semibold">Range Measurement</div>
@@ -23,16 +29,18 @@
                     Determines which range graph variant is shown for maximum reception distance.
                 </p>
                 <div class="d-flex flex-column gap-2">
-                    <div *ngFor="let opt of rangeOptions" class="form-check">
-                        <input class="form-check-input" type="radio"
-                               [id]="'range-' + opt.value"
-                               name="measurementRange"
-                               [value]="opt.value"
-                               [(ngModel)]="measurementRange">
-                        <label class="form-check-label" [for]="'range-' + opt.value">
-                            {{ opt.label }}
-                        </label>
-                    </div>
+                    @for (opt of rangeOptions; track opt.value) {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   [id]="'range-' + opt.value"
+                                   name="measurementRange"
+                                   [value]="opt.value"
+                                   [(ngModel)]="measurementRange">
+                            <label class="form-check-label" [for]="'range-' + opt.value">
+                                {{ opt.label }}
+                            </label>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -44,16 +52,18 @@
                     Determines the unit used for the CPU core temperature graph.
                 </p>
                 <div class="d-flex flex-column gap-2">
-                    <div *ngFor="let opt of temperatureOptions" class="form-check">
-                        <input class="form-check-input" type="radio"
-                               [id]="'temp-' + opt.value"
-                               name="measurementTemperature"
-                               [value]="opt.value"
-                               [(ngModel)]="measurementTemperature">
-                        <label class="form-check-label" [for]="'temp-' + opt.value">
-                            {{ opt.label }}
-                        </label>
-                    </div>
+                    @for (opt of temperatureOptions; track opt.value) {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   [id]="'temp-' + opt.value"
+                                   name="measurementTemperature"
+                                   [value]="opt.value"
+                                   [(ngModel)]="measurementTemperature">
+                            <label class="form-check-label" [for]="'temp-' + opt.value">
+                                {{ opt.label }}
+                            </label>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -65,16 +75,18 @@
                     Determines which network interface is used for the bandwidth graph.
                 </p>
                 <div class="d-flex flex-column gap-2">
-                    <div *ngFor="let opt of interfaceOptions" class="form-check">
-                        <input class="form-check-input" type="radio"
-                               [id]="'iface-' + opt.value"
-                               name="networkInterface"
-                               [value]="opt.value"
-                               [(ngModel)]="networkInterface">
-                        <label class="form-check-label" [for]="'iface-' + opt.value">
-                            {{ opt.label }}
-                        </label>
-                    </div>
+                    @for (opt of interfaceOptions; track opt.value) {
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio"
+                                   [id]="'iface-' + opt.value"
+                                   name="networkInterface"
+                                   [value]="opt.value"
+                                   [(ngModel)]="networkInterface">
+                            <label class="form-check-label" [for]="'iface-' + opt.value">
+                                {{ opt.label }}
+                            </label>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -99,5 +111,5 @@
             {{ saving ? 'Saving…' : 'Save Settings' }}
         </button>
 
-    </ng-container>
+    }
 </div>

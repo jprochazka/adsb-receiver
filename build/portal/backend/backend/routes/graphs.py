@@ -3,11 +3,11 @@ import os
 import re
 import socket
 import subprocess
-import yaml
 
 from flask import Blueprint, abort, jsonify, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from sqlalchemy import select
+from backend.config_loader import get_graphs_config
 
 graphs = Blueprint('graphs', __name__)
 graphs_ns = Namespace('graphs', description='Historical RRD graph data for Chart.js')
@@ -16,10 +16,7 @@ graphs_ns = Namespace('graphs', description='Historical RRD graph data for Chart
 # Configuration
 # ---------------------------------------------------------------------------
 
-with open("config.yml") as _f:
-    _config = yaml.safe_load(_f)
-
-_g              = _config.get('graphs', {})
+_g              = get_graphs_config()
 _RRD_BASE       = _g.get('rrd_base') or os.environ.get('RRD_BASE', 'instance/rrd')
 _RRD_HOST       = _g.get('hostname', socket.gethostname())
 _D1090_INSTANCE = _g.get('dump1090_instance', 'localhost')
@@ -179,7 +176,14 @@ def _fetch_rrd(
     if step is not None:
         cmd.extend(['--resolution', str(step)])
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    except FileNotFoundError:
+        logging.error('rrdtool not found — is rrdtool installed?')
+        return {}
+    except subprocess.TimeoutExpired:
+        logging.error('rrdtool timed out for %s', rrd_path)
+        return {}
 
     if result.returncode != 0:
         logging.error('rrdtool fetch failed for %s: %s', rrd_path, result.stderr.strip())
@@ -309,6 +313,51 @@ def _get_network_interface() -> str:
     ).scalar_one_or_none()
     return row.value if row else 'eth0'
 
+
+def _graph_response_for_metric(metric: str, metrics: dict, unknown_message: str):
+    if metric not in metrics:
+        abort(404, unknown_message.format(metric=metric))
+    period, start, end, step = _parse_window_query()
+    series = _metric_to_series(metrics[metric])
+    return jsonify(_build_chart_response(series, period, start, end, step))
+
+
+def _network_series_or_error():
+    iface = _get_network_interface()
+    rrd_path = f'{_SYS_DIR}/interface-{iface}/if_octets.rrd'
+    if not os.path.isfile(rrd_path):
+        return None, (
+            {'error': f'RRD file not found for network interface "{iface}". '
+                      'Verify the interface name in settings and that data collection is running.'},
+            503,
+        )
+    return [
+        ('rx', rrd_path, 'AVERAGE', 'rx'),
+        ('tx', rrd_path, 'AVERAGE', 'tx'),
+    ], None
+
+
+def _system_metric_series_or_error(metric: str):
+    if metric not in SYSTEM_METRICS:
+        abort(404, f'Unknown devices metric: {metric}')
+
+    series = _metric_to_series(SYSTEM_METRICS[metric])
+    missing = [rrd_path for _, rrd_path, _, _ in series if not os.path.isfile(rrd_path)]
+    if len(missing) == len(series):
+        return None, (
+            {'error': f'RRD files not found for metric "{metric}". '
+                      'Data collection may not be running yet.'},
+            503,
+        )
+    return series, None
+
+
+def _device_series_or_error(metric: str):
+    if metric == 'network':
+        return _network_series_or_error()
+    return _system_metric_series_or_error(metric)
+
+
 # ---------------------------------------------------------------------------
 # API models
 # ---------------------------------------------------------------------------
@@ -338,10 +387,7 @@ class Dump1090GraphResource(Resource):
     @graphs_ns.doc('get_dump1090_graph')
     def get(self, metric):
         """Get dump1090 chart data from RRD"""
-        if metric not in DUMP1090_METRICS:
-            abort(404, f'Unknown dump1090 metric: {metric}')
-        period, start, end, step = _parse_window_query()
-        return jsonify(_build_chart_response(_metric_to_series(DUMP1090_METRICS[metric]), period, start, end, step))
+        return _graph_response_for_metric(metric, DUMP1090_METRICS, 'Unknown dump1090 metric: {metric}')
 
 
 # ---------------------------------------------------------------------------
@@ -358,10 +404,7 @@ class Dump978GraphResource(Resource):
     @graphs_ns.doc('get_dump978_graph')
     def get(self, metric):
         """Get dump978 chart data from RRD"""
-        if metric not in DUMP978_METRICS:
-            abort(404, f'Unknown dump978 metric: {metric}')
-        period, start, end, step = _parse_window_query()
-        return jsonify(_build_chart_response(_metric_to_series(DUMP978_METRICS[metric]), period, start, end, step))
+        return _graph_response_for_metric(metric, DUMP978_METRICS, 'Unknown dump978 metric: {metric}')
 
 
 # ---------------------------------------------------------------------------
@@ -380,30 +423,7 @@ class DevicesGraphResource(Resource):
     def get(self, metric):
         """Get devices chart data from RRD"""
         period, start, end, step = _parse_window_query()
-
-        if metric == 'network':
-            iface = _get_network_interface()
-            rrd_path = f'{_SYS_DIR}/interface-{iface}/if_octets.rrd'
-            if not os.path.isfile(rrd_path):
-                return (
-                    {'error': f'RRD file not found for network interface "{iface}". '
-                              'Verify the interface name in settings and that data collection is running.'},
-                    503,
-                )
-            series = [
-                ('rx', rrd_path, 'AVERAGE', 'rx'),
-                ('tx', rrd_path, 'AVERAGE', 'tx'),
-            ]
-        elif metric in SYSTEM_METRICS:
-            series = _metric_to_series(SYSTEM_METRICS[metric])
-            missing = [rrd_path for _, rrd_path, _, _ in series if not os.path.isfile(rrd_path)]
-            if len(missing) == len(series):
-                return (
-                    {'error': f'RRD files not found for metric "{metric}". '
-                              'Data collection may not be running yet.'},
-                    503,
-                )
-        else:
-            abort(404, f'Unknown devices metric: {metric}')
-
+        series, error_response = _device_series_or_error(metric)
+        if error_response:
+            return error_response
         return jsonify(_build_chart_response(series, period, start, end, step))

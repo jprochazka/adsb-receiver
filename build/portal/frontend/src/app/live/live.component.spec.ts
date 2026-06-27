@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { LiveComponent } from './live.component';
+import { extractOverlayRings } from './live-overlay.helpers';
 import { DataService } from '../service/data.service';
 
 describe('LiveComponent', () => {
@@ -331,7 +332,7 @@ describe('LiveComponent', () => {
   it('should parse coordinate-array theoretical range json into rings', () => {
     fixture.detectChanges();
 
-    const parsed = (component as any).extractOverlayRings(
+    const parsed = extractOverlayRings(
       JSON.stringify([
         [-90.0, 40.0],
         [-90.1, 40.0],
@@ -347,7 +348,7 @@ describe('LiveComponent', () => {
   it('should ignore invalid theoretical range json', () => {
     fixture.detectChanges();
 
-    const parsed = (component as any).extractOverlayRings('{not-json') as number[][][];
+    const parsed = extractOverlayRings('{not-json') as number[][][];
     expect(parsed.length).toBe(0);
   });
 

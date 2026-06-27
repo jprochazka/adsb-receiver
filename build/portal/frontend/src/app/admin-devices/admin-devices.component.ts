@@ -1,20 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
+import { AdminSettingToggleComponent } from '../shared/admin-setting-toggle/admin-setting-toggle.component';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
 @Component({
   selector: 'app-admin-devices',
   standalone: true,
-  imports: [FormsModule, SpinnerComponent],
+  imports: [FormsModule, SpinnerComponent, AdminSettingToggleComponent],
   templateUrl: './admin-devices.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-devices.component.scss'
 })
 export class AdminDevicesComponent implements OnInit {
   loading = true;
+  errorMessage = '';
+  successMessage = '';
 
   // Navigation visibility
   infoNavEnabled    = true;
@@ -81,47 +85,55 @@ export class AdminDevicesComponent implements OnInit {
   }
 
   saveInfoNavEnabled(): void {
-    this.dataService.updateSetting('info_nav_enabled', String(this.infoNavEnabled)).subscribe();
+    this.saveSetting('info_nav_enabled', String(this.infoNavEnabled));
   }
 
   saveInfoSystemEnabled(): void {
-    this.dataService.updateSetting('info_system_enabled', String(this.infoSystemEnabled)).subscribe();
+    this.saveSetting('info_system_enabled', String(this.infoSystemEnabled));
   }
 
   saveInfoGraphsEnabled(): void {
-    this.dataService.updateSetting('info_graphs_enabled', String(this.infoGraphsEnabled)).subscribe();
+    this.saveSetting('info_graphs_enabled', String(this.infoGraphsEnabled));
   }
 
   saveInfoStatsEnabled(): void {
-    this.dataService.updateSetting('info_stats_enabled', String(this.infoStatsEnabled)).subscribe();
+    this.saveSetting('info_stats_enabled', String(this.infoStatsEnabled));
   }
 
   saveDump1090GraphsEnabled(): void {
-    this.dataService.updateSetting('graphs_dump1090_enabled', String(this.dump1090GraphsEnabled)).subscribe();
+    this.saveSetting('graphs_dump1090_enabled', String(this.dump1090GraphsEnabled));
   }
 
   saveDump978GraphsEnabled(): void {
-    this.dataService.updateSetting('graphs_dump978_enabled', String(this.dump978GraphsEnabled)).subscribe();
+    this.saveSetting('graphs_dump978_enabled', String(this.dump978GraphsEnabled));
   }
 
   saveMeasurementRange(): void {
-    this.dataService.updateSetting('graphs_measurement_range', this.measurementRange).subscribe();
+    this.saveSetting('graphs_measurement_range', this.measurementRange);
   }
 
   saveMeasurementTemperature(): void {
-    this.dataService.updateSetting('graphs_measurement_temperature', this.measurementTemperature).subscribe();
+    this.saveSetting('graphs_measurement_temperature', this.measurementTemperature);
   }
 
   saveNetworkInterface(): void {
-    this.dataService.updateSetting('graphs_network_interface', this.networkInterface).subscribe();
+    this.saveSetting('graphs_network_interface', this.networkInterface);
   }
 
   saveGraphRefreshIntervalSeconds(): void {
     this.graphRefreshIntervalSeconds = this.normalizeRefreshSeconds(this.graphRefreshIntervalSeconds);
     const refreshMs = this.secondsToMs(this.graphRefreshIntervalSeconds);
-    this.dataService
-      .updateSetting('graphs_refresh_interval_ms', String(refreshMs))
-      .subscribe();
+    this.saveSetting('graphs_refresh_interval_ms', String(refreshMs));
+  }
+
+  private saveSetting(key: string, value: string): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; },
+    });
   }
 
   private secondsToMs(value: number): number {

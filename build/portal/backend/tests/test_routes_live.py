@@ -200,12 +200,14 @@ class TestLiveAircraftEndpoint:
         assert resp.get_json()['messages'] == 7
 
     @patch('backend.routes.live.urlopen', side_effect=URLError('connection refused'))
-    def test_get_live_aircraft_503_when_all_unreachable(self, _mock, client):
-        """Should return 503 when both dump1090 and dump978 are unreachable."""
+    def test_get_live_aircraft_200_when_all_unreachable(self, _mock, client):
+        """Should return an empty 200 payload when both dump1090 and dump978 are unreachable."""
         resp = client.get('/api/live/aircraft')
-        assert resp.status_code == 503
+        assert resp.status_code == 200
         body = resp.get_json()
-        assert 'msg' in body
+        assert body['aircraft'] == []
+        assert body['messages'] == 0
+        assert body['source_status'] == 'offline'
         assert 'detail' in body
 
     @patch('backend.routes.live.urlopen')

@@ -1,4 +1,4 @@
-from tests.conftest import create_admin_token, create_user_token
+from conftest import create_admin_token, create_user_token
 
 # DELETE /notifications/{id}
 
@@ -59,8 +59,11 @@ def test_post_notification_401(client):
 
 # GET /notifications
 
-def test_get_notifications_200(client):
-    response = client.get('/api/notifications')
+def test_get_notifications_200(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/notifications',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 200
     assert response.json['offset'] == 0
     assert response.json['limit'] == 100
@@ -72,8 +75,11 @@ def test_get_notifications_200(client):
     assert response.json['notifications'][2]['id'] == 3
     assert response.json['notifications'][2]['flight'] == "FLT0013"
 
-def test_get_notifications_200_offset(client):
-    response = client.get('/api/notifications?offset=2')
+def test_get_notifications_200_offset(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/notifications?offset=2',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 200
     assert response.json['offset'] == 2
     assert response.json['limit'] == 100
@@ -81,8 +87,11 @@ def test_get_notifications_200_offset(client):
     assert response.json['notifications'][0]['id'] == 3
     assert response.json['notifications'][0]['flight'] == "FLT0013"
 
-def test_get_notifications_200_limit(client):
-    response = client.get('/api/notifications?limit=1')
+def test_get_notifications_200_limit(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/notifications?limit=1',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 200
     assert response.json['offset'] == 0
     assert response.json['limit'] == 1
@@ -90,8 +99,11 @@ def test_get_notifications_200_limit(client):
     assert response.json['notifications'][0]['id'] == 1
     assert response.json['notifications'][0]['flight'] == "FLT0011"
 
-def test_get_notifications_200_offset_and_limit(client):
-    response = client.get('/api/notifications?offset=1&limit=1')
+def test_get_notifications_200_offset_and_limit(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/notifications?offset=1&limit=1',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 200
     assert response.json['offset'] == 1
     assert response.json['limit'] == 1
@@ -99,14 +111,23 @@ def test_get_notifications_200_offset_and_limit(client):
     assert response.json['notifications'][0]['id'] == 2
     assert response.json['notifications'][0]['flight'] == "FLT0012"
 
-def test_get_notifications_400_offset_less_than_0(client):
-    response = client.get('/api/notifications?offset=-1')
+def test_get_notifications_400_offset_less_than_0(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/notifications?offset=-1',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 400
 
-def test_get_notifications_400_limit_less_than_0(client):
-    response = client.get('/api/notifications?limit=-1')
+def test_get_notifications_400_limit_less_than_0(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/notifications?limit=-1',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 400
 
-def test_get_notifications_400_limit_greater_than_1000(client):
-    response = client.get('/api/notifications?limit=1001')
+def test_get_notifications_400_limit_greater_than_1000(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/notifications?limit=1001',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 400

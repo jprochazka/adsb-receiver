@@ -1,19 +1,30 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
+interface PortalLink {
+  id: number;
+  name: string;
+  address: string;
+}
+
+interface LinksResponse {
+  links?: PortalLink[];
+}
+
 @Component({
   selector: 'app-admin-links',
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-links.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-links.component.scss'
 })
 export class AdminLinksComponent implements OnInit {
-  links: any[] = [];
+  links: PortalLink[] = [];
   loading = true;
   errorMessage = '';
   successMessage = '';
@@ -27,7 +38,7 @@ export class AdminLinksComponent implements OnInit {
   newAddress = '';
 
   // Edit form state
-  editingLink: any = null;
+  editingLink: PortalLink | null = null;
   editName = '';
   editAddress = '';
   saving = false;
@@ -50,14 +61,24 @@ export class AdminLinksComponent implements OnInit {
   }
 
   saveLinksNavEnabled() {
-    this.dataService.updateSetting('links_nav_enabled', String(this.linksNavEnabled)).subscribe();
+    this.saveSetting('links_nav_enabled', String(this.linksNavEnabled));
+  }
+
+  private saveSetting(key: string, value: string) {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; },
+    });
   }
 
   loadLinks() {
     this.loading = true;
     this.dataService.getLinks(0, 100).subscribe({
-      next: (data) => {
-        this.links   = data.links;
+      next: (data: LinksResponse) => {
+        this.links   = data.links ?? [];
         this.loading = false;
       },
       error: () => {
@@ -99,7 +120,7 @@ export class AdminLinksComponent implements OnInit {
     });
   }
 
-  startEdit(link: any) {
+  startEdit(link: PortalLink) {
     this.editingLink = link;
     this.editName = link.name;
     this.editAddress = link.address;
@@ -113,6 +134,10 @@ export class AdminLinksComponent implements OnInit {
   }
 
   saveEdit() {
+    if (!this.editingLink) {
+      return;
+    }
+
     if (!this.editName.trim() || !this.editAddress.trim()) {
       this.errorMessage = 'Name and address are required.';
       return;
@@ -136,7 +161,7 @@ export class AdminLinksComponent implements OnInit {
     });
   }
 
-  deleteLink(link: any) {
+  deleteLink(link: PortalLink) {
     if (!confirm(`Delete "${link.name}"? This cannot be undone.`)) return;
     this.errorMessage = '';
     this.dataService.deleteLink(link.id).subscribe({
@@ -175,6 +200,11 @@ export class AdminLinksComponent implements OnInit {
 
     const reordered = [...this.links];
     const [moved] = reordered.splice(this.dragIndex, 1);
+    if (!moved) {
+      this.dragIndex = null;
+      this.dragOverIndex = null;
+      return;
+    }
     reordered.splice(dropIndex, 0, moved);
     this.links = reordered;
     this.dragIndex = null;

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import type { BlogPostSummary, PaginatedResponse } from '../shared/api-types';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,25 @@ export class DataService {
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
+
+  private authHeaders(): { Authorization: string } {
+    const token = localStorage.getItem('access_token');
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  private offsetLimitParams(offset: number, limit: number): HttpParams {
+    return new HttpParams()
+      .set('offset', offset)
+      .set('limit', limit);
+  }
+
+  private flightUrl(source: 'adsb' | 'uat', flight: string, suffix = ''): string {
+    return `${this.apiUrl}/${source}/flight/${encodeURIComponent(flight)}${suffix}`;
+  }
+
+  private schedulerJobUrl(jobId: string, action: 'run' | 'pause' | 'resume'): string {
+    return `${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/${action}`;
+  }
 
   login(email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/token/login`, { email, password });
@@ -20,24 +40,19 @@ export class DataService {
   }
 
   getUser(userId: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.get(`${this.apiUrl}/users/user/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   updateUser(userId: number, data: any): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/users/user/${userId}`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   getUsers(offset = 0, limit = 10, options?: { q?: string; locked?: boolean | null }): Observable<any> {
-    const token = localStorage.getItem('access_token');
-    let params = new HttpParams()
-      .set('offset', offset)
-      .set('limit', limit);
+    let params = this.offsetLimitParams(offset, limit);
 
     if (options?.q?.trim()) {
       params = params.set('q', options.q.trim());
@@ -49,28 +64,25 @@ export class DataService {
 
     return this.http.get(`${this.apiUrl}/users/users`, {
       params,
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   createUser(data: { name: string; email: string; password: string; role: string }): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/users/create`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   deleteUser(userId: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/users/user/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   setUserLocked(userId: number, locked: boolean): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/users/user/${userId}/lock`, { locked }, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
@@ -83,30 +95,35 @@ export class DataService {
   }
 
   createBlogComment(blogPostId: number | string, data: { content: string; parent_comment_id?: number }): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/blog/post/${blogPostId}/comments`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   updateBlogComment(blogPostId: number | string, commentId: number, data: { content: string }): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/blog/post/${blogPostId}/comments/${commentId}`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   deleteBlogComment(blogPostId: number | string, commentId: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/blog/post/${blogPostId}/comments/${commentId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
-  getBlogPosts(offset = 0, limit = 10, category = '', tag = ''): Observable<any> {
-    const cat = category ? `&category=${encodeURIComponent(category)}` : '';
-    const tg = tag ? `&tag=${encodeURIComponent(tag)}` : '';
-    return this.http.get(`${this.apiUrl}/blog/posts?offset=${offset}&limit=${limit}${cat}${tg}`);
+  getBlogPosts(offset = 0, limit = 10, category = '', tag = ''): Observable<PaginatedResponse<BlogPostSummary>> {
+    let params = this.offsetLimitParams(offset, limit);
+
+    if (category) {
+      params = params.set('category', category);
+    }
+
+    if (tag) {
+      params = params.set('tag', tag);
+    }
+
+    return this.http.get<PaginatedResponse<BlogPostSummary>>(`${this.apiUrl}/blog/posts`, { params });
   }
 
   getBlogPostsMeta(): Observable<any> {
@@ -114,10 +131,7 @@ export class DataService {
   }
 
   getAdminBlogPosts(offset = 0, limit = 10, options?: { q?: string; status?: string }): Observable<any> {
-    const token = localStorage.getItem('access_token');
-    let params = new HttpParams()
-      .set('offset', offset)
-      .set('limit', limit);
+    let params = this.offsetLimitParams(offset, limit);
 
     if (options?.q?.trim()) {
       params = params.set('q', options.q.trim());
@@ -129,33 +143,30 @@ export class DataService {
 
     return this.http.get(`${this.apiUrl}/blog/posts/all`, {
       params,
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   createBlogPost(data: { title: string; author: string; content: string; date?: string; visible?: boolean; tags?: string[]; category?: string }): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/blog/post`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   updateBlogPost(id: number, data: { title: string; content: string; date?: string; visible?: boolean; tags?: string[]; category?: string }): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/blog/post/${id}`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   deleteBlogPost(id: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/blog/post/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   getFlights(offset = 0, limit = 50): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flights`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/adsb/flights`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getIgnoredFlights(offset = 0, limit = 10): Observable<any> {
@@ -165,28 +176,26 @@ export class DataService {
   }
 
   getFlightDetails(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}`);
+    return this.http.get(this.flightUrl('adsb', flight));
   }
 
   updateFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/purge-preference`,
+      this.flightUrl('adsb', flight, '/purge-preference'),
       { ignore_on_purge },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: this.authHeaders() }
     );
   }
 
   getUatFlightDetails(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}`);
+    return this.http.get(this.flightUrl('uat', flight));
   }
 
   updateUatFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/purge-preference`,
+      this.flightUrl('uat', flight, '/purge-preference'),
       { ignore_on_purge },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: this.authHeaders() }
     );
   }
 
@@ -195,70 +204,64 @@ export class DataService {
   }
 
   getFlightPositions(flight: string, limit = 1000): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
+    return this.http.get(this.flightUrl('adsb', flight, '/positions'), { params: { limit } });
   }
 
   getUatFlightPositions(flight: string, limit = 1000): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/positions`, { params: { limit } });
+    return this.http.get(this.flightUrl('uat', flight, '/positions'), { params: { limit } });
   }
 
   getFlightComments(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments`);
+    return this.http.get(this.flightUrl('adsb', flight, '/comments'));
   }
 
   getUatFlightComments(flight: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments`);
+    return this.http.get(this.flightUrl('uat', flight, '/comments'));
   }
 
   createFlightComment(flight: string, content: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments`,
+      this.flightUrl('adsb', flight, '/comments'),
       { content },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: this.authHeaders() }
     );
   }
 
   createUatFlightComment(flight: string, content: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments`,
+      this.flightUrl('uat', flight, '/comments'),
       { content },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: this.authHeaders() }
     );
   }
 
   updateFlightComment(flight: string, commentId: number, content: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      this.flightUrl('adsb', flight, `/comments/${commentId}`),
       { content },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: this.authHeaders() }
     );
   }
 
   deleteFlightComment(flight: string, commentId: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(
-      `${this.apiUrl}/adsb/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      this.flightUrl('adsb', flight, `/comments/${commentId}`),
+      { headers: this.authHeaders() }
     );
   }
 
   updateUatFlightComment(flight: string, commentId: number, content: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
+      this.flightUrl('uat', flight, `/comments/${commentId}`),
       { content },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: this.authHeaders() }
     );
   }
 
   deleteUatFlightComment(flight: string, commentId: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(
-      `${this.apiUrl}/uat/flight/${encodeURIComponent(flight)}/comments/${commentId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      this.flightUrl('uat', flight, `/comments/${commentId}`),
+      { headers: this.authHeaders() }
     );
   }
 
@@ -271,7 +274,7 @@ export class DataService {
   }
 
   getUatFlights(offset = 0, limit = 50): Observable<any> {
-    return this.http.get(`${this.apiUrl}/uat/flights`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/uat/flights`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getIgnoredUatFlights(offset = 0, limit = 10): Observable<any> {
@@ -289,7 +292,7 @@ export class DataService {
   }
 
   getAcarsFlights(offset = 0, limit = 50): Observable<any> {
-    return this.http.get(`${this.apiUrl}/acars/flights`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/acars/flights`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getAcarsFlightsCount(): Observable<any> {
@@ -297,7 +300,7 @@ export class DataService {
   }
 
   getAcarsFlightMessages(flightId: number, offset = 0, limit = 25): Observable<any> {
-    return this.http.get(`${this.apiUrl}/acars/flight/${flightId}/messages`, { params: { offset, limit } });
+    return this.http.get(`${this.apiUrl}/acars/flight/${flightId}/messages`, { params: this.offsetLimitParams(offset, limit) });
   }
 
   getAcarsMessagesCount(): Observable<any> {
@@ -309,9 +312,8 @@ export class DataService {
   }
 
   purgeAcarsFlights(days: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/acars/flights/purge?days=${days}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
@@ -320,30 +322,26 @@ export class DataService {
   }
 
   createLink(data: { name: string; address: string }): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/links`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   updateLink(id: number, data: { name: string; address: string }): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/links/${id}`, data, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   deleteLink(id: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/links/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   reorderLinks(ids: number[]): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/links/reorder`, { ids }, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
@@ -372,9 +370,8 @@ export class DataService {
   }
 
   getSystemFlightsTables(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.get(`${this.apiUrl}/devices/flights-tables`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
@@ -383,23 +380,20 @@ export class DataService {
   }
 
   getNotifications(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.get(`${this.apiUrl}/notifications`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   createNotification(flight: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/notifications/${encodeURIComponent(flight)}`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   deleteNotification(flight: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/notifications/${encodeURIComponent(flight)}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
@@ -408,16 +402,14 @@ export class DataService {
   }
 
   purgeFlights(days: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/adsb/flights/purge?days=${days}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   purgeUatFlights(days: number): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.delete(`${this.apiUrl}/uat/flights/purge?days=${days}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
@@ -451,9 +443,8 @@ export class DataService {
   }
 
   updateSetting(name: string, value: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.put(`${this.apiUrl}/setting`, { name, value }, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
@@ -462,72 +453,62 @@ export class DataService {
   }
 
   updateOpenSkyAircraftDatabase(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/setting/opensky-aircraft-database/update`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   getSchedulerStatus(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.get(`${this.apiUrl}/scheduler`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   getSchedulerJobs(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.get(`${this.apiUrl}/scheduler/jobs`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   startScheduler(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/scheduler/start`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   pauseScheduler(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/scheduler/pause`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   resumeScheduler(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/scheduler/resume`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   shutdownScheduler(): Observable<any> {
-    const token = localStorage.getItem('access_token');
     return this.http.post(`${this.apiUrl}/scheduler/shutdown`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.authHeaders()
     });
   }
 
   runSchedulerJob(jobId: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
-    return this.http.post(`${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/run`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+    return this.http.post(this.schedulerJobUrl(jobId, 'run'), {}, {
+      headers: this.authHeaders()
     });
   }
 
   pauseSchedulerJob(jobId: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
-    return this.http.post(`${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/pause`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+    return this.http.post(this.schedulerJobUrl(jobId, 'pause'), {}, {
+      headers: this.authHeaders()
     });
   }
 
   resumeSchedulerJob(jobId: string): Observable<any> {
-    const token = localStorage.getItem('access_token');
-    return this.http.post(`${this.apiUrl}/scheduler/jobs/${encodeURIComponent(jobId)}/resume`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+    return this.http.post(this.schedulerJobUrl(jobId, 'resume'), {}, {
+      headers: this.authHeaders()
     });
   }
 

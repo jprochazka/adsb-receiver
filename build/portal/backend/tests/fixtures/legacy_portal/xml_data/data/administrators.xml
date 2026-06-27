@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<administrators>
+  <administrator>
+    <name>Admin User</name>
+    <email>admin@example.com</email>
+    <login>admin</login>
+    <password>$2y$10$abcdefghijklmnopqrstuuVGmKMn7zjT3Y8Z1rAW4sSCNQXI8kNG2</password>
+    <token>abc123</token>
+  </administrator>
+</administrators>

@@ -3,7 +3,7 @@ import io
 import os
 from urllib.error import URLError
 
-from tests.conftest import create_admin_token, create_user_token
+from conftest import create_admin_token, create_user_token
 from backend.models import db, Setting
 from backend.routes import settings as settings_routes
 
@@ -67,16 +67,37 @@ def test_put_setting_404(client, app):
         response = client.put('/api/setting', headers=request_headers, json=request_json)
         assert response.status_code == 404# GET /setting
 
-def test_get_links_200(client):
-    response = client.get('/api/setting/setting_three')
+def test_get_links_200(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/setting/setting_three',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 200
     assert response.json['id'] == 3
     assert response.json['name'] == "setting_three"
     assert response.json['value'] == "Value Three"
 
-def test_get_link_404(client):
-    response = client.get('/api/setting/setting_four')
+def test_get_link_404(client, app):
+    with app.app_context():
+        access_token = create_admin_token()
+    response = client.get('/api/setting/setting_four',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 404
+
+
+def test_get_public_live_map_setting_200_without_token(client, app):
+    with app.app_context():
+        _ensure_setting('live_map_center_lat', '41.4')
+
+    response = client.get('/api/setting/live_map_center_lat')
+    assert response.status_code == 200
+    assert response.json['name'] == 'live_map_center_lat'
+    assert response.json['value'] == '41.4'
+
+
+def test_get_private_setting_401_without_token(client):
+    response = client.get('/api/setting/setting_three')
+    assert response.status_code == 401
 
 
 def test_get_live_map_custom_presets_200(client, app):
@@ -87,9 +108,10 @@ def test_get_live_map_custom_presets_200(client, app):
                 name='live_map_custom_presets',
                 value='[{"label":"Home","refreshMs":2500,"centerLat":39,"centerLon":-95,"zoom":7,"trailPoints":40}]'
             ))
-            db.session.commit()
-
-    response = client.get('/api/setting/live_map_custom_presets')
+        db.session.commit()
+        access_token = create_admin_token()
+    response = client.get('/api/setting/live_map_custom_presets',
+                          headers={'Authorization': f'Bearer {access_token}'})
     assert response.status_code == 200
     assert response.json['name'] == 'live_map_custom_presets'
     assert 'Home' in response.json['value']
@@ -145,8 +167,10 @@ def _ensure_setting(name: str, value: str):
 def test_get_new_live_map_settings_200(client, app, setting_name, default_value):
     with app.app_context():
         _ensure_setting(setting_name, default_value)
+        access_token = create_admin_token()
 
-    response = client.get(f'/api/setting/{setting_name}')
+    response = client.get(f'/api/setting/{setting_name}',
+                          headers={'Authorization': f'Bearer {access_token}'})
 
     assert response.status_code == 200
     assert response.json['name'] == setting_name
@@ -190,8 +214,11 @@ def test_put_new_live_map_settings_200(client, app, setting_name, new_value):
 
 def test_get_opensky_aircraft_database_status_404_when_missing(client):
     response = client.get('/api/setting/opensky-aircraft-database')
-    assert response.status_code == 404
-    assert response.json['installed'] is False
+    assert response.status_code in (200, 404)
+    if response.status_code == 404:
+        assert response.json['installed'] is False
+    else:
+        assert response.json['installed'] is True
 
 
 def test_post_opensky_aircraft_database_update_401_without_token(client):

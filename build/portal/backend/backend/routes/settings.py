@@ -10,10 +10,11 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from flask import Blueprint, current_app, request
+from flask_jwt_extended import verify_jwt_in_request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Setting
-from backend.auth import require_admin
+from backend.auth import get_current_user, require_admin
 from backend.opensky_classification import import_opensky_csv
 from sqlalchemy import select
 
@@ -58,6 +59,40 @@ OPENSKY_NOTICE_FILE = 'LICENSE-ODbL-OpenSky.txt'
 OPENSKY_LICENSE_NAME = 'Open Database License (ODbL) v1.0'
 OPENSKY_LICENSE_URL = 'https://opendatacommons.org/licenses/odbl/'
 OPENSKY_ATTRIBUTION = 'Contains information from OpenSky Network aircraft database (ODbL v1.0).'
+
+_PUBLIC_SETTING_PREFIXES = (
+    'live_map_',
+    'graphs_',
+    'info_',
+    'map_',
+    'flights_',
+    'acars_',
+    'blog_',
+    'links_',
+    'all_tab_',
+    'adsb_tab_',
+    'uat_tab_',
+)
+
+
+def _is_public_setting_name(name: str) -> bool:
+    return any(name.startswith(prefix) for prefix in _PUBLIC_SETTING_PREFIXES)
+
+
+def _require_admin_setting_read():
+    try:
+        verify_jwt_in_request()
+        current_user = get_current_user()
+
+        if not current_user:
+            return {'msg': 'User not found'}, 401
+        if current_user.locked:
+            return {'msg': 'Account is locked'}, 403
+        if not current_user.is_admin():
+            return {'msg': 'Admin access required'}, 403
+        return None
+    except Exception:
+        return {'msg': 'Invalid token'}, 401
 
 
 def _opensky_db_dir() -> str:
@@ -109,15 +144,11 @@ def _read_metadata(path: str):
 def _build_opensky_status() -> dict:
     db_path = _opensky_db_path()
     metadata_path = _opensky_metadata_path()
-    notice_path = _opensky_notice_path()
     metadata = _read_metadata(metadata_path) or {}
     installed = os.path.exists(db_path)
 
     return {
         'installed': installed,
-        'db_path': db_path,
-        'metadata_path': metadata_path,
-        'notice_path': notice_path,
         'size_bytes': metadata.get('size_bytes') if installed else None,
         'sha256': metadata.get('sha256') if installed else None,
         'downloaded_at': metadata.get('downloaded_at') if installed else None,
@@ -192,11 +223,17 @@ class SettingResource(Resource):
 @setting_ns.route('/<string:name>')
 class SettingByNameResource(Resource):
     @setting_ns.response(200, 'Setting retrieved successfully', setting_model)
+    @setting_ns.response(401, 'Unauthorized')
     @setting_ns.response(404, 'Setting not found')
     @setting_ns.response(500, 'Internal server error')
     @setting_ns.doc('get_setting_by_name')
     def get(self, name):
         """Get setting value by name"""
+        if not _is_public_setting_name(name):
+            auth_error = _require_admin_setting_read()
+            if auth_error:
+                return auth_error
+
         try:
             setting = db.session.execute(select(Setting).filter_by(name=name)).scalar_one_or_none()
             

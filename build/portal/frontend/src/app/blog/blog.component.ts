@@ -1,16 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
+import { getCurrentUserId, getCurrentUserRole, hasValidAccessToken } from '../shared/auth-session';
 
 @Component({
   selector: 'app-blog',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, SpinnerComponent],
   templateUrl: './blog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './blog.component.scss'
 })
 export class BlogComponent implements OnInit {
@@ -313,43 +315,15 @@ export class BlogComponent implements OnInit {
   }
 
   private hasValidToken(): boolean {
-    const token = localStorage.getItem('access_token');
-    if (!token) return false;
-
-    try {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(base64));
-      return !!payload && payload.exp * 1000 > Date.now();
-    } catch {
-      return false;
-    }
+    return hasValidAccessToken();
   }
 
   private getCurrentUserId(): number | null {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-
-    try {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(base64));
-      const id = payload?.user_id;
-      return typeof id === 'number' ? id : null;
-    } catch {
-      return null;
-    }
+    return getCurrentUserId();
   }
 
   private getCurrentUserRole(): string | null {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-
-    try {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(base64));
-      return payload?.role ?? null;
-    } catch {
-      return null;
-    }
+    return getCurrentUserRole();
   }
 
   goToPage(page: number): void {

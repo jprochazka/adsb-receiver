@@ -1,4 +1,4 @@
-from tests.conftest import create_admin_token, create_another_user_token, create_user_token
+from conftest import create_admin_token, create_another_user_token, create_user_token
 from backend.models import db, Dump978Aircraft, Dump978Flight, User
 
 # GET /api/uat/flight/{flight}
@@ -476,4 +476,4 @@ def test_delete_uat_flight_comment_204_admin(client, app):
         f'/api/uat/flight/UAT0001/comments/{comment_id}',
         headers={'Authorization': f'Bearer {admin_token}'}
     )
-    assert delete_response.status_code == 204
+    assert delete_response.status_code == 200

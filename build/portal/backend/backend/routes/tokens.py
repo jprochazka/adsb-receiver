@@ -1,5 +1,4 @@
-import logging
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
@@ -62,16 +61,20 @@ class LoginResource(Resource):
         
         if not user:
             return {'msg': 'Invalid credentials'}, 401
-        
-        if not check_password_hash(user.password or '', password):
-            return {'msg': 'Invalid credentials'}, 401
 
         if user.locked:
-            return {'msg': 'Account locked. Please contact an administrator.'}, 403
+            return {'msg': 'Invalid credentials'}, 401
+
+        if not user.password:
+            return {'msg': 'Invalid credentials'}, 401
+
+        if not check_password_hash(user.password, password):
+            return {'msg': 'Invalid credentials'}, 401
         
-        # Ensure user has a valid role
+        # Ensure user has a valid role; persist any correction
         if not user.role or not validate_role(user.role):
             user.role = 'Admin' if user.administrator == 1 else 'User'
+            db.session.commit()
         
         # Create tokens with user email as identity
         access_token = create_access_token(

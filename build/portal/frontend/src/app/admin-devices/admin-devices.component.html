@@ -8,97 +8,70 @@
   }
 
   @if (!loading) {
+    @if (successMessage) {
+      <div class="alert alert-success" role="alert">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+    }
+
     <div class="card mb-4">
       <div class="card-header fw-semibold">Navigation Visibility</div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-semibold">Show Devices in Navigation Bar</div>
-            <div class="text-muted small">When disabled, the Devices menu is hidden from all visitors regardless of individual link settings</div>
-          </div>
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" type="checkbox" role="switch"
-              id="toggle-info-nav" [(ngModel)]="infoNavEnabled" (change)="saveInfoNavEnabled()">
-            <label class="form-check-label" for="toggle-info-nav">
-              {{ infoNavEnabled ? 'Visible' : 'Hidden' }}
-            </label>
-          </div>
-        </li>
+        <app-admin-setting-toggle
+          id="toggle-info-nav"
+          title="Show Devices in Navigation Bar"
+          description="When disabled, the Devices menu is hidden from all visitors regardless of individual link settings"
+          [checked]="infoNavEnabled"
+          enabledLabel="Visible"
+          disabledLabel="Hidden"
+          (checkedChange)="infoNavEnabled = $event; saveInfoNavEnabled()">
+        </app-admin-setting-toggle>
       </ul>
     </div>
     <div class="card mb-4">
       <div class="card-header fw-semibold">Devices Links</div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-semibold">System Devices</div>
-            <div class="text-muted small">Link to the System Devices page</div>
-          </div>
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" type="checkbox" role="switch"
-              id="toggle-system" [(ngModel)]="infoSystemEnabled" (change)="saveInfoSystemEnabled()">
-            <label class="form-check-label" for="toggle-system">
-              {{ infoSystemEnabled ? 'Enabled' : 'Disabled' }}
-            </label>
-          </div>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-semibold">Receiver Devices</div>
-            <div class="text-muted small">Link to the Receiver Devices page</div>
-          </div>
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" type="checkbox" role="switch"
-              id="toggle-graphs" [(ngModel)]="infoGraphsEnabled" (change)="saveInfoGraphsEnabled()">
-            <label class="form-check-label" for="toggle-graphs">
-              {{ infoGraphsEnabled ? 'Enabled' : 'Disabled' }}
-            </label>
-          </div>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-semibold">Public Portal Tab</div>
-            <div class="text-muted small">Show or hide the public Portal tab on the Devices page</div>
-          </div>
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" type="checkbox" role="switch"
-              id="toggle-stats" [(ngModel)]="infoStatsEnabled" (change)="saveInfoStatsEnabled()">
-            <label class="form-check-label" for="toggle-stats">
-              {{ infoStatsEnabled ? 'Enabled' : 'Disabled' }}
-            </label>
-          </div>
-        </li>
+        <app-admin-setting-toggle
+          id="toggle-system"
+          title="System Devices"
+          description="Link to the System Devices page"
+          [checked]="infoSystemEnabled"
+          (checkedChange)="infoSystemEnabled = $event; saveInfoSystemEnabled()">
+        </app-admin-setting-toggle>
+        <app-admin-setting-toggle
+          id="toggle-graphs"
+          title="Receiver Devices"
+          description="Link to the Receiver Devices page"
+          [checked]="infoGraphsEnabled"
+          (checkedChange)="infoGraphsEnabled = $event; saveInfoGraphsEnabled()">
+        </app-admin-setting-toggle>
+        <app-admin-setting-toggle
+          id="toggle-stats"
+          title="Public Portal Tab"
+          description="Show or hide the public Portal tab on the Devices page"
+          [checked]="infoStatsEnabled"
+          (checkedChange)="infoStatsEnabled = $event; saveInfoStatsEnabled()">
+        </app-admin-setting-toggle>
       </ul>
     </div>
     <div class="card mb-4">
       <div class="card-header fw-semibold">Graph Sections</div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-semibold">Dump1090 Graphs</div>
-            <div class="text-muted small">Show ADS-B aircraft, range, signal, and message rate graphs generated by dump1090-fa</div>
-          </div>
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" type="checkbox" role="switch"
-              id="toggle-dump1090-graphs" [(ngModel)]="dump1090GraphsEnabled" (change)="saveDump1090GraphsEnabled()">
-            <label class="form-check-label" for="toggle-dump1090-graphs">
-              {{ dump1090GraphsEnabled ? 'Enabled' : 'Disabled' }}
-            </label>
-          </div>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-semibold">Dump978 Graphs</div>
-            <div class="text-muted small">Show UAT (978 MHz) aircraft and range graphs generated by dump978-fa</div>
-          </div>
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" type="checkbox" role="switch"
-              id="toggle-dump978-graphs" [(ngModel)]="dump978GraphsEnabled" (change)="saveDump978GraphsEnabled()">
-            <label class="form-check-label" for="toggle-dump978-graphs">
-              {{ dump978GraphsEnabled ? 'Enabled' : 'Disabled' }}
-            </label>
-          </div>
-        </li>
+        <app-admin-setting-toggle
+          id="toggle-dump1090-graphs"
+          title="Dump1090 Graphs"
+          description="Show ADS-B aircraft, range, signal, and message rate graphs generated by dump1090-fa"
+          [checked]="dump1090GraphsEnabled"
+          (checkedChange)="dump1090GraphsEnabled = $event; saveDump1090GraphsEnabled()">
+        </app-admin-setting-toggle>
+        <app-admin-setting-toggle
+          id="toggle-dump978-graphs"
+          title="Dump978 Graphs"
+          description="Show UAT (978 MHz) aircraft and range graphs generated by dump978-fa"
+          [checked]="dump978GraphsEnabled"
+          (checkedChange)="dump978GraphsEnabled = $event; saveDump978GraphsEnabled()">
+        </app-admin-setting-toggle>
       </ul>
     </div>
     <div class="card mb-4">

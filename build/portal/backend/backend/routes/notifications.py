@@ -1,15 +1,13 @@
 import logging
 import datetime
-import yaml
 
-from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Notification, Flight, Dump978Flight, Setting
-from backend.auth import require_admin, require_user_or_admin
-from werkzeug.exceptions import HTTPException
+from backend.auth import require_user_or_admin
+from backend.config_loader import get_acars_config
 from sqlalchemy import create_engine, select, text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 notifications = Blueprint('notifications', __name__)
 
@@ -52,6 +50,9 @@ class NotificationResource(Resource):
             db.session.add(new_notification)
             db.session.commit()
             return {'msg': 'Notification created successfully'}, 201
+        except IntegrityError:
+            db.session.rollback()
+            return {'msg': 'Conflict - Notification already exists'}, 409
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to post notification for flight {flight}", exc_info=ex)
@@ -85,11 +86,13 @@ class NotificationResource(Resource):
 class NotificationsListResource(Resource):
     @notifications_ns.marshal_with(notifications_list_model, code=200)
     @notifications_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @notifications_ns.response(401, 'Unauthorized')
     @notifications_ns.response(500, 'Internal server error')
-    @notifications_ns.doc('get_notifications_list', params={
+    @notifications_ns.doc('get_notifications_list', security='Bearer', params={
         'offset': 'Pagination offset (default: 0)',
         'limit': 'Number of notifications to return (default: 100, max: 1000)'
     })
+    @require_user_or_admin()
     def get(self):
         """Get list of flight notifications with pagination"""
         offset = request.args.get('offset', default=0, type=int)
@@ -136,8 +139,10 @@ recent_notifications_model = notifications_ns.model('RecentNotifications', {
 @notifications_ns.route('/recent')
 class RecentNotificationsResource(Resource):
     @notifications_ns.marshal_with(recent_notifications_model, code=200)
+    @notifications_ns.response(401, 'Unauthorized')
     @notifications_ns.response(500, 'Internal server error')
-    @notifications_ns.doc('get_recent_notifications')
+    @notifications_ns.doc('get_recent_notifications', security='Bearer')
+    @require_user_or_admin()
     def get(self):
         """Get flights seen recently that match a notification entry"""
         try:
@@ -192,9 +197,7 @@ class RecentNotificationsResource(Resource):
 
             # Check ACARS database if available
             try:
-                with open('config.yml') as f:
-                    config = yaml.safe_load(f)
-                acars_db_path = config.get('acars', {}).get('database', '/run/acarsdec.sqlite')
+                acars_db_path = get_acars_config().get('database', '/run/acarsdec.sqlite')
                 acars_engine = create_engine(f'sqlite:///{acars_db_path}', connect_args={'check_same_thread': False})
                 with acars_engine.connect() as conn:
                     placeholders = ','.join(f':m{i}' for i in range(len(monitored)))

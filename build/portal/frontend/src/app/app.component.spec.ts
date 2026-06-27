@@ -11,6 +11,7 @@ describe('AppComponent', () => {
     getSetting: jasmine.createSpy('getSetting').and.returnValue(of({ value: 'true' })),
     getApiVersion: jasmine.createSpy('getApiVersion').and.returnValue(of({ version: 'v3.0.0' })),
     searchFlights: jasmine.createSpy('searchFlights').and.returnValue(of({ count: 0, flights: [] })),
+    getLinks: jasmine.createSpy('getLinks').and.returnValue(of({ links: [] })),
   };
 
   beforeEach(async () => {

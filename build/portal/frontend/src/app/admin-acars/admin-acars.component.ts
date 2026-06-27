@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
@@ -10,6 +10,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-acars.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-acars.component.scss'
 })
 export class AdminAcarsComponent implements OnInit {
@@ -39,7 +40,17 @@ export class AdminAcarsComponent implements OnInit {
   }
 
   saveAcarsNavEnabled(): void {
-    this.dataService.updateSetting('acars_nav_enabled', String(this.acarsNavEnabled)).subscribe();
+    this.saveSetting('acars_nav_enabled', String(this.acarsNavEnabled));
+  }
+
+  private saveSetting(key: string, value: string): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
+      next: () => { this.successMessage = 'Setting saved.'; },
+      error: () => { this.errorMessage = 'Failed to save setting.'; },
+    });
   }
 
   loadStats(): void {

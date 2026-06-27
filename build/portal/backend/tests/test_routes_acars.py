@@ -1,15 +1,12 @@
-import json
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 
-from backend import create_app
-from backend.models import db
-from tests.conftest import create_admin_token, create_user_token
+from conftest import create_admin_token, create_user_token
 
 
 @pytest.fixture
@@ -70,13 +67,12 @@ def acars_db():
 @pytest.fixture
 def mock_acars_engine(acars_db):
     """Patch _get_acars_engine to return the temp ACARS engine, and
-    patch config.yml reads inside _get_database_info to point to the temp file."""
+    patch centralized config reads inside _get_database_info to point to the temp file."""
     path, engine = acars_db
     with patch('backend.routes.acars._get_acars_engine', return_value=engine), \
-         patch('backend.routes.acars.yaml') as mock_yaml, \
+         patch('backend.routes.acars.load_portal_config', return_value={'acars': {'database': path}}), \
          patch('backend.routes.acars.os.path.exists', return_value=True), \
          patch('backend.routes.acars.os.path.getsize', return_value=4096):
-        mock_yaml.safe_load.return_value = {'acars': {'database': path}}
         yield
 
 
@@ -172,9 +168,8 @@ class TestAcarsRoutes:
         assert data['size'] == 4096
 
     def test_get_database_info_unavailable(self, client):
-        with patch('backend.routes.acars.yaml') as mock_yaml, \
+        with patch('backend.routes.acars.load_portal_config', return_value={'acars': {'database': '/nonexistent'}}), \
              patch('backend.routes.acars.os.path.exists', return_value=False):
-            mock_yaml.safe_load.return_value = {'acars': {'database': '/nonexistent'}}
             response = client.get('/api/acars/flights/database')
             assert response.status_code == 503
 

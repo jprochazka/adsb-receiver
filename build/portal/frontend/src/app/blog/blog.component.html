@@ -18,7 +18,7 @@
             }
           </div>
         }
-        <div class="fs-5">{{ selectedPost.content }}</div>
+        <div class="blog-content">{{ selectedPost.content }}</div>
 
         <div class="pt-4">
           <h3>Comments</h3>
@@ -194,7 +194,7 @@
             }
             @for (post of posts; track post) {
               <div>
-                <h2><a [routerLink]="['/blog-post', post.id]">{{ post.title }}</a></h2>
+                <h2 class="blog-post-title"><a [routerLink]="['/blog-post', post.id]">{{ post.title }}</a></h2>
                 <p class="fs-6">Posted by {{ post.author }} on {{ post.date | date:"MMMM d, y 'at' h:mm a" }}</p>
                 @if (post.category || post.tags?.length) {
                   <div class="mb-2">
@@ -206,7 +206,7 @@
                     }
                   </div>
                 }
-                <div class="fs-5">{{ truncate(post.content, 500) }}</div>
+                <div class="blog-excerpt">{{ truncate(post.content, 500) }}</div>
                 <div class="pb-3 text-end"><a [routerLink]="['/blog-post', post.id]">read more...</a></div>
               </div>
             }

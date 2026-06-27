@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -27,6 +27,7 @@ const DEFAULT_ORDER = 'dump1090,dump978,adsbx,pfclient';
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-feeders.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-feeders.component.scss'
 })
 export class AdminFeedersComponent implements OnInit {
@@ -84,16 +85,18 @@ export class AdminFeedersComponent implements OnInit {
   }
 
   saveNavEnabled(): void {
-    this.errorMessage = '';
-    this.dataService.updateSetting('map_nav_enabled', String(this.mapNavEnabled)).subscribe({
-      next: () => { this.successMessage = 'Setting saved.'; },
-      error: () => { this.errorMessage = 'Failed to save setting.'; }
-    });
+    this.saveSetting('map_nav_enabled', String(this.mapNavEnabled));
   }
 
   saveItemEnabled(item: MapItem): void {
+    this.saveSetting(item.settingKey, String(item.enabled));
+  }
+
+  private saveSetting(key: string, value: string): void {
     this.errorMessage = '';
-    this.dataService.updateSetting(item.settingKey, String(item.enabled)).subscribe({
+    this.successMessage = '';
+
+    this.dataService.updateSetting(key, value).subscribe({
       next: () => { this.successMessage = 'Setting saved.'; },
       error: () => { this.errorMessage = 'Failed to save setting.'; }
     });

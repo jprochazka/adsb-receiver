@@ -2,12 +2,20 @@ import datetime
 import logging
 import time
 
-from flask import abort, Blueprint, jsonify, request
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.auth import get_current_user, require_admin, require_user_or_admin
 from backend.models import db, Aircraft, Flight, FlightComment, Position
-from werkzeug.exceptions import HTTPException
-from sqlalchemy import select, func, delete, or_
+from backend.routes.common import QueryParamError, get_stripped_arg, parse_pagination
+from backend.routes.flight_common import (
+    apply_flight_filters,
+    can_modify_comment,
+    get_sightings_counts,
+    parse_ignore_on_purge,
+    serialize_flights,
+    validate_flight_comment_content,
+)
+from sqlalchemy import select, func, delete
 
 flights = Blueprint('dump1090', __name__)
 SIGHTING_GAP = datetime.timedelta(minutes=30)
@@ -71,88 +79,24 @@ positions_list_model = flight_ns.model('PositionsList', {
 
 
 def _serialize_adsb_flights(rows):
-    flights_rows = list(rows)
-    flights_data = []
-    for flight_obj in flights_rows:
-        data = flight_obj.to_dict()
-        data['icao'] = flight_obj.aircraft_ref.icao if flight_obj.aircraft_ref else None
-        flights_data.append(data)
-
-    sightings_counts = _get_adsb_sightings_counts(
-        [data.get('flight') for data in flights_data if data.get('flight')]
-    )
-    for data in flights_data:
-        flight_code = data.get('flight')
-        data['sightings_count'] = sightings_counts.get(flight_code, 1 if flight_code else 0)
-
-    return flights_data
-
-
-def _parse_timestamp(value: str | None):
-    if not value:
-        return None
-
-    try:
-        return datetime.datetime.strptime(value, TIMESTAMP_FORMAT)
-    except ValueError:
-        return None
+    return serialize_flights(rows, _get_adsb_sightings_counts)
 
 
 def _get_adsb_sightings_counts(flights: list[str]):
-    unique_flights = sorted({flight for flight in flights if flight})
-    if not unique_flights:
-        return {}
-
-    rows = db.session.execute(
-        select(Flight.flight, Flight.first_seen)
-        .where(Flight.flight.in_(unique_flights))
-        .order_by(Flight.flight.asc(), Flight.first_seen.asc(), Flight.id.asc())
-    ).all()
-
-    counts: dict[str, int] = {}
-    previous_seen: dict[str, datetime.datetime | None] = {}
-
-    for flight, first_seen in rows:
-        current_seen = _parse_timestamp(first_seen)
-        if current_seen is None:
-            counts[flight] = counts.get(flight, 0) + 1
-            continue
-
-        prior_seen = previous_seen.get(flight)
-        if prior_seen is None or (current_seen - prior_seen) >= SIGHTING_GAP:
-            counts[flight] = counts.get(flight, 0) + 1
-
-        previous_seen[flight] = current_seen
-
-    return counts
+    return get_sightings_counts(
+        Flight,
+        flights,
+        gap=SIGHTING_GAP,
+        timestamp_format=TIMESTAMP_FORMAT,
+    )
 
 
 def _parse_ignore_on_purge(value: str | None):
-    if value is None or value == '':
-        return None
-
-    normalized = value.strip().lower()
-    if normalized in ('true', '1'):
-        return True
-    if normalized in ('false', '0'):
-        return False
-
-    raise ValueError('invalid ignore_on_purge value')
+    return parse_ignore_on_purge(value)
 
 
 def _apply_adsb_flight_filters(stmt, q: str | None, ignore_on_purge: bool | None):
-    if q:
-        stmt = stmt.filter(
-            or_(
-                Flight.flight.ilike(f'%{q}%'),
-                Aircraft.icao.ilike(f'%{q}%')
-            )
-        )
-
-    if ignore_on_purge is not None:
-        stmt = stmt.filter(Flight.ignore_on_purge.is_(ignore_on_purge))
-
-    return stmt
+    return apply_flight_filters(stmt, Flight, Aircraft, q, ignore_on_purge)
 
 
 def _query_adsb_flights(q: str | None, offset: int, limit: int, ignore_on_purge: bool | None = None):
@@ -308,11 +252,10 @@ class AdsbFlightsController(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
     def _get_flight_positions(self, flight):
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=500, type=int)
-
-        if offset < 0 or limit < 1 or limit > 1000:
-            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+        try:
+            offset, limit = parse_pagination(request.args, default_limit=500, max_limit=1000)
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
         try:
             flight_obj = db.session.execute(select(Flight).filter_by(flight=flight)).scalar_one_or_none()
@@ -345,7 +288,7 @@ class AdsbFlightsController(Resource):
 
     def _search_flights(self):
         request_started = time.perf_counter()
-        q = request.args.get('q', '', type=str).strip()
+        q = get_stripped_arg(request.args, 'q')
         if not q:
             return {'msg': 'Bad Request - search query required'}, 400
 
@@ -378,11 +321,10 @@ class AdsbFlightsController(Resource):
 
     def _list_flights(self):
         request_started = time.perf_counter()
-        offset = request.args.get('offset', default=0, type=int)
-        limit = request.args.get('limit', default=50, type=int)
-
-        if offset < 0 or limit < 1 or limit > 100:
-            return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
+        try:
+            offset, limit = parse_pagination(request.args, default_limit=50, max_limit=100)
+        except QueryParamError as ex:
+            return {'msg': str(ex)}, 400
 
         ignore_param = request.args.get('ignore_on_purge', default=None, type=str)
         try:
@@ -391,7 +333,7 @@ class AdsbFlightsController(Resource):
             return {'msg': 'Bad Request - ignore_on_purge must be true, false, 1, or 0'}, 400
 
         try:
-            q = request.args.get('q', default='', type=str).strip()
+            q = get_stripped_arg(request.args, 'q')
             flights_data, total = _query_adsb_flights(
                 q=q or None,
                 offset=offset,
@@ -430,6 +372,7 @@ class AdsbFlightsPurgeController(Resource):
     @flights_ns.response(401, 'Unauthorized - authentication required')
     @flights_ns.response(403, 'Forbidden - admin role required')
     @flights_ns.response(500, 'Internal server error')
+    @flights_ns.param('days', 'Number of days of history to keep before purging older flights', _in='query', type='integer', required=True)
     @flights_ns.doc('purge_adsb_flights', security='Bearer')
     @require_admin()
     def delete(self):
@@ -510,11 +453,11 @@ class AdsbFlightCommentsController(Resource):
     @require_user_or_admin()
     def post(self, flight):
         """Create a comment for an ADS-B flight (authenticated unlocked user/admin)"""
-        content = (request.json or {}).get('content', '').strip()
-        if not content:
-            return {'msg': 'Bad Request - content is required'}, 400
-        if len(content) > 5000:
-            return {'msg': 'Bad Request - content cannot exceed 5000 characters'}, 400
+        content, error_body, error_status = validate_flight_comment_content(
+            (request.json or {}).get('content', '')
+        )
+        if error_body:
+            return error_body, error_status
 
         try:
             flight_obj = db.session.execute(select(Flight).filter_by(flight=flight)).scalar_one_or_none()
@@ -552,11 +495,11 @@ class AdsbFlightCommentModerationController(Resource):
     @require_user_or_admin()
     def put(self, flight, comment_id):
         """Update an ADS-B flight comment (comment owner or admin)"""
-        content = (request.json or {}).get('content', '').strip()
-        if not content:
-            return {'msg': 'Bad Request - content is required'}, 400
-        if len(content) > 5000:
-            return {'msg': 'Bad Request - content cannot exceed 5000 characters'}, 400
+        content, error_body, error_status = validate_flight_comment_content(
+            (request.json or {}).get('content', '')
+        )
+        if error_body:
+            return error_body, error_status
 
         try:
             flight_obj = db.session.execute(select(Flight).filter_by(flight=flight)).scalar_one_or_none()
@@ -570,7 +513,7 @@ class AdsbFlightCommentModerationController(Resource):
             current_user = get_current_user()
             if not current_user:
                 return {'msg': 'User not found'}, 401
-            if comment.user_id != current_user.id and not current_user.is_admin():
+            if not can_modify_comment(current_user, comment):
                 return {'msg': 'Access denied. You can only edit your own comments'}, 403
 
             comment.content = content
@@ -603,27 +546,84 @@ class AdsbFlightCommentModerationController(Resource):
 
             db.session.delete(comment)
             db.session.commit()
-            return {'msg': 'Comment deleted successfully'}, 204
+            return {'msg': 'Comment deleted successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f'Error encountered while trying to delete comment {comment_id} for ADS-B flight {flight}', exc_info=ex)
             return {'msg': 'Internal Server Error'}, 500
 
 
-flights_ns.add_resource(
-    AdsbFlightsController,
-    '/flights',
-    '/flights/search',
-    '/flights/count',
-)
+class AdsbFlightsListResource(AdsbFlightsController):
+    @flights_ns.marshal_with(flights_list_model, code=200)
+    @flights_ns.response(400, 'Bad request - invalid offset, limit, or ignore_on_purge parameter')
+    @flights_ns.response(500, 'Internal server error')
+    @flights_ns.doc('list_adsb_flights', params={
+        'offset': {'description': 'Number of flights to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of flights to return', 'type': 'integer', 'in': 'query', 'default': 50, 'minimum': 1, 'maximum': 100},
+        'q': {'description': 'Optional flight callsign or ICAO search query', 'type': 'string', 'in': 'query'},
+        'ignore_on_purge': {'description': 'Optional purge-protection filter: true, false, 1, or 0', 'type': 'boolean', 'in': 'query'},
+    })
+    def get(self):
+        """List ADS-B flights."""
+        return self._list_flights()
 
+
+class AdsbFlightsSearchResource(AdsbFlightsController):
+    @flights_ns.marshal_with(flights_list_model, code=200)
+    @flights_ns.response(400, 'Bad request - q is required or ignore_on_purge is invalid')
+    @flights_ns.response(500, 'Internal server error')
+    @flights_ns.doc('search_adsb_flights', params={
+        'q': {'description': 'Required flight callsign or ICAO search query', 'type': 'string', 'in': 'query', 'required': True},
+        'ignore_on_purge': {'description': 'Optional purge-protection filter: true, false, 1, or 0', 'type': 'boolean', 'in': 'query'},
+    })
+    def get(self):
+        """Search ADS-B flights by callsign or ICAO."""
+        return self._search_flights()
+
+
+class AdsbFlightsCountResource(AdsbFlightsController):
+    @flights_ns.marshal_with(flight_count_model, code=200)
+    @flights_ns.response(500, 'Internal server error')
+    @flights_ns.doc('count_adsb_flights')
+    def get(self):
+        """Count ADS-B flights."""
+        return self._get_flights_count()
+
+
+class AdsbFlightResource(AdsbFlightsController):
+    @flight_ns.marshal_with(flight_model, code=200)
+    @flight_ns.response(404, 'Flight not found')
+    @flight_ns.response(500, 'Internal server error')
+    @flight_ns.doc('get_adsb_flight', params={
+        'flight': {'description': 'Flight callsign to retrieve', 'type': 'string', 'in': 'path', 'required': True},
+    })
+    def get(self, flight):
+        """Get one ADS-B flight by callsign."""
+        return self._get_flight(flight)
+
+
+class AdsbFlightPositionsResource(AdsbFlightsController):
+    @flight_ns.marshal_with(positions_list_model, code=200)
+    @flight_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @flight_ns.response(404, 'Flight not found')
+    @flight_ns.response(500, 'Internal server error')
+    @flight_ns.doc('get_adsb_flight_positions', params={
+        'flight': {'description': 'Flight callsign whose positions should be returned', 'type': 'string', 'in': 'path', 'required': True},
+        'offset': {'description': 'Number of positions to skip for pagination', 'type': 'integer', 'in': 'query', 'default': 0},
+        'limit': {'description': 'Maximum number of positions to return', 'type': 'integer', 'in': 'query', 'default': 500, 'minimum': 1, 'maximum': 1000},
+    })
+    def get(self, flight):
+        """Get ADS-B positions for one flight."""
+        return self._get_flight_positions(flight)
+
+
+flights_ns.add_resource(AdsbFlightsListResource, '/flights')
+flights_ns.add_resource(AdsbFlightsSearchResource, '/flights/search')
+flights_ns.add_resource(AdsbFlightsCountResource, '/flights/count')
 flights_ns.add_resource(AdsbFlightsPurgeController, '/flights/purge')
 
-flight_ns.add_resource(
-    AdsbFlightsController,
-    '/flight/<string:flight>',
-    '/flight/<string:flight>/positions',
-)
+flight_ns.add_resource(AdsbFlightResource, '/flight/<string:flight>')
+flight_ns.add_resource(AdsbFlightPositionsResource, '/flight/<string:flight>/positions')
 
 flight_ns.add_resource(
     AdsbFlightCommentsController,

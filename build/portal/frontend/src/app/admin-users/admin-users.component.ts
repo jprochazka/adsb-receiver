@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../service/data.service';
@@ -9,6 +9,7 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-users.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-users.component.scss'
 })
 export class AdminUsersComponent implements OnInit {

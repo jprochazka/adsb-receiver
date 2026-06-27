@@ -1,8 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
+import { getCurrentAccessTokenPayload } from '../shared/auth-session';
+import { aircraftTypeLabelForFlight, buildPageNumbers, inferAircraftClass, normalizeCount, normalizeSightingsCount } from './flight-display.helpers';
+import { buildRenderableSegmentCoords, splitTrackSegments, type TrackPositionLike } from './flight-track.helpers';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { forkJoin, combineLatest } from 'rxjs';
 import { catchError, map, of } from 'rxjs';
@@ -25,11 +28,7 @@ import ControlScaleLine from 'ol/control/ScaleLine';
 import smooth from 'to-smooth';
 
 const DEFAULT_PAGE_SIZE = 50;
-const TRACK_GAP_HOURS = 2;
 const TRACK_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
-const TRACK_INTERPOLATION_TARGET_SECONDS = 6;
-const TRACK_INTERPOLATION_TARGET_METERS = 2_000;
-const TRACK_INTERPOLATION_MAX_POINTS_PER_EDGE = 16;
 const OPENSTREETMAP_ATTRIBUTION_HTML = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
 const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/metadata/aircraftDatabase.csv" target="_blank" rel="noopener noreferrer">OpenSky Network Aircraft Database (ODbL v1.0)</a>';
 
@@ -38,6 +37,7 @@ const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/
   standalone: true,
   imports: [DatePipe, FormsModule, SpinnerComponent, RouterLink],
   templateUrl: './flights.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './flights.component.scss'
 })
 export class FlightsComponent implements OnInit, OnDestroy {
@@ -231,12 +231,12 @@ export class FlightsComponent implements OnInit, OnDestroy {
           this.adsbTotalFlights = adsbCount.flights;
           this.adsbTotalPages   = Math.max(1, Math.ceil(adsbCount.flights / this.perPage));
           this.adsbCurrentPage  = Math.min(adsbPage, this.adsbTotalPages);
-          this.adsbPageNumbers  = this.buildPageNumbers(this.adsbCurrentPage, this.adsbTotalPages);
+          this.adsbPageNumbers  = buildPageNumbers(this.adsbCurrentPage, this.adsbTotalPages);
 
           this.uatTotalFlights = uatCount.flights;
           this.uatTotalPages   = Math.max(1, Math.ceil(uatCount.flights / this.perPage));
           this.uatCurrentPage  = Math.min(uatPage, this.uatTotalPages);
-          this.uatPageNumbers  = this.buildPageNumbers(this.uatCurrentPage, this.uatTotalPages);
+          this.uatPageNumbers  = buildPageNumbers(this.uatCurrentPage, this.uatTotalPages);
 
           const allTotalPages = Math.max(1, Math.ceil(this.allTotalFlights / this.perPage));
           this.allCurrentPage = Math.min(allPage, allTotalPages);
@@ -369,14 +369,14 @@ export class FlightsComponent implements OnInit, OnDestroy {
     forkJoin({ details: details$, posData: posData$ }).subscribe({
       next: ({ details, posData }) => {
         this.loading = false;
-        const aircraftClass = this.aircraftClassForFlight(details);
+        const aircraftClass = inferAircraftClass(details);
         this.currentAircraftClass = aircraftClass;
         this.flightInfo = {
           icao: details?.icao ?? '—',
           firstSeen: details?.first_seen ?? '—',
           lastSeen: details?.last_seen ?? '—',
-          totalPositions: this.normalizeCount(posData?.total, posData.positions?.length ?? 0),
-          trackCount: this.normalizeSightingsCount(details?.sightings_count, 0),
+          totalPositions: normalizeCount(posData?.total, posData.positions?.length ?? 0),
+          trackCount: normalizeSightingsCount(details?.sightings_count, 0),
           lastAltitude: null,
           lastSpeed: null,
           lastSquawk: null,
@@ -405,34 +405,14 @@ export class FlightsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private splitIntoSegments(positions: any[]): any[][] {
-    positions.sort((a, b) => a.time.localeCompare(b.time));
-
-    const segments: any[][] = [];
-    let current: any[] = [positions[0]];
-
-    for (let i = 1; i < positions.length; i++) {
-      const prevMs = new Date(positions[i - 1].time.replace(' ', 'T')).getTime();
-      const currMs = new Date(positions[i].time.replace(' ', 'T')).getTime();
-      if ((currMs - prevMs) / 3_600_000 > TRACK_GAP_HOURS) {
-        segments.push(current);
-        current = [positions[i]];
-      } else {
-        current.push(positions[i]);
-      }
-    }
-    segments.push(current);
-    return segments.filter(s => s.length > 0);
-  }
-
   private plotTracks(positions: any[]): void {
-    const segments = this.splitIntoSegments(positions);
+    const segments = splitTrackSegments(positions as TrackPositionLike[]);
     const allFeatures: Feature[] = [];
     this.tracks = [];
 
     segments.forEach((segment, idx) => {
       const color = TRACK_COLORS[idx % TRACK_COLORS.length];
-      const coords = this.buildRenderableSegmentCoords(segment);
+      const coords = buildRenderableSegmentCoords(segment);
       const smoothed = coords.length <= 25 ? this.makeSmooth(coords, 3) : this.makeSmooth(coords, 2);
 
       const line = new Feature({ geometry: new LineString(smoothed) });
@@ -486,22 +466,6 @@ export class FlightsComponent implements OnInit, OnDestroy {
       this.flightInfo.lastSpeed = lastPos.speed ?? null;
       this.flightInfo.lastSquawk = lastPos.squawk ?? null;
     }
-  }
-
-  private normalizeSightingsCount(value: unknown, fallback: number): number {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed) && parsed >= 1) {
-      return Math.floor(parsed);
-    }
-    return fallback;
-  }
-
-  private normalizeCount(value: unknown, fallback: number): number {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed) && parsed >= 0) {
-      return Math.floor(parsed);
-    }
-    return fallback;
   }
 
   selectTrack(val: string): void {
@@ -690,14 +654,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   private getTokenPayload(): any | null {
-    const token = localStorage.getItem('access_token');
-    if (!token) return null;
-    try {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      return JSON.parse(atob(base64));
-    } catch {
-      return null;
-    }
+    return getCurrentAccessTokenPayload();
   }
 
   beginEditComment(comment: any): void {
@@ -779,7 +736,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   aircraftTypeIconDataUrl(flight: any): string {
-    const klass = this.aircraftClassForFlight(flight);
+    const klass = inferAircraftClass(flight);
     const svg = this.svgForAircraftClass(klass, '#f8fafc', '#0f172a');
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
@@ -795,48 +752,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   aircraftTypeLabelForFlight(flight: any): string {
-    switch (this.aircraftClassForFlight(flight)) {
-      case 'airliner':
-        return 'Airliner';
-      case 'general_aviation':
-        return 'General Aviation';
-      case 'helicopter':
-        return 'Helicopter';
-      case 'military':
-        return 'Military';
-      case 'glider':
-        return 'Glider';
-      case 'balloon':
-        return 'Balloon';
-      case 'uav':
-        return 'UAV';
-      case 'ground':
-        return 'Ground Vehicle';
-      case 'space':
-        return 'Space Vehicle';
-      default:
-        return 'Unknown';
-    }
-  }
-
-  private aircraftClassForFlight(flight: any): string {
-    const provided = String(flight?.aircraft_class || '').trim().toLowerCase();
-    if (provided && provided !== 'unknown') return provided;
-
-    const category = String(flight?.emitter_category || '').trim().toUpperCase();
-    const callsign = String(flight?.flight || '').trim().toUpperCase();
-
-    if (callsign.startsWith('RCH') || callsign.startsWith('NAVY') || callsign.startsWith('ARMY')) return 'military';
-    if (category === 'A7') return 'helicopter';
-    if (category === 'A5' || category === 'A6' || category === 'A4') return 'airliner';
-    if (category === 'B1') return 'glider';
-    if (category === 'B2') return 'balloon';
-    if (category === 'B5') return 'uav';
-    if (category.startsWith('C')) return 'ground';
-    if (category.startsWith('D')) return 'military';
-    if (category.startsWith('A') || category.startsWith('B')) return 'general_aviation';
-
-    return 'unknown';
+    return aircraftTypeLabelForFlight(flight);
   }
 
   private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
@@ -954,52 +870,6 @@ export class FlightsComponent implements OnInit, OnDestroy {
     return coords;
   }
 
-  private buildRenderableSegmentCoords(segment: any[]): number[][] {
-    if (!segment.length) {
-      return [];
-    }
-
-    const baseCoords = segment.map((p: any) => fromLonLat([p.longitude, p.latitude]));
-    if (baseCoords.length < 2) {
-      return baseCoords;
-    }
-
-    const rendered: number[][] = [baseCoords[0]];
-
-    for (let i = 1; i < segment.length; i++) {
-      const prev = segment[i - 1];
-      const curr = segment[i];
-      const prevCoord = baseCoords[i - 1];
-      const currCoord = baseCoords[i];
-
-      const prevMs = new Date(String(prev.time).replace(' ', 'T')).getTime();
-      const currMs = new Date(String(curr.time).replace(' ', 'T')).getTime();
-      const dtMs = Math.max(1, currMs - prevMs);
-
-      const dx = currCoord[0] - prevCoord[0];
-      const dy = currCoord[1] - prevCoord[1];
-      const distance = Math.hypot(dx, dy);
-
-      const dtSteps = Math.ceil(dtMs / (TRACK_INTERPOLATION_TARGET_SECONDS * 1000));
-      const distSteps = Math.ceil(distance / TRACK_INTERPOLATION_TARGET_METERS);
-      const interpolationPoints = Math.min(
-        TRACK_INTERPOLATION_MAX_POINTS_PER_EDGE,
-        Math.max(0, Math.max(dtSteps, distSteps) - 1)
-      );
-
-      for (let j = 1; j <= interpolationPoints; j++) {
-        const t = j / (interpolationPoints + 1);
-        rendered.push([
-          prevCoord[0] + dx * t,
-          prevCoord[1] + dy * t,
-        ]);
-      }
-
-      rendered.push(currCoord);
-    }
-
-    return rendered;
-  }
 
   setTab(tab: 'all' | 'adsb' | 'uat') {
     this.activeTab = tab;
@@ -1090,7 +960,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   get allPageNumbers(): number[] {
-    return this.buildPageNumbers(this.allCurrentPage, this.allTotalPages);
+    return buildPageNumbers(this.allCurrentPage, this.allTotalPages);
   }
 
   get allTotalFlights(): number {
@@ -1120,14 +990,6 @@ export class FlightsComponent implements OnInit, OnDestroy {
 
   private matchesFlight(flight: any, q: string): boolean {
     return (flight.flight || '').toLowerCase().includes(q) || (flight.icao || '').toLowerCase().includes(q);
-  }
-
-  private buildPageNumbers(current: number, total: number): number[] {
-    const start = Math.max(1, current - 2);
-    const end = Math.min(total, current + 2);
-    const range: number[] = [];
-    for (let i = start; i <= end; i++) range.push(i);
-    return range;
   }
 
   private buildFlightsListQueryParams(

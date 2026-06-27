@@ -1,10 +1,21 @@
 import { DatePipe } from '@angular/common';
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
+import {
+  AIRCRAFT_TYPE_LEGEND,
+  aircraftTypeLabel,
+  aircraftTypeSourceLabel,
+  altitudeColor,
+  classifyAircraftForIcon,
+  flightHistoryLink,
+  sourceLabel,
+} from './live-display.helpers';
+import { extractOverlayRings } from './live-overlay.helpers';
+import { DEFAULT_FLYOUT_WIDTH, DEFAULT_LIVE_MAP_SETTINGS, clampFlyoutWidth, parseLiveMapSettings } from './live-settings.helpers';
 import { interval, Subscription, of, catchError, forkJoin, startWith, switchMap } from 'rxjs';
 
 import 'ol/ol.css';
@@ -15,7 +26,6 @@ import LineString from 'ol/geom/LineString';
 import CircleGeom from 'ol/geom/Circle';
 import Polygon from 'ol/geom/Polygon';
 import { fromCircle as polygonFromCircle } from 'ol/geom/Polygon';
-import GeoJSON from 'ol/format/GeoJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import TileLayer from 'ol/layer/Tile';
@@ -33,23 +43,6 @@ import ScaleLine from 'ol/control/ScaleLine';
 // Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_REFRESH_MS = 5_000;
-const DEFAULT_CENTER_LON = 0;
-const DEFAULT_CENTER_LAT = 20;
-const DEFAULT_ZOOM = 3;
-const DEFAULT_TRAIL_POINTS = 20;
-const DEFAULT_CENTER_ICON_ENABLED = true;
-const DEFAULT_DISTANCE_RINGS_ENABLED = false;
-const DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED = true;
-const DEFAULT_DISTANCE_RING_COUNT = 4;
-const DEFAULT_DISTANCE_RING_INTERVAL_MILES = 25;
-const DEFAULT_THEORETICAL_RANGE_ENABLED = false;
-const DEFAULT_THEORETICAL_RANGE_JSON = '';
-const DEFAULT_HEYWHATSTHAT_RINGS_ENABLED = false;
-const DEFAULT_HEYWHATSTHAT_RINGS_JSON = '';
-const DEFAULT_FLYOUT_WIDTH = 280;
-const MIN_FLYOUT_WIDTH = 240;
-const MAX_FLYOUT_WIDTH = 560;
 const SPIDER_SECTOR_COUNT = 16;
 const SPIDER_MAX_RADIUS_METERS = 300_000;
 const TRAIL_INTERPOLATION_TARGET_SECONDS = 6;
@@ -58,30 +51,6 @@ const TRAIL_INTERPOLATION_MAX_POINTS = 12;
 const TRAIL_SMOOTHING_WINDOW = 3;
 const OPENSTREETMAP_ATTRIBUTION_HTML = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>';
 const OPENSKY_ATTRIBUTION_HTML = '<a href="https://opensky-network.org/datasets/metadata/aircraftDatabase.csv" target="_blank" rel="noopener noreferrer">OpenSky Network Aircraft Database (ODbL v1.0)</a>';
-
-/** Altitude tiers used for icon/dot colouring. */
-const ALTITUDE_TIERS = [
-  { max: -1,     color: '#64748b' }, // ground / on-ground flag
-  { max: 5_000,  color: '#38bdf8' }, // low
-  { max: 15_000, color: '#22c55e' }, // medium-low
-  { max: 30_000, color: '#f59e0b' }, // medium-high
-  { max: 45_000, color: '#f97316' }, // high
-  { max: Infinity, color: '#ef4444' }, // very high
-] as const;
-
-/** Return a colour string for a given altitude, or gray when unknown. */
-function altitudeColor(alt: number | null | undefined): string {
-  if (alt == null) return '#64748b';
-  for (const tier of ALTITUDE_TIERS) {
-    if (alt <= tier.max) return tier.color;
-  }
-  return '#ef4444';
-}
-
-/** Source colour for icon outlines so ADS-B and UAT are distinguishable on-map. */
-function sourceColor(source: string | null | undefined): string {
-  return source === 'dump978' ? '#f59e0b' : '#22d3ee';
-}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -107,11 +76,6 @@ export interface LiveAircraft {
   classification_confidence?: string | null;
 }
 
-type AircraftTypeLegendItem = {
-  key: string;
-  label: string;
-};
-
 type TrailPoint = {
   coord: number[];
   ts: number;
@@ -126,6 +90,7 @@ type TrailPoint = {
   standalone: true,
   imports: [DatePipe, DecimalPipe, FormsModule, SpinnerComponent, RouterLink],
   templateUrl: './live.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './live.component.scss'
 })
 export class LiveComponent implements OnInit, OnDestroy {
@@ -157,23 +122,23 @@ export class LiveComponent implements OnInit, OnDestroy {
   photoLoading  = false;
 
   // Settings
-  liveMapEnabled = true;
-  refreshMs = DEFAULT_REFRESH_MS;
-  defaultCenterLon = DEFAULT_CENTER_LON;
-  defaultCenterLat = DEFAULT_CENTER_LAT;
-  defaultZoom = DEFAULT_ZOOM;
-  trailPoints = DEFAULT_TRAIL_POINTS;
-  showAllSeen = true;
-  liveMapSpiderOverlayEnabled = true;
-  liveMapCenterIconEnabled = DEFAULT_CENTER_ICON_ENABLED;
-  liveMapDistanceRingsEnabled = DEFAULT_DISTANCE_RINGS_ENABLED;
-  liveMapDistanceRingCompassLinesEnabled = DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED;
-  liveMapDistanceRingCount = DEFAULT_DISTANCE_RING_COUNT;
-  liveMapDistanceRingIntervalMiles = DEFAULT_DISTANCE_RING_INTERVAL_MILES;
-  liveMapTheoreticalRangeEnabled = DEFAULT_THEORETICAL_RANGE_ENABLED;
-  liveMapTheoreticalRangeJson = DEFAULT_THEORETICAL_RANGE_JSON;
-  liveMapHeyWhatsThatRingsEnabled = DEFAULT_HEYWHATSTHAT_RINGS_ENABLED;
-  liveMapHeyWhatsThatRingsJson = DEFAULT_HEYWHATSTHAT_RINGS_JSON;
+  liveMapEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapEnabled;
+  refreshMs = DEFAULT_LIVE_MAP_SETTINGS.refreshMs;
+  defaultCenterLon = DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLon;
+  defaultCenterLat = DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLat;
+  defaultZoom = DEFAULT_LIVE_MAP_SETTINGS.defaultZoom;
+  trailPoints = DEFAULT_LIVE_MAP_SETTINGS.trailPoints;
+  showAllSeen = DEFAULT_LIVE_MAP_SETTINGS.showAllSeen;
+  liveMapSpiderOverlayEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapSpiderOverlayEnabled;
+  liveMapCenterIconEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapCenterIconEnabled;
+  liveMapDistanceRingsEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingsEnabled;
+  liveMapDistanceRingCompassLinesEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCompassLinesEnabled;
+  liveMapDistanceRingCount = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCount;
+  liveMapDistanceRingIntervalMiles = DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingIntervalMiles;
+  liveMapTheoreticalRangeEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeEnabled;
+  liveMapTheoreticalRangeJson = DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeJson;
+  liveMapHeyWhatsThatRingsEnabled = DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsEnabled;
+  liveMapHeyWhatsThatRingsJson = DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsJson;
 
   // Session-only directional spider graph
   private readonly spiderSectorMaxDistanceMeters = Array.from(
@@ -189,17 +154,7 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   // Exposed helper for templates
   readonly altColor = altitudeColor;
-  readonly aircraftTypeLegend: AircraftTypeLegendItem[] = [
-    { key: 'airliner', label: 'Airliner' },
-    { key: 'general_aviation', label: 'General Aviation' },
-    { key: 'helicopter', label: 'Helicopter' },
-    { key: 'military', label: 'Military' },
-    { key: 'glider', label: 'Glider' },
-    { key: 'balloon', label: 'Balloon' },
-    { key: 'uav', label: 'UAV' },
-    { key: 'ground', label: 'Ground Vehicle' },
-    { key: 'unknown', label: 'Unknown' },
-  ];
+  readonly aircraftTypeLegend = AIRCRAFT_TYPE_LEGEND;
 
   // OL map objects
   private olMap!: OlMap;
@@ -306,40 +261,42 @@ export class LiveComponent implements OnInit, OnDestroy {
   private loadSettings(afterLoad: () => void): void {
     forkJoin({
       enabled: this.dataService.getSetting('live_map_enabled').pipe(catchError(() => of({ value: 'true' }))),
-      refreshMs: this.dataService.getSetting('live_map_refresh_ms').pipe(catchError(() => of({ value: String(DEFAULT_REFRESH_MS) }))),
-      centerLat: this.dataService.getSetting('live_map_center_lat').pipe(catchError(() => of({ value: String(DEFAULT_CENTER_LAT) }))),
-      centerLon: this.dataService.getSetting('live_map_center_lon').pipe(catchError(() => of({ value: String(DEFAULT_CENTER_LON) }))),
-      zoom: this.dataService.getSetting('live_map_default_zoom').pipe(catchError(() => of({ value: String(DEFAULT_ZOOM) }))),
-      trailPoints: this.dataService.getSetting('live_map_trail_points').pipe(catchError(() => of({ value: String(DEFAULT_TRAIL_POINTS) }))),
+      refreshMs: this.dataService.getSetting('live_map_refresh_ms').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.refreshMs) }))),
+      centerLat: this.dataService.getSetting('live_map_center_lat').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLat) }))),
+      centerLon: this.dataService.getSetting('live_map_center_lon').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.defaultCenterLon) }))),
+      zoom: this.dataService.getSetting('live_map_default_zoom').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.defaultZoom) }))),
+      trailPoints: this.dataService.getSetting('live_map_trail_points').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.trailPoints) }))),
       showAllSeen: this.dataService.getSetting('live_map_show_all_seen').pipe(catchError(() => of({ value: 'true' }))),
       spiderOverlayEnabled: this.dataService.getSetting('live_map_spider_overlay_enabled').pipe(catchError(() => of({ value: 'true' }))),
-      centerIconEnabled: this.dataService.getSetting('live_map_center_icon_enabled').pipe(catchError(() => of({ value: String(DEFAULT_CENTER_ICON_ENABLED) }))),
-      distanceRingsEnabled: this.dataService.getSetting('live_map_distance_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RINGS_ENABLED) }))),
-      distanceRingCompassLinesEnabled: this.dataService.getSetting('live_map_distance_ring_compass_lines_enabled').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_COMPASS_LINES_ENABLED) }))),
-      distanceRingCount: this.dataService.getSetting('live_map_distance_ring_count').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_COUNT) }))),
-      distanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_DISTANCE_RING_INTERVAL_MILES) }))),
-      theoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_THEORETICAL_RANGE_ENABLED) }))),
-      theoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_THEORETICAL_RANGE_JSON }))),
-      heyWhatsThatRingsEnabled: this.dataService.getSetting('live_map_heywhatsthat_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_HEYWHATSTHAT_RINGS_ENABLED) }))),
-      heyWhatsThatRingsJson: this.dataService.getSetting('live_map_heywhatsthat_rings_json').pipe(catchError(() => of({ value: DEFAULT_HEYWHATSTHAT_RINGS_JSON }))),
+      centerIconEnabled: this.dataService.getSetting('live_map_center_icon_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapCenterIconEnabled) }))),
+      distanceRingsEnabled: this.dataService.getSetting('live_map_distance_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingsEnabled) }))),
+      distanceRingCompassLinesEnabled: this.dataService.getSetting('live_map_distance_ring_compass_lines_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCompassLinesEnabled) }))),
+      distanceRingCount: this.dataService.getSetting('live_map_distance_ring_count').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingCount) }))),
+      distanceRingIntervalMiles: this.dataService.getSetting('live_map_distance_ring_interval_miles').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapDistanceRingIntervalMiles) }))),
+      theoreticalRangeEnabled: this.dataService.getSetting('live_map_theoretical_range_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeEnabled) }))),
+      theoreticalRangeJson: this.dataService.getSetting('live_map_theoretical_range_json').pipe(catchError(() => of({ value: DEFAULT_LIVE_MAP_SETTINGS.liveMapTheoreticalRangeJson }))),
+      heyWhatsThatRingsEnabled: this.dataService.getSetting('live_map_heywhatsthat_rings_enabled').pipe(catchError(() => of({ value: String(DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsEnabled) }))),
+      heyWhatsThatRingsJson: this.dataService.getSetting('live_map_heywhatsthat_rings_json').pipe(catchError(() => of({ value: DEFAULT_LIVE_MAP_SETTINGS.liveMapHeyWhatsThatRingsJson }))),
     }).subscribe(({ enabled, refreshMs, centerLat, centerLon, zoom, trailPoints, showAllSeen, spiderOverlayEnabled, centerIconEnabled, distanceRingsEnabled, distanceRingCompassLinesEnabled, distanceRingCount, distanceRingIntervalMiles, theoreticalRangeEnabled, theoreticalRangeJson, heyWhatsThatRingsEnabled, heyWhatsThatRingsJson }) => {
-      this.liveMapEnabled = enabled?.value !== 'false';
-      this.refreshMs = this.clampInt(refreshMs?.value, 1_000, 60_000, DEFAULT_REFRESH_MS);
-      this.defaultCenterLat = this.clampFloat(centerLat?.value, -85, 85, DEFAULT_CENTER_LAT);
-      this.defaultCenterLon = this.clampFloat(centerLon?.value, -180, 180, DEFAULT_CENTER_LON);
-      this.defaultZoom = this.clampInt(zoom?.value, 1, 18, DEFAULT_ZOOM);
-      this.trailPoints = this.clampInt(trailPoints?.value, 0, 200, DEFAULT_TRAIL_POINTS);
-      this.showAllSeen = showAllSeen?.value !== 'false';
-      this.liveMapSpiderOverlayEnabled = spiderOverlayEnabled?.value !== 'false';
-      this.liveMapCenterIconEnabled = centerIconEnabled?.value !== 'false';
-      this.liveMapDistanceRingsEnabled = distanceRingsEnabled?.value === 'true';
-      this.liveMapDistanceRingCompassLinesEnabled = distanceRingCompassLinesEnabled?.value !== 'false';
-      this.liveMapDistanceRingCount = this.clampInt(distanceRingCount?.value, 1, 12, DEFAULT_DISTANCE_RING_COUNT);
-      this.liveMapDistanceRingIntervalMiles = this.clampInt(distanceRingIntervalMiles?.value, 1, 250, DEFAULT_DISTANCE_RING_INTERVAL_MILES);
-      this.liveMapTheoreticalRangeEnabled = theoreticalRangeEnabled?.value === 'true';
-      this.liveMapTheoreticalRangeJson = String(theoreticalRangeJson?.value ?? '').trim();
-      this.liveMapHeyWhatsThatRingsEnabled = heyWhatsThatRingsEnabled?.value === 'true';
-      this.liveMapHeyWhatsThatRingsJson = String(heyWhatsThatRingsJson?.value ?? '').trim();
+      Object.assign(this, parseLiveMapSettings({
+        enabled: enabled?.value,
+        refreshMs: refreshMs?.value,
+        centerLat: centerLat?.value,
+        centerLon: centerLon?.value,
+        zoom: zoom?.value,
+        trailPoints: trailPoints?.value,
+        showAllSeen: showAllSeen?.value,
+        spiderOverlayEnabled: spiderOverlayEnabled?.value,
+        centerIconEnabled: centerIconEnabled?.value,
+        distanceRingsEnabled: distanceRingsEnabled?.value,
+        distanceRingCompassLinesEnabled: distanceRingCompassLinesEnabled?.value,
+        distanceRingCount: distanceRingCount?.value,
+        distanceRingIntervalMiles: distanceRingIntervalMiles?.value,
+        theoreticalRangeEnabled: theoreticalRangeEnabled?.value,
+        theoreticalRangeJson: theoreticalRangeJson?.value,
+        heyWhatsThatRingsEnabled: heyWhatsThatRingsEnabled?.value,
+        heyWhatsThatRingsJson: heyWhatsThatRingsJson?.value,
+      }));
       afterLoad();
     });
   }
@@ -651,7 +608,7 @@ export class LiveComponent implements OnInit, OnDestroy {
     const outlineColor = selected ? '#333333' : '#ffffff';
     const rotation = ((ac.track ?? 0) * Math.PI) / 180;
     const scale = selected ? 1.35 : 1.0;
-    const aircraftClass = this.classifyAircraftForIcon(ac);
+    const aircraftClass = classifyAircraftForIcon(ac);
 
     return new Style({
       image: new Icon({
@@ -675,25 +632,6 @@ export class LiveComponent implements OnInit, OnDestroy {
     });
   }
 
-  private classifyAircraftForIcon(ac: LiveAircraft): string {
-    const provided = (ac.aircraft_class || '').trim().toLowerCase();
-    if (provided) return provided;
-
-    const category = (ac.category || '').trim().toUpperCase();
-    const callsign = (ac.flight || '').trim().toUpperCase();
-
-    if (callsign.startsWith('RCH') || callsign.startsWith('NAVY') || callsign.startsWith('ARMY')) return 'military';
-    if (category === 'A7') return 'helicopter';
-    if (category === 'A5' || category === 'A6' || category === 'A4') return 'airliner';
-    if (category === 'B1') return 'glider';
-    if (category === 'B2') return 'balloon';
-    if (category === 'B5') return 'uav';
-    if (category.startsWith('C')) return 'ground';
-    if (category.startsWith('D')) return 'military';
-    if (category.startsWith('A') || category.startsWith('B')) return 'general_aviation';
-
-    return 'unknown';
-  }
 
   private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
     switch (aircraftClass) {
@@ -920,40 +858,11 @@ export class LiveComponent implements OnInit, OnDestroy {
   }
 
   aircraftTypeLabel(ac: LiveAircraft | null | undefined): string {
-    const klass = (ac?.aircraft_class || '').trim().toLowerCase();
-    switch (klass) {
-      case 'airliner':
-        return 'Airliner';
-      case 'general_aviation':
-        return 'General Aviation';
-      case 'helicopter':
-        return 'Helicopter';
-      case 'military':
-        return 'Military';
-      case 'glider':
-        return 'Glider';
-      case 'balloon':
-        return 'Balloon';
-      case 'uav':
-        return 'UAV';
-      case 'ground':
-        return 'Ground Vehicle';
-      case 'space':
-        return 'Space Vehicle';
-      default:
-        return 'Unknown';
-    }
+    return aircraftTypeLabel(ac);
   }
 
   aircraftTypeSourceLabel(ac: LiveAircraft | null | undefined): string {
-    const source = (ac?.classification_source || '').trim().toLowerCase();
-    const confidence = (ac?.classification_confidence || '').trim().toLowerCase();
-    const confidenceLabel = confidence ? ` (${confidence})` : '';
-
-    if (source === 'opensky') {
-      return `OpenSky${confidenceLabel}`;
-    }
-    return `Heuristic${confidenceLabel}`;
+    return aircraftTypeSourceLabel(ac);
   }
 
   aircraftTypeLegendIconDataUrl(aircraftClass: string): string {
@@ -962,31 +871,15 @@ export class LiveComponent implements OnInit, OnDestroy {
   }
 
   flightHistoryLink(ac: LiveAircraft): string | null {
-    if (!ac.flight) return null;
-    const flightType = ac.source === 'dump978' ? 'uat' : 'adsb';
-    return `/flight-history/${flightType}/${encodeURIComponent(ac.flight)}`;
+    return flightHistoryLink(ac);
   }
 
   sourceLabel(ac: LiveAircraft): string {
-    return ac.source === 'dump978' ? 'Dump978 (UAT)' : 'Dump1090 (ADS-B)';
-  }
-
-  private clampInt(raw: string | undefined, min: number, max: number, fallback: number): number {
-    const parsed = Number.parseInt(String(raw ?? ''), 10);
-    if (!Number.isFinite(parsed)) return fallback;
-    return Math.max(min, Math.min(max, parsed));
-  }
-
-  private clampFloat(raw: string | undefined, min: number, max: number, fallback: number): number {
-    const parsed = Number.parseFloat(String(raw ?? ''));
-    if (!Number.isFinite(parsed)) return fallback;
-    return Math.max(min, Math.min(max, parsed));
+    return sourceLabel(ac);
   }
 
   private clampFlyoutWidth(width: number): number {
-    const viewportMax = Math.max(MIN_FLYOUT_WIDTH, window.innerWidth - 80);
-    const max = Math.min(MAX_FLYOUT_WIDTH, viewportMax);
-    return Math.max(MIN_FLYOUT_WIDTH, Math.min(max, width));
+    return clampFlyoutWidth(width, window.innerWidth);
   }
 
   private spiderStyleFor(feature: Feature): Style {
@@ -1061,7 +954,7 @@ export class LiveComponent implements OnInit, OnDestroy {
 
     if (!this.liveMapTheoreticalRangeEnabled || !this.liveMapTheoreticalRangeJson) return;
 
-    for (const ring of this.extractOverlayRings(this.liveMapTheoreticalRangeJson)) {
+    for (const ring of extractOverlayRings(this.liveMapTheoreticalRangeJson)) {
       this.theoreticalRangeSource.addFeature(new Feature({
         geometry: new Polygon([ring])
       }));
@@ -1073,106 +966,13 @@ export class LiveComponent implements OnInit, OnDestroy {
 
     if (!this.liveMapHeyWhatsThatRingsEnabled || !this.liveMapHeyWhatsThatRingsJson) return;
 
-    for (const ring of this.extractOverlayRings(this.liveMapHeyWhatsThatRingsJson)) {
+    for (const ring of extractOverlayRings(this.liveMapHeyWhatsThatRingsJson)) {
       this.heyWhatsThatRingsSource.addFeature(new Feature({
         geometry: new Polygon([ring])
       }));
     }
   }
 
-  private extractOverlayRings(rawJson: string): number[][][] {
-    let parsed: unknown;
-
-    try {
-      parsed = JSON.parse(rawJson);
-    } catch {
-      return [];
-    }
-
-    const geoJsonFeatures = this.readGeoJsonFeatures(parsed);
-    if (geoJsonFeatures.length > 0) {
-      return geoJsonFeatures;
-    }
-
-    const rings = this.collectCoordinateRings(parsed)
-      .map(ring => this.projectRing(ring))
-      .filter((ring): ring is number[][] => ring.length >= 4);
-
-    return rings;
-  }
-
-  private readGeoJsonFeatures(parsed: unknown): number[][][] {
-    try {
-      const features = new GeoJSON().readFeatures(parsed as object, {
-        featureProjection: 'EPSG:3857',
-        dataProjection: 'EPSG:4326'
-      });
-
-      return features.flatMap(feature => {
-        const geometry = feature.getGeometry();
-        if (geometry instanceof Polygon) {
-          return [geometry.getCoordinates()[0]];
-        }
-        return [];
-      }).filter(ring => ring.length >= 4);
-    } catch {
-      return [];
-    }
-  }
-
-  private collectCoordinateRings(value: unknown): number[][][] {
-    if (this.isLonLatPairArray(value)) {
-      return [this.closeLonLatRing(value)];
-    }
-
-    if (this.isLonLatObjectArray(value)) {
-      return [this.closeLonLatRing(value.map(point => [point.lon, point.lat]))];
-    }
-
-    if (!value || typeof value !== 'object') {
-      return [];
-    }
-
-    if (Array.isArray(value)) {
-      return value.flatMap(entry => this.collectCoordinateRings(entry));
-    }
-
-    return Object.values(value).flatMap(entry => this.collectCoordinateRings(entry));
-  }
-
-  private isLonLatPairArray(value: unknown): value is number[][] {
-    return Array.isArray(value) && value.length >= 3 && value.every(item =>
-      Array.isArray(item) && item.length >= 2 &&
-      Number.isFinite(item[0]) && Number.isFinite(item[1])
-    );
-  }
-
-  private isLonLatObjectArray(value: unknown): value is Array<{ lon: number; lat: number }> {
-    return Array.isArray(value) && value.length >= 3 && value.every(item => {
-      if (!item || typeof item !== 'object') return false;
-      const candidate = item as Record<string, unknown>;
-      const lon = candidate['lon'] ?? candidate['lng'] ?? candidate['longitude'];
-      const lat = candidate['lat'] ?? candidate['latitude'];
-      return Number.isFinite(lon) && Number.isFinite(lat);
-    });
-  }
-
-  private closeLonLatRing(points: number[][]): number[][] {
-    const ring = points.map(([lon, lat]) => [Number(lon), Number(lat)]);
-    const first = ring[0];
-    const last = ring[ring.length - 1];
-    if (!first || !last) return [];
-    if (first[0] !== last[0] || first[1] !== last[1]) {
-      ring.push([first[0], first[1]]);
-    }
-    return ring;
-  }
-
-  private projectRing(ring: number[][]): number[][] {
-    return ring
-      .filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat))
-      .map(([lon, lat]) => fromLonLat([lon, lat]));
-  }
 
   private distanceRingStyleFor(feature: Feature): Style {
     return feature.get('distanceRingKind') === 'ray'

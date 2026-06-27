@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -9,8 +8,9 @@ import { SpinnerComponent } from '../shared/spinner/spinner.component';
 @Component({
   selector: 'app-admin-graphs',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, SpinnerComponent],
+  imports: [FormsModule, SpinnerComponent],
   templateUrl: './admin-graphs.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './admin-graphs.component.scss'
 })
 export class AdminGraphsComponent implements OnInit {

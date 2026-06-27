@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { of, throwError } from 'rxjs';
 
 import { DevicesComponent } from './devices.component';
@@ -10,6 +10,7 @@ import { RrdChartComponent } from '../shared/rrd-chart/rrd-chart.component';
 @Component({
   selector: 'app-spinner',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class SpinnerStubComponent {}
@@ -17,6 +18,7 @@ class SpinnerStubComponent {}
 @Component({
   selector: 'app-rrd-chart',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class RrdChartStubComponent {
@@ -246,9 +248,13 @@ describe('DevicesComponent', () => {
     expect(component.publicStats?.dump978Available).toBeFalse();
   });
 
-  it('should handle receiver settings load failure', () => {
+  it('should use graph settings defaults when receiver settings requests fail', () => {
     dataServiceMock.getSetting.and.callFake((name: string) => {
-      if (name === 'graphs_measurement_range') {
+      if (
+        name === 'graphs_measurement_range' ||
+        name === 'graphs_measurement_temperature' ||
+        name === 'graphs_network_interface'
+      ) {
         return throwError(() => new Error('failed'));
       }
       return of({ value: 'true' });
@@ -257,7 +263,10 @@ describe('DevicesComponent', () => {
     fixture.detectChanges();
 
     expect(component.receiverLoading).toBeFalse();
-    expect(component.errorMessage).toBe('Failed to load graph settings.');
+    expect(component.errorMessage).toBe('');
+    expect(component.measurementRange).toBe('imperialNautical');
+    expect(component.measurementTemperature).toBe('imperial');
+    expect(component.networkInterface).toBe('eth0');
   });
 
   it('should update active period', () => {

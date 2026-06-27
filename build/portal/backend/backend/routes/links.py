@@ -1,12 +1,10 @@
 import logging
 
-from flask import abort, Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from backend.models import db, Link
 from backend.auth import require_admin
-from werkzeug.exceptions import HTTPException
 from sqlalchemy import select, func
 
 links = Blueprint('links', __name__)
@@ -105,7 +103,7 @@ class LinkResource(Resource):
             link.address = payload['address']
             
             db.session.commit()
-            return {'msg': 'Link updated successfully'}, 204
+            return {'msg': 'Link updated successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to put link id {link_id}", exc_info=ex)
@@ -128,7 +126,7 @@ class LinkResource(Resource):
                 
             db.session.delete(link)
             db.session.commit()
-            return {'msg': 'Link deleted successfully'}, 204
+            return {'msg': 'Link deleted successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
@@ -220,12 +218,19 @@ class LinksReorderResource(Resource):
             return {'msg': 'Validation error', 'errors': err.messages}, 400
 
         try:
-            for position, link_id in enumerate(payload['ids']):
-                link = db.session.get(Link, link_id)
+            ids = payload['ids']
+            links_map = {
+                link.id: link
+                for link in db.session.execute(
+                    select(Link).where(Link.id.in_(ids))
+                ).scalars().all()
+            }
+            for position, link_id in enumerate(ids):
+                link = links_map.get(link_id)
                 if link:
                     link.sort_order = position
             db.session.commit()
-            return {'msg': 'Links reordered successfully'}, 204
+            return {'msg': 'Links reordered successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error('Error encountered while trying to reorder links', exc_info=ex)

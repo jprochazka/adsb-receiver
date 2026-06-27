@@ -1,15 +1,17 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { catchError, of, forkJoin } from 'rxjs';
+import { getCurrentUserId } from '../shared/auth-session';
 
 @Component({
   selector: 'app-account',
   standalone: true,
   imports: [FormsModule, SpinnerComponent],
   templateUrl: './account.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './account.component.scss'
 })
 export class AccountComponent implements OnInit {
@@ -39,11 +41,9 @@ export class AccountComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(base64));
-      this.userId = payload.user_id;
+    const userId = getCurrentUserId();
+    if (userId !== null) {
+      this.userId = userId;
 
       this.dataService.getUser(this.userId).subscribe({
         next: (user) => {

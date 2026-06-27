@@ -1,4 +1,4 @@
-from tests.conftest import create_admin_token
+from conftest import create_admin_token
 
 # POST /links
 
@@ -56,7 +56,7 @@ def test_delete_link_204(client, app):
             'Authorization': 'Bearer {}'.format(access_token),
         }
         response = client.delete('/api/links/1', headers=request_headers)
-        assert response.status_code == 204
+        assert response.status_code == 200
 
 def test_delete_link_401(client):
     response = client.delete('/api/links/1')
@@ -110,7 +110,7 @@ def test_put_link_204(client, app):
             'address': 'https://adsbportal.com/three-updated'
         }
         response = client.put('/api/links/3', headers=request_headers, json=request_json)
-    assert response.status_code == 204
+    assert response.status_code == 200
 
 def test_put_link_401(client):
     request_json = {

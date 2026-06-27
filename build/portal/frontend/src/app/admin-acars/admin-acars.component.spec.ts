@@ -66,11 +66,23 @@ describe('AdminAcarsComponent', () => {
     expect(component.loading).toBeFalse();
   });
 
-  it('should save nav setting', () => {
+  it('should save nav setting and show success feedback', () => {
     component.acarsNavEnabled = false;
     component.saveAcarsNavEnabled();
 
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('acars_nav_enabled', 'false');
+    expect(component.successMessage).toBe('Setting saved.');
+    expect(component.errorMessage).toBe('');
+  });
+
+  it('should surface nav setting save failures', () => {
+    dataServiceMock.updateSetting.and.returnValue(throwError(() => new Error('failed')));
+    component.successMessage = 'Previous success';
+
+    component.saveAcarsNavEnabled();
+
+    expect(component.successMessage).toBe('');
+    expect(component.errorMessage).toBe('Failed to save setting.');
   });
 
   it('should purge ACARS successfully', () => {

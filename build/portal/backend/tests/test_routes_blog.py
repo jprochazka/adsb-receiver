@@ -1,5 +1,5 @@
-from tests.conftest import create_admin_token, create_another_user_token, create_user_token
-from backend.models import BlogComment, BlogPost, db, User
+from conftest import create_admin_token, create_another_user_token, create_user_token
+from backend.models import BlogComment, db, User
 
 # POST /blog/post
 
@@ -74,7 +74,7 @@ def test_delete_blog_post_204(client, app):
             'Authorization': 'Bearer {}'.format(access_token),
         }
         response = client.delete('/api/blog/post/2', headers=request_headers)
-        assert response.status_code == 204
+        assert response.status_code == 200
 
 
 def test_delete_blog_post_204_removes_related_comments(client, app):
@@ -88,7 +88,7 @@ def test_delete_blog_post_204_removes_related_comments(client, app):
 
         response = client.delete('/api/blog/post/1', headers=request_headers)
 
-        assert response.status_code == 204
+        assert response.status_code == 200
         assert db.session.query(BlogComment).filter_by(blog_post_id=1).count() == 0
 
 def test_delete_blog_post_401(client):
@@ -132,7 +132,7 @@ def test_put_blog_post_204(client, app):
             'content': 'Updated content for blog post one.'
         }
         response = client.put('/api/blog/post/1', headers=request_headers, json=request_json)
-    assert response.status_code == 204
+    assert response.status_code == 200
 
 def test_put_blog_post_401(client):
     request_json = {
@@ -621,7 +621,7 @@ def test_delete_blog_comment_204_owner_soft_deletes_comment(client, app):
 
         response = client.delete('/api/blog/post/1/comments/1', headers=request_headers)
 
-        assert response.status_code == 204
+        assert response.status_code == 200
         deleted_comment = db.session.get(BlogComment, 1)
         reply_comment = db.session.get(BlogComment, 2)
 
@@ -640,7 +640,7 @@ def test_delete_blog_comment_204_admin_hard_deletes_leaf_comment(client, app):
 
         response = client.delete('/api/blog/post/1/comments/3', headers=request_headers)
 
-        assert response.status_code == 204
+        assert response.status_code == 200
         deleted_comment = db.session.get(BlogComment, 3)
         assert deleted_comment is None
 
@@ -680,7 +680,7 @@ def test_delete_blog_comment_200_deleted_comment_is_anonymized_in_get_response(c
         }
 
         delete_response = client.delete('/api/blog/post/1/comments/1', headers=request_headers)
-        assert delete_response.status_code == 204
+        assert delete_response.status_code == 200
 
         read_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
@@ -702,10 +702,10 @@ def test_delete_blog_comment_204_when_already_deleted(client, app):
         }
 
         first_response = client.delete('/api/blog/post/1/comments/1', headers=request_headers)
-        assert first_response.status_code == 204
+        assert first_response.status_code == 200
 
         second_response = client.delete('/api/blog/post/1/comments/1', headers=request_headers)
-        assert second_response.status_code == 204
+        assert second_response.status_code == 200
 
         deleted_comment = db.session.get(BlogComment, 1)
         assert deleted_comment is not None
@@ -732,7 +732,7 @@ def test_delete_blog_comment_404_when_hard_deleted_leaf_comment_is_deleted_again
         }
 
         first_response = client.delete('/api/blog/post/1/comments/3', headers=request_headers)
-        assert first_response.status_code == 204
+        assert first_response.status_code == 200
 
         second_response = client.delete('/api/blog/post/1/comments/3', headers=request_headers)
         assert second_response.status_code == 404

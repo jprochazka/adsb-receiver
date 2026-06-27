@@ -1,6 +1,6 @@
 import logging
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import current_app
 from flask_apscheduler import APScheduler
 from sqlalchemy import delete, exists, or_, select
@@ -19,13 +19,12 @@ from backend.models import (
 )
 
 scheduler = APScheduler()
-now = None
 DEFAULT_RETENTION_DAYS = 7300
 
 
 class MaintenanceProcessor(object):
     def log(self, string):
-        # print(f'[{datetime.now().strftime("%Y/%m/%d %H:%M:%S")}] {string}')
+        logging.info('[maintenance] %s', string)
         return
 
     def begin_maintenance(self):
@@ -57,13 +56,21 @@ class MaintenanceProcessor(object):
             return False
 
     def _get_cutoff_date(self):
-        cutoff_date = datetime.now() - timedelta(days=DEFAULT_RETENTION_DAYS)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=DEFAULT_RETENTION_DAYS)
         try:
             days_setting = db.session.execute(
                 select(Setting).filter_by(name='days_to_save')
             ).scalar_one_or_none()
             if days_setting:
-                cutoff_date = datetime.now() - timedelta(days=int(days_setting.value))
+                try:
+                    days = int(days_setting.value)
+                except ValueError:
+                    logging.error(
+                        "Setting 'days_to_save' has non-integer value %r; using default %d days",
+                        days_setting.value, DEFAULT_RETENTION_DAYS
+                    )
+                    return cutoff_date
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
             return cutoff_date
         except Exception as ex:
             logging.error("Error encountered while getting value for setting days_to_save", exc_info=ex)
@@ -75,20 +82,12 @@ class MaintenanceProcessor(object):
     def _delete_related_comments(self, flight_ids, comment_model, label, cutoff_date):
         if not flight_ids:
             return
-
-        try:
-            db.session.execute(delete(comment_model).where(comment_model.flight_id.in_(flight_ids)))
-        except Exception as ex:
-            logging.error(f"Error deleting {label} comments related to flights not seen since {cutoff_date}", exc_info=ex)
+        db.session.execute(delete(comment_model).where(comment_model.flight_id.in_(flight_ids)))
 
     def _delete_related_positions(self, flight_ids, position_model, label, cutoff_date):
         if not flight_ids:
             return
-
-        try:
-            db.session.execute(delete(position_model).where(position_model.flight.in_(flight_ids)))
-        except Exception as ex:
-            logging.error(f"Error deleting {label} positions related to flights not seen since {cutoff_date}", exc_info=ex)
+        db.session.execute(delete(position_model).where(position_model.flight.in_(flight_ids)))
 
     def _delete_positions_for_aircraft(self, aircraft_ids, position_model, flight_model, label, cutoff_date, include_orphans=False):
         if not aircraft_ids:
@@ -270,14 +269,11 @@ class MaintenanceProcessor(object):
 
 def maintenance_job():
     """Main maintenance job function."""
-    global now
-    
     with current_app.app_context():
         processor = MaintenanceProcessor()
 
         # Setup and begin the maintenance job
         processor.log("-- BEGINNING PORTAL MAINTENANCE JOB")
-        now = datetime.now()
         processor.begin_maintenance()
         
         # Commit all changes

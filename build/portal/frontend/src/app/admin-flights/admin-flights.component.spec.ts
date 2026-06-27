@@ -63,6 +63,59 @@ describe('AdminFlightsComponent', () => {
   };
 
   beforeEach(async () => {
+    Object.values(dataServiceMock).forEach((spy) => spy.calls.reset());
+    dataServiceMock.getSetting.and.returnValue(of({ value: 'true' }));
+    dataServiceMock.updateSetting.and.returnValue(of({}));
+    dataServiceMock.GetFlightsCount.and.returnValue(of({ flights: 12 }));
+    dataServiceMock.getUatFlightsCount.and.returnValue(of({ flights: 3 }));
+    dataServiceMock.getSystemDatabase.and.returnValue(of({ size: 1048576 }));
+    dataServiceMock.getSystemFlightsTables.and.returnValue(of({ size: 2048 }));
+    dataServiceMock.getSystemDisk.and.returnValue(of({
+      disk_usage_used: 1024,
+      disk_usage_total: 2048,
+      disk_usage_percent: 50,
+    }));
+    dataServiceMock.purgeFlights.and.returnValue(of({
+      deleted_flights: 2,
+      deleted_positions: 10,
+      cutoff_date: '2026-03-01 00:00:00'
+    }));
+    dataServiceMock.purgeUatFlights.and.returnValue(of({
+      deleted_flights: 1,
+      deleted_positions: 2,
+      cutoff_date: '2026-03-01 00:00:00'
+    }));
+    dataServiceMock.getIgnoredFlights.and.returnValue(of({
+      flights: [
+        { id: 1, flight: 'FLT0001', icao: 'icao01', last_seen: '2024-06-17 01:11:01', ignore_on_purge: true }
+      ],
+      total: 1,
+    }));
+    dataServiceMock.getIgnoredUatFlights.and.returnValue(of({
+      flights: [
+        { id: 1, flight: 'UAT0001', icao: 'uicao01', last_seen: '2024-06-17 01:11:01', ignore_on_purge: true }
+      ],
+      total: 1,
+    }));
+    dataServiceMock.updateFlightPurgePreference.and.returnValue(of({
+      flight: 'FLT0001',
+      ignore_on_purge: false,
+    }));
+    dataServiceMock.updateUatFlightPurgePreference.and.returnValue(of({
+      flight: 'UAT0001',
+      ignore_on_purge: false,
+    }));
+    dataServiceMock.getOpenSkyAircraftDatabaseStatus.and.returnValue(of({
+      installed: false,
+      source_url: 'https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
+      license_name: 'Open Database License (ODbL) v1.0',
+    }));
+    dataServiceMock.updateOpenSkyAircraftDatabase.and.returnValue(of({
+      installed: true,
+      source_url: 'https://opensky-network.org/datasets/metadata/aircraftDatabase.csv',
+      license_name: 'Open Database License (ODbL) v1.0',
+    }));
+
     await TestBed.configureTestingModule({
       imports: [AdminFlightsComponent],
       providers: [{ provide: DataService, useValue: dataServiceMock }],
@@ -131,10 +184,33 @@ describe('AdminFlightsComponent', () => {
     expect(component.openSkyError).toBe('Failed to update OpenSky aircraft database: admin access required.');
   });
 
-  it('should save nav settings', () => {
+  it('should save nav settings and show success feedback', () => {
     component.flightsNavEnabled = false;
+    component.allTabEnabled = false;
+    component.adsbTabEnabled = false;
+    component.uatTabEnabled = false;
+
     component.saveFlightsNavEnabled();
+    component.saveAllTabEnabled();
+    component.saveAdsbTabEnabled();
+    component.saveUatTabEnabled();
+
     expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('flights_nav_enabled', 'false');
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('all_tab_enabled', 'false');
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('adsb_tab_enabled', 'false');
+    expect(dataServiceMock.updateSetting).toHaveBeenCalledWith('uat_tab_enabled', 'false');
+    expect(component.successMessage).toBe('Setting saved.');
+    expect(component.errorMessage).toBe('');
+  });
+
+  it('should surface nav setting save failures', () => {
+    dataServiceMock.updateSetting.and.returnValue(throwError(() => new Error('failed')));
+    component.successMessage = 'Previous success';
+
+    component.saveAdsbTabEnabled();
+
+    expect(component.successMessage).toBe('');
+    expect(component.errorMessage).toBe('Failed to save setting.');
   });
 
   it('should purge ADS-B flights successfully', () => {
