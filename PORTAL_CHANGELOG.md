@@ -40,6 +40,7 @@ compiled Angular single-page application served by Nginx.
 | SQLite | Yes | Yes |
 | MySQL / MariaDB | Yes | Yes |
 | PostgreSQL | Yes | Yes |
+| SQL Server (MSSQL) | Yes (PDO `sqlsrv`) | No — removed |
 
 The XML flat-file driver has been removed. The new portal requires a proper
 relational database. SQLite is the default for single-host installs.
@@ -106,7 +107,7 @@ relational database. SQLite is the default for single-host installs.
 - `/api/uat/*` — separate endpoint set for UAT (dump978) flights (new).
 - Full-text search across callsign and ICAO hex.
 - Pagination with configurable `offset` / `limit`.
-- Per-flight position history.
+- Per-flight position history with map plot view.
 - Per-flight comments (threaded, with soft-delete and admin hard-delete).
 - Aircraft classification metadata per flight (class, source, confidence).
 - Bulk purge by age (`DELETE /api/flights/purge?days=N`).
@@ -144,7 +145,7 @@ relational database. SQLite is the default for single-host installs.
 
 ### New
 - `/api/graphs/*` — REST endpoints return time-series data as JSON arrays.
-- Frontend renders interactive charts from the data (not static PNGs).
+- Frontend renders interactive charts from the data using **Chart.js** (not static PNGs).
 - RRD files read directly via `rrdtool fetch` called from Python.
 - Metrics available: dump1090 aircraft/message counts, system CPU, memory,
   disk I/O, disk usage, network I/O, CPU temperature.
@@ -331,6 +332,8 @@ The following are present in the legacy portal but not in the new portal:
 - lighttpd dependency — replaced by Nginx.
 - `build/portal/graphs/make-collectd-graphs.sh` and `dump1090.py` graph
   generation scripts — replaced by RRD-reading Python job and JSON API.
+- `build/portal/html/plot.php` — server-rendered historical flight track map —
+  replaced by per-flight position view in the Angular flights component.
 - dump978 static map assets bundled in `html/dump978/` (flags, OpenLayers,
   db JSON shards) — the new live map loads decoder data dynamically.
 - `admin/import.php` PHP-based data import page.
