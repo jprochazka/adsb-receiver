@@ -9,6 +9,7 @@ from backend.models import BlogComment, FlightComment, UatFlightComment, db, Use
 from backend.auth import require_admin, require_user_or_admin, validate_role
 from backend.routes.common import QueryParamError, get_stripped_arg, parse_bool_arg, parse_pagination
 from sqlalchemy import delete, select, func
+from sqlalchemy.exc import IntegrityError
 
 users = Blueprint('users', __name__)
 
@@ -73,7 +74,7 @@ class CreateUserRequestSchema(Schema):
 class UpdateUserRequestSchema(Schema):
     name = fields.String(required=True)
     email = fields.Email()
-    password = fields.String(required=True)
+    password = fields.String(required=False)
     administrator = fields.Boolean()  # Keep for backward compatibility
     role = fields.String()  # New role field
 
@@ -239,6 +240,9 @@ class UserCreateResource(Resource):
                 'user': new_user.to_dict()
             }, 201
             
+        except IntegrityError:
+            db.session.rollback()
+            return {'msg': 'User with this email already exists'}, 409
         except Exception as ex:
             db.session.rollback()
             logging.error('Error encountered while trying to create user', exc_info=ex)

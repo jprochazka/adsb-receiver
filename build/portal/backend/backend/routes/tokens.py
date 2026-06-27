@@ -65,7 +65,10 @@ class LoginResource(Resource):
         if user.locked:
             return {'msg': 'Invalid credentials'}, 401
 
-        if not check_password_hash(user.password or '', password):
+        if not user.password:
+            return {'msg': 'Invalid credentials'}, 401
+
+        if not check_password_hash(user.password, password):
             return {'msg': 'Invalid credentials'}, 401
         
         # Ensure user has a valid role; persist any correction

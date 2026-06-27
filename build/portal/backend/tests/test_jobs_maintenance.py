@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from backend import create_app
 from backend.models import db
 from backend.jobs.maintenance import MaintenanceProcessor
@@ -72,7 +72,7 @@ class TestMaintenanceProcessor:
             
             # Check that cutoff date is calculated correctly (30 days ago)
             call_args = mock_purge_aircraft.call_args[0][0]
-            expected_date = datetime.now() - timedelta(days=30)
+            expected_date = datetime.now(timezone.utc) - timedelta(days=30)
             assert abs((call_args - expected_date).total_seconds()) < 60  # Within 1 minute
 
     def test_begin_maintenance_disabled(self, processor, app, capsys):
@@ -136,7 +136,7 @@ class TestMaintenanceProcessor:
             from backend.models import Aircraft
             
             # Create test aircraft with old last_seen date
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
             
             aircraft = Aircraft(icao='TEST123', 
@@ -155,7 +155,7 @@ class TestMaintenanceProcessor:
     def test_purge_aircraft_database_error(self, mock_logging, processor, app):
         """Test aircraft purging with database error"""
         with app.app_context():
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             
             # Mock db.session.execute to raise an exception
             with patch('backend.jobs.maintenance.db.session.execute') as mock_execute:
@@ -173,9 +173,9 @@ class TestMaintenanceProcessor:
             from backend.models import Position, Aircraft, Flight
             
             # Create test data
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             
             aircraft = Aircraft(icao='TEST123', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -203,9 +203,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Position, Aircraft, Flight
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Aircraft(icao='PROTECT1', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -244,7 +244,7 @@ class TestMaintenanceProcessor:
     def test_purge_positions_database_error(self, mock_logging, processor, app):
         """Test position purging with database error"""
         with app.app_context():
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             
             # Mock db.session.execute to raise an exception
             with patch('backend.jobs.maintenance.db.session.execute') as mock_execute:
@@ -262,9 +262,9 @@ class TestMaintenanceProcessor:
             from backend.models import Flight, Aircraft
             
             # Create test data
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             
             aircraft = Aircraft(icao='TEST123', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -287,9 +287,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Aircraft, Flight, FlightComment
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Aircraft(icao='COMMENT1', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -321,9 +321,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Flight, Aircraft, Position
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Aircraft(icao='PROTECT2', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -365,9 +365,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Dump978Aircraft, Dump978Flight, Dump978Position
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Dump978Aircraft(icao='UTEST123', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -402,9 +402,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Dump978Aircraft, Dump978Flight, Dump978Position
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Dump978Aircraft(icao='UPROTECT1', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -445,9 +445,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Dump978Aircraft, Dump978Flight
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Dump978Aircraft(icao='UTEST456', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -473,9 +473,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Dump978Aircraft, Dump978Flight, UatFlightComment
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Dump978Aircraft(icao='UCOMMENT1', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -507,9 +507,9 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Dump978Aircraft, Dump978Flight, Dump978Position
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
-            now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
             aircraft = Dump978Aircraft(icao='UPROTECT2', first_seen=now_str, last_seen=now_str)
             db.session.add(aircraft)
@@ -551,7 +551,7 @@ class TestMaintenanceProcessor:
             from backend import db
             from backend.models import Dump978Aircraft
 
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             old_date = cutoff_date - timedelta(days=1)
 
             aircraft = Dump978Aircraft(
@@ -570,7 +570,7 @@ class TestMaintenanceProcessor:
     def test_purge_flights_database_error(self, mock_logging, processor, app):
         """Test flight purging with database error"""
         with app.app_context():
-            cutoff_date = datetime.now() - timedelta(days=30)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
             
             # Mock db.session.execute to raise an exception
             with patch('backend.jobs.maintenance.db.session.execute') as mock_execute:
@@ -587,11 +587,11 @@ class TestMaintenanceProcessor:
         test_cases = [1, 7, 30, 365]
         
         for days in test_cases:
-            expected_cutoff = datetime.now() - timedelta(days=days)
+            expected_cutoff = datetime.now(timezone.utc) - timedelta(days=days)
             
             # This would be called in the actual maintenance process
             # We can verify the logic by checking the timedelta calculation
-            calculated_cutoff = datetime.now() - timedelta(days=days)
+            calculated_cutoff = datetime.now(timezone.utc) - timedelta(days=days)
             
             # Should be within a few seconds of each other
             assert abs((calculated_cutoff - expected_cutoff).total_seconds()) < 5
@@ -685,4 +685,4 @@ class TestMaintenanceProcessor:
                 
                 # Cutoff date should be in the future with negative days
                 call_args = mock_purge_aircraft.call_args[0][0]
-                assert call_args > datetime.now()
+                assert call_args > datetime.now(timezone.utc)

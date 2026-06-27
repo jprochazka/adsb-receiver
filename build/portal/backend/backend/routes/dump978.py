@@ -549,7 +549,7 @@ class UatFlightCommentModerationController(Resource):
 
             db.session.delete(comment)
             db.session.commit()
-            return {'msg': 'Comment deleted successfully'}, 204
+            return {'msg': 'Comment deleted successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f'Error encountered while trying to delete comment {comment_id} for UAT flight {flight}', exc_info=ex)

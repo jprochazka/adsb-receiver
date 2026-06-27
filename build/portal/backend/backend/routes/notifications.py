@@ -7,7 +7,7 @@ from backend.models import db, Notification, Flight, Dump978Flight, Setting
 from backend.auth import require_user_or_admin
 from backend.config_loader import get_acars_config
 from sqlalchemy import create_engine, select, text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 notifications = Blueprint('notifications', __name__)
 
@@ -50,6 +50,9 @@ class NotificationResource(Resource):
             db.session.add(new_notification)
             db.session.commit()
             return {'msg': 'Notification created successfully'}, 201
+        except IntegrityError:
+            db.session.rollback()
+            return {'msg': 'Conflict - Notification already exists'}, 409
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to post notification for flight {flight}", exc_info=ex)

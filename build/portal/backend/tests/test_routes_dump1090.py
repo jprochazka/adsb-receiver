@@ -545,4 +545,4 @@ def test_delete_flight_comment_204_admin(client, app):
         f'/api/adsb/flight/FLT0001/comments/{comment_id}',
         headers={'Authorization': f'Bearer {admin_token}'}
     )
-    assert delete_response.status_code == 204
+    assert delete_response.status_code == 200

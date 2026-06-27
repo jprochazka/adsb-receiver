@@ -103,7 +103,7 @@ class LinkResource(Resource):
             link.address = payload['address']
             
             db.session.commit()
-            return {'msg': 'Link updated successfully'}, 204
+            return {'msg': 'Link updated successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to put link id {link_id}", exc_info=ex)
@@ -126,7 +126,7 @@ class LinkResource(Resource):
                 
             db.session.delete(link)
             db.session.commit()
-            return {'msg': 'Link deleted successfully'}, 204
+            return {'msg': 'Link deleted successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to delete link id {link_id}", exc_info=ex)
@@ -223,7 +223,7 @@ class LinksReorderResource(Resource):
                 if link:
                     link.sort_order = position
             db.session.commit()
-            return {'msg': 'Links reordered successfully'}, 204
+            return {'msg': 'Links reordered successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error('Error encountered while trying to reorder links', exc_info=ex)

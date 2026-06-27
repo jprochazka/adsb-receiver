@@ -421,7 +421,7 @@ class BlogPostResource(Resource):
             _apply_blog_post_update(blog_post, payload)
 
             db.session.commit()
-            return {'msg': 'Blog post updated successfully'}, 204
+            return {'msg': 'Blog post updated successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to put blog post id {blog_post_id}", exc_info=ex)
@@ -446,7 +446,7 @@ class BlogPostResource(Resource):
                 
             db.session.delete(blog_post)
             db.session.commit()
-            return {'msg': 'Blog post deleted successfully'}, 204
+            return {'msg': 'Blog post deleted successfully'}, 200
         except Exception as ex:
             db.session.rollback()
             logging.error(f"Error encountered while trying to delete blog post id {blog_post_id}", exc_info=ex)
@@ -646,15 +646,15 @@ class BlogPostCommentResource(Resource):
             if not comment.replies:
                 db.session.delete(comment)
                 db.session.commit()
-                return {'msg': 'Comment deleted successfully'}, 204
+                return {'msg': 'Comment deleted successfully'}, 200
 
             if comment.deleted:
-                return {'msg': 'Comment deleted successfully'}, 204
+                return {'msg': 'Comment deleted successfully'}, 200
 
             comment.deleted = True
             comment.deleted_at = datetime.datetime.now(datetime.timezone.utc)
             db.session.commit()
-            return {'msg': 'Comment deleted successfully'}, 204
+            return {'msg': 'Comment deleted successfully'}, 200
         except OperationalError as ex:
             db.session.rollback()
             logging.error('Comment deletion failed due to database schema mismatch', exc_info=ex)
