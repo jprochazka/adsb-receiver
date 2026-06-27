@@ -1,4 +1,4 @@
-from tests.conftest import create_admin_token
+from conftest import create_admin_token
 
 # POST /links
 

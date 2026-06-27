@@ -1,4 +1,4 @@
-from tests.conftest import create_admin_token, create_user_token
+from conftest import create_admin_token, create_user_token
 
 
 def test_scheduler_unauthorized_without_token(client):

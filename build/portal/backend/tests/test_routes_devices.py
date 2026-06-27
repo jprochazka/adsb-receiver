@@ -1,7 +1,7 @@
 import pytest
 import json
 from unittest.mock import patch, MagicMock
-from tests.conftest import create_admin_token
+from conftest import create_admin_token
 from io import BytesIO
 
 

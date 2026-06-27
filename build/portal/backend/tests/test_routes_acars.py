@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 
-from tests.conftest import create_admin_token, create_user_token
+from conftest import create_admin_token, create_user_token
 
 
 @pytest.fixture

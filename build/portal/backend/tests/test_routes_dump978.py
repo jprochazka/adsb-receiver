@@ -1,4 +1,4 @@
-from tests.conftest import create_admin_token, create_another_user_token, create_user_token
+from conftest import create_admin_token, create_another_user_token, create_user_token
 from backend.models import db, Dump978Aircraft, Dump978Flight, User
 
 # GET /api/uat/flight/{flight}

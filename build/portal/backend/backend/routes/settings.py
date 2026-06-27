@@ -109,15 +109,11 @@ def _read_metadata(path: str):
 def _build_opensky_status() -> dict:
     db_path = _opensky_db_path()
     metadata_path = _opensky_metadata_path()
-    notice_path = _opensky_notice_path()
     metadata = _read_metadata(metadata_path) or {}
     installed = os.path.exists(db_path)
 
     return {
         'installed': installed,
-        'db_path': db_path,
-        'metadata_path': metadata_path,
-        'notice_path': notice_path,
         'size_bytes': metadata.get('size_bytes') if installed else None,
         'sha256': metadata.get('sha256') if installed else None,
         'downloaded_at': metadata.get('downloaded_at') if installed else None,
@@ -192,9 +188,11 @@ class SettingResource(Resource):
 @setting_ns.route('/<string:name>')
 class SettingByNameResource(Resource):
     @setting_ns.response(200, 'Setting retrieved successfully', setting_model)
+    @setting_ns.response(401, 'Unauthorized')
     @setting_ns.response(404, 'Setting not found')
     @setting_ns.response(500, 'Internal server error')
-    @setting_ns.doc('get_setting_by_name')
+    @setting_ns.doc('get_setting_by_name', security='Bearer')
+    @require_admin()
     def get(self, name):
         """Get setting value by name"""
         try:

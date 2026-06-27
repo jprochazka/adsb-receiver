@@ -83,11 +83,13 @@ class NotificationResource(Resource):
 class NotificationsListResource(Resource):
     @notifications_ns.marshal_with(notifications_list_model, code=200)
     @notifications_ns.response(400, 'Bad request - invalid offset or limit parameters')
+    @notifications_ns.response(401, 'Unauthorized')
     @notifications_ns.response(500, 'Internal server error')
-    @notifications_ns.doc('get_notifications_list', params={
+    @notifications_ns.doc('get_notifications_list', security='Bearer', params={
         'offset': 'Pagination offset (default: 0)',
         'limit': 'Number of notifications to return (default: 100, max: 1000)'
     })
+    @require_user_or_admin()
     def get(self):
         """Get list of flight notifications with pagination"""
         offset = request.args.get('offset', default=0, type=int)
@@ -134,8 +136,10 @@ recent_notifications_model = notifications_ns.model('RecentNotifications', {
 @notifications_ns.route('/recent')
 class RecentNotificationsResource(Resource):
     @notifications_ns.marshal_with(recent_notifications_model, code=200)
+    @notifications_ns.response(401, 'Unauthorized')
     @notifications_ns.response(500, 'Internal server error')
-    @notifications_ns.doc('get_recent_notifications')
+    @notifications_ns.doc('get_recent_notifications', security='Bearer')
+    @require_user_or_admin()
     def get(self):
         """Get flights seen recently that match a notification entry"""
         try:

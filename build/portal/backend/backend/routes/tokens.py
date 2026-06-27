@@ -61,16 +61,17 @@ class LoginResource(Resource):
         
         if not user:
             return {'msg': 'Invalid credentials'}, 401
-        
-        if not check_password_hash(user.password or '', password):
-            return {'msg': 'Invalid credentials'}, 401
 
         if user.locked:
-            return {'msg': 'Account locked. Please contact an administrator.'}, 403
+            return {'msg': 'Invalid credentials'}, 401
+
+        if not check_password_hash(user.password or '', password):
+            return {'msg': 'Invalid credentials'}, 401
         
-        # Ensure user has a valid role
+        # Ensure user has a valid role; persist any correction
         if not user.role or not validate_role(user.role):
             user.role = 'Admin' if user.administrator == 1 else 'User'
+            db.session.commit()
         
         # Create tokens with user email as identity
         access_token = create_access_token(

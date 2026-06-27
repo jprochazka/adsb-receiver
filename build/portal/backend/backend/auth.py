@@ -31,7 +31,10 @@ def require_role(required_role):
                 
                 if not current_user:
                     return {'msg': 'User not found'}, 401
-                
+
+                if current_user.locked:
+                    return {'msg': 'Account is locked'}, 403
+
                 if current_user.role != required_role and current_user.role != 'Admin':
                     return {'msg': f'Access denied. {required_role} role required'}, 403
             except Exception as e:
