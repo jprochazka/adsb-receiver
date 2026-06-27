@@ -3,7 +3,7 @@ import logging
 from backend.aircraft_classification import classify_aircraft
 from backend.opensky_classification import get_opensky_classification
 
-POSITION_KEYS = ('lat', 'lon', 'alt_baro', 'gs', 'track', 'geom_rate', 'hex')
+POSITION_KEYS = ('lat', 'lon', 'alt_baro', 'gs', 'track', 'baro_rate', 'hex')
 
 
 def log_job_message(prefix: str, message: str):

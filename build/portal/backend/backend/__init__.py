@@ -120,10 +120,16 @@ def _configure_database(app):
         db_config = get_database_config()
         if db_config['use'].lower() == 'mysql':
             mysql_config = db_config['mysql']
-            app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{mysql_config['user']}:***@{mysql_config['host']}/{mysql_config['database']}"
+            app.config['SQLALCHEMY_DATABASE_URI'] = (
+                f"mysql://{mysql_config['user']}:{mysql_config['password']}"
+                f"@{mysql_config['host']}/{mysql_config['database']}"
+            )
         elif db_config['use'].lower() == 'postgresql':
             pg_config = db_config['postgresql']
-            app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{pg_config['user']}:***@{pg_config['host']}/{pg_config['database']}"
+            app.config['SQLALCHEMY_DATABASE_URI'] = (
+                f"postgresql://{pg_config['user']}:{pg_config['password']}"
+                f"@{pg_config['host']}/{pg_config['database']}"
+            )
         elif db_config['use'].lower() == 'sqlite':
             app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'adsbportal.sqlite3')}"
         else:

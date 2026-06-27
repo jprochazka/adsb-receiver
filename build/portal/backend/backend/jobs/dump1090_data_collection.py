@@ -1,7 +1,7 @@
 import json
 import logging
 
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_apscheduler import APScheduler
 from urllib.error import URLError
 from urllib.request import urlopen
@@ -17,7 +17,7 @@ from backend.jobs.aircraft_data_collection import (
 )
 
 scheduler = APScheduler()
-now = None
+
 
 class DataProcessor(object):
 
@@ -30,16 +30,20 @@ class DataProcessor(object):
     def read_json(self):
         self.log("Reading aircraft.json")
         try:
-            raw_json = urlopen('http://127.0.0.1/dump1090/data/aircraft.json')
+            raw_json = urlopen('http://127.0.0.1/dump1090/data/aircraft.json', timeout=10)
             json_object = json.load(raw_json)
             return json_object
         except (OSError, URLError, json.JSONDecodeError) as ex:
             logging.error('There was a problem consuming aircraft.json', exc_info=True)
-            return
+            return None
 
     # Begin processing data retrived from dump1090
-    def process_all_aircraft(self):
+    def process_all_aircraft(self, now):
         data = self.read_json()
+        if not data:
+            self.log('Failed to read aircraft.json; skipping this collection cycle')
+            return
+
         aircraft_data = data["aircraft"]
 
         if len(aircraft_data) == 0:
@@ -48,14 +52,10 @@ class DataProcessor(object):
 
         self.log(f'Beginning to process {len(aircraft_data)} aircraft')
         for aircraft in aircraft_data:
-            aircraft_id = self.process_aircraft(aircraft)
-            if aircraft_id:
-                self.process_flight(aircraft_id, aircraft)
-        
-        return
+            self.process_aircraft(aircraft, now)
 
     # Process the aircraft
-    def process_aircraft(self, aircraft):
+    def process_aircraft(self, aircraft, now):
         tracked = False
         aircraft_id = None
 
@@ -93,14 +93,14 @@ class DataProcessor(object):
                 return
 
         if 'flight' in aircraft:
-            self.process_flight(aircraft_id, aircraft)
+            self.process_flight(aircraft_id, aircraft, now)
         else:
-            self.process_positions(aircraft_id , None, aircraft)
+            self.process_positions(aircraft_id, None, aircraft, now)
 
         return aircraft_id
 
     # Process the flight
-    def process_flight(self, aircraft_id, aircraft):
+    def process_flight(self, aircraft_id, aircraft, now):
         flight_id = None
         
         if 'flight' in aircraft:
@@ -150,12 +150,12 @@ class DataProcessor(object):
         else:
             self.log(f'  Aircraft ICAO {aircraft["hex"]} was not assigned a flight')
 
-        self.process_positions(aircraft_id, flight_id, aircraft)
+        self.process_positions(aircraft_id, flight_id, aircraft, now)
 
         return
 
     # Process positions
-    def process_positions(self, aircraft_id, flight_id, aircraft):
+    def process_positions(self, aircraft_id, flight_id, aircraft, now):
         if aircraft_has_position_fields(aircraft):
 
             tracked = False
@@ -193,7 +193,7 @@ class DataProcessor(object):
                     longitude=aircraft["lon"],
                     track=aircraft["track"],
                     altitude=altitude,
-                    vertical_rate=aircraft["geom_rate"],
+                    vertical_rate=aircraft["baro_rate"],
                     speed=aircraft["gs"],
                     aircraft=aircraft_id
                 )
@@ -209,15 +209,13 @@ class DataProcessor(object):
 
 def dump1090_data_collection_job():
     """Main data collection job function."""
-    global now
-    
     with current_app.app_context():
         processor = DataProcessor()
+        now = datetime.now(timezone.utc)
 
         # Setup and begin the data collection job
         processor.log("-- BEGINING FLIGHT RECORDER JOB")
-        now = datetime.now()
-        processor.process_all_aircraft()
+        processor.process_all_aircraft(now)
         
         # Commit all changes
         try:

@@ -5,7 +5,7 @@ from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
 from werkzeug.security import generate_password_hash
-from backend.models import BlogComment, db, User
+from backend.models import BlogComment, FlightComment, UatFlightComment, db, User
 from backend.auth import require_admin, require_user_or_admin, validate_role
 from backend.routes.common import QueryParamError, get_stripped_arg, parse_bool_arg, parse_pagination
 from sqlalchemy import delete, select, func
@@ -394,12 +394,20 @@ class UserResource(Resource):
             current_user = get_current_user()
 
             replacement_user_id = _select_comment_replacement_user_id(current_user, user_id)
-            authored_comments = db.session.execute(
+
+            # Handle BlogComments — reassign or soft-delete
+            authored_blog_comments = db.session.execute(
                 select(BlogComment).where(BlogComment.user_id == user_id)
             ).scalars().all()
-            error, status = _delete_or_reassign_authored_comments(authored_comments, replacement_user_id)
+            error, status = _delete_or_reassign_authored_comments(authored_blog_comments, replacement_user_id)
             if error:
                 return error, status
+
+            # Handle FlightComments — delete directly (no soft-delete on this model)
+            db.session.execute(delete(FlightComment).where(FlightComment.user_id == user_id))
+
+            # Handle UatFlightComments — delete directly
+            db.session.execute(delete(UatFlightComment).where(UatFlightComment.user_id == user_id))
 
             db.session.execute(delete(User).where(User.id == user_id))
             db.session.commit()

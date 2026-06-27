@@ -3,11 +3,13 @@ import json
 import logging
 from urllib.error import URLError
 from unittest.mock import patch, MagicMock
-from datetime import datetime
+from datetime import datetime, timezone
 from backend import create_app
 from backend.models import db, Aircraft, Flight, Position, Dump978Flight
 from backend.jobs.dump1090_data_collection import DataProcessor
 from backend.jobs.dump978_data_collection import UatDataProcessor
+
+TEST_NOW = datetime(2022, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
 
 @pytest.fixture
@@ -96,7 +98,7 @@ class TestDataProcessor:
         mock_read_json.return_value = mock_data
         mock_process_aircraft.return_value = 1  # Mock aircraft_id
         
-        processor.process_all_aircraft()
+        processor.process_all_aircraft(TEST_NOW)
         
         assert mock_process_aircraft.call_count == 2
 
@@ -107,11 +109,10 @@ class TestDataProcessor:
         mock_read_json.return_value = mock_data
 
         with caplog.at_level(logging.INFO):
-            processor.process_all_aircraft()
+            processor.process_all_aircraft(TEST_NOW)
 
         assert "no aircraft data to process" in caplog.text
 
-    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_flight')
     def test_process_aircraft_new_aircraft(self, mock_process_flight, processor, app):
         """Test processing a new aircraft"""
@@ -125,7 +126,7 @@ class TestDataProcessor:
             existing = Aircraft.query.filter_by(icao="abc123").first()
             assert existing is None
             
-            result = processor.process_aircraft(aircraft_data)
+            result = processor.process_aircraft(aircraft_data, TEST_NOW)
             
             # Should create new aircraft
             new_aircraft = Aircraft.query.filter_by(icao="abc123").first()
@@ -133,9 +134,8 @@ class TestDataProcessor:
             assert new_aircraft.icao == "abc123"
             assert result == new_aircraft.id
             
-            mock_process_flight.assert_called_once_with(new_aircraft.id, aircraft_data)
+            mock_process_flight.assert_called_once_with(new_aircraft.id, aircraft_data, TEST_NOW)
 
-    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_aircraft_existing_aircraft(self, mock_process_positions, processor, app):
         """Test processing an existing aircraft"""
@@ -155,14 +155,14 @@ class TestDataProcessor:
                 "lon": -74.0060
             }
             
-            result = processor.process_aircraft(aircraft_data)
+            result = processor.process_aircraft(aircraft_data, TEST_NOW)
             
             # Should update existing aircraft's last_seen
             updated_aircraft = Aircraft.query.filter_by(icao="abc123").first()
             assert updated_aircraft is not None
             assert result == existing_aircraft.id
             
-            mock_process_positions.assert_called_once_with(existing_aircraft.id, None, aircraft_data)
+            mock_process_positions.assert_called_once_with(existing_aircraft.id, None, aircraft_data, TEST_NOW)
 
     @patch('backend.jobs.dump1090_data_collection.Aircraft')
     @patch('backend.jobs.dump1090_data_collection.logging.error')
@@ -174,12 +174,11 @@ class TestDataProcessor:
             # Mock Aircraft.query to raise an exception
             mock_aircraft.query.filter_by.side_effect = Exception("Database error")
             
-            result = processor.process_aircraft(aircraft_data)
+            result = processor.process_aircraft(aircraft_data, TEST_NOW)
             
             assert result is None
             mock_logging.assert_called()
 
-    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch('backend.jobs.aircraft_data_collection.get_opensky_classification', return_value=(None, None, None))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_flight_new_flight(self, mock_process_positions, _mock_opensky, processor, app):
@@ -197,7 +196,7 @@ class TestDataProcessor:
             existing = Flight.query.filter_by(flight="TST123").first()
             assert existing is None
             
-            processor.process_flight(aircraft_id, aircraft_data)
+            processor.process_flight(aircraft_id, aircraft_data, TEST_NOW)
             
             # Should create new flight
             new_flight = Flight.query.filter_by(flight="TST123").first()
@@ -208,10 +207,9 @@ class TestDataProcessor:
             assert new_flight.emitter_category == 'A7'
             assert new_flight.message_type == 'adsb_icao'
             
-            mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data)
+            mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data, TEST_NOW)
 
     @patch('backend.jobs.aircraft_data_collection.get_opensky_classification', return_value=('helicopter', 'opensky', 'high'))
-    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_flight_prefers_opensky_classification(self, mock_process_positions, _mock_opensky, processor, app):
         """When OpenSky provides a class, it should override heuristic mapping."""
@@ -224,15 +222,14 @@ class TestDataProcessor:
                 "type": "adsb_icao"
             }
 
-            processor.process_flight(aircraft_id, aircraft_data)
+            processor.process_flight(aircraft_id, aircraft_data, TEST_NOW)
 
             flight = Flight.query.filter_by(flight="TST124").first()
             assert flight is not None
             assert flight.aircraft_class == 'helicopter'
 
-            mock_process_positions.assert_called_once_with(aircraft_id, flight.id, aircraft_data)
+            mock_process_positions.assert_called_once_with(aircraft_id, flight.id, aircraft_data, TEST_NOW)
 
-    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(DataProcessor, 'process_positions')
     def test_process_flight_existing_flight(self, mock_process_positions, processor, app):
         """Test processing an existing flight"""
@@ -253,13 +250,13 @@ class TestDataProcessor:
                 "flight": "TST123  "
             }
             
-            processor.process_flight(aircraft_id, aircraft_data)
+            processor.process_flight(aircraft_id, aircraft_data, TEST_NOW)
             
             # Should update existing flight's last_seen
             updated_flight = Flight.query.filter_by(flight="TST123").first()
             assert updated_flight is not None
             
-            mock_process_positions.assert_called_once_with(aircraft_id, existing_flight.id, aircraft_data)
+            mock_process_positions.assert_called_once_with(aircraft_id, existing_flight.id, aircraft_data, TEST_NOW)
 
     @patch('backend.jobs.dump1090_data_collection.Flight')
     @patch('backend.jobs.dump1090_data_collection.logging.error')
@@ -272,11 +269,10 @@ class TestDataProcessor:
             # Mock Flight.query to raise an exception
             mock_flight.query.filter_by.side_effect = Exception("Database error")
             
-            processor.process_flight(aircraft_id, aircraft_data)
+            processor.process_flight(aircraft_id, aircraft_data, TEST_NOW)
             
             mock_logging.assert_called()
 
-    @patch('backend.jobs.dump1090_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     def test_process_positions_with_coordinates(self, processor, app):
         """Test processing positions with valid coordinates"""
         with app.app_context():
@@ -289,11 +285,11 @@ class TestDataProcessor:
                 "alt_baro": 30000,
                 "track": 180,
                 "gs": 450,
-                "geom_rate": 0,
+                "baro_rate": 0,
                 "messages": 12345
             }
             
-            processor.process_positions(aircraft_id, flight_id, aircraft_data)
+            processor.process_positions(aircraft_id, flight_id, aircraft_data, TEST_NOW)
             
             # Should create new position
             new_position = Position.query.filter_by(flight=flight_id, message=12345).first()
@@ -310,11 +306,11 @@ class TestDataProcessor:
             aircraft_data = {
                 "hex": "abc123",
                 "altitude": 30000
-                # Missing required lat/lon/alt_baro/gs/track/geom_rate
+                # Missing required lat/lon/alt_baro/gs/track/baro_rate
             }
 
             with caplog.at_level(logging.INFO):
-                processor.process_positions(aircraft_id, flight_id, aircraft_data)
+                processor.process_positions(aircraft_id, flight_id, aircraft_data, TEST_NOW)
 
             # Should not create any position
             positions = Position.query.filter_by(flight=flight_id).all()
@@ -337,14 +333,14 @@ class TestDataProcessor:
                 "alt_baro": 30000,
                 "track": 180,
                 "gs": 450,
-                "geom_rate": 0,
+                "baro_rate": 0,
                 "messages": 12345
             }
             
             # Mock Position.query to raise an exception
             mock_position.query.filter_by.side_effect = Exception("Database error")
             
-            processor.process_positions(aircraft_id, flight_id, aircraft_data)
+            processor.process_positions(aircraft_id, flight_id, aircraft_data, TEST_NOW)
             
             mock_logging.assert_called()
 
@@ -353,20 +349,20 @@ class TestDataProcessor:
         invalid_data = None
         
         with pytest.raises((AttributeError, TypeError)):
-            processor.process_aircraft(invalid_data)
+            processor.process_aircraft(invalid_data, TEST_NOW)
 
     def test_missing_hex_in_aircraft_data(self, processor):
         """Test processing aircraft data without hex field"""
         aircraft_data = {"flight": "TST123"}
         
         with pytest.raises(KeyError):
-            processor.process_aircraft(aircraft_data)
+            processor.process_aircraft(aircraft_data, TEST_NOW)
 
     @patch.object(DataProcessor, 'log')
     def test_verbose_logging(self, mock_log, processor):
         """Test that all major operations are logged"""
         with patch.object(processor, 'read_json', return_value={"aircraft": []}):
-            processor.process_all_aircraft()
+            processor.process_all_aircraft(TEST_NOW)
             
         # Should log the no data message (read_json log is mocked out)
         assert mock_log.call_count >= 1
@@ -374,7 +370,6 @@ class TestDataProcessor:
         mock_log.assert_called_with('There is no aircraft data to process at this time')
 
     @patch('backend.jobs.aircraft_data_collection.get_opensky_classification', return_value=('uav', 'opensky', 'high'))
-    @patch('backend.jobs.dump978_data_collection.now', datetime(2022, 1, 1, 12, 0, 0))
     @patch.object(UatDataProcessor, 'process_positions')
     def test_uat_process_flight_prefers_opensky_classification(self, mock_process_positions, _mock_opensky, app):
         """UAT ingest should honor OpenSky class when available."""
