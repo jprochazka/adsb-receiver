@@ -1,8 +1,8 @@
 # Portal Changelog
 
 This document describes what changed between the legacy ADS-B Receiver Portal
-(PHP/lighttpd, last release v2.8.10, `master` branch) and the new portal
-(Flask/Angular/Nginx, `cleanup` branch).
+(PHP/lighttpd, last release v2.8.10) and the current portal
+(Flask/Angular/Nginx), which replaces it.
 
 ---
 
@@ -17,11 +17,11 @@ compiled Angular single-page application served by Nginx.
 
 ## Architecture
 
-| | Legacy Portal (v2.8.10) | New Portal (cleanup) |
+| | Legacy Portal (v2.8.10) | Current Portal |
 |---|---|---|
 | Language | PHP 7+ | Python 3.10+ / TypeScript |
 | Backend framework | None (raw PHP classes) | Flask + Flask-RESTX |
-| Frontend framework | Smarty templates + jQuery + Bootstrap 3 | Angular 22 + Angular Material |
+| Frontend framework | Smarty templates + jQuery + Bootstrap 3 | Angular 22 + Bootstrap 5 |
 | Web server | lighttpd | Nginx (static) + Gunicorn (API) |
 | Process manager | None (PHP-FPM via lighttpd) | systemd (`adsb-portal-backend.service`) |
 | API style | None (server-rendered pages + 3 thin PHP API endpoints) | Full REST API with Swagger/OpenAPI docs at `/api/docs/` |
@@ -289,6 +289,29 @@ relational database. SQLite is the default for single-host installs.
 - `bash/tools/portal_restore_v3.sh` — restores from a v3 backup archive.
   Runs `flask db upgrade` after restoring the database to ensure schema is
   current relative to the installed migration head.
+
+---
+
+## Repository-Wide Changes
+
+In addition to the portal rewrite itself, this release includes broader
+repository updates that are outside the Flask/Angular application code.
+
+- **Installer and shell scripts updated** across `install.sh`, `bash/init.sh`,
+  `bash/main.sh`, and related helper scripts.
+- **Decoder/feeders updates** in multiple scripts under `bash/decoders/` and
+  `bash/feeders/`.
+- **New extras/feeders scripts** added, including `bash/extras/stream1090.sh`
+  and `bash/feeders/airframesio.sh`.
+- **Portal installer hardening and expansion** in `bash/extras/portal.sh`,
+  including modern dependency setup, migration/import support, and compatibility
+  checks.
+- **Backup/restore tooling transition** from older backup script variants to the
+  current v2/v3 toolchain and documentation in `bash/tools/`.
+- **Legacy static portal web assets pruned/removed** from old
+  `build/portal/html/*` areas where no longer needed by the Angular/Nginx stack.
+- **Project docs/meta updates** including `README.md`, `CHANGELOG.md`,
+  `CREDITS.md`, and `LICENSE.md` alignment with the portal migration.
 
 ---
 
