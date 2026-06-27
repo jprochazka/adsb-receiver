@@ -218,8 +218,15 @@ class LinksReorderResource(Resource):
             return {'msg': 'Validation error', 'errors': err.messages}, 400
 
         try:
-            for position, link_id in enumerate(payload['ids']):
-                link = db.session.get(Link, link_id)
+            ids = payload['ids']
+            links_map = {
+                link.id: link
+                for link in db.session.execute(
+                    select(Link).where(Link.id.in_(ids))
+                ).scalars().all()
+            }
+            for position, link_id in enumerate(ids):
+                link = links_map.get(link_id)
                 if link:
                     link.sort_order = position
             db.session.commit()

@@ -1,7 +1,7 @@
 import json
 import logging
 
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_apscheduler import APScheduler
 from urllib.error import URLError
 from urllib.request import urlopen
@@ -17,7 +17,7 @@ from backend.jobs.aircraft_data_collection import (
 )
 
 scheduler = APScheduler()
-now = None
+
 
 class UatDataProcessor(object):
 
@@ -30,7 +30,7 @@ class UatDataProcessor(object):
     def read_json(self):
         self.log("Reading aircraft.json from dump978")
         try:
-            raw_json = urlopen('http://127.0.0.1/dump978/data/aircraft.json')
+            raw_json = urlopen('http://127.0.0.1/dump978/data/aircraft.json', timeout=10)
             json_object = json.load(raw_json)
             return json_object
         except (OSError, URLError, json.JSONDecodeError) as ex:
@@ -38,7 +38,7 @@ class UatDataProcessor(object):
             return
 
     # Begin processing data retrieved from dump978
-    def process_all_aircraft(self):
+    def process_all_aircraft(self, now):
         data = self.read_json()
         if not data:
             return
@@ -58,12 +58,12 @@ class UatDataProcessor(object):
 
         self.log(f'Beginning to process {len(recent)} UAT aircraft')
         for aircraft in recent:
-            self.process_aircraft(aircraft)
+            self.process_aircraft(aircraft, now)
 
         return
 
     # Process the aircraft
-    def process_aircraft(self, aircraft):
+    def process_aircraft(self, aircraft, now):
         tracked = False
         aircraft_id = None
 
@@ -101,14 +101,14 @@ class UatDataProcessor(object):
                 return
 
         if 'flight' in aircraft:
-            self.process_flight(aircraft_id, aircraft)
+            self.process_flight(aircraft_id, aircraft, now)
         else:
-            self.process_positions(aircraft_id, None, aircraft)
+            self.process_positions(aircraft_id, None, aircraft, now)
 
         return aircraft_id
 
     # Process the flight
-    def process_flight(self, aircraft_id, aircraft):
+    def process_flight(self, aircraft_id, aircraft, now):
         flight_id = None
 
         if 'flight' in aircraft:
@@ -158,12 +158,12 @@ class UatDataProcessor(object):
         else:
             self.log(f'  UAT aircraft ICAO {aircraft["hex"]} was not assigned a flight')
 
-        self.process_positions(aircraft_id, flight_id, aircraft)
+        self.process_positions(aircraft_id, flight_id, aircraft, now)
 
         return
 
     # Process positions
-    def process_positions(self, aircraft_id, flight_id, aircraft):
+    def process_positions(self, aircraft_id, flight_id, aircraft, now):
         if not aircraft_has_position_fields(aircraft):
             self.log(f'  Data required to insert position data for UAT aircraft ICAO {aircraft["hex"]} is not present')
             return
@@ -223,14 +223,12 @@ class UatDataProcessor(object):
 
 def dump978_data_collection_job():
     """Main UAT data collection job function for dump978."""
-    global now
-
     with current_app.app_context():
         processor = UatDataProcessor()
+        now = datetime.now(timezone.utc)
 
         processor.log("-- BEGINNING UAT FLIGHT RECORDER JOB")
-        now = datetime.now()
-        processor.process_all_aircraft()
+        processor.process_all_aircraft(now)
 
         try:
             db.session.commit()

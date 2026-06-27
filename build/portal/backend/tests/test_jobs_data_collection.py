@@ -383,9 +383,9 @@ class TestDataProcessor:
                 "type": "uat_icao"
             }
 
-            processor.process_flight(aircraft_id, aircraft_data)
+            processor.process_flight(aircraft_id, aircraft_data, TEST_NOW)
 
             new_flight = Dump978Flight.query.filter_by(flight="UAT001").first()
             assert new_flight is not None
             assert new_flight.aircraft_class == 'uav'
-            mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data)
+            mock_process_positions.assert_called_once_with(aircraft_id, new_flight.id, aircraft_data, TEST_NOW)

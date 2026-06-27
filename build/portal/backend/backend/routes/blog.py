@@ -7,6 +7,7 @@ from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError, validate
 from sqlalchemy import select, func
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import joinedload
 from backend.models import db, BlogComment, BlogPost
 from backend.auth import get_current_user, require_admin, require_user_or_admin
 from backend.routes.common import QueryParamError, get_stripped_arg, parse_pagination
@@ -474,6 +475,7 @@ class BlogPostCommentsResource(Resource):
                 select(BlogComment)
                 .where(BlogComment.blog_post_id == blog_post_id)
                 .order_by(BlogComment.created_at.asc(), BlogComment.id.asc())
+                .options(joinedload(BlogComment.user))
             ).scalars().all()
 
             root_comments, replies_by_parent = _comments_by_parent(comments)

@@ -176,7 +176,14 @@ def _fetch_rrd(
     if step is not None:
         cmd.extend(['--resolution', str(step)])
 
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    except FileNotFoundError:
+        logging.error('rrdtool not found — is rrdtool installed?')
+        return {}
+    except subprocess.TimeoutExpired:
+        logging.error('rrdtool timed out for %s', rrd_path)
+        return {}
 
     if result.returncode != 0:
         logging.error('rrdtool fetch failed for %s: %s', rrd_path, result.stderr.strip())

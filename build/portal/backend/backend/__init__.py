@@ -25,6 +25,8 @@ from backend.routes.users import users, users_ns
 from backend.models import db
 from backend.config_loader import get_database_config, get_security_config, load_portal_config
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 BACKEND_VERSION = os.environ.get('PORTAL_BACKEND_VERSION', 'v3.0.0')
 
 
@@ -47,6 +49,9 @@ def create_app(test_config=None):
     _register_blueprints(app)
     _configure_scheduler(app)
     _init_extensions(app)
+
+    # Apply ProxyFix so Flask sees real client IPs behind Nginx
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     return app
 
@@ -116,8 +121,8 @@ def _register_api_namespaces(api):
 def _configure_database(app):
     # Load database configuration from yaml only if SQLALCHEMY_DATABASE_URI is
     # not already set (e.g. passed directly via test_config).
+    db_config = get_database_config()
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
-        db_config = get_database_config()
         if db_config['use'].lower() == 'mysql':
             mysql_config = db_config['mysql']
             app.config['SQLALCHEMY_DATABASE_URI'] = (
@@ -138,6 +143,8 @@ def _configure_database(app):
             )
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    if db_config['use'].lower() == 'mysql':
+        app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
 
 
 def _configure_jwt(app):

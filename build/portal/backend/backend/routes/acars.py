@@ -2,10 +2,10 @@ import datetime
 import logging
 import os
 
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from flask_restx import Namespace, Resource, fields as restx_fields
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import create_engine, select, text
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from backend.auth import require_admin
 from backend.aircraft_classification import classify_aircraft
@@ -18,6 +18,21 @@ acars = Blueprint('acars', __name__)
 acars_ns = Namespace('acars', description='ACARS operations')
 acars_flights_ns = acars_ns
 acars_flight_ns = acars_ns
+
+# Module-level engine singleton — created once on first use.
+_acars_engine = None
+
+
+def _get_acars_engine():
+    """Return (and lazily create) the shared ACARS SQLAlchemy engine."""
+    global _acars_engine
+    if _acars_engine is None:
+        db_path = get_acars_config(load_portal_config()).get('database', '/run/acarsdec.sqlite')
+        _acars_engine = create_engine(
+            f"sqlite:///{db_path}",
+            connect_args={"check_same_thread": False},
+        )
+    return _acars_engine
 acars_messages_ns = acars_ns
 
 # --- API Models ---
@@ -108,12 +123,17 @@ def _purge_acars_flights():
                 conn.commit()
                 return {'deleted_flights': 0, 'deleted_messages': 0, 'cutoff_date': cutoff_str}, 200
 
-            placeholders = ','.join(str(fid) for fid in old_flight_ids)
+            # Use bound parameters — build IN clause with positional params for SQLite compat
+            flight_id_list = [int(fid) for fid in old_flight_ids]
+            placeholders = ','.join(f':id{i}' for i in range(len(flight_id_list)))
+            id_params = {f'id{i}': fid for i, fid in enumerate(flight_id_list)}
             deleted_messages = conn.execute(
-                text(f"DELETE FROM Messages WHERE FlightID IN ({placeholders})")
+                text(f"DELETE FROM Messages WHERE FlightID IN ({placeholders})"),
+                id_params
             ).rowcount
             deleted_flights = conn.execute(
-                text(f"DELETE FROM Flights WHERE FlightID IN ({placeholders})")
+                text(f"DELETE FROM Flights WHERE FlightID IN ({placeholders})"),
+                id_params
             ).rowcount
             conn.commit()
 
@@ -132,12 +152,6 @@ def _purge_acars_flights():
     except Exception as ex:
         logging.error("Error purging ACARS flights", exc_info=ex)
         return {'msg': 'Internal Server Error'}, 500
-
-
-def _get_acars_engine():
-    """Create and return a SQLAlchemy engine connected to the ACARS SQLite database."""
-    db_path = get_acars_config().get('database', '/run/acarsdec.sqlite')
-    return create_engine(f"sqlite:///{db_path}", connect_args={"check_same_thread": False})
 
 
 def _row_to_flight(row):
