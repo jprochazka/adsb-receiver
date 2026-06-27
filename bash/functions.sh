@@ -140,6 +140,50 @@ function check_package() {
 }
 
 
+## ALLOW LIGHTTPD TO COEXIST WITH NGINX
+
+function configure_lighttpd_for_portal_coexistence() {
+    local override_conf="/etc/lighttpd/conf-available/99-adsb-receiver-port.conf"
+    local enabled_conf="/etc/lighttpd/conf-enabled/99-adsb-receiver-port.conf"
+
+    if [[ $(dpkg-query -W -f='${STATUS}' lighttpd 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+        return 0
+    fi
+
+    if [[ $(dpkg-query -W -f='${STATUS}' nginx 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+        return 0
+    fi
+
+    log_message "Configuring lighttpd to coexist with Nginx"
+
+    sudo install -d -m 0755 /etc/lighttpd/conf-available /etc/lighttpd/conf-enabled
+    sudo tee "${override_conf}" > /dev/null <<'EOF'
+server.port = 8081
+EOF
+
+    if [[ ! -e "${enabled_conf}" ]]; then
+        sudo ln -s ../conf-available/99-adsb-receiver-port.conf "${enabled_conf}"
+    fi
+
+    if command -v lighttpd >/dev/null 2>&1 && [[ -f /etc/lighttpd/lighttpd.conf ]]; then
+        if ! sudo /usr/sbin/lighttpd -tt -f /etc/lighttpd/lighttpd.conf >/dev/null 2>&1; then
+            log_warning_message "lighttpd configuration test failed after applying the Nginx coexistence override"
+            return 1
+        fi
+    fi
+
+    if systemctl is-active --quiet lighttpd 2>/dev/null; then
+        log_message "Restarting lighttpd so SkyAware remains available on port 8080"
+        sudo systemctl restart lighttpd 2>&1 | log_pipe
+    elif systemctl is-enabled --quiet lighttpd 2>/dev/null; then
+        log_message "Starting lighttpd so SkyAware remains available on port 8080"
+        sudo systemctl start lighttpd 2>&1 | log_pipe
+    fi
+
+    return 0
+}
+
+
 ## BLACKLIST DVB-T DRIVERS FOR RTL-SDR DEVICES
 
 function blacklist_modules() {

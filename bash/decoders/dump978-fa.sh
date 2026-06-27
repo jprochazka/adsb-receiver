@@ -133,6 +133,20 @@ if [[ $(dpkg-query -W -f='${STATUS}' skyaware978 2>/dev/null | grep -c "ok insta
     exit 1
 fi
 
+if ! configure_lighttpd_for_portal_coexistence; then
+    echo ""
+    log_alert_heading "INSTALLATION HALTED"
+    echo ""
+    log_alert_message "lighttpd could not be reconfigured to coexist with Nginx"
+    log_alert_message "Setup has been terminated"
+    echo ""
+    log_title_message "------------------------------------------------------------------------------"
+    log_title_heading "FlightAware Dump978 decoder setup halted"
+    echo ""
+    read -p "Press enter to continue..." discard
+    exit 1
+fi
+
 if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
     log_message "Creating the Debian package archive directory"
     echo ""

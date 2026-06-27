@@ -45,7 +45,7 @@ LIGHTTPD_INSTALLED="false"
 LIGHTTPD_ACTIVE_BEFORE="false"
 LIGHTTPD_ENABLED_BEFORE="false"
 LIGHTTPD_DOCROOT=""
-LIGHTTPD_TAKEOVER_STATUS="No lighttpd takeover needed"
+LIGHTTPD_TAKEOVER_STATUS="No lighttpd coexistence changes needed"
 
 find_legacy_rrd_source() {
     # Build candidate list: well-known fixed paths first, then legacy-portal-root-relative
@@ -975,6 +975,24 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_redirect off;
     }
+
+    location /dump1090/ {
+        proxy_pass http://127.0.0.1:8080/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_redirect off;
+    }
+
+    location /dump978/data/ {
+        proxy_pass http://127.0.0.1:8080/data-978/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_redirect off;
+    }
 }
 NGINXEOF
     if [[ ! -L "/etc/nginx/sites-enabled/${NGINX_SITE}" ]]; then
@@ -985,17 +1003,18 @@ NGINXEOF
     fi
     sudo nginx -t >> "${LOG_FILE}" 2>&1
 
-    ## LIGHTTPD-TO-NGINX TAKEOVER (runs after legacy data handling; before nginx restart)
-    if [[ "${LIGHTTPD_INSTALLED}" == "true" && "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
-        _gauge 96 "Stopping lighttpd to hand port 80 to Nginx..."
+    ## LIGHTTPD-AND-NGINX COEXISTENCE (runs before nginx restart)
+    if [[ "${LIGHTTPD_INSTALLED}" == "true" ]]; then
+        _gauge 96 "Configuring lighttpd to coexist with Nginx..."
 
-        if sudo systemctl stop lighttpd >> "${LOG_FILE}" 2>&1 && \
-           sudo systemctl disable lighttpd >> "${LOG_FILE}" 2>&1; then
-            LIGHTTPD_TAKEOVER_STATUS="lighttpd stopped and disabled; Nginx will own port 80"
-            log_message "lighttpd stopped and disabled"
+        if configure_lighttpd_for_portal_coexistence >> "${LOG_FILE}" 2>&1; then
+            LIGHTTPD_TAKEOVER_STATUS="lighttpd retained; Nginx serves the portal on port 80 and SkyAware remains available via lighttpd on port 8080"
+            log_message "lighttpd retained for SkyAware while Nginx serves the portal"
         else
-            LIGHTTPD_TAKEOVER_STATUS="WARNING: failed to stop/disable lighttpd — Nginx may fail to bind port 80"
-            log_message "WARNING: could not stop lighttpd"
+            LIGHTTPD_TAKEOVER_STATUS="WARNING: failed to reconfigure lighttpd for coexistence with Nginx"
+            log_message "WARNING: could not reconfigure lighttpd for coexistence with Nginx"
+            echo "Failed to reconfigure lighttpd for coexistence with Nginx" >> "${LOG_FILE}"
+            exit 1
         fi
     fi
 
@@ -1025,16 +1044,6 @@ SVCEOF
     sudo systemctl enable nginx >> "${LOG_FILE}" 2>&1
 
     if ! sudo systemctl restart nginx >> "${LOG_FILE}" 2>&1; then
-        # Nginx failed to start — attempt lighttpd rollback if we stopped it.
-        if [[ "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
-            log_message "Nginx failed; attempting lighttpd rollback..."
-            if sudo systemctl enable lighttpd >> "${LOG_FILE}" 2>&1 && \
-               sudo systemctl start  lighttpd >> "${LOG_FILE}" 2>&1; then
-                LIGHTTPD_TAKEOVER_STATUS="Nginx failed; lighttpd rolled back and re-started"
-            else
-                LIGHTTPD_TAKEOVER_STATUS="Nginx failed AND lighttpd rollback failed — port 80 may be unserved"
-            fi
-        fi
         echo "Nginx failed to restart — see ${LOG_FILE}" >> "${LOG_FILE}"
         exit 1
     fi
@@ -1113,8 +1122,8 @@ Legacy PHP portal detection result:
 
 No legacy data has been modified or deleted." 12 78
 
-whiptail --title "Web Server Takeover Status" --msgbox "\
-lighttpd-to-Nginx takeover result:
+whiptail --title "Web Server Status" --msgbox "\
+lighttpd-and-Nginx coexistence result:
 
     ${LIGHTTPD_TAKEOVER_STATUS}
 
