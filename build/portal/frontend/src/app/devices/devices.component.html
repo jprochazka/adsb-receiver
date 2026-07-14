@@ -277,6 +277,11 @@
               </div>
             </div>
             <div class="row mb-4">
+              <div class="col-12">
+                <app-rrd-chart [config]="d1090DecodeEfficiency" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch" [compareStartEpoch]="compareEnabled ? baselineStartEpoch : null" [compareEndEpoch]="compareEnabled ? baselineEndEpoch : null" compareLabel="Baseline"></app-rrd-chart>
+              </div>
+            </div>
+            <div class="row mb-4">
               <div class="col-md-6">
                 <app-rrd-chart [config]="d1090Aircraft" [period]="activePeriod" [refreshMs]="graphRefreshIntervalMs" [maxPoints]="maxGraphPoints" [startEpoch]="customStartEpoch" [endEpoch]="customEndEpoch"></app-rrd-chart>
               </div>

@@ -89,6 +89,11 @@ DUMP1090_METRICS = {
         ('messages',  *_spec(f'{_D1090_DIR}/dump1090_messages-remote_accepted.rrd'), 'value'),
         ('positions', *_spec(f'{_D1090_DIR}/dump1090_messages-positions.rrd'), 'value'),
     ],
+    'decode-efficiency': [
+        ('aircraft',  *_spec(f'{_D1090_DIR}/dump1090_aircraft-recent.rrd'), 'total'),
+        ('messages',  *_spec(f'{_D1090_DIR}/dump1090_messages-local_accepted.rrd'), 'value'),
+        ('positions', *_spec(f'{_D1090_DIR}/dump1090_messages-positions.rrd'), 'value'),
+    ],
 }
 
 DUMP978_METRICS = {
@@ -378,7 +383,7 @@ graph_response_model = graphs_ns.model('GraphResponse', {
 # ---------------------------------------------------------------------------
 
 @graphs_ns.route('/dump1090/<string:metric>')
-@graphs_ns.param('metric', 'Chart metric: aircraft | message-rate | cpu | tracks | range | signal | positions | strong-signals | df-types | remote-rate')
+@graphs_ns.param('metric', 'Chart metric: aircraft | message-rate | cpu | tracks | range | signal | positions | strong-signals | df-types | remote-rate | decode-efficiency')
 class Dump1090GraphResource(Resource):
     @graphs_ns.param('period', 'Time period: 1h | 6h | 24h | 2d | 7d | 30d', _in='query')
     @graphs_ns.response(200, 'Success', graph_response_model)

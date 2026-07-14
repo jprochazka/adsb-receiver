@@ -81,6 +81,7 @@ export class DevicesComponent implements OnInit {
   d1090LocalRate!: RrdChartConfig;
   d1090Positions!: RrdChartConfig;
   d1090StrongSignals!: RrdChartConfig;
+  d1090DecodeEfficiency!: RrdChartConfig;
   d1090DfTypes!: RrdChartConfig;
   d1090Cpu!: RrdChartConfig;
 
@@ -793,6 +794,29 @@ export class DevicesComponent implements OnInit {
             return (v != null && t != null && t > 0) ? (v * 100) / t : null;
           })
         }];
+      },
+    };
+    this.d1090DecodeEfficiency = {
+      decoder: 'dump1090', metric: 'decode-efficiency', title: 'Aircraft Count vs Decode Efficiency',
+      yLabel: 'Aircraft / Efficiency %',
+      transform: (ds) => {
+        const aircraft = ds.find(d => d.label === 'aircraft');
+        const messages = ds.find(d => d.label === 'messages');
+        const positions = ds.find(d => d.label === 'positions');
+        if (!aircraft || !messages || !positions) return ds;
+        return [
+          {
+            label: 'Aircraft Seen',
+            data: aircraft.data,
+          },
+          {
+            label: 'Positions per Message %',
+            data: positions.data.map((v, i) => {
+              const m = messages.data[i];
+              return (v != null && m != null && m > 0) ? (v * 100) / m : null;
+            })
+          },
+        ];
       },
     };
     this.d1090DfTypes = {

@@ -369,6 +369,26 @@ describe('DevicesComponent', () => {
     expect(component.currentKpis?.uatMsgRate).toBeCloseTo(15, 5);
   });
 
+  it('should build aircraft versus decode efficiency chart transform', () => {
+    fixture.detectChanges();
+
+    expect(component.d1090DecodeEfficiency).toBeDefined();
+
+    const transformed = component.d1090DecodeEfficiency.transform?.([
+      { label: 'aircraft', data: [20, 25] },
+      { label: 'messages', data: [100, 125] },
+      { label: 'positions', data: [45, 60] },
+    ]);
+
+    expect(transformed).toBeTruthy();
+    expect(transformed?.length).toBe(2);
+    expect(transformed?.[0].label).toBe('Aircraft Seen');
+    expect(transformed?.[0].data).toEqual([20, 25]);
+    expect(transformed?.[1].label).toBe('Positions per Message %');
+    expect(transformed?.[1].data[0]).toBeCloseTo(45, 5);
+    expect(transformed?.[1].data[1]).toBeCloseTo(48, 5);
+  });
+
   it('should set and clear baseline from current KPI snapshot', () => {
     fixture.detectChanges();
     component.currentKpis = {
@@ -572,6 +592,9 @@ describe('DevicesComponent', () => {
 
   it('should render decoder split and OpenSky stats sections', () => {
     fixture.detectChanges();
+    const receiverText = fixture.nativeElement.textContent as string;
+    expect(receiverText).toContain('Aircraft Count vs Decode Efficiency');
+
     component.setActiveTab('stats');
     fixture.detectChanges();
 

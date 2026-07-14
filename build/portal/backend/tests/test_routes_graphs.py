@@ -30,6 +30,21 @@ def test_get_dump1090_graph_200(mock_fetch, client):
 
 
 @patch('backend.routes.graphs._fetch_rrd', side_effect=_fake_fetch)
+def test_get_dump1090_decode_efficiency_graph_200(mock_fetch, client):
+    response = client.get('/api/graphs/dump1090/decode-efficiency?period=1h')
+
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data['period'] == '1h'
+    assert data['labels'] == [100, 130]
+    assert len(data['datasets']) == 3
+    assert data['datasets'][0]['label'] == 'aircraft'
+    assert data['datasets'][1]['label'] == 'messages'
+    assert data['datasets'][2]['label'] == 'positions'
+
+
+@patch('backend.routes.graphs._fetch_rrd', side_effect=_fake_fetch)
 def test_get_dump978_graph_200(mock_fetch, client):
     response = client.get('/api/graphs/dump978/aircraft?period=6h')
 
