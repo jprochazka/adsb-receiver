@@ -45,7 +45,7 @@ LIGHTTPD_INSTALLED="false"
 LIGHTTPD_ACTIVE_BEFORE="false"
 LIGHTTPD_ENABLED_BEFORE="false"
 LIGHTTPD_DOCROOT=""
-LIGHTTPD_TAKEOVER_STATUS="No lighttpd coexistence changes needed"
+LIGHTTPD_TAKEOVER_STATUS="No lighttpd takeover needed"
 
 find_legacy_rrd_source() {
     # Build candidate list: well-known fixed paths first, then legacy-portal-root-relative
@@ -200,46 +200,6 @@ Notes:
 - External reachability from the internet (NAT/firewall) still cannot be fully verified from this host alone." 22 78
 }
 
-check_portal_platform_compatibility() {
-    local dpkg_arch=""
-    local kernel_arch=""
-
-    dpkg_arch="$(dpkg --print-architecture 2>/dev/null || true)"
-    kernel_arch="$(uname -m 2>/dev/null || true)"
-
-    case "${dpkg_arch}" in
-        arm64|amd64)
-            return 0
-            ;;
-        armhf)
-            log_alert_heading "INSTALLATION HALTED"
-            log_alert_message "Unsupported operating system architecture: ${dpkg_arch} (${kernel_arch})"
-            log_alert_message "ADS-B Portal requires a 64-bit OS with the current setup process"
-            whiptail --title "Unsupported Platform" --msgbox "\
-ADS-B Portal cannot be installed on this system with the current setup process.
-
-Detected architecture: ${dpkg_arch} (${kernel_arch})
-
-32-bit Raspberry Pi OS is not currently supported for ADS-B Portal because frontend Node.js requirements cannot be satisfied on armhf.
-
-Use Raspberry Pi OS 64-bit (arm64) to install ADS-B Portal." 17 78
-            exit 1
-            ;;
-        *)
-            log_alert_heading "INSTALLATION HALTED"
-            log_alert_message "Unsupported operating system architecture: ${dpkg_arch:-unknown} (${kernel_arch:-unknown})"
-            log_alert_message "ADS-B Portal currently supports amd64 and arm64 only"
-            whiptail --title "Unsupported Platform" --msgbox "\
-ADS-B Portal cannot be installed on this system with the current setup process.
-
-Detected architecture: ${dpkg_arch:-unknown} (${kernel_arch:-unknown})
-
-Supported architectures: amd64, arm64." 13 78
-            exit 1
-            ;;
-    esac
-}
-
 if [[ -f "${CONFIG_FILE}" ]]; then
     existing_db_type=$(sed -nE 's/^    use:[[:space:]]*"?([^"#]+)"?$/\1/p' "${CONFIG_FILE}" | head -n 1)
     if [[ -n "${existing_db_type}" ]]; then
@@ -380,8 +340,6 @@ if ! command -v whiptail &>/dev/null; then
     log_message "Installing whiptail"
     check_package whiptail
 fi
-
-check_portal_platform_compatibility
 
 if [[ -f "${CONFIG_FILE}" && -n "${existing_db_type:-}" ]]; then
     if whiptail --title "Existing Portal Configuration Detected" \
@@ -975,24 +933,6 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_redirect off;
     }
-
-    location /dump1090/ {
-        proxy_pass http://127.0.0.1:8080/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_redirect off;
-    }
-
-    location /dump978/data/ {
-        proxy_pass http://127.0.0.1:8080/data-978/;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_redirect off;
-    }
 }
 NGINXEOF
     if [[ ! -L "/etc/nginx/sites-enabled/${NGINX_SITE}" ]]; then
@@ -1003,18 +943,17 @@ NGINXEOF
     fi
     sudo nginx -t >> "${LOG_FILE}" 2>&1
 
-    ## LIGHTTPD-AND-NGINX COEXISTENCE (runs before nginx restart)
-    if [[ "${LIGHTTPD_INSTALLED}" == "true" ]]; then
-        _gauge 96 "Configuring lighttpd to coexist with Nginx..."
+    ## LIGHTTPD-TO-NGINX TAKEOVER (runs after legacy data handling; before nginx restart)
+    if [[ "${LIGHTTPD_INSTALLED}" == "true" && "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
+        _gauge 96 "Stopping lighttpd to hand port 80 to Nginx..."
 
-        if configure_lighttpd_for_portal_coexistence >> "${LOG_FILE}" 2>&1; then
-            LIGHTTPD_TAKEOVER_STATUS="lighttpd retained; Nginx serves the portal on port 80 and SkyAware remains available via lighttpd on port 8080"
-            log_message "lighttpd retained for SkyAware while Nginx serves the portal"
+        if sudo systemctl stop lighttpd >> "${LOG_FILE}" 2>&1 && \
+           sudo systemctl disable lighttpd >> "${LOG_FILE}" 2>&1; then
+            LIGHTTPD_TAKEOVER_STATUS="lighttpd stopped and disabled; Nginx will own port 80"
+            log_message "lighttpd stopped and disabled"
         else
-            LIGHTTPD_TAKEOVER_STATUS="WARNING: failed to reconfigure lighttpd for coexistence with Nginx"
-            log_message "WARNING: could not reconfigure lighttpd for coexistence with Nginx"
-            echo "Failed to reconfigure lighttpd for coexistence with Nginx" >> "${LOG_FILE}"
-            exit 1
+            LIGHTTPD_TAKEOVER_STATUS="WARNING: failed to stop/disable lighttpd — Nginx may fail to bind port 80"
+            log_message "WARNING: could not stop lighttpd"
         fi
     fi
 
@@ -1044,6 +983,16 @@ SVCEOF
     sudo systemctl enable nginx >> "${LOG_FILE}" 2>&1
 
     if ! sudo systemctl restart nginx >> "${LOG_FILE}" 2>&1; then
+        # Nginx failed to start — attempt lighttpd rollback if we stopped it.
+        if [[ "${LIGHTTPD_ACTIVE_BEFORE}" == "true" ]]; then
+            log_message "Nginx failed; attempting lighttpd rollback..."
+            if sudo systemctl enable lighttpd >> "${LOG_FILE}" 2>&1 && \
+               sudo systemctl start  lighttpd >> "${LOG_FILE}" 2>&1; then
+                LIGHTTPD_TAKEOVER_STATUS="Nginx failed; lighttpd rolled back and re-started"
+            else
+                LIGHTTPD_TAKEOVER_STATUS="Nginx failed AND lighttpd rollback failed — port 80 may be unserved"
+            fi
+        fi
         echo "Nginx failed to restart — see ${LOG_FILE}" >> "${LOG_FILE}"
         exit 1
     fi
@@ -1122,8 +1071,8 @@ Legacy PHP portal detection result:
 
 No legacy data has been modified or deleted." 12 78
 
-whiptail --title "Web Server Status" --msgbox "\
-lighttpd-and-Nginx coexistence result:
+whiptail --title "Web Server Takeover Status" --msgbox "\
+lighttpd-to-Nginx takeover result:
 
     ${LIGHTTPD_TAKEOVER_STATUS}
 

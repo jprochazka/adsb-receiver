@@ -226,7 +226,8 @@ class SettingByNameResource(Resource):
     @setting_ns.response(401, 'Unauthorized')
     @setting_ns.response(404, 'Setting not found')
     @setting_ns.response(500, 'Internal server error')
-    @setting_ns.doc('get_setting_by_name')
+    @setting_ns.doc('get_setting_by_name', security='Bearer')
+    @require_admin()
     def get(self, name):
         """Get setting value by name"""
         if not _is_public_setting_name(name):
