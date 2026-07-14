@@ -21,4 +21,10 @@ build/readsb
 build/tar1090
 build/vdlm2dec
 logs
-.vscode
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

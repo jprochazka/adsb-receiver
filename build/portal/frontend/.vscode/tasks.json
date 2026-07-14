@@ -15,7 +15,7 @@
                 "regexp": "(.*?)"
             },
             "endsPattern": {
-                "regexp": "bundle generation complete"
+                "regexp": "(Application bundle generation complete|Compiled successfully|Local:\\s+https?://)"
             }
             }
         }
@@ -33,7 +33,7 @@
                 "regexp": "(.*?)"
             },
             "endsPattern": {
-                "regexp": "bundle generation complete"
+                "regexp": "(Application bundle generation complete|Compiled successfully|Local:\\s+https?://)"
             }
             }
         }
