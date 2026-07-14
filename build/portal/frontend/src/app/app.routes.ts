@@ -17,22 +17,32 @@ import { FlightsComponent } from './flights/flights.component';
 import { LoginComponent } from './login/login.component';
 import { DevicesComponent } from './devices/devices.component';
 import { RegisterComponent } from './register/register.component';
+import { adminGuard } from './shared/admin.guard';
+import { authGuard } from './shared/auth.guard';
 
 export const routes = [
     { path: '', component: LiveComponent },
-    { path: 'account', component: AccountComponent },
+    { path: 'account', component: AccountComponent, canActivate: [authGuard] },
     { path: 'acars', component: AcarsComponent },
     { path: 'acars/:page', component: AcarsComponent },
-    { path: 'admin/acars', component: AdminAcarsComponent },
-    { path: 'admin/blog', component: AdminBlogComponent },
-    { path: 'admin/flights', component: AdminFlightsComponent },
-    { path: 'admin/devices', component: AdminDevicesComponent },
-    { path: 'admin/live', component: AdminLiveComponent },
-    { path: 'admin/links', component: AdminLinksComponent },
-    { path: 'admin/feeders', component: AdminFeedersComponent },
-    { path: 'admin/scheduler', component: AdminSchedulerComponent },
-    { path: 'admin/x-alert', component: AdminXAlertComponent },
-    { path: 'admin/users', component: AdminUsersComponent },
+    {
+        path: 'admin',
+        canActivateChild: [adminGuard],
+        children: [
+            { path: '', redirectTo: 'live', pathMatch: 'full' },
+            { path: 'acars', component: AdminAcarsComponent },
+            { path: 'blog', component: AdminBlogComponent },
+            { path: 'flights', component: AdminFlightsComponent },
+            { path: 'devices', component: AdminDevicesComponent },
+            { path: 'live', component: AdminLiveComponent },
+            { path: 'links', component: AdminLinksComponent },
+            { path: 'feeders', component: AdminFeedersComponent },
+            { path: 'scheduler', component: AdminSchedulerComponent },
+            { path: 'x-alert', component: AdminXAlertComponent },
+            { path: 'users', component: AdminUsersComponent },
+            { path: '**', redirectTo: 'live' },
+        ],
+    },
     { path: 'blog', component: BlogComponent },
     { path: 'blog/:page', component: BlogComponent },
     { path: 'blog-post/:id', component: BlogComponent },

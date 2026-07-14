@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AdminXAlertComponent } from './admin-x-alert.component';
@@ -32,10 +31,7 @@ describe('AdminXAlertComponent', () => {
     dryRunXAlert: jasmine.createSpy('dryRunXAlert').and.returnValue(of({ result: 'success' })),
     sendXAlert: jasmine.createSpy('sendXAlert').and.returnValue(of({ result: 'success' })),
   };
-  const adminToken = 'eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQWRtaW4iLCJleHAiOjQxMDI0NDQ4MDB9.signature';
-
   beforeEach(async () => {
-    localStorage.setItem('access_token', adminToken);
     Object.values(dataServiceMock).forEach(spy => spy.calls.reset());
     dataServiceMock.getXAlertConfig.and.returnValue(of(config));
     dataServiceMock.updateXAlertConfig.and.returnValue(of(config));
@@ -45,15 +41,13 @@ describe('AdminXAlertComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [AdminXAlertComponent],
-      providers: [provideRouter([]), { provide: DataService, useValue: dataServiceMock }],
+      providers: [{ provide: DataService, useValue: dataServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminXAlertComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
-
-  afterEach(() => localStorage.removeItem('access_token'));
 
   it('loads configuration and compact status', () => {
     expect(component).toBeTruthy();

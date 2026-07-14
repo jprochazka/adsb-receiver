@@ -19,10 +19,10 @@ class SpinnerStubComponent {}
   selector: 'app-rrd-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.Eager,
-  template: '',
+  template: '<span class="chart-title">{{ config?.title }}</span>',
 })
 class RrdChartStubComponent {
-  @Input() config: unknown;
+  @Input() config: { title?: string } | null = null;
   @Input() period = '';
   @Input() refreshMs = 15000;
   @Input() maxPoints: number | null = null;

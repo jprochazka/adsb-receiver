@@ -215,6 +215,36 @@ fi
 sudo cp "${backed_up_config}" "${live_config}"
 
 
+## RESTORE PORTAL SYSTEMD ENV OVERRIDES
+
+backed_up_env_list="${temporary_directory}/systemd/portal_backend_env.list"
+systemd_dropin_dir="/etc/systemd/system/${systemd_service}.d"
+systemd_dropin_file="${systemd_dropin_dir}/portal-env.conf"
+
+if [[ -f "${backed_up_env_list}" ]]; then
+    echo -e "\e[94m  Restoring portal runtime environment settings...\e[97m"
+    sudo mkdir -p "${systemd_dropin_dir}"
+
+    if [[ -f "${systemd_dropin_file}" ]]; then
+        sudo cp "${systemd_dropin_file}" "${systemd_dropin_file}.pre_restore.${restore_date}.bak"
+        echo -e "\e[94m  Existing systemd env drop-in backed up.\e[97m"
+    fi
+
+    {
+        echo "[Service]"
+        while IFS= read -r env_line; do
+            [[ -z "${env_line}" ]] && continue
+            echo "Environment=\"${env_line}\""
+        done < "${backed_up_env_list}"
+    } | sudo tee "${systemd_dropin_file}" >/dev/null
+
+    sudo systemctl daemon-reload
+    echo -e "\e[94m  Portal runtime environment settings restored.\e[97m"
+else
+    echo -e "\e[94m  No saved portal runtime environment settings found in archive.\e[97m"
+fi
+
+
 ## RESTORE DATABASE
 
 if [[ "${db_driver}" == "sqlite" ]]; then

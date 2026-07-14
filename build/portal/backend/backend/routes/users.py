@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from marshmallow import Schema, fields, ValidationError
-from werkzeug.security import generate_password_hash
-from backend.models import BlogComment, FlightComment, UatFlightComment, db, User
-from backend.auth import require_admin, require_user_or_admin, validate_role
+from werkzeug.security import check_password_hash, generate_password_hash
+from backend.models import BlogComment, FlightComment, Notification, UatFlightComment, db, User
+from backend.auth import get_current_user, require_admin, require_user_or_admin, validate_role
 from backend.routes.common import QueryParamError, get_stripped_arg, parse_bool_arg, parse_pagination
 from sqlalchemy import delete, select, func
 from sqlalchemy.exc import IntegrityError
@@ -43,6 +43,13 @@ update_user_model = users_ns.model('UpdateUserRequest', {
     'administrator': restx_fields.Boolean(description='Administrator flag (true/false) for backward compatibility', example=False)
 })
 
+update_current_user_model = users_ns.model('UpdateCurrentUserRequest', {
+    'name': restx_fields.String(required=True, description='User full name'),
+    'email': restx_fields.String(description='User email address'),
+    'password': restx_fields.String(description='New password'),
+    'current_password': restx_fields.String(description='Current password, required when changing password')
+})
+
 users_list_model = users_ns.model('UsersList', {
     'users': restx_fields.List(restx_fields.Nested(user_model)),
     'offset': restx_fields.Integer(description='Pagination offset'),
@@ -77,6 +84,13 @@ class UpdateUserRequestSchema(Schema):
     password = fields.String(required=False)
     administrator = fields.Boolean()  # Keep for backward compatibility
     role = fields.String()  # New role field
+
+
+class UpdateCurrentUserRequestSchema(Schema):
+    name = fields.String(required=True)
+    email = fields.Email()
+    password = fields.String(required=False)
+    current_password = fields.String(required=False, load_only=True)
 
 
 def _role_and_administrator_from_payload(payload):
@@ -196,6 +210,48 @@ def _user_list_totals(search_query):
 
 def _serialize_users(users):
     return [_public_user_dict(user) for user in users]
+
+
+@users_ns.route('/me')
+class CurrentUserResource(Resource):
+    @users_ns.marshal_with(user_model, code=200)
+    @users_ns.doc('get_current_user_profile', security='Bearer')
+    @require_user_or_admin()
+    def get(self):
+        """Get the authenticated user's profile."""
+        return _public_user_dict(get_current_user()), 200
+
+    @users_ns.expect(update_current_user_model, validate=True)
+    @users_ns.marshal_with(user_response_model, code=200)
+    @users_ns.doc('update_current_user_profile', security='Bearer')
+    @require_user_or_admin()
+    def put(self):
+        """Update the authenticated user's profile."""
+        try:
+            payload = UpdateCurrentUserRequestSchema().load(request.json)
+        except ValidationError as err:
+            return {'msg': 'Invalid request data', 'errors': err.messages}, 400
+
+        current_user = get_current_user()
+        email_changed = 'email' in payload and payload['email'] != current_user.email
+        if email_changed or 'password' in payload:
+            current_password = payload.get('current_password', '')
+            if not current_user.password or not check_password_hash(current_user.password, current_password):
+                return {'msg': 'Current password is incorrect'}, 403
+
+        current_user.name = payload['name']
+        if 'email' in payload:
+            current_user.email = payload['email']
+        if 'password' in payload:
+            current_user.password = generate_password_hash(payload['password'])
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return {'msg': 'An account with that email address already exists'}, 409
+
+        return {'msg': 'User updated successfully', 'user': _updated_user_response(current_user)}, 200
 
 
 @users_ns.route('/create')
@@ -412,6 +468,8 @@ class UserResource(Resource):
 
             # Handle UatFlightComments — delete directly
             db.session.execute(delete(UatFlightComment).where(UatFlightComment.user_id == user_id))
+
+            db.session.execute(delete(Notification).where(Notification.user_id == user_id))
 
             db.session.execute(delete(User).where(User.id == user_id))
             db.session.commit()

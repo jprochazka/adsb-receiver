@@ -224,6 +224,7 @@ class TestModels:
         """Test Notification model creation and serialization"""
         with app.app_context():
             notification = Notification(
+                user_id=1,
                 flight='FL001'
             )
             

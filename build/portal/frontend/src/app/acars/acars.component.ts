@@ -50,6 +50,7 @@ export class AcarsComponent implements OnInit {
   modalMsgNo = '';
   modalLabel = '';
   modalTime = '';
+  isTextModalOpen = false;
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -152,6 +153,12 @@ export class AcarsComponent implements OnInit {
     this.modalMsgNo  = msg.message_no || '';
     this.modalLabel  = msg.label || '';
     this.modalTime   = msg.time || '';
+    this.isTextModalOpen = true;
+  }
+
+  closeTextModal(event?: Event): void {
+    event?.stopPropagation();
+    this.isTextModalOpen = false;
   }
 
   truncate(text: string, max = 50): string {

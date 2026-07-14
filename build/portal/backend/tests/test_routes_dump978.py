@@ -13,7 +13,7 @@ def test_get_uat_flight_200(client):
     assert response.json['last_seen'] == '2024-06-17 01:11:01'
     assert response.json['icao'] == 'uicao01'
     assert response.json['aircraft_class'] == 'unknown'
-    assert response.json['ignore_on_purge'] is False
+    assert 'ignore_on_purge' not in response.json
     assert response.json['sightings_count'] == 1
 
 def test_get_uat_flight_404(client):
@@ -147,12 +147,16 @@ def test_get_uat_flights_400_limit_too_high(client):
 
 def test_get_uat_flights_200_ignore_on_purge_true_filter(client, app):
     with app.app_context():
+        access_token = create_admin_token(app)
         from backend.models import Dump978Flight
         flight = db.session.execute(db.select(Dump978Flight).filter_by(flight='UAT0001')).scalar_one()
         flight.ignore_on_purge = True
         db.session.commit()
 
-    response = client.get('/api/uat/flights?ignore_on_purge=true')
+    response = client.get(
+        '/api/uat/flights?ignore_on_purge=true',
+        headers={'Authorization': f'Bearer {access_token}'},
+    )
     assert response.status_code == 200
     assert response.json['count'] == 1
     assert response.json['total'] == 1
@@ -162,7 +166,7 @@ def test_get_uat_flights_200_ignore_on_purge_true_filter(client, app):
 
 def test_get_uat_flights_400_invalid_ignore_on_purge_filter(client):
     response = client.get('/api/uat/flights?ignore_on_purge=maybe')
-    assert response.status_code == 400
+    assert response.status_code == 401
 
 # GET /api/uat/flights/count
 
@@ -262,7 +266,10 @@ def test_update_uat_flight_purge_preference_200_admin(client, app):
     assert response.json['flight'] == 'UAT0001'
     assert response.json['ignore_on_purge'] is True
 
-    verify_response = client.get('/api/uat/flight/UAT0001')
+    verify_response = client.get(
+        '/api/uat/flight/UAT0001',
+        headers={'Authorization': f'Bearer {access_token}'},
+    )
     assert verify_response.status_code == 200
     assert verify_response.json['ignore_on_purge'] is True
 
@@ -309,7 +316,10 @@ def test_purge_uat_flights_ignores_protected_flights(client, app):
 
     assert response.status_code == 200
 
-    verify_response = client.get('/api/uat/flight/UAT0001')
+    verify_response = client.get(
+        '/api/uat/flight/UAT0001',
+        headers={'Authorization': f'Bearer {access_token}'},
+    )
     assert verify_response.status_code == 200
     assert verify_response.json['ignore_on_purge'] is True
 
@@ -477,3 +487,18 @@ def test_delete_uat_flight_comment_204_admin(client, app):
         headers={'Authorization': f'Bearer {admin_token}'}
     )
     assert delete_response.status_code == 200
+
+
+def test_delete_uat_flight_comment_owner_allowed_other_user_denied(client, app):
+    with app.app_context():
+        owner_token = create_user_token(app)
+        other_token = create_another_user_token(app)
+
+    created = client.post(
+        '/api/uat/flight/UAT0001/comments',
+        json={'content': 'Owned comment.'},
+        headers={'Authorization': f'Bearer {owner_token}'},
+    )
+    comment_url = f"/api/uat/flight/UAT0001/comments/{created.json['id']}"
+    assert client.delete(comment_url, headers={'Authorization': f'Bearer {other_token}'}).status_code == 403
+    assert client.delete(comment_url, headers={'Authorization': f'Bearer {owner_token}'}).status_code == 200

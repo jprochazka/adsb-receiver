@@ -28,6 +28,7 @@ For the legacy PHP/lighttpd portal see
 | RRD files | Each `.rrd` file under the configured `graphs.rrd_base` path is exported to XML using `rrdtool dump`. Stored as XML for portability across rrdtool versions. |
 | OpenSky classification cache | `instance/opensky/` directory. Contains aircraft classification data fetched from OpenSky Network. Optional — the backend rebuilds this cache automatically if absent. |
 | ACARS database | The SQLite database configured via `acars.database` in `config.yml`, if present. |
+| Portal runtime env overrides | `PORTAL_BACKEND_VERSION`, `PORTAL_API_DOCS_ENABLED`, and `PORTAL_CORS_ORIGINS` from `adsb-portal-backend.service` are saved when explicitly set. |
 
 **Not backed up:** The Angular frontend (`/var/www/adsb-portal`) is a build
 artefact produced by `npm run build`. It is not backed up because it can
@@ -59,17 +60,19 @@ The backup is written to:
 ```
 <archive>.tar.gz
 └── ./
-    ├── config.yml
-    ├── instance/
-    │   ├── adsbportal.sqlite3      # sqlite driver only
-    │   ├── opensky/                # if present
-    │   │   └── ...
-    │   └── acarsdec.sqlite         # if configured and present
-    ├── <mysql_database_name>.sql   # mysql driver only
-    ├── <pgsql_database_name>.sql   # postgresql driver only
-    └── rrd/
-        └── <path_relative_to_backend_dir>/
-            └── *.xml               # one XML file per RRD
+   ├── config.yml
+   ├── systemd/
+   │   └── portal_backend_env.list  # optional; saved PORTAL_* runtime overrides
+   ├── instance/
+   │   ├── adsbportal.sqlite3      # sqlite driver only
+   │   ├── opensky/                # if present
+   │   │   └── ...
+   │   └── acarsdec.sqlite         # if configured and present
+   ├── <mysql_database_name>.sql   # mysql driver only
+   ├── <pgsql_database_name>.sql   # postgresql driver only
+   └── rrd/
+      └── <path_relative_to_backend_dir>/
+         └── *.xml               # one XML file per RRD
 ```
 
 ### What happens during backup
@@ -91,8 +94,11 @@ The backup is written to:
    the exact target location.
 7. The OpenSky cache directory is copied if present.
 8. The ACARS database is copied if configured and present.
-9. The backend service is **restarted**.
-10. The staging directory is compressed to a `.tar.gz` archive and removed.
+9. Runtime env overrides (`PORTAL_BACKEND_VERSION`,
+   `PORTAL_API_DOCS_ENABLED`, `PORTAL_CORS_ORIGINS`) are read from the
+   systemd service unit and saved when present.
+10. The backend service is **restarted**.
+11. The staging directory is compressed to a `.tar.gz` archive and removed.
 
 ---
 
@@ -140,11 +146,15 @@ was in use when the backup was taken.
    file is saved as a `.pre_restore.<date>.bak` before being replaced.
 9. The OpenSky cache directory is restored if present in the archive.
 10. The ACARS database is restored if present in the archive.
-11. Ownership is set to `www-data:www-data` on the `instance/` directory
+11. If present in the archive, saved runtime env overrides are restored via
+   a systemd drop-in at
+   `/etc/systemd/system/adsb-portal-backend.service.d/portal-env.conf`, then
+   `systemctl daemon-reload` is run.
+12. Ownership is set to `www-data:www-data` on the `instance/` directory
     and the RRD base directory.
-12. The `adsb-portal-backend.service` is restarted. If it fails to start,
+13. The `adsb-portal-backend.service` is restarted. If it fails to start,
     a `journalctl` command is shown for diagnosis.
-13. The temporary extraction directory is removed.
+14. The temporary extraction directory is removed.
 
 ### Pre-restore backups
 

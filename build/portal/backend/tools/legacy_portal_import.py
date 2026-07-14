@@ -353,6 +353,30 @@ def _import_links_sqlite(conn: sqlite3.Connection, src_path: str, prefix: str,
 def _import_notifications_xml(conn: sqlite3.Connection, xml_files: dict,
                                dry_run: bool) -> dict:
     records = _xml_records(xml_files.get("notifications"), "flight")
+    notification_columns = {
+        row[1] for row in conn.execute("PRAGMA table_info(notifications)").fetchall()
+    }
+    if "user_id" not in notification_columns:
+        imported = skipped = failed = 0
+        for el in records:
+            flight = _text(el, "flight").strip()
+            if not flight:
+                failed += 1
+                continue
+            if conn.execute("SELECT id FROM notifications WHERE flight = ?", (flight,)).fetchone():
+                skipped += 1
+                continue
+            if not dry_run:
+                conn.execute("INSERT INTO notifications (flight) VALUES (?)", (flight,))
+            imported += 1
+        return {"imported": imported, "skipped": skipped, "failed": failed}
+
+    owner = conn.execute(
+        "SELECT id FROM users WHERE role = 'Admin' OR administrator = 1 ORDER BY id LIMIT 1"
+    ).fetchone()
+    if not owner:
+        return {"imported": 0, "skipped": 0, "failed": len(records)}
+    user_id = owner[0]
     imported = skipped = failed = 0
     for el in records:
         flight = _text(el, "flight").strip()
@@ -360,13 +384,16 @@ def _import_notifications_xml(conn: sqlite3.Connection, xml_files: dict,
             failed += 1
             continue
         existing = conn.execute(
-            "SELECT id FROM notifications WHERE flight = ?", (flight,)
+            "SELECT id FROM notifications WHERE user_id = ? AND flight = ?", (user_id, flight)
         ).fetchone()
         if existing:
             skipped += 1
             continue
         if not dry_run:
-            conn.execute("INSERT INTO notifications (flight) VALUES (?)", (flight,))
+            conn.execute(
+                "INSERT INTO notifications (user_id, flight) VALUES (?, ?)",
+                (user_id, flight),
+            )
         imported += 1
     return {"imported": imported, "skipped": skipped, "failed": failed}
 
@@ -374,6 +401,30 @@ def _import_notifications_xml(conn: sqlite3.Connection, xml_files: dict,
 def _import_notifications_sqlite(conn: sqlite3.Connection, src_path: str,
                                   prefix: str, dry_run: bool) -> dict:
     rows = _sqlite_rows(src_path, prefix, "flightNotifications", ["id", "flight"])
+    notification_columns = {
+        row[1] for row in conn.execute("PRAGMA table_info(notifications)").fetchall()
+    }
+    if "user_id" not in notification_columns:
+        imported = skipped = failed = 0
+        for row in rows:
+            flight = (row.get("flight") or "").strip()
+            if not flight:
+                failed += 1
+                continue
+            if conn.execute("SELECT id FROM notifications WHERE flight = ?", (flight,)).fetchone():
+                skipped += 1
+                continue
+            if not dry_run:
+                conn.execute("INSERT INTO notifications (flight) VALUES (?)", (flight,))
+            imported += 1
+        return {"imported": imported, "skipped": skipped, "failed": failed}
+
+    owner = conn.execute(
+        "SELECT id FROM users WHERE role = 'Admin' OR administrator = 1 ORDER BY id LIMIT 1"
+    ).fetchone()
+    if not owner:
+        return {"imported": 0, "skipped": 0, "failed": len(rows)}
+    user_id = owner[0]
     imported = skipped = failed = 0
     for row in rows:
         flight = (row.get("flight") or "").strip()
@@ -381,13 +432,16 @@ def _import_notifications_sqlite(conn: sqlite3.Connection, src_path: str,
             failed += 1
             continue
         existing = conn.execute(
-            "SELECT id FROM notifications WHERE flight = ?", (flight,)
+            "SELECT id FROM notifications WHERE user_id = ? AND flight = ?", (user_id, flight)
         ).fetchone()
         if existing:
             skipped += 1
             continue
         if not dry_run:
-            conn.execute("INSERT INTO notifications (flight) VALUES (?)", (flight,))
+            conn.execute(
+                "INSERT INTO notifications (user_id, flight) VALUES (?, ?)",
+                (user_id, flight),
+            )
         imported += 1
     return {"imported": imported, "skipped": skipped, "failed": failed}
 

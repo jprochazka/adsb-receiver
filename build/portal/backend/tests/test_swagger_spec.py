@@ -116,3 +116,37 @@ def test_swagger_documents_acars_read_endpoints(client):
     assert set(_operation(spec, '/acars/messages/count', 'get')['responses']) >= {'200', '500', '503'}
 
     assert _query_param_names(spec, '/acars/flights/purge', 'delete') == {'days'}
+
+
+def test_swagger_documents_x_alert_endpoints(client):
+    spec = _swagger_spec(client)
+
+    config_get = _operation(spec, '/x-alert/config')
+    assert config_get['operationId'] == 'get_x_alert_config'
+    assert config_get['security'] == [{'Bearer': []}]
+    assert _response_schema_ref(spec, '/x-alert/config', 'get') == '#/definitions/XAlertConfig'
+    assert set(config_get['responses']) >= {'200', '401', '403'}
+
+    config_put = _operation(spec, '/x-alert/config', 'put')
+    assert config_put['operationId'] == 'update_x_alert_config'
+    assert config_put['security'] == [{'Bearer': []}]
+    assert next(parameter for parameter in config_put['parameters'] if parameter['in'] == 'body')[
+        'schema'
+    ]['$ref'] == '#/definitions/UpdateXAlertConfig'
+    assert _response_schema_ref(spec, '/x-alert/config', 'put') == '#/definitions/XAlertConfig'
+    assert set(config_put['responses']) >= {'200', '400', '401', '403'}
+
+    status = _operation(spec, '/x-alert/status')
+    assert status['operationId'] == 'get_x_alert_status'
+    assert _response_schema_ref(spec, '/x-alert/status', 'get') == '#/definitions/XAlertStatus'
+    assert set(status['responses']) >= {'200', '401', '403'}
+
+    dry_run = _operation(spec, '/x-alert/dry-run', 'post')
+    assert dry_run['operationId'] == 'dry_run_x_alert'
+    assert _response_schema_ref(spec, '/x-alert/dry-run', 'post') == '#/definitions/XAlertCycleResult'
+    assert set(dry_run['responses']) >= {'200', '401', '403'}
+
+    send = _operation(spec, '/x-alert/send', 'post')
+    assert send['operationId'] == 'send_x_alert'
+    assert _response_schema_ref(spec, '/x-alert/send', 'post') == '#/definitions/XAlertCycleResult'
+    assert set(send['responses']) >= {'200', '401', '403', '502'}

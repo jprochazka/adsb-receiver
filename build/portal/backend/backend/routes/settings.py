@@ -60,23 +60,29 @@ OPENSKY_LICENSE_NAME = 'Open Database License (ODbL) v1.0'
 OPENSKY_LICENSE_URL = 'https://opendatacommons.org/licenses/odbl/'
 OPENSKY_ATTRIBUTION = 'Contains information from OpenSky Network aircraft database (ODbL v1.0).'
 
-_PUBLIC_SETTING_PREFIXES = (
-    'live_map_',
-    'graphs_',
-    'info_',
-    'map_',
-    'flights_',
-    'acars_',
-    'blog_',
-    'links_',
-    'all_tab_',
-    'adsb_tab_',
-    'uat_tab_',
-)
+_PUBLIC_SETTING_NAMES = {
+    'acars_nav_enabled', 'adsb_tab_enabled', 'all_tab_enabled',
+    'blog_nav_enabled', 'flights_nav_enabled', 'graphs_dump1090_enabled',
+    'graphs_dump978_enabled', 'graphs_measurement_range',
+    'graphs_measurement_temperature', 'graphs_network_interface',
+    'graphs_refresh_interval_ms', 'info_graphs_enabled', 'info_nav_enabled',
+    'info_stats_enabled', 'info_system_enabled', 'links_nav_enabled',
+    'live_map_center_icon_enabled', 'live_map_center_lat', 'live_map_center_lon',
+    'live_map_custom_presets', 'live_map_default_zoom',
+    'live_map_distance_ring_compass_lines_enabled', 'live_map_distance_ring_count',
+    'live_map_distance_ring_interval_miles', 'live_map_distance_rings_enabled',
+    'live_map_enabled', 'live_map_heywhatsthat_rings_enabled',
+    'live_map_heywhatsthat_rings_json', 'live_map_show_all_seen',
+    'live_map_spider_overlay_enabled', 'live_map_theoretical_range_enabled',
+    'live_map_theoretical_range_json', 'live_map_trail_points',
+    'map_adsbx_enabled', 'map_dump1090_enabled', 'map_dump978_enabled',
+    'map_links_order', 'map_nav_enabled', 'map_pfclient_enabled',
+    'uat_tab_enabled',
+}
 
 
 def _is_public_setting_name(name: str) -> bool:
-    return any(name.startswith(prefix) for prefix in _PUBLIC_SETTING_PREFIXES)
+    return name in _PUBLIC_SETTING_NAMES
 
 
 def _require_admin_setting_read():
@@ -227,7 +233,6 @@ class SettingByNameResource(Resource):
     @setting_ns.response(404, 'Setting not found')
     @setting_ns.response(500, 'Internal server error')
     @setting_ns.doc('get_setting_by_name', security='Bearer')
-    @require_admin()
     def get(self, name):
         """Get setting value by name"""
         if not _is_public_setting_name(name):

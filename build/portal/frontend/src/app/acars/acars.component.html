@@ -28,6 +28,7 @@
   @if (!loading) {
     <div>
       <!-- Flights table -->
+      <div class="table-responsive mobile-table-wrap">
       <table class="table table-hover align-middle">
         <thead>
           <tr>
@@ -72,6 +73,7 @@
                     @if (!messagesLoading) {
                       <div>
                         @if (messages.length > 0) {
+                          <div class="table-responsive mobile-table-wrap">
                           <table class="table table-sm table-striped mb-2">
                             <thead>
                               <tr>
@@ -107,8 +109,6 @@
                                       <a
                                         class="font-monospace text-decoration-none"
                                         href="#"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#acarsTextModal"
                                         (click)="openTextModal(msg, $event)"
                                       title="View full message">{{ truncate(msg.text) }}</a>
                                     }
@@ -117,6 +117,7 @@
                               }
                             </tbody>
                           </table>
+                          </div>
                         }
                         @if (messages.length === 0) {
                           <p class="text-secondary mb-2">No messages found.</p>
@@ -166,6 +167,7 @@
           }
         </tbody>
       </table>
+      </div>
       @if (filteredFlights.length === 0) {
         <p class="text-secondary">No ACARS flights found.</p>
       }
@@ -210,9 +212,16 @@
 </div>
 
 <!-- ACARS message text modal -->
-<div class="modal fade" id="acarsTextModal" tabindex="-1" aria-labelledby="acarsTextModalLabel" aria-hidden="true">
+<div
+  class="modal"
+  [class.show]="isTextModalOpen"
+  [style.display]="isTextModalOpen ? 'block' : 'none'"
+  tabindex="-1"
+  aria-labelledby="acarsTextModalLabel"
+  [attr.aria-hidden]="!isTextModalOpen"
+  (click)="closeTextModal($event)">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
+    <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h5 class="modal-title" id="acarsTextModalLabel">
           Message {{ modalMsgNo }}
@@ -220,15 +229,18 @@
             <span class="badge bg-secondary ms-2">{{ modalLabel }}</span>
           }
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" (click)="closeTextModal($event)" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p class="text-secondary small mb-2">{{ modalTime }}</p>
         <pre class="acars-modal-text">{{ modalText }}</pre>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" (click)="closeTextModal($event)">Close</button>
       </div>
     </div>
   </div>
 </div>
+@if (isTextModalOpen) {
+  <div class="modal-backdrop fade show"></div>
+}

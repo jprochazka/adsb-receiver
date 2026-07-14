@@ -1,7 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
-import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { AdminSchedulerComponent } from './admin-scheduler.component';
@@ -10,7 +8,6 @@ import { DataService } from '../service/data.service';
 describe('AdminSchedulerComponent', () => {
   let component: AdminSchedulerComponent;
   let fixture: ComponentFixture<AdminSchedulerComponent>;
-  let router: Router;
 
   const dataServiceMock = {
     getSchedulerStatus: jasmine.createSpy('getSchedulerStatus').and.returnValue(of({ state: 'STATE_RUNNING' })),
@@ -24,12 +21,7 @@ describe('AdminSchedulerComponent', () => {
     resumeSchedulerJob: jasmine.createSpy('resumeSchedulerJob').and.returnValue(of({})),
   };
 
-  const adminToken =
-    'eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQWRtaW4iLCJleHAiOjQxMDI0NDQ4MDB9.signature';
-
   beforeEach(async () => {
-    localStorage.setItem('access_token', adminToken);
-
     dataServiceMock.getSchedulerStatus.calls.reset();
     dataServiceMock.getSchedulerStatus.and.returnValue(of({ state: 'STATE_RUNNING' }));
     dataServiceMock.getSchedulerJobs.calls.reset();
@@ -52,19 +44,13 @@ describe('AdminSchedulerComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AdminSchedulerComponent],
       providers: [
-        provideRouter([]),
         { provide: DataService, useValue: dataServiceMock },
       ],
     }).compileComponents();
 
-    router = TestBed.inject(Router);
     fixture = TestBed.createComponent(AdminSchedulerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
-
-  afterEach(() => {
-    localStorage.removeItem('access_token');
   });
 
   it('should create', () => {
@@ -179,15 +165,6 @@ describe('AdminSchedulerComponent', () => {
 
     component.schedulerStatus = { state: 'custom-state' };
     expect(component.schedulerStateLabel()).toBe('custom-state');
-  });
-
-  it('should redirect non-admin users to login', () => {
-    localStorage.removeItem('access_token');
-    const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
-
-    component.ngOnInit();
-
-    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
   });
 
   it('should normalize non-array jobs to empty array', () => {

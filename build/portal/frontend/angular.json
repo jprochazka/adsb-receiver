@@ -38,9 +38,6 @@
             "styles": [
               "src/styles.scss",
               "node_modules/ol/ol.css"
-            ],
-            "scripts": [
-              "./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
             ]
           },
           "configurations": {
@@ -106,9 +103,6 @@
             ],
             "styles": [
               "node_modules/ol/ol.css"
-            ],
-            "scripts": [
-              "./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
             ]
           }
         }

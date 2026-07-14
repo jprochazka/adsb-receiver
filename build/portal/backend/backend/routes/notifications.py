@@ -4,7 +4,7 @@ import datetime
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Notification, Flight, Dump978Flight, Setting
-from backend.auth import require_user_or_admin
+from backend.auth import get_current_user, require_user_or_admin
 from backend.config_loader import get_acars_config
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -41,12 +41,15 @@ class NotificationResource(Resource):
         """Create a flight notification (authenticated user or admin)"""
         try:
             # Check if notification already exists
-            existing_notification = db.session.execute(select(Notification).filter_by(flight=flight)).scalar_one_or_none()
+            current_user = get_current_user()
+            existing_notification = db.session.execute(
+                select(Notification).filter_by(user_id=current_user.id, flight=flight)
+            ).scalar_one_or_none()
             
             if existing_notification:
                 return {'msg': 'Conflict - Notification already exists'}, 409
                 
-            new_notification = Notification(flight=flight)
+            new_notification = Notification(user_id=current_user.id, flight=flight)
             db.session.add(new_notification)
             db.session.commit()
             return {'msg': 'Notification created successfully'}, 201
@@ -68,7 +71,10 @@ class NotificationResource(Resource):
     def delete(self, flight):
         """Delete a flight notification (authenticated user or admin)"""
         try:
-            notification = db.session.execute(select(Notification).filter_by(flight=flight)).scalar_one_or_none()
+            current_user = get_current_user()
+            notification = db.session.execute(
+                select(Notification).filter_by(user_id=current_user.id, flight=flight)
+            ).scalar_one_or_none()
             
             if not notification:
                 return {'msg': 'Notification not found'}, 404
@@ -102,8 +108,10 @@ class NotificationsListResource(Resource):
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
             
         try:
+            current_user = get_current_user()
             notifications_result = db.session.execute(
                 select(Notification)
+                .where(Notification.user_id == current_user.id)
                 .order_by(Notification.id)
                 .offset(offset)
                 .limit(limit)
@@ -155,8 +163,11 @@ class RecentNotificationsResource(Resource):
             cutoff_str = cutoff.strftime('%Y-%m-%d %H:%M:%S')
 
             # Get all monitored callsigns from the notifications table
+            current_user = get_current_user()
             monitored = [
-                n.flight for n in db.session.execute(select(Notification)).scalars()
+                n.flight for n in db.session.execute(
+                    select(Notification).where(Notification.user_id == current_user.id)
+                ).scalars()
             ]
 
             if not monitored:

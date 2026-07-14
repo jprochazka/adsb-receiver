@@ -17,8 +17,19 @@ def test_delete_notification_204_user(client, app):
         request_headers = {
             'Authorization': 'Bearer {}'.format(access_token),
         }
+        create_response = client.post('/api/notifications/FLT0013', headers=request_headers)
+        assert create_response.status_code == 201
         response = client.delete('/api/notifications/FLT0013', headers=request_headers)
         assert response.status_code == 204
+
+        admin_token = create_admin_token(app)
+        admin_response = client.get(
+            '/api/notifications',
+            headers={'Authorization': f'Bearer {admin_token}'},
+        )
+        assert [item['flight'] for item in admin_response.json['notifications']] == [
+            'FLT0011', 'FLT0012', 'FLT0013'
+        ]
 
 def test_delete_notification_401(client):
     response = client.delete('/api/notifications/FLT0013')

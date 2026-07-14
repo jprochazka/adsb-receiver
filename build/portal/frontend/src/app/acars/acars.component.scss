@@ -42,4 +42,32 @@
     margin: 0;
 }
 
+.mobile-table-wrap {
+    max-width: 100%;
+}
+
+@media (max-width: 575.98px) {
+    .row.align-items-end {
+        align-items: stretch !important;
+    }
+
+    .row.align-items-end > .col,
+    .row.align-items-end > .col-md-auto {
+        width: 100%;
+    }
+
+    .per-page-select {
+        width: 100%;
+    }
+
+    .mobile-table-wrap .table {
+        font-size: 0.9rem;
+        min-width: 620px;
+    }
+
+    .acars-text {
+        max-width: 12rem;
+    }
+}
+
 

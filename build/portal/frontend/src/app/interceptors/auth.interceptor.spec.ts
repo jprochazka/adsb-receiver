@@ -17,6 +17,7 @@ describe('authInterceptor', () => {
   beforeEach(() => {
     localStorage.clear();
     routerMock.navigate.calls.reset();
+    routerMock.url = '/devices';
 
     TestBed.configureTestingModule({
       providers: [
@@ -74,5 +75,23 @@ describe('authInterceptor', () => {
 
     expect(localStorage.getItem('access_token')).toBeNull();
     expect(localStorage.getItem('refresh_token')).toBeNull();
+  });
+
+  it('clears a stale admin session on an admin-role 403', () => {
+    const validPayload = btoa(JSON.stringify({ exp: 4102444800, role: 'Admin' }));
+    localStorage.setItem('access_token', `header.${validPayload}.sig`);
+    routerMock.url = '/admin/users';
+
+    http.get('/admin-endpoint', {
+      headers: new HttpHeaders({ Authorization: 'Bearer test-token' }),
+    }).subscribe({ next: fail, error: () => {} });
+
+    httpMock.expectOne('/admin-endpoint').flush(
+      { msg: 'Admin access required' },
+      { status: 403, statusText: 'Forbidden' },
+    );
+
+    expect(localStorage.getItem('access_token')).toBeNull();
+    expect(routerMock.navigate).toHaveBeenCalled();
   });
 });

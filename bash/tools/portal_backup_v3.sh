@@ -187,6 +187,26 @@ echo -e "\e[94m  Backing up config.yml...\e[97m"
 cp "${config_file}" "${temporary_directory}/config.yml"
 
 
+## BACK UP PORTAL SYSTEMD ENV OVERRIDES
+
+echo -e "\e[94m  Backing up portal runtime environment settings from ${systemd_service}...\e[97m"
+mkdir -p "${temporary_directory}/systemd"
+if systemctl cat "${systemd_service}" >/dev/null 2>&1; then
+    systemctl cat "${systemd_service}" 2>/dev/null \
+        | sed -nE 's/^[[:space:]]*Environment="(PORTAL_(BACKEND_VERSION|API_DOCS_ENABLED|CORS_ORIGINS)=[^"]*)"$/\1/p' \
+        > "${temporary_directory}/systemd/portal_backend_env.list"
+
+    if [[ -s "${temporary_directory}/systemd/portal_backend_env.list" ]]; then
+        echo -e "\e[94m  Saved portal env overrides.\e[97m"
+    else
+        rm -f "${temporary_directory}/systemd/portal_backend_env.list"
+        echo -e "\e[94m  No explicit portal env overrides found in the systemd unit.\e[97m"
+    fi
+else
+    echo -e "\e[93m  WARNING: Could not read ${systemd_service}; skipping portal env backup.\e[97m"
+fi
+
+
 ## BACK UP DATABASE
 
 if [[ "${db_driver}" == "sqlite" ]]; then

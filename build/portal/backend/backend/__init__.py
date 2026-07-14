@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import Flask, jsonify, redirect, request
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager, get_jwt, verify_jwt_in_request
+from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_restx import Api
 from backend.jobs.dump1090_data_collection import dump1090_data_collection_job
@@ -25,6 +25,7 @@ from backend.routes.tokens import tokens, auth_ns
 from backend.routes.users import users, users_ns
 from backend.routes.x_alert import x_alert_ns
 from backend.models import db
+from backend.auth import validate_current_user
 from backend.config_loader import get_database_config, get_security_config, load_portal_config
 
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -77,7 +78,10 @@ def _configure_json(app):
 
 
 def _configure_cors(app):
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    configured_origins = os.environ.get('PORTAL_CORS_ORIGINS', '')
+    origins = [origin.strip() for origin in configured_origins.split(',') if origin.strip()]
+    if origins:
+        CORS(app, resources={r"/api/*": {"origins": origins}})
 
 
 def _register_index_route(app):
@@ -87,12 +91,13 @@ def _register_index_route(app):
 
 
 def _create_api(app):
+    docs_enabled = os.environ.get('PORTAL_API_DOCS_ENABLED', 'true').lower() in ('1', 'true', 'yes')
     return Api(
         app,
         version=BACKEND_VERSION,
         title='ADS-B Receiver Portal API',
         description='A comprehensive API for managing ADS-B receiver data, flights, and system administration',
-        doc='/api/docs/',
+        doc='/api/docs/' if docs_enabled else False,
         prefix='/api',
         authorizations={
             'Bearer': {
@@ -185,10 +190,12 @@ def _protect_scheduler_api(app):
         if request.method == 'OPTIONS':
             return None
 
-        verify_jwt_in_request()
-        claims = get_jwt()
-        if claims.get('role') != 'Admin':
-            return jsonify({'msg': 'Admin access required'}), 403
+        try:
+            _, auth_error = validate_current_user('Admin')
+            if auth_error:
+                return jsonify(auth_error[0]), auth_error[1]
+        except Exception:
+            return jsonify({'msg': 'Invalid token'}), 401
 
         return None
 

@@ -3,6 +3,7 @@ import json
 from unittest.mock import patch, MagicMock
 from conftest import create_admin_token
 from io import BytesIO
+from backend import create_app
 
 
 @pytest.fixture
@@ -200,7 +201,7 @@ class TestDevicesRoutes:
         data = json.loads(response.data)
         
         assert data['other_boot_time'] == 1640995200.0
-        assert data['other_users'] == []
+        assert 'other_users' not in data
 
     @patch('backend.routes.devices.config', {'database': {'use': 'SQLite'}})
     @patch('backend.routes.devices.os.path.getsize')
@@ -345,10 +346,11 @@ class TestDevicesRoutes:
             data = response.get_json()
             
             # Check for expected keys
-            expected_keys = ['other_boot_time', 'other_users']
+            expected_keys = ['other_boot_time']
             
             for key in expected_keys:
                 assert key in data, f"Missing key {key} in other endpoint response"
+            assert 'other_users' not in data
 
     def test_database_endpoint_structure(self, client):
         """Test database endpoint returns expected structure when working"""
@@ -371,23 +373,31 @@ class TestDevicesRoutes:
         response = client.post('/api/devices/cpu')
         assert response.status_code == 405  # Method Not Allowed
 
-    def test_cors_headers_consistency(self, client):
-        """Test that all system endpoints have consistent CORS headers"""
-        endpoints = [
+    def test_cors_disabled_by_default(self, client):
+        response = client.get('/api/devices/cpu', headers={'Origin': 'https://untrusted.example'})
+
+        assert 'Access-Control-Allow-Origin' not in response.headers
+
+    def test_cors_allows_only_configured_origin(self, monkeypatch):
+        monkeypatch.setenv('PORTAL_CORS_ORIGINS', 'https://portal.example')
+        app = create_app({
+            'TESTING': True,
+            'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+            'JWT_SECRET_KEY': 'test-secret-key',
+        })
+        configured_client = app.test_client()
+
+        trusted = configured_client.get(
             '/api/devices/cpu',
-            '/api/devices/memory', 
-            '/api/devices/disk',
-            '/api/devices/network',
-            '/api/devices/other',
-            '/api/devices/database'
-        ]
-        
-        for endpoint in endpoints:
-            response = client.get(endpoint)
-            
-            if response.status_code in [200, 500]:  # Skip 404s
-                assert 'Access-Control-Allow-Origin' in response.headers
-                assert response.headers['Access-Control-Allow-Origin'] == '*'
+            headers={'Origin': 'https://portal.example'},
+        )
+        untrusted = configured_client.get(
+            '/api/devices/cpu',
+            headers={'Origin': 'https://untrusted.example'},
+        )
+
+        assert trusted.headers['Access-Control-Allow-Origin'] == 'https://portal.example'
+        assert 'Access-Control-Allow-Origin' not in untrusted.headers
 
     def test_response_content_type(self, client):
         """Test that system endpoints return correct content type"""
@@ -554,7 +564,8 @@ class TestDevicesRoutes:
         data = response.get_json()
         assert data['dump1090'] is not None
         assert data['dump1090']['version'] == 'v9.0'
-        assert data['dump1090']['lat'] == 40.0
+        assert 'lat' not in data['dump1090']
+        assert 'lon' not in data['dump1090']
         assert data['dump1090']['signal'] == -3.5
 
     @patch('backend.routes.devices.urlopen')

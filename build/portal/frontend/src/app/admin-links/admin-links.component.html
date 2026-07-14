@@ -97,6 +97,7 @@
       }
       <!-- Links table with drag-and-drop reordering -->
       @if (links.length > 0) {
+        <div class="table-responsive mobile-table-wrap">
         <table class="table table-striped align-middle">
           <thead>
             <tr>
@@ -129,6 +130,7 @@
             }
           </tbody>
         </table>
+        </div>
       }
       @if (links.length === 0) {
         <p class="text-muted">No links yet.</p>

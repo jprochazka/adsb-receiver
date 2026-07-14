@@ -1,0 +1,33 @@
+.mobile-table-wrap {
+	max-width: 100%;
+}
+
+@media (max-width: 575.98px) {
+	.d-flex.justify-content-between.align-items-center.mb-2 {
+		flex-direction: column;
+		align-items: stretch !important;
+		gap: 0.5rem;
+	}
+
+	.d-flex.justify-content-between.align-items-center.mb-2 h1 {
+		margin-bottom: 0;
+	}
+
+	.d-flex.justify-content-between.align-items-center.mb-2 .btn {
+		width: 100%;
+	}
+
+	.mobile-table-wrap .table {
+		min-width: 560px;
+		font-size: 0.9rem;
+	}
+
+	.mobile-table-wrap td:nth-child(3) a {
+		overflow-wrap: anywhere;
+		word-break: break-word;
+	}
+
+	.mobile-table-wrap td.text-end {
+		white-space: nowrap;
+	}
+}

@@ -9,9 +9,9 @@ describe('AccountComponent', () => {
   let fixture: ComponentFixture<AccountComponent>;
 
   const dataServiceMock = {
-    getUser: jasmine.createSpy('getUser').and.returnValue(of({ id: 7, name: 'Jane', email: 'jane@example.com' })),
+    getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(of({ id: 7, name: 'Jane', email: 'jane@example.com' })),
     getNotifications: jasmine.createSpy('getNotifications').and.returnValue(of({ notifications: [{ flight: 'AAL123' }] })),
-    updateUser: jasmine.createSpy('updateUser').and.returnValue(of({})),
+    updateCurrentUser: jasmine.createSpy('updateCurrentUser').and.returnValue(of({})),
     createNotification: jasmine.createSpy('createNotification').and.returnValue(of({})),
     deleteNotification: jasmine.createSpy('deleteNotification').and.returnValue(of({})),
   };
@@ -39,7 +39,7 @@ describe('AccountComponent', () => {
   });
 
   it('should load profile and notifications on init', () => {
-    expect(dataServiceMock.getUser).toHaveBeenCalledWith(7);
+    expect(dataServiceMock.getCurrentUser).toHaveBeenCalled();
     expect(component.name).toBe('Jane');
     expect(component.email).toBe('jane@example.com');
     expect(component.notifications).toBe('AAL123');
@@ -49,12 +49,14 @@ describe('AccountComponent', () => {
   it('should save profile changes', () => {
     component.name = 'Jane Doe';
     component.email = 'jane.doe@example.com';
+    component.currentPassword = 'oldpass';
 
     component.saveProfile();
 
-    expect(dataServiceMock.updateUser).toHaveBeenCalledWith(7, {
+    expect(dataServiceMock.updateCurrentUser).toHaveBeenCalledWith({
       name: 'Jane Doe',
       email: 'jane.doe@example.com',
+      current_password: 'oldpass',
     });
     expect(component.profileSuccess).toBe('Profile updated successfully.');
   });
@@ -79,9 +81,10 @@ describe('AccountComponent', () => {
 
     component.changePassword();
 
-    expect(dataServiceMock.updateUser).toHaveBeenCalledWith(7, {
+    expect(dataServiceMock.updateCurrentUser).toHaveBeenCalledWith({
       name: 'Jane',
       password: 'password123',
+      current_password: 'oldpass',
     });
     expect(component.authSuccess).toBe('Password updated successfully.');
     expect(component.currentPassword).toBe('');

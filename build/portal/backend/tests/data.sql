@@ -32,11 +32,11 @@ VALUES
   ('Link Two', 'https://adsbportal.com/two', 3),
   ('Link Three', 'https://adsbportal.com/three', 2);
 
-INSERT INTO notifications (flight)
+INSERT INTO notifications (user_id, flight)
 VALUES
-  ('FLT0011'),
-  ('FLT0012'),
-  ('FLT0013');
+  (1, 'FLT0011'),
+  (1, 'FLT0012'),
+  (1, 'FLT0013');
 
 INSERT INTO dump1090_positions (flight, aircraft, time, message, squawk, latitude, longitude, track, altitude, vertical_rate, speed)
 VALUES

@@ -1,10 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
-import { isAdminAccessToken } from '../shared/auth-session';
 
 @Component({
   selector: 'app-admin-scheduler',
@@ -25,13 +23,9 @@ export class AdminSchedulerComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private dataService: DataService, private router: Router) {}
+  constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
-    if (!this.isAdmin()) {
-      this.router.navigate(['/login']);
-      return;
-    }
     this.refresh();
   }
 
@@ -180,7 +174,4 @@ export class AdminSchedulerComponent implements OnInit {
     });
   }
 
-  private isAdmin(): boolean {
-    return isAdminAccessToken();
-  }
 }

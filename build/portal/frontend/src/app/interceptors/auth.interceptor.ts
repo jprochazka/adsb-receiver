@@ -25,6 +25,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error instanceof HttpErrorResponse && error.status === 401 && hasAuthHeader) {
         clearSession(router);
       }
+      if (error instanceof HttpErrorResponse && error.status === 403 && hasAuthHeader) {
+        const message = error.error?.msg;
+        if (message === 'Account is locked' || (router.url.startsWith('/admin') && message === 'Admin access required')) {
+          clearSession(router);
+        }
+      }
       return throwError(() => error);
     })
   );

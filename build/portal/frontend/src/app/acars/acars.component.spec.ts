@@ -103,4 +103,43 @@ describe('AcarsComponent', () => {
     const firstAlt = icons[0].getAttribute('alt') as string;
     expect(firstAlt.toLowerCase()).toContain('icon');
   });
+
+  it('should open text modal and set message fields', () => {
+    const stopPropagation = jasmine.createSpy('stopPropagation');
+    const event = { stopPropagation } as unknown as Event;
+    const msg = {
+      text: 'LONG MESSAGE TEXT',
+      message_no: '42',
+      label: 'CPDLC',
+      time: '12:34:56',
+    };
+
+    component.openTextModal(msg, event);
+
+    expect(stopPropagation).toHaveBeenCalled();
+    expect(component.isTextModalOpen).toBeTrue();
+    expect(component.modalText).toBe('LONG MESSAGE TEXT');
+    expect(component.modalMsgNo).toBe('42');
+    expect(component.modalLabel).toBe('CPDLC');
+    expect(component.modalTime).toBe('12:34:56');
+  });
+
+  it('should close text modal and stop propagation when event is provided', () => {
+    const stopPropagation = jasmine.createSpy('stopPropagation');
+    const event = { stopPropagation } as unknown as Event;
+    component.isTextModalOpen = true;
+
+    component.closeTextModal(event);
+
+    expect(stopPropagation).toHaveBeenCalled();
+    expect(component.isTextModalOpen).toBeFalse();
+  });
+
+  it('should close text modal without an event', () => {
+    component.isTextModalOpen = true;
+
+    component.closeTextModal();
+
+    expect(component.isTextModalOpen).toBeFalse();
+  });
 });

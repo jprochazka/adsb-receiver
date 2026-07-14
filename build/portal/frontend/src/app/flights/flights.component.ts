@@ -541,8 +541,7 @@ export class FlightsComponent implements OnInit, OnDestroy {
   }
 
   canDeleteComment(comment: any): boolean {
-    if (!comment) return false;
-    return this.canModerateComments;
+    return this.canEditComment(comment);
   }
 
   updateIgnoreOnPurge(event: Event): void {

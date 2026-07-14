@@ -4,7 +4,7 @@ import time
 
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
-from backend.auth import get_current_user, require_admin, require_user_or_admin
+from backend.auth import get_current_user, require_admin, require_user_or_admin, validate_current_user
 from backend.models import db, Dump978Aircraft, Dump978Flight, Dump978Position, UatFlightComment
 from backend.routes.common import QueryParamError, get_stripped_arg, parse_pagination
 from backend.routes.flight_common import (
@@ -176,7 +176,26 @@ def _purge_uat_flights():
 
 
 def _serialize_uat_flights(rows):
-    return serialize_flights(rows, _get_uat_sightings_counts)
+    flights = serialize_flights(rows, _get_uat_sightings_counts)
+    if not _is_admin_request():
+        for flight in flights:
+            flight.pop('ignore_on_purge', None)
+    return flights
+
+
+def _is_admin_request():
+    current_user = get_current_user()
+    return bool(current_user and current_user.is_admin() and not current_user.locked)
+
+
+def _require_admin_filter(ignore_param):
+    if ignore_param is None:
+        return None
+    try:
+        _, auth_error = validate_current_user('Admin')
+        return auth_error
+    except Exception:
+        return {'msg': 'Invalid token'}, 401
 
 
 def _get_uat_sightings_counts(flights: list[str]):
@@ -247,6 +266,8 @@ class UatFlightsController(Resource):
                 return {'msg': 'Flight not found'}, 404
 
             data = flight_obj.to_dict()
+            if not _is_admin_request():
+                data.pop('ignore_on_purge', None)
             data['icao'] = flight_obj.aircraft_ref.icao if flight_obj.aircraft_ref else None
             data['sightings_count'] = _get_uat_sightings_counts([flight_obj.flight]).get(flight_obj.flight, 1)
             return data, 200
@@ -298,6 +319,9 @@ class UatFlightsController(Resource):
             return {'msg': 'Bad Request - search query required'}, 400
 
         ignore_param = request.args.get('ignore_on_purge', default=None, type=str)
+        auth_error = _require_admin_filter(ignore_param)
+        if auth_error:
+            return auth_error
         try:
             ignore_on_purge = _parse_ignore_on_purge(ignore_param)
         except ValueError:
@@ -332,6 +356,9 @@ class UatFlightsController(Resource):
             return {'msg': str(ex)}, 400
 
         ignore_param = request.args.get('ignore_on_purge', default=None, type=str)
+        auth_error = _require_admin_filter(ignore_param)
+        if auth_error:
+            return auth_error
         try:
             ignore_on_purge = _parse_ignore_on_purge(ignore_param)
         except ValueError:
@@ -531,13 +558,13 @@ class UatFlightCommentModerationController(Resource):
 
     @uat_flight_ns.response(204, 'Comment deleted successfully')
     @uat_flight_ns.response(401, 'Unauthorized - authentication required')
-    @uat_flight_ns.response(403, 'Forbidden - admin role required')
+    @uat_flight_ns.response(403, 'Forbidden - only the comment owner or admin may delete')
     @uat_flight_ns.response(404, 'Flight or comment not found')
     @uat_flight_ns.response(500, 'Internal server error')
     @uat_flight_ns.doc('delete_uat_flight_comment', security='Bearer')
-    @require_admin()
+    @require_user_or_admin()
     def delete(self, flight, comment_id):
-        """Delete a UAT flight comment (Admin only)"""
+        """Delete a UAT flight comment (comment owner or admin)"""
         try:
             flight_obj = db.session.execute(select(Dump978Flight).filter_by(flight=flight)).scalar_one_or_none()
             if not flight_obj:
@@ -546,6 +573,12 @@ class UatFlightCommentModerationController(Resource):
             comment = db.session.get(UatFlightComment, comment_id)
             if not comment or comment.flight_id != flight_obj.id:
                 return {'msg': 'Comment not found for this flight'}, 404
+
+            current_user = get_current_user()
+            if not current_user:
+                return {'msg': 'User not found'}, 401
+            if not can_modify_comment(current_user, comment):
+                return {'msg': 'Access denied. You can only delete your own comments'}, 403
 
             db.session.delete(comment)
             db.session.commit()
@@ -557,7 +590,7 @@ class UatFlightCommentModerationController(Resource):
 
 
 class UatFlightsListResource(UatFlightsController):
-    @uat_flights_ns.marshal_with(uat_flights_list_model, code=200)
+    @uat_flights_ns.marshal_with(uat_flights_list_model, code=200, skip_none=True)
     @uat_flights_ns.response(400, 'Bad request - invalid offset, limit, or ignore_on_purge parameter')
     @uat_flights_ns.response(500, 'Internal server error')
     @uat_flights_ns.doc('list_uat_flights', params={
@@ -572,7 +605,7 @@ class UatFlightsListResource(UatFlightsController):
 
 
 class UatFlightsSearchResource(UatFlightsController):
-    @uat_flights_ns.marshal_with(uat_flights_list_model, code=200)
+    @uat_flights_ns.marshal_with(uat_flights_list_model, code=200, skip_none=True)
     @uat_flights_ns.response(400, 'Bad request - q is required or ignore_on_purge is invalid')
     @uat_flights_ns.response(500, 'Internal server error')
     @uat_flights_ns.doc('search_uat_flights', params={
@@ -594,7 +627,7 @@ class UatFlightsCountResource(UatFlightsController):
 
 
 class UatFlightResource(UatFlightsController):
-    @uat_flight_ns.marshal_with(uat_flight_model, code=200)
+    @uat_flight_ns.marshal_with(uat_flight_model, code=200, skip_none=True)
     @uat_flight_ns.response(404, 'Flight not found')
     @uat_flight_ns.response(500, 'Internal server error')
     @uat_flight_ns.doc('get_uat_flight', params={

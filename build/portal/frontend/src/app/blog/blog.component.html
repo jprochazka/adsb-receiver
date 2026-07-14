@@ -60,7 +60,7 @@
                         {{ replyFormOpen[comment.id] ? 'Cancel reply' : 'Reply' }}
                       </a>
                     }
-                    @if (currentUserId !== null && comment.user_id === currentUserId && !comment.deleted) {
+                    @if (currentUserId !== null && (comment.user_id === currentUserId || currentUserRole === 'Admin') && !comment.deleted) {
                       <a
                         href="#"
                         class="ms-2"

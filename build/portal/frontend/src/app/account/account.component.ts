@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { DataService } from '../service/data.service';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import { catchError, of, forkJoin } from 'rxjs';
-import { getCurrentUserId } from '../shared/auth-session';
 
 @Component({
   selector: 'app-account',
@@ -22,6 +21,7 @@ export class AccountComponent implements OnInit {
   // Profile
   name = '';
   email = '';
+  private originalEmail = '';
   profileSuccess = '';
   profileError = '';
 
@@ -41,14 +41,12 @@ export class AccountComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit() {
-    const userId = getCurrentUserId();
-    if (userId !== null) {
-      this.userId = userId;
-
-      this.dataService.getUser(this.userId).subscribe({
+      this.dataService.getCurrentUser().subscribe({
         next: (user) => {
+          this.userId = user.id;
           this.name  = user.name;
           this.email = user.email;
+          this.originalEmail = user.email;
           this.loading = false;
         },
         error: () => {
@@ -64,14 +62,25 @@ export class AccountComponent implements OnInit {
         this.originalNotifications = flights;
         this.notifications = flights.join(', ');
       });
-    }
   }
 
   saveProfile() {
     this.profileSuccess = '';
     this.profileError = '';
-    this.dataService.updateUser(this.userId, { name: this.name, email: this.email }).subscribe({
-      next: () => this.profileSuccess = 'Profile updated successfully.',
+    const emailChanged = this.email !== this.originalEmail;
+    if (emailChanged && !this.currentPassword) {
+      this.profileError = 'Current password is required to change your email address.';
+      return;
+    }
+    this.dataService.updateCurrentUser({
+      name: this.name,
+      email: this.email,
+      ...(emailChanged ? { current_password: this.currentPassword } : {})
+    }).subscribe({
+      next: () => {
+        this.originalEmail = this.email;
+        this.profileSuccess = 'Profile updated successfully.';
+      },
       error: () => this.profileError = 'Failed to update profile.'
     });
   }
@@ -87,7 +96,11 @@ export class AccountComponent implements OnInit {
       this.authError = 'New passwords do not match.';
       return;
     }
-    this.dataService.updateUser(this.userId, { name: this.name, password: this.newPassword }).subscribe({
+    this.dataService.updateCurrentUser({
+      name: this.name,
+      password: this.newPassword,
+      current_password: this.currentPassword
+    }).subscribe({
       next: () => {
         this.authSuccess = 'Password updated successfully.';
         this.currentPassword = '';

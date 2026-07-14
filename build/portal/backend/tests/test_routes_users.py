@@ -1,5 +1,6 @@
 from conftest import create_admin_token, create_user_token
-from backend.models import BlogComment, db
+from backend.models import BlogComment, db, User
+from werkzeug.security import generate_password_hash
 
 # POST /user
 
@@ -212,6 +213,56 @@ def test_delete_user_404(client, app):
         assert response.status_code == 404
 
 # GET /user/{user_id}
+
+def test_get_current_user_uses_token_identity(client, app):
+    with app.app_context():
+        access_token = create_user_token(app)
+
+    response = client.get('/api/users/me', headers={'Authorization': f'Bearer {access_token}'})
+
+    assert response.status_code == 200
+    assert response.json['id'] == 2
+    assert response.json['email'] == 'noreply@email-two.com'
+
+
+def test_put_current_user_requires_current_password_for_password_change(client, app):
+    with app.app_context():
+        user = db.session.get(User, 2)
+        user.password = generate_password_hash('current-password')
+        db.session.commit()
+        access_token = create_user_token(app)
+
+    denied = client.put(
+        '/api/users/me',
+        headers={'Authorization': f'Bearer {access_token}'},
+        json={'name': 'Regular User', 'password': 'new-password', 'current_password': 'wrong'},
+    )
+    assert denied.status_code == 403
+
+    allowed = client.put(
+        '/api/users/me',
+        headers={'Authorization': f'Bearer {access_token}'},
+        json={'name': 'Regular User', 'password': 'new-password', 'current_password': 'current-password'},
+    )
+    assert allowed.status_code == 200
+
+
+def test_put_current_user_requires_current_password_for_email_change(client, app):
+    with app.app_context():
+        user = db.session.get(User, 2)
+        user.password = generate_password_hash('current-password')
+        db.session.commit()
+        access_token = create_user_token(app)
+
+    denied = client.put(
+        '/api/users/me',
+        headers={'Authorization': f'Bearer {access_token}'},
+        json={'name': 'Regular User', 'email': 'changed@example.com', 'current_password': 'wrong'},
+    )
+    assert denied.status_code == 403
+
+    with app.app_context():
+        assert db.session.get(User, 2).email == 'noreply@email-two.com'
 
 def test_get_user_200(client, app):
     with app.app_context():

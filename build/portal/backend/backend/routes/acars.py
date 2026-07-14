@@ -370,9 +370,12 @@ class AcarsFlightsDatabaseResource(AcarsController):
     @acars_flights_ns.marshal_with(acars_database_model, code=200)
     @acars_flights_ns.response(500, 'Internal server error')
     @acars_flights_ns.response(503, 'ACARS database unavailable')
-    @acars_flights_ns.doc('get_acars_database_info')
+    @acars_flights_ns.response(401, 'Unauthorized - authentication required')
+    @acars_flights_ns.response(403, 'Forbidden - admin role required')
+    @acars_flights_ns.doc('get_acars_database_info', security='Bearer')
+    @require_admin()
     def get(self):
-        """Get ACARS database size information."""
+        """Get ACARS database size information (Admin only)."""
         return self._get_database_info()
 
 

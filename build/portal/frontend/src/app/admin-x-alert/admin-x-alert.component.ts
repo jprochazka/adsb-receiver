@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { DataService } from '../service/data.service';
-import { isAdminAccessToken } from '../shared/auth-session';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
 interface XAlertConfig {
@@ -75,13 +73,9 @@ export class AdminXAlertComponent implements OnInit {
   status: XAlertStatus = { ...EMPTY_STATUS };
   credentials = { api_key: false, api_secret: false, access_token: false, access_secret: false };
 
-  constructor(private dataService: DataService, private router: Router) {}
+  constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
-    if (!isAdminAccessToken()) {
-      this.router.navigate(['/login']);
-      return;
-    }
     this.refresh();
   }
 

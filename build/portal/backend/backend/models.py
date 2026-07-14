@@ -134,7 +134,12 @@ class Notification(SerializableMixin, db.Model):
     __tablename__ = 'notifications'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
     flight = db.Column(db.String(20), nullable=False)
+
+    user = db.relationship('User', back_populates='notifications')
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'flight', name='uq_notifications_user_flight'),)
 
     def to_dict(self):
         return {
@@ -259,6 +264,7 @@ class User(SerializableMixin, db.Model):
     blog_comments = db.relationship('BlogComment', back_populates='user')
     flight_comments = db.relationship('FlightComment', back_populates='user')
     uat_flight_comments = db.relationship('UatFlightComment', back_populates='user')
+    notifications = db.relationship('Notification', back_populates='user', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {

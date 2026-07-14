@@ -1,7 +1,7 @@
 import logging
 
 from flask import request
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace, Resource, fields as restx_fields
 from sqlalchemy import select
 
 from backend.auth import require_admin
@@ -17,6 +17,53 @@ from backend.models import Setting, db
 
 
 x_alert_ns = Namespace('x-alert', description='X aircraft alert job management')
+
+credentials_model = x_alert_ns.model('XAlertCredentials', {
+    'api_key': restx_fields.Boolean(description='Whether an X API key is configured'),
+    'api_secret': restx_fields.Boolean(description='Whether an X API secret is configured'),
+    'access_token': restx_fields.Boolean(description='Whether an X access token is configured'),
+    'access_secret': restx_fields.Boolean(description='Whether an X access secret is configured'),
+})
+
+config_fields = {
+    name: restx_fields.String(description=f'Value for the {name} setting')
+    for name in SETTING_DEFAULTS
+    if name not in SECRET_SETTING_NAMES
+}
+config_fields['credentials'] = restx_fields.Nested(credentials_model)
+x_alert_config_model = x_alert_ns.model('XAlertConfig', config_fields)
+
+update_config_fields = {
+    name: restx_fields.String(description=f'New value for the {name} setting')
+    for name in SETTING_DEFAULTS
+}
+update_x_alert_config_model = x_alert_ns.model('UpdateXAlertConfig', update_config_fields)
+
+x_alert_status_model = x_alert_ns.model('XAlertStatus', {
+    'last_run': restx_fields.String(description='ISO 8601 timestamp of the last cycle'),
+    'last_result': restx_fields.String(description='Result of the last cycle'),
+    'last_error': restx_fields.String(description='Error from the last failed cycle'),
+    'posted_since_start': restx_fields.Integer(description='Alerts posted since process start'),
+    'suppressed_since_start': restx_fields.Integer(description='Alerts suppressed since process start'),
+    'dump1090_status': restx_fields.String(description='Status of the dump1090 source'),
+    'dump978_status': restx_fields.String(description='Status of the dump978 source'),
+    'seen': restx_fields.Integer(description='Aircraft seen during the last cycle'),
+    'eligible': restx_fields.Integer(description='Aircraft eligible during the last cycle'),
+    'last_image_result': restx_fields.String(description='Result of the last map image attempt'),
+    'last_image_at': restx_fields.String(description='ISO 8601 timestamp of the last map image attempt'),
+})
+
+x_alert_cycle_model = x_alert_ns.model('XAlertCycleResult', {
+    'result': restx_fields.String(description='Cycle result'),
+    'reason': restx_fields.String(description='Reason a cycle was skipped'),
+    'error': restx_fields.String(description='Error from a failed cycle'),
+    'seen': restx_fields.Integer(description='Aircraft seen during the cycle'),
+    'eligible': restx_fields.Integer(description='Aircraft eligible during the cycle'),
+    'posted': restx_fields.Integer(description='Alerts posted during the cycle'),
+    'suppressed': restx_fields.Integer(description='Alerts suppressed during the cycle'),
+    'failed': restx_fields.Integer(description='Alerts that failed during the cycle'),
+    'messages': restx_fields.List(restx_fields.String, description='Generated alert messages'),
+})
 
 
 def _public_config(values: dict[str, str]) -> dict:
@@ -71,11 +118,21 @@ def _validate_config(values: dict[str, str]) -> str | None:
 
 @x_alert_ns.route('/config')
 class XAlertConfigResource(Resource):
+    @x_alert_ns.response(200, 'X alert configuration retrieved successfully', x_alert_config_model)
+    @x_alert_ns.response(401, 'Unauthorized - authentication required')
+    @x_alert_ns.response(403, 'Forbidden - admin role required')
+    @x_alert_ns.doc('get_x_alert_config', security='Bearer')
     @require_admin()
     def get(self):
         ensure_x_alert_settings()
         return _public_config(get_x_alert_setting_values()), 200
 
+    @x_alert_ns.expect((update_x_alert_config_model, 'X alert settings to update. Omitted settings are unchanged.'))
+    @x_alert_ns.response(200, 'X alert configuration updated successfully', x_alert_config_model)
+    @x_alert_ns.response(400, 'Bad request - one or more settings are invalid')
+    @x_alert_ns.response(401, 'Unauthorized - authentication required')
+    @x_alert_ns.response(403, 'Forbidden - admin role required')
+    @x_alert_ns.doc('update_x_alert_config', security='Bearer')
     @require_admin()
     def put(self):
         payload = request.get_json(silent=True) or {}
@@ -109,6 +166,10 @@ class XAlertConfigResource(Resource):
 
 @x_alert_ns.route('/status')
 class XAlertStatusResource(Resource):
+    @x_alert_ns.response(200, 'X alert status retrieved successfully', x_alert_status_model)
+    @x_alert_ns.response(401, 'Unauthorized - authentication required')
+    @x_alert_ns.response(403, 'Forbidden - admin role required')
+    @x_alert_ns.doc('get_x_alert_status', security='Bearer')
     @require_admin()
     def get(self):
         return get_x_alert_status(), 200
@@ -116,6 +177,10 @@ class XAlertStatusResource(Resource):
 
 @x_alert_ns.route('/dry-run')
 class XAlertDryRunResource(Resource):
+    @x_alert_ns.response(200, 'X alert dry run completed', x_alert_cycle_model)
+    @x_alert_ns.response(401, 'Unauthorized - authentication required')
+    @x_alert_ns.response(403, 'Forbidden - admin role required')
+    @x_alert_ns.doc('dry_run_x_alert', security='Bearer')
     @require_admin()
     def post(self):
         logging.info('[x_alert] Manual dry run requested by an administrator')
@@ -124,6 +189,11 @@ class XAlertDryRunResource(Resource):
 
 @x_alert_ns.route('/send')
 class XAlertSendResource(Resource):
+    @x_alert_ns.response(200, 'X alert cycle completed', x_alert_cycle_model)
+    @x_alert_ns.response(401, 'Unauthorized - authentication required')
+    @x_alert_ns.response(403, 'Forbidden - admin role required')
+    @x_alert_ns.response(502, 'X alert cycle failed', x_alert_cycle_model)
+    @x_alert_ns.doc('send_x_alert', security='Bearer')
     @require_admin()
     def post(self):
         logging.info('[x_alert] Manual send requested by an administrator')

@@ -58,12 +58,6 @@ def upgrade():
         sa.PrimaryKeyConstraint('id')
     )
 
-    op.create_table('notifications',
-        sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column('flight', sa.String(length=20), nullable=False),
-        sa.PrimaryKeyConstraint('id')
-    )
-
     op.create_table('opensky_aircraft',
         sa.Column('icao24', sa.String(length=8), nullable=False),
         sa.Column('aircraft_class', sa.String(length=32), nullable=False),
@@ -93,6 +87,20 @@ def upgrade():
     )
 
     # ---- tables with foreign keys to standalone tables ----
+    op.create_table('notifications',
+        sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('flight', sa.String(length=20), nullable=False),
+        sa.ForeignKeyConstraint(
+            ['user_id'], ['users.id'],
+            name='fk_notifications_user_id_users', ondelete='CASCADE'
+        ),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('user_id', 'flight', name='uq_notifications_user_flight')
+    )
+    with op.batch_alter_table('notifications') as batch_op:
+        batch_op.create_index('ix_notifications_user_id', ['user_id'], unique=False)
+
     op.create_table('blog_comments',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('blog_post_id', sa.Integer(), nullable=False),
@@ -267,10 +275,13 @@ def downgrade():
         batch_op.drop_index('ix_blog_comments_blog_post_id')
     op.drop_table('blog_comments')
 
+    with op.batch_alter_table('notifications') as batch_op:
+        batch_op.drop_index('ix_notifications_user_id')
+    op.drop_table('notifications')
+
     op.drop_table('users')
     op.drop_table('settings')
     op.drop_table('opensky_aircraft')
-    op.drop_table('notifications')
     op.drop_table('links')
 
     with op.batch_alter_table('dump978_aircraft') as batch_op:

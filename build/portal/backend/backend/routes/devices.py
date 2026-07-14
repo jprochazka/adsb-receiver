@@ -145,7 +145,6 @@ class DiskResource(Resource):
                 'disk_io_write_count': io.write_count,
                 'disk_io_read_bytes': io.read_bytes,
                 'disk_io_write_bytes': io.write_bytes,
-                'disk_partitions': [p._asdict() for p in psutil.disk_partitions()],
             }
             return jsonify(disk_data)
         except Exception as e:
@@ -171,9 +170,6 @@ class NetworkResource(Resource):
                 'network_io_errors_out': io.errout,
                 'network_io_dropped_in': io.dropin,
                 'network_io_dropped_out': io.dropout,
-                'network_connections': psutil.net_connections(),
-                'network_interface_addresses': psutil.net_if_addrs(),
-                'network_interface_stats': psutil.net_if_stats()
             }
             return jsonify(network_data)
         except Exception as e:
@@ -187,12 +183,9 @@ class OtherResource(Resource):
     @devices_ns.response(500, 'Internal server error')
     @devices_ns.doc('get_other_info')
     def get(self):
-        """Get other system information (boot time, users) (Public)"""
+        """Get system boot time (Public)"""
         try:
-            other_data = {
-                'other_boot_time': psutil.boot_time(),
-                'other_users': [u._asdict() for u in psutil.users()]
-            }
+            other_data = {'other_boot_time': psutil.boot_time()}
             return jsonify(other_data)
         except Exception as e:
             logging.error(f'Error encountered while getting other system information: {e}')
@@ -317,8 +310,6 @@ class ReceiverResource(Resource):
                     receiver = json.load(resp)
                 d1090 = {
                     'version': receiver.get('version'),
-                    'lat': receiver.get('lat'),
-                    'lon': receiver.get('lon'),
                     'signal': None,
                     'peak_signal': None,
                     'noise': None,
@@ -342,8 +333,6 @@ class ReceiverResource(Resource):
                     receiver = json.load(resp)
                 result['dump978'] = {
                     'version': receiver.get('version'),
-                    'lat': receiver.get('lat'),
-                    'lon': receiver.get('lon'),
                 }
             except Exception as exc:
                 logging.debug('Could not reach dump978 receiver.json: %s', exc)

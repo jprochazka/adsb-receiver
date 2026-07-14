@@ -344,6 +344,7 @@
         <div>
           @if (displayedCombinedFlights.length) {
             <div>
+              <div class="table-responsive mobile-table-wrap">
               <table class="table table-striped table-hover">
                 <thead>
                   <tr>
@@ -479,6 +480,7 @@
                   }
                 </tbody>
               </table>
+              </div>
               @if (!searchQuery && !filterQuery && allTotalPages > 1) {
                 <nav aria-label="All flight pages">
                   <ul class="pagination flex-wrap">
@@ -517,6 +519,7 @@
         <div>
           @if (filteredAdsbFlights.length) {
             <div>
+              <div class="table-responsive mobile-table-wrap">
               <table class="table table-striped table-hover">
                 <thead>
                   <tr>
@@ -637,6 +640,7 @@
                   }
                 </tbody>
               </table>
+              </div>
               @if (!searchQuery && !filterQuery && adsbTotalPages > 1) {
                 <nav aria-label="ADS-B flight pages">
                   <ul class="pagination flex-wrap">
@@ -675,6 +679,7 @@
         <div>
           @if (filteredUatFlights.length) {
             <div>
+              <div class="table-responsive mobile-table-wrap">
               <table class="table table-striped table-hover">
                 <thead>
                   <tr>
@@ -800,6 +805,7 @@
                   }
                 </tbody>
               </table>
+              </div>
               @if (!searchQuery && !filterQuery && uatTotalPages > 1) {
                 <nav aria-label="UAT flight pages">
                   <ul class="pagination flex-wrap">

@@ -39,6 +39,18 @@ export class DataService {
     return this.http.post(`${this.apiUrl}/users/register`, { name, email, password });
   }
 
+  getCurrentUser(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/users/me`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateCurrentUser(data: { name: string; email?: string; password?: string; current_password?: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/users/me`, data, {
+      headers: this.authHeaders()
+    });
+  }
+
   getUser(userId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/users/user/${userId}`, {
       headers: this.authHeaders()
@@ -171,12 +183,16 @@ export class DataService {
 
   getIgnoredFlights(offset = 0, limit = 10): Observable<any> {
     return this.http.get(`${this.apiUrl}/adsb/flights`, {
-      params: { offset, limit, ignore_on_purge: 'true' }
+      params: { offset, limit, ignore_on_purge: 'true' },
+      headers: this.authHeaders()
     });
   }
 
   getFlightDetails(flight: string): Observable<any> {
-    return this.http.get(this.flightUrl('adsb', flight));
+    const token = localStorage.getItem('access_token');
+    return token
+      ? this.http.get(this.flightUrl('adsb', flight), { headers: this.authHeaders() })
+      : this.http.get(this.flightUrl('adsb', flight));
   }
 
   updateFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
@@ -188,7 +204,10 @@ export class DataService {
   }
 
   getUatFlightDetails(flight: string): Observable<any> {
-    return this.http.get(this.flightUrl('uat', flight));
+    const token = localStorage.getItem('access_token');
+    return token
+      ? this.http.get(this.flightUrl('uat', flight), { headers: this.authHeaders() })
+      : this.http.get(this.flightUrl('uat', flight));
   }
 
   updateUatFlightPurgePreference(flight: string, ignore_on_purge: boolean): Observable<any> {
@@ -279,7 +298,8 @@ export class DataService {
 
   getIgnoredUatFlights(offset = 0, limit = 10): Observable<any> {
     return this.http.get(`${this.apiUrl}/uat/flights`, {
-      params: { offset, limit, ignore_on_purge: 'true' }
+      params: { offset, limit, ignore_on_purge: 'true' },
+      headers: this.authHeaders()
     });
   }
 
@@ -398,7 +418,9 @@ export class DataService {
   }
 
   getRecentNotifications(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/notifications/recent`);
+    return this.http.get(`${this.apiUrl}/notifications/recent`, {
+      headers: this.authHeaders()
+    });
   }
 
   purgeFlights(days: number): Observable<any> {

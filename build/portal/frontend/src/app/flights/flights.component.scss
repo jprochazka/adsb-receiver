@@ -571,3 +571,41 @@ $flyout-tab:   28px;
 		text-decoration: underline;
 	}
 }
+
+.mobile-table-wrap {
+	max-width: 100%;
+}
+
+@media (max-width: 575.98px) {
+	.row.align-items-end {
+		align-items: stretch !important;
+	}
+
+	.row.align-items-end > .col,
+	.row.align-items-end > .col-md-auto {
+		width: 100%;
+	}
+
+	.per-page-select {
+		width: 100%;
+	}
+
+	.nav-tabs {
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.nav-tabs .nav-link {
+		padding: 0.35rem 0.6rem;
+		font-size: 0.9rem;
+	}
+
+	.mobile-table-wrap .table {
+		font-size: 0.9rem;
+		min-width: 720px;
+	}
+
+	.flight-link-icons {
+		min-width: 7.8rem;
+	}
+}

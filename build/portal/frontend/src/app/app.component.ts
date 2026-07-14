@@ -8,7 +8,7 @@ import { LinksComponent } from './links/links.component';
 import { LogoutComponent } from './logout/logout.component';
 import { DataService } from './service/data.service';
 import { environment } from '../environments/environment';
-import { getAccessToken, getCurrentUserRole, hasValidAccessToken } from './shared/auth-session';
+import { hasValidAccessToken, isAdminAccessToken } from './shared/auth-session';
 
 const MAP_LINK_DEFS: Record<string, { label: string; href: string; external: boolean }> = {
   dump1090: { label: 'Dump1090',            href: '/dump1090', external: false },
@@ -85,6 +85,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private pollRecentNotifications(): void {
+    if (!this.isLoggedIn) {
+      this.trackedFlights = [];
+      return;
+    }
     this.dataService.getRecentNotifications().subscribe({
       next: (result) => {
         const flights = result.flights ?? [];
@@ -170,7 +174,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   get isAdmin(): boolean {
-    return !!getAccessToken() && getCurrentUserRole() === 'Admin';
+    return isAdminAccessToken();
   }
 
   dismissAlert(): void {

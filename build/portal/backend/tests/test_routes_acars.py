@@ -161,17 +161,21 @@ class TestAcarsRoutes:
 
     # ---- /flights/database ----
 
-    def test_get_database_info(self, client, mock_acars_engine):
-        response = client.get('/api/acars/flights/database')
+    def test_get_database_info(self, client, mock_acars_engine, admin_headers):
+        response = client.get('/api/acars/flights/database', headers=admin_headers)
         assert response.status_code == 200
         data = response.get_json()
         assert data['size'] == 4096
 
-    def test_get_database_info_unavailable(self, client):
+    def test_get_database_info_unavailable(self, client, admin_headers):
         with patch('backend.routes.acars.load_portal_config', return_value={'acars': {'database': '/nonexistent'}}), \
              patch('backend.routes.acars.os.path.exists', return_value=False):
-            response = client.get('/api/acars/flights/database')
+            response = client.get('/api/acars/flights/database', headers=admin_headers)
             assert response.status_code == 503
+
+    def test_get_database_info_requires_admin(self, client, user_headers):
+        assert client.get('/api/acars/flights/database').status_code == 401
+        assert client.get('/api/acars/flights/database', headers=user_headers).status_code == 403
 
     # ---- /flight/<id>/messages ----
 

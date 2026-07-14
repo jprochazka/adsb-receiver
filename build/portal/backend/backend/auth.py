@@ -17,6 +17,28 @@ def get_current_user():
     except Exception:
         return None
 
+
+def validate_current_user(required_role=None):
+    """Validate the JWT and return the current unlocked database user."""
+    verify_jwt_in_request()
+    current_user_email = get_jwt_identity()
+    current_user = db.session.execute(
+        select(User).filter_by(email=current_user_email)
+    ).scalar_one_or_none()
+
+    if not current_user:
+        return None, ({'msg': 'User not found'}, 401)
+    if current_user.locked:
+        return None, ({'msg': 'Account is locked'}, 403)
+    if current_user.role not in ['User', 'Admin']:
+        return None, ({'msg': 'User or Admin access required'}, 403)
+    if required_role == 'Admin' and not current_user.is_admin():
+        return None, ({'msg': 'Admin access required'}, 403)
+    if required_role and required_role not in ['Admin', current_user.role]:
+        return None, ({'msg': f'Access denied. {required_role} role required'}, 403)
+
+    return current_user, None
+
 def require_role(required_role):
     """
     Decorator to require a specific role for accessing an endpoint.
@@ -26,18 +48,10 @@ def require_role(required_role):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
-                verify_jwt_in_request()
-                current_user = get_current_user()
-                
-                if not current_user:
-                    return {'msg': 'User not found'}, 401
-
-                if current_user.locked:
-                    return {'msg': 'Account is locked'}, 403
-
-                if current_user.role != required_role and current_user.role != 'Admin':
-                    return {'msg': f'Access denied. {required_role} role required'}, 403
-            except Exception as e:
+                _, auth_error = validate_current_user(required_role)
+                if auth_error:
+                    return auth_error
+            except Exception:
                 return {'msg': 'Invalid token'}, 401
             
             return f(*args, **kwargs)
@@ -51,17 +65,9 @@ def require_admin():
         @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
-                verify_jwt_in_request()
-                current_user = get_current_user()
-                
-                if not current_user:
-                    return {'msg': 'User not found'}, 401
-
-                if current_user.locked:
-                    return {'msg': 'Account is locked'}, 403
-
-                if not current_user.is_admin():
-                    return {'msg': 'Admin access required'}, 403
+                _, auth_error = validate_current_user('Admin')
+                if auth_error:
+                    return auth_error
             except Exception as e:
                 from werkzeug.exceptions import HTTPException
                 if isinstance(e, HTTPException):
@@ -79,17 +85,9 @@ def require_user_or_admin():
         @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
-                verify_jwt_in_request()
-                current_user = get_current_user()
-                
-                if not current_user:
-                    return {'msg': 'User not found'}, 401
-
-                if current_user.locked:
-                    return {'msg': 'Account is locked'}, 403
-
-                if current_user.role not in ['User', 'Admin']:
-                    return {'msg': 'User or Admin access required'}, 403
+                _, auth_error = validate_current_user()
+                if auth_error:
+                    return auth_error
             except Exception as e:
                 from werkzeug.exceptions import HTTPException
                 if isinstance(e, HTTPException):
