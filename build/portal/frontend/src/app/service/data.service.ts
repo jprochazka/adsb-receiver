@@ -448,6 +448,36 @@ export class DataService {
     });
   }
 
+  getXAlertConfig(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/x-alert/config`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateXAlertConfig(config: Record<string, string>): Observable<any> {
+    return this.http.put(`${this.apiUrl}/x-alert/config`, config, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getXAlertStatus(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/x-alert/status`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  dryRunXAlert(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/x-alert/dry-run`, {}, {
+      headers: this.authHeaders()
+    });
+  }
+
+  sendXAlert(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/x-alert/send`, {}, {
+      headers: this.authHeaders()
+    });
+  }
+
   getOpenSkyAircraftDatabaseStatus(): Observable<any> {
     return this.http.get(`${this.apiUrl}/setting/opensky-aircraft-database`);
   }

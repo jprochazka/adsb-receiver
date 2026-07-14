@@ -1,0 +1,131 @@
+import logging
+
+from flask import request
+from flask_restx import Namespace, Resource
+from sqlalchemy import select
+
+from backend.auth import require_admin
+from backend.jobs.x_alert import (
+    SECRET_SETTING_NAMES,
+    SETTING_DEFAULTS,
+    ensure_x_alert_settings,
+    execute_x_alert_cycle,
+    get_x_alert_setting_values,
+    get_x_alert_status,
+)
+from backend.models import Setting, db
+
+
+x_alert_ns = Namespace('x-alert', description='X aircraft alert job management')
+
+
+def _public_config(values: dict[str, str]) -> dict:
+    result = {name: value for name, value in values.items() if name not in SECRET_SETTING_NAMES}
+    result['credentials'] = {
+        'api_key': bool(values['x_alert_x_api_key']),
+        'api_secret': bool(values['x_alert_x_api_secret']),
+        'access_token': bool(values['x_alert_x_access_token']),
+        'access_secret': bool(values['x_alert_x_access_secret']),
+    }
+    return result
+
+
+def _validate_config(values: dict[str, str]) -> str | None:
+    try:
+        poll_seconds = int(values['x_alert_poll_seconds'])
+        latitude = values['x_alert_receiver_lat'].strip()
+        longitude = values['x_alert_receiver_lon'].strip()
+        parsed_latitude = float(latitude) if latitude else None
+        parsed_longitude = float(longitude) if longitude else None
+        radius = float(values['x_alert_radius_nm'])
+        minimum_altitude = int(values['x_alert_min_altitude_ft'])
+        maximum_altitude = int(values['x_alert_max_altitude_ft'])
+        minimum_speed = int(values['x_alert_min_speed_kt'])
+        cooldown = int(values['x_alert_cooldown_minutes'])
+        image_width = int(values['x_alert_image_width'])
+        image_height = int(values['x_alert_image_height'])
+        image_points = int(values['x_alert_image_track_points_max'])
+    except (KeyError, TypeError, ValueError):
+        return 'One or more numeric settings are invalid'
+
+    if poll_seconds < 15 or poll_seconds > 3600:
+        return 'Poll interval must be between 15 and 3600 seconds'
+    if parsed_latitude is not None and not -90 <= parsed_latitude <= 90:
+        return 'Receiver latitude must be between -90 and 90'
+    if parsed_longitude is not None and not -180 <= parsed_longitude <= 180:
+        return 'Receiver longitude must be between -180 and 180'
+    if not 0.1 <= radius <= 250:
+        return 'Radius must be between 0.1 and 250 nautical miles'
+    if minimum_altitude > maximum_altitude:
+        return 'Minimum altitude cannot exceed maximum altitude'
+    if minimum_speed < 0 or cooldown < 1:
+        return 'Speed must be non-negative and cooldown must be at least one minute'
+    if not 320 <= image_width <= 2048 or not 240 <= image_height <= 2048:
+        return 'Image dimensions are outside the supported range'
+    if not 2 <= image_points <= 1000:
+        return 'Image track point limit must be between 2 and 1000'
+    if values['x_alert_post_mode'] not in {'log-only', 'x-api'}:
+        return 'Post mode must be log-only or x-api'
+    return None
+
+
+@x_alert_ns.route('/config')
+class XAlertConfigResource(Resource):
+    @require_admin()
+    def get(self):
+        ensure_x_alert_settings()
+        return _public_config(get_x_alert_setting_values()), 200
+
+    @require_admin()
+    def put(self):
+        payload = request.get_json(silent=True) or {}
+        ensure_x_alert_settings()
+        current_values = get_x_alert_setting_values()
+        updated_values = dict(current_values)
+
+        for name in SETTING_DEFAULTS:
+            if name not in payload:
+                continue
+            value = payload[name]
+            if name in SECRET_SETTING_NAMES and (value is None or str(value) == ''):
+                continue
+            updated_values[name] = str(value).strip()
+
+        validation_error = _validate_config(updated_values)
+        if validation_error:
+            return {'msg': validation_error}, 400
+
+        rows = {
+            row.name: row for row in db.session.execute(
+                select(Setting).where(Setting.name.in_(SETTING_DEFAULTS))
+            ).scalars()
+        }
+        for name, value in updated_values.items():
+            rows[name].value = value
+        db.session.commit()
+        logging.info('[x_alert] Configuration updated by an administrator')
+        return _public_config(updated_values), 200
+
+
+@x_alert_ns.route('/status')
+class XAlertStatusResource(Resource):
+    @require_admin()
+    def get(self):
+        return get_x_alert_status(), 200
+
+
+@x_alert_ns.route('/dry-run')
+class XAlertDryRunResource(Resource):
+    @require_admin()
+    def post(self):
+        logging.info('[x_alert] Manual dry run requested by an administrator')
+        return execute_x_alert_cycle(dry_run=True, force=True), 200
+
+
+@x_alert_ns.route('/send')
+class XAlertSendResource(Resource):
+    @require_admin()
+    def post(self):
+        logging.info('[x_alert] Manual send requested by an administrator')
+        result = execute_x_alert_cycle(force=True)
+        return result, 200 if result.get('result') != 'failed' else 502

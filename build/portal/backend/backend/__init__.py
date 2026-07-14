@@ -10,6 +10,7 @@ from backend.jobs.dump1090_data_collection import dump1090_data_collection_job
 from backend.jobs.maintenance import maintenance_job
 from backend.jobs.dump978_data_collection import dump978_data_collection_job
 from backend.jobs.rrd_data_collection import rrd_data_collection_job
+from backend.jobs.x_alert import x_alert_job
 from backend.routes.graphs import graphs, graphs_ns
 from backend.routes.acars import acars, acars_ns
 from backend.routes.blog import blog, blog_ns
@@ -22,6 +23,7 @@ from backend.routes.settings import settings, setting_ns
 from backend.routes.devices import devices, devices_ns
 from backend.routes.tokens import tokens, auth_ns
 from backend.routes.users import users, users_ns
+from backend.routes.x_alert import x_alert_ns
 from backend.models import db
 from backend.config_loader import get_database_config, get_security_config, load_portal_config
 
@@ -116,6 +118,7 @@ def _register_api_namespaces(api):
     api.add_namespace(live_ns)
     api.add_namespace(notifications_ns)
     api.add_namespace(setting_ns)
+    api.add_namespace(x_alert_ns)
 
 
 def _configure_database(app):
@@ -212,6 +215,7 @@ def _configure_scheduler(app):
     scheduler.add_job(id='dump978_data_collection', func=dump978_data_collection_job, trigger="interval", seconds=15)
     scheduler.add_job(id='rrd_data_collection', func=rrd_data_collection_job, trigger="interval", seconds=30)
     scheduler.add_job(id='maintenance', func=maintenance_job, trigger="cron", hour=0)
+    scheduler.add_job(id='x_alert', func=x_alert_job, trigger="interval", seconds=15, max_instances=1, coalesce=True)
     scheduler.init_app(app)
     # scheduler.start()
 

@@ -12,6 +12,7 @@ import { BlogComponent } from './blog/blog.component';
 import { AcarsComponent } from './acars/acars.component';
 import { AdminAcarsComponent } from './admin-acars/admin-acars.component';
 import { AdminSchedulerComponent } from './admin-scheduler/admin-scheduler.component';
+import { AdminXAlertComponent } from './admin-x-alert/admin-x-alert.component';
 import { FlightsComponent } from './flights/flights.component';
 import { LoginComponent } from './login/login.component';
 import { DevicesComponent } from './devices/devices.component';
@@ -30,6 +31,7 @@ export const routes = [
     { path: 'admin/links', component: AdminLinksComponent },
     { path: 'admin/feeders', component: AdminFeedersComponent },
     { path: 'admin/scheduler', component: AdminSchedulerComponent },
+    { path: 'admin/x-alert', component: AdminXAlertComponent },
     { path: 'admin/users', component: AdminUsersComponent },
     { path: 'blog', component: BlogComponent },
     { path: 'blog/:page', component: BlogComponent },

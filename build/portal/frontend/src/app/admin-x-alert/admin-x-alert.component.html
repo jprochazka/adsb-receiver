@@ -1,0 +1,109 @@
+<div class="container x-alert-page py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+    <div>
+      <h1 class="mb-1">X Alerts</h1>
+      <p class="text-muted mb-0">Configure overhead aircraft posts and optional track maps.</p>
+    </div>
+    <button class="btn btn-outline-secondary" type="button" (click)="refresh()" [disabled]="loading || busy">Refresh</button>
+  </div>
+  <hr />
+
+  @if (loading) {
+    <app-spinner></app-spinner>
+  } @else {
+    <section class="status-strip" aria-label="X alert job status">
+      <div><span>Last run</span><strong>{{ lastRunLabel() }}</strong></div>
+      <div><span>Result</span><strong class="text-capitalize">{{ status.last_result }}</strong></div>
+      <div><span>Posted</span><strong>{{ status.posted_since_start }}</strong></div>
+      <div><span>Sources</span><strong>1090 {{ status.dump1090_status }} / 978 {{ status.dump978_status }}</strong></div>
+    </section>
+
+    @if (status.last_error) {
+      <div class="alert alert-warning mt-3 mb-0">{{ status.last_error }}</div>
+    }
+
+    <form class="mt-4" (ngSubmit)="save()">
+      <section class="settings-section">
+        <div class="section-heading">
+          <div>
+            <h2>Detection</h2>
+            <p>Define the receiver location and aircraft thresholds.</p>
+          </div>
+          <label class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" [checked]="enabled()" (change)="setEnabled($any($event.target).checked)">
+            <span class="form-check-label">Enabled</span>
+          </label>
+        </div>
+
+        <div class="settings-grid">
+          <label>Poll interval (seconds)<input class="form-control" type="number" min="15" max="3600" name="poll" [(ngModel)]="config['x_alert_poll_seconds']"></label>
+          <label>Cooldown (minutes)<input class="form-control" type="number" min="1" name="cooldown" [(ngModel)]="config['x_alert_cooldown_minutes']"></label>
+          <label>Receiver latitude<input class="form-control" type="number" min="-90" max="90" step="0.000001" name="lat" [(ngModel)]="config['x_alert_receiver_lat']"></label>
+          <label>Receiver longitude<input class="form-control" type="number" min="-180" max="180" step="0.000001" name="lon" [(ngModel)]="config['x_alert_receiver_lon']"></label>
+          <label>Radius (NM)<input class="form-control" type="number" min="0.1" max="250" step="0.1" name="radius" [(ngModel)]="config['x_alert_radius_nm']"></label>
+          <label>Minimum speed (kt)<input class="form-control" type="number" min="0" name="speed" [(ngModel)]="config['x_alert_min_speed_kt']"></label>
+          <label>Minimum altitude (ft)<input class="form-control" type="number" name="minAltitude" [(ngModel)]="config['x_alert_min_altitude_ft']"></label>
+          <label>Maximum altitude (ft)<input class="form-control" type="number" name="maxAltitude" [(ngModel)]="config['x_alert_max_altitude_ft']"></label>
+        </div>
+        <label class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" [checked]="ignoreNoCallsign()" (change)="setIgnoreNoCallsign($any($event.target).checked)">
+          <span class="form-check-label">Ignore aircraft without a callsign</span>
+        </label>
+      </section>
+
+      <section class="settings-section">
+        <div class="section-heading">
+          <div><h2>Posting</h2><p>Use log-only mode while tuning detection.</p></div>
+        </div>
+        <div class="settings-grid">
+          <label>Post mode
+            <select class="form-select" name="postMode" [(ngModel)]="config['x_alert_post_mode']">
+              <option value="log-only">Log only</option>
+              <option value="x-api">X API</option>
+            </select>
+          </label>
+          <label>API key<input class="form-control" type="password" name="apiKey" [(ngModel)]="config['x_alert_x_api_key']" [placeholder]="credentials.api_key ? 'Configured' : 'Not configured'"></label>
+          <label>API secret<input class="form-control" type="password" name="apiSecret" [(ngModel)]="config['x_alert_x_api_secret']" [placeholder]="credentials.api_secret ? 'Configured' : 'Not configured'"></label>
+          <label>Access token<input class="form-control" type="password" name="accessToken" [(ngModel)]="config['x_alert_x_access_token']" [placeholder]="credentials.access_token ? 'Configured' : 'Not configured'"></label>
+          <label>Access token secret<input class="form-control" type="password" name="accessSecret" [(ngModel)]="config['x_alert_x_access_secret']" [placeholder]="credentials.access_secret ? 'Configured' : 'Not configured'"></label>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <div class="section-heading">
+          <div>
+            <h2>Track Map</h2>
+            <p>Attach a compact map generated from recent stored positions.</p>
+            <p class="image-status mb-0">Last image: {{ lastImageLabel() }}</p>
+          </div>
+          <label class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" [checked]="imageEnabled()" (change)="setImageEnabled($any($event.target).checked)">
+            <span class="form-check-label">Include map</span>
+          </label>
+        </div>
+        @if (imageEnabled()) {
+          <div class="settings-grid">
+            <label>Track lookback (minutes)<input class="form-control" type="number" min="1" max="180" name="lookback" [(ngModel)]="config['x_alert_image_lookback_minutes']"></label>
+            <label>Maximum track points<input class="form-control" type="number" min="2" max="1000" name="trackPoints" [(ngModel)]="config['x_alert_image_track_points_max']"></label>
+            <label>Image width<input class="form-control" type="number" min="320" max="2048" name="imageWidth" [(ngModel)]="config['x_alert_image_width']"></label>
+            <label>Image height<input class="form-control" type="number" min="240" max="2048" name="imageHeight" [(ngModel)]="config['x_alert_image_height']"></label>
+          </div>
+        }
+      </section>
+
+      <div class="d-flex flex-wrap gap-2 pt-3">
+        <button class="btn btn-primary" type="submit" [disabled]="busy">Save</button>
+        <button class="btn btn-outline-secondary" type="button" (click)="reset()" [disabled]="busy">Reset</button>
+        <button class="btn btn-outline-primary" type="button" (click)="dryRun()" [disabled]="busy">Dry run</button>
+        <button class="btn btn-outline-danger" type="button" (click)="sendNow()" [disabled]="busy">Send now</button>
+      </div>
+    </form>
+
+    @if (successMessage) {
+      <div class="alert alert-success mt-3 mb-0">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="alert alert-danger mt-3 mb-0">{{ errorMessage }}</div>
+    }
+  }
+</div>

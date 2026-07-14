@@ -56,3 +56,8 @@ typeguard==4.4.4
 six==1.17.0
 typing_extensions==4.15.0
 packaging==25.0
+
+# X Alert Posting and Map Images
+tweepy==4.16.0
+staticmap==0.5.7
+Pillow==11.3.0

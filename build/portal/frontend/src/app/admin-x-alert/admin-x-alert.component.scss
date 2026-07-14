@@ -1,0 +1,99 @@
+.x-alert-page {
+  max-width: 1120px;
+}
+
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-block: 1px solid var(--bs-border-color);
+}
+
+.status-strip > div {
+  min-width: 0;
+  padding: 1rem;
+  border-right: 1px solid var(--bs-border-color);
+}
+
+.status-strip > div:last-child {
+  border-right: 0;
+}
+
+.status-strip span,
+.status-strip strong {
+  display: block;
+}
+
+.status-strip span {
+  color: var(--bs-secondary-color);
+  font-size: .78rem;
+  text-transform: uppercase;
+}
+
+.status-strip strong {
+  margin-top: .25rem;
+  overflow-wrap: anywhere;
+}
+
+.settings-section {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.section-heading p {
+  margin: .25rem 0 0;
+  color: var(--bs-secondary-color);
+}
+
+.section-heading .image-status {
+  font-size: .85rem;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.settings-grid label {
+  min-width: 0;
+  font-weight: 600;
+}
+
+.settings-grid .form-control,
+.settings-grid .form-select {
+  margin-top: .35rem;
+  font-weight: 400;
+}
+
+@media (max-width: 767.98px) {
+  .status-strip,
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-strip > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+
+  .status-strip > div:last-child {
+    border-bottom: 0;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+  }
+}
