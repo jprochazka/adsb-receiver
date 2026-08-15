@@ -2,7 +2,7 @@
 
 The following is a history of the changes made to this project.
 
-## v3.1.0 *(Coming later...)*
+## v3.1.0 *(Coming later maybe...)*
 
 * Added initial AIS-catcher integration.
 
