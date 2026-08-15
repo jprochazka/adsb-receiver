@@ -76,7 +76,7 @@ When setting up the portal you will have to choose between a lite or advanced in
 * Beast-Splitter:       https://github.com/flightaware/beast-splitter
 * DuckDNS.org Support:  https://www.duckdns.org
 * Graphs1090:           https://github.com/wiedehopf/graphs1090
-* tar1090:              https://github.com/wiedehopf/tar1090
+* Tar1090:              https://github.com/wiedehopf/tar1090
 
 ## Supported Operating Systems
 
