@@ -1,14 +1,13 @@
 EXTRAS_CHOICES
 FEEDER_CHOICES
 build/acarsdec
-build/acarsserv
 build/adsbexchange
 build/airplaneslive
 build/beast-splitter
 build/duckdns
 build/dump1090-fa
 build/dump978-fa
-build/dumpvld2
+build/dumpvdl2
 build/flightradar24
 build/flyitalyadsb
 build/graphs1090
@@ -19,7 +18,6 @@ build/package-archive
 build/portal/graphs/__pycache__
 build/readsb
 build/tar1090
-build/vdlm2dec
 logs
 
 # Visual Studio Code

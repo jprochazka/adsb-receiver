@@ -2,7 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import type { BlogPostSummary, PaginatedResponse } from '../shared/api-types';
+import type {
+  BlogPostSummary,
+  DumpVdl2Config,
+  DumpVdl2ConfigUpdate,
+  PaginatedResponse
+} from '../shared/api-types';
 
 @Injectable({
   providedIn: 'root'
@@ -466,6 +471,18 @@ export class DataService {
 
   updateSetting(name: string, value: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/setting`, { name, value }, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getDumpVdl2Config(): Observable<DumpVdl2Config> {
+    return this.http.get<DumpVdl2Config>(`${this.apiUrl}/dumpvdl2/config`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateDumpVdl2Config(config: DumpVdl2ConfigUpdate): Observable<DumpVdl2Config> {
+    return this.http.put<DumpVdl2Config>(`${this.apiUrl}/dumpvdl2/config`, config, {
       headers: this.authHeaders()
     });
   }

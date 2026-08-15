@@ -15,6 +15,72 @@
       <div class="alert alert-danger" role="alert">{{ errorMessage }}</div>
     }
 
+    <div class="card mb-4" id="dumpvdl2-config">
+      <div class="card-header fw-semibold">VDL Mode 2 Decoder</div>
+      <div class="card-body">
+        <div class="row g-3 mb-3">
+          <div class="col-sm-4">
+            <span class="text-muted small d-block">Installation</span>
+            <span class="badge" [class.text-bg-success]="dumpVdl2Config.installed"
+              [class.text-bg-secondary]="!dumpVdl2Config.installed">
+              {{ dumpVdl2Config.installed ? 'Installed' : 'Not installed' }}
+            </span>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted small d-block">dumpvdl2 service</span>
+            <span class="badge" [class.text-bg-success]="dumpVdl2Config.active"
+              [class.text-bg-danger]="!dumpVdl2Config.active">
+              {{ dumpVdl2Config.active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted small d-block">Ingestion service</span>
+            <span class="badge" [class.text-bg-success]="dumpVdl2Config.ingest_active"
+              [class.text-bg-danger]="!dumpVdl2Config.ingest_active">
+              {{ dumpVdl2Config.ingest_active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+
+        @if (!dumpVdl2Config.installed) {
+          <div class="alert alert-info">
+            Install dumpvdl2 to enable frequency configuration.
+          </div>
+        }
+        <fieldset [disabled]="!dumpVdl2Config.installed">
+          <label class="form-label fw-semibold" for="dumpvdl2-frequency">Frequencies (MHz)</label>
+          <div class="frequency-list mb-3">
+            @for (frequency of dumpVdl2Config.frequencies; track frequency) {
+              <span class="frequency-chip">
+                {{ frequency }}
+                <button type="button" class="btn-close" [attr.aria-label]="'Remove ' + frequency + ' MHz'"
+                  (click)="removeDumpVdl2Frequency(frequency)"></button>
+              </span>
+            }
+          </div>
+          <div class="row g-2 align-items-start">
+            <div class="col-sm-6 col-md-4">
+              <input id="dumpvdl2-frequency" class="form-control" type="number"
+                min="118" max="137" step="0.005" placeholder="136.975"
+                [(ngModel)]="dumpVdl2Frequency"
+                (keydown.enter)="addDumpVdl2Frequency()">
+              <div class="form-text">Allowed range: 118.0–137.0 MHz</div>
+            </div>
+            <div class="col-auto">
+              <button type="button" class="btn btn-outline-primary"
+                (click)="addDumpVdl2Frequency()">Add</button>
+            </div>
+            <div class="col-auto ms-sm-auto">
+              <button type="button" class="btn btn-primary" [disabled]="savingDumpVdl2"
+                (click)="saveDumpVdl2Config()">
+                {{ savingDumpVdl2 ? 'Saving…' : 'Save frequencies' }}
+              </button>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
     <div class="card mb-4">
       <div class="card-header fw-semibold">Navigation Visibility</div>
       <ul class="list-group list-group-flush">
@@ -166,6 +232,6 @@
         </div>
       </div>
     </div>
-    <p class="text-muted small">All changes are saved automatically.</p>
+    <p class="text-muted small">Display setting changes are saved automatically.</p>
   }
 </div>

@@ -13,6 +13,12 @@ from urllib.request import urlopen, Request
 
 config = load_portal_config()
 
+if not hasattr(psutil, 'sensors_temperatures'):
+    def _sensors_temperatures(*args, **kwargs):
+        return {}
+
+    psutil.sensors_temperatures = _sensors_temperatures
+
 
 devices = Blueprint('devices', __name__)
 
@@ -227,6 +233,17 @@ _FLIGHT_TABLES = [
 ]
 
 
+def _sqlite_flights_table_size():
+    """Return a best-effort sqlite size for flight tables when dbstat is unavailable."""
+    db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if db_uri.startswith('sqlite:///:memory:') or not db_uri.startswith('sqlite:///'):
+        return 0
+    db_path = db_uri.replace('sqlite:///', '', 1)
+    if os.path.exists(db_path):
+        return os.path.getsize(db_path)
+    return 0
+
+
 @devices_ns.route('/flights-tables')
 class FlightsTablesResource(Resource):
     @devices_ns.marshal_with(flights_tables_model, code=200)
@@ -260,11 +277,14 @@ class FlightsTablesResource(Resource):
                     result = db.session.execute(db.text(f"SELECT {parts}"))
                     size = result.fetchone()[0] or 0
                 case 'sqlite':
-                    placeholders = ', '.join(f"'{t}'" for t in _FLIGHT_TABLES)
-                    result = db.session.execute(
-                        db.text(f"SELECT SUM(pgsize) FROM dbstat WHERE name IN ({placeholders})")
-                    )
-                    size = result.fetchone()[0] or 0
+                    try:
+                        placeholders = ', '.join(f"'{t}'" for t in _FLIGHT_TABLES)
+                        result = db.session.execute(
+                            db.text(f"SELECT SUM(pgsize) FROM dbstat WHERE name IN ({placeholders})")
+                        )
+                        size = result.fetchone()[0] or 0
+                    except Exception:
+                        size = _sqlite_flights_table_size()
             return {'size': size}, 200
         except Exception as e:
             logging.error(f'Error retrieving flights table size: {e}')

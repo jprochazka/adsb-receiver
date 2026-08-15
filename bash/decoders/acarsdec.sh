@@ -11,7 +11,7 @@ log_title_heading "Setting up the ACARSDEC decoder"
 log_title_message "------------------------------------------------------------------------------"
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
               --title "ACARSDEC decoder Setup" \
-              --yesno "ACARSDEC is a multi-channels acars decoder with built-in rtl_sdr, airspy front end or sdrplay device. Since 3.0, It comes with a database backend : acarsserv to store received acars messages.\n\nWould you like to begin the setup process now?" \
+              --yesno "ACARSDEC is a multi-channel ACARS decoder with built-in RTL-SDR, AirSpy, and SDRPlay support. Decoded messages can be stored for display in the portal.\n\nWould you like to begin the setup process now?" \
               11 78; then
     echo ""
     log_alert_heading "INSTALLATION HALTED"
@@ -63,7 +63,7 @@ if [[ -z $RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER ]]; then
 fi
 
 current_acars_frequencies="130.025 130.425 130.450 131.125 131.550"
-if [[ "${acars_decoder_installed}" == "true" ]]; then
+if [[ -f /etc/systemd/system/acarsdec.service ]]; then
     log_message "Determining which frequencies are currently assigned"
     exec_start=$(get_config "ExecStart" "/etc/systemd/system/acarsdec.service")
     parsed_frequencies=$(grep -Eo '[0-9]{3}\.[0-9]{3}' <<< "${exec_start}" | tr '\n' ' ' | sed -e 's/[[:space:]]\+$//')
@@ -255,38 +255,14 @@ echo ""
 sudo make install
 
 
-## CLONE OR PULL THE ACARSSERV GIT REPOSITORY
+## INSTALL THE MESSAGE INGESTION SERVICE
 
-log_heading "Preparing the acarsserv Git repository"
+log_heading "Installing the ACARS and VDL2 message ingestion service"
 
-if [[ -d $RECEIVER_BUILD_DIRECTORY/acarsserv && -d $RECEIVER_BUILD_DIRECTORY/acarsserv/.git ]]; then
-    log_message "Entering the acarsserv git repository directory"
-    cd $RECEIVER_BUILD_DIRECTORY/acarsserv
-    log_message "Updating the local acarsserv git repository"
-    echo ""
-    git pull
-else
-    log_message "Entering the build directory"
-    cd $RECEIVER_BUILD_DIRECTORY
-    log_message "Cloning the acarsserv git repository locally"
-    echo ""
-    git clone https://github.com/TLeconte/acarsserv.git
-fi
+install_acars_ingest_service
 
 
-## BUILD AND INSTALL THE ACARSSERV BINARY
-
-log_heading "Building the ACARSSERV binary"
-
-log_message "Entering the acarsserv build directory"
-cd $RECEIVER_BUILD_DIRECTORY/acarsserv
-log_message "Executing make"
-echo ""
-make -f Makefile
-echo ""
-
-
-## RUN ACARSDECO AND ACARSSERV
+## RUN ACARSDEC
 
 log_message "Creating the ACARSDEC systemd service script"
 case "${device}" in
@@ -303,7 +279,8 @@ esac
 sudo tee /etc/systemd/system/acarsdec.service > /dev/null <<EOF
 [Unit]
 Description=ARCARSDEC multi-channel acars decoder.
-After=network.target
+Requires=acars-ingest.service
+After=network.target acars-ingest.service
 
 [Service]
 ExecStart=/usr/local/bin/acarsdec --output json:udp:host=127.0.0.1,port=5555 ${acarsdec_input_args}
@@ -319,30 +296,9 @@ StartLimitBurst=10
 WantedBy=multi-user.target
 EOF
 
-log_message "Creating the ACARSSERV systemd service script"
-sudo tee /etc/systemd/system/acarsserv.service > /dev/null <<EOF
-[Unit]
-Description=ARCARSSERV saves acars data to SQLite.
-After=network.target
-
-[Service]
-ExecStart=${RECEIVER_BUILD_DIRECTORY}/acarsserv/acarsserv -j 127.0.0.1:5555
-WorkingDirectory=${RECEIVER_BUILD_DIRECTORY}/acarsserv
-StandardOutput=null
-TimeoutSec=30
-Restart=on-failure
-RestartSec=30
-StartLimitInterval=350
-StartLimitBurst=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
+sudo systemctl daemon-reload
 log_message "Enabling then starting the ACARSDEC service"
 sudo systemctl enable --now acarsdec.service
-log_message "Enabling then starting the acarsserv service"
-sudo systemctl enable --now acarsserv.service
 
 
 ## CONFIGURATION
@@ -354,7 +310,7 @@ assign_devices_to_decoders
 
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "ACARSDEC Decoder Setup Complete" \
-         --msgbox "The setup process currently sets basic parameters needed to feed acarsserv. You can fine tune your installation by modifying the startup command found in the file /etc/systemd/system/acarsdec.service. Usage information for ACARSDEC can be found in the project README at https://github.com/f00b4r0/acarsdec." \
+         --msgbox "The setup process configured ACARSDEC to store decoded messages for the portal. You can fine tune the decoder by modifying /etc/systemd/system/acarsdec.service. Usage information for ACARSDEC can be found in the project README at https://github.com/f00b4r0/acarsdec." \
          12 78
 
 

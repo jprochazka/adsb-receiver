@@ -5,7 +5,9 @@ The following is a history of the changes made to this project.
 ## v3.0.0 *(Coming soon...)*
 
 * New version of the portal. (total rewrite with many additions)
-* Added a new Airframes.io feeder setup script for ACARSDEC/dumpvdl2/vdlm2dec.
+* Added a new Airframes.io feeder setup script for ACARSDEC and dumpvdl2.
+* Replaced the archived VDLM2DEC and acarsserv components with dumpvdl2 and a native portal message ingester.
+* Added portal status and frequency management for dumpvdl2.
 * Added a new stream1090 installer capable of integrating it with Readsb or dump1090-fa.
 * The ACARSDEC script now uses a maintained fork of the original.
 * Console message color fix applied.

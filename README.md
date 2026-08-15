@@ -49,12 +49,11 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 ### Decoders
 
-* ACARSDEC:                https://github.com/TLeconte/acarsdec
+* ACARSDEC:                https://github.com/f00b4r0/acarsdec
 * Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
 * Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * Readsb:                  https://github.com/wiedehopf/readsb
-* VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 ### Feeders
 

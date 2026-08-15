@@ -180,4 +180,23 @@ describe('DataService', () => {
     expect(req.request.headers.has('Authorization')).toBeFalse();
     req.flush({ dump1090: { version: 'v9.0' }, dump978: null });
   });
+
+  it('should get dumpvdl2 configuration with auth header', () => {
+    service.getDumpVdl2Config().subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/dumpvdl2/config`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.headers.get('Authorization')).toContain(localStorage.getItem('access_token')!);
+    req.flush({ installed: true, active: true, ingest_active: true, frequencies: [136.975] });
+  });
+
+  it('should update dumpvdl2 frequencies with auth header', () => {
+    service.updateDumpVdl2Config({ frequencies: [136.1, 136.975] }).subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/dumpvdl2/config`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ frequencies: [136.1, 136.975] });
+    expect(req.request.headers.get('Authorization')).toContain(localStorage.getItem('access_token')!);
+    req.flush({ installed: true, active: true, ingest_active: true, frequencies: [136.1, 136.975] });
+  });
 });

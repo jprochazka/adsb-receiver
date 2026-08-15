@@ -1,5 +1,9 @@
+import importlib.util
+import logging
 import os
 from datetime import timedelta
+from pathlib import Path
+
 from flask import Flask, jsonify, redirect, request
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
@@ -21,6 +25,7 @@ from backend.routes.live import live_ns
 from backend.routes.notifications import notifications, notifications_ns
 from backend.routes.settings import settings, setting_ns
 from backend.routes.devices import devices, devices_ns
+from backend.routes.dumpvdl2 import dumpvdl2, dumpvdl2_ns
 from backend.routes.tokens import tokens, auth_ns
 from backend.routes.users import users, users_ns
 from backend.routes.x_alert import x_alert_ns
@@ -119,6 +124,7 @@ def _register_api_namespaces(api):
     api.add_namespace(acars_ns)
     api.add_namespace(blog_ns)
     api.add_namespace(devices_ns)
+    api.add_namespace(dumpvdl2_ns)
     api.add_namespace(links_ns)
     api.add_namespace(live_ns)
     api.add_namespace(notifications_ns)
@@ -210,6 +216,7 @@ def _register_blueprints(app):
     app.register_blueprint(notifications)
     app.register_blueprint(settings)
     app.register_blueprint(devices)
+    app.register_blueprint(dumpvdl2)
     app.register_blueprint(tokens)
     app.register_blueprint(users)
 
@@ -227,6 +234,37 @@ def _configure_scheduler(app):
     # scheduler.start()
 
 
+def _database_driver_available(database_uri):
+    if not database_uri:
+        return True
+    if database_uri.startswith('mysql'):
+        return importlib.util.find_spec('MySQLdb') is not None or importlib.util.find_spec('mysqlclient') is not None
+    if database_uri.startswith('postgresql'):
+        return importlib.util.find_spec('psycopg2') is not None or importlib.util.find_spec('psycopg2_binary') is not None
+    return True
+
+
 def _init_extensions(app):
-    db.init_app(app)
-    Migrate(app, db)
+    database_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if _database_driver_available(database_uri):
+        db.init_app(app)
+    else:
+        logging.warning(
+            'Skipping SQLAlchemy initialization for %s because the required database driver is not installed. '
+            'Install the driver before using database-backed features.',
+            database_uri,
+        )
+
+    @app.teardown_appcontext
+    def _shutdown_sqlalchemy(exc):
+        db.session.remove()
+        database_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if database_uri.startswith('sqlite') and ':memory:' not in database_uri:
+            try:
+                if hasattr(db, 'engine') and db.engine is not None:
+                    db.engine.dispose()
+            except Exception:
+                pass
+
+    migrations_dir = Path(__file__).resolve().parents[1] / 'migrations'
+    Migrate(app, db, directory=str(migrations_dir))
