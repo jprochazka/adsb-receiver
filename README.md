@@ -57,24 +57,6 @@ When setting up the portal you will have to choose between a lite or advanced in
 * Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * Readsb:                  https://github.com/wiedehopf/readsb
 
-AIS-catcher uses a dedicated RTL-SDR and sends timestamped `JSON_FULL` UDP
-messages to the local portal ingest service on port 5556. Assign a unique
-stable serial to its dongle when other RTL-SDR decoders are installed. AIS
-support is intended for hobbyist and research use only and must not be relied
-on for navigation or safety of life or property.
-
-After installation, inspect the decoder and ingest services with:
-
-    sudo systemctl status ais-catcher.service ais-ingest.service
-    sudo journalctl -u ais-catcher.service -u ais-ingest.service -n 100
-
-The portal receives AIS data on loopback UDP port 5556. The AIS history is
-available at `/ais` and administration at `/admin/ais`. To upgrade or roll back,
-select AIS-catcher from `install.sh` and use the pinned release in
-`bash/variables.sh`; stop the services first if a failed build requires manual
-recovery. Existing portal backups include the AIS tables and settings because
-the backup contains the complete portal database.
-
 ### Feeders
 
 * ADS-B Exchange Feeder Client:   https://adsbexchange.com
