@@ -51,11 +51,11 @@ When setting up the portal you will have to choose between a lite or advanced in
 ### Decoders
 
 * ACARSDEC:                https://github.com/f00b4r0/acarsdec
+* AIS-catcher:             https://github.com/jvde-github/AIS-catcher
 * Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
 * Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * Readsb:                  https://github.com/wiedehopf/readsb
-* AIS-catcher:             https://github.com/jvde-github/AIS-catcher
 
 AIS-catcher uses a dedicated RTL-SDR and sends timestamped `JSON_FULL` UDP
 messages to the local portal ingest service on port 5556. Assign a unique
