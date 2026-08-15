@@ -18,9 +18,9 @@ readonly display_true_inline=$'\033[2;32m'
 ## SOFTWARE VERSIONS
 
 # FlightAware
-readonly dump1090_fa_current_version="10.2"
-readonly dump978_fa_current_version="10.2"
-readonly piaware_current_version="10.2"
+readonly dump1090_fa_current_version="11.1"
+readonly dump978_fa_current_version="11.1"
+readonly piaware_current_version="11.1"
 
 # PlaneFinder Client
 readonly pfclient_current_version_armhf="5.3.29"

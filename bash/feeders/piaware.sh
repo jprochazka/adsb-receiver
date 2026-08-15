@@ -57,7 +57,7 @@ check_package tcllib
 check_package tclx8.4
 check_package zlib1g-dev
 
-if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
+if [[ "${RECEIVER_OS_CODE_NAME}" == "trixie" || "${RECEIVER_OS_CODE_NAME}" == "questing" || "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then
     check_package python3-filelock
     check_package python3-pyasyncore
 fi
@@ -70,9 +70,10 @@ log_heading "Preparing the FlightAware piaware_builder Git repository"
 if [[ -d $RECEIVER_BUILD_DIRECTORY/piaware_builder && -d $RECEIVER_BUILD_DIRECTORY/piaware_builder/.git ]]; then
     log_message "Entering the piaware_builder git repository directory"
     cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
-    log_message "Updating the local piaware_builder git repository"
+    log_message "Updating the local piaware_builder Git repository from the official master branch"
     echo ""
-    git pull 2>&1 | log_pipe
+    git fetch origin master 2>&1 | log_pipe
+    git checkout -B master origin/master 2>&1 | log_pipe
 else
     log_message "Creating the FlightAware piaware_builder build directory"
     echo ""
@@ -82,16 +83,7 @@ else
     cd $RECEIVER_BUILD_DIRECTORY
     log_message "Cloning the piaware_builder git repository locally"
     echo ""
-
-    # --- START TEMPORARY NOBLE FIX ---
-    if [[ "${RECEIVER_OS_CODE_NAME}" == "noble" || "${RECEIVER_OS_CODE_NAME}" == "trixie" || "${RECEIVER_OS_CODE_NAME}" == "questing" ]]; then
-        git clone -b dev https://github.com/flightaware/piaware_builder.git 2>&1 | log_pipe
-    else
-        git clone https://github.com/flightaware/piaware_builder.git 2>&1 | log_pipe
-    fi
-
-    #git clone https://github.com/flightaware/piaware_builder.git 2>&1 | log_pipe
-    # --- END TEMPORARY NOBLE FIX ---
+    git clone -b master https://github.com/flightaware/piaware_builder.git 2>&1 | log_pipe
 fi
 
 
@@ -102,26 +94,26 @@ log_heading "Beginning the FlightAware PiAware installation process"
 log_message "Entering the piaware_builder git repository directory"
 cd $RECEIVER_BUILD_DIRECTORY/piaware_builder
 
-log_message "Determining which piaware_builder build strategy should be use"
+log_message "Determining which piaware_builder build strategy should be used"
 distro="bookworm"
 case $RECEIVER_OS_CODE_NAME in
     bullseye)
         distro="bullseye"
         ;;
-    jammy)
-        distro="bullseye"
-        ;;
     bookworm)
         distro="bookworm"
         ;;
-    trixie | questing | noble)
+    trixie | questing)
         distro="trixie"
+        ;;
+    jammy | noble)
+        distro="${RECEIVER_OS_CODE_NAME}"
         ;;
     *)
         log_warning_message "Unknown OS codename '${RECEIVER_OS_CODE_NAME}', defaulting PiAware build strategy to ${distro}"
         ;;
 esac
-log_message "Setting distribution to build for to ${distro}"
+log_message "Setting build distribution to ${distro}"
 
 log_message "Executing the FlightAware PiAware client build script"
 echo ""
