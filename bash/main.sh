@@ -152,22 +152,13 @@ if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
                   9 65 install_vdlm2_decoder
 fi
 
-if [[ -f /etc/systemd/system/vdlm2dec.service ]]; then
-    vdlm2_decoder_installed="true"
-    chosen_vdlm2_decoder="vdlm2dec"
-    ask_reinstall "Reinstall VDLM2DEC Decoder" \
-                  "The option to rebuild and reinstall VDLM2DEC is available.\n\nWould you like to rebuild and reinstall VDLM2DEC?" \
-                  9 65 install_vdlm2_decoder
-fi
-
 if [[ "${vdlm2_decoder_installed}" == "false" ]]; then
     install_vdlm2_decoder="true"
     chosen_vdlm2_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "VLD Mode 2 Decoder Selection" \
-             --menu "The following VLD Mode 2 decoders are available for installation." \
+             --menu "The following VDL Mode 2 decoders are available for installation." \
              16 100 9 \
-             "None" "Do not install a VLD decoder." \
-             "vdlm2dec" "vdlm2dec is a VDL Mode 2 decoder." \
+             "None" "Do not install a VDL decoder." \
              "dumpvdl2" "dumpvdl2 is a VDL Mode 2 message decoder." \
              3>&2 2>&1 1>&3)
     exit_status=$?
@@ -418,9 +409,6 @@ else
             "dumpvdl2")
                 confirmation_message="${confirmation_message}\n  * dumpvdl2"
                 ;;
-            "vdlm2dec")
-                confirmation_message="${confirmation_message}\n  * vdlm2dec"
-                ;;
         esac
     fi
 
@@ -494,9 +482,6 @@ if [[ "${install_vdlm2_decoder}" == "true" ]]; then
     case "${chosen_vdlm2_decoder}" in
         "dumpvdl2")
             run_installer "decoders/dumpvdl2.sh"
-            ;;
-        "vdlm2dec")
-            run_installer "decoders/vdlm2dec.sh"
             ;;
     esac
 fi

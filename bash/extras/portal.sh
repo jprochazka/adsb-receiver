@@ -644,7 +644,7 @@ database:
         days_to_save: 30
 
 acars:
-    database: "instance/acarsdec.sqlite"
+    database: "/var/lib/adsb-receiver/acars.sqlite3"
 
 graphs:
     rrd_base: "${RRD_BASE}"
@@ -879,6 +879,10 @@ PY
         fi
     fi
 
+    _gauge 65 "Installing ACARS and VDL2 integration..."
+    install_acars_ingest_service >> "${LOG_FILE}" 2>&1
+    install_dumpvdl2_config_helper >> "${LOG_FILE}" 2>&1
+
     _gauge 67 "Applying backend data permissions..."
     sudo chown -R www-data:www-data "${INSTANCE_DIR}"
     sudo chmod -R 755 "${INSTANCE_DIR}"
@@ -973,6 +977,7 @@ After=network.target
 Type=notify
 User=www-data
 Group=www-data
+SupplementaryGroups=adsb-receiver
 WorkingDirectory=${BACKEND_DIR}
 Environment="PATH=${VENV_DIR}/bin"
 Environment="RRD_BASE=${RRD_BASE}"
@@ -1006,7 +1011,7 @@ SVCEOF
         exit 1
     fi
     sudo systemctl enable "${SYSTEMD_SERVICE}" >> "${LOG_FILE}" 2>&1
-    sudo systemctl start "${SYSTEMD_SERVICE}" >> "${LOG_FILE}" 2>&1
+    sudo systemctl restart "${SYSTEMD_SERVICE}" >> "${LOG_FILE}" 2>&1
 
     _gauge 100 "Installation complete!"
 }

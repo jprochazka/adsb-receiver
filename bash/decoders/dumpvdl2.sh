@@ -37,19 +37,28 @@ if [[ $? -ne 0 ]] ; then
 fi
 
 current_vdlm2_frequencies="136.100 136.650 136.700 136.800 136.975"
-if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
+if [[ -f /etc/default/dumpvdl2 ]]; then
     log_message "Determining which frequencies are currently assigned"
-    exec_start=$(get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service")
-    current_vdlm2_frequencies=$(sed -e "s#.*--correction ${vdlm2_correction} \(\)#\1#" <<< "${exec_start}")
+    configured_frequencies=$(get_config "DUMPVDL2_FREQUENCIES" "/etc/default/dumpvdl2")
+    if [[ -n "${configured_frequencies}" ]]; then
+        current_vdlm2_frequencies="${configured_frequencies//M/}"
+    fi
+elif systemctl cat vdlm2dec.service >/dev/null 2>&1; then
+    log_message "Migrating frequencies from the existing VDLM2DEC service"
+    legacy_exec_start=$(systemctl show --property=ExecStart --value vdlm2dec.service)
+    legacy_frequencies=$(grep -Eo '[0-9]{3}\.[0-9]{3}' <<< "${legacy_exec_start}" | tr '\n' ' ' | sed -e 's/[[:space:]]\+$//')
+    if [[ -n "${legacy_frequencies}" ]]; then
+        current_vdlm2_frequencies="${legacy_frequencies}"
+    fi
 fi
 log_message "Asking the user for VDL Mode 2 frequencies to monitor"
-vdlm2_fequencies_title="Enter VDL Mode 2 Frequencies"
-while [[ -z $vdlm2_fequencies ]] ; do
-    vdlm2_fequencies=$(whiptail --backtitle "VDL Mode 2 Frequencies" \
-                              --title "${vdlm2_fequencies_title}" \
-                              --inputbox "\nEnter the VDL Mode 2 frequencies you would like to monitor." \
-                              8 78 \
-                              "${current_vdlm2_frequencies}" 3>&1 1>&2 2>&3)
+vdlm2_frequencies_title="Enter VDL Mode 2 Frequencies"
+while [[ -z "${vdlm2_frequencies}" ]] ; do
+    vdlm2_frequencies=$(whiptail --backtitle "VDL Mode 2 Frequencies" \
+                               --title "${vdlm2_frequencies_title}" \
+                               --inputbox "\nEnter 1 to 20 space-separated frequencies between 118 and 137 MHz." \
+                               8 78 \
+                               "${current_vdlm2_frequencies}" 3>&1 1>&2 2>&3)
     exit_status=$?
     if [[ $exit_status != 0 ]]; then
         log_alert_heading "INSTALLATION HALTED"
@@ -59,8 +68,27 @@ while [[ -z $vdlm2_fequencies ]] ; do
         log_title_heading "Dumpvdl2 decoder setup halted"
         exit 1
     fi
-    vdlm2_fequencies_title="Enter VDL Frequencies (REQUIRED)"
+    read -r -a requested_frequencies <<< "${vdlm2_frequencies}"
+    if [[ ${#requested_frequencies[@]} -lt 1 || ${#requested_frequencies[@]} -gt 20 ]]; then
+        vdlm2_frequencies=""
+        vdlm2_frequencies_title="Enter 1 to 20 VDL Frequencies (REQUIRED)"
+        continue
+    fi
+    for frequency in "${requested_frequencies[@]}"; do
+        if [[ ! "${frequency}" =~ ^[0-9]{3}([.][0-9]{1,3})?$ ]] || \
+           ! awk -v frequency="${frequency}" 'BEGIN { exit !(frequency >= 118 && frequency <= 137) }'; then
+            vdlm2_frequencies=""
+            vdlm2_frequencies_title="Enter Valid 118-137 MHz Frequencies (REQUIRED)"
+            break
+        fi
+    done
 done
+
+canonical_frequencies=()
+for frequency in "${requested_frequencies[@]}"; do
+    canonical_frequencies+=("$(printf '%.3fM' "${frequency}")")
+done
+vdlm2_frequencies="${canonical_frequencies[*]}"
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
@@ -190,16 +218,54 @@ echo ""
 sudo make install
 
 
+## INSTALL THE MESSAGE INGESTION SERVICE
+
+log_heading "Installing the ACARS and VDL2 message ingestion service"
+
+if systemctl cat vdlm2dec.service >/dev/null 2>&1; then
+    log_message "Disabling the archived VDLM2DEC service"
+    sudo systemctl disable --now vdlm2dec.service
+fi
+
+install_acars_ingest_service
+
+
 ## RUN DUMPVDL2
+
+if [[ -z "${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}" ]]; then
+    if [[ -n "${legacy_exec_start}" ]]; then
+        RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER=$(grep -o -P '(?<=-r )[0-9]+' <<< "${legacy_exec_start}")
+    fi
+    RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER="${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER:-0}"
+fi
+
+dumpvdl2_gain="40"
+dumpvdl2_correction="0"
+if [[ -f /etc/default/dumpvdl2 ]]; then
+    configured_gain=$(get_config "DUMPVDL2_GAIN" "/etc/default/dumpvdl2")
+    configured_correction=$(get_config "DUMPVDL2_CORRECTION" "/etc/default/dumpvdl2")
+    dumpvdl2_gain="${configured_gain:-${dumpvdl2_gain}}"
+    dumpvdl2_correction="${configured_correction:-${dumpvdl2_correction}}"
+fi
+
+log_message "Creating the dumpvdl2 configuration"
+sudo tee /etc/default/dumpvdl2 > /dev/null <<EOF
+DUMPVDL2_DEVICE="${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}"
+DUMPVDL2_GAIN="${dumpvdl2_gain}"
+DUMPVDL2_CORRECTION="${dumpvdl2_correction}"
+DUMPVDL2_FREQUENCIES="${vdlm2_frequencies}"
+EOF
 
 log_message "Creating the dumpvdl2 systemd service script"
 sudo tee /etc/systemd/system/dumpvdl2.service > /dev/null <<EOF
 [Unit]
 Description=Dumpvdl2 VDL Mode 2 message decoder and protocol analyzer.
-After=network.target
+Requires=acars-ingest.service
+After=network.target acars-ingest.service
 
 [Service]
-ExecStart=/usr/local/bin/dumpvdl2 --rtlsdr 0 --gain 40 --correction 42 ${current_vdlm2_frequencies}
+EnvironmentFile=/etc/default/dumpvdl2
+ExecStart=/usr/local/bin/dumpvdl2 --rtlsdr \${DUMPVDL2_DEVICE} --gain \${DUMPVDL2_GAIN} --correction \${DUMPVDL2_CORRECTION} --output decoded:json:udp:address=127.0.0.1,port=5555 \$DUMPVDL2_FREQUENCIES
 WorkingDirectory=/usr/local/bin
 StandardOutput=null
 TimeoutSec=30
@@ -212,10 +278,10 @@ StartLimitBurst=10
 WantedBy=multi-user.target
 EOF
 
+sudo systemctl daemon-reload
 log_message "Enabling then starting the dumpvdl2 service"
 sudo systemctl enable --now dumpvdl2.service
-log_message "Enabling then starting the dumpvdl2 service"
-sudo systemctl enable --now dumpvdl2.service
+install_dumpvdl2_config_helper
 
 
 ## CONFIGURATION
@@ -227,7 +293,7 @@ assign_devices_to_decoders
 
 whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
          --title "Dumpvdl2 Decoder Setup Complete" \
-         --msgbox "The setup process currently sets basic parameters needed to run a basic dumpvdl2 setup. You can fine tune your installation by modifying the startup command found in the file /etc/systemd/system/dumpvdl2.service. Usage information for dumpvdl2 can be found in the projects README at https://github.com/szpajder/dumpvdl2." \
+         --msgbox "The setup process configured dumpvdl2 to store decoded messages for the portal. Frequencies can be managed in the portal or in /etc/default/dumpvdl2. Usage information for dumpvdl2 can be found in the project's README at https://github.com/szpajder/dumpvdl2." \
          12 78
 
 

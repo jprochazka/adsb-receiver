@@ -76,3 +76,14 @@ export interface SchedulerJob {
   next_run_time?: string | null;
   trigger?: string;
 }
+
+export interface DumpVdl2Config {
+  installed: boolean;
+  active: boolean;
+  ingest_active: boolean;
+  frequencies: number[];
+}
+
+export interface DumpVdl2ConfigUpdate {
+  frequencies: number[];
+}

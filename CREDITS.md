@@ -50,7 +50,6 @@ I would like to thank the maintainers and contributors of the following projects
 hard work and dedication to their respective projects this project would not have been possible.
 
 * ACARSDEC Decoder:        https://github.com/f00b4r0/acarsdec
-* ACARSSERV:               https://github.com/TLeconte/acarsserv
 * ADS-B Exchange Client:   https://github.com/adsbexchange/feedclient
 * Airplanes.live Client:   https://github.com/airplanes-live/feed
 * Beast-Splitter:          https://github.com/flightaware/beast-splitter
@@ -63,7 +62,6 @@ hard work and dedication to their respective projects this project would not hav
 * Readsb (wiedehopf):      https://github.com/wiedehopf/readsb
 * stream1090:              https://github.com/mgrone/stream1090
 * tar1090:                 https://github.com/wiedehopf/tar1090
-* VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 Thanks also goes out to the developers and the businesses that employ them who work to supply us
 with quality closed source packages which they have made available to the community.

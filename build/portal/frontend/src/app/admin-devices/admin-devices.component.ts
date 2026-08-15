@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
 import { DataService } from '../service/data.service';
 import { AdminSettingToggleComponent } from '../shared/admin-setting-toggle/admin-setting-toggle.component';
+import type { DumpVdl2Config } from '../shared/api-types';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 
 @Component({
@@ -19,6 +20,14 @@ export class AdminDevicesComponent implements OnInit {
   loading = true;
   errorMessage = '';
   successMessage = '';
+  dumpVdl2Config: DumpVdl2Config = {
+    installed: false,
+    active: false,
+    ingest_active: false,
+    frequencies: [],
+  };
+  dumpVdl2Frequency: number | null = null;
+  savingDumpVdl2 = false;
 
   // Navigation visibility
   infoNavEnabled    = true;
@@ -64,8 +73,12 @@ export class AdminDevicesComponent implements OnInit {
       temp:   this.dataService.getSetting('graphs_measurement_temperature').pipe(catchError(() => of({ value: 'imperial' }))),
       iface:  this.dataService.getSetting('graphs_network_interface').pipe(catchError(() => of({ value: 'eth0' }))),
       refresh: this.dataService.getSetting('graphs_refresh_interval_ms').pipe(catchError(() => of({ value: '15000' }))),
+      dumpVdl2: this.dataService.getDumpVdl2Config().pipe(catchError(() => {
+        this.errorMessage = 'Failed to load VDL Mode 2 decoder configuration.';
+        return of(this.dumpVdl2Config);
+      })),
     }).subscribe({
-      next: ({ nav, system, graphs, stats, d1090, d978, range, temp, iface, refresh }) => {
+      next: ({ nav, system, graphs, stats, d1090, d978, range, temp, iface, refresh, dumpVdl2 }) => {
         this.infoNavEnabled    = nav?.value    !== 'false';
         this.infoSystemEnabled = system?.value !== 'false';
         this.infoGraphsEnabled = graphs?.value !== 'false';
@@ -76,6 +89,10 @@ export class AdminDevicesComponent implements OnInit {
         this.measurementTemperature = temp?.value  ?? 'imperial';
         this.networkInterface       = iface?.value ?? 'eth0';
         this.graphRefreshIntervalSeconds = this.msToSeconds(this.normalizeRefreshMs(refresh?.value));
+        this.dumpVdl2Config = {
+          ...dumpVdl2,
+          frequencies: this.normalizeFrequencies(dumpVdl2.frequencies),
+        };
         this.loading = false;
       },
       error: () => {
@@ -126,9 +143,72 @@ export class AdminDevicesComponent implements OnInit {
     this.saveSetting('graphs_refresh_interval_ms', String(refreshMs));
   }
 
+  addDumpVdl2Frequency(): void {
+    this.clearMessages();
+    if (!this.dumpVdl2Config.installed) {
+      this.errorMessage = 'dumpvdl2 is not installed; configuration cannot be changed.';
+      return;
+    }
+    const frequency = Number(this.dumpVdl2Frequency);
+    if (!this.isValidDumpVdl2Frequency(frequency)) {
+      this.errorMessage = 'Frequency must be between 118.0 and 137.0 MHz.';
+      return;
+    }
+
+    this.dumpVdl2Config.frequencies = this.normalizeFrequencies([
+      ...this.dumpVdl2Config.frequencies,
+      frequency,
+    ]);
+    this.dumpVdl2Frequency = null;
+  }
+
+  removeDumpVdl2Frequency(frequency: number): void {
+    this.clearMessages();
+    if (!this.dumpVdl2Config.installed) {
+      this.errorMessage = 'dumpvdl2 is not installed; configuration cannot be changed.';
+      return;
+    }
+    if (this.dumpVdl2Config.frequencies.length <= 1) {
+      this.errorMessage = 'At least one VDL Mode 2 frequency is required.';
+      return;
+    }
+
+    this.dumpVdl2Config.frequencies = this.dumpVdl2Config.frequencies.filter(
+      configuredFrequency => configuredFrequency !== frequency
+    );
+  }
+
+  saveDumpVdl2Config(): void {
+    this.clearMessages();
+    const frequencies = this.normalizeFrequencies(this.dumpVdl2Config.frequencies);
+    if (!this.dumpVdl2Config.installed) {
+      this.errorMessage = 'dumpvdl2 is not installed; configuration cannot be changed.';
+      return;
+    }
+    if (frequencies.length === 0 || frequencies.some(frequency => !this.isValidDumpVdl2Frequency(frequency))) {
+      this.errorMessage = 'Enter at least one frequency between 118.0 and 137.0 MHz.';
+      return;
+    }
+
+    this.savingDumpVdl2 = true;
+    this.dataService.updateDumpVdl2Config({ frequencies }).subscribe({
+      next: config => {
+        this.dumpVdl2Config = {
+          ...config,
+          frequencies: this.normalizeFrequencies(config.frequencies),
+        };
+        this.savingDumpVdl2 = false;
+        this.successMessage = 'VDL Mode 2 decoder configuration saved.';
+      },
+      error: () => {
+        this.savingDumpVdl2 = false;
+        this.errorMessage = 'Failed to save VDL Mode 2 decoder configuration.';
+      },
+    });
+  }
+
   private saveSetting(key: string, value: string): void {
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.clearMessages();
 
     this.dataService.updateSetting(key, value).subscribe({
       next: () => { this.successMessage = 'Setting saved.'; },
@@ -158,5 +238,18 @@ export class AdminDevicesComponent implements OnInit {
       return 15000;
     }
     return Math.min(120000, Math.max(3000, Math.round(parsed)));
+  }
+
+  private isValidDumpVdl2Frequency(frequency: number): boolean {
+    return Number.isFinite(frequency) && frequency >= 118 && frequency <= 137;
+  }
+
+  private normalizeFrequencies(frequencies: number[]): number[] {
+    return [...new Set(frequencies.map(Number))].sort((left, right) => left - right);
+  }
+
+  private clearMessages(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
   }
 }

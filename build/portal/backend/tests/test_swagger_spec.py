@@ -118,6 +118,19 @@ def test_swagger_documents_acars_read_endpoints(client):
     assert _query_param_names(spec, '/acars/flights/purge', 'delete') == {'days'}
 
 
+def test_swagger_documents_dumpvdl2_config(client):
+    spec = _swagger_spec(client)
+
+    config_get = _operation(spec, '/dumpvdl2/config')
+    assert config_get['security'] == [{'Bearer': []}]
+    assert _response_schema_ref(spec, '/dumpvdl2/config', 'get') == '#/definitions/Dumpvdl2Config'
+
+    config_put = _operation(spec, '/dumpvdl2/config', 'put')
+    assert config_put['security'] == [{'Bearer': []}]
+    assert _response_schema_ref(spec, '/dumpvdl2/config', 'put') == '#/definitions/Dumpvdl2Config'
+    assert set(config_put['responses']) >= {'200', '400', '401', '403', '503'}
+
+
 def test_swagger_documents_x_alert_endpoints(client):
     spec = _swagger_spec(client)
 

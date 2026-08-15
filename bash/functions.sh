@@ -205,6 +205,119 @@ EOF
     fi
 }
 
+function install_acars_ingest_service() {
+    local ingest_source="${RECEIVER_ROOT_DIRECTORY}/build/portal/backend/backend/acars_ingest.py"
+    local ingest_directory="/usr/local/lib/adsb-receiver"
+    local data_directory="/var/lib/adsb-receiver"
+    local database_path="${data_directory}/acars.sqlite3"
+    local legacy_database=""
+    local candidate
+    local legacy_candidates=(
+        "${RECEIVER_BUILD_DIRECTORY}/acarsserv/acarsserv.sqb"
+        "${RECEIVER_ROOT_DIRECTORY}/build/portal/backend/instance/acarsdec.sqlite"
+    )
+
+    if [[ ! -f "${ingest_source}" ]]; then
+        log_alert_message "ACARS ingestion service source was not found at ${ingest_source}"
+        return 1
+    fi
+
+    check_package python3
+
+    if ! getent group adsb-receiver >/dev/null; then
+        sudo groupadd --system adsb-receiver
+    fi
+    if ! getent passwd adsb-receiver >/dev/null; then
+        log_message "Creating the adsb-receiver service account"
+        sudo useradd --system \
+                      --gid adsb-receiver \
+                      --home-dir "${data_directory}" \
+                      --shell /usr/sbin/nologin \
+                      adsb-receiver
+    else
+        sudo usermod --append --groups adsb-receiver adsb-receiver
+    fi
+    if getent passwd www-data >/dev/null; then
+        sudo usermod --append --groups adsb-receiver www-data
+    fi
+
+    sudo install -d -m 0755 "${ingest_directory}"
+    sudo install -d -o adsb-receiver -g adsb-receiver -m 0775 "${data_directory}"
+    sudo install -o root -g root -m 0755 "${ingest_source}" "${ingest_directory}/acars_ingest.py"
+
+    if systemctl cat acarsserv.service >/dev/null 2>&1; then
+        log_message "Disabling the archived acarsserv service"
+        sudo systemctl disable --now acarsserv.service
+    fi
+
+    for candidate in "${legacy_candidates[@]}"; do
+        if [[ -f "${candidate}" ]]; then
+            legacy_database="${candidate}"
+            break
+        fi
+    done
+    if [[ ! -f "${database_path}" && -n "${legacy_database}" ]]; then
+        log_message "Migrating the legacy acarsserv database"
+        sudo install -o adsb-receiver -g adsb-receiver -m 0664 \
+                     "${legacy_database}" "${database_path}"
+    fi
+    if [[ -f "${database_path}" ]]; then
+        sudo chown adsb-receiver:adsb-receiver "${database_path}"
+        sudo chmod 0664 "${database_path}"
+    fi
+
+    log_message "Creating the ACARS ingestion systemd service"
+    sudo tee /etc/systemd/system/acars-ingest.service >/dev/null <<EOF
+[Unit]
+Description=ADS-B Receiver ACARS and VDL2 message ingestion
+After=network.target
+
+[Service]
+Type=simple
+User=adsb-receiver
+Group=adsb-receiver
+UMask=0002
+ExecStart=/usr/bin/python3 ${ingest_directory}/acars_ingest.py --database ${database_path} --bind 127.0.0.1 --port 5555
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=${data_directory}
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now acars-ingest.service
+}
+
+function install_dumpvdl2_config_helper() {
+    local helper_source="${RECEIVER_ROOT_DIRECTORY}/bash/tools/dumpvdl2_config.sh"
+    local helper_target="/usr/local/sbin/adsb-receiver-dumpvdl2-config"
+    local sudoers_file="/etc/sudoers.d/adsb-receiver-dumpvdl2"
+
+    if [[ ! -f "${helper_source}" ]]; then
+        log_alert_message "dumpvdl2 configuration helper was not found at ${helper_source}"
+        return 1
+    fi
+
+    sudo install -o root -g root -m 0755 "${helper_source}" "${helper_target}"
+
+    if getent passwd www-data >/dev/null; then
+        echo "www-data ALL=(root) NOPASSWD: ${helper_target} *" | \
+            sudo tee "${sudoers_file}" >/dev/null
+        sudo chmod 0440 "${sudoers_file}"
+        if ! sudo visudo -cf "${sudoers_file}" >/dev/null; then
+            sudo rm -f "${sudoers_file}"
+            log_alert_message "The dumpvdl2 sudoers configuration was invalid"
+            return 1
+        fi
+    fi
+}
+
 
 ## CONFIGURATION RELATED FUNCTIONS
 
@@ -306,11 +419,6 @@ function ask_for_device_assignments() {
         vdlm2_decoder_installed="true"
         RECEIVER_VDLM2_DECODER_SOFTWARE="dumpvdl2"
     fi
-    if [[ -f /usr/local/bin/vdlm2dec ]]; then
-        log_message "The VDLM2DEC decoder appears to be installed"
-        vdlm2_decoder_installed="true"
-        RECEIVER_VDLM2_DECODER_SOFTWARE="vdlm2dec"
-    fi
     if [[ "${vdlm2_decoder_installed}" == "true" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" != "${decoder_being_installed}" ]]; then
         (( decoder_count++ ))
     fi
@@ -326,7 +434,7 @@ function ask_for_device_assignments() {
             if [[ "${acars_decoder_installed}" == "true" ]]; then
                 log_message "Determining which device is currently assigned to ACARSDEC"
                 exec_start=$(get_config "ExecStart" "/etc/systemd/system/acarsdec.service")
-                device_assigned_to_acars_decoder=$(echo "${exec_start}" | grep -o -P '(?<=-r )[0-9]+')
+                device_assigned_to_acars_decoder=$(echo "${exec_start}" | grep -o -P '(?<=--rtlsdr )[0-9]+')
             fi
             ask_device_number "ACARSDEC" "RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER" "${device_assigned_to_acars_decoder}"
         fi
@@ -351,8 +459,7 @@ function ask_for_device_assignments() {
         if [[ "${decoder_being_installed}" == "dumpvdl2" || "${vdlm2_decoder_installed}" == "true" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "dumpvdl2" ]]; then
             if [[ "${vdlm2_decoder_installed}" == "true" ]]; then
                 log_message "Determining which device is currently assigned to dumpvdl2"
-                exec_start=$(get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service")
-                device_assigned_to_vdlm2_decoder=$(echo "${exec_start}" | grep -o -P '(?<=--rtlsdr )[0-9]+')
+                device_assigned_to_vdlm2_decoder=$(get_config "DUMPVDL2_DEVICE" "/etc/default/dumpvdl2")
             fi
             ask_device_number "dumpvdl2" "RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER" "${device_assigned_to_vdlm2_decoder}"
         fi
@@ -366,14 +473,6 @@ function ask_for_device_assignments() {
             ask_device_number "Readsb" "RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER" "${device_assigned_to_adsb_decoder}"
         fi
 
-        if [[ "${decoder_being_installed}" == "vdlm2dec" || "${vdlm2_decoder_installed}" == "true" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "vdlm2dec" ]]; then
-            if [[ "${vdlm2_decoder_installed}" == "true" ]]; then
-                log_message "Determining which device is currently assigned to VDLM2DEC"
-                exec_start=$(get_config "ExecStart" "/etc/systemd/system/vdlm2dec.service")
-                device_assigned_to_vdlm2_decoder=$(echo "${exec_start}" | grep -o -P '(?<=-r )[0-9]+')
-            fi
-            ask_device_number "VDLM2DEC" "RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER" "${device_assigned_to_vdlm2_decoder}"
-        fi
     fi
 }
 
@@ -383,7 +482,7 @@ function assign_devices_to_decoders() {
 
     if [[ -n "${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER}" && "${RECEIVER_ACARS_DECODER_SOFTWARE}" == "acarsdec" ]]; then
         log_message "Assigning RTL-SDR device number ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} to ACARSDEC"
-        sudo sed -i -e "s|\(.*-r \)\([0-9]\+\)\( .*\)|\1${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER}\3|g" /etc/systemd/system/acarsdec.service
+        sudo sed -i -e "s|\(.*--rtlsdr \)\([0-9]\+\)\( .*\)|\1${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER}\3|g" /etc/systemd/system/acarsdec.service
         log_message "Reload systemd units"
         sudo systemctl daemon-reload
         log_message "Restarting ACARSDEC"
@@ -412,9 +511,7 @@ function assign_devices_to_decoders() {
 
     if [[ -n "${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "dumpvdl2" ]]; then
         log_message "Assigning RTL-SDR device number ${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER} to dumpvdl2"
-        sudo sed -i -e "s|\(.*--rtlsdr \)\([0-9]\+\)\( .*\)|\1${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}\3|g" /etc/systemd/system/dumpvdl2.service
-        log_message "Reloading systemd units"
-        sudo systemctl daemon-reload
+        change_config "DUMPVDL2_DEVICE" "${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}" "/etc/default/dumpvdl2"
         log_message "Restarting dumpvdl2"
         sudo systemctl restart dumpvdl2
     fi
@@ -426,12 +523,4 @@ function assign_devices_to_decoders() {
         sudo systemctl restart readsb
     fi
 
-    if [[ -n "${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}" && "${RECEIVER_VDLM2_DECODER_SOFTWARE}" == "vdlm2dec" ]]; then
-        log_message "Assigning RTL-SDR device number ${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER} to vdlm2dec"
-        sudo sed -i -e "s|\(.*-r \)\([0-9]\+\)\( .*\)|\1${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}\3|g" /etc/systemd/system/vdlm2dec.service
-        log_message "Reloading systemd units"
-        sudo systemctl daemon-reload
-        log_message "Restarting vdlm2dec"
-        sudo systemctl restart vdlm2dec
-    fi
 }
