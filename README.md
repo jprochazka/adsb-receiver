@@ -56,15 +56,6 @@ When setting up the portal you will have to choose between a lite or advanced in
 * Readsb:                  https://github.com/wiedehopf/readsb
 * VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
-### ADS-B Input Add-ons
-
-* Stream1090:              https://github.com/mgrone/stream1090
-
-Stream1090 is an optional Mode-S demodulator that can feed readsb or dump1090-fa
-over a local TCP connection. It is not a standalone aircraft decoder. When it is
-enabled, stream1090 owns the selected SDR and the ADS-B decoder must use network
-input instead of opening that SDR directly.
-
 ### Feeders
 
 * ADS-B Exchange Feeder Client:   https://adsbexchange.com
@@ -75,6 +66,10 @@ input instead of opening that SDR directly.
 * Fly Italy ADS-B Feeder Client:  https://flyitalyadsb.com
 * OpenSky Feeder Client:          https://opensky-network.org
 * Plane Finder ADS-B Client:      https://planefinder.net
+
+### Add-ons
+
+* Stream1090:              https://github.com/mgrone/stream1090
 
 ### Extras
 
