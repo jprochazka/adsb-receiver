@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.12 *(Coming soon...)*
+
+* Added the option to install stream1090.
+
 ## v2.8.11 *(August 14th, 2026)*
 
 * Fixed a stray `esac` that caused the dump1090-fa installer to fail with a Bash syntax error.

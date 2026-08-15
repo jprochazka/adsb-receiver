@@ -75,6 +75,37 @@ if [[ "${adsb_decoder_installed}" == "false" ]]; then
 fi
 
 
+## ADS-B INPUT SOURCE
+
+install_stream1090="false"
+disable_stream1090="false"
+chosen_adsb_input_source="Direct SDR"
+
+if [[ "${adsb_decoder_installed}" == "true" || "${install_adsb_decoder}" == "true" && "${chosen_adsb_decoder}" != "None" ]]; then
+    chosen_adsb_input_source=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                            --title "ADS-B Input Source" \
+                                            --menu "Choose how the selected ADS-B decoder will receive Mode-S data." \
+                                            12 100 2 \
+                                            "Direct SDR" "The ADS-B decoder opens the SDR directly." \
+                                            "stream1090" "stream1090 owns the SDR and forwards raw frames to the decoder." \
+                                            3>&2 2>&1 1>&3)
+    exit_status=$?
+    if [[ $exit_status -ne 0 ]]; then
+        exit 1
+    fi
+    if [[ "${chosen_adsb_input_source}" == "stream1090" ]]; then
+        install_stream1090="true"
+    elif [[ -f /etc/systemd/system/stream1090.service ]]; then
+        if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                    --title "Disable stream1090" \
+                    --yesno "stream1090 is installed. Would you like to disable it and restore the decoder's direct-SDR configuration?" \
+                    9 78; then
+            disable_stream1090="true"
+        fi
+    fi
+fi
+
+
 ## UAT DECODERS
 
 uat_decoder_installed="false"
@@ -354,7 +385,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
 confirmation_message=""
 
-if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_vdlm2_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/feeder_choices.txt" && ! -s "${RECEIVER_ROOT_DIRECTORY}/extras_choices.txt" ]]; then
+if [[ "${install_adsb_decoder}" == "false" && "${install_stream1090}" == "false" && "${disable_stream1090}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_vdlm2_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/feeder_choices.txt" && ! -s "${RECEIVER_ROOT_DIRECTORY}/extras_choices.txt" ]]; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Nothing to be done" \
              --msgbox "Nothing has been selected to be installed so the script will exit now." \
@@ -376,6 +407,14 @@ else
                 confirmation_message="${confirmation_message}\n  * Readsb"
                 ;;
         esac
+    fi
+
+    if [[ "${install_stream1090}" == "true" ]]; then
+        confirmation_message="${confirmation_message}\n  * stream1090 ADS-B input (paired with ${chosen_adsb_decoder})"
+    fi
+
+    if [[ "${disable_stream1090}" == "true" ]]; then
+        confirmation_message="${confirmation_message}\n  * Disable stream1090 and restore direct SDR input"
     fi
 
     # UAT decoders
@@ -453,6 +492,19 @@ if [[ "${install_adsb_decoder}" == "true" ]]; then
              run_installer "decoders/readsb.sh"
              ;;
     esac
+fi
+
+# ADS-B input source
+if [[ "${install_stream1090}" == "true" ]]; then
+    export RECEIVER_STREAM1090_DECODER="${chosen_adsb_decoder}"
+    run_installer "addons/stream1090.sh"
+fi
+
+if [[ "${disable_stream1090}" == "true" ]]; then
+    export RECEIVER_STREAM1090_DECODER="${chosen_adsb_decoder}"
+    if ! bash "${RECEIVER_BASH_DIRECTORY}/addons/stream1090.sh" --disable; then
+        exit 1
+    fi
 fi
 
 # UAT Decoders

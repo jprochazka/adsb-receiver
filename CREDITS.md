@@ -62,6 +62,7 @@ hard work and dedication to their respective projects this project would not hav
 * Graphs1090:              https://github.com/wiedehopf/graphs1090
 * PiAware (FlightAware):   https://github.com/flightaware/piaware
 * Readsb (wiedehopf):      https://github.com/wiedehopf/readsb
+* Stream1090:              https://github.com/mgrone/stream1090
 * tar1090:                 https://github.com/wiedehopf/tar1090
 * VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
