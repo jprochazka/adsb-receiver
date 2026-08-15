@@ -24,6 +24,7 @@ from backend.routes.notifications import notifications, notifications_ns
 from backend.routes.settings import settings, setting_ns
 from backend.routes.devices import devices, devices_ns
 from backend.routes.dumpvdl2 import dumpvdl2, dumpvdl2_ns
+from backend.routes.ais import ais, ais_ns
 from backend.routes.tokens import tokens, auth_ns
 from backend.routes.users import users, users_ns
 from backend.routes.x_alert import x_alert_ns
@@ -123,6 +124,7 @@ def _register_api_namespaces(api):
     api.add_namespace(blog_ns)
     api.add_namespace(devices_ns)
     api.add_namespace(dumpvdl2_ns)
+    api.add_namespace(ais_ns)
     api.add_namespace(links_ns)
     api.add_namespace(live_ns)
     api.add_namespace(notifications_ns)
@@ -215,6 +217,7 @@ def _register_blueprints(app):
     app.register_blueprint(settings)
     app.register_blueprint(devices)
     app.register_blueprint(dumpvdl2)
+    app.register_blueprint(ais)
     app.register_blueprint(tokens)
     app.register_blueprint(users)
 

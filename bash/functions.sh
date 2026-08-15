@@ -288,6 +288,58 @@ EOF
     sudo systemctl enable --now acars-ingest.service
 }
 
+function install_ais_ingest_service() {
+    local ingest_source="${RECEIVER_ROOT_DIRECTORY}/build/portal/backend/backend/ais_ingest.py"
+    local ingest_directory="/usr/local/lib/adsb-receiver"
+    local data_directory="/var/lib/adsb-receiver"
+    local portal_backend_directory="${RECEIVER_ROOT_DIRECTORY}/build/portal/backend"
+
+    if [[ ! -f "${ingest_source}" ]]; then
+        log_alert_message "AIS ingestion service source was not found at ${ingest_source}"
+        return 1
+    fi
+
+    check_package python3
+    if ! getent group adsb-receiver >/dev/null; then
+        sudo groupadd --system adsb-receiver
+    fi
+    if ! getent passwd adsb-receiver >/dev/null; then
+        sudo useradd --system --gid adsb-receiver --home-dir "${data_directory}" \
+                     --shell /usr/sbin/nologin adsb-receiver
+    fi
+    sudo install -d -o adsb-receiver -g adsb-receiver -m 0775 "${data_directory}"
+    sudo install -d -m 0755 "${ingest_directory}"
+    sudo install -o root -g root -m 0755 "${ingest_source}" "${ingest_directory}/ais_ingest.py"
+
+    log_message "Creating the AIS ingestion systemd service"
+    sudo tee /etc/systemd/system/ais-ingest.service >/dev/null <<EOF
+[Unit]
+Description=ADS-B Receiver AIS message ingestion
+After=network.target
+
+[Service]
+Type=simple
+User=adsb-receiver
+Group=adsb-receiver
+UMask=0002
+WorkingDirectory=${portal_backend_directory}
+ExecStart=/usr/bin/python3 ${ingest_directory}/ais_ingest.py --bind 127.0.0.1 --port 5556
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=${data_directory} ${portal_backend_directory}/instance
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now ais-ingest.service
+}
+
 function install_dumpvdl2_config_helper() {
     local helper_source="${RECEIVER_ROOT_DIRECTORY}/bash/tools/dumpvdl2_config.sh"
     local helper_target="/usr/local/sbin/adsb-receiver-dumpvdl2-config"
@@ -339,21 +391,51 @@ function ask_device_number() {
     local decoder_name="$1"
     local var_name="$2"
     local default_value="${3:-}"
-    local title="Enter the ${decoder_name} RTL-SDR Device Number"
+    local title="Enter the ${decoder_name} RTL-SDR Device Identifier"
     local value=""
     log_message "Asking the user to assign a RTL-SDR device number to ${decoder_name}"
     while [[ -z "${value}" ]]; do
         value=$(whiptail --backtitle "Decoder Configuration" \
                          --title "${title}" \
-                         --inputbox "\nEnter the RTL-SDR device number to assign to ${decoder_name}." \
+                         --inputbox "\nEnter the RTL-SDR device identifier to assign to ${decoder_name}. Use the stable serial where supported." \
                          8 78 \
                          "${default_value}" 3>&1 1>&2 2>&3)
         if [[ $? -ne 0 ]]; then
             exit 1
         fi
-        title="Enter the ${decoder_name} RTL-SDR Device Number (REQUIRED)"
+        title="Enter the ${decoder_name} RTL-SDR Device Identifier (REQUIRED)"
     done
     declare -g "${var_name}=${value}"
+}
+
+function validate_decoder_device_assignments() {
+    local assignment
+    local decoder
+    declare -A assigned_devices=()
+    local assignments=(
+        "ACARSDEC:${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER:-}"
+        "dump1090-fa:${RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER:-}"
+        "dump978-fa:${RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER:-}"
+        "dumpvdl2:${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER:-}"
+        "AIS-catcher:${RECEIVER_DEVICE_ASSIGNED_TO_AIS_CATCHER:-}"
+    )
+
+    log_heading "RTL-SDR decoder assignments"
+    for assignment in "${assignments[@]}"; do
+        decoder="${assignment%%:*}"
+        local value="${assignment#*:}"
+        [[ -z "${value}" ]] && continue
+        if [[ ! "${value}" =~ ^[A-Za-z0-9_.:-]+$ ]]; then
+            log_alert_message "Invalid RTL-SDR device identifier for ${decoder}: ${value}"
+            return 1
+        fi
+        log_message "${decoder}: ${value}"
+        if [[ -n "${assigned_devices[${value}]:-}" && "${assigned_devices[${value}]}" != "${decoder}" ]]; then
+            log_alert_message "Duplicate RTL-SDR assignment: ${value} is assigned to ${assigned_devices[${value}]} and ${decoder}"
+            return 1
+        fi
+        assigned_devices["${value}"]="${decoder}"
+    done
 }
 
 function ask_for_device_assignments() {
@@ -363,12 +445,14 @@ function ask_for_device_assignments() {
     local adsb_decoder_installed="false"
     local uat_decoder_installed="false"
     local vdlm2_decoder_installed="false"
+    local ais_decoder_installed="false"
     local exec_start
     local receiver_options
     local device_assigned_to_acars_decoder=""
     local device_assigned_to_adsb_decoder=""
     local device_assigned_to_uat_decoder=""
     local device_assigned_to_vdlm2_decoder=""
+    local device_assigned_to_ais_decoder=""
 
     log_heading "Gather information required to configure the decoder(s)"
 
@@ -417,6 +501,16 @@ function ask_for_device_assignments() {
         (( decoder_count++ ))
     fi
 
+    log_message "Checking if an AIS decoder is installed"
+    if [[ -f /usr/local/bin/AIS-catcher ]]; then
+        log_message "The AIS-catcher decoder appears to be installed"
+        ais_decoder_installed="true"
+        RECEIVER_AIS_DECODER_SOFTWARE="ais-catcher"
+    fi
+    if [[ "${ais_decoder_installed}" == "true" && "${RECEIVER_AIS_DECODER_SOFTWARE}" != "${decoder_being_installed}" ]]; then
+        (( decoder_count++ ))
+    fi
+
     if [[ $decoder_count -gt 1 ]]; then
         log_message "Informing the user that existing decoder(s) appears to be installed"
         whiptail --backtitle "Decoder Configuration" \
@@ -458,6 +552,14 @@ function ask_for_device_assignments() {
             ask_device_number "dumpvdl2" "RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER" "${device_assigned_to_vdlm2_decoder}"
         fi
 
+        if [[ "${decoder_being_installed}" == "ais-catcher" || "${ais_decoder_installed}" == "true" && "${RECEIVER_AIS_DECODER_SOFTWARE}" == "ais-catcher" ]]; then
+            if [[ "${ais_decoder_installed}" == "true" ]]; then
+                log_message "Determining which device is currently assigned to AIS-catcher"
+                device_assigned_to_ais_decoder=$(get_config "AIS_CATCHER_DEVICE" "/etc/default/ais-catcher")
+            fi
+            ask_device_number "AIS-catcher" "RECEIVER_DEVICE_ASSIGNED_TO_AIS_CATCHER" "${device_assigned_to_ais_decoder}"
+        fi
+
         if [[ "${decoder_being_installed}" == "readsb" || "${adsb_decoder_installed}" == "true" && "${RECEIVER_ADSB_DECODER_SOFTWARE}" == "readsb" ]]; then
             if [[ "${adsb_decoder_installed}" == "true" ]]; then
                 log_message "Determining which device is currently assigned to Readsb"
@@ -473,6 +575,12 @@ function ask_for_device_assignments() {
 function assign_devices_to_decoders() {
 
     log_heading "Configure decoders if more than one is present"
+
+    if ! validate_decoder_device_assignments; then
+        log_alert_heading "INSTALLATION HALTED"
+        log_alert_message "Each active decoder must use a unique RTL-SDR device identifier"
+        return 1
+    fi
 
     if [[ -n "${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER}" && "${RECEIVER_ACARS_DECODER_SOFTWARE}" == "acarsdec" ]]; then
         log_message "Assigning RTL-SDR device number ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} to ACARSDEC"
@@ -508,6 +616,13 @@ function assign_devices_to_decoders() {
         change_config "DUMPVDL2_DEVICE" "${RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER}" "/etc/default/dumpvdl2"
         log_message "Restarting dumpvdl2"
         sudo systemctl restart dumpvdl2
+    fi
+
+    if [[ -n "${RECEIVER_DEVICE_ASSIGNED_TO_AIS_CATCHER}" && "${RECEIVER_AIS_DECODER_SOFTWARE}" == "ais-catcher" ]]; then
+        log_message "Assigning RTL-SDR device number ${RECEIVER_DEVICE_ASSIGNED_TO_AIS_CATCHER} to AIS-catcher"
+        change_config "AIS_CATCHER_DEVICE" "${RECEIVER_DEVICE_ASSIGNED_TO_AIS_CATCHER}" "/etc/default/ais-catcher"
+        log_message "Restarting AIS-catcher"
+        sudo systemctl restart ais-catcher
     fi
 
     if [[ -n "${RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER}" && "${RECEIVER_ADSB_DECODER_SOFTWARE}" == "readsb" ]]; then

@@ -168,6 +168,35 @@ if [[ "${vdlm2_decoder_installed}" == "false" ]]; then
 fi
 
 
+## AIS DECODER
+
+ais_decoder_installed="false"
+install_ais_decoder="false"
+
+if [[ -f /etc/systemd/system/ais-catcher.service ]]; then
+    ais_decoder_installed="true"
+    chosen_ais_decoder="ais-catcher"
+    ask_reinstall "Reinstall AIS-catcher Decoder" \
+                  "The option to rebuild and reinstall AIS-catcher is available.\n\nWould you like to rebuild and reinstall AIS-catcher?" \
+                  9 65 install_ais_decoder
+fi
+
+if [[ "${ais_decoder_installed}" == "false" ]]; then
+    install_ais_decoder="true"
+    chosen_ais_decoder=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                  --title "AIS Decoder Selection" \
+                                  --menu "The following AIS decoders are available for installation." \
+                                  16 100 9 \
+                                  "None" "Do not install an AIS decoder." \
+                                  "ais-catcher" "AIS-catcher dual-channel AIS decoder." \
+                                  3>&2 2>&1 1>&3)
+    exit_status=$?
+    if [[ $exit_status -ne 0 || "${chosen_ais_decoder}" == "None" ]]; then
+        install_ais_decoder="false"
+    fi
+fi
+
+
 ## AGGREGATE SITE CLIENTS
 
 declare -a feeder_list
@@ -361,7 +390,7 @@ whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 
 confirmation_message=""
 
-if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_vdlm2_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/feeder_choices.txt" && ! -s "${RECEIVER_ROOT_DIRECTORY}/extras_choices.txt" ]]; then
+if [[ "${install_adsb_decoder}" == "false" && "${install_uat_decoder}" == "false" && "${install_acars_decoder}" == "false" && "${install_vdlm2_decoder}" == "false" && "${install_ais_decoder}" == "false" && "${install_portal}" == "false" && ! -s "${RECEIVER_ROOT_DIRECTORY}/feeder_choices.txt" && ! -s "${RECEIVER_ROOT_DIRECTORY}/extras_choices.txt" ]]; then
     whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
              --title "Nothing to be done" \
              --msgbox "Nothing has been selected to be installed so the script will exit now." \
@@ -408,6 +437,15 @@ else
         case "${chosen_vdlm2_decoder}" in
             "dumpvdl2")
                 confirmation_message="${confirmation_message}\n  * dumpvdl2"
+                ;;
+        esac
+    fi
+
+    # AIS decoders
+    if [[ "${install_ais_decoder}" == "true" ]]; then
+        case "${chosen_ais_decoder}" in
+            "ais-catcher")
+                confirmation_message="${confirmation_message}\n  * AIS-catcher"
                 ;;
         esac
     fi
@@ -482,6 +520,15 @@ if [[ "${install_vdlm2_decoder}" == "true" ]]; then
     case "${chosen_vdlm2_decoder}" in
         "dumpvdl2")
             run_installer "decoders/dumpvdl2.sh"
+            ;;
+    esac
+fi
+
+# AIS decoders
+if [[ "${install_ais_decoder}" == "true" ]]; then
+    case "${chosen_ais_decoder}" in
+        "ais-catcher")
+            run_installer "decoders/ais-catcher.sh"
             ;;
     esac
 fi

@@ -4,6 +4,7 @@ import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, inject, 
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../service/data.service';
+import type { AisTarget } from '../shared/api-types';
 import { SpinnerComponent } from '../shared/spinner/spinner.component';
 import {
   AIRCRAFT_TYPE_LEGEND,
@@ -108,10 +109,17 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   // Selection
   selectedHex: string | null = null;
+  selectedAisIdentity: string | null = null;
   get selectedAircraft(): LiveAircraft | null {
     return this.selectedHex
       ? (this.aircraft.find(a => a.hex === this.selectedHex) ?? null)
       : null;
+  }
+  get selectedAis(): AisTarget | null {
+    if (!this.selectedAisIdentity) return null;
+    return this.aisTargets.find(target =>
+      `ais:${target.mmsi}:${target.target_kind}` === this.selectedAisIdentity
+    ) ?? null;
   }
 
   // UI
@@ -152,6 +160,18 @@ export class LiveComponent implements OnInit, OnDestroy {
     return this.aircraft.filter(a => a.lat != null && a.lon != null).length;
   }
 
+  get aisWithPosition(): number {
+    return this.aisTargets.filter(target => target.latitude != null && target.longitude != null).length;
+  }
+
+  get trackedCount(): number {
+    return this.aircraft.length + this.aisTargets.length;
+  }
+
+  get plottedCount(): number {
+    return this.aircraftWithPosition + this.aisWithPosition;
+  }
+
   // Exposed helper for templates
   readonly altColor = altitudeColor;
   readonly aircraftTypeLegend = AIRCRAFT_TYPE_LEGEND;
@@ -167,6 +187,14 @@ export class LiveComponent implements OnInit, OnDestroy {
   private spiderSource = new VectorSource();
   /** hex -> OL Feature lookup for in-place position updates */
   private featureIndex: { [hex: string]: Feature } = {};
+  private aisSource = new VectorSource();
+  private aisFeatureIndex: { [identity: string]: Feature } = {};
+  aisTargets: AisTarget[] = [];
+  aisTargetKindFilter = 'all';
+  get filteredAisTargets(): AisTarget[] {
+    if (this.aisTargetKindFilter === 'all') return this.aisTargets;
+    return this.aisTargets.filter(target => target.target_kind === this.aisTargetKindFilter);
+  }
   /** hex -> list of projected/time-stamped points retained for trail rendering */
   private trailHistory: { [hex: string]: TrailPoint[] } = {};
   /** hex -> trail line feature */
@@ -305,13 +333,19 @@ export class LiveComponent implements OnInit, OnDestroy {
     this.subscription?.unsubscribe();
     this.subscription = interval(this.refreshMs).pipe(
       startWith(0),
-      switchMap(() => this.dataService.getLiveAircraft().pipe(catchError(() => of(null))))
+      switchMap(() => forkJoin({
+        aircraft: this.dataService.getLiveAircraft().pipe(catchError(() => of(null))),
+        ais: this.dataService.getLiveAis().pipe(catchError(() => of(null))),
+      }))
     ).subscribe(data => {
-      if (data) {
-        this.handleData(data);
+      if (data.aircraft) {
+        this.handleData(data.aircraft);
+      }
+      if (data.ais) {
+        this.handleAisData(data.ais);
       } else if (this.loading) {
         this.loading = false;
-        this.errorMessage = 'Unable to reach aircraft data. Ensure the decoder(s) are running and reachable.';
+        this.errorMessage = 'Unable to reach aircraft or AIS data. Ensure the decoder(s) are running and reachable.';
       }
       this.cdr.detectChanges();
     });
@@ -352,6 +386,7 @@ export class LiveComponent implements OnInit, OnDestroy {
           style: feature => this.spiderStyleFor(feature as Feature)
         }),
         new VectorLayer({ source: this.aircraftSource, zIndex: 14 }),
+        new VectorLayer({ source: this.aisSource, zIndex: 15 }),
       ],
       target: 'live',
       view: new View({
@@ -379,16 +414,21 @@ export class LiveComponent implements OnInit, OnDestroy {
     // Click to select / deselect
     this.olMap.on('click', evt => {
       let hitHex: string | null = null;
+      let hitAis: string | null = null;
       this.olMap.forEachFeatureAtPixel(
         evt.pixel,
         feature => {
           hitHex = (feature.get('hex') as string) ?? null;
+          hitAis = (feature.get('id') as string) ?? null;
           return true; // stop after first hit
         },
         { hitTolerance: 8 }
       );
+      const aisIdentity = hitAis as string | null;
       if (hitHex) {
         this.selectAircraft(hitHex);
+      } else if (aisIdentity?.startsWith('ais:')) {
+        this.selectAis(aisIdentity);
       } else {
         this.clearSelection();
         this.cdr.detectChanges();
@@ -418,6 +458,39 @@ export class LiveComponent implements OnInit, OnDestroy {
       this.selectedHex = null;
       this.photoUrl    = null;
       this.photoAttrib = null;
+    }
+  }
+
+  private handleAisData(data: { items?: AisTarget[] }): void {
+    this.aisTargets = data.items ?? [];
+    const active = new Set<string>();
+    for (const target of this.aisTargets) {
+      if (target.latitude == null || target.longitude == null) continue;
+      const identity = `ais:${target.mmsi}:${target.target_kind}`;
+      active.add(identity);
+      const coordinate = fromLonLat([target.longitude, target.latitude]);
+      const existing = this.aisFeatureIndex[identity];
+      if (existing) {
+        (existing.getGeometry() as Point).setCoordinates(coordinate);
+        existing.set('ais', target, true);
+        existing.setStyle(this.makeAisStyle(target));
+      } else {
+        const feature = new Feature({ geometry: new Point(coordinate) });
+        feature.set('id', identity);
+        feature.set('ais', target);
+        feature.setStyle(this.makeAisStyle(target));
+        this.aisSource.addFeature(feature);
+        this.aisFeatureIndex[identity] = feature;
+      }
+    }
+    for (const identity of Object.keys(this.aisFeatureIndex)) {
+      if (!active.has(identity)) {
+        this.aisSource.removeFeature(this.aisFeatureIndex[identity]);
+        delete this.aisFeatureIndex[identity];
+      }
+    }
+    if (this.selectedAisIdentity && !active.has(this.selectedAisIdentity)) {
+      this.selectedAisIdentity = null;
     }
   }
 
@@ -632,6 +705,61 @@ export class LiveComponent implements OnInit, OnDestroy {
     });
   }
 
+  private makeAisStyle(target: AisTarget): Style {
+    const rotation = ((target.heading ?? target.course ?? 0) * Math.PI) / 180;
+    const stale = target.last_seen
+      ? Date.now() - Date.parse(target.last_seen) > 300_000
+      : true;
+    const fill = stale ? '#64748b' : '#0f766e';
+    const outline = stale ? '#cbd5e1' : '#ccfbf1';
+    const icon = this.aisIconForTarget(target, fill, outline);
+    return new Style({
+      image: new Icon({
+        src: 'data:image/svg+xml;utf8,' + encodeURIComponent(icon.svg),
+        rotation: icon.rotates ? rotation : 0,
+        scale: 0.9,
+      }),
+    });
+  }
+
+  private aisIconForTarget(target: AisTarget, fill: string, outline: string): { svg: string; rotates: boolean } {
+    switch (target.target_kind) {
+      case 'sar_aircraft':
+        return { svg: this.aisSarSvg(fill, outline), rotates: true };
+      case 'base_station':
+        return { svg: this.aisBaseStationSvg(fill, outline), rotates: false };
+      case 'aid_to_navigation':
+        return { svg: this.aisAidSvg(fill, outline), rotates: false };
+      default:
+        return { svg: this.aisVesselSvg(target.vessel_type, fill, outline), rotates: true };
+    }
+  }
+
+  private aisVesselSvg(vesselType: number | null | undefined, fill: string, outline: string): string {
+    const shape = vesselType != null && vesselType >= 80 && vesselType <= 89
+      ? '<path d="M16 2 23 21 19 28 13 28 9 21Z"/>'
+      : vesselType != null && vesselType >= 70 && vesselType <= 79
+        ? '<path d="M16 2 24 8 22 27 10 27 8 8Z"/><path d="M10 13h12M10 18h12M11 23h10" fill="none"/>'
+      : vesselType != null && vesselType >= 60 && vesselType <= 69
+        ? '<path d="M16 2 24 9 22 26 10 26 8 9Z"/><path d="M11 12h10M10 17h12" fill="none"/>'
+        : vesselType != null && vesselType >= 30 && vesselType <= 39
+          ? '<path d="M16 3 22 22 16 29 10 22Z"/><path d="M11 21h10" fill="none"/>'
+          : '<path d="M16 3 22 22 16 29 10 22Z"/>';
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g fill="${fill}" stroke="${outline}" stroke-width="2" stroke-linejoin="round">${shape}</g><path d="M16 7v15" stroke="${outline}" stroke-width="1.5"/></svg>`;
+  }
+
+  private aisSarSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g fill="${fill}" stroke="${outline}" stroke-width="2" stroke-linejoin="round"><path d="M16 3 19 12 29 16 19 20 16 29 13 20 3 16 13 12Z"/><circle cx="16" cy="16" r="3" fill="${outline}" stroke="none"/></g></svg>`;
+  }
+
+  private aisBaseStationSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g fill="none" stroke="${outline}" stroke-width="2" stroke-linecap="round"><path d="M16 6v20M10 26h12M12 12a6 6 0 0 1 8 0M8 8a11 11 0 0 1 16 0"/><circle cx="16" cy="6" r="3" fill="${fill}"/></g></svg>`;
+  }
+
+  private aisAidSvg(fill: string, outline: string): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g fill="${fill}" stroke="${outline}" stroke-width="2" stroke-linejoin="round"><path d="M16 3 21 10 20 25 16 29 12 25 11 10Z"/><path d="M7 13h18M8 18h16" fill="none"/></g></svg>`;
+  }
+
 
   private svgForAircraftClass(aircraftClass: string, fill: string, outline: string): string {
     switch (aircraftClass) {
@@ -684,6 +812,7 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   selectAircraft(hex: string): void {
     this.selectedHex = hex;
+    this.selectedAisIdentity = null;
     this.refreshAllStyles();
     this.photoUrl   = null;
     this.photoAttrib = null;
@@ -714,8 +843,26 @@ export class LiveComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  selectAis(identity: string): void {
+    const target = this.aisTargets.find(item =>
+      `ais:${item.mmsi}:${item.target_kind}` === identity
+    );
+    if (!target) return;
+    this.selectedAisIdentity = identity;
+    this.selectedHex = null;
+    if (target.latitude != null && target.longitude != null) {
+      this.olMap.getView().animate({
+        center: fromLonLat([target.longitude, target.latitude]),
+        duration: 400,
+      });
+    }
+    if (!this.panelOpen) this.panelOpen = true;
+    this.cdr.detectChanges();
+  }
+
   clearSelection(): void {
     this.selectedHex  = null;
+    this.selectedAisIdentity = null;
     this.photoUrl     = null;
     this.photoAttrib  = null;
     this.refreshAllStyles();
@@ -867,6 +1014,14 @@ export class LiveComponent implements OnInit, OnDestroy {
 
   aircraftTypeLegendIconDataUrl(aircraftClass: string): string {
     const svg = this.svgForAircraftClass(aircraftClass, '#f8fafc', '#0f172a');
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  aisLegendIconDataUrl(): string {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">' +
+      '<path d="M16 3 22 22 16 29 10 22Z" fill="#0f766e" stroke="#ccfbf1" stroke-width="2"/>' +
+      '<path d="M16 7v15" stroke="#ccfbf1" stroke-width="1.5"/>' +
+      '</svg>';
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
 

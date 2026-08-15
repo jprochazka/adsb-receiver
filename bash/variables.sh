@@ -32,3 +32,8 @@ readonly fr24feed_current_version="1.0.54-0"
 
 # OpenSky Network Client
 readonly opensky_feeder_current_version="2.1.7-1"
+
+# AIS-catcher
+readonly ais_catcher_current_version="main"
+readonly ais_catcher_repository_url="https://github.com/jvde-github/AIS-catcher.git"
+readonly ais_catcher_source_sha256=""

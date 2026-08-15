@@ -2,6 +2,10 @@
 
 The following is a history of the changes made to this project.
 
+## v3.1.0 *(Coming later...)*
+
+* Added initial AIS-catcher integration.
+
 ## v3.0.0 *(Coming soon...)*
 
 * New version of the portal. (total rewrite with many additions)

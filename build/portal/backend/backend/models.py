@@ -436,3 +436,180 @@ class UatFlightComment(SerializableMixin, db.Model):
             'edited_at': _isoformat_or_none(self.edited_at),
             'user': _comment_user_dict(self.user, self.user_id),
         }
+
+
+class AisTarget(SerializableMixin, db.Model):
+    __tablename__ = 'ais_targets'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    mmsi = db.Column(db.String(9), nullable=False, index=True)
+    target_kind = db.Column(db.String(32), nullable=False, default='vessel', index=True)
+    imo = db.Column(db.String(10))
+    callsign = db.Column(db.String(32))
+    name = db.Column(db.String(128))
+    vessel_type = db.Column(db.Integer)
+    dimensions = db.Column(db.JSON)
+    first_seen = db.Column(db.DateTime, nullable=False, index=True)
+    last_seen = db.Column(db.DateTime, nullable=False, index=True)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    speed = db.Column(db.Float)
+    course = db.Column(db.Float)
+    heading = db.Column(db.Integer)
+    turn_rate = db.Column(db.Float)
+    navigation_status = db.Column(db.Integer)
+    channel = db.Column(db.String(16))
+    position_timestamp = db.Column(db.DateTime, index=True)
+    static_report_timestamp = db.Column(db.DateTime)
+
+    positions = db.relationship('AisPosition', back_populates='target', cascade='all, delete-orphan')
+    voyages = db.relationship('AisVoyageReport', back_populates='target', cascade='all, delete-orphan')
+    raw_messages = db.relationship('AisRawMessage', back_populates='target', cascade='all, delete-orphan')
+
+    __table_args__ = (
+        db.UniqueConstraint('mmsi', 'target_kind', name='uq_ais_targets_mmsi_kind'),
+        db.Index('ix_ais_targets_live_position', 'last_seen', 'latitude', 'longitude'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'mmsi': self.mmsi,
+            'target_kind': self.target_kind,
+            'imo': self.imo,
+            'callsign': self.callsign,
+            'name': self.name,
+            'vessel_type': self.vessel_type,
+            'dimensions': self.dimensions,
+            'first_seen': _isoformat_or_none(self.first_seen),
+            'last_seen': _isoformat_or_none(self.last_seen),
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'speed': self.speed,
+            'course': self.course,
+            'heading': self.heading,
+            'turn_rate': self.turn_rate,
+            'navigation_status': self.navigation_status,
+            'channel': self.channel,
+            'position_timestamp': _isoformat_or_none(self.position_timestamp),
+            'static_report_timestamp': _isoformat_or_none(self.static_report_timestamp),
+        }
+
+
+class AisPosition(SerializableMixin, db.Model):
+    __tablename__ = 'ais_positions'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    target_id = db.Column(db.Integer, db.ForeignKey('ais_targets.id', ondelete='CASCADE'), nullable=False, index=True)
+    received_at = db.Column(db.DateTime, nullable=False, index=True)
+    position_timestamp = db.Column(db.DateTime, index=True)
+    message_type = db.Column(db.Integer, nullable=False)
+    channel = db.Column(db.String(16), nullable=False)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    speed = db.Column(db.Float)
+    course = db.Column(db.Float)
+    heading = db.Column(db.Integer)
+    turn_rate = db.Column(db.Float)
+    navigation_status = db.Column(db.Integer)
+    signal_strength = db.Column(db.Float)
+    frequency = db.Column(db.Float)
+    fingerprint = db.Column(db.String(64), nullable=False)
+
+    target = db.relationship('AisTarget', back_populates='positions')
+
+    __table_args__ = (
+        db.UniqueConstraint('target_id', 'fingerprint', name='uq_ais_positions_target_fingerprint'),
+        db.Index('ix_ais_positions_track', 'target_id', 'received_at'),
+        db.Index('ix_ais_positions_live', 'received_at', 'latitude', 'longitude'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'target_id': self.target_id,
+            'received_at': _isoformat_or_none(self.received_at),
+            'position_timestamp': _isoformat_or_none(self.position_timestamp),
+            'message_type': self.message_type,
+            'channel': self.channel,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'speed': self.speed,
+            'course': self.course,
+            'heading': self.heading,
+            'turn_rate': self.turn_rate,
+            'navigation_status': self.navigation_status,
+            'signal_strength': self.signal_strength,
+            'frequency': self.frequency,
+            'fingerprint': self.fingerprint,
+        }
+
+
+class AisVoyageReport(SerializableMixin, db.Model):
+    __tablename__ = 'ais_voyage_reports'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    target_id = db.Column(db.Integer, db.ForeignKey('ais_targets.id', ondelete='CASCADE'), nullable=False, index=True)
+    reported_at = db.Column(db.DateTime, nullable=False, index=True)
+    imo = db.Column(db.String(10))
+    callsign = db.Column(db.String(32))
+    name = db.Column(db.String(128))
+    vessel_type = db.Column(db.Integer)
+    dimensions = db.Column(db.JSON)
+    destination = db.Column(db.String(128))
+    eta_month = db.Column(db.Integer)
+    eta_day = db.Column(db.Integer)
+    eta_hour = db.Column(db.Integer)
+    eta_minute = db.Column(db.Integer)
+    draught = db.Column(db.Float)
+
+    target = db.relationship('AisTarget', back_populates='voyages')
+
+    __table_args__ = (db.Index('ix_ais_voyages_history', 'target_id', 'reported_at'),)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'target_id': self.target_id,
+            'reported_at': _isoformat_or_none(self.reported_at),
+            'imo': self.imo,
+            'callsign': self.callsign,
+            'name': self.name,
+            'vessel_type': self.vessel_type,
+            'dimensions': self.dimensions,
+            'destination': self.destination,
+            'eta_month': self.eta_month,
+            'eta_day': self.eta_day,
+            'eta_hour': self.eta_hour,
+            'eta_minute': self.eta_minute,
+            'draught': self.draught,
+        }
+
+
+class AisRawMessage(SerializableMixin, db.Model):
+    __tablename__ = 'ais_raw_messages'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    target_id = db.Column(db.Integer, db.ForeignKey('ais_targets.id', ondelete='CASCADE'), index=True)
+    received_at = db.Column(db.DateTime, nullable=False, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    nmea = db.Column(db.Text)
+    payload = db.Column(db.Text)
+    channel = db.Column(db.String(16))
+    message_type = db.Column(db.Integer)
+    decoder_version = db.Column(db.String(32))
+
+    target = db.relationship('AisTarget', back_populates='raw_messages')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'target_id': self.target_id,
+            'received_at': _isoformat_or_none(self.received_at),
+            'expires_at': _isoformat_or_none(self.expires_at),
+            'nmea': self.nmea,
+            'payload': self.payload,
+            'channel': self.channel,
+            'message_type': self.message_type,
+            'decoder_version': self.decoder_version,
+        }

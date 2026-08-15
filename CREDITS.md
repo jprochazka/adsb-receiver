@@ -49,14 +49,15 @@ threads myself along with other contributors to the cause were able to add these
 I would like to thank the maintainers and contributors of the following projects. Without their
 hard work and dedication to their respective projects this project would not have been possible.
 
-* ACARSDEC Decoder:      https://github.com/f00b4r0/acarsdec
-* ADS-B Exchange Client: https://github.com/adsbexchange/feedclient
-* Airplanes.live Client: https://github.com/airplanes-live/feed
-* Beast-Splitter:        https://github.com/flightaware/beast-splitter
-* Dump1090 (FlightAware): https://github.com/flightaware/dump1090
-* Dump978 (FlightAware):  https://github.com/flightaware/dump978
-* Dumpvdl2:              https://github.com/szpajder/dumpvdl2
-* Fly Italy ADS-B Client: https://github.com/flyitalyadsb/fly-italy-adsb
+* ACARSDEC Decoder:        https://github.com/f00b4r0/acarsdec
+* AIS-catcher:             https://github.com/jvde-github/AIS-catcher
+* ADS-B Exchange Client:   https://github.com/adsbexchange/feedclient
+* Airplanes.live Client:   https://github.com/airplanes-live/feed
+* Beast-Splitter:          https://github.com/flightaware/beast-splitter
+* Dump1090 (FlightAware):  https://github.com/flightaware/dump1090
+* Dump978 (FlightAware):   https://github.com/flightaware/dump978
+* Dumpvdl2:                https://github.com/szpajder/dumpvdl2
+* Fly Italy ADS-B Client:  https://github.com/flyitalyadsb/fly-italy-adsb
 * Graphs1090:              https://github.com/wiedehopf/graphs1090
 * PiAware (FlightAware):   https://github.com/flightaware/piaware
 * Readsb (wiedehopf):      https://github.com/wiedehopf/readsb

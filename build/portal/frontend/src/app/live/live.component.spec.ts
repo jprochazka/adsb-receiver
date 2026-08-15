@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { LiveComponent } from './live.component';
 import { extractOverlayRings } from './live-overlay.helpers';
@@ -79,6 +79,7 @@ describe('LiveComponent', () => {
       return of({ value: values[name] ?? 'true' });
     }),
     getLiveAircraft: jasmine.createSpy('getLiveAircraft').and.returnValue(of(livePayload)),
+    getLiveAis: jasmine.createSpy('getLiveAis').and.returnValue(of({ items: [], total: 0, offset: 0, limit: 100 })),
     getAircraftPhoto: jasmine.createSpy('getAircraftPhoto').and.returnValue(of({ photos: [] })),
   };
 
@@ -122,9 +123,11 @@ describe('LiveComponent', () => {
   beforeEach(async () => {
     dataServiceMock.getSetting.and.callFake(defaultGetSetting);
     dataServiceMock.getLiveAircraft.and.returnValue(of(livePayload));
+    dataServiceMock.getLiveAis.and.returnValue(of({ items: [], total: 0, offset: 0, limit: 100 }));
     dataServiceMock.getAircraftPhoto.and.returnValue(of({ photos: [] }));
     dataServiceMock.getSetting.calls.reset();
     dataServiceMock.getLiveAircraft.calls.reset();
+    dataServiceMock.getLiveAis.calls.reset();
     dataServiceMock.getAircraftPhoto.calls.reset();
 
     await TestBed.configureTestingModule({
@@ -169,6 +172,17 @@ describe('LiveComponent', () => {
     expect(component.loading).toBeFalse();
     expect(component.aircraft.length).toBe(2);
     expect(component.filteredAircraft.length).toBe(2);
+    expect(component.trackedCount).toBe(2);
+    expect(component.plottedCount).toBe(1);
+  });
+
+  it('keeps aircraft data when AIS polling fails', () => {
+    dataServiceMock.getLiveAis.and.returnValue(throwError(() => new Error('AIS unavailable')));
+
+    fixture.detectChanges();
+
+    expect(component.aircraft.length).toBe(2);
+    expect(component.aisTargets.length).toBe(0);
   });
 
   it('should hide non-positioned aircraft when show-all-seen is disabled', () => {
@@ -383,7 +397,7 @@ describe('LiveComponent', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Aircraft Types');
+    expect(text).toContain('Tracked Types');
     expect(text).toContain('General Aviation');
     expect(text).toContain('Unknown');
   });
@@ -416,5 +430,20 @@ describe('LiveComponent', () => {
 
     expect(icon.startsWith('data:image/svg+xml;utf8,')).toBeTrue();
     expect(icon).toContain('%3Csvg');
+  });
+
+  it('should generate a data-url legend icon for AIS targets', () => {
+    expect(component.aisLegendIconDataUrl()).toContain('data:image/svg+xml;utf8,');
+  });
+
+  it('should classify AIS target kinds into distinct marker SVGs', () => {
+    const iconFor = (targetKind: string, vesselType?: number) =>
+      (component as any).aisIconForTarget({ target_kind: targetKind, vessel_type: vesselType }, '#0f766e', '#ccfbf1');
+
+    expect(iconFor('sar_aircraft').svg).toContain('circle');
+    expect(iconFor('base_station').svg).toContain('M16 6v20');
+    expect(iconFor('aid_to_navigation').svg).toContain('M16 3 21 10');
+    expect(iconFor('vessel', 70).svg).toContain('M16 2 24 8');
+    expect(iconFor('vessel', 80).svg).toContain('M16 2 23 21');
   });
 });

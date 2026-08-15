@@ -6,6 +6,10 @@ import type {
   BlogPostSummary,
   DumpVdl2Config,
   DumpVdl2ConfigUpdate,
+  AisLiveResponse,
+  AisPosition,
+  AisSettings,
+  AisStats,
   PaginatedResponse
 } from '../shared/api-types';
 
@@ -583,5 +587,41 @@ export class DataService {
 
   getLiveAircraft(): Observable<any> {
     return this.http.get(`${this.apiUrl}/live/aircraft`);
+  }
+
+  getLiveAis(options?: { freshness?: number; targetKind?: string }): Observable<AisLiveResponse> {
+    let params = new HttpParams();
+    if (options?.freshness != null) params = params.set('freshness', options.freshness);
+    if (options?.targetKind) params = params.set('target_kind', options.targetKind);
+    return this.http.get<AisLiveResponse>(`${this.apiUrl}/ais/live`, { params });
+  }
+
+  getAisTargets(offset = 0, limit = 25, query = ''): Observable<AisLiveResponse> {
+    let params = this.offsetLimitParams(offset, limit);
+    if (query.trim()) params = params.set('q', query.trim());
+    return this.http.get<AisLiveResponse>(`${this.apiUrl}/ais/targets`, { params });
+  }
+
+  getAisPositions(mmsi: string, offset = 0, limit = 50): Observable<PaginatedResponse<AisPosition>> {
+    return this.http.get<PaginatedResponse<AisPosition>>(
+      `${this.apiUrl}/ais/targets/${encodeURIComponent(mmsi)}/positions`,
+      { params: this.offsetLimitParams(offset, limit) }
+    );
+  }
+
+  getAisSettings(): Observable<AisSettings> {
+    return this.http.get<AisSettings>(`${this.apiUrl}/ais/settings`, { headers: this.authHeaders() });
+  }
+
+  updateAisSettings(settings: AisSettings): Observable<AisSettings> {
+    return this.http.put<AisSettings>(`${this.apiUrl}/ais/settings`, settings, { headers: this.authHeaders() });
+  }
+
+  getAisStats(): Observable<AisStats> {
+    return this.http.get<AisStats>(`${this.apiUrl}/ais/stats`);
+  }
+
+  purgeAis(): Observable<Pick<AisStats, 'positions' | 'voyages' | 'raw_messages'>> {
+    return this.http.post<Pick<AisStats, 'positions' | 'voyages' | 'raw_messages'>>(`${this.apiUrl}/ais/purge`, { confirm: true }, { headers: this.authHeaders() });
   }
 }

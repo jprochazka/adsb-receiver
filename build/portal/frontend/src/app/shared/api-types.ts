@@ -87,3 +87,59 @@ export interface DumpVdl2Config {
 export interface DumpVdl2ConfigUpdate {
   frequencies: number[];
 }
+
+export interface AisTarget {
+  id: number;
+  mmsi: string;
+  target_kind: string;
+  imo?: string | null;
+  callsign?: string | null;
+  name?: string | null;
+  vessel_type?: number | null;
+  dimensions?: Record<string, unknown> | null;
+  first_seen?: string | null;
+  last_seen?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  speed?: number | null;
+  course?: number | null;
+  heading?: number | null;
+  turn_rate?: number | null;
+  navigation_status?: number | null;
+  channel?: string | null;
+  position_timestamp?: string | null;
+  static_report_timestamp?: string | null;
+}
+
+export interface AisLiveResponse extends PaginatedResponse<AisTarget> {
+  items: AisTarget[];
+}
+
+export interface AisPosition {
+  id: number;
+  target_id: number;
+  received_at?: string | null;
+  position_timestamp?: string | null;
+  message_type: number;
+  channel: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  speed?: number | null;
+  course?: number | null;
+  heading?: number | null;
+}
+
+export interface AisSettings {
+  ais_map_enabled: string;
+  ais_live_freshness_seconds: string;
+  ais_history_retention_days: string;
+  ais_raw_capture_enabled: string;
+  ais_raw_retention_days: string;
+}
+
+export interface AisStats {
+  targets: number;
+  positions: number;
+  voyages: number;
+  raw_messages: number;
+}

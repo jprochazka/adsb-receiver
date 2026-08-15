@@ -16,6 +16,8 @@ import { AdminXAlertComponent } from './admin-x-alert/admin-x-alert.component';
 import { FlightsComponent } from './flights/flights.component';
 import { LoginComponent } from './login/login.component';
 import { DevicesComponent } from './devices/devices.component';
+import { AisComponent } from './ais/ais.component';
+import { AdminAisComponent } from './admin-ais/admin-ais.component';
 import { RegisterComponent } from './register/register.component';
 import { adminGuard } from './shared/admin.guard';
 import { authGuard } from './shared/auth.guard';
@@ -31,6 +33,7 @@ export const routes = [
         children: [
             { path: '', redirectTo: 'live', pathMatch: 'full' },
             { path: 'acars', component: AdminAcarsComponent },
+            { path: 'ais', component: AdminAisComponent },
             { path: 'blog', component: AdminBlogComponent },
             { path: 'flights', component: AdminFlightsComponent },
             { path: 'devices', component: AdminDevicesComponent },
@@ -52,5 +55,6 @@ export const routes = [
     { path: 'flights/:page', component: FlightsComponent },
     { path: 'login', component: LoginComponent },
     { path: 'devices', component: DevicesComponent },
+    { path: 'ais', component: AisComponent },
     { path: 'register', component: RegisterComponent }
 ] satisfies Routes;

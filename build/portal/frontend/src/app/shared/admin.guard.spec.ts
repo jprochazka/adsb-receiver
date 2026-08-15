@@ -35,6 +35,7 @@ describe('adminGuard', () => {
       '',
       '**',
       'acars',
+      'ais',
       'blog',
       'devices',
       'feeders',

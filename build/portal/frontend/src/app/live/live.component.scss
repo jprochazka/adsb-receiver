@@ -589,6 +589,24 @@ $flyout-resize-handle: 8px;
 	display: block;
 }
 
+@media (max-width: 600px) {
+	.flyout {
+		width: 100vw;
+
+		&--closed {
+			transform: translateX(calc(-100vw + #{$flyout-tab}));
+		}
+	}
+
+	.flyout-panel {
+		width: calc(100vw - #{$flyout-tab});
+	}
+
+	.legend {
+		display: none;
+	}
+}
+
 // ── OpenLayers control placement adjustments ──────────────────────────────────
 
 :host ::ng-deep {

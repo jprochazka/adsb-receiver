@@ -8,11 +8,15 @@
       <!-- Status bar -->
       <div class="status-bar">
         <div class="status-stat">
-          <span class="status-stat-value">{{ aircraft.length }}</span>
-          <span class="status-stat-label">Aircraft</span>
+          <span class="status-stat-value">{{ trackedCount }}</span>
+          <span class="status-stat-label">Tracked</span>
         </div>
         <div class="status-stat">
-          <span class="status-stat-value">{{ aircraftWithPosition }}</span>
+          <span class="status-stat-value">{{ aisTargets.length }}</span>
+          <span class="status-stat-label">AIS</span>
+        </div>
+        <div class="status-stat">
+          <span class="status-stat-value">{{ plottedCount }}</span>
           <span class="status-stat-label">Plotted</span>
         </div>
         @if (lastUpdate) {
@@ -185,8 +189,34 @@
         </div>
       }
 
+      @if (selectedAis) {
+        <div class="ac-detail ais-detail">
+          <div class="detail-img">
+            <svg class="detail-plane-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M16 3 22 22 16 29 10 22Z" fill="#0f766e" stroke="#ccfbf1" stroke-width="2"/>
+              <path d="M16 7v15" stroke="#ccfbf1" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="detail-header">
+            <button class="detail-back-btn" (click)="clearSelection()" aria-label="Back to target list">Back to targets</button>
+            <div class="detail-callsign">{{ selectedAis.name || selectedAis.mmsi }}</div>
+            <div class="detail-source-badge">AIS</div>
+          </div>
+          <div class="detail-info">
+            <div class="flyout-row"><span class="flyout-label">MMSI</span><span class="flyout-value mono">{{ selectedAis.mmsi }}</span></div>
+            <div class="flyout-row"><span class="flyout-label">Target type</span><span class="flyout-value">{{ selectedAis.target_kind }}</span></div>
+            @if (selectedAis.callsign) { <div class="flyout-row"><span class="flyout-label">Callsign</span><span class="flyout-value mono">{{ selectedAis.callsign }}</span></div> }
+            @if (selectedAis.speed != null) { <div class="flyout-row"><span class="flyout-label">Speed</span><span class="flyout-value">{{ selectedAis.speed | number:'1.0-1' }} kts</span></div> }
+            @if (selectedAis.course != null) { <div class="flyout-row"><span class="flyout-label">Course</span><span class="flyout-value">{{ selectedAis.course | number:'1.0-1' }}&deg;</span></div> }
+            @if (selectedAis.heading != null) { <div class="flyout-row"><span class="flyout-label">Heading</span><span class="flyout-value">{{ selectedAis.heading }}&deg;</span></div> }
+            @if (selectedAis.navigation_status != null) { <div class="flyout-row"><span class="flyout-label">Navigation status</span><span class="flyout-value">{{ selectedAis.navigation_status }}</span></div> }
+            <div class="flyout-row"><span class="flyout-label">Last seen</span><span class="flyout-value">{{ selectedAis.last_seen | date:'medium' }}</span></div>
+          </div>
+        </div>
+      }
+
       <!-- ── Aircraft list view (no selection) ────────────────────────── -->
-      @if (!selectedAircraft && !loading) {
+      @if (!selectedAircraft && !selectedAis && !loading) {
         <div class="panel-list-wrap">
           <!-- Aircraft rows -->
           <div class="ac-list">
@@ -217,6 +247,17 @@
             }
           </div>
 
+          <div class="ac-list ais-list">
+            @for (target of filteredAisTargets; track target.mmsi + ':' + target.target_kind) {
+              <button class="ac-row" (click)="selectAis('ais:' + target.mmsi + ':' + target.target_kind)">
+                <span class="ac-dot" style="background: #0f766e"></span>
+                <span class="ac-hex mono">{{ target.mmsi }}</span>
+                <span class="ac-callsign">{{ target.name || target.target_kind }}</span>
+                <span class="ac-source">AIS</span>
+              </button>
+            }
+          </div>
+
           <!-- Filter input -->
           <div class="panel-filter">
             <svg class="panel-filter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
@@ -238,6 +279,17 @@
               </button>
             }
           </div>
+
+          <label class="panel-filter ais-filter-label">
+            <span class="flyout-label">AIS target type</span>
+            <select class="panel-filter-input" [(ngModel)]="aisTargetKindFilter" aria-label="AIS target type filter">
+              <option value="all">All targets</option>
+              <option value="vessel">Vessels</option>
+              <option value="base_station">Base stations</option>
+              <option value="sar_aircraft">SAR aircraft</option>
+              <option value="aid_to_navigation">Aids to navigation</option>
+            </select>
+          </label>
 
         </div>
       }
@@ -261,7 +313,7 @@
 
   <!-- Map legends -->
   <div class="legend">
-    <div class="legend-title">Aircraft Types</div>
+    <div class="legend-title">Tracked Types</div>
     <div class="legend-group">
       @for (item of aircraftTypeLegend; track item.key) {
         <div class="legend-item">
@@ -269,6 +321,10 @@
           <span>{{ item.label }}</span>
         </div>
       }
+    </div>
+    <div class="legend-item">
+      <span class="legend-icon-wrap"><img class="legend-icon" [src]="aisLegendIconDataUrl()" alt="AIS tracked target icon"></span>
+      <span>AIS tracked target</span>
     </div>
     <div class="legend-divider"></div>
     <div class="legend-title">Altitude</div>

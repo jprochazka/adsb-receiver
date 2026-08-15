@@ -15,11 +15,17 @@ from backend.models import (
     Position,
     Setting,
     UatFlightComment,
+    AisPosition,
+    AisRawMessage,
+    AisTarget,
+    AisVoyageReport,
     db,
 )
 
 scheduler = APScheduler()
 DEFAULT_RETENTION_DAYS = 7300
+AIS_RETENTION_DAYS = 30
+AIS_RAW_RETENTION_DAYS = 7
 
 
 class MaintenanceProcessor(object):
@@ -44,6 +50,24 @@ class MaintenanceProcessor(object):
         self.purge_uat_aircraft(cutoff_date)
         self.purge_uat_flights(cutoff_date)
         self.purge_uat_positions(cutoff_date)
+        self.purge_ais()
+
+    def purge_ais(self):
+        now = datetime.now(timezone.utc)
+        position_cutoff = now - timedelta(days=AIS_RETENTION_DAYS)
+        try:
+            db.session.execute(delete(AisPosition).where(AisPosition.received_at < position_cutoff))
+            db.session.execute(delete(AisVoyageReport).where(AisVoyageReport.reported_at < position_cutoff))
+            db.session.execute(delete(AisRawMessage).where(AisRawMessage.expires_at < now))
+            db.session.execute(delete(AisTarget).where(
+                AisTarget.last_seen < position_cutoff,
+                ~exists(select(1).where(AisPosition.target_id == AisTarget.id)),
+                ~exists(select(1).where(AisVoyageReport.target_id == AisTarget.id)),
+                ~exists(select(1).where(AisRawMessage.target_id == AisTarget.id)),
+            ))
+            self.log('Purged AIS history and expired raw messages')
+        except Exception as ex:
+            logging.error('Error purging AIS history', exc_info=ex)
 
     def _is_purge_enabled(self):
         try:
