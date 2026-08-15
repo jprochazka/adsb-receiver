@@ -1,6 +1,6 @@
 # The ADS-B Receiver Project :airplane:
 
-## Easily install ADS-B/UAT/AIS/ACARS/VDLM2/AIS related applications!
+## Easily install ADS-B/UAT/ACARS/VDLM2/AIS related applications!
 
 This project continues to realize that for some, Docker and premade images are not the most optimal solution.
 
