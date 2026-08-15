@@ -103,13 +103,13 @@ def test_store_message_in_legacy_portal_schema(acars_database):
     assert acars_database.store(message, '127.0.0.1') is False
 
     flight = acars_database.connection.execute(
-        'SELECT Registration, FlightNumber, NbMessages FROM Flights'
+        'SELECT Registration, FlightNumber, NbMessages FROM acars_flights'
     ).fetchone()
     stored_message = acars_database.connection.execute(
-        'SELECT Channel, Label, MessNo, Txt FROM Messages'
+        'SELECT Channel, Label, MessNo, Txt FROM acars_messages'
     ).fetchone()
     station = acars_database.connection.execute(
-        'SELECT IdStation, IpAddr FROM Stations'
+        'SELECT IdStation, IpAddr FROM acars_stations'
     ).fetchone()
 
     assert flight == ('N54321', 'UAL456', 1)
@@ -144,5 +144,5 @@ def test_skip_message_without_flight_metadata(acars_database):
     assert message is not None
     assert acars_database.store(message, '127.0.0.1') is False
     assert acars_database.connection.execute(
-        'SELECT COUNT(*) FROM Messages'
+        'SELECT COUNT(*) FROM acars_messages'
     ).fetchone()[0] == 0

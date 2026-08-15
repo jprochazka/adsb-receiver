@@ -2,13 +2,11 @@ import importlib.util
 import logging
 import os
 from datetime import timedelta
-from pathlib import Path
 
 from flask import Flask, jsonify, redirect, request
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
 from flask_restx import Api
 from backend.jobs.dump1090_data_collection import dump1090_data_collection_job
 from backend.jobs.maintenance import maintenance_job
@@ -248,6 +246,8 @@ def _init_extensions(app):
     database_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
     if _database_driver_available(database_uri):
         db.init_app(app)
+        with app.app_context():
+            db.create_all()
     else:
         logging.warning(
             'Skipping SQLAlchemy initialization for %s because the required database driver is not installed. '
@@ -265,6 +265,3 @@ def _init_extensions(app):
                     db.engine.dispose()
             except Exception:
                 pass
-
-    migrations_dir = Path(__file__).resolve().parents[1] / 'migrations'
-    Migrate(app, db, directory=str(migrations_dir))

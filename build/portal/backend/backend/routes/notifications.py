@@ -5,6 +5,7 @@ from flask import Blueprint, request
 from flask_restx import Namespace, Resource, fields as restx_fields
 from backend.models import db, Notification, Flight, Dump978Flight, Setting
 from backend.auth import get_current_user, require_user_or_admin
+from backend.acars_ingest import ACARS_TABLES
 from backend.config_loader import get_acars_config
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -208,31 +209,32 @@ class RecentNotificationsResource(Resource):
 
             # Check ACARS database if available
             try:
-                acars_db_path = get_acars_config().get('database', '/run/acarsdec.sqlite')
+                acars_db_path = get_acars_config().get('database', 'instance/adsbportal.sqlite3')
                 acars_engine = create_engine(f'sqlite:///{acars_db_path}', connect_args={'check_same_thread': False})
                 with acars_engine.connect() as conn:
+                    flights_table = ACARS_TABLES['flights']
                     placeholders = ','.join(f':m{i}' for i in range(len(monitored)))
                     params = {f'm{i}': v for i, v in enumerate(monitored)}
                     params['cutoff'] = cutoff_str
                     rows = conn.execute(
                         text(
-                            f'SELECT FlightID, FlightNumber, StartTime, LastTime FROM Flights '
+                            f'SELECT FlightID, FlightNumber, StartTime, LastTime FROM {flights_table} '
                             f'WHERE FlightNumber IN ({placeholders}) AND LastTime >= :cutoff '
                             f'ORDER BY LastTime DESC'
                         ),
                         params,
                     ).fetchall()
-                for row in rows:
-                    callsign = row[1]
-                    if callsign and callsign not in seen_callsigns:
-                        seen_callsigns.add(callsign)
-                        flights_data.append({
-                            'id': row[0],
-                            'flight': callsign,
-                            'type': 'acars',
-                            'first_seen': str(row[2]) if row[2] else None,
-                            'last_seen': str(row[3]) if row[3] else None,
-                        })
+                    for row in rows:
+                        callsign = row[1]
+                        if callsign and callsign not in seen_callsigns:
+                            seen_callsigns.add(callsign)
+                            flights_data.append({
+                                'id': row[0],
+                                'flight': callsign,
+                                'type': 'acars',
+                                'first_seen': str(row[2]) if row[2] else None,
+                                'last_seen': str(row[3]) if row[3] else None,
+                            })
             except OperationalError:
                 pass  # ACARS database unavailable
             except FileNotFoundError:

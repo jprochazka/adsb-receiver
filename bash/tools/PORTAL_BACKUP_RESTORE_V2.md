@@ -28,7 +28,6 @@ For the new Flask/Angular portal (cleanup branch) see
 | MySQL database | Full `mysqldump` of the portal database — only present on **mysql** installs. |
 | PostgreSQL database | Full `pg_dump` of the portal database — only present on **pgsql** installs. |
 | Collectd RRD files | Each `.rrd` file under `/var/lib/collectd/rrd` is exported to XML using `rrdtool dump`. Stored as XML for portability across rrdtool versions. |
-| ACARS database | The SQLite database configured via `acarsserv_database` in `settings.class.php`, if present. |
 
 **Not backed up:** lighttpd configuration, PHP source files, or any files
 outside the document root. These are part of the installation, not the data.
@@ -72,8 +71,6 @@ The backup is written to:
     │       └── portal.sqlite           # sqlite driver only
     ├── <mysql_database_name>.sql       # mysql driver only
     ├── <pgsql_database_name>.sql       # pgsql driver only
-    ├── acars/
-    │   └── <acars_db_filename>         # if configured
     └── var/lib/collectd/rrd/
         └── **/*.xml                    # one XML file per RRD
 ```
@@ -91,8 +88,7 @@ The backup is written to:
    - **mysql** — `mysqldump` produces a `.sql` file.
    - **pgsql** — `pg_dump` produces a `.sql` file (credentials passed via a
      temporary `.pgpass` file; never via command-line arguments).
-6. The ACARS database is copied if found.
-7. The staging directory is compressed to a `.tar.gz` archive and removed.
+6. The staging directory is compressed to a `.tar.gz` archive and removed.
 
 ---
 
@@ -130,11 +126,10 @@ missing or different.
 7. RRD XML exports are re-created as `.rrd` files using `rrdtool restore`.
    Any existing RRD file is saved as a `.pre_restore.<date>.bak` before
    being replaced.
-8. The ACARS database is restored if present in the archive.
-9. Ownership is set to `www-data:www-data` on all restored web files and
+8. Ownership is set to `www-data:www-data` on all restored web files and
    RRD directories.
-10. lighttpd is restarted.
-11. The temporary extraction directory is removed.
+9. lighttpd is restarted.
+10. The temporary extraction directory is removed.
 
 ### Pre-restore backups
 

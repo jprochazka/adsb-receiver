@@ -5,8 +5,10 @@ The following is a history of the changes made to this project.
 ## v3.0.0 *(Coming soon...)*
 
 * New version of the portal. (total rewrite with many additions)
-* Added a new Airframes.io feeder setup script for ACARSDEC and dumpvdl2.
-* Replaced the archived VDLM2DEC and acarsserv components with dumpvdl2 and a native portal message ingester.
+* Added a new Airframes.io feeder setup script for ACARS data.
+* Replaced acarsserv with scripts included in this repository.
+* Replaced the archived VDLM2DEC components with dumpvdl2 and a native portal message ingester.
+* Merged the ACARS database into the main portal database and consolidated the ACARS tables to avoid naming conflicts.
 * Added portal status and frequency management for dumpvdl2.
 * Added a new stream1090 installer capable of integrating it with Readsb or dump1090-fa.
 * The ACARSDEC script now uses a maintained fork of the original.
@@ -22,6 +24,11 @@ The following is a history of the changes made to this project.
 * Updated dump1090-fa build target selection to use OS codename-aware mapping with fallback behavior.
 * Updated AirNav rbfeeder repository selection to probe available upstream distro releases.
 * Updated OpenSky feeder repository setup to validate upstream apt metadata before source configuration.
+
+## v2.8.11 *(August 14th, 2026)*
+
+* Fixed a stray `esac` that caused the dump1090-fa installer to fail with a Bash syntax error.
+* Updated FlightAware components to 11.1 support and improved Debian/Ubuntu build-targets.
 
 ## v2.8.10 *(April 9th, 2026)*
 

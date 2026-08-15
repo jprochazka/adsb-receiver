@@ -282,27 +282,6 @@ else
 fi
 
 
-## RESTORE ACARS DATABASE
-
-acars_database=$(grep 'acarsserv_database' "${backed_up_settings}" 2>/dev/null | tail -n1 | cut -d\' -f2)
-if [[ -n "${acars_database}" ]]; then
-    acars_filename=$(basename "${acars_database}")
-    backed_up_acars=$(find "${temporary_directory}" -path "*/acars/${acars_filename}" | head -n1)
-    if [[ -n "${backed_up_acars}" && -f "${backed_up_acars}" ]]; then
-        echo -e "\e[94m  Restoring ACARS database to ${acars_database}...\e[97m"
-        sudo mkdir -p "$(dirname "${acars_database}")"
-        if [[ -f "${acars_database}" ]]; then
-            sudo cp "${acars_database}" "${acars_database}.pre_restore.${restore_date}.bak"
-            echo -e "\e[94m  Existing ACARS database backed up.\e[97m"
-        fi
-        sudo cp "${backed_up_acars}" "${acars_database}"
-        echo -e "\e[94m  ACARS database restored.\e[97m"
-    else
-        echo -e "\e[94m  No ACARS database found in archive. Skipping.\e[97m"
-    fi
-fi
-
-
 ## FIX PERMISSIONS
 
 echo -e "\e[94m  Setting permissions on restored files...\e[97m"

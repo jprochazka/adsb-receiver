@@ -10,9 +10,29 @@ from pathlib import Path
 from typing import Optional
 
 
-DEFAULT_DATABASE_PATH = '/var/lib/adsb-receiver/acars.sqlite3'
+DEFAULT_DATABASE_PATH = 'instance/adsbportal.sqlite3'
 DEFAULT_BIND_ADDRESS = '127.0.0.1'
 DEFAULT_PORT = 5555
+
+ACARS_TABLES = {
+    'flights': 'acars_flights',
+    'messages': 'acars_messages',
+    'stations': 'acars_stations',
+}
+
+LEGACY_ACARS_TABLES = {
+    'flights': 'Flights',
+    'messages': 'Messages',
+    'stations': 'Stations',
+}
+
+
+def _table_exists(connection: sqlite3.Connection, table_name: str) -> bool:
+    row = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+        (table_name,),
+    ).fetchone()
+    return row is not None
 
 
 @dataclass(frozen=True)
@@ -142,9 +162,13 @@ class AcarsDatabase:
         self.connection.close()
 
     def _initialize_schema(self):
+        flights_table = ACARS_TABLES['flights']
+        stations_table = ACARS_TABLES['stations']
+        messages_table = ACARS_TABLES['messages']
+
         self.connection.executescript(
-            '''
-            CREATE TABLE IF NOT EXISTS Flights (
+            f'''
+            CREATE TABLE IF NOT EXISTS {flights_table} (
                 FlightID INTEGER PRIMARY KEY,
                 Registration CHAR(7),
                 FlightNumber CHAR(6),
@@ -152,14 +176,14 @@ class AcarsDatabase:
                 LastTime DATETIME,
                 NbMessages INTEGER NOT NULL DEFAULT 0
             );
-            CREATE INDEX IF NOT EXISTS FlightsFlightNumber ON Flights(FlightNumber);
-            CREATE INDEX IF NOT EXISTS FlightsRegistration ON Flights(Registration);
-            CREATE TABLE IF NOT EXISTS Stations (
+            CREATE INDEX IF NOT EXISTS {flights_table}_FlightNumber ON {flights_table}(FlightNumber);
+            CREATE INDEX IF NOT EXISTS {flights_table}_Registration ON {flights_table}(Registration);
+            CREATE TABLE IF NOT EXISTS {stations_table} (
                 StID INTEGER PRIMARY KEY,
                 IdStation VARCHAR,
                 IpAddr VARCHAR
             );
-            CREATE TABLE IF NOT EXISTS Messages (
+            CREATE TABLE IF NOT EXISTS {messages_table} (
                 MessageID INTEGER PRIMARY KEY,
                 FlightID INTEGER NOT NULL,
                 Time DATETIME,
@@ -177,10 +201,32 @@ class AcarsDatabase:
             '''
         )
         self.connection.commit()
+        self._migrate_legacy_tables()
+
+    def _migrate_legacy_tables(self):
+        for kind, current_name in ACARS_TABLES.items():
+            legacy_name = LEGACY_ACARS_TABLES[kind]
+            if not _table_exists(self.connection, legacy_name):
+                continue
+            if _table_exists(self.connection, current_name):
+                current_count = self.connection.execute(
+                    f'SELECT COUNT(*) FROM {current_name}'
+                ).fetchone()[0]
+                if current_count > 0:
+                    continue
+
+            self.connection.execute(
+                f"INSERT INTO {current_name} SELECT * FROM {legacy_name}"
+            )
+        self.connection.commit()
 
     def store(self, message: AcarsMessage, source_address: str) -> bool:
         if not message.registration or not message.flight_number:
             return False
+
+        flights_table = ACARS_TABLES['flights']
+        messages_table = ACARS_TABLES['messages']
+        stations_table = ACARS_TABLES['stations']
 
         received_at = datetime.datetime.fromtimestamp(
             message.timestamp, datetime.timezone.utc
@@ -192,15 +238,15 @@ class AcarsDatabase:
 
             if message.message_number:
                 duplicate = self.connection.execute(
-                    'SELECT 1 FROM Messages WHERE FlightID = ? AND MessNo = ? LIMIT 1',
+                    f'SELECT 1 FROM {messages_table} WHERE FlightID = ? AND MessNo = ? LIMIT 1',
                     (flight_id, message.message_number),
                 ).fetchone()
                 if duplicate:
                     return False
 
             self.connection.execute(
-                '''
-                INSERT INTO Messages
+                f'''
+                INSERT INTO {messages_table}
                     (FlightID, Time, StID, Channel, Error, SignalLvl, Mode, Ack,
                      Label, BlockNo, MessNo, Txt)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -222,8 +268,8 @@ class AcarsDatabase:
             )
             if flight_id:
                 self.connection.execute(
-                    '''
-                    UPDATE Flights
+                    f'''
+                    UPDATE {flights_table}
                     SET LastTime = ?, NbMessages = NbMessages + 1
                     WHERE FlightID = ?
                     ''',
@@ -232,15 +278,16 @@ class AcarsDatabase:
         return True
 
     def _station_id(self, source_address: str, station_name: str) -> int:
+        stations_table = ACARS_TABLES['stations']
         row = self.connection.execute(
-            'SELECT StID FROM Stations WHERE IpAddr = ? AND IdStation = ?',
+            f'SELECT StID FROM {stations_table} WHERE IpAddr = ? AND IdStation = ?',
             (source_address, station_name),
         ).fetchone()
         if row:
             return row[0]
 
         cursor = self.connection.execute(
-            'INSERT INTO Stations (IpAddr, IdStation) VALUES (?, ?)',
+            f'INSERT INTO {stations_table} (IpAddr, IdStation) VALUES (?, ?)',
             (source_address, station_name),
         )
         return cursor.lastrowid
@@ -249,10 +296,11 @@ class AcarsDatabase:
         if not message.registration or not message.flight_number:
             return 0
 
+        flights_table = ACARS_TABLES['flights']
         row = self.connection.execute(
-            '''
+            f'''
             SELECT FlightID
-            FROM Flights
+            FROM {flights_table}
             WHERE Registration = ?
               AND FlightNumber = ?
               AND datetime(LastTime, '30 minutes') > datetime(?)
@@ -265,8 +313,8 @@ class AcarsDatabase:
             return row[0]
 
         cursor = self.connection.execute(
-            '''
-            INSERT INTO Flights
+            f'''
+            INSERT INTO {flights_table}
                 (Registration, FlightNumber, StartTime, LastTime, NbMessages)
             VALUES (?, ?, ?, ?, 0)
             ''',

@@ -32,16 +32,16 @@ The following software can be installed using these scripts.
 
 Included is the option to install the ADS-B Portal which offers the following features.
 
-* Saves all flights seen as well as displays a plot for the flight.
-* Saves all ACARS and VDLM2 messages received and offers the ability to view them.
-* Control what is displayed online via a web based administration area.
-* A more uniform website site layout that can be easily navigated.
-* Web accessible dump1090 and system performance graphs.
-* Easy access to live dump1090 and dump978 maps.
-* A blog which can be used to share your aircraft tracking experiences with others.
-* Visitors can be informed when specific flights are being tracked.
-* Administrators can be informed via email when specific flights are being tracked.
-* Easily customize the look of your portal using the custom template system.
+* Live ADS-B and UAT map with status and device overview.
+* Flight history for ADS-B and UAT traffic.
+* ACARS browsing with ACARSDEC and dumpvdl2 support.
+* dumpvdl2 monitoring, status, and frequency controls.
+* Web admin for flights, devices, graphs, links, users, and blog tools.
+* Notifications for tracked callsigns and X/Twitter alerts.
+* Graphs for dump1090, dump978, and system performance.
+* Modern Angular frontend with a Python Flask backend and REST API.
+* Flexible blog, links, and site configuration tools.
+* Email and alert support for monitored flights.
 
 When setting up the portal you will have to choose between a lite or advanced installation. Advanced features add flight logging and plotting and should only be chosen on devices running a sturdy data storage solution.
 

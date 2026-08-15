@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, select, text
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from backend.auth import require_admin
+from backend.acars_ingest import ACARS_TABLES
 from backend.aircraft_classification import classify_aircraft
 from backend.config_loader import get_acars_config, load_portal_config
 from backend.opensky_classification import get_opensky_classification_by_registration
@@ -27,7 +28,7 @@ def _get_acars_engine():
     """Return (and lazily create) the shared ACARS SQLAlchemy engine."""
     global _acars_engine
     if _acars_engine is None:
-        db_path = get_acars_config(load_portal_config()).get('database', '/run/acarsdec.sqlite')
+        db_path = get_acars_config(load_portal_config()).get('database', 'instance/adsbportal.sqlite3')
         _acars_engine = create_engine(
             f"sqlite:///{db_path}",
             connect_args={"check_same_thread": False},
@@ -108,13 +109,15 @@ def _purge_acars_flights():
 
     cutoff = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=days)
     cutoff_str = cutoff.strftime('%Y-%m-%d %H:%M:%S')
+    flights_table = ACARS_TABLES['flights']
+    messages_table = ACARS_TABLES['messages']
 
     try:
         engine = _get_acars_engine()
         with engine.connect() as conn:
             old_flight_ids = [
                 row[0] for row in conn.execute(
-                    text("SELECT FlightID FROM Flights WHERE LastTime < :cutoff OR LastTime IS NULL"),
+                    text(f"SELECT FlightID FROM {flights_table} WHERE LastTime < :cutoff OR LastTime IS NULL"),
                     {"cutoff": cutoff_str},
                 ).fetchall()
             ]
@@ -128,11 +131,11 @@ def _purge_acars_flights():
             placeholders = ','.join(f':id{i}' for i in range(len(flight_id_list)))
             id_params = {f'id{i}': fid for i, fid in enumerate(flight_id_list)}
             deleted_messages = conn.execute(
-                text(f"DELETE FROM Messages WHERE FlightID IN ({placeholders})"),
+                text(f"DELETE FROM {messages_table} WHERE FlightID IN ({placeholders})"),
                 id_params
             ).rowcount
             deleted_flights = conn.execute(
-                text(f"DELETE FROM Flights WHERE FlightID IN ({placeholders})"),
+                text(f"DELETE FROM {flights_table} WHERE FlightID IN ({placeholders})"),
                 id_params
             ).rowcount
             conn.commit()
@@ -213,6 +216,7 @@ class AcarsController(Resource):
     def _get_flights(self):
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=50, type=int)
+        flights_table = ACARS_TABLES['flights']
 
         if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
@@ -220,11 +224,11 @@ class AcarsController(Resource):
         try:
             engine = _get_acars_engine()
             with engine.connect() as conn:
-                total = conn.execute(text("SELECT COUNT(*) FROM Flights")).scalar()
+                total = conn.execute(text(f"SELECT COUNT(*) FROM {flights_table}")).scalar()
                 rows = conn.execute(
                     text(
-                        "SELECT FlightID, Registration, FlightNumber, StartTime, LastTime, NbMessages "
-                        "FROM Flights ORDER BY LastTime DESC LIMIT :limit OFFSET :offset"
+                        f"SELECT FlightID, Registration, FlightNumber, StartTime, LastTime, NbMessages "
+                        f"FROM {flights_table} ORDER BY LastTime DESC LIMIT :limit OFFSET :offset"
                     ),
                     {"limit": limit, "offset": offset},
                 ).fetchall()
@@ -244,10 +248,11 @@ class AcarsController(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
     def _get_flights_count(self):
+        flights_table = ACARS_TABLES['flights']
         try:
             engine = _get_acars_engine()
             with engine.connect() as conn:
-                total = conn.execute(text("SELECT COUNT(*) FROM Flights")).scalar()
+                total = conn.execute(text(f"SELECT COUNT(*) FROM {flights_table}")).scalar()
             return {'flights': total}, 200
         except OperationalError as ex:
             logging.warning("ACARS database unavailable", exc_info=ex)
@@ -259,6 +264,8 @@ class AcarsController(Resource):
     def _get_flight_messages(self, flight_id: int):
         offset = request.args.get('offset', default=0, type=int)
         limit = request.args.get('limit', default=100, type=int)
+        flights_table = ACARS_TABLES['flights']
+        messages_table = ACARS_TABLES['messages']
 
         if offset < 0 or limit < 1 or limit > 100:
             return {'msg': 'Bad Request - invalid offset or limit parameters'}, 400
@@ -267,22 +274,22 @@ class AcarsController(Resource):
             engine = _get_acars_engine()
             with engine.connect() as conn:
                 flight_row = conn.execute(
-                    text("SELECT FlightID FROM Flights WHERE FlightID = :flight_id"),
+                    text(f"SELECT FlightID FROM {flights_table} WHERE FlightID = :flight_id"),
                     {"flight_id": flight_id},
                 ).fetchone()
                 if not flight_row:
                     return {'msg': 'Flight not found'}, 404
 
                 total = conn.execute(
-                    text("SELECT COUNT(*) FROM Messages WHERE FlightID = :flight_id"),
+                    text(f"SELECT COUNT(*) FROM {messages_table} WHERE FlightID = :flight_id"),
                     {"flight_id": flight_id},
                 ).scalar()
                 rows = conn.execute(
                     text(
-                        "SELECT MessageID, FlightID, Time, StID, Channel, Error, SignalLvl, "
-                        "Mode, Ack, Label, BlockNo, MessNo, Txt "
-                        "FROM Messages WHERE FlightID = :flight_id "
-                        "ORDER BY Time LIMIT :limit OFFSET :offset"
+                        f"SELECT MessageID, FlightID, Time, StID, Channel, Error, SignalLvl, "
+                        f"Mode, Ack, Label, BlockNo, MessNo, Txt "
+                        f"FROM {messages_table} WHERE FlightID = :flight_id "
+                        f"ORDER BY Time LIMIT :limit OFFSET :offset"
                     ),
                     {"flight_id": flight_id, "limit": limit, "offset": offset},
                 ).fetchall()
@@ -303,7 +310,7 @@ class AcarsController(Resource):
 
     def _get_database_info(self):
         try:
-            db_path = get_acars_config(load_portal_config()).get('database', '/run/acarsdec.sqlite')
+            db_path = get_acars_config(load_portal_config()).get('database', 'instance/adsbportal.sqlite3')
             if not os.path.exists(db_path):
                 return {'msg': 'ACARS database unavailable'}, 503
             size = os.path.getsize(db_path)
@@ -313,10 +320,11 @@ class AcarsController(Resource):
             return {'msg': 'Internal Server Error'}, 500
 
     def _get_messages_count(self):
+        messages_table = ACARS_TABLES['messages']
         try:
             engine = _get_acars_engine()
             with engine.connect() as conn:
-                total = conn.execute(text("SELECT COUNT(*) FROM Messages")).scalar()
+                total = conn.execute(text(f"SELECT COUNT(*) FROM {messages_table}")).scalar()
             return {'messages': total}, 200
         except OperationalError as ex:
             logging.warning("ACARS database unavailable", exc_info=ex)

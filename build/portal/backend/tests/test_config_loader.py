@@ -1,4 +1,5 @@
 import os
+import re
 
 import pytest
 
@@ -32,5 +33,5 @@ def test_load_portal_config_can_load_explicit_path(tmp_path):
 def test_load_portal_config_rejects_missing_file(tmp_path):
     missing = tmp_path / 'missing.yml'
 
-    with pytest.raises(FileNotFoundError, match=os.fspath(missing)):
+    with pytest.raises(FileNotFoundError, match=re.escape(os.fspath(missing))):
         load_portal_config(missing)

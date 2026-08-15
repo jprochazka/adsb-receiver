@@ -28,7 +28,7 @@ def _yaml_config(db_type):
                 'database': 'testdb',
             },
         },
-        'acars': {'database': 'instance/acarsdec.sqlite'},
+        'acars': {'database': 'instance/adsbportal.sqlite3'},
         'security': {'jwt_secret_key': 'test-jwt-secret'},
     }
 
@@ -87,40 +87,40 @@ def _make_migrate_app(db_url):
     })
 
 
-def test_alembic_upgrade_creates_expected_tables():
-    """flask db upgrade head must create all model tables."""
-    from flask_migrate import upgrade
+def test_create_all_creates_expected_tables():
+    """Initial schema setup should create all model tables without running migrations."""
     from sqlalchemy import inspect
+    from backend.models import db
 
     with tempfile.TemporaryDirectory() as tmpdir:
         db_url = f"sqlite:///{tmpdir}/test.sqlite3"
         app = _make_migrate_app(db_url)
 
         with app.app_context():
-            upgrade()
-            tables = set(inspect(app.extensions['migrate'].db.engine).get_table_names())
+            db.create_all()
+            tables = set(inspect(db.engine).get_table_names())
 
     expected = {
         'blog_posts',
         'dump1090_aircraft', 'dump1090_flights', 'dump1090_positions',
-        'dump978_aircraft',  'dump978_flights',  'dump978_positions',
+        'dump978_aircraft', 'dump978_flights', 'dump978_positions',
         'links', 'notifications', 'settings', 'users',
     }
     assert expected.issubset(tables)
 
 
-def test_alembic_upgrade_downgrade_roundtrip():
-    """Migrations must survive upgrade → downgrade base → upgrade without error."""
-    from flask_migrate import upgrade, downgrade
+def test_create_all_is_idempotent():
+    """Creating the initial schema should be safe on a fresh database and repeatable."""
+    from backend.models import db
 
     with tempfile.TemporaryDirectory() as tmpdir:
         db_url = f"sqlite:///{tmpdir}/test.sqlite3"
         app = _make_migrate_app(db_url)
 
         with app.app_context():
-            upgrade()
-            downgrade(revision='base')
-            upgrade()
+            db.create_all()
+            db.drop_all()
+            db.create_all()
 
 
 # ---------------------------------------------------------------------------

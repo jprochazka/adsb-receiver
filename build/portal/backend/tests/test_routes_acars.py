@@ -16,7 +16,7 @@ def acars_db():
     engine = create_engine(f'sqlite:///{path}', connect_args={'check_same_thread': False})
     with engine.begin() as conn:
         conn.execute(text(
-            "CREATE TABLE Flights ("
+            "CREATE TABLE acars_flights ("
             "  FlightID INTEGER PRIMARY KEY AUTOINCREMENT,"
             "  Registration TEXT,"
             "  FlightNumber TEXT,"
@@ -26,7 +26,7 @@ def acars_db():
             ")"
         ))
         conn.execute(text(
-            "CREATE TABLE Messages ("
+            "CREATE TABLE acars_messages ("
             "  MessageID INTEGER PRIMARY KEY AUTOINCREMENT,"
             "  FlightID INTEGER,"
             "  Time TEXT,"
@@ -43,23 +43,24 @@ def acars_db():
             ")"
         ))
         conn.execute(text(
-            "INSERT INTO Flights (Registration, FlightNumber, StartTime, LastTime, NbMessages) "
+            "INSERT INTO acars_flights (Registration, FlightNumber, StartTime, LastTime, NbMessages) "
             "VALUES ('N12345', 'AA100', '2026-01-01 10:00:00', '2026-01-01 12:00:00', 3)"
         ))
         conn.execute(text(
-            "INSERT INTO Flights (Registration, FlightNumber, StartTime, LastTime, NbMessages) "
+            "INSERT INTO acars_flights (Registration, FlightNumber, StartTime, LastTime, NbMessages) "
             "VALUES ('N67890', 'UA200', '2026-01-02 08:00:00', '2026-01-02 10:00:00', 1)"
         ))
         for i in range(3):
             conn.execute(text(
-                "INSERT INTO Messages (FlightID, Time, StID, Channel, Error, SignalLvl, Mode, Ack, Label, BlockNo, MessNo, Txt) "
+                "INSERT INTO acars_messages (FlightID, Time, StID, Channel, Error, SignalLvl, Mode, Ack, Label, BlockNo, MessNo, Txt) "
                 "VALUES (1, :time, 1, 0, 0, -5.3, '2', '', 'H1', '1', :mno, 'test message')"
             ), {'time': f'2026-01-01 10:{i:02d}:00', 'mno': str(i)})
         conn.execute(text(
-            "INSERT INTO Messages (FlightID, Time, StID, Channel, Error, SignalLvl, Mode, Ack, Label, BlockNo, MessNo, Txt) "
+            "INSERT INTO acars_messages (FlightID, Time, StID, Channel, Error, SignalLvl, Mode, Ack, Label, BlockNo, MessNo, Txt) "
             "VALUES (2, '2026-01-02 08:00:00', 1, 0, 0, -4.0, '2', '', 'Q0', '1', '0', 'hello')"
         ))
     yield path, engine
+    engine.dispose()
     os.close(fd)
     os.unlink(path)
 

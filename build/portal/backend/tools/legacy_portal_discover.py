@@ -52,7 +52,6 @@ SETTINGS_ALLOWLIST = {
     "hideNavbarAndFooter",
     "googleMapsApiKey",
     "enableAcars",
-    "acarsserv_database",
 }
 
 # Mapping from old setting name to new setting name where they differ.

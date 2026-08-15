@@ -213,7 +213,6 @@ function install_acars_ingest_service() {
     local legacy_database=""
     local candidate
     local legacy_candidates=(
-        "${RECEIVER_BUILD_DIRECTORY}/acarsserv/acarsserv.sqb"
         "${RECEIVER_ROOT_DIRECTORY}/build/portal/backend/instance/acarsdec.sqlite"
     )
 
@@ -245,11 +244,6 @@ function install_acars_ingest_service() {
     sudo install -d -o adsb-receiver -g adsb-receiver -m 0775 "${data_directory}"
     sudo install -o root -g root -m 0755 "${ingest_source}" "${ingest_directory}/acars_ingest.py"
 
-    if systemctl cat acarsserv.service >/dev/null 2>&1; then
-        log_message "Disabling the archived acarsserv service"
-        sudo systemctl disable --now acarsserv.service
-    fi
-
     for candidate in "${legacy_candidates[@]}"; do
         if [[ -f "${candidate}" ]]; then
             legacy_database="${candidate}"
@@ -257,7 +251,7 @@ function install_acars_ingest_service() {
         fi
     done
     if [[ ! -f "${database_path}" && -n "${legacy_database}" ]]; then
-        log_message "Migrating the legacy acarsserv database"
+        log_message "Migrating the legacy local ACARS database"
         sudo install -o adsb-receiver -g adsb-receiver -m 0664 \
                      "${legacy_database}" "${database_path}"
     fi

@@ -15,7 +15,7 @@ database:
         days_to_save: 30
 
 acars:
-    database: "instance/acarsdec.sqlite"
+    database: "instance/adsbportal.sqlite3"
 
 graphs:
     rrd_base: instance/rrd

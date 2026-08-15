@@ -147,19 +147,6 @@ else
 fi
 
 
-## BACKUP ACARS DATABASE IF CONFIGURED
-
-acars_database=$(grep 'acarsserv_database' "${settings_file}" 2>/dev/null | tail -n1 | cut -d\' -f2)
-if [[ -n "${acars_database}" && -f "${acars_database}" ]]; then
-    echo -e "\e[94m  Backing up ACARS database from ${acars_database}...\e[97m"
-    acars_backup_dir="${temporary_directory}/acars"
-    mkdir -p "${acars_backup_dir}"
-    sudo cp "${acars_database}" "${acars_backup_dir}/$(basename "${acars_database}")"
-else
-    echo -e "\e[94m  No ACARS database configured or found, skipping...\e[97m"
-fi
-
-
 ## COMPRESS AND DATE THE BACKUP ARCHIVE
 
 echo -e "\e[94m  Compressing the backed up files...\e[97m"
