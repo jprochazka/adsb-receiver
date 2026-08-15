@@ -69,7 +69,7 @@ When setting up the portal you will have to choose between a lite or advanced in
 
 ### Add-ons
 
-* Stream1090:              https://github.com/mgrone/stream1090
+* Stream1090:  https://github.com/mgrone/stream1090
 
 ### Extras
 
