@@ -95,7 +95,7 @@ if [[ "${adsb_decoder_installed}" == "true" || "${install_adsb_decoder}" == "tru
     fi
     if [[ "${chosen_adsb_input_source}" == "stream1090" ]]; then
         install_stream1090="true"
-    elif [[ -f /etc/systemd/system/stream1090.service ]]; then
+    elif dpkg-query -W -f='${Status}' stream1090 2>/dev/null | grep -q "ok installed" || [[ -f /etc/systemd/system/stream1090.service ]]; then
         if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                     --title "Disable stream1090" \
                     --yesno "stream1090 is installed. Would you like to disable it and restore the decoder's direct-SDR configuration?" \

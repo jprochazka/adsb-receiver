@@ -2,7 +2,7 @@
 
 ## ASSIGN VARIABLES
 
-project_version="2.8.10"
+project_version="2"
 
 printf -v date_time '%(%Y-%m-%d_%H-%M-%S)T' -1
 log_file="adsb-installer_${date_time}.log"

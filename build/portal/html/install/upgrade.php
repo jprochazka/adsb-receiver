@@ -4,7 +4,7 @@
     $common = new common();
 
     // The most current stable release.
-    $thisVersion = "2.8.11";
+    $thisVersion = "2.8.12";
 
     // Begin the upgrade process if this release is newer than what is installed.
     if ($common->getSetting("version") == $thisVersion) {
@@ -254,6 +254,15 @@
         $success = $results['success'];
         $message = $results['message'];
         $version = "2.8.11";
+    }
+
+    // UPGRADE TO V2.8.12
+    if ($common->getSetting("version") == "2.8.11" && $success) {
+        $json = file_get_contents("http://localhost/install/upgrade-v2.8.12.php");
+        $results = json_decode($json, TRUE);
+        $success = $results['success'];
+        $message = $results['message'];
+        $version = "2.8.12";
     }
 
     require_once($_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR."admin".DIRECTORY_SEPARATOR."includes".DIRECTORY_SEPARATOR."header.inc.php");

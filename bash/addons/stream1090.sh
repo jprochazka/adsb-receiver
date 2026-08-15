@@ -6,13 +6,30 @@ source "${RECEIVER_BASH_DIRECTORY}/variables.sh"
 source "${RECEIVER_BASH_DIRECTORY}/functions.sh"
 
 readonly stream1090_repository="https://github.com/mgrone/stream1090.git"
-readonly stream1090_commit="329280ef889d04f9be6e81b1628e07b3fc507159"
 readonly stream1090_build_directory="${RECEIVER_BUILD_DIRECTORY}/stream1090"
 readonly stream1090_source_directory="${stream1090_build_directory}/source"
 readonly stream1090_config_directory="/etc/stream1090"
-readonly stream1090_service_file="/etc/systemd/system/stream1090.service"
 readonly stream1090_backup_directory="/var/backups/adsb-receiver/stream1090"
 readonly stream1090_input_port="30001"
+
+function set_stream1090_ini_value() {
+    local setting="$1"
+    local value="$2"
+    local config_file="${stream1090_config_directory}/${stream1090_config_name}"
+
+    if grep -q -E "^[#[:space:]]*${setting}[[:space:]]*=" "${config_file}"; then
+        sudo sed -i -E "s|^[#[:space:]]*${setting}[[:space:]]*=.*$|${setting} = ${value}|" "${config_file}"
+    else
+        echo "${setting} = ${value}" | sudo tee -a "${config_file}" > /dev/null
+    fi
+}
+
+function disable_stream1090_ini_value() {
+    local setting="$1"
+    local config_file="${stream1090_config_directory}/${stream1090_config_name}"
+
+    sudo sed -i -E "s|^[[:space:]]*(${setting}[[:space:]]*=.*)$|# \1|" "${config_file}"
+}
 
 if [[ "$1" == "--disable" ]]; then
     stream1090_decoder="${RECEIVER_STREAM1090_DECODER:-}"
@@ -82,11 +99,9 @@ fi
 
 stream1090_sample_rate="2.4"
 stream1090_config_name="rtlsdr.ini"
-stream1090_dependency="librtlsdr-dev"
 if [[ "${stream1090_device_type}" == "Airspy" ]]; then
     stream1090_sample_rate="6"
     stream1090_config_name="airspy.ini"
-    stream1090_dependency="libairspy-dev"
 fi
 
 stream1090_sample_rate=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
@@ -103,6 +118,109 @@ stream1090_serial=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                               8 78 "" 3>&1 1>&2 2>&3)
 if [[ $? -ne 0 ]]; then
     exit 1
+fi
+
+stream1090_frequency=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                 --title "stream1090 Center Frequency" \
+                                 --inputbox "Enter the center frequency in Hz." \
+                                 8 78 "1090000000" 3>&1 1>&2 2>&3)
+if [[ $? -ne 0 || ! "${stream1090_frequency}" =~ ^[0-9]+$ ]]; then
+    exit 1
+fi
+
+stream1090_bias_tee="false"
+if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+            --title "stream1090 Bias Tee" \
+            --defaultno \
+            --yesno "Enable the SDR's 5V bias tee to power an attached LNA?" \
+            8 78; then
+    stream1090_bias_tee="true"
+fi
+
+stream1090_gain_mode=""
+stream1090_gain=""
+stream1090_lna_gain=""
+stream1090_mixer_gain=""
+stream1090_vga_gain=""
+stream1090_ppm=""
+stream1090_tuner_bandwidth=""
+stream1090_packing=""
+if [[ "${stream1090_device_type}" == "RTL-SDR" ]]; then
+    stream1090_gain_mode=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                      --title "stream1090 RTL-SDR Gain" \
+                                      --menu "Select the RTL-SDR gain mode." \
+                                      12 78 2 \
+                                      "Automatic" "Enable tuner AGC" \
+                                      "Manual" "Set gain in dB" \
+                                      3>&2 2>&1 1>&3)
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+    if [[ "${stream1090_gain_mode}" == "Manual" ]]; then
+        stream1090_gain=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                    --title "stream1090 RTL-SDR Gain" \
+                                    --inputbox "Enter tuner gain in dB (for example, 40 or 48.0)." \
+                                    8 78 "40" 3>&1 1>&2 2>&3)
+        if [[ $? -ne 0 || ! "${stream1090_gain}" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+            exit 1
+        fi
+    fi
+
+    stream1090_ppm=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                               --title "stream1090 Frequency Correction" \
+                               --inputbox "Enter optional frequency correction in PPM, or leave blank." \
+                               8 78 "" 3>&1 1>&2 2>&3)
+    if [[ $? -ne 0 || ( -n "${stream1090_ppm}" && ! "${stream1090_ppm}" =~ ^-?[0-9]+$ ) ]]; then
+        exit 1
+    fi
+
+    stream1090_tuner_bandwidth=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                           --title "stream1090 Tuner Bandwidth" \
+                                           --inputbox "Enter tuner bandwidth in Hz, or leave blank for the packaged default." \
+                                           8 78 "3000000" 3>&1 1>&2 2>&3)
+    if [[ $? -ne 0 || ( -n "${stream1090_tuner_bandwidth}" && ! "${stream1090_tuner_bandwidth}" =~ ^[0-9]+$ ) ]]; then
+        exit 1
+    fi
+else
+    stream1090_gain_mode=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                      --title "stream1090 Airspy Gain" \
+                                      --menu "Select the Airspy gain control mode." \
+                                      14 78 3 \
+                                      "Linearity" "Combined linearity gain (0-21)" \
+                                      "Sensitivity" "Combined sensitivity gain (0-21)" \
+                                      "Manual" "Set LNA, mixer, and VGA gains" \
+                                      3>&2 2>&1 1>&3)
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+    if [[ "${stream1090_gain_mode}" == "Manual" ]]; then
+        stream1090_lna_gain=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Airspy LNA Gain" --inputbox "Enter LNA gain (0-14)." 8 78 "10" 3>&1 1>&2 2>&3)
+        stream1090_mixer_gain=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Airspy Mixer Gain" --inputbox "Enter mixer gain (0-15)." 8 78 "7" 3>&1 1>&2 2>&3)
+        stream1090_vga_gain=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" --title "Airspy VGA Gain" --inputbox "Enter VGA gain (0-15)." 8 78 "11" 3>&1 1>&2 2>&3)
+        if [[ ! "${stream1090_lna_gain}" =~ ^([0-9]|1[0-4])$ || ! "${stream1090_mixer_gain}" =~ ^([0-9]|1[0-5])$ || ! "${stream1090_vga_gain}" =~ ^([0-9]|1[0-5])$ ]]; then
+            exit 1
+        fi
+    else
+        stream1090_default_gain="16"
+        if [[ "${stream1090_gain_mode}" == "Sensitivity" ]]; then
+            stream1090_default_gain="5"
+        fi
+        stream1090_gain=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                    --title "stream1090 Airspy Gain" \
+                                    --inputbox "Enter ${stream1090_gain_mode,,} gain (0-21)." \
+                                    8 78 "${stream1090_default_gain}" 3>&1 1>&2 2>&3)
+        if [[ $? -ne 0 || ! "${stream1090_gain}" =~ ^([0-9]|1[0-9]|2[01])$ ]]; then
+            exit 1
+        fi
+    fi
+
+    stream1090_packing="false"
+    if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                --title "stream1090 Airspy Packing" \
+                --yesno "Use packed 12-bit Airspy samples to reduce USB bandwidth?" \
+                8 78; then
+        stream1090_packing="true"
+    fi
 fi
 
 stream1090_upsample_rate=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
@@ -142,21 +260,33 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     stream1090_filter="-q"
 fi
 
+stream1090_verbose=""
+if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+            --title "stream1090 Verbose Logging" \
+            --defaultno \
+            --yesno "Enable verbose stream1090 journal logging for troubleshooting?" \
+            8 78; then
+    stream1090_verbose="-v"
+fi
+
 ## CHECK FOR PREREQUISITE PACKAGES
 
 log_heading "Installing packages needed to build stream1090"
-check_package build-essential
+check_package devscripts
+check_package debhelper
 check_package cmake
-check_package git
 check_package pkg-config
+check_package g++
+check_package git
 check_package socat
-check_package "${stream1090_dependency}"
+check_package libairspy-dev
+check_package librtlsdr-dev
 
 if [[ "${stream1090_device_type}" == "RTL-SDR" ]]; then
     blacklist_modules
 fi
 
-## CLONE AND BUILD THE OFFICIAL UPSTREAM SOURCE
+## CLONE AND BUILD THE OFFICIAL UPSTREAM PACKAGE
 
 log_heading "Preparing the official stream1090 Git repository"
 mkdir -p "${stream1090_build_directory}"
@@ -170,46 +300,87 @@ else
     cd "${stream1090_source_directory}" || exit 1
 fi
 
-git checkout --detach "${stream1090_commit}" 2>&1 | log_pipe
+git checkout --force --detach origin/main 2>&1 | log_pipe
 
-if [[ -d build ]]; then
-    rm -rf build
-fi
-mkdir build
-cd build || exit 1
-cmake .. -DCMAKE_BUILD_TYPE=Release 2>&1 | log_pipe
-cmake --build . --parallel 2>&1 | log_pipe
+log_heading "Building the stream1090 Debian package"
+rm -f "${stream1090_build_directory}"/stream1090_*.deb
+dpkg-buildpackage -us -uc -b 2>&1 | log_pipe
 
-if [[ ! -x ./stream1090 ]]; then
+stream1090_package=$(find "${stream1090_build_directory}" -maxdepth 1 -type f -name 'stream1090_*.deb' -print -quit)
+if [[ -z "${stream1090_package}" ]]; then
     log_alert_heading "INSTALLATION HALTED"
-    log_alert_message "The official stream1090 source build did not produce an executable"
+    log_alert_message "The official stream1090 build did not produce a Debian package"
     exit 1
 fi
 
+log_heading "Installing the stream1090 Debian package"
+sudo rm -f /etc/systemd/system/stream1090.service
+sudo rm -f /usr/local/bin/stream1090
+sudo dpkg -i "${stream1090_package}" 2>&1 | log_pipe
+
+if [[ $(dpkg-query -W -f='${STATUS}' stream1090 2>/dev/null | grep -c "ok installed") -eq 0 ]]; then
+    log_alert_heading "INSTALLATION HALTED"
+    log_alert_message "The stream1090 Debian package failed to install"
+    exit 1
+fi
+
+sudo systemctl stop stream1090 2>/dev/null || true
+
 log_message "Verifying stream1090 native device support"
-./stream1090 -h 2>&1 | log_pipe
+/usr/bin/stream1090 -h 2>&1 | log_pipe
 
-## INSTALL RUNTIME FILES
+mkdir -p "${RECEIVER_BUILD_DIRECTORY}/package-archive"
+cp -vf "${stream1090_package}" "${RECEIVER_BUILD_DIRECTORY}/package-archive/" 2>&1 | log_pipe
 
-log_heading "Installing stream1090 runtime files"
-sudo install -Dm755 ./stream1090 /usr/local/bin/stream1090
-sudo install -d "${stream1090_config_directory}"
-if [[ ! -f "${stream1090_config_directory}/${stream1090_config_name}" ]]; then
-    sudo install -m644 "${stream1090_source_directory}/configs/${stream1090_config_name}" "${stream1090_config_directory}/${stream1090_config_name}"
-else
-    log_message "Preserving the existing ${stream1090_config_name} device configuration"
-fi
+## CONFIGURE PACKAGE RUNTIME FILES
 
+set_stream1090_ini_value "frequency" "${stream1090_frequency}"
+set_stream1090_ini_value "bias_tee" "${stream1090_bias_tee}"
 if [[ -n "${stream1090_serial}" ]]; then
-    sudo sed -i -E "s|^#?[[:space:]]*serial[[:space:]]*=.*$|serial = ${stream1090_serial}|" "${stream1090_config_directory}/${stream1090_config_name}"
+    set_stream1090_ini_value "serial" "${stream1090_serial}"
+else
+    disable_stream1090_ini_value "serial"
 fi
-
-if [[ -f "${stream1090_config_directory}/stream1090.conf" ]]; then
-    source "${stream1090_config_directory}/stream1090.conf"
+if [[ "${stream1090_device_type}" == "RTL-SDR" ]]; then
+    if [[ "${stream1090_gain_mode}" == "Automatic" ]]; then
+        set_stream1090_ini_value "agc" "true"
+    else
+        set_stream1090_ini_value "agc" "false"
+        set_stream1090_ini_value "gain" "${stream1090_gain}"
+    fi
+    if [[ -n "${stream1090_ppm}" ]]; then
+        set_stream1090_ini_value "ppm" "${stream1090_ppm}"
+    else
+        disable_stream1090_ini_value "ppm"
+    fi
+    if [[ -n "${stream1090_tuner_bandwidth}" ]]; then
+        set_stream1090_ini_value "tuner_bandwidth" "${stream1090_tuner_bandwidth}"
+    else
+        disable_stream1090_ini_value "tuner_bandwidth"
+    fi
+else
+    if [[ "${stream1090_gain_mode}" == "Manual" ]]; then
+        disable_stream1090_ini_value "linearity_gain"
+        disable_stream1090_ini_value "sensitivity_gain"
+        set_stream1090_ini_value "lna_gain" "${stream1090_lna_gain}"
+        set_stream1090_ini_value "mixer_gain" "${stream1090_mixer_gain}"
+        set_stream1090_ini_value "vga_gain" "${stream1090_vga_gain}"
+    else
+        disable_stream1090_ini_value "lna_gain"
+        disable_stream1090_ini_value "mixer_gain"
+        disable_stream1090_ini_value "vga_gain"
+        if [[ "${stream1090_gain_mode}" == "Linearity" ]]; then
+            disable_stream1090_ini_value "sensitivity_gain"
+        else
+            disable_stream1090_ini_value "linearity_gain"
+        fi
+        set_stream1090_ini_value "${stream1090_gain_mode,,}_gain" "${stream1090_gain}"
+    fi
+    set_stream1090_ini_value "packing" "${stream1090_packing}"
 fi
 
 sudo tee "${stream1090_config_directory}/stream1090.conf" > /dev/null <<EOF
-STREAM1090_OPTS="-s ${stream1090_sample_rate} -d ${stream1090_config_directory}/${stream1090_config_name}${stream1090_upsample_rate:+ -u ${stream1090_upsample_rate}}${stream1090_filter:+ ${stream1090_filter}}"
+STREAM1090_OPTS="-s ${stream1090_sample_rate} -d ${stream1090_config_directory}/${stream1090_config_name}${stream1090_upsample_rate:+ -u ${stream1090_upsample_rate}}${stream1090_filter:+ ${stream1090_filter}}${stream1090_verbose:+ ${stream1090_verbose}}"
 READSB_PORT=${stream1090_input_port}
 EOF
 
@@ -236,26 +407,6 @@ else
     change_config "RECEIVER" "none" "/etc/default/dump1090-fa"
     change_config "NET_RAW_INPUT_PORTS" "${stream1090_input_port}" "/etc/default/dump1090-fa"
 fi
-
-## CREATE SERVICE
-
-log_heading "Creating the stream1090 systemd service"
-sudo tee "${stream1090_service_file}" > /dev/null <<EOF
-[Unit]
-Description=stream1090 Mode-S demodulator
-After=network.target ${stream1090_decoder}.service
-Wants=${stream1090_decoder}.service
-
-[Service]
-Type=simple
-EnvironmentFile=${stream1090_config_directory}/stream1090.conf
-ExecStart=/bin/bash -c '/usr/local/bin/stream1090 \${STREAM1090_OPTS} | /usr/bin/socat -u - TCP4:127.0.0.1:\${READSB_PORT}'
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
 
 sudo systemctl daemon-reload
 sudo systemctl restart "${stream1090_decoder}"
