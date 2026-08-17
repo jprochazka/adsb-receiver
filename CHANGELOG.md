@@ -7,7 +7,6 @@ The following is a history of the changes made to this project.
 * Added package check requirments for wget where needed.
 * Reimplemented a much improved headless installation option offered in the past.
 * Added the ability to specify heywhatsthat style panoramas to dump978.
-* Added checks for wget to scripts which require the package.
 
 ## v2.8.11 *(August 14th, 2026)*
 
