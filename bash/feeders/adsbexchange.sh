@@ -70,7 +70,7 @@ log_heading "Starting the ADS-B Exchange stats package setup process"
 
 log_message "Asking if the user wishes to install the ADS-B Exchange stats package"
 if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-            --title "ADS-B Exchange Feed Setup" \
+            --title "ADS-B Exchange Stats Package" \
             --yesno "ADS-B Exchange offers the option to install their stats package in order to send your stats to their site.\n\nWould you like to install the stats package now?" \
             12 78; then
     log_message "Downloading the ADS-B Exchange stats package installation script"
@@ -92,7 +92,7 @@ log_heading "Starting the ADS-B Exchange web interface setup process"
 
 log_message "Asking if the user wishes to install the ADS-B Exchange web interface"
 if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-            --title "ADS-B Exchange Feed Setup" \
+            --title "ADS-B Exchange Web Interface" \
             --yesno "ADS-B Exchange offers the option to install an additional web interface.\n\nWould you like to install the web interface now?" \
             12 78; then
     echo -e "Executing the ADS-B Exchange web interface installation script"

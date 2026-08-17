@@ -6,24 +6,6 @@ This project continues to realize that for some, Docker and premade images are n
 
 It would seem as of late the move towards premade as well as Docker and other PaaS images with preinstalled software has become popular within the community. Docker images require additional software and, in some cases, result in additional overhead as well as making trivial configuration changes more complicated than they should be. Most of these solutions also come with preinstalled software one may never use as part of the image as well. This project offers the ability to choose and install only what you want or need natively across a wide range of devices with minimal command line experience.
 
-## Obtaining And Using This Software
-
-### New installations...
-
-    sudo apt-get update
-    sudo apt-get install git
-    git clone https://github.com/jprochazka/adsb-receiver
-    cd ~/adsb-receiver
-    chmod +x install.sh
-    ./install.sh
-
-### Updating existing installations...
-
-Your local repositories master branch will be updated each time install.sh is executed that is unless either the `--development` or `--branch <branch>` switch is used. Unless you are testing an upcoming release or wishing to contribute to the project you will generally not need to use either of these switches.
-
-    cd ~/adsb-receiver
-    ./install.sh
-
 ## What Can Be Installed
 
 The following software can be installed using these scripts.
@@ -54,7 +36,6 @@ When setting up the portal you will have to choose between a lite or advanced in
 * Dump978 (FlightAware):   https://github.com/flightaware/dump978
 * Dumpvdl2:                https://github.com/szpajder/dumpvdl2
 * Readsb:                  https://github.com/wiedehopf/readsb
-* VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 ### Feeders
 
@@ -73,6 +54,40 @@ When setting up the portal you will have to choose between a lite or advanced in
 * DuckDNS.org Support:  https://www.duckdns.org
 * Graphs1090:           https://github.com/wiedehopf/graphs1090
 * tar1090:              https://github.com/wiedehopf/tar1090
+
+## Obtaining And Using This Software
+
+### New installations...
+
+    sudo apt-get update
+    sudo apt-get install git
+    git clone https://github.com/jprochazka/adsb-receiver
+    cd ~/adsb-receiver
+    chmod +x install.sh
+    ./install.sh
+
+### Updating existing installations...
+
+Your local repositories master branch will be updated each time install.sh is executed that is unless either the `--development` or `--branch <branch>` switch is used. Unless you are testing an upcoming release or wishing to contribute to the project you will generally not need to use either of these switches.
+
+    cd ~/adsb-receiver
+    ./install.sh
+
+### Headless installations
+
+Headless mode installs software using a configuration file instead of interactive prompts. Copy `headless.conf.example` to `headless.conf` in the repository root, then update the settings for the software you want to install.
+
+    cd ~/adsb-receiver
+    cp headless.conf.example headless.conf
+    nano headless.conf
+
+Validate the configuration before installation:
+
+    ./install.sh --headless --validate-headless
+
+Set `HEADLESS_CONFIGURATION_VERIFIED="yes"` only after the configuration is complete, then run:
+
+    ./install.sh --headless
 
 ## Supported Operating Systems
 

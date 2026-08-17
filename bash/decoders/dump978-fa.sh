@@ -153,6 +153,51 @@ cp -vf $RECEIVER_BUILD_DIRECTORY/dump978-fa/skyaware978_*.deb $RECEIVER_BUILD_DI
 assign_devices_to_decoders
 
 
+## POST INSTALLATION OPERATIONS
+
+log_heading "Performing post installation operations"
+
+log_message "Checking if a dump978-fa heywhatsthat upintheair.json file exists"
+if [[ ! -f "/usr/share/skyaware978/html/upintheair.json" ]]; then
+    if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                --title "Setup dump978-fa heywhatsthat Maximum Range Rings" \
+                --yesno "Maximum range rings can be added to the FlightAware Dump978 map using data obtained from heywhatsthat. Create a panorama centered on your receiver at http://www.heywhatsthat.com, then enter the view ID from its URL.\n\nWould you like to add heywhatsthat maximum range rings to your map?" \
+                13 78; then
+        panorama_id_title="Enter the dump978-fa heywhatsthat Panorama ID"
+        while [[ -z "${panorama_id}" ]]; do
+            panorama_id=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                   --title "${panorama_id_title}" \
+                                   --inputbox "Please enter your Heywhatsthat panorama ID." \
+                                   8 78 3>&1 1>&2 2>&3) || exit 1
+            panorama_id_title="Enter the dump978-fa Heywhatsthat Panorama ID [REQUIRED]"
+        done
+
+        first_altitude_title="First dump978-fa heywhatsthat Ring Altitude"
+        while [[ -z "${first_altitude}" ]]; do
+            first_altitude=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                      --title "${first_altitude_title}" \
+                                      --nocancel \
+                                      --inputbox "Enter the first ring altitude in meters." \
+                                      8 78 "3048" 3>&1 1>&2 2>&3)
+            first_altitude_title="First dump978-fa heywhatsthat Ring Altitude [REQUIRED]"
+        done
+
+        second_altitude_title="Second dump978-fa heywhatsthat Ring Altitude"
+        while [[ -z "${second_altitude}" ]]; do
+            second_altitude=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
+                                       --title "${second_altitude_title}" \
+                                       --nocancel \
+                                       --inputbox "Enter the second ring altitude in meters." \
+                                       8 78 "12192" 3>&1 1>&2 2>&3)
+            second_altitude_title="Second dump978-fa heywhatsthat Ring Altitude [REQUIRED]"
+        done
+
+        log_message "Downloading the dump978-fa heywhatsthat panorama data"
+        sudo wget -v -O /usr/share/skyaware978/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${panorama_id}&refraction=0.25&alts=${first_altitude},${second_altitude}" 2>&1 | log_pipe
+    fi
+fi
+
+
 ## SETUP COMPLETE
 
 log_message "Returning to ${RECEIVER_PROJECT_TITLE} root directory"

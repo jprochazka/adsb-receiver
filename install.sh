@@ -11,6 +11,7 @@ project_branch="master"
 development_mode=""
 headless_mode=""
 headless_config_file=""
+headless_default_yesno="no"
 validate_headless_config_only=""
 mta=""
 
@@ -31,7 +32,7 @@ function display_help() {
     echo "-h           --help             Shows this message.                                        "
     echo "-m <MTA>     --mta=<MTA>        Specify which email MTA to use currently Exim or Postfix.  "
     echo "-n           --no-logging       Disables writing output to a log file.                     "
-    echo "-c <FILE>    --config=<FILE>    Headless configuration file.                                "
+    echo "-c <FILE>    --config=<FILE>    Optional headless config path; defaults to ./headless.conf.  "
     echo "    --validate-headless         Validates headless config without installing.                "
     echo "-v           --version          Displays the version being used.                           "
     echo "-------------------------------------------------------------------------------------------"
@@ -115,16 +116,36 @@ export RECEIVER_LOGGING_ENABLED="${logging_enabled}"
 export RECEIVER_MTA="${mta}"
 if [[ "${headless_mode}" == "true" ]]; then
     export RECEIVER_UI_MODE="headless"
-    if [[ -z "${headless_config_file}" || ! -f "${headless_config_file}" ]]; then
-        echo "Headless mode requires --config=<FILE> pointing to a readable configuration file." >&2
+    if [[ -z "${headless_config_file}" ]]; then
+        headless_config_file="${PWD}/headless.conf"
+    fi
+    if [[ ! -f "${headless_config_file}" ]]; then
+        echo "Warning: headless config file not found at '${headless_config_file}'." >&2
+        echo "Place a file named 'headless.conf' in the repository root or pass --config=<FILE>." >&2
         exit 1
     fi
-    # Config files edited on Windows may carry CRLF line endings, which would
-    # otherwise leave a trailing \r embedded in every sourced value.
-    source <(tr -d '\r' < "${headless_config_file}")
-    for headless_variable in ${!RECEIVER_HEADLESS_@}; do
+    if grep -q $'\r' "${headless_config_file}"; then
+        echo "Normalizing CRLF line endings in '${headless_config_file}'." >&2
+        if ! sed -i 's/\r$//' "${headless_config_file}"; then
+            echo "Error: unable to normalize '${headless_config_file}'." >&2
+            exit 1
+        fi
+    fi
+    source "${headless_config_file}"
+    export HEADLESS_DEFAULT_YESNO="${headless_default_yesno}"
+    for headless_variable in ${!HEADLESS_@}; do
         export "${headless_variable}"
     done
+    if [[ "${validate_headless_config_only}" != "true" ]]; then
+        case "${HEADLESS_CONFIGURATION_VERIFIED,,}" in
+            yes|true|1)
+                ;;
+            *)
+                echo "Headless installation halted: set HEADLESS_CONFIGURATION_VERIFIED=yes to continue." >&2
+                exit 1
+                ;;
+        esac
+    fi
 fi
 
 

@@ -156,15 +156,15 @@ assign_devices_to_decoders
 
 log_heading "Performing post installation operations"
 
-log_message "Checking if a heywhatsthat upintheair.json file exists"
+log_message "Checking if a dump1090-fa heywhatsthat upintheair.json file exists"
 if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
-    log_message "Asking the user if they want to add heywhatsthat maximum range rings"
+    log_message "Asking the user if they want to add dump1090-fa heywhatsthat maximum range rings"
     if (whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-                 --title "Setup heywhaststhat Maximum Range Rings" \
+                 --title "Setup dump1090-fa heywhatsthat Maximum Range Rings" \
                  --yesno "Maximum range rings can be added to the FlightAware Dump1090 map usings data obtained from heywhatsthat. In order to add these rings to your FlightAware dump1090 map you will first need to visit http://www.heywhatsthat.com and generate a new panorama centered on the location of your receiver. Once your panorama has been generated a link to the panorama will be displayed in the top left hand portion of the page. You will need the view ID which is the series of letters and  numbers after ?view= in the URL.\n\nWould you like to add heywhatsthat maximum range rings to your map?" \
                  16 78); then
         log_message "Asking the user for the heywhatsthat panarama ID"
-        heywhatsthat_panorama_id_title="Enter the heywhatsthat Panorama ID"
+        heywhatsthat_panorama_id_title="Enter the dump1090-fa heywhatsthat Panorama ID"
         while [[ -z $heywhatsthat_panorama_id ]] ; do
             heywhatsthat_panorama_id=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                 --title "${heywhatsthat_panorama_id_title}" \
@@ -175,11 +175,11 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
                 log_alert_message "Setup of heywhatsthat maximum range rings was cancelled"
                 break
             fi
-            heywhatsthat_panorama_id_title="Enter the Heywhatsthat Panorama ID [REQUIRED]"
+            heywhatsthat_panorama_id_title="Enter the dump1090-fa Heywhatsthat Panorama ID [REQUIRED]"
         done
 	if [[ $whiptail_exit_status == 0 ]]; then
             log_message "Asking the user what the altitude is for the first ring"
-            heywhatsthat_ring_one_altitude_title="First heywhatsthat Ring Altitude"
+            heywhatsthat_ring_one_altitude_title="First dump1090-fa heywhatsthat Ring Altitude"
             while [[ -z $heywhatsthat_ring_one_altitude ]] ; do
                 heywhatsthat_ring_one_altitude=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                           --title "${heywhatsthat_ring_one_altitude_title}" \
@@ -187,10 +187,10 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
                                                           --inputbox "Enter the first ring's altitude in meters.\n(default 3048 meters or 10000 feet)" \
                                                           8 78 \
                                                           "3048" 3>&1 1>&2 2>&3)
-                heywhatsthat_ring_one_altitude_title="First heywhatsthat Ring Altitude [REQUIRED]"
+                heywhatsthat_ring_one_altitude_title="First dump1090-fa heywhatsthat Ring Altitude [REQUIRED]"
             done
             log_message "Asking the user what the altitude is for the second ring"
-            heywhatsthat_ring_two_altitude_title="Second heywhatsthat Ring Altitude"
+            heywhatsthat_ring_two_altitude_title="Second dump1090-fa heywhatsthat Ring Altitude"
             while [[ -z $heywhatsthat_ring_two_altitude ]] ; do
                 heywhatsthat_ring_two_altitude=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                           --title "${heywhatsthat_ring_two_altitude_title}" \
@@ -198,12 +198,12 @@ if [[ ! -f "/usr/share/dump1090-fa/html/upintheair.json" ]]; then
                                                           --inputbox "Enter the second ring's altitude in meters.\n(default 12192 meters or 40000 feet)" \
                                                           8 78 \
                                                           "12192" 3>&1 1>&2 2>&3)
-                heywhatsthat_ring_two_altitude_title="Second heywhatsthat Ring Altitude [REQUIRED]"
+                heywhatsthat_ring_two_altitude_title="Second dump1090-fa heywhatsthat Ring Altitude [REQUIRED]"
             done
 
             log_message "Downloading JSON data file assigned to panorama ID ${heywhatsthat_panorama_id}"
             echo ""
-            sudo wget -v -O /usr/share/skyaware/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${heywhatsthat_panarama_id}&refraction=0.25&alts=${heywhatsthat_ring_one_altitude},${heywhatsthat_ring_two_altitude}" 2>&1 | log_pipe
+            sudo wget -v -O /usr/share/dump1090-fa/html/upintheair.json "http://www.heywhatsthat.com/api/upintheair.json?id=${heywhatsthat_panorama_id}&refraction=0.25&alts=${heywhatsthat_ring_one_altitude},${heywhatsthat_ring_two_altitude}" 2>&1 | log_pipe
             echo ""
             log_message "Heywhatsthat configuration complete"
         fi

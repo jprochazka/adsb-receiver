@@ -2,6 +2,12 @@
 
 The following is a history of the changes made to this project.
 
+## v2.8.12 *(August 17th, 2026)*
+
+* Added package check requirments for wget where needed.
+* Reimplemented a much improved headless installation option offered in the past.
+* Added the ability to specify heywhatsthat style panoramas to dump978.
+
 ## v2.8.11 *(August 14th, 2026)*
 
 * Fixed a stray `esac` that caused the dump1090-fa installer to fail with a Bash syntax error.

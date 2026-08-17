@@ -30,7 +30,7 @@ log_heading "Determine the device type to build ACARSDEC for"
 
 log_message "Asking which type of device will be used by ACARSDEC"
 device=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-                  --title "Device Type" \
+                  --title "ACARSDEC Device Type" \
                   --menu "Please choose the RTL-SDR device type which is to be used by ACARSDEC." \
                   11 78 3 \
                   "RTL-SDR" "" \
@@ -65,14 +65,14 @@ fi
 current_acars_frequencies="130.025 130.425 130.450 131.125 131.550"
 if [[ "${acars_decoder_installed}" == "true" ]]; then
     log_message "Determining which frequencies are currently assigned"
-    exec_start=`get_config "ExecStart" "/etc/systemd/system/acarsdec.service"`
-    current_acars_frequencies=`sed -e "s#.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} \(\)#\1#" <<< "${exec_start}"`
+    exec_start=$(get_config "ExecStart" "/etc/systemd/system/acarsdec.service")
+    current_acars_frequencies=$(sed -n "s/.*-r ${RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER} \(.*\)$/\1/p" <<< "${exec_start}")
 fi
 log_message "Asking the user for ACARS frequencies to monitor"
-acars_fequencies_title="Enter ACARS Frequencies"
-while [[ -z $acars_fequencies ]] ; do
-    acars_fequencies=$(whiptail --backtitle "ACARS Frequencies" \
-                                --title "${acars_fequencies_title}" \
+acars_frequencies_title="Enter ACARS Frequencies"
+while [[ -z $acars_frequencies ]] ; do
+    acars_frequencies=$(whiptail --backtitle "ACARS Frequencies" \
+                                --title "${acars_frequencies_title}" \
                                 --inputbox "\nEnter the ACARS frequencies you would like to monitor." \
                                 8 78 \
                                 "${current_acars_frequencies}" 3>&1 1>&2 2>&3)
@@ -85,13 +85,13 @@ while [[ -z $acars_fequencies ]] ; do
         log_title_heading "ACARSDEC decoder setup halted"
         exit 1
     fi
-    acars_fequencies_title="Enter ACARS Frequencies (REQUIRED)"
+    acars_frequencies_title="Enter ACARS Frequencies (REQUIRED)"
 done
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-log_heading "Installing packages needed to fulfill dependencies for FlightAware PiAware client"
+log_heading "Installing packages needed to fulfill ACARSDEC decoder dependencies"
 
 check_package cmake
 check_package libjansson-dev

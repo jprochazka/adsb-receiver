@@ -43,7 +43,7 @@ while [[ -z $duckdns_domain ]]; do
                       --title "${duckdns_domain_title}" \
                       --inputbox "\nPlease enter the Duck DNS sub domain you selected after registering.\nIf you do not have one yet visit http://www.ducknds.org to obtain one." \
                       9 78 3>&1 1>&2 2>&3)
-    if [[ $duckdns_domain == 0 ]]; then
+    if [[ $? -ne 0 ]]; then
         log_alert_heading "INSTALLATION HALTED"
         log_alert_message "Setup has been halted due to lack of required information"
         echo ""
@@ -61,7 +61,7 @@ while [[ -z $duckdns_token ]]; do
                      --title "${duckdns_token_title}" \
                      --inputbox "\nPlease enter your Duck DNS token." \
                      8 78 3>&1 1>&2 2>&3)
-    if [[ $duckdns_domain == 0 ]]; then
+    if [[ $? -ne 0 ]]; then
         log_alert_heading "INSTALLATION HALTED"
         log_alert_message "Setup has been halted due to lack of required information"
         echo ""

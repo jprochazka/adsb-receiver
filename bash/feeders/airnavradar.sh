@@ -106,7 +106,7 @@ for ((i=0; i<wait_time; i++)); do
   sleep 1
 done
 
-log_message "Attempting to retreive sharing-key from AirNav Radar"
+log_message "Attempting to retrieve sharing-key from AirNav Radar"
 real_sharing_key=`sudo rbfeeder --showkey`
 log_message "Sharing-key set to ${real_sharing_key}"
 

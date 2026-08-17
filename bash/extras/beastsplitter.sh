@@ -44,7 +44,7 @@ input_options=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                          --title "Input Options for Beast Splitter" \
                          --inputbox "Enter the option telling Beast Splitter where to read data from. You should provide one of the following either --net or --serial.\n\nExamples:\n--serial /dev/beast\n--net remotehost:remoteport" \
                          8 78 3>&1 1>&2 2>&3)
-if [[ $input_options == 0 ]]; then
+if [[ $? -ne 0 ]]; then
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted due to lack of required information"
     echo ""
@@ -58,7 +58,7 @@ output_options=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                           --title "Output Options for Beast Splitter" \
                           --nocancel --inputbox "Enter the option to tell Beast Splitter where to send output data. You can do so by establishing an outgoing connection or accepting inbound connections.\\Examples:\n--connect remotehost:remoteport\n --listen remotehost:remoteport" \
                           8 78 3>&1 1>&2 2>&3)
-if [[ $output_options == 0 ]]; then
+if [[ $? -ne 0 ]]; then
     log_alert_heading "INSTALLATION HALTED"
     log_alert_message "Setup has been halted due to lack of required information"
     echo ""

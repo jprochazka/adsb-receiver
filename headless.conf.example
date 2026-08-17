@@ -1,36 +1,120 @@
-# Copy this file outside the repository, set the values for the software you
-# want installed, and run: ./install.sh --headless --config /path/to/file
-# Values in this file are shell assignments and must not be accepted from an
-# untrusted source.
+# Place this file in the repository root as headless.conf and run:
+# ./install.sh --headless
+# You may also point at a different path with --config=/path/to/file.
 
-# Main installation choices. Valid decoder values are listed below; use none to
-# skip a category. Only one ADS-B and one VDL Mode 2 decoder can be selected.
-RECEIVER_HEADLESS_ADSB_DECODER="dump1090-fa"       # dump1090-fa, readsb, none
-RECEIVER_HEADLESS_UAT_DECODER="none"               # dump978-fa, none
-RECEIVER_HEADLESS_ACARS_DECODER="none"             # acarsdec, none
-RECEIVER_HEADLESS_VDLM2_DECODERS="none"            # Comma-separated: dumpvdl2, vdlm2dec, none
-RECEIVER_HEADLESS_FEEDERS=""                        # Comma-separated: ADS-B Exchange Feed Client, AirNav Radar RBFeeder, Airplanes.live Feeder, FlightAware PiAware, Flightradar24 Client, Fly Italy ADS-B Feeder, OpenSky Network Feeder, Plane Finder Client
-RECEIVER_HEADLESS_EXTRAS=""                         # Comma-separated: beast-splitter, Duck DNS Free Dynamic DNS Hosting, Graphs1090, tar1090
-RECEIVER_HEADLESS_INSTALL_THE_ADS_B_PORTAL="no"     # yes or no
-RECEIVER_HEADLESS_OPERATING_SYSTEM_UPDATES="no"     # yes or no
-RECEIVER_HEADLESS_CONFIRM_YOU_WISH_TO_CONTINUE="yes"
-RECEIVER_HEADLESS_THE_ADS_B_RECEIVER_PROJECT="yes"
-RECEIVER_HEADLESS_DEFAULT_YESNO="yes"
+# =============================================================================
+# OS and local repository Options
+# =============================================================================
 
-# When more than one decoder is selected, assign each a unique RTL-SDR device.
-# dumpvdl2 and vdlm2dec can coexist only when assigned separate devices.
-RECEIVER_HEADLESS_DEVICE_DUMP1090_FA="0"
-RECEIVER_HEADLESS_DEVICE_DUMP978_FA="1"
-RECEIVER_HEADLESS_DEVICE_ACARSDEC="2"
-RECEIVER_HEADLESS_DEVICE_DUMPVDL2="3"
-RECEIVER_HEADLESS_DEVICE_VDLM2DEC="4"
-RECEIVER_HEADLESS_DEVICE_READSB="5"
+HEADLESS_OPERATING_SYSTEM_UPDATES="no"
+HEADLESS_STASH_CHANGES="no"
 
-# Freeform answers use the dialog type and title, normalized to uppercase
-# letters, numbers, and underscores. Add only values required by selected
-# components. Examples:
-# RECEIVER_HEADLESS_MENU_DEVICE_TYPE="RTL-SDR"
-# RECEIVER_HEADLESS_INPUTBOX_ENTER_ACARS_FREQUENCIES="130.025 130.425"
-# RECEIVER_HEADLESS_INPUTBOX_MYSQL_DATABASE_SERVER_HOSTNAME="db.example.net"
-# RECEIVER_HEADLESS_INPUTBOX_MYSQL_ADMINISTRATOR_USERNAME="root"
-# RECEIVER_HEADLESS_PASSWORDBOX_MYSQL_ADMINISTRATOR_PASSWORD="change-me"
+# =============================================================================
+# Installer choices
+# =============================================================================
+
+# Decoders
+HEADLESS_ACARS_DECODER="none"        # acarsdec, none
+HEADLESS_ADSB_DECODER="dump1090-fa"  # dump1090-fa, readsb, none
+HEADLESS_UAT_DECODER="none"          # dump978-fa, none
+HEADLESS_VDLM2_DECODERS="none"       # dumpvdl2 or none
+
+# Feeders
+HEADLESS_INSTALL_PORTAL="no"
+HEADLESS_INSTALL_ADSBEXCHANGE="no"
+HEADLESS_INSTALL_AIRNAVRADAR="no"
+HEADLESS_INSTALL_AIRPLANESLIVE="no"
+HEADLESS_INSTALL_FLIGHTRADAR24="no"
+HEADLESS_INSTALL_FLYITALYADSB="no"
+HEADLESS_INSTALL_OPENSKY="no"
+HEADLESS_INSTALL_PIAWARE="no"
+HEADLESS_INSTALL_PLANEFINDER="no"
+
+# Extras
+HEADLESS_INSTALL_BEAST_SPLITTER="no"
+HEADLESS_INSTALL_DUCK_DNS="no"
+HEADLESS_INSTALL_GRAPHS1090="no"
+HEADLESS_INSTALL_TAR1090="no"
+
+# =============================================================================
+# Decoder specific variables
+# =============================================================================
+
+## dump1090-fa
+HEADLESS_DUMP1090_FA_DEVICE="0"
+HEADLESS_DUMP1090_FA_SETUP_HEYWHATSTHAT="no"
+# HEADLESS_DUMP1090_FA_HEYWHATSTHAT_PANORAMA_ID="abc123"
+# HEADLESS_DUMP1090_FA_HEYWHATSTHAT_FIRST_RING_ALTITUDE="3048"
+# HEADLESS_DUMP1090_FA_HEYWHATSTHAT_SECOND_RING_ALTITUDE="12192"
+
+## readsb
+HEADLESS_READSB_DEVICE="5"
+
+## dump978-fa
+HEADLESS_DUMP978_FA_DEVICE="1"
+HEADLESS_DUMP978_FA_SETUP_HEYWHATSTHAT="no"
+# HEADLESS_DUMP978_FA_HEYWHATSTHAT_PANORAMA_ID="abc123"
+# HEADLESS_DUMP978_FA_HEYWHATSTHAT_FIRST_RING_ALTITUDE="3048"
+# HEADLESS_DUMP978_FA_HEYWHATSTHAT_SECOND_RING_ALTITUDE="12192"
+
+## acarsdec
+HEADLESS_ACARSDEC_DEVICE="2"
+HEADLESS_ACARSDEC_DEVICE_TYPE="rtl-sdr"  # rtl-sdr, airspy, sdrplay
+HEADLESS_ACARSDEC_FREQUENCIES="130.025 130.425 130.450 131.125 131.550"
+
+## dumpvdl2
+HEADLESS_DUMPVDL2_DEVICE="3"
+HEADLESS_DUMPVDL2_FREQUENCIES="136.100 136.650 136.700 136.800 136.975"
+
+# =============================================================================
+# Feeder specific variables
+# =============================================================================
+
+## AirNav Radar RBFeeder
+# HEADLESS_AIRNAVRADAR_SHARING_KEY="your-key-here"
+
+## ADS-B Exchange Feed Client
+HEADLESS_ADSBEXCHANGE_STATS="no"
+HEADLESS_ADSBEXCHANGE_WEB_INTERFACE="no"
+
+## Airplanes.live Feeder
+HEADLESS_AIRPLANESLIVE_WEB_INTERFACE="no"
+
+## Fly Italy ADS-B Feeder
+HEADLESS_FLYITALYADSB_UPDATER="no"
+
+# =============================================================================
+# Portal specific variables
+# =============================================================================
+
+HEADLESS_PORTAL_MODE="lite"             # lite or advanced
+HEADLESS_PORTAL_DATABASE_TYPE="mysql"   # mysql or sqlite
+HEADLESS_PORTAL_DATABASE_LOCAL="yes"    # yes for local mysql hosting
+HEADLESS_PORTAL_DATABASE_EXISTS="yes"
+HEADLESS_PORTAL_MYSQL_ADMINISTRATOR_USERNAME="root"
+HEADLESS_PORTAL_MYSQL_ADMINISTRATOR_PASSWORD="change-me"
+HEADLESS_PORTAL_DATABASE_NAME="adsbportal"
+HEADLESS_PORTAL_DATABASE_USER="adsbportal"
+HEADLESS_PORTAL_DATABASE_PASSWORD="change-me"
+# HEADLESS_PORTAL_DATABASE_HOSTNAME="db.example.net" # remote mysql hosting only
+
+# =============================================================================
+# Extra specific variables
+# =============================================================================
+
+## Duck DNS
+# HEADLESS_DUCK_DNS_DOMAIN="example.duckdns.org"
+# HEADLESS_DUCK_DNS_TOKEN="token-value"
+
+## beast-splitter
+HEADLESS_ENABLE_BEAST_SPLITTER="no"
+# HEADLESS_BEAST_SPLITTER_INPUT_OPTIONS="--serial /dev/beast"
+# HEADLESS_BEAST_SPLITTER_OUTPUT_OPTIONS="--listen 0.0.0.0:30103"
+
+# =============================================================================
+# Varification check
+# =============================================================================
+
+## Set to yes when you are done and verified this file is in order using the following command
+## ./install.sh --headless --validate-headless
+HEADLESS_CONFIGURATION_VERIFIED="no"

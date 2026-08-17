@@ -95,6 +95,10 @@ else
                                    --nocancel \
                                    --menu "Choose which database engine to use." 11 80 2 \
                                    "MySQL" "" "SQLite" "" 3>&1 1>&2 2>&3)
+        case "${database_engine,,}" in
+            mysql) database_engine="MySQL" ;;
+            sqlite) database_engine="SQLite" ;;
+        esac
         if [[ "${database_engine}" = "MySQL" ]]; then
             if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                         --title "MySQL Database Location" \
@@ -142,7 +146,7 @@ else
                     database_admin_user=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                  --title "${database_admin_user_title}" \
                                                  --nocancel \
-                                                 --inputbox "Enter the MySQL adminitrator username." \
+                                                 --inputbox "Enter the MySQL administrator username." \
                                                  8 78 \
                                                  "root" 3>&1 1>&2 2>&3)
                     database_admin_user_title="MySQL Administrator User (REQUIRED)"
@@ -154,7 +158,7 @@ else
                     database_admin_password1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                       --title "${database_admin_password1_title}" \
                                                       --nocancel \
-                                                      --passwordbox "Enter the password for the MySQL adminitrator user." \
+                                                      --passwordbox "Enter the password for the MySQL administrator user." \
                                                       8 78 3>&1 1>&2 2>&3)
                     database_admin_password1_title="MySQL Administrator Password (REQUIRED)"
                 done
@@ -164,7 +168,7 @@ else
                     database_admin_password2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                         --title "${database_admin_password2_title}" \
                                                         --nocancel \
-                                                        --passwordbox "Confirm the password for the MySQL adminitrator user." \
+                                                        --passwordbox "Confirm the password for the MySQL administrator user." \
                                                         8 78 3>&1 1>&2 2>&3)
                     database_admin_password2_title="Confirm The MySQL Administrator Password (REQUIRED)"
                 done
@@ -182,7 +186,7 @@ else
                         database_admin_password1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                           --title "${database_admin_password1_title}" \
                                                           --nocancel \
-                                                          --passwordbox "Enter the password for the MySQL adminitrator user." \
+                                                          --passwordbox "Enter the password for the MySQL administrator user." \
                                                           8 78 3>&1 1>&2 2>&3)
                         database_admin_password1_title="MySQL Administrator Password (REQUIRED)"
                     done
@@ -192,7 +196,7 @@ else
                         database_admin_password2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                             --title "${database_admin_password2_title}" \
                                                             --nocancel \
-                                                            --passwordbox "Confirm the password for the MySQL adminitrator user." \
+                                                            --passwordbox "Confirm the password for the MySQL administrator user." \
                                                             8 78 3>&1 1>&2 2>&3)
                         database_admin_password2_title="Confirm The MySQL Administrator Password (REQUIRED)"
                     done
@@ -233,7 +237,7 @@ else
             done
             log_message "Asking the user to confirm the ADS-B Portal database password"
             database_password2_title="Confirm The ADS-B Portal Database Password"
-            while [[ -z database_password2 ]]; do
+            while [[ -z $database_password2 ]]; do
                 database_password2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                               --title "${database_password2_title}" \
                                               --nocancel \
@@ -479,7 +483,7 @@ if [[ "${portal_installed}" = "false" && "${advanced_installation}" = "true" && 
             database_admin_password1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                 --title "${database_admin_password1_title}" \
                                                 --nocancel \
-                                                --passwordbox "Enter the password for the MySQL adminitrator user." \
+                                                --passwordbox "Enter the password for the MySQL administrator user." \
                                                 8 78 3>&1 1>&2 2>&3)
             database_admin_password1_title="MySQL Administrator Password (REQUIRED)"
         done
@@ -489,7 +493,7 @@ if [[ "${portal_installed}" = "false" && "${advanced_installation}" = "true" && 
             database_admin_password2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                 --title "${database_admin_password2_title}" \
                                                 --nocancel \
-                                                --passwordbox "Confirm the password for the MySQL adminitrator user." \
+                                                --passwordbox "Confirm the password for the MySQL administrator user." \
                                                 8 78 3>&1 1>&2 2>&3)
             database_admin_password2_title="Confirm The MySQL Administrator Password (REQUIRED)"
         done
@@ -507,7 +511,7 @@ if [[ "${portal_installed}" = "false" && "${advanced_installation}" = "true" && 
                 database_admin_password1=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                   --title "${database_admin_password1_title}" \
                                                   --nocancel \
-                                                  --passwordbox "Enter the password for the MySQL adminitrator user." \
+                                                  --passwordbox "Enter the password for the MySQL administrator user." \
                                                   8 78 3>&1 1>&2 2>&3)
                 database_admin_password1_title="MySQL Administrator Password (REQUIRED)"
             done
@@ -517,7 +521,7 @@ if [[ "${portal_installed}" = "false" && "${advanced_installation}" = "true" && 
                 database_admin_password2=$(whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
                                                     --title "${database_admin_password2_title}" \
                                                     --nocancel \
-                                                    --passwordbox "Confirm the password for the MySQL adminitrator user." \
+                                                    --passwordbox "Confirm the password for the MySQL administrator user." \
                                                     8 78 3>&1 1>&2 2>&3)
                 database_admin_password2_title="Confirm The MySQL Administrator Password (REQUIRED)"
             done

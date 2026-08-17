@@ -63,7 +63,6 @@ hard work and dedication to their respective projects this project would not hav
 * PiAware (FlightAware):   https://github.com/flightaware/piaware
 * Readsb (wiedehopf):      https://github.com/wiedehopf/readsb
 * tar1090:                 https://github.com/wiedehopf/tar1090
-* VDLM2DEC:                https://github.com/TLeconte/vdlm2dec
 
 Thanks also goes out to the developers and the businesses that employ them who work to supply us
 with quality closed source packages which they have made available to the community.

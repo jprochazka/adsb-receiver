@@ -10,7 +10,7 @@ log_project_title
 log_title_heading "Setting up tar1090"
 log_title_message "------------------------------------------------------------------------------"
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-              --title "Beast-Splitter Setup" \
+              --title "tar1090 Setup" \
               --yesno "Tar1090 provides an improved webinterface for use with ADS-B decoders readsb / dump1090-fa.\n\nRepository: https://github.com/wiedehopf/tar1090\n\nWould you like to begin the setup process now?" \
               15 78; then
     echo ""

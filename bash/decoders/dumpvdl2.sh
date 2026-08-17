@@ -39,14 +39,14 @@ fi
 current_vdlm2_frequencies="136.100 136.650 136.700 136.800 136.975"
 if [[ -f /etc/systemd/system/dumpvdl2.service ]]; then
     log_message "Determining which frequencies are currently assigned"
-    exec_start=`get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service"`
-    current_vdlm2_frequencies=`sed -e "s#.*--correction ${vdlm2_correction} \(\)#\1#" <<< "${exec_start}"`
+    exec_start=$(get_config "ExecStart" "/etc/systemd/system/dumpvdl2.service")
+    current_vdlm2_frequencies=$(sed -n 's/.*--correction [^ ]* \(.*\)$/\1/p' <<< "${exec_start}")
 fi
 log_message "Asking the user for VDL Mode 2 frequencies to monitor"
-vdlm2_fequencies_title="Enter VDL Mode 2 Frequencies"
-while [[ -z $vdlm2_fequencies ]] ; do
-    vdlm2_fequencies=$(whiptail --backtitle "VDL Mode 2 Frequencies" \
-                              --title "${vdlm2_fequencies_title}" \
+vdlm2_frequencies_title="Enter VDL Mode 2 Frequencies"
+while [[ -z $vdlm2_frequencies ]] ; do
+    vdlm2_frequencies=$(whiptail --backtitle "VDL Mode 2 Frequencies" \
+                              --title "${vdlm2_frequencies_title}" \
                               --inputbox "\nEnter the VDL Mode 2 frequencies you would like to monitor." \
                               8 78 \
                               "${current_vdlm2_frequencies}" 3>&1 1>&2 2>&3)
@@ -59,13 +59,13 @@ while [[ -z $vdlm2_fequencies ]] ; do
         log_title_heading "Dumpvdl2 decoder setup halted"
         exit 1
     fi
-    vdlm2_fequencies_title="Enter VDL Frequencies (REQUIRED)"
+    vdlm2_frequencies_title="Enter VDL Frequencies (REQUIRED)"
 done
 
 
 ## CHECK FOR PREREQUISITE PACKAGES
 
-log_heading "Installing packages needed to fulfill dependencies for FlightAware PiAware client"
+log_heading "Installing packages needed to fulfill dumpvdl2 dependencies"
 
 check_package build-essential
 check_package cmake

@@ -10,7 +10,7 @@ log_project_title
 log_title_heading "Setting up Graphs1090"
 log_title_message "------------------------------------------------------------------------------"
 if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
-              --title "Beast-Splitter Setup" \
+              --title "Graphs1090 Setup" \
               --yesno "Graphs for readsb and dump1090-fa based on dump1090-tools by mutability.\n\nRepository: https://github.com/wiedehopf/graphs1090\n\nWould you like to begin the setup process now?" \
               15 78; then
     echo ""
