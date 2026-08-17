@@ -28,6 +28,7 @@ fi
 ## CHECK FOR PREREQUISITE PACKAGES
 
 check_package curl
+check_package wget
 
 
 ## DOWNLOAD THEN EXECUTE THE INSTALLATION SCRIPT

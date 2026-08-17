@@ -24,6 +24,13 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 fi
 
 
+## CHECK FOR PREREQUISITE PACKAGES
+
+log_heading "Installing packages needed to fulfill FlightRadar24 client dependencies"
+
+check_package wget
+
+
 ## DOWNLOAD AND EXECUTE THE FLIGHTRADAR24 CLIENT INSTALL SCRIPT
 
 log_heading "Begining the FlightRadar24 client installation process"

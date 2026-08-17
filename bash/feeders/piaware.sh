@@ -55,6 +55,7 @@ check_package tcl-tls
 check_package tcl8.6-dev
 check_package tcllib
 check_package tclx8.4
+check_package wget
 check_package zlib1g-dev
 
 if [[ "${RECEIVER_OS_CODE_NAME}" == "trixie" || "${RECEIVER_OS_CODE_NAME}" == "questing" || "${RECEIVER_OS_CODE_NAME}" == "noble" ]]; then

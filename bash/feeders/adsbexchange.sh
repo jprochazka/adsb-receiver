@@ -24,6 +24,13 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 fi
 
 
+## CHECK FOR PREREQUISITE PACKAGES
+
+log_heading "Installing packages needed to fulfill ADS-B Exchange client dependencies"
+
+check_package wget
+
+
 ## DOWNLOAD AND EXECUTE THE ADS-B EXCHANGE CLIENT INSTALL SCRIPT
 
 log_heading "Downloading the proper ADS-B Exchange client script"

@@ -24,6 +24,13 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
 fi
 
 
+## CHECK FOR PREREQUISITE PACKAGES
+
+log_heading "Installing packages needed to fulfill Fly Italy ADS-B client dependencies"
+
+check_package wget
+
+
 ## DOWNLOAD AND EXECUTE THE PROPER FLY ITALY ADS-B CLIENT SCRIPT
 
 log_heading "Begining the Fly Italy ADS-B client installation process"

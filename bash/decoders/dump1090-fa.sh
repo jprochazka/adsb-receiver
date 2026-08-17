@@ -53,6 +53,7 @@ check_package librtlsdr-dev
 check_package libsoapysdr-dev
 check_package lighttpd
 check_package pkg-config
+check_package wget
 
 
 ## BLACKLIST UNWANTED RTL-SDR MODULES

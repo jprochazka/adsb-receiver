@@ -24,6 +24,13 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     exit 1
 fi
 
+## CHECK FOR PREREQUISITE PACKAGES
+
+log_heading "Installing packages needed to fulfill Graphs1090 dependencies"
+
+check_package wget
+
+
 ## DOWNLOAD THEN EXECUTE THE INSTALLATION SCRIPT
 
 log_heading "Preparing to install graphs1090"

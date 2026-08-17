@@ -29,6 +29,7 @@ fi
 log_heading "Installing packages needed to fulfill FlightAware Dump1090 decoder dependencies"
 
 check_package net-tools
+check_package wget
 
 
 ## DOWNLOAD AND EXECUTE THE AIRPLANES.LIVE CLIENT INSTALL SCRIPT

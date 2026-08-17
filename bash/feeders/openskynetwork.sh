@@ -29,6 +29,7 @@ fi
 log_heading "Installing packages needed to fulfill OpenSky Network client dependencies"
 
 check_package apt-transport-https
+check_package wget
 
 
 ## ADD THE OPENSKY NETWORK APT REPOSITORY TO THE SYSTEM IF IT DOES NOT ALREADY EXIST
