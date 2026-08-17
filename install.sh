@@ -9,6 +9,9 @@ log_file="adsb-installer_${date_time}.log"
 logging_enabled="true"
 project_branch="master"
 development_mode=""
+headless_mode=""
+headless_config_file=""
+validate_headless_config_only=""
 mta=""
 
 
@@ -24,9 +27,12 @@ function display_help() {
     echo "-------------------------------------------------------------------------------------------"
     echo "-b <BRANCH>  --branch=<BRANCH>  Specifies the repository branch to be used.                "
     echo "-d           --development      Skips local repository update so changes are not overwrote."
+    echo "    --headless                 Uses configuration-driven installation without whiptail.      "
     echo "-h           --help             Shows this message.                                        "
     echo "-m <MTA>     --mta=<MTA>        Specify which email MTA to use currently Exim or Postfix.  "
     echo "-n           --no-logging       Disables writing output to a log file.                     "
+    echo "-c <FILE>    --config=<FILE>    Headless configuration file.                                "
+    echo "    --validate-headless         Validates headless config without installing.                "
     echo "-v           --version          Displays the version being used.                           "
     echo "-------------------------------------------------------------------------------------------"
     echo "                                                                                           "
@@ -42,6 +48,9 @@ if [[ $# -gt 0 ]]; then
         case "$arg" in
             --branch=*)    normalized_args+=("-b" "${arg#*=}") ;;
             --development) normalized_args+=("-d") ;;
+            --headless)    normalized_args+=("-H") ;;
+            --config=*)    normalized_args+=("-c" "${arg#*=}") ;;
+            --validate-headless) normalized_args+=("-V") ;;
             --help)        normalized_args+=("-h") ;;
             --mta=*)       normalized_args+=("-m" "${arg#*=}") ;;
             --no-logging)  normalized_args+=("-n") ;;
@@ -52,13 +61,16 @@ if [[ $# -gt 0 ]]; then
     set -- "${normalized_args[@]}"
 fi
 
-while getopts ":b:dhm:nv" opt; do
+while getopts ":b:c:dHhm:nvV" opt; do
     case "$opt" in
         b)
             project_branch="$OPTARG"
             ;;
         d)
             development_mode="true"
+            ;;
+        H)
+            headless_mode="true"
             ;;
         h)
             display_help
@@ -70,6 +82,12 @@ while getopts ":b:dhm:nv" opt; do
                 echo "MTA can only be either EXIM or POSTFIX."
                 exit 1
             fi
+            ;;
+        c)
+            headless_config_file="${OPTARG}"
+            ;;
+        V)
+            validate_headless_config_only="true"
             ;;
         n)
             logging_enabled="false"
@@ -95,6 +113,17 @@ export RECEIVER_PROJECT_BRANCH="${project_branch}"
 export RECEIVER_DEVELOPMENT_MODE="${development_mode}"
 export RECEIVER_LOGGING_ENABLED="${logging_enabled}"
 export RECEIVER_MTA="${mta}"
+if [[ "${headless_mode}" == "true" ]]; then
+    export RECEIVER_UI_MODE="headless"
+    if [[ -z "${headless_config_file}" || ! -f "${headless_config_file}" ]]; then
+        echo "Headless mode requires --config=<FILE> pointing to a readable configuration file." >&2
+        exit 1
+    fi
+    source "${headless_config_file}"
+    for headless_variable in ${!RECEIVER_HEADLESS_@}; do
+        export "${headless_variable}"
+    done
+fi
 
 
 ## SET PROJECT VARIABLES
@@ -109,6 +138,19 @@ export RECEIVER_BUILD_DIRECTORY="${PWD}/build"
 
 source "${RECEIVER_BASH_DIRECTORY}/functions.sh"
 source "${RECEIVER_BASH_DIRECTORY}/variables.sh"
+
+if [[ "${headless_mode}" == "true" ]] && ! validate_headless_config; then
+    exit 1
+fi
+
+if [[ "${validate_headless_config_only}" == "true" ]]; then
+    if [[ "${headless_mode}" != "true" ]]; then
+        echo "--validate-headless requires --headless and --config=<FILE>." >&2
+        exit 1
+    fi
+    echo "Headless configuration is valid."
+    exit 0
+fi
 
 
 ## CREATE THE LOG DIRECTORY
@@ -139,7 +181,9 @@ check_package bc
 check_package git
 check_package lsb-base
 check_package lsb-release
-check_package whiptail
+if [[ "${RECEIVER_UI_MODE:-whiptail}" == "whiptail" ]]; then
+    check_package whiptail
+fi
 echo ""
 
 log_title_message "------------------------------------------------------------------------------"
@@ -214,5 +258,6 @@ unset RECEIVER_DEVELOPMENT_MODE
 unset RECEIVER_LOGGING_ENABLED
 unset RECEIVER_LOG_FILE
 unset RECEIVER_MTA
+unset RECEIVER_UI_MODE
 
 exit "$init_exit_code"

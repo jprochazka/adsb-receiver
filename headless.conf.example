@@ -1,0 +1,36 @@
+# Copy this file outside the repository, set the values for the software you
+# want installed, and run: ./install.sh --headless --config /path/to/file
+# Values in this file are shell assignments and must not be accepted from an
+# untrusted source.
+
+# Main installation choices. Valid decoder values are listed below; use none to
+# skip a category. Only one ADS-B and one VDL Mode 2 decoder can be selected.
+RECEIVER_HEADLESS_ADSB_DECODER="dump1090-fa"       # dump1090-fa, readsb, none
+RECEIVER_HEADLESS_UAT_DECODER="none"               # dump978-fa, none
+RECEIVER_HEADLESS_ACARS_DECODER="none"             # acarsdec, none
+RECEIVER_HEADLESS_VDLM2_DECODERS="none"            # Comma-separated: dumpvdl2, vdlm2dec, none
+RECEIVER_HEADLESS_FEEDERS=""                        # Comma-separated: ADS-B Exchange Feed Client, AirNav Radar RBFeeder, Airplanes.live Feeder, FlightAware PiAware, Flightradar24 Client, Fly Italy ADS-B Feeder, OpenSky Network Feeder, Plane Finder Client
+RECEIVER_HEADLESS_EXTRAS=""                         # Comma-separated: beast-splitter, Duck DNS Free Dynamic DNS Hosting, Graphs1090, tar1090
+RECEIVER_HEADLESS_INSTALL_THE_ADS_B_PORTAL="no"     # yes or no
+RECEIVER_HEADLESS_OPERATING_SYSTEM_UPDATES="no"     # yes or no
+RECEIVER_HEADLESS_CONFIRM_YOU_WISH_TO_CONTINUE="yes"
+RECEIVER_HEADLESS_THE_ADS_B_RECEIVER_PROJECT="yes"
+RECEIVER_HEADLESS_DEFAULT_YESNO="yes"
+
+# When more than one decoder is selected, assign each a unique RTL-SDR device.
+# dumpvdl2 and vdlm2dec can coexist only when assigned separate devices.
+RECEIVER_HEADLESS_DEVICE_DUMP1090_FA="0"
+RECEIVER_HEADLESS_DEVICE_DUMP978_FA="1"
+RECEIVER_HEADLESS_DEVICE_ACARSDEC="2"
+RECEIVER_HEADLESS_DEVICE_DUMPVDL2="3"
+RECEIVER_HEADLESS_DEVICE_VDLM2DEC="4"
+RECEIVER_HEADLESS_DEVICE_READSB="5"
+
+# Freeform answers use the dialog type and title, normalized to uppercase
+# letters, numbers, and underscores. Add only values required by selected
+# components. Examples:
+# RECEIVER_HEADLESS_MENU_DEVICE_TYPE="RTL-SDR"
+# RECEIVER_HEADLESS_INPUTBOX_ENTER_ACARS_FREQUENCIES="130.025 130.425"
+# RECEIVER_HEADLESS_INPUTBOX_MYSQL_DATABASE_SERVER_HOSTNAME="db.example.net"
+# RECEIVER_HEADLESS_INPUTBOX_MYSQL_ADMINISTRATOR_USERNAME="root"
+# RECEIVER_HEADLESS_PASSWORDBOX_MYSQL_ADMINISTRATOR_PASSWORD="change-me"

@@ -103,6 +103,262 @@ function log_pipe() {
 }
 
 
+## USER INTERFACE BACKENDS
+
+function ui_config_value() {
+    local variable_name="$1"
+    local default_value="${2:-}"
+
+    if [[ -v "${variable_name}" ]]; then
+        printf '%s' "${!variable_name}"
+    else
+        printf '%s' "${default_value}"
+    fi
+}
+
+function ui_title_key() {
+    local title="$1"
+
+    title=$(printf '%s' "${title}" | tr '[:lower:]' '[:upper:]' | tr -cs 'A-Z0-9' '_')
+    printf '%s' "${title#_}"
+}
+
+function ui_headless_dialog() {
+    local dialog_type="$1"
+    local title="$2"
+    local value_key="RECEIVER_HEADLESS_$(printf '%s' "${dialog_type#--}" | tr '[:lower:]' '[:upper:]')_$(ui_title_key "${title}")"
+    local generic_key="RECEIVER_HEADLESS_$(ui_title_key "${title}")"
+    local mapped_key=""
+    local value
+
+    case "${title}" in
+        "ADS-B Decoder Selection") mapped_key="RECEIVER_HEADLESS_ADSB_DECODER" ;;
+        "UAT Decoder Selection") mapped_key="RECEIVER_HEADLESS_UAT_DECODER" ;;
+        "ACARS Decoder Selection") mapped_key="RECEIVER_HEADLESS_ACARS_DECODER" ;;
+        "VLD Mode 2 Decoder Selection") mapped_key="RECEIVER_HEADLESS_VDLM2_DECODER" ;;
+        "Client Installation Options") mapped_key="RECEIVER_HEADLESS_FEEDERS" ;;
+        "Extras Installation Options") mapped_key="RECEIVER_HEADLESS_EXTRAS" ;;
+        *"dump1090-fa RTL-SDR Device Number"*) mapped_key="RECEIVER_HEADLESS_DEVICE_DUMP1090_FA" ;;
+        *"dump978-fa RTL-SDR Device Number"*) mapped_key="RECEIVER_HEADLESS_DEVICE_DUMP978_FA" ;;
+        *"ACARSDEC RTL-SDR Device Number"*) mapped_key="RECEIVER_HEADLESS_DEVICE_ACARSDEC" ;;
+        *"dumpvdl2 RTL-SDR Device Number"*) mapped_key="RECEIVER_HEADLESS_DEVICE_DUMPVDL2" ;;
+        *"VDLM2DEC RTL-SDR Device Number"*) mapped_key="RECEIVER_HEADLESS_DEVICE_VDLM2DEC" ;;
+        *"Readsb RTL-SDR Device Number"*) mapped_key="RECEIVER_HEADLESS_DEVICE_READSB" ;;
+    esac
+
+    case "${dialog_type}" in
+        --msgbox)
+            return 0
+            ;;
+        --yesno)
+            value=$(ui_config_value "${value_key}" "$(ui_config_value "${generic_key}" "$(ui_config_value RECEIVER_HEADLESS_DEFAULT_YESNO no)")")
+            case "${value,,}" in
+                yes|true|1) return 0 ;;
+                no|false|0) return 1 ;;
+                *)
+                    log_alert_message "Invalid headless answer for ${title}: '${value}'. Use yes or no."
+                    return 1
+                    ;;
+            esac
+            ;;
+        --menu|--inputbox|--passwordbox)
+            value=$(ui_config_value "${value_key}" "$(ui_config_value "${mapped_key}" "$(ui_config_value "${generic_key}")")")
+            if [[ -z "${value}" ]]; then
+                log_alert_message "Missing headless configuration value ${value_key} for '${title}'"
+                return 1
+            fi
+            printf '%s\n' "${value}" >&2
+            ;;
+        --checklist)
+            value=$(ui_config_value "${value_key}" "$(ui_config_value "${mapped_key}" "$(ui_config_value "${generic_key}")")")
+            if [[ -n "${value}" ]]; then
+                tr ',' '\n' <<< "${value}" >&2
+            fi
+            ;;
+        *)
+            log_alert_message "Unsupported headless dialog type: ${dialog_type}"
+            return 1
+            ;;
+    esac
+}
+
+function ui_text_dialog() {
+    local dialog_type="$1"
+    local title="$2"
+    local message="$3"
+    local answer=""
+
+    case "${dialog_type}" in
+        --msgbox)
+            printf '\n%s\n%s\n' "${title}" "${message}" >&2
+            return 0
+            ;;
+        --yesno)
+            printf '\n%s\n%s\n[y/N]: ' "${title}" "${message}" >&2
+            read -r answer
+            [[ "${answer,,}" == "y" || "${answer,,}" == "yes" ]]
+            return
+            ;;
+        --menu|--checklist|--inputbox|--passwordbox)
+            printf '\n%s\n%s\nAnswer: ' "${title}" "${message}" >&2
+            read -r answer
+            [[ -n "${answer}" ]] || return 1
+            if [[ "${dialog_type}" == "--checklist" ]]; then
+                tr ',' '\n' <<< "${answer}" >&2
+            else
+                printf '%s\n' "${answer}" >&2
+            fi
+            ;;
+    esac
+}
+
+function ui_dialog() {
+    local dialog_type=""
+    local title=""
+    local message=""
+    local argument
+    local previous=""
+
+    for argument in "$@"; do
+        if [[ "${previous}" == "--title" ]]; then
+            title="${argument}"
+        elif [[ "${previous}" == "--yesno" || "${previous}" == "--menu" || "${previous}" == "--checklist" || "${previous}" == "--inputbox" || "${previous}" == "--passwordbox" || "${previous}" == "--msgbox" ]]; then
+            message="${argument}"
+        fi
+
+        case "${argument}" in
+            --yesno|--menu|--checklist|--inputbox|--passwordbox|--msgbox)
+                dialog_type="${argument}"
+                ;;
+        esac
+        previous="${argument}"
+    done
+
+    case "${RECEIVER_UI_MODE:-whiptail}" in
+        whiptail)
+            command whiptail "$@"
+            ;;
+        headless)
+            ui_headless_dialog "${dialog_type}" "${title}"
+            ;;
+        text)
+            ui_text_dialog "${dialog_type}" "${title}" "${message}"
+            ;;
+        *)
+            log_alert_message "Unknown user interface mode: ${RECEIVER_UI_MODE}"
+            return 1
+            ;;
+    esac
+}
+
+# Existing installer scripts retain their whiptail-compatible arguments while all
+# backend selection is owned by ui_dialog.
+function whiptail() {
+    ui_dialog "$@"
+}
+
+function ui_yesno() { ui_dialog "$@"; }
+function ui_menu() { ui_dialog "$@"; }
+function ui_checklist() { ui_dialog "$@"; }
+function ui_inputbox() { ui_dialog "$@"; }
+function ui_msgbox() { ui_dialog "$@"; }
+
+function validate_headless_config() {
+    local selected_decoders=()
+    local selections=()
+    local decoder
+    local device_key
+    local device_value
+    local selection
+    local vdlm2_decoders
+    local seen_devices=" "
+
+    for decoder in "${RECEIVER_HEADLESS_ADSB_DECODER:-none}" "${RECEIVER_HEADLESS_UAT_DECODER:-none}" "${RECEIVER_HEADLESS_ACARS_DECODER:-none}"; do
+        case "${decoder}" in
+            none|dump1090-fa|readsb|dump978-fa|acarsdec|dumpvdl2|vdlm2dec) ;;
+            *)
+                log_alert_message "Invalid headless decoder selection: ${decoder}"
+                return 1
+                ;;
+        esac
+        [[ "${decoder}" != "none" ]] && selected_decoders+=("${decoder}")
+    done
+
+    vdlm2_decoders="${RECEIVER_HEADLESS_VDLM2_DECODERS:-${RECEIVER_HEADLESS_VDLM2_DECODER:-none}}"
+    IFS=',' read -r -a selections <<< "${vdlm2_decoders}"
+    for decoder in "${selections[@]}"; do
+        case "${decoder}" in
+            none|dumpvdl2|vdlm2dec) ;;
+            *)
+                log_alert_message "Invalid VDL Mode 2 decoder selection: ${decoder}"
+                return 1
+                ;;
+        esac
+        [[ "${decoder}" != "none" ]] && selected_decoders+=("${decoder}")
+    done
+
+    if [[ "${RECEIVER_HEADLESS_ADSB_DECODER:-none}" != "none" && "${RECEIVER_HEADLESS_ADSB_DECODER}" != "dump1090-fa" && "${RECEIVER_HEADLESS_ADSB_DECODER}" != "readsb" ]]; then
+        log_alert_message "ADS-B decoder must be dump1090-fa, readsb, or none."
+        return 1
+    fi
+
+    if [[ "${RECEIVER_HEADLESS_UAT_DECODER:-none}" != "none" && "${RECEIVER_HEADLESS_UAT_DECODER}" != "dump978-fa" ]]; then
+        log_alert_message "UAT decoder must be dump978-fa or none."
+        return 1
+    fi
+
+    if [[ "${RECEIVER_HEADLESS_ACARS_DECODER:-none}" != "none" && "${RECEIVER_HEADLESS_ACARS_DECODER}" != "acarsdec" ]]; then
+        log_alert_message "ACARS decoder must be acarsdec or none."
+        return 1
+    fi
+
+    if [[ "${vdlm2_decoders}" == *"none,"* || "${vdlm2_decoders}" == *,"none"* || ( "${vdlm2_decoders}" == *"none"* && "${vdlm2_decoders}" != "none" ) ]]; then
+        log_alert_message "VDL Mode 2 selection cannot combine none with an installed decoder."
+        return 1
+    fi
+
+    if (( ${#selected_decoders[@]} > 1 )); then
+        for decoder in "${selected_decoders[@]}"; do
+            device_key="RECEIVER_HEADLESS_DEVICE_$(printf '%s' "${decoder}" | tr '[:lower:]-' '[:upper:]_')"
+            device_value=$(ui_config_value "${device_key}")
+            if ! [[ "${device_value}" =~ ^[0-9]+$ ]]; then
+                log_alert_message "${device_key} must assign a numeric RTL-SDR device for ${decoder}."
+                return 1
+            fi
+            if [[ "${seen_devices}" == *" ${device_value} "* ]]; then
+                log_alert_message "RTL-SDR device ${device_value} is assigned to more than one decoder."
+                return 1
+            fi
+            seen_devices+="${device_value} "
+        done
+    fi
+
+    IFS=',' read -r -a selections <<< "${RECEIVER_HEADLESS_FEEDERS:-}"
+    for selection in "${selections[@]}"; do
+        [[ -z "${selection}" ]] && continue
+        case "${selection}" in
+            "ADS-B Exchange Feed Client"|"AirNav Radar RBFeeder"|"Airplanes.live Feeder"|"FlightAware PiAware"|"Flightradar24 Client"|"Fly Italy ADS-B Feeder"|"OpenSky Network Feeder"|"Plane Finder Client") ;;
+            *)
+                log_alert_message "Unknown headless feeder selection: ${selection}"
+                return 1
+                ;;
+        esac
+    done
+
+    IFS=',' read -r -a selections <<< "${RECEIVER_HEADLESS_EXTRAS:-}"
+    for selection in "${selections[@]}"; do
+        [[ -z "${selection}" ]] && continue
+        case "${selection}" in
+            "beast-splitter"|"Duck DNS Free Dynamic DNS Hosting"|"Graphs1090"|"tar1090") ;;
+            *)
+                log_alert_message "Unknown headless extra selection: ${selection}"
+                return 1
+                ;;
+        esac
+    done
+}
+
+
 ## CHECK IF THE SUPPLIED PACKAGE IS INSTALLED AND IF NOT ATTEMPT TO INSTALL IT
 
 function check_package() {
