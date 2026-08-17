@@ -36,6 +36,7 @@ fi
 log_heading "Installing packages needed to fulfill AirNav Radar rbfeeder dependencies"
 
 check_package dirmngr
+check_package gnupg
 
 
 ## ADD THE APT REPOSITORY
@@ -43,22 +44,25 @@ check_package dirmngr
 log_heading "Adding the rb24 apt repository"
 
 log_message "Importing the key"
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
+sudo install -d -m 0755 /etc/apt/keyrings
+gpg --no-default-keyring --keyring /tmp/rb24-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D043681
+gpg --no-default-keyring --keyring /tmp/rb24-keyring.gpg --export 1D043681 | sudo tee /etc/apt/keyrings/rb24.gpg > /dev/null
+rm -f /tmp/rb24-keyring.gpg /tmp/rb24-keyring.gpg~
 
 log_message "Removing the old source list"
-/bin/rm -f /etc/apt/sources.list.d/rb24.list
+sudo /bin/rm -f /etc/apt/sources.list.d/rb24.list
 
 log_message "Setting repository based on distribution"
 distro="bookworm"
 case $RECEIVER_OS_CODE_NAME in
     jammy)
-        echo 'deb https://apt.rb24.com/ bullseye main' > /etc/apt/sources.list.d/rb24.list
+        echo 'deb [signed-by=/etc/apt/keyrings/rb24.gpg] https://apt.rb24.com/ bullseye main' | sudo tee /etc/apt/sources.list.d/rb24.list > /dev/null
         ;;
     bookworm)
-        echo 'deb https://apt.rb24.com/ bookworm main' > /etc/apt/sources.list.d/rb24.list
+        echo 'deb [signed-by=/etc/apt/keyrings/rb24.gpg] https://apt.rb24.com/ bookworm main' | sudo tee /etc/apt/sources.list.d/rb24.list > /dev/null
         ;;
     trixie | questing | noble)
-         echo 'deb https://apt.rb24.com/ trixie main' > /etc/apt/sources.list.d/rb24.list
+         echo 'deb [signed-by=/etc/apt/keyrings/rb24.gpg] https://apt.rb24.com/ trixie main' | sudo tee /etc/apt/sources.list.d/rb24.list > /dev/null
         ;;
 esac
 log_message "Setting repository distribution to ${distro}"
@@ -67,7 +71,7 @@ log_message "Setting repository distribution to ${distro}"
 ## UPDATE APT REPOSITORY AND INSTALL RBFEEDER
 
 log_heading "Updating apt repositories"
-apt update -y
+sudo apt-get update -y
 
 log_heading "Installing rbfeeder"
 check_package rbfeeder
@@ -120,6 +124,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "AirNav Radar client setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

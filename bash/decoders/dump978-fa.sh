@@ -114,7 +114,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' dump978-fa 2>/dev/null | grep -c "ok instal
     log_title_message "------------------------------------------------------------------------------"
     log_title_heading "FlightAware Dump978 decoder setup halted"
     echo ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
     exit 1
 fi
 
@@ -129,7 +129,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' skyaware978 2>/dev/null | grep -c "ok insta
     log_title_message "------------------------------------------------------------------------------"
     log_title_heading "FlightAware Dump978 decoder setup halted"
     echo ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
     exit 1
 fi
 
@@ -207,6 +207,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "FlightAware Dump978 decoder setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

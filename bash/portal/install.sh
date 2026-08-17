@@ -287,8 +287,12 @@ if [[ "${local_mysql_server}" = "true" ]]; then
     database_hostname="localhost"
 
     check_package mariadb-server
-    log_message "Executing the mysql_secure_installation script"
-    sudo mysql_secure_installation
+    if [[ "${RECEIVER_UI_MODE}" == "headless" ]]; then
+        log_message "Skipping interactive mysql_secure_installation script in headless mode"
+    else
+        log_message "Executing the mysql_secure_installation script"
+        sudo mysql_secure_installation
+    fi
 fi
 
 check_package collectd-core
@@ -628,6 +632,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "The ADS-B Portal setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

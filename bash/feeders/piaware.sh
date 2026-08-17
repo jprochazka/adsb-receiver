@@ -137,7 +137,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' piaware 2>/dev/null | grep -c "ok installed
     log_title_message "------------------------------------------------------------------------------"
     log_title_heading "FlightAware PiAware client setup failed"
     echo ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
     exit 1
 else
     if [[ ! -d $RECEIVER_BUILD_DIRECTORY/package-archive ]]; then
@@ -172,6 +172,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "FlightAware PiAware client setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

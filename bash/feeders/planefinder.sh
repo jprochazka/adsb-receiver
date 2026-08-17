@@ -63,7 +63,7 @@ case "${RECEIVER_CPU_ARCHITECTURE}" in
         log_title_message "------------------------------------------------------------------------------"
         log_title_heading "PlaneFinder client setup failed"
         echo ""
-        read -p "Press enter to continue..." discard
+        if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
         exit 1
         ;;
 esac
@@ -120,6 +120,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "PlaneFinder client setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

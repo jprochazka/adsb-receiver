@@ -113,6 +113,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "ADS-B Exchange client client setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

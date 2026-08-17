@@ -51,10 +51,11 @@ if ! grep -q "^deb .*opensky." /etc/apt/sources.list /etc/apt/sources.list.d/*; 
     log_message "Downloading and adding the OpenSky Network apt repository GPG key"
     echo ""
     wget -v -O $RECEIVER_BUILD_DIRECTORY/openskynetwork/opensky.gpg.pub https://opensky-network.org/files/firmware/opensky.gpg.pub 2>&1 | log_pipe
-    wget -q -O - https://opensky-network.org/files/firmware/opensky.gpg.pub | sudo apt-key add - 2>&1 | log_pipe
+    sudo install -d -m 0755 /etc/apt/keyrings
+    sudo gpg --dearmor -o /etc/apt/keyrings/opensky.gpg $RECEIVER_BUILD_DIRECTORY/openskynetwork/opensky.gpg.pub
     echo ""
     log_message "Adding the OpenSky Network apt repository"
-    sudo bash -c "echo deb https://opensky-network.org/repos/debian opensky custom > /etc/apt/sources.list.d/opensky.list"
+    sudo bash -c "echo 'deb [signed-by=/etc/apt/keyrings/opensky.gpg] https://opensky-network.org/repos/debian opensky custom' > /etc/apt/sources.list.d/opensky.list"
 else
     log_message "The OpenSky Network apt repository is already set up"
 fi
@@ -83,6 +84,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "OpenSky Network client setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

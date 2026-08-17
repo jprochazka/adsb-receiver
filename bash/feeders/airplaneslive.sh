@@ -90,7 +90,7 @@ if whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     echo ""
     log_message "Executing the airplanes.live web interface installation script"
     echo ""
-    sudo bash sudo bash /usr/local/share/airplanes/git/install-or-update-interface.sh
+    sudo bash /usr/local/share/airplanes/git/install-or-update-interface.sh
 else
     log_message "The user opted out of installing the airplanes.live web interface"
 fi
@@ -113,6 +113,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "Airplanes.live client setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

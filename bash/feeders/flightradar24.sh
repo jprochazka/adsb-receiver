@@ -63,7 +63,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' fr24feed 2>/dev/null | grep -c "ok installe
     log_title_message "------------------------------------------------------------------------------"
     log_title_heading "FlightRadar24 client setup failed"
     echo ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
     exit 1
 fi
 
@@ -92,6 +92,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "FlightRadar24 client setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0

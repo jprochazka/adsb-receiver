@@ -20,7 +20,7 @@ if ! whiptail --backtitle "${RECEIVER_PROJECT_TITLE}" \
     echo -e "\e[93m  ------------------------------------------------------------------------------\e[96m"
     echo -e "\e[92m  beast-splitter setup halted.\e[39m"
     echo -e ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
     exit 1
 fi
 
@@ -131,7 +131,7 @@ if [[ $(dpkg-query -W -f='${STATUS}' beast-splitter 2>/dev/null | grep -c "ok in
     log_title_message "------------------------------------------------------------------------------"
     log_title_heading "beast-splitter setup halted"
     echo ""
-    read -p "Press enter to continue..." discard
+    if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
     exit 1
 fi
 
@@ -175,6 +175,6 @@ echo ""
 log_title_message "------------------------------------------------------------------------------"
 log_title_heading "beast-splitter setup is complete"
 echo ""
-read -p "Press enter to continue..." discard
+if [[ -t 0 ]]; then read -r -p "Press enter to continue..." discard; fi
 
 exit 0
