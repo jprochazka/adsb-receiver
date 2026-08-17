@@ -55,6 +55,16 @@ When setting up the portal you will have to choose between a lite or advanced in
 * Graphs1090:           https://github.com/wiedehopf/graphs1090
 * tar1090:              https://github.com/wiedehopf/tar1090
 
+## Supported Operating Systems
+
+The project currently supports the following Linux distributions.
+
+* Raspberry PI OS _(Legacy, Current)_
+* Debian _(Bookworm, Trixie)_
+* Ubuntu _(Jammy Jellyfish, Noble Numbat, Questing Quokka)_
+
+_These scripts should work most any Debian based distributions_
+
 ## Obtaining And Using This Software
 
 ### New installations...
@@ -77,26 +87,20 @@ Your local repositories master branch will be updated each time install.sh is ex
 
 Headless mode installs software using a configuration file instead of interactive prompts. Copy `headless.conf.example` to `headless.conf` in the repository root, then update the settings for the software you want to install.
 
+    sudo apt-get update
+    sudo apt-get install git
+    git clone https://github.com/jprochazka/adsb-receiver
     cd ~/adsb-receiver
+    chmod +x install.sh
     cp headless.conf.example headless.conf
     nano headless.conf
 
 Validate the configuration before installation:
 
-    ./install.sh --headless --validate-headless
+    ./install.sh --validate-headless
 
 Set `HEADLESS_CONFIGURATION_VERIFIED="yes"` only after the configuration is complete, then run:
 
     ./install.sh --headless
 
-## Supported Operating Systems
-
-The project currently supports the following Linux distributions.
-
-* Raspberry PI OS _(Legacy, Current)_
-* Debian _(Bookworm, Trixie)_
-* Ubuntu _(Jammy Jellyfish, Noble Numbat, Questing Quokka)_
-
-_These scripts should work most any Debian based distributions_
-
-Support is available via this repository through the use of the issue tracker or discussions.
+_Rerunning `./install.sh --headless` reloads the current `headless.conf` and applies its settings._

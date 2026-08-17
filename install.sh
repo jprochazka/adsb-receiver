@@ -20,23 +20,23 @@ mta=""
 
 # Display the help message
 function display_help() {
-    echo "                                                                                           "
-    echo "Usage: $0 [OPTION] [ARGUMENT]                                                              "
-    echo "                                                                                           "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "Option       GNU long option    Description                                                "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "-b <BRANCH>  --branch=<BRANCH>  Specifies the repository branch to be used.                "
-    echo "-d           --development      Skips local repository update so changes are not overwrote."
-    echo "    --headless                 Uses configuration-driven installation without whiptail.      "
-    echo "-h           --help             Shows this message.                                        "
-    echo "-m <MTA>     --mta=<MTA>        Specify which email MTA to use currently Exim or Postfix.  "
-    echo "-n           --no-logging       Disables writing output to a log file.                     "
-    echo "-c <FILE>    --config=<FILE>    Optional headless config path; defaults to ./headless.conf.  "
-    echo "    --validate-headless         Validates headless config without installing.                "
-    echo "-v           --version          Displays the version being used.                           "
-    echo "-------------------------------------------------------------------------------------------"
-    echo "                                                                                           "
+    echo "                                                                                                "
+    echo "Usage: $0 [OPTION] [ARGUMENT]                                                                   "
+    echo "                                                                                                "
+    echo "------------------------------------------------------------------------------------------------"
+    echo "Option       GNU long option    Description                                                     "
+    echo "------------------------------------------------------------------------------------------------"
+    echo "-b <BRANCH>  --branch=<BRANCH>    Specifies the repository branch to be used.                   "
+    echo "-d           --development        Skips local repository update so changes are not overwritten. "
+    echo "-H           --headless           Uses configuration-driven installation without whiptail.      "
+    echo "-h           --help               Shows this message.                                           "
+    echo "-m <MTA>     --mta=<MTA>          Specify which email MTA to use currently Exim or Postfix.     "
+    echo "-n           --no-logging         Disables writing output to a log file.                        "
+    echo "-c <FILE>    --config=<FILE>      Optional headless config path; defaults to ./headless.conf.   "
+    echo "-V           --validate-headless  Validates headless config without installing.                 "
+    echo "-v           --version            Displays the version being used.                              "
+    echo "------------------------------------------------------------------------------------------------"
+    echo "                                                                                                "
 }
 
 
@@ -47,16 +47,16 @@ if [[ $# -gt 0 ]]; then
     normalized_args=()
     for arg in "$@"; do
         case "$arg" in
-            --branch=*)    normalized_args+=("-b" "${arg#*=}") ;;
-            --development) normalized_args+=("-d") ;;
-            --headless)    normalized_args+=("-H") ;;
-            --config=*)    normalized_args+=("-c" "${arg#*=}") ;;
+            --branch=*)          normalized_args+=("-b" "${arg#*=}") ;;
+            --development)       normalized_args+=("-d") ;;
+            --headless)          normalized_args+=("-H") ;;
+            --config=*)          normalized_args+=("-c" "${arg#*=}") ;;
             --validate-headless) normalized_args+=("-V") ;;
-            --help)        normalized_args+=("-h") ;;
-            --mta=*)       normalized_args+=("-m" "${arg#*=}") ;;
-            --no-logging)  normalized_args+=("-n") ;;
-            --version)     normalized_args+=("-v") ;;
-            *)             normalized_args+=("$arg") ;;
+            --help)              normalized_args+=("-h") ;;
+            --mta=*)             normalized_args+=("-m" "${arg#*=}") ;;
+            --no-logging)        normalized_args+=("-n") ;;
+            --version)           normalized_args+=("-v") ;;
+            *)                   normalized_args+=("$arg") ;;
         esac
     done
     set -- "${normalized_args[@]}"
@@ -88,6 +88,7 @@ while getopts ":b:c:dHhm:nvV" opt; do
             headless_config_file="${OPTARG}"
             ;;
         V)
+            headless_mode="true"
             validate_headless_config_only="true"
             ;;
         n)
@@ -259,28 +260,12 @@ for choice in feeder_choices.txt extras_choices.txt ; do
     rm -f "${RECEIVER_ROOT_DIRECTORY}/${choice}"
 done
 
-unset RECEIVER_PROJECT_TITLE
-unset RECEIVER_ROOT_DIRECTORY
-unset RECEIVER_BASH_DIRECTORY
-unset RECEIVER_BUILD_DIRECTORY
-unset RECEIVER_OS_CODE_NAME
-unset RECEIVER_OS_DISTRIBUTION
-unset RECEIVER_OS_RELEASE
-unset RECEIVER_CPU_ARCHITECTURE
-unset RECEIVER_CPU_REVISION
-unset RECEIVER_DEVICE_ASSIGNED_TO_ACARS_DECODER
-unset RECEIVER_DEVICE_ASSIGNED_TO_ADSB_DECODER
-unset RECEIVER_DEVICE_ASSIGNED_TO_UAT_DECODER
-unset RECEIVER_DEVICE_ASSIGNED_TO_VDLM2_DECODER
-unset RECEIVER_ACARS_DECODER_SOFTWARE
-unset RECEIVER_ADSB_DECODER_SOFTWARE
-unset RECEIVER_UAT_DECODER_SOFTWARE
-unset RECEIVER_VDLM2_DECODER_SOFTWARE
-unset RECEIVER_PROJECT_BRANCH
-unset RECEIVER_DEVELOPMENT_MODE
-unset RECEIVER_LOGGING_ENABLED
-unset RECEIVER_LOG_FILE
-unset RECEIVER_MTA
-unset RECEIVER_UI_MODE
+for headless_variable in ${!HEADLESS_@}; do
+    unset "${headless_variable}"
+done
+
+for receiver_variable in ${!RECEIVER_@}; do
+    unset "${receiver_variable}"
+done
 
 exit "$init_exit_code"

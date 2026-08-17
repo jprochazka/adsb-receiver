@@ -116,5 +116,5 @@ HEADLESS_ENABLE_BEAST_SPLITTER="no"
 # =============================================================================
 
 ## Set to yes when you are done and verified this file is in order using the following command
-## ./install.sh --headless --validate-headless
+## ./install.sh --validate-headless
 HEADLESS_CONFIGURATION_VERIFIED="no"
