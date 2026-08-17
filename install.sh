@@ -119,7 +119,9 @@ if [[ "${headless_mode}" == "true" ]]; then
         echo "Headless mode requires --config=<FILE> pointing to a readable configuration file." >&2
         exit 1
     fi
-    source "${headless_config_file}"
+    # Config files edited on Windows may carry CRLF line endings, which would
+    # otherwise leave a trailing \r embedded in every sourced value.
+    source <(tr -d '\r' < "${headless_config_file}")
     for headless_variable in ${!RECEIVER_HEADLESS_@}; do
         export "${headless_variable}"
     done
